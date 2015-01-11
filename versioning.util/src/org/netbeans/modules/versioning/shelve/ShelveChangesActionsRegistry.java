@@ -40,6 +40,8 @@ package org.netbeans.modules.versioning.shelve;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 
 /**
@@ -77,6 +79,10 @@ public final class ShelveChangesActionsRegistry {
     public static abstract class ShelveChangesActionProvider {
         
         public abstract Action getAction ();
+        
+        public JComponent[] getUnshelveActions (VCSContext ctx, boolean popup) {
+            return new JComponent[0];
+        }
         
     }
 }

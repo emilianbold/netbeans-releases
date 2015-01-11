@@ -50,14 +50,21 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.Git;
@@ -67,6 +74,8 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.ui.stash.Stash;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry.ShelveChangesActionProvider;
 import org.netbeans.modules.versioning.shelve.ShelveChangesSupport;
@@ -74,6 +83,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.Actions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -278,6 +288,16 @@ public class ShelveChangesAction extends SingleRepositoryAction {
                     Utils.setAcceleratorBindings("Actions/Git", a); //NOI18N
                     return a;
                 }
+
+                @Override
+                public JComponent[] getUnshelveActions (VCSContext ctx, boolean popup) {
+                    JComponent[] cont = UnshelveMenu.getInstance().getMenu(ctx);
+                    if (cont == null) {
+                        cont = super.getUnshelveActions(ctx, popup);
+                    }
+                    return cont;
+                }
+                
             };
         }
         return ACTION_PROVIDER;
@@ -289,5 +309,51 @@ public class ShelveChangesAction extends SingleRepositoryAction {
         public void setDisplayName (String displayName) {
             super.setDisplayName(displayName);
         }
+    }
+    
+    @NbBundle.Messages({
+        "CTL_UnstashMenu.name=&Git Unstash",
+        "CTL_UnstashMenu.name.popup=Git Unstash",
+        "# {0} - stash index", "# {1} - stash name", "CTL_UnstashAction.name={0} - {1}"
+    })
+    private static class UnshelveMenu {
+
+        private static UnshelveMenu instance;
+        
+        synchronized static UnshelveMenu getInstance () {
+            if (instance == null) {
+                instance = new UnshelveMenu();
+            }
+            return instance;
+        }
+
+        private JComponent[] getMenu (VCSContext context) {
+            final Map.Entry<File, File[]> actionRoots = getActionRoots(context);
+            if (actionRoots != null) {
+                final File root = actionRoots.getKey();
+                RepositoryInfo info = RepositoryInfo.getInstance(root);
+                final List<GitRevisionInfo> stashes = info.getStashes();
+                if (!stashes.isEmpty()) {
+                    JMenu menu = new JMenu(Bundle.CTL_UnstashMenu_name());
+                    int i = 0;
+                    for (ListIterator<Stash> it = Stash.create(root, stashes).listIterator(); it.hasNext() && i < 10; ++i) {
+                        Stash stash = it.next();
+                        Action a = stash.getApplyAction();
+                        String name = Bundle.CTL_UnstashAction_name(stash.getIndex(), stash.getInfo().getShortMessage());
+                        if (name.length() > 40) {
+                            name = name.substring(0, 40);
+                        }
+                        a.putValue(Action.NAME, name);
+                        a.putValue(Action.SHORT_DESCRIPTION, stash.getInfo().getShortMessage());
+                        JMenuItem item = new JMenuItem(name);
+                        Actions.connect(item, a);
+                        menu.add(item);
+                    }
+                    return new JComponent[] { menu };
+                }
+            }
+            return null;
+        }
+        
     }
 }

@@ -39,6 +39,7 @@ package org.netbeans.modules.versioning.shelve.impl;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import javax.swing.AbstractAction;
@@ -84,12 +85,13 @@ public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu 
     
     public static List<JComponent> getMenuActions (VCSContext context, Lookup lkp) {
         List<JComponent> menuItems = new ArrayList<>();
+        VersioningSystem [] vs = Utils.getOwners(context);
         // shelve changes
-        List<JMenuItem> shelveActions = getShelveActions(context, lkp);
+        List<JComponent> shelveActions = getShelveActions(vs, lkp);
         menuItems.addAll(shelveActions);
         
         // unshelve changes
-        List<JMenuItem> unshelveActions = getUnshelveActions(context, lkp);
+        List<JComponent> unshelveActions = getUnshelveActions(vs, context, lkp);
         if (!shelveActions.isEmpty() && !unshelveActions.isEmpty()) {
             menuItems.add(null);
         }
@@ -113,9 +115,9 @@ public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu 
         return menu;
     }
 
-    private static List<JMenuItem> getShelveActions (VCSContext ctx, Lookup lkp) {
-        List<JMenuItem> items = new ArrayList<>();
-        VersioningSystem [] vs = Utils.getOwners(ctx);
+    private static List<JComponent> getShelveActions (VersioningSystem[] vs, Lookup lkp) {
+        List<JComponent> items = new ArrayList<>();
+        
 
         if (vs.length == 1) {
             // actions depending on the central patch storage
@@ -142,8 +144,8 @@ public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu 
         return items;
     }
 
-    private static List<JMenuItem> getUnshelveActions (VCSContext ctx, Lookup lkp) {
-        List<JMenuItem> items = new ArrayList<>();
+    private static List<JComponent> getUnshelveActions (VersioningSystem[] vs, VCSContext ctx, Lookup lkp) {
+        List<JComponent> items = new ArrayList<>();
         List<String> list = Utils.getStringList(NbPreferences.forModule(ShelveChangesMenu.class), PREF_KEY_SHELVED_PATCHES);
         // XXX use Actions.forID
         Action a = Utils.getAcceleratedAction("Actions/Versioning/UnshelveChanges/org-netbeans-modules-versioning-shelve-impl-UnshelveChangesAction.instance");
@@ -163,6 +165,15 @@ public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu 
                 JMenuItem mItem = new JMenuItem();
                 Actions.connect(mItem, new UnshelveChangesAction(patch.getPatchName()), false);
                 items.add(mItem);
+            }
+        }
+        if (vs.length == 1) {
+            // actions depending on the central patch storage
+            ShelveChangesActionProvider actionProvider = ShelveChangesActionsRegistry.getInstance().getActionProvider(vs[0]);
+            JComponent[] components = actionProvider.getUnshelveActions(ctx, lkp != null);
+            if (components.length > 0) {
+                items.add(null);
+                items.addAll(Arrays.asList(components));
             }
         }
         return items;

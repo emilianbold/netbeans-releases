@@ -43,18 +43,9 @@
 package org.netbeans.modules.git.ui.stash;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.Callable;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitClient;
-import org.netbeans.modules.git.client.GitClientExceptionHandler;
-import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.actions.GitAction;
+import java.util.List;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -68,8 +59,7 @@ import org.openide.util.NbBundle;
 @ActionRegistration(displayName = "#LBL_ApplyStashAction_Name")
 @NbBundle.Messages({
     "LBL_ApplyStashAction_Name=&Apply Stash",
-    "LBL_ApplyStashAction_PopupName=Apply Stash",
-    "MSG_ApplyStashAction.progressName=Applying stash"
+    "LBL_ApplyStashAction_PopupName=Apply Stash"
 })
 public class ApplyStashAction extends SingleRepositoryAction {
     
@@ -79,30 +69,9 @@ public class ApplyStashAction extends SingleRepositoryAction {
     }
 
     public void applyStash (final File repository, final int stashIndex, final boolean drop) {
-        GitProgressSupport supp = new GitProgressSupport() {
-            @Override
-            protected void perform () {
-                try {
-                    final GitClient client = getClient();
-                    GitUtils.runWithoutIndexing(new Callable<Void>() {
-
-                        @Override
-                        public Void call () throws Exception {
-                            client.stashApply(stashIndex, drop, getProgressMonitor());
-                            return null;
-                        }
-                    }, new File[] { repository });
-                    if (drop) {
-                        RepositoryInfo.getInstance(repository).refreshStashes();
-                    }
-                } catch (GitException ex) {
-                    GitClientExceptionHandler.notifyException(ex, true);
-                } finally {
-                    setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
-                    Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Git.getInstance().getSeenRoots(repository)));
-                }
-            }
-        };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.MSG_ApplyStashAction_progressName());
+        List<Stash> stashes = Stash.create(repository, RepositoryInfo.getInstance(repository).getStashes());
+        if (!stashes.isEmpty()) {
+            stashes.get(0).apply(drop);
+        }
     }
 }

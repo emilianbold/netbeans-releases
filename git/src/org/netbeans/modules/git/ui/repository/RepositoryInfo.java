@@ -370,7 +370,7 @@ public class RepositoryInfo {
     private void setStashes (List<GitRevisionInfo> newStashes) {
         List<GitRevisionInfo> oldStash;
         boolean changed = false;
-        synchronized (remotes) {
+        synchronized (stashes) {
             oldStash = new ArrayList<>(stashes);
             if (!equals(oldStash, newStashes)) {
                 stashes.clear();
@@ -422,6 +422,12 @@ public class RepositoryInfo {
     public Map<String, GitRemoteConfig> getRemotes () {
         synchronized (remotes) {
             return new HashMap<String, GitRemoteConfig>(remotes);
+        }
+    }
+
+    public List<GitRevisionInfo> getStashes () {
+        synchronized (stashes) {
+            return new ArrayList<>(stashes);
         }
     }
 

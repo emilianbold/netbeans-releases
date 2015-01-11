@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import org.netbeans.modules.git.ui.stash.Stash;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -1942,11 +1943,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
         
         private void refreshStash (List<GitRevisionInfo> stash) {
-            int i = 0;
-            List<Stash> items = new ArrayList<>(stash.size());
-            for (GitRevisionInfo info : stash) {
-                items.add(new Stash(info, i++));
-            }
+            List<Stash> items = Stash.create(repository, stash);
             setKeys(items);
         }
 
@@ -1998,7 +1995,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
         
         public String getName (boolean html) {
-            String retval = Bundle.CTL_StashNode_name(item.name, item.info.getShortMessage());
+            String retval = Bundle.CTL_StashNode_name(item.getName(), item.getInfo().getShortMessage());
             if (retval.length() > 75) {
                 retval = retval.substring(0, 72) + "...";
             }
@@ -2007,27 +2004,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         public String getShortDescription () {
-            return item.info.getFullMessage();
+            return item.getInfo().getFullMessage();
         }
 
         @Override
         protected Action[] getPopupActions (boolean context) {
             List<Action> actions = new LinkedList<Action>();
             if (currRepository != null && item != null) {
-                final File repo = currRepository;
                 final Stash stash = item;
-                actions.add(new AbstractAction(NbBundle.getMessage(ApplyStashAction.class, "LBL_ApplyStashAction_PopupName")) { //NOI18N
-                    @Override
-                    public void actionPerformed (ActionEvent e) {
-                        Utils.postParallel(new Runnable () {
-                            @Override
-                            public void run() {
-                                ApplyStashAction action = SystemAction.get(ApplyStashAction.class);
-                                action.applyStash(repo, stash.index, false);
-                            }
-                        }, 0);
-                    }
-                });
+                actions.add(stash.getApplyAction());
 //                actions.add(new AbstractAction(Bundle.LBL_StashNode_show_action()) {
 //                    @Override
 //                    public void actionPerformed (ActionEvent e) {
@@ -2045,7 +2030,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             
                             @Override
                             public void run () {
-                                if (JOptionPane.showConfirmDialog(RepositoryBrowserPanel.this, Bundle.MSG_StashNode_drop_confirmation(stash.name),
+                                if (JOptionPane.showConfirmDialog(RepositoryBrowserPanel.this, Bundle.MSG_StashNode_drop_confirmation(stash.getName()),
                                         Bundle.LBL_StashNode_drop_confirmation(),
                                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {                                     
                                     new GitProgressSupport() {
@@ -2053,7 +2038,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                         @Override
                                         protected void perform () {
                                             try {
-                                                getClient().stashDrop(stash.index, GitUtils.NULL_PROGRESS_MONITOR);
+                                                getClient().stashDrop(stash.getIndex(), GitUtils.NULL_PROGRESS_MONITOR);
                                                 RepositoryInfo.getInstance(currRepository).refreshStashes();
                                             } catch (GitException ex) {
                                                 GitClientExceptionHandler.notifyException(ex, false);
@@ -2078,7 +2063,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (options.contains(Option.ENABLE_POPUP)) {
                 if (currRepository != null && item != null) {
                     final File repo = currRepository;
-                    final int index = item.index;
+                    final int index = item.getIndex();
                     return new AbstractAction(NbBundle.getMessage(ApplyStashAction.class, "LBL_ApplyStashAction_PopupName")) { //NOI18N
                         @Override
                         public void actionPerformed (ActionEvent e) {
@@ -2092,19 +2077,6 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         
     }
     
-    private static class Stash {
-        
-        private final GitRevisionInfo info;
-        private final int index;
-        private final String name;
-        
-        Stash (GitRevisionInfo info, int index) {
-            this.info = info;
-            this.index = index;
-            this.name = "stash@{" + index + "}"; //NOI18N
-        }
-        
-    }
     
     //</editor-fold>
 
