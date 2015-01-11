@@ -75,6 +75,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.ui.stash.SaveStashAction;
 import org.netbeans.modules.git.ui.stash.Stash;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry.ShelveChangesActionProvider;
@@ -84,6 +85,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -103,11 +105,15 @@ public class ShelveChangesAction extends SingleRepositoryAction {
     private static ShelveChangesActionProvider ACTION_PROVIDER;
     
     @Override
+    protected void performAction (File repository, File[] roots, VCSContext context) {
+        shelve(repository, roots);
+    }
+    
     @NbBundle.Messages({
         "MSG_ShelveAction.noModifications.text=There are no local modifications to shelve.",
         "LBL_ShelveAction.noModifications.title=No Local Modifications"
     })
-    protected void performAction (File repository, File[] roots, VCSContext context) {
+    public void shelve (File repository, File[] roots) {
         if (Git.getInstance().getFileStatusCache().listFiles(roots,
                 FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING).length == 0) {
             // no local changes found
@@ -284,14 +290,14 @@ public class ShelveChangesAction extends SingleRepositoryAction {
             ACTION_PROVIDER = new ShelveChangesActionProvider() {
                 @Override
                 public Action getAction () {
-                    Action a = SystemAction.get(ShelveChangesAction.class);
+                    Action a = SystemAction.get(SaveStashAction.class);
                     Utils.setAcceleratorBindings("Actions/Git", a); //NOI18N
                     return a;
                 }
 
                 @Override
                 public JComponent[] getUnshelveActions (VCSContext ctx, boolean popup) {
-                    JComponent[] cont = UnshelveMenu.getInstance().getMenu(ctx);
+                    JComponent[] cont = UnshelveMenu.getInstance().getMenu(ctx, popup);
                     if (cont == null) {
                         cont = super.getUnshelveActions(ctx, popup);
                     }
@@ -327,14 +333,15 @@ public class ShelveChangesAction extends SingleRepositoryAction {
             return instance;
         }
 
-        private JComponent[] getMenu (VCSContext context) {
+        private JComponent[] getMenu (VCSContext context, boolean popup) {
             final Map.Entry<File, File[]> actionRoots = getActionRoots(context);
             if (actionRoots != null) {
                 final File root = actionRoots.getKey();
                 RepositoryInfo info = RepositoryInfo.getInstance(root);
                 final List<GitRevisionInfo> stashes = info.getStashes();
                 if (!stashes.isEmpty()) {
-                    JMenu menu = new JMenu(Bundle.CTL_UnstashMenu_name());
+                    JMenu menu = new JMenu(popup ? Bundle.CTL_UnstashMenu_name_popup(): Bundle.CTL_UnstashMenu_name());
+                    Mnemonics.setLocalizedText(menu, menu.getText());
                     int i = 0;
                     for (ListIterator<Stash> it = Stash.create(root, stashes).listIterator(); it.hasNext() && i < 10; ++i) {
                         Stash stash = it.next();
@@ -346,7 +353,11 @@ public class ShelveChangesAction extends SingleRepositoryAction {
                         a.putValue(Action.NAME, name);
                         a.putValue(Action.SHORT_DESCRIPTION, stash.getInfo().getShortMessage());
                         JMenuItem item = new JMenuItem(name);
-                        Actions.connect(item, a);
+                        if (popup) {
+                            Actions.connect(item, a, true);
+                        } else {
+                            Actions.connect(item, a);
+                        }
                         menu.add(item);
                     }
                     return new JComponent[] { menu };

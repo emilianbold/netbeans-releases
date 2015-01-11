@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,10 +82,14 @@ public class SaveStashAction extends SingleRepositoryAction {
     
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
-        saveStash(repository);
+        saveStash(repository, roots);
     }
 
     public void saveStash (final File repository) {
+        saveStash(repository, new File[0]);
+    }
+    
+    public void saveStash (final File repository, final File[] roots) {
         final File[] modifications = Git.getInstance().getFileStatusCache().listFiles(new File[] { repository }, FileInformation.STATUS_LOCAL_CHANGES);
         if (modifications.length == 0) {
             NotifyDescriptor nd = new NotifyDescriptor(
@@ -97,10 +102,17 @@ public class SaveStashAction extends SingleRepositoryAction {
             DialogDisplayer.getDefault().notifyLater(nd);
             return;
         }
-        SaveStash saveStash = new SaveStash(repository, RepositoryInfo.getInstance(repository).getActiveBranch());
-        if (saveStash.show()) {
-            start(repository, modifications, saveStash);
-        }
+        Mutex.EVENT.readAccess(new Runnable () {
+
+            @Override
+            public void run () {
+                SaveStash saveStash = new SaveStash(repository, roots, RepositoryInfo.getInstance(repository).getActiveBranch());
+                if (saveStash.show()) {
+                    start(repository, modifications, saveStash);
+                }
+            }
+            
+        });
     }
 
     private void start (final File repository, final File[] modifications, final SaveStash saveStash) {
