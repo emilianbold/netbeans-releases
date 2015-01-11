@@ -39,7 +39,6 @@ package org.netbeans.modules.versioning.shelve.impl;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import javax.swing.AbstractAction;
@@ -51,10 +50,12 @@ import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry.ShelveChangesActionProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -80,26 +81,40 @@ public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu 
         JMenu menu = createMenu();
         return menu;
     }
+    
+    public static List<JComponent> getMenuActions (VCSContext context, Lookup lkp) {
+        List<JComponent> menuItems = new ArrayList<>();
+        // shelve changes
+        List<JMenuItem> shelveActions = getShelveActions(context, lkp);
+        menuItems.addAll(shelveActions);
+        
+        // unshelve changes
+        List<JMenuItem> unshelveActions = getUnshelveActions(context, lkp);
+        if (!shelveActions.isEmpty() && !unshelveActions.isEmpty()) {
+            menuItems.add(null);
+        }
+        menuItems.addAll(unshelveActions);
+        return menuItems;
+    }
 
     private JMenu createMenu () {
         JMenu menu = new JMenu(this);
         org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_Menu_ShelveChanges());
-        List<JMenuItem> menuItems = new ArrayList<JMenuItem>();
-        // shelve changes
-        menuItems.addAll(getShelveActions());
+        VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
         
-        // unshelve changes
-        menuItems.addAll(getUnshelveActions());
-        for (JMenuItem item : menuItems) {
-            menu.add(item);
+        for (JComponent item : getMenuActions(ctx, null)) {
+            if (item == null) {
+                menu.addSeparator();
+            } else {
+                menu.add(item);
+            }
         }
         enableMenu(menu);
         return menu;
     }
 
-    private List<JMenuItem> getShelveActions () {
-        List<JMenuItem> items = new ArrayList<JMenuItem>();
-        VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
+    private static List<JMenuItem> getShelveActions (VCSContext ctx, Lookup lkp) {
+        List<JMenuItem> items = new ArrayList<>();
         VersioningSystem [] vs = Utils.getOwners(ctx);
 
         if (vs.length == 1) {
@@ -107,12 +122,18 @@ public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu 
             ShelveChangesActionProvider actionProvider = ShelveChangesActionsRegistry.getInstance().getActionProvider(vs[0]);
             Action action;
             if (actionProvider != null && (action = actionProvider.getAction()) != null && action.isEnabled()) {
+                if (lkp != null) {
+                    action = SystemActionBridge.createAction(action, Actions.cutAmpersand((String) action.getValue(Action.NAME)), lkp);
+                }
                 JMenuItem item = new JMenuItem();
                 Actions.connect(item, action, false);
                 items.add(item);
             }
             // actions using their own logic
             for (Action a : Utilities.actionsForPath("Actions/Versioning/ShelveChanges")) {
+                if (lkp != null) {
+                    a = SystemActionBridge.createAction(a, Actions.cutAmpersand((String) a.getValue(Action.NAME)), lkp);
+                }
                 JMenuItem item = new JMenuItem();
                 Actions.connect(item, a, false);
                 items.add(item);
@@ -121,13 +142,16 @@ public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu 
         return items;
     }
 
-    private List<JMenuItem> getUnshelveActions () {
-        List<JMenuItem> items = new ArrayList<JMenuItem>();
+    private static List<JMenuItem> getUnshelveActions (VCSContext ctx, Lookup lkp) {
+        List<JMenuItem> items = new ArrayList<>();
         List<String> list = Utils.getStringList(NbPreferences.forModule(ShelveChangesMenu.class), PREF_KEY_SHELVED_PATCHES);
         // XXX use Actions.forID
         Action a = Utils.getAcceleratedAction("Actions/Versioning/UnshelveChanges/org-netbeans-modules-versioning-shelve-impl-UnshelveChangesAction.instance");
         if (a != null && !list.isEmpty()) {
             JMenuItem mItem = new JMenuItem();
+            if (lkp != null) {
+                a = SystemActionBridge.createAction(a, Actions.cutAmpersand((String) a.getValue(Action.NAME)), lkp);
+            }
             Actions.connect(mItem, a, false);
             items.add(mItem);
         }

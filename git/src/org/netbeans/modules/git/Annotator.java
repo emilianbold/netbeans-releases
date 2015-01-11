@@ -82,6 +82,7 @@ import org.netbeans.modules.git.ui.menu.IgnoreMenu;
 import org.netbeans.modules.git.ui.menu.RemoteMenu;
 import org.netbeans.modules.git.ui.menu.RepositoryMenu;
 import org.netbeans.modules.git.ui.menu.RevertMenu;
+import org.netbeans.modules.git.ui.menu.ShelveMenu;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.status.StatusAction;
@@ -203,6 +204,9 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(null);
                 
                 actions.add(new RepositoryMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(null);
+                
+                actions.add(new ShelveMenu(ActionDestination.PopupMenu, lkp, context));
             }
         }
 
