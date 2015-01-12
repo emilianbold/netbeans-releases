@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
@@ -92,13 +93,27 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                     // file doesn't exists yet
                     return Collections.emptyList();
                 }
+                JsObject requireObject = globalObject.getProperty(NodeJsUtils.REQUIRE_METHOD_NAME);
+                if (requireObject != null) {
+                    if (!(requireObject instanceof JsFunction)) {
+                        JsObject parent = requireObject.getParent();
+                        requireObject = factory.newFunction(scope, requireObject.getParent(), requireObject.getName(), new ArrayList<String>());
+                        parent.addProperty(requireObject.getName(), requireObject);
+                    }
+                    if (requireObject instanceof JsFunction) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX).append(NodeJsUtils.getModuleName(module)).append('.');
+                        ((JsFunction)requireObject).addReturnType(factory.newType(sb.toString() + NodeJsUtils.EXPORTS, -1, true));
+                        sb.append(NodeJsUtils.MODULE).append('.').append(NodeJsUtils.EXPORTS);
+                        ((JsFunction)requireObject).addReturnType(factory.newType(sb.toString(), -1, true));
+                    }
+                }
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), theFirst.getOffset());
                 if (ts == null) {
                     return Collections.emptyList();
                 }
                 ts.move(theFirst.getOffset());
                 if (ts.moveNext()) {
-                    
                     Token<? extends JsTokenId> token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_SEMICOLON));
                     if (token != null && token.id() == JsTokenId.IDENTIFIER && NodeJsUtils.REQUIRE_METHOD_NAME.equals(token.text().toString())) {
                         token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.OPERATOR_ASSIGNMENT, JsTokenId.OPERATOR_SEMICOLON));
