@@ -41,9 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
@@ -58,16 +59,20 @@ class GeneralItemCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        ItemConfiguration itemConfiguration = getContext().getItem().getItemConfiguration(configuration);
-        if (itemConfiguration != null) {
-            return itemConfiguration.getGeneralSheet();
+    public Sheet[] getSheets(Configuration configuration) {
+        SharedItemConfiguration[] sharedConfigurations = getContext().getItems();
+        List<Sheet> out = new ArrayList<>();
+        for (SharedItemConfiguration cfg : sharedConfigurations) {
+            ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
+            if (itemConfiguration != null) {
+                out.add(itemConfiguration.getGeneralSheet());
+            }
         }
-        return null;
+        return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("SettingCandC++FileProperties"); // NOI18N
-    }         
+    }
 }

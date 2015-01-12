@@ -84,7 +84,7 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
         }
 
         @Override
-        public Sheet getSheet(Configuration configuration) {
+        public Sheet[] getSheets(Configuration configuration) {
             RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
             // TODO: will not disable selection of the console type as
             // internal terminal was introduced....
@@ -94,7 +94,7 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
 //            if (configuration instanceof MakeConfiguration) {
 //                disableConsoleTypeSelection = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
 //            }
-            return runProfile != null ? runProfile.getSheet(disableConsoleTypeSelection) : null;
+            return runProfile != null ? new Sheet[]{runProfile.getSheet(disableConsoleTypeSelection)} : null;
         }
 
         @Override

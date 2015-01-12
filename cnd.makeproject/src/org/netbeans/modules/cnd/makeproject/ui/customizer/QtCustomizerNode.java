@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -57,7 +56,8 @@ class QtCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        return ((MakeConfiguration) configuration).getQmakeConfiguration().getGeneralSheet();
+    public Sheet[] getSheets(Configuration configuration) {
+        Sheet generalSheet = ((MakeConfiguration) configuration).getQmakeConfiguration().getGeneralSheet();
+        return new Sheet[]{generalSheet};
     }
 }

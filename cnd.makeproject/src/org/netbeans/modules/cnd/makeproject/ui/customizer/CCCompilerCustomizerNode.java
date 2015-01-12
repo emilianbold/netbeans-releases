@@ -41,9 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -61,20 +62,24 @@ class CCCompilerCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        switch (getContext().getKind()){
+    public Sheet[] getSheets(Configuration configuration) {
+        switch (getContext().getKind()) {
             case Item:
-                ItemConfiguration itemConfiguration = getContext().getItem().getItemConfiguration(configuration);
-                if (itemConfiguration != null) {
-                    Item item = getContext().getItem().getItem();
-                    return itemConfiguration.getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null, item);
+                SharedItemConfiguration[] configurations = getContext().getItems();
+                List<Sheet> out = new ArrayList<>();
+                for (SharedItemConfiguration cfg : configurations) {
+                    ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
+                    if (itemConfiguration != null) {
+                        Item item = cfg.getItem();
+                        out.add(itemConfiguration.getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null, item));
+                    }
                 }
-                break;
+                return out.toArray(new Sheet[out.size()]);
             case Folder:
                 Folder folder = getContext().getFolder();
-                return folder.getFolderConfiguration(configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, folder, null);
+                return new Sheet[]{folder.getFolderConfiguration(configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, folder, null)};
             case Project:
-                return ((MakeConfiguration) configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null, null);
+                return new Sheet[]{((MakeConfiguration) configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null, null)};
         }
         return null;
     }

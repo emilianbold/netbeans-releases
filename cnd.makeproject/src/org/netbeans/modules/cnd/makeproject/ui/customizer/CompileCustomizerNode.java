@@ -59,8 +59,9 @@ public class CompileCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        return ((MakeConfiguration) configuration).getCompileConfiguration().getSheet();
+    public Sheet[] getSheets(Configuration configuration) {
+        Sheet sheet = ((MakeConfiguration) configuration).getCompileConfiguration().getSheet();
+        return new Sheet[]{sheet};
     }
 
     @Override

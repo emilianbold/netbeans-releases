@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -58,8 +57,9 @@ class PackagingCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        return ((MakeConfiguration) configuration).getPackagingConfiguration().getGeneralSheet(getContext().getContainer());
+    public Sheet[] getSheets(Configuration configuration) {
+        Sheet generalSheet = ((MakeConfiguration) configuration).getPackagingConfiguration().getGeneralSheet(getContext().getContainer());
+        return new Sheet[]{generalSheet};
     }
 
     @Override

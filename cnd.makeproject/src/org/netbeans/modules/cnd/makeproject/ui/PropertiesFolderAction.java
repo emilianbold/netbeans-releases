@@ -41,12 +41,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -54,42 +57,63 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * node action to show folder's properties
+ *
  * @author Gordon Prieur
  */
 public final class PropertiesFolderAction extends NodeAction {
-    
+
     @Override
-    protected boolean enable(Node[] activatedNodes)  {
-        return activatedNodes.length == 1;
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length == 0) {
+            return false;
+        }
+        Project golden = (Project) activatedNodes[0].getValue("Project");// NOI18N
+        if (golden == null) {
+            return false;
+        }
+        for (int i = 1; i < activatedNodes.length; i++) {
+            if (!golden.equals((Project) activatedNodes[i].getValue("Project"))) {// NOI18N
+                return false;
+            }
+        }
+        return true;
     }
-    
+
     @Override
     public String getName() {
-        return NbBundle.getBundle(getClass()).getString("CTL_PropertiesFolderActionName"); // NOI18N
+        return NbBundle.getMessage(getClass(), "CTL_PropertiesFolderActionName"); // NOI18N
     }
-    
+
     @Override
     public void performAction(Node[] activatedNodes) {
+        List<Folder> list = new ArrayList<>();
+        MakeCustomizerProvider best = null;
         for (int i = 0; i < activatedNodes.length; i++) {
             Node n = activatedNodes[i];
-            Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-            Project project = (Project)n.getValue("Project"); // NOI18N
+            Folder folder = (Folder) n.getValue("Folder"); // NOI18N
+            Project project = (Project) n.getValue("Project"); // NOI18N
             if (project == null) {
                 return;  // FIXUP
             }
-            MakeCustomizerProvider cp = project.getLookup().lookup( MakeCustomizerProvider.class );
+            MakeCustomizerProvider cp = project.getLookup().lookup(MakeCustomizerProvider.class);
             if (cp == null) {
-                return;  // FIXUP
+                continue; // FIXUP
             }
-            cp.showCustomizer(folder);
+            if (best == null) {
+                best = cp;
+            }
+            list.add(folder);
+        }
+        if (best != null) {
+            best.showCustomizer(best.getLastCurrentNodeName(MakeContext.Kind.Item), null, list);
         }
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return null;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;

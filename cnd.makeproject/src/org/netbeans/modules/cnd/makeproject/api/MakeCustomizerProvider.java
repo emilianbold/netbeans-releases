@@ -47,6 +47,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -113,18 +114,19 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     }
 
     public void showCustomizer(Item item) {
-        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Item), item, null);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Item), Arrays.asList(item), null);
     }
-
+    
     public void showCustomizer(Folder folder) {
-        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Folder), null, folder);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Folder), null, Arrays.asList(folder));
     }
 
     public void showCustomizer(String preselectedNodeName) {
         showCustomizer(preselectedNodeName, null, null);
     }
 
-    public void showCustomizer(final String preselectedNodeName, final Item item, final Folder folder) {
+    // TODO public API!
+    public void showCustomizer(final String preselectedNodeName, final List<Item> items, final List<Folder> folders) {
         if (!projectDescriptorProvider.gotDescriptor() || projectDescriptorProvider.getConfigurationDescriptor().getConfs().size() == 0) {
             //TODO: show warning dialog
             return;
@@ -132,12 +134,12 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                showCustomizerWorker(preselectedNodeName, item, folder);
+                showCustomizerWorker(preselectedNodeName, items, folders);
             }
         });
     }
 
-    private void showCustomizerWorker(String preselectedNodeName, Item item, Folder folder) {
+    private void showCustomizerWorker(String preselectedNodeName, List<Item> items, List<Folder> folders) {
 
         if (customizerPerProject.containsKey(project)) {
             Dialog dlg = customizerPerProject.get(project);
@@ -150,11 +152,15 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             }
         }
 
-        if (folder != null) {
-            // Make sure all FolderConfigurations are created (they are lazyly created)
-            Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
-            for (int i = 0; i < configurations.length; i++) {
-                folder.getFolderConfiguration(configurations[i]);
+        if (folders != null) {
+            for (Folder folder : folders) {
+                if (folder != null) {
+                    // Make sure all FolderConfigurations are created (they are lazyly created)
+                    Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
+                    for (int i = 0; i < configurations.length; i++) {
+                        folder.getFolderConfiguration(configurations[i]);
+                    }
+                }
             }
         }
 
@@ -188,17 +194,29 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         ConfigurationDescriptor clonedProjectdescriptor = projectDescriptorProvider.getConfigurationDescriptor().cloneProjectDescriptor();
         ArrayList<JComponent> controls = new ArrayList<>();
         controls.add(options[OPTION_OK]);
-        MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, Collections.unmodifiableCollection(controls));
-        ActionListener optionsListener = new OptionListener(project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, item);
+        // FIX: folders.get(0)
+        Folder folder = (folders == null) ? null : folders.get(0);
+        MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, items, folder, Collections.unmodifiableCollection(controls));
+        ActionListener optionsListener = new OptionListener(project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, items);
         options[OPTION_OK].addActionListener(optionsListener);
         options[OPTION_CANCEL].addActionListener(optionsListener);
         options[OPTION_APPLY].addActionListener(optionsListener);
 
         String dialogTitle;
-        if (item != null) {
-            dialogTitle = NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_File_Customizer_Title", item.getName()); // NOI18N 
-        } else if (folder != null) {
-            dialogTitle = NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Folder_Customizer_Title", folder.getName()); // NOI18N 
+        if (items != null && !items.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (Item i : items) {
+                sb.append(i.getName()).append(", "); //NOI18N
+            }
+            String name = sb.toString().substring(0, sb.length() - 2);
+            dialogTitle = NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_File_Customizer_Title", name); // NOI18N 
+        } else if (folders != null && !folders.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (Folder f : folders) {
+                sb.append(f.getName()).append(", "); //NOI18N
+            }
+            String name = sb.toString().substring(0, sb.length() - 2);
+            dialogTitle = NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Folder_Customizer_Title", name); // NOI18N 
         } else {
             dialogTitle = NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Project_Customizer_Title", ProjectUtils.getInformation(project).getDisplayName()); // NOI18N 
         }
@@ -251,15 +269,15 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         private final ConfigurationDescriptor clonedProjectdescriptor;
         private final MakeCustomizer makeCustomizer;
         private final Folder folder;
-        private final Item item;
+        private final List<Item> items;
 
-        OptionListener(Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, MakeCustomizer makeCustomizer, Folder folder, Item item) {
+        OptionListener(Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, MakeCustomizer makeCustomizer, Folder folder, List<Item> items) {
             this.project = project;
             this.projectDescriptor = projectDescriptor;
             this.clonedProjectdescriptor = clonedProjectdescriptor;
             this.makeCustomizer = makeCustomizer;
             this.folder = folder;
-            this.item = item;
+            this.items = items;
         }
 
         @Override
@@ -306,42 +324,44 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                             }
                             projectDescriptor.setVersion(currentVersion);
                         }
-                        ConfigurationDescriptorProvider.SnapShot delta = null;
-                        if (folder == null && item == null) {
-                            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                            delta = (Delta) cdp.startModifications();
-                        }
-                        List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
-                        List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
-                        List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
-                        List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
-                        Configuration oldActive = projectDescriptor.getConfs().getActive();
-                        if (oldActive != null) {
-                            oldActive = oldActive.cloneConf();
-                        }
-                        Configuration[] oldConf = projectDescriptor.getConfs().toArray();
-                        Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
-                        Configuration[] newConf = clonedProjectdescriptor.getConfs().toArray();
+                        for (Item item : items) {
+                            ConfigurationDescriptorProvider.SnapShot delta = null;
+                            if (folder == null && item == null) {
+                                ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                                delta = (Delta) cdp.startModifications();
+                            }
+                            List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
+                            List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
+                            List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
+                            List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
+                            Configuration oldActive = projectDescriptor.getConfs().getActive();
+                            if (oldActive != null) {
+                                oldActive = oldActive.cloneConf();
+                            }
+                            Configuration[] oldConf = projectDescriptor.getConfs().toArray();
+                            Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
+                            Configuration[] newConf = clonedProjectdescriptor.getConfs().toArray();
 
-                        projectDescriptor.assign(clonedProjectdescriptor);
-                        projectDescriptor.getConfs().fireChangedConfigurations(oldConf, newConf);
-                        projectDescriptor.setModified();
-                        projectDescriptor.save(); // IZ 133606
+                            projectDescriptor.assign(clonedProjectdescriptor);
+                            projectDescriptor.getConfs().fireChangedConfigurations(oldConf, newConf);
+                            projectDescriptor.setModified();
+                            projectDescriptor.save(); // IZ 133606
 
-                        // IZ#179995
-                        MakeSharabilityQuery query = project.getLookup().lookup(MakeSharabilityQuery.class);
-                        if (query != null) {
-                            query.update();
+                            // IZ#179995
+                            MakeSharabilityQuery query = project.getLookup().lookup(MakeSharabilityQuery.class);
+                            if (query != null) {
+                                query.update();
+                            }
+                            if (folder == null && item == null) {
+                                ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                                cdp.endModifications(delta, true, null);
+                            } else {
+                                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
+                            }
+                            ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
+                            ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
+                            ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
                         }
-                        if (folder == null && item == null) {
-                            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                            cdp.endModifications(delta, true, null);
-                        } else {
-                            ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
-                        }
-                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
-                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
-                        ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
                     }
                 });
 
@@ -379,8 +399,12 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             it.next().actionPerformed(e);
         }
     }
-
-    /**
+    
+    public String getLastCurrentNodeName(MakeContext.Kind kind) {
+        return lastCurrentNodeName.get(kind);
+    }
+ 
+   /**
      * Look up i18n strings here
      */
     private static String getString(String s) {

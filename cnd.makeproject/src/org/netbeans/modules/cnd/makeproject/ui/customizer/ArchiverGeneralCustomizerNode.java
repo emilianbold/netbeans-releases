@@ -58,8 +58,9 @@ class ArchiverGeneralCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        return ((MakeConfiguration) configuration).getArchiverConfiguration().getGeneralSheet();
+    public Sheet[] getSheets(Configuration configuration) {
+        Sheet generalSheet = ((MakeConfiguration) configuration).getArchiverConfiguration().getGeneralSheet();
+        return new Sheet[]{generalSheet};
     }
 
     @Override

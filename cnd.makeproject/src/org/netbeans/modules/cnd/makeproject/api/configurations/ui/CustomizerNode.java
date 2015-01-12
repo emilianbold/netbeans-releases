@@ -77,7 +77,7 @@ public class CustomizerNode {
         return CustomizerStyle.SHEET; // Backward compatible
     }
 
-    public Sheet getSheet(Configuration configuration) {
+    public Sheet[] getSheets(Configuration configuration) {
         return null;
     }
     

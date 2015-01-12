@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -60,24 +59,30 @@ class LinkerGeneralCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
+    public Sheet[] getSheets(Configuration configuration) {
         switch (getContext().getKind()) {
             case Folder:
                 // folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()
                 Folder folder = getContext().getFolder();
-                if(folder.isTest()) {
-                    return folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
-                            getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
-                            (MakeConfiguration) configuration, getContext().isQtMode(), false);
+                if (folder.isTest()) {
+                    return new Sheet[]{
+                        folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
+                        getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
+                        (MakeConfiguration) configuration, getContext().isQtMode(), false)
+                    };
                 } else {
-                    return folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
-                            getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
-                            (MakeConfiguration) configuration, getContext().isQtMode(), true);
+                    return new Sheet[]{
+                        folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
+                        getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
+                        (MakeConfiguration) configuration, getContext().isQtMode(), true)
+                    };
                 }
             case Project:
-                return ((MakeConfiguration) configuration).getLinkerConfiguration().getGeneralSheet(
-                        getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
-                        (MakeConfiguration) configuration, getContext().isQtMode(), false);
+                return new Sheet[]{
+                    ((MakeConfiguration) configuration).getLinkerConfiguration().getGeneralSheet(
+                    getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
+                    (MakeConfiguration) configuration, getContext().isQtMode(), false)
+                };
         }
         return null;
     }
