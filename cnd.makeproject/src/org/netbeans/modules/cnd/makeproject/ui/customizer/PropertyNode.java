@@ -71,8 +71,8 @@ final class PropertyNode extends AbstractNode implements HelpCtx.Provider {
         return description.customizerStyle();
     }
 
-    public Sheet getSheet(Configuration configuration) {
-        return description.getSheet(configuration);
+    public Sheet[] getSheets(Configuration configuration) {
+        return description.getSheets(configuration);
     }
 
     public JPanel getPanel(Configuration configuration) {

@@ -59,8 +59,9 @@ public class PreBuildCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        return ((MakeConfiguration) configuration).getPreBuildConfiguration().getSheet();
+    public Sheet[] getSheets(Configuration configuration) {
+        Sheet sheet = ((MakeConfiguration) configuration).getPreBuildConfiguration().getSheet();
+        return new Sheet[]{sheet};
     }
 
     @Override

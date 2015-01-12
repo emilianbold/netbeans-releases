@@ -53,14 +53,17 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public class CodeAssistanceCustomizerNode extends CustomizerNode {
-     public CodeAssistanceCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+
+    public CodeAssistanceCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
         super(name, displayName, children, lookup);
     }
+
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        switch (getContext().getKind()){
+    public Sheet[] getSheets(Configuration configuration) {
+        switch (getContext().getKind()) {
             case Project:
-                return ((MakeConfiguration) configuration).getCodeAssistanceConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+                Sheet generalSheet = ((MakeConfiguration) configuration).getCodeAssistanceConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+                return new Sheet[]{generalSheet};
         }
         return null;
     }

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -57,8 +56,10 @@ class GeneralFolderCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
+    public Sheet[] getSheets(Configuration configuration) {
+        // IG: folder -> folders
         Folder folder = getContext().getFolder();
-        return folder.getFolderConfiguration(configuration).getGeneralSheet();
+        Sheet generalSheet = folder.getFolderConfiguration(configuration).getGeneralSheet();
+        return new Sheet[]{generalSheet};
     }
 }

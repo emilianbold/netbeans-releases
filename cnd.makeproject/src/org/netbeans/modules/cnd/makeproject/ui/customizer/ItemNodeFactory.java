@@ -61,18 +61,17 @@ public class ItemNodeFactory {
         MakeContext context = lookup.lookup(MakeContext.class);
         CustomizerNode descriptions[];
 
-        PredefinedToolKind tool = context.getItemTool();
+        PredefinedToolKind tool = context.getItemsTool();
+        
+        // IG -> context.isProCfile()
 
-        boolean procFile = false;
+        boolean procFile = context.isProc();
 
-        int count = 1;
-        if (tool != PredefinedToolKind.UnknownTool) {
+        int count = 1; //general
+        if (tool != PredefinedToolKind.UnknownTool){
             count++;
-            if(context.getItem() != null) {
-                if(ItemConfiguration.isProCFile(context.getItem().getItem(), tool)) {
-                    procFile = true;
-                    count++;
-                }
+            if (procFile) {
+                count++;
             }
         }
         descriptions = new CustomizerNode[count];

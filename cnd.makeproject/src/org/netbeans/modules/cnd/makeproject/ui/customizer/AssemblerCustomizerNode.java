@@ -41,9 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -59,17 +60,22 @@ class AssemblerCustomizerNode extends CustomizerNode {
     }
 
     @Override
-    public Sheet getSheet(Configuration configuration) {
-        SharedItemConfiguration sharedItemConfiguration = getContext().getItem();
-        if (sharedItemConfiguration != null) {
-            ItemConfiguration itemConfiguration = sharedItemConfiguration.getItemConfiguration(configuration);
-            if (itemConfiguration != null) {
-                return itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+    public Sheet[] getSheets(Configuration configuration) {
+        SharedItemConfiguration[] itemConfigurations = getContext().getItems();
+        List<Sheet> out = new ArrayList<>();
+        for (SharedItemConfiguration cfg : itemConfigurations) {
+            if (cfg != null) {
+                ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
+                if (itemConfiguration != null) {
+                    out.add(itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
+                }
+                return null;
+            } else {
+                // TODO investigeate.
+                out.add(((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
             }
-            return null;
-        } else {
-            return ((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
         }
+        return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
     }
 
     @Override

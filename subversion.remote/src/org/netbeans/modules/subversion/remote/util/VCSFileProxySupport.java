@@ -319,7 +319,24 @@ public final class VCSFileProxySupport {
     }
 
     public static boolean copyFile(VCSFileProxy from, VCSFileProxy to) throws IOException {
-        throw new UnsupportedOperationException();
+        if (from == null || to == null) {
+            throw new NullPointerException("from and to files must not be null"); // NOI18N
+        }
+        InputStream inputStream = null;
+        try {
+            inputStream = from.getInputStream(false);
+            copyStreamToFile(inputStream, to);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                }
+                catch (IOException ex) {
+                    // ignore
+                }
+            }
+        }
+        return true;
     }
     
     /**

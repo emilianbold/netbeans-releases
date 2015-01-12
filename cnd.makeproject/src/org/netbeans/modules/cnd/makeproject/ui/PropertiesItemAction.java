@@ -43,11 +43,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -56,29 +58,52 @@ import org.openide.util.actions.NodeAction;
 
 public class PropertiesItemAction extends NodeAction {
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
-        return activatedNodes.length == 1;
+        if (activatedNodes.length == 0) {
+            return false;
+        }
+        Project golden = (Project) activatedNodes[0].getValue("Project");// NOI18N
+        if (golden == null) {
+            return false;
+        }
+        for (int i = 1; i < activatedNodes.length; i++) {
+            if (!golden.equals((Project) activatedNodes[i].getValue("Project"))) {// NOI18N
+                return false;
+            }
+        }
+        return true;
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getBundle(getClass()).getString("CTL_PropertiesItemActionName"); // NOI18N
+        return NbBundle.getMessage(getClass(), "CTL_PropertiesItemActionName"); // NOI18N
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
+        List<Item> list = new ArrayList<>();
+        MakeCustomizerProvider best = null;
         for (int i = 0; i < activatedNodes.length; i++) {
             Node n = activatedNodes[i];
             Folder folder = (Folder) n.getValue("Folder"); // NOI18N
             Item item = (Item) n.getValue("Item"); // NOI18N
             Project project = (Project) n.getValue("Project"); // NOI18N
             if (project == null) {
-                return; // FIXUP
+                continue; // FIXUP
             }
             MakeCustomizerProvider cp = project.getLookup().lookup(MakeCustomizerProvider.class);
             if (cp == null) {
-                return; // FIXUP
+                continue; // FIXUP
             }
-            cp.showCustomizer(item);
-        //dumpNativeFileInfo(item);
+            if (best == null) {
+                best = cp;
+            }
+            list.add(item);
+            //dumpNativeFileInfo(item);
+        }
+        if (best != null) {
+            best.showCustomizer(best.getLastCurrentNodeName(MakeContext.Kind.Item), list, null);
         }
     }
 
@@ -95,13 +120,14 @@ public class PropertiesItemAction extends NodeAction {
             System.out.println(txt + ":" + s); // NOI18N
         }
     }
-    
+
     private void dumpPathsList(String txt, List<FSPath> list) {
         for (FSPath s : list) {
             System.out.println(txt + ":" + s.getURL()); // NOI18N
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }

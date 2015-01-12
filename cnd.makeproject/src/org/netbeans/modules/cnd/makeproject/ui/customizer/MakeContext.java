@@ -75,7 +75,7 @@ public class MakeContext {
     private final Project project;
     private final ExecutionEnvironment env;
     private final Configuration[] selectedConfigurations;
-    private SharedItemConfiguration item;
+    private SharedItemConfiguration[] items;
     private Folder folder;
     private JPanel container;
     private ConfigurationDescriptor configurationDescriptor;
@@ -103,8 +103,9 @@ public class MakeContext {
         return this;
     }
 
-    /*package*/MakeContext setSharedItem(SharedItemConfiguration item) {
-        this.item = item;
+    /*package*/MakeContext setSharedItem(SharedItemConfiguration[] items) {
+        // 1 -> many
+        this.items = items;
         return this;
     }
     /**
@@ -138,8 +139,8 @@ public class MakeContext {
     /**
      * @return the item
      */
-    /*package*/ SharedItemConfiguration getItem() {
-        return item;
+    /*package*/ SharedItemConfiguration[] getItems() {
+        return items;
     }
 
     /**
@@ -177,10 +178,39 @@ public class MakeContext {
         return ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
     }
 
-    public PredefinedToolKind getItemTool() {
+    public boolean isProc() {
+        PredefinedToolKind itemTool = getItemsTool();
+        if (itemTool == PredefinedToolKind.CCCompiler
+                || itemTool == PredefinedToolKind.CCompiler) {
+            for (SharedItemConfiguration item : items) {
+                if (!ItemConfiguration.isProCFile(item.getItem(), itemTool)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    public PredefinedToolKind getItemsTool(){
+        PredefinedToolKind result = null;
+        for (SharedItemConfiguration item : items) {
+            PredefinedToolKind current = getItemTool(item);
+            if (result != null && current != result) {
+                result = PredefinedToolKind.UnknownTool;
+            } else {
+                // it's ok to set null too
+                result = current;
+            }
+        }
+        return result;
+    }
+    
+    private PredefinedToolKind getItemTool(SharedItemConfiguration item) {
         PredefinedToolKind tool = PredefinedToolKind.UnknownTool;
         CompilerSet compilerSet = null;
 
+        // IG one item context -> many items
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
             CompilerSet compilerSet2 = makeConfiguration.getCompilerSet().getCompilerSet();
@@ -190,10 +220,13 @@ public class MakeContext {
             }
             PredefinedToolKind tool2 = itemConfiguration.getTool();
             if (tool == PredefinedToolKind.UnknownTool && compilerSet == null) {
+                // this is the first iteration
+                // initialize goldens to compare with
                 tool = tool2;
                 compilerSet = compilerSet2;
-            }
-            if (tool != tool2 || compilerSet != compilerSet2) {
+            } else if (tool != tool2 || compilerSet != compilerSet2) {
+                // if we found differences in tool kind of used 
+                // compiler set, then tools are different; break
                 tool = PredefinedToolKind.UnknownTool;
                 break;
             }

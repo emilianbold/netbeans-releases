@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,6 +89,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
@@ -105,7 +107,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     private final Project project;
     private DialogDescriptor dialogDescriptor;
     private final ConfigurationDescriptor projectDescriptor;
-    private final Item item;
+    private final List<Item> items;
     private final Folder folder;
     private final List<JComponent> controls;
     private CategoryView currentCategoryView;
@@ -116,12 +118,12 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     private MakeContext lastContext;
 
     /** Creates new form MakeCustomizer */
-    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, Collection<JComponent> controls) {
+    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, List<Item> items, Folder folder, Collection<JComponent> controls) {
         initComponents();
         this.projectDescriptor = projectDescriptor;
         this.controls = new ArrayList<>(controls);
         this.project = project;
-        this.item = item;
+        this.items = items;
         this.folder = folder;
         this.controls.add(configurationComboBox);
         this.controls.add(configurationsButton);
@@ -152,7 +154,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         fillConstraints.fill = java.awt.GridBagConstraints.BOTH;
         fillConstraints.weightx = 1.0;
         fillConstraints.weighty = 1.0;
-        currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, item, folder), preselectedNodeName);
+        currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, items, folder), preselectedNodeName);
         currentCategoryView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MakeCustomizer.class, "AN_BeanTreeViewCategories")); // NOI18N
         currentCategoryView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class, "AD_BeanTreeViewCategories")); // NOI18N
         categoryPanel.add(currentCategoryView, fillConstraints);
@@ -365,7 +367,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         if (currentCategoryView != null) {
             String selectedNodeName = currentNodeName;
             categoryPanel.remove(currentCategoryView);
-            currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, item, folder), null);
+            currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, items, folder), null);
             currentCategoryView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MakeCustomizer.class, "AN_BeanTreeViewCategories"));
             currentCategoryView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class, "AD_BeanTreeViewCategories"));
             categoryPanel.add(currentCategoryView, fillConstraints);
@@ -530,6 +532,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     panel.setLayout(new java.awt.GridBagLayout());
                     currentConfigurationNode = (PropertyNode) node;
                     if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {
+                        // IG investigate
                         panel.add(currentConfigurationNode.getPanel(null), fillConstraints);
                         configurationLabel.setEnabled(false);
                         configurationComboBox.setEnabled(false);
@@ -540,24 +543,26 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     } else if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());
                         PropertySheet propertySheet = new PropertySheet(); // See IZ 105525 for details.
-                        List<DummyNode> dummyNodes = new ArrayList<>(selectedConfigurations.length*nodes.length);
+                        List<DummyNode> dummyNodes = new ArrayList<>(selectedConfigurations.length * nodes.length);
                         for (Node selNode : nodes) {
-                            if (selNode instanceof PropertyNode && ((PropertyNode)selNode).customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
+                            if (selNode instanceof PropertyNode && ((PropertyNode) selNode).customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                                 PropertyNode propNode = (PropertyNode) selNode;
                                 for (int i = 0; i < selectedConfigurations.length; i++) {
-                                    Sheet sheet = propNode.getSheet(selectedConfigurations[i]);
-                                    
-                                    if (((MakeConfigurationDescriptor)projectDescriptor).hasProjectCustomizer()) {
-                                        MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor)projectDescriptor).getProjectCustomizer();
-                                        sheet = makeProjectCustomizer.getPropertySheet(sheet);
+                                    Sheet[] sheets = propNode.getSheets(selectedConfigurations[i]);
+
+                                    for (Sheet sheet : sheets) {
+                                        if (((MakeConfigurationDescriptor) projectDescriptor).hasProjectCustomizer()) {
+                                            MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor) projectDescriptor).getProjectCustomizer();
+                                            sheet = makeProjectCustomizer.getPropertySheet(sheet);
+                                        }
+
+                                        dummyNodes.add(new DummyNode(sheet, selectedConfigurations[i].getName()));
                                     }
-                                    
-                                    dummyNodes.add(new DummyNode(sheet, selectedConfigurations[i].getName()));
                                 }
                             }
                         }
                         propertySheet.setNodes(dummyNodes.toArray(new DummyNode[dummyNodes.size()]));
-                        
+
                         panel.add(propertySheet, fillConstraints);
                         configurationLabel.setEnabled(true);
                         configurationComboBox.setEnabled(true);
@@ -621,10 +626,16 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     }
 
     // Private methods ---------------------------------------------------------
-    private Node createRootNode(Project project, ConfigurationDescriptor projectDescriptor, Item item, Folder folder) {
-        if (item != null) {
+    private Node createRootNode(Project project, ConfigurationDescriptor projectDescriptor, List<Item> items, Folder folder) {
+        if (items != null) {
+            List<SharedItemConfiguration> configs = new ArrayList<>();
+            for (Item item : items) {
+                if (item != null) {
+                    configs.add(getSharedItemConfiguration(item));
+                }
+            }
             lastContext = new MakeContext(MakeContext.Kind.Item, project, getSelectedHost(), selectedConfigurations)
-                    .setSharedItem(getSharedItemConfiguration(item))
+                    .setSharedItem(configs.toArray(new SharedItemConfiguration[configs.size()]))
                     .setConfigurationDescriptor(projectDescriptor);
             Lookup lookup = Lookups.fixed(lastContext);
             return ItemNodeFactory.createRootNodeItem(lookup);

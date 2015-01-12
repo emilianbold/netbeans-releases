@@ -123,14 +123,14 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
         }
 
         @Override
-        public Sheet getSheet(Configuration configuration) {
+        public Sheet[] getSheets(Configuration configuration) {
             EngineType engine = engineType;
             if (engineType == null) {
                 engine = NativeDebuggerManager.debuggerType(configuration);
             }
             String profileID = EngineTypeManager.engine2DebugProfileID(engine);
             DbgProfile dbgProfile = (DbgProfile) configuration.getAuxObject(profileID);
-            return dbgProfile.getSheet();
+            return new Sheet[]{dbgProfile.getSheet()};
         }
 
         @Override
@@ -150,10 +150,10 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
 	}
 
         @Override
-	public Sheet getSheet(Configuration configuration) {
+	public Sheet[] getSheets(Configuration configuration) {
             // show debugger chooser panel if it is enabled
             EngineProfile profile = (EngineProfile) configuration.getAuxObject(EngineProfile.PROFILE_ID);
-            return profile.getSheet();
+            return new Sheet[]{profile.getSheet()};
 	}
 
         @Override
