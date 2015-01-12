@@ -135,6 +135,18 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "p^;", false);
     }
     
+    public void testIssue249626_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249626.js", "require(\"./complexModule\").^literalRef.propX.iprop;", false);
+    }
+    
+    public void testIssue249626_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249626.js", "require(\"./complexModule\").literalRef.^propX.iprop;", false);
+    }
+    
+    public void testIssue249626_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249626.js", "require(\"./complexModule\").literalRef.propX.^iprop;", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();
