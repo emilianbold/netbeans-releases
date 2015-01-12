@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -258,14 +259,30 @@ abstract public class FileOperationsProvider {
             FileObject root = getRoot();
             fo = root.getFileObject(path.getPath());
             if (fo == null && existsSafe(path)) {
-                String parent = PathUtilities.getDirName(path.getPath());
-                if (parent != null) {
+                String parent = path.getPath();
+                LinkedList<String> stack = new LinkedList<String>();
+                while(true) {
+                    parent = PathUtilities.getDirName(parent);
+                    if (parent == null) {
+                        return null;
+                    }
+                    stack.addLast(parent);
+                    FileObject parentFO = root.getFileObject(parent);
+                    if (parentFO != null && parentFO.isValid()) {
+                        break;
+                    }
+                }
+                while(!stack.isEmpty()) {
+                    parent = stack.removeLast();
                     FileObject parentFO = root.getFileObject(parent);
                     if (parentFO != null && parentFO.isValid()) {
                         parentFO.refresh();
-                        fo = root.getFileObject(path.getPath());
+                        break;
+                    } else {
+                        return null;
                     }
                 }
+                fo = root.getFileObject(path.getPath());
             }
             return fo;
         }
