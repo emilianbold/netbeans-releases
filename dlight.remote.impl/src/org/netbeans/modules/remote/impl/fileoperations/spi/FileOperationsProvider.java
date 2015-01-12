@@ -277,7 +277,6 @@ abstract public class FileOperationsProvider {
                     FileObject parentFO = root.getFileObject(parent);
                     if (parentFO != null && parentFO.isValid()) {
                         parentFO.refresh();
-                        break;
                     } else {
                         return null;
                     }
