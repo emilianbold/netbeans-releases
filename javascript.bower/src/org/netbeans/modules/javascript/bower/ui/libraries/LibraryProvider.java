@@ -329,18 +329,15 @@ public class LibraryProvider {
          * @return libraries/packages returned by the search.
          */
         private Library[] parseSearchResult(JSONArray searchResult) {
-            Library[] libraries = new Library[searchResult.size()];
-            for (int i=0; i<searchResult.size(); i++) {
+            int size = searchResult.size();
+            Library[] libraries = new Library[size];
+            for (int i=0; i<size; i++) {
                 JSONObject libraryInfo = (JSONObject)searchResult.get(i);
                 String libraryName = (String)libraryInfo.get("name"); // NOI18N
-                libraries[i] = new Library(libraryName);
+                Library library = new Library(libraryName);
+                library.setPopularity(size-i);
+                libraries[i] = library;
             }
-            Arrays.sort(libraries, new Comparator<Library>() {
-                @Override
-                public int compare(Library library1, Library library2) {
-                    return library1.getName().compareTo(library2.getName());
-                }
-            });
             return libraries;
         }
 
