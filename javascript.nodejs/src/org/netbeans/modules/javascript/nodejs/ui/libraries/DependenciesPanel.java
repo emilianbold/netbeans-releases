@@ -94,8 +94,6 @@ public class DependenciesPanel extends javax.swing.JPanel {
     private List<Dependency> dependencies;
     /** Model for a table of selected dependencies. */
     private final DependencyTableModel tableModel;
-    /** Maps the name of the library to its npm meta-data. */
-    private final Map<String,Library> dependencyInfo = new HashMap<>();
     /** Determines whether the installed libraries were set. */
     private boolean installedLibrariesSet;
     /** Owning project. */
@@ -233,7 +231,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
      */
     private void updateDependencyInfo(final String libraryName, final Library library) {
         if (EventQueue.isDispatchThread()) {
-            dependencyInfo.put(libraryName, library);
+            allDependencies.dependencyInfo.put(libraryName, library);
             tableModel.fireTableRowsUpdated(0, dependencies.size()-1);
             updateButtons();
         } else {
@@ -279,7 +277,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
         for (int selectedRow : table.getSelectedRows()) {
             Dependency dependency = dependencies.get(selectedRow);
             String name = dependency.getName();
-            Library library = dependencyInfo.get(name);
+            Library library = allDependencies.dependencyInfo.get(name);
             if (library != null) {
                 Library.Version latestVersion = library.getLatestVersion();
                 if (latestVersion != null && !Objects.equals(latestVersion.getName(), dependency.getInstalledVersion())) {
@@ -509,7 +507,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
         for (int selectedRow : selectedRows) {
             Dependency dependency = dependencies.get(selectedRow);
             String name = dependency.getName();
-            Library library = dependencyInfo.get(name);
+            Library library = allDependencies.dependencyInfo.get(name);
             if (library != null) {
                 Library.Version version = library.getLatestVersion();
                 if (version != null) {
@@ -823,9 +821,9 @@ public class DependenciesPanel extends javax.swing.JPanel {
                     break;
                 case 3:
                     String libraryName = dependency.getName();
-                    Library library = dependencyInfo.get(libraryName);
+                    Library library = allDependencies.dependencyInfo.get(libraryName);
                     if (library == null) {
-                        value = dependencyInfo.containsKey(libraryName)
+                        value = allDependencies.dependencyInfo.containsKey(libraryName)
                                 ? VersionColumnRenderer.UNKNOWN
                                 : VersionColumnRenderer.CHECKING;
                     } else {
@@ -862,6 +860,8 @@ public class DependenciesPanel extends javax.swing.JPanel {
         private final Map<Dependency.Type,List<Dependency>> dependencies = new EnumMap<>(Dependency.Type.class);
         /** Change listeners. */
         private final List<ChangeListener> listeners = new CopyOnWriteArrayList<>();
+        /** Maps the name of the library to its npm meta-data. */
+        final Map<String,Library> dependencyInfo = new HashMap<>();
 
         /**
          * Creates a new {@code Dependencies} object.
