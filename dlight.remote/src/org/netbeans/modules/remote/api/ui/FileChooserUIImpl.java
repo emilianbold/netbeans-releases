@@ -2759,6 +2759,11 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             final TreePath path = tree.getSelectionPath();
 
             if(path == null) {
+                //fixed bz#249623
+                if (tree.getModel().getRoot() instanceof LoadingNode) {
+                    //do nothing, just return
+                    return;
+                }
                 // if no nodes are selected, get the root node
                 // fixed #96954, to be able to add a new directory
                 // in the current directory shown in the tree
