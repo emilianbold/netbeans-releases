@@ -62,6 +62,8 @@ public class Library {
     private String[] keywords;
     /** Home-page of the library. */
     private String homePage;
+    /** Popularity of the library. */
+    private int popularity;
 
     /**
      * Creates a new {@code Library} with the given name.
@@ -160,6 +162,24 @@ public class Library {
      */
     public String getHomePage() {
         return homePage;
+    }
+
+    /**
+     * Sets popularity of this library.
+     * 
+     * @param popularity popularity of this library.
+     */
+    void setPopularity(int popularity) {
+        this.popularity = popularity;
+    }
+
+    /**
+     * Returns the popularity of this library.
+     * 
+     * @return popularity of this library.
+     */
+    public int getPopularity() {
+        return popularity;
     }
 
     /**
