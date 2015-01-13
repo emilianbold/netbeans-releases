@@ -43,10 +43,9 @@
 package org.netbeans.modules.parsing.impl.event;
 
 import java.util.Objects;
-import javax.swing.event.ChangeEvent;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.implspi.SourceControl;
+import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
@@ -70,7 +69,7 @@ public final class FileChangeSupport extends FileChangeAdapter {
         // FIXME -- MIME type may changed even though the file only changed content.
         // For example XML files' MIME type depends on their XMLNS declaration
         sourceControl.sourceChanged(false);
-        Utilities.revalidate(sourceControl.getSource());
+        sourceControl.revalidate(SourceEnvironment.getReparseDelay(false));
     }
 
     @Override
@@ -78,6 +77,6 @@ public final class FileChangeSupport extends FileChangeAdapter {
         final String oldExt = fe.getExt();
         final String newExt = fe.getFile().getExt();
         sourceControl.sourceChanged(!Objects.equals(oldExt, newExt));
-        Utilities.revalidate(sourceControl.getSource());
+        sourceControl.revalidate(SourceEnvironment.getReparseDelay(false));
     }
 }
