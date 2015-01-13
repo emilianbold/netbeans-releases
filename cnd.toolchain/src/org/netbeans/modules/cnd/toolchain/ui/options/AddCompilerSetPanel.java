@@ -302,7 +302,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
             boolean found = true;
             for (CompilerFlavor flavor2 : flavors) {
                 if (flavor2 != flavor) {
-                    String subsitute = flavor2.getToolchainDescriptor().getSubsitute();
+                    String subsitute = flavor2.getToolchainDescriptor().getSubstitute();
                     if (subsitute != null) {
                         if (subsitute.equals(flavor.getToolchainDescriptor().getName())) {
                             found = false;
@@ -334,7 +334,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
             boolean found = true;
             for (CompilerSet set2 : sets) {
                 if (set2 != set) {
-                    String subsitute = set2.getCompilerFlavor().getToolchainDescriptor().getSubsitute();
+                    String subsitute = set2.getCompilerFlavor().getToolchainDescriptor().getSubstitute();
                     if (subsitute != null) {
                         if (subsitute.equals(set.getCompilerFlavor().getToolchainDescriptor().getName())) {
                             found = false;

@@ -53,6 +53,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
@@ -252,12 +254,21 @@ public class SearchPanel extends javax.swing.JPanel {
         });
     }
 
+    /**
+     * Cache of library details. The details are cached in {@code LibraryProvider}
+     * in fact, but they are held weakly there. The purpose of this collection
+     * is to keep strong references to library details shown in the customizer
+     * until the customizer is closed.
+     */
+    private final Map<String,Library> libraryDetailCache = new HashMap<>();
+
     @NbBundle.Messages({
         "SearchPanel.nodeDescription=<No Description>",
         "SearchPanel.message.loadingOfDetailFailed=Loading of package detail failed! :-("
     })
     private void updateLibraryDetail(String libraryName, Library libraryDetails) {
         assert EventQueue.isDispatchThread();
+        libraryDetailCache.put(libraryName, libraryDetails);
         synchronized (this) {
             if (libraryName != null && selectedLibrary != null && !libraryName.equals(selectedLibrary.getName())) {
                 return;

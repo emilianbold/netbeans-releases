@@ -378,8 +378,8 @@ public final class ToolchainManagerImpl {
         if (descriptor.getAliases().length > 0) {
             element.setAttribute("aliases", unsplit(descriptor.getAliases())); // NOI18N
         }
-        if (descriptor.getSubsitute() != null) {
-            element.setAttribute("subtitute", descriptor.getSubsitute()); // NOI18N
+        if (descriptor.getSubstitute() != null) {
+            element.setAttribute("substitute", descriptor.getSubstitute()); // NOI18N
         }
         root.appendChild(element);
         if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null) {
@@ -2222,7 +2222,7 @@ public final class ToolchainManagerImpl {
         }
 
         @Override
-        public String getSubsitute() {
+        public String getSubstitute() {
             return v.substitute;
         }
 

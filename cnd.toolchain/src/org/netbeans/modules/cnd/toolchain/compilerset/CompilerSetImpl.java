@@ -818,11 +818,11 @@ public final class CompilerSetImpl extends CompilerSet {
         }
 
         @Override
-        public String getSubsitute() {
+        public String getSubstitute() {
             if (proxy == null) {
                 return null;
             }
-            return proxy.getSubsitute();
+            return proxy.getSubstitute();
         }
 
         @Override

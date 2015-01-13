@@ -45,7 +45,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -55,7 +54,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
@@ -315,7 +313,20 @@ public final class VCSFileProxySupport {
     }
     
     public static boolean renameTo(VCSFileProxy from, VCSFileProxy to){
-        throw new UnsupportedOperationException();
+        File javaFile = from.toFile();
+        if (javaFile != null) {
+            return javaFile.renameTo(to.toFile());
+        } else {
+            // TODO: rewrite it with using sftp
+            ExitStatus status = ProcessUtils.executeInDir(from.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(from),
+                    "mv", "-f", from.getName(), to.getName()); //NOI18N
+            if (!status.isOK()) {
+                ProcessUtils.LOG.log(Level.INFO, status.toString());
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
 
     public static boolean copyFile(VCSFileProxy from, VCSFileProxy to) throws IOException {
