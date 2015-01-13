@@ -43,10 +43,12 @@ package org.netbeans.modules.subversion.remote;
 
 import java.util.logging.Level;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
@@ -77,17 +79,36 @@ public class SimpleTestCase extends RemoteVersioningTestBase {
 
     @ForAllEnvironments
     public void testCreateNewFile() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
-        VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
-        
-        // create
-        FileObject fo = wc.toFileObject();
-        fo.createData(file.getName());
-                                        
-        // test 
-        assertTrue(file.exists());
-        
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
-        assertCachedStatus(file, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+        VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "folder");
+        VCSFileProxySupport.mkdirs(fromFolder);
+        VCSFileProxy toFolder = VCSFileProxy.createFileProxy(wc2, "toFolder");
+        VCSFileProxySupport.mkdirs(toFolder);
+        commit(wc2);
+        VCSFileProxy fromFile = VCSFileProxy.createFileProxy(fromFolder, "file");
+        VCSFileProxySupport.createNew(fromFile);
+        commit(wc);
+        VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, "file");
+
+        // copy
+        copyDO(fromFile, toFile);
+
+        // test
+        assertTrue(fromFile.exists());
+        assertTrue(toFile.exists());
+
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFile).getTextStatus());
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
+
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFile));
+        assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+
+        assertFalse(getSVNStatus(toFile).isCopied());
+
+//        commit(wc);
+//        commit(wc2);
     }    
 }

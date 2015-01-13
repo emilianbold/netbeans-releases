@@ -85,6 +85,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
     
     public void copyVersionedFile_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(fromFile);
@@ -112,6 +115,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyUnversionedFile_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(fromFile);
@@ -139,6 +145,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyUnversionedFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -165,6 +174,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyAddedFile2UnversionedFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(fromFile);
@@ -196,6 +208,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyAddedFile2VersionedFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(wc, "toFodler");
         VCSFileProxySupport.mkdirs(toFolder);
@@ -227,6 +242,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyA2B2C_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);
@@ -263,6 +281,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyVersionedFile2UnversionedFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(fromFile);
@@ -294,6 +315,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyVersionedFile2IgnoredFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(fromFile);
@@ -323,6 +347,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyVersionedFolder2UnversionedFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdir(fromFolder);
@@ -356,6 +383,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyVersionedFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "from");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -383,6 +413,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyFileTree_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "from");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -470,6 +503,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyVersionedFile2Repos_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -501,6 +537,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyVersionedFolder2Repos_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -539,6 +578,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyFileTree2Repos_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -624,6 +666,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
     }
 
     public void copyA2CB2A_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);
@@ -676,6 +721,9 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
 
     
     public void deleteA_copyUnversioned2A_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         final VCSFileProxy folderA = VCSFileProxy.createFileProxy(wc, "folderA");
         VCSFileProxySupport.mkdir(folderA);

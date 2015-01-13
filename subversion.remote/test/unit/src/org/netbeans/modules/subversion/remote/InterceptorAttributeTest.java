@@ -72,6 +72,9 @@ public class InterceptorAttributeTest extends RemoteVersioningTestBase {
     }
     
     public void getWrongAttribute() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "attrfile");
         VCSFileProxySupport.createNew(file);
         FileObject fo = file.toFileObject();
@@ -81,6 +84,9 @@ public class InterceptorAttributeTest extends RemoteVersioningTestBase {
     }
 
     public void getRemoteLocationAttribute() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "attrfile");
         VCSFileProxySupport.createNew(file);
         FileObject fo = file.toFileObject();
@@ -91,6 +97,9 @@ public class InterceptorAttributeTest extends RemoteVersioningTestBase {
     }
 
     public void getIsManaged() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // unversioned file
         VCSFileProxy file = VCSFileProxy.createFileProxy(dataRootDir, "unversionedfile");
         VCSFileProxySupport.createNew(file);

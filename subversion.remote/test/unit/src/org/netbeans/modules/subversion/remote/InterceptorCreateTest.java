@@ -78,6 +78,9 @@ public class InterceptorCreateTest extends RemoteVersioningTestBase {
     }
     
     public void createNewFile() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
         
@@ -93,6 +96,9 @@ public class InterceptorCreateTest extends RemoteVersioningTestBase {
     }
     
     public void createNewFolder() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy folder = VCSFileProxy.createFileProxy(wc, "folder");
         
@@ -108,7 +114,9 @@ public class InterceptorCreateTest extends RemoteVersioningTestBase {
     }
     
     public void deleteA_CreateA() throws IOException, SVNClientException {
-        
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);        
@@ -135,6 +143,9 @@ public class InterceptorCreateTest extends RemoteVersioningTestBase {
     }
 
     public void deleteA_CreateAOnDemandLocking() throws IOException, SVNClientException {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(file);
@@ -162,6 +173,9 @@ public class InterceptorCreateTest extends RemoteVersioningTestBase {
     }
 
     public void deleteA_CreateA_RunAtomic() throws IOException, SVNClientException {
+        if (skipTest()) {
+            return;
+        }
         // init
         final VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);        
@@ -187,6 +201,9 @@ public class InterceptorCreateTest extends RemoteVersioningTestBase {
     }    
     
     public void afterDelete_AfterCreate_194998 () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
         
