@@ -805,7 +805,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private void removeSubstitutions() {
         Set<CompilerSet> toRemove = new HashSet<CompilerSet>();
         for (CompilerSet cs : sets) {
-            String subsitute = cs.getCompilerFlavor().getToolchainDescriptor().getSubsitute();
+            String subsitute = cs.getCompilerFlavor().getToolchainDescriptor().getSubstitute();
             if (subsitute != null) {
                 // cs is a numbered tool collection
                 // find general tool collection that fit the numbered tool collection

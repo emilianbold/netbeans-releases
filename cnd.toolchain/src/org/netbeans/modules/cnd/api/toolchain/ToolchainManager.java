@@ -75,7 +75,7 @@ public final class ToolchainManager {
 
         String[] getAliases();
 
-        String getSubsitute();
+        String getSubstitute();
 
         String getDriveLetterPrefix();
 
