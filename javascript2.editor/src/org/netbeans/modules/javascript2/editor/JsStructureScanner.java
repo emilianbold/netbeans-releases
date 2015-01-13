@@ -162,7 +162,12 @@ public class JsStructureScanner implements StructureScanner {
                 }
             } else if (((child.getJSKind() == JsElement.Kind.OBJECT && (children.size() > 0 || child.isDeclared())) || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
                     && (children.size() > 0 || child.isDeclared())) {
-                collectedItems.add(new JsObjectStructureItem(child, children, result));
+                if(!(jsObject.getJSKind() == JsElement.Kind.FILE && JsTokenId.JSON_MIME_TYPE.equals(jsObject.getMimeType()))) {
+                    collectedItems.add(new JsObjectStructureItem(child, children, result));
+                } else {
+                    // don't include the first anonymous object. 
+                    collectedItems.addAll(children);
+                }
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
                 if(child.isDeclared() && (child.getModifiers().contains(Modifier.PUBLIC)
                         || !(jsObject.getParent() instanceof JsFunction)))
