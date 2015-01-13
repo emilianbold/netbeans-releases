@@ -459,10 +459,6 @@ class TagUIManager extends XmlOptionPanelManager {
      */
     public void initFolderValue( TargetChooserPanel<FileType> panel, String target , 
             JTextField field) {
-        if ( target!=null && !target.startsWith(TAG_FILE_IN_JAVALIB_FOLDER)
-                && !target.startsWith(TAG_FILE_FOLDER)) {
-            target=null;
-        }    
         
         if (getWebModule()!=null) {
             boolean isWebInfLocation = panel.getComponent().getSelectedFolder().
