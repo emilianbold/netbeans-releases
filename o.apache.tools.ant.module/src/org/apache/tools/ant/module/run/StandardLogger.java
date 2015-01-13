@@ -428,7 +428,9 @@ public final class StandardLogger extends AntLogger {
             return;
         }
         if (line.length() >= LOGGER_MAX_LINE_LENGTH) { // too long message, probably coming from user, so just print it
-            session.println(line, false, null);
+            if (!isRedirectedJavaOutput(event)) { // if not already printed
+                session.println(line, false, null);
+            }
             return;
         }
         Matcher m = CARET_SHOWING_COLUMN.matcher(line);
@@ -468,9 +470,7 @@ public final class StandardLogger extends AntLogger {
                 }
             }
         }
-        if ("java".equals(event.getTaskName()) &&
-                event.getProperty(USING_STANDARD_REDIRECTOR) == null &&
-                (event.getLogLevel() == AntEvent.LOG_WARN || event.getLogLevel() == AntEvent.LOG_INFO)) {
+        if (isRedirectedJavaOutput(event)) {
             // stdout and stderr is printed directly for java
             return;
         }
@@ -479,6 +479,22 @@ public final class StandardLogger extends AntLogger {
             getSessionData(session).lastHyperlink = (Hyperlink) parse.hyperlink;
         }
         parse.println(event.getSession(), event.getLogLevel() <= AntEvent.LOG_WARN);
+    }
+
+    /**
+     * Check whether a "message logged" event is related to "java" task output
+     * which is printed directly.
+     *
+     * @param event A "message logged" event.
+     *
+     * @return True if the event is related to some directly printed message
+     * from task "java", false otherwise.
+     */
+    private static boolean isRedirectedJavaOutput(AntEvent event) {
+        return "java".equals(event.getTaskName())
+                && event.getProperty(USING_STANDARD_REDIRECTOR) == null
+                && (event.getLogLevel() == AntEvent.LOG_WARN
+                || event.getLogLevel() == AntEvent.LOG_INFO);
     }
     
     @Override
@@ -549,7 +565,6 @@ public final class StandardLogger extends AntLogger {
      */
     public static PartiallyLinkedLine findHyperlink(String line, AntSession session, Stack<File> cwd) {
         if (line.length() >= LOGGER_MAX_LINE_LENGTH) { // too long message, probably coming from user, so just print it without trying to hyperlink
-            session.println(line, false, null);
             return new PartiallyLinkedLine(line);
         }
         Matcher m = HYPERLINK.matcher(line);
