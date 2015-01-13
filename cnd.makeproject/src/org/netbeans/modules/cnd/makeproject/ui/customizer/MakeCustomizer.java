@@ -643,7 +643,8 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
             lastContext = new MakeContext(MakeContext.Kind.Folder, project, getSelectedHost(), selectedConfigurations)
                     .setFolders(folders.toArray(new Folder[folders.size()]))
                     .setConfigurationDescriptor(projectDescriptor);
-            Lookup lookup = Lookups.fixed(lastContext, folders);
+            Folder[] array = folders.toArray(new Folder[folders.size()]);
+            Lookup lookup = Lookups.fixed(lastContext, array);
             return FolderNodeFactory.createRootNodeFolder(lookup);
         } else {
             lastContext = new MakeContext(MakeContext.Kind.Project, project, getSelectedHost(), selectedConfigurations)

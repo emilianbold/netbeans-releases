@@ -63,8 +63,7 @@ public class FolderNodeFactory {
         descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
         descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
 
-        //TODO
-        ArrayList<Folder> folders = lookup.lookup(ArrayList.class); //FIX
+        Folder[] folders = lookup.lookup(Folder[].class); 
         boolean linker = true;
         for (Folder folder : folders) {
             if (folder == null || (!folder.isTest() && !folder.isTestLogicalFolder() && !folder.isTestRootFolder())) {

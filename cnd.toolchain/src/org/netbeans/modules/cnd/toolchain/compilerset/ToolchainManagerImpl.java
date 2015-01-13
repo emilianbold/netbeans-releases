@@ -379,7 +379,7 @@ public final class ToolchainManagerImpl {
             element.setAttribute("aliases", unsplit(descriptor.getAliases())); // NOI18N
         }
         if (descriptor.getSubsitute() != null) {
-            element.setAttribute("subtitute", descriptor.getSubsitute()); // NOI18N
+            element.setAttribute("substitute", descriptor.getSubsitute()); // NOI18N
         }
         root.appendChild(element);
         if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null) {
