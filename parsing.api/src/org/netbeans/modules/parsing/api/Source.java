@@ -678,11 +678,6 @@ public final class Source implements Lookup.Provider {
         }
 
         @Override
-        public void revalidate(Source source, int delay) {
-            source.ctrl.revalidate(delay);
-        }
-
-        @Override
         public boolean invalidate(Source source, long id, Snapshot snapshot) {
             assert source != null;
             synchronized (TaskProcessor.INTERNAL_LOCK) {

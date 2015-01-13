@@ -130,13 +130,6 @@ final class EventSupport extends SourceEnvironment {
     
     private static final Logger LOGGER = Logger.getLogger(EventSupport.class.getName());
     private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1, false, false);       //NOI18N
-    /** Default reparse - sliding window for editor events*/
-    private static final int DEFAULT_REPARSE_DELAY = 500;
-    /** Default reparse - sliding window for focus events*/
-    private static final int IMMEDIATE_REPARSE_DELAY = 10;
-
-    private static int reparseDelay = DEFAULT_REPARSE_DELAY;
-    private static int immediateReparseDelay = IMMEDIATE_REPARSE_DELAY;
 
     private DocListener docListener;
     private DataObjectListener dobjListener;
@@ -220,27 +213,6 @@ final class EventSupport extends SourceEnvironment {
         getSourceControl().revalidate(getReparseDelay(fast));
     }
 
-    /**
-     * Sets the reparse delays.
-     * Used by unit tests.
-     */
-    public static void setReparseDelays(
-        final int standardReparseDelay,
-        final int fastReparseDelay) throws IllegalArgumentException {
-        if (standardReparseDelay < fastReparseDelay) {
-            throw new IllegalArgumentException(
-                    String.format(
-                        "Fast reparse delay %d > standatd reparse delay %d",    //NOI18N
-                        fastReparseDelay,
-                        standardReparseDelay));
-        }
-        immediateReparseDelay = fastReparseDelay;
-        reparseDelay = standardReparseDelay;
-    }
-
-    public static int getReparseDelay(final boolean fast) {
-        return fast ? immediateReparseDelay : reparseDelay;
-    }
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
 
     private void assignDocumentListener(final DataObject od) {

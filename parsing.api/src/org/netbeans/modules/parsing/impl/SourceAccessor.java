@@ -130,8 +130,6 @@ public abstract class SourceAccessor {
      * @return true if the snapshot is up to date and was refreshed
      */
     public abstract boolean invalidate (Source source, long id, Snapshot snapshot);
-    
-    public abstract void revalidate(Source source, int delay);
 
     public abstract SourceModificationEvent getSourceModificationEvent (Source source);
 

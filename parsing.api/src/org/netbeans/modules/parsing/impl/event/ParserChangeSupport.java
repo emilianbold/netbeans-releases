@@ -45,8 +45,8 @@ package org.netbeans.modules.parsing.impl.event;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.implspi.SourceControl;
+import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.openide.util.Parameters;
 
 /**
@@ -65,6 +65,6 @@ public final class ParserChangeSupport implements ChangeListener {
     @Override
     public void stateChanged(final ChangeEvent e) {
         sourceControl.sourceChanged(false);
-        Utilities.revalidate(sourceControl.getSource());
+        sourceControl.revalidate(SourceEnvironment.getReparseDelay(false));
     }
 }

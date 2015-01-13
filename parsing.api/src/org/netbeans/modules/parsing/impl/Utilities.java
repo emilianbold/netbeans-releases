@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.concurrent.Callable;
 
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.document.EditorDocumentUtils;
@@ -117,12 +118,12 @@ public class Utilities {
     public static void scheduleSpecialTask (final Runnable runnable, int priority) {
         TaskProcessor.scheduleSpecialTask(runnable, priority);
     }
-    
-    private static final int DEFAULT_REPARSE_DELAY = 500;
-    
+
     //Helpers to bridge java.source factories into parsing.api
-    public static void revalidate (final Source source) {
-        SourceAccessor.getINSTANCE().revalidate(source, DEFAULT_REPARSE_DELAY);
+    public static void revalidate (@NonNull final Source source) {
+        final SourceControl ctl = SourceAccessor.getINSTANCE().getEnvControl(source);
+        ctl.sourceChanged(false);
+        ctl.revalidate(SourceEnvironment.getReparseDelay(false));
     }
     
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {

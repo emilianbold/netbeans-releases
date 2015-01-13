@@ -72,6 +72,14 @@ import org.openide.util.Parameters;
  */
 public abstract class SourceEnvironment {
 
+    /** Default reparse - sliding window for editor events*/
+    private static final int DEFAULT_REPARSE_DELAY = 500;
+    /** Default reparse - sliding window for focus events*/
+    private static final int IMMEDIATE_REPARSE_DELAY = 10;
+
+    private static int reparseDelay = DEFAULT_REPARSE_DELAY;
+    private static int immediateReparseDelay = IMMEDIATE_REPARSE_DELAY;
+
     private final SourceControl sourceControl;
     private FileChangeListener fileChangeListener;
     private ChangeListener parserListener;
@@ -162,5 +170,27 @@ public abstract class SourceEnvironment {
     @NonNull
     protected static SourceEnvironment forSource(@NonNull final Source source) {
         return SourceAccessor.getINSTANCE().getEnv(source);
+    }
+
+    public static int getReparseDelay(final boolean fast) {
+        return fast ? immediateReparseDelay : reparseDelay;
+    }
+
+    /**
+     * Sets the reparse delays.
+     * Used by unit tests.
+     */
+    static void setReparseDelays(
+        final int standardReparseDelay,
+        final int fastReparseDelay) throws IllegalArgumentException {
+        if (standardReparseDelay < fastReparseDelay) {
+            throw new IllegalArgumentException(
+                    String.format(
+                        "Fast reparse delay %d > standatd reparse delay %d",    //NOI18N
+                        fastReparseDelay,
+                        standardReparseDelay));
+        }
+        immediateReparseDelay = fastReparseDelay;
+        reparseDelay = standardReparseDelay;
     }
 }
