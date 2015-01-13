@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
@@ -58,8 +60,14 @@ class GeneralFolderCustomizerNode extends CustomizerNode {
     @Override
     public Sheet[] getSheets(Configuration configuration) {
         // IG: folder -> folders
-        Folder folder = getContext().getFolder();
-        Sheet generalSheet = folder.getFolderConfiguration(configuration).getGeneralSheet();
-        return new Sheet[]{generalSheet};
+        Folder[] folders = getContext().getFolders();
+        List<Sheet> out = new ArrayList<>();
+        if (folders != null) {
+            for (Folder folder : folders) {
+                Sheet generalSheet = folder.getFolderConfiguration(configuration).getGeneralSheet();
+                out.add(generalSheet);
+            }
+        }
+        return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
     }
 }

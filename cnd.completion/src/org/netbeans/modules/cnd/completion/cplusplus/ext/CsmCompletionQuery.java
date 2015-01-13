@@ -2915,7 +2915,7 @@ abstract public class CsmCompletionQuery {
                                                             // field can have type with defined "operator()"
                                                             CsmClassifier cls = getClassifier(fldType, contextFile, endOffset);
                                                             if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
-                                                                lastType = ((CsmFunction) cls).getReturnType();
+                                                                lastType = ((CsmFunctional) cls).getReturnType();
                                                             } else {
                                                                 CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
                                                                 if (funCall != null) {

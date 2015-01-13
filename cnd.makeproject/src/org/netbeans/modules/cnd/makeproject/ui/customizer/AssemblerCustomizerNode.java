@@ -63,16 +63,18 @@ class AssemblerCustomizerNode extends CustomizerNode {
     public Sheet[] getSheets(Configuration configuration) {
         SharedItemConfiguration[] itemConfigurations = getContext().getItems();
         List<Sheet> out = new ArrayList<>();
-        for (SharedItemConfiguration cfg : itemConfigurations) {
-            if (cfg != null) {
-                ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
-                if (itemConfiguration != null) {
-                    out.add(itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
+        if (itemConfigurations != null) {
+            for (SharedItemConfiguration cfg : itemConfigurations) {
+                if (cfg != null) {
+                    ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
+                    if (itemConfiguration != null) {
+                        out.add(itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
+                    }
+                    return null;
+                } else {
+                    // TODO investigeate.
+                    out.add(((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
                 }
-                return null;
-            } else {
-                // TODO investigeate.
-                out.add(((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
             }
         }
         return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);

@@ -108,7 +108,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     private DialogDescriptor dialogDescriptor;
     private final ConfigurationDescriptor projectDescriptor;
     private final List<Item> items;
-    private final Folder folder;
+    private final List<Folder> folders;
     private final List<JComponent> controls;
     private CategoryView currentCategoryView;
     private String currentNodeName;
@@ -118,13 +118,13 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     private MakeContext lastContext;
 
     /** Creates new form MakeCustomizer */
-    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, List<Item> items, Folder folder, Collection<JComponent> controls) {
+    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, List<Item> items, List<Folder> folders, Collection<JComponent> controls) {
         initComponents();
         this.projectDescriptor = projectDescriptor;
         this.controls = new ArrayList<>(controls);
         this.project = project;
         this.items = items;
-        this.folder = folder;
+        this.folders = folders;
         this.controls.add(configurationComboBox);
         this.controls.add(configurationsButton);
 
@@ -154,7 +154,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         fillConstraints.fill = java.awt.GridBagConstraints.BOTH;
         fillConstraints.weightx = 1.0;
         fillConstraints.weighty = 1.0;
-        currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, items, folder), preselectedNodeName);
+        currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, items, folders), preselectedNodeName);
         currentCategoryView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MakeCustomizer.class, "AN_BeanTreeViewCategories")); // NOI18N
         currentCategoryView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class, "AD_BeanTreeViewCategories")); // NOI18N
         categoryPanel.add(currentCategoryView, fillConstraints);
@@ -367,7 +367,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         if (currentCategoryView != null) {
             String selectedNodeName = currentNodeName;
             categoryPanel.remove(currentCategoryView);
-            currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, items, folder), null);
+            currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, items, folders), null);
             currentCategoryView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MakeCustomizer.class, "AN_BeanTreeViewCategories"));
             currentCategoryView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class, "AD_BeanTreeViewCategories"));
             categoryPanel.add(currentCategoryView, fillConstraints);
@@ -626,7 +626,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     }
 
     // Private methods ---------------------------------------------------------
-    private Node createRootNode(Project project, ConfigurationDescriptor projectDescriptor, List<Item> items, Folder folder) {
+    private Node createRootNode(Project project, ConfigurationDescriptor projectDescriptor, List<Item> items, List<Folder> folders) {
         if (items != null) {
             List<SharedItemConfiguration> configs = new ArrayList<>();
             for (Item item : items) {
@@ -639,20 +639,13 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     .setConfigurationDescriptor(projectDescriptor);
             Lookup lookup = Lookups.fixed(lastContext);
             return ItemNodeFactory.createRootNodeItem(lookup);
-        } else if (folder != null) {
-            if(folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
-                lastContext = new MakeContext(MakeContext.Kind.Folder, project, getSelectedHost(), selectedConfigurations)
-                        .setFolder(folder)
-                        .setConfigurationDescriptor(projectDescriptor);
-                Lookup lookup = Lookups.fixed(lastContext, folder);
-                return FolderNodeFactory.createRootNodeFolder(lookup);
-            } else {
-                lastContext = new MakeContext(MakeContext.Kind.Folder, project, getSelectedHost(), selectedConfigurations)
-                        .setFolder(folder)
-                        .setConfigurationDescriptor(projectDescriptor);
-                Lookup lookup = Lookups.fixed(lastContext);
-                return FolderNodeFactory.createRootNodeFolder(lookup);
-            }
+        } else if (folders != null) {
+            lastContext = new MakeContext(MakeContext.Kind.Folder, project, getSelectedHost(), selectedConfigurations)
+                    .setFolders(folders.toArray(new Folder[folders.size()]))
+                    .setConfigurationDescriptor(projectDescriptor);
+            Folder[] array = folders.toArray(new Folder[folders.size()]);
+            Lookup lookup = Lookups.fixed(lastContext, array);
+            return FolderNodeFactory.createRootNodeFolder(lookup);
         } else {
             lastContext = new MakeContext(MakeContext.Kind.Project, project, getSelectedHost(), selectedConfigurations)
                     .setPanel(this)

@@ -83,6 +83,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameVersionedFile_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "fromFile");
         VCSFileProxySupport.createNew(fromFile);
@@ -106,6 +109,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
 
     public void renameUnversionedFile_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "fromFile");
         VCSFileProxySupport.createNew(fromFile);
@@ -128,6 +134,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameUnversionedFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "fromFolder");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -150,6 +159,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameAddedFile_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init        
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "fromFile");
         VCSFileProxySupport.createNew(fromFile);
@@ -175,6 +187,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameA2B2A_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "from");
         VCSFileProxySupport.createNew(fileA);
@@ -200,6 +215,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameA2B2C_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);        
@@ -229,6 +247,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameA2B2C2A_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);
@@ -260,6 +281,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }        
     
     public void renameA2B_CreateA_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);
@@ -287,6 +311,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     
     // fixed - see issue #129805
     public void deleteA_RenameB2A_FO_129805() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);
@@ -319,6 +346,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameVersionedFolder_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "from");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -341,6 +371,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
 
     public void renameFileTree_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fromFolder = VCSFileProxy.createFileProxy(wc, "from");
         VCSFileProxySupport.mkdirs(fromFolder);
@@ -416,6 +449,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameA2CB2A_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);
@@ -460,6 +496,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void renameA2a_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "A");
         VCSFileProxySupport.createNew(fileA);
@@ -485,6 +524,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void deleteA_renameB2A2B_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy folder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdir(folder);
@@ -518,6 +560,9 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
     }
     
     public void deleteA_renameUnversioned2A_FO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy folder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdir(folder);

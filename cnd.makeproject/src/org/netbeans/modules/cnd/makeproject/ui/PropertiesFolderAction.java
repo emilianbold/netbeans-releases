@@ -64,19 +64,19 @@ public final class PropertiesFolderAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-//        if (activatedNodes.length == 0) {
-//            return false;
-//        }
-//        Project golden = (Project) activatedNodes[0].getValue("Project");// NOI18N
-//        if (golden == null) {
-//            return false;
-//        }
-//        for (int i = 1; i < activatedNodes.length; i++) {
-//            if (!golden.equals((Project) activatedNodes[i].getValue("Project"))) {// NOI18N
-//                return false;
-//            }
-//        }
-        return activatedNodes.length == 1;
+        if (activatedNodes.length == 0) {
+            return false;
+        }
+        Project golden = (Project) activatedNodes[0].getValue("Project");// NOI18N
+        if (golden == null) {
+            return false;
+        }
+        for (int i = 1; i < activatedNodes.length; i++) {
+            if (!golden.equals((Project) activatedNodes[i].getValue("Project"))) {// NOI18N
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

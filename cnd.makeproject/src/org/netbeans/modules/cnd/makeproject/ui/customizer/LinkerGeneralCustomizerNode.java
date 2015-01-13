@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -63,20 +65,24 @@ class LinkerGeneralCustomizerNode extends CustomizerNode {
         switch (getContext().getKind()) {
             case Folder:
                 // folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()
-                Folder folder = getContext().getFolder();
-                if (folder.isTest()) {
-                    return new Sheet[]{
-                        folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
-                        getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
-                        (MakeConfiguration) configuration, getContext().isQtMode(), false)
-                    };
-                } else {
-                    return new Sheet[]{
-                        folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
-                        getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
-                        (MakeConfiguration) configuration, getContext().isQtMode(), true)
-                    };
+                Folder[] folders = getContext().getFolders();
+                List<Sheet> folderSheets = new ArrayList<>();
+                for (Folder folder : folders) {
+                    if (folder.isTest()) {
+                        folderSheets.add(
+                                folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
+                                        getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
+                                        (MakeConfiguration) configuration, getContext().isQtMode(), false)
+                        );
+                    } else {
+                        folderSheets.add(
+                                folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
+                                        getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
+                                        (MakeConfiguration) configuration, getContext().isQtMode(), true)
+                        );
+                    }
                 }
+            return folderSheets.toArray(new Sheet[folderSheets.size()]);
             case Project:
                 return new Sheet[]{
                     ((MakeConfiguration) configuration).getLinkerConfiguration().getGeneralSheet(

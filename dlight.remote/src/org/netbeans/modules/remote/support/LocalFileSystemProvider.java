@@ -46,6 +46,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -486,5 +487,10 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
             }
         }
         return null;
-    }    
+    }
+
+    @Override
+    public InputStream getInputStream(FileObject fo, int maxSize) throws IOException {
+        return fo.getInputStream();
+    }
 }

@@ -394,6 +394,16 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         return getImplementor().getInputStream(true);
     }
 
+    public InputStream getInputStream(int maxSize) throws FileNotFoundException {
+        if (maxSize <= MagicCache.BUF_LENGTH) {
+            byte[] b = getImplementor().getMagic();
+            if (b != null) {
+                return new ByteArrayInputStream(b);
+            }
+        }
+        return getInputStream();
+    }
+
     @Override
     public RemoteFileObject getFileObject(String relativePath) {
         return getFileObject(relativePath, new HashSet<String>());
