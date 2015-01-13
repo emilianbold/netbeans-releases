@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.spi;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -542,6 +543,15 @@ public final class FileSystemProvider {
                 provider.warmup(mode, env, paths, extensions);
             }
         }
+    }
+
+    public static InputStream getInputStream(FileObject fo, int maxSize) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fo)) {
+                return provider.getInputStream(fo, maxSize);
+            }
+        }
+        return fo.getInputStream();
     }
 
     private static void noProvidersWarning(Object object) {

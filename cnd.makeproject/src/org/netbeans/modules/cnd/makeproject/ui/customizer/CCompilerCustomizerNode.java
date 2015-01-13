@@ -66,18 +66,23 @@ class CCompilerCustomizerNode extends CustomizerNode {
         switch (getContext().getKind()) {
             case Item:
                 SharedItemConfiguration[] configurations = getContext().getItems();
-                List<Sheet> out = new ArrayList<>();
+                List<Sheet> itemSheets = new ArrayList<>();
                 for (SharedItemConfiguration cfg : configurations) {
                     ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
                     if (itemConfiguration != null) {
                         Item item = cfg.getItem();
-                        out.add(itemConfiguration.getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null, item));
+                        itemSheets.add(itemConfiguration.getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null, item));
                     }
                 }
-                return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
+                return itemSheets.isEmpty() ? null : itemSheets.toArray(new Sheet[itemSheets.size()]);
             case Folder:
-                Folder folder = getContext().getFolder();
-                return new Sheet[]{folder.getFolderConfiguration(configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder, null)};
+                Folder[] folders = getContext().getFolders();
+                List<Sheet> folderSheets = new ArrayList<>();
+                for (Folder folder : folders) {
+                    Sheet sheet = folder.getFolderConfiguration(configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder, null);
+                    folderSheets.add(sheet);
+                }
+                return folderSheets.toArray(new Sheet[folderSheets.size()]);
             case Project:
                 return new Sheet[]{((MakeConfiguration) configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null, null)};
         }

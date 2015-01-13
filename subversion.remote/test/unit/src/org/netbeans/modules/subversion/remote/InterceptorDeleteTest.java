@@ -81,6 +81,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }
         
     public void deleteCreateChangeCase_issue_157373 () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         final VCSFileProxy fileA = VCSFileProxy.createFileProxy(wc, "file");
         wc.toFileObject().createData(fileA.getName());
@@ -109,6 +112,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }
     
     public void deleteNotVersionedFile() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init        
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(file);
@@ -127,6 +133,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }
     
     public void deleteVersionedFileExternally() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(file);
@@ -157,6 +166,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }
 
     public void deleteVersionedFile() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(file);
@@ -178,6 +190,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }
 
     public void deleteVersionedFolder() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init        
         VCSFileProxy folder = VCSFileProxy.createFileProxy(wc, "folder1");
         VCSFileProxySupport.mkdirs(folder);
@@ -200,6 +215,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }
 
     public void deleteNotVersionedFolder() throws IOException, SVNClientException {
+        if (skipTest()) {
+            return;
+        }
         // init        
         VCSFileProxy folder = VCSFileProxy.createFileProxy(wc, "folder2");
         VCSFileProxySupport.mkdirs(folder);
@@ -218,6 +236,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }    
 
     public void deleteWCRoot() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init        
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(wc).getTextStatus());
 
@@ -232,6 +253,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }
 
     public void deleteVersionedFileTree() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy folder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdirs(folder);
@@ -294,6 +318,9 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
     }
 
     public void deleteNotVersionedFileTree() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy folder = VCSFileProxy.createFileProxy(wc, "folder");
         VCSFileProxySupport.mkdirs(folder);

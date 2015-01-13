@@ -94,6 +94,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     protected VCSFileProxy repoDir;
     protected VCSFileProxy repo2Dir;
     protected SVNUrl repo2Url;
+    private boolean skipTest = false;
     
     public RemoteVersioningTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -143,10 +144,19 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
             ex.printStackTrace(System.err);
         }
     }
-        
+    
+    protected boolean skipTest() {
+        return skipTest;
+    }
+    
     @Override
     protected void setUp() throws Exception {          
         super.setUp();
+        FileObject svn = rootFO.getFileObject("/usr/bin/svn");
+        if (svn == null || !svn.isValid()) {
+            skipTest = true;
+            return;
+        }
         VersioningManager.getInstance();
         MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, SubversionVCS.class, FilesystemInterceptorProviderImpl.class});
         // create temporary folder
@@ -188,6 +198,9 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        if (skipTest) {
+            return;
+        }
         cleanUpWC(wc);
         cleanUpWC(wc2);
     }
@@ -206,19 +219,20 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     }
     
     protected void cleanUpWC(VCSFileProxy wc) throws IOException {
-        if(wc.exists()) {
-            VCSFileProxy[] files = wc.listFiles();
-            if(files != null) {
-                for (VCSFileProxy file : files) {
-                    if(!file.getName().equals("cache")) { // do not delete the cache
-                        FileObject fo = file.toFileObject();
-                        if (fo != null) {
-                            fo.delete();
-                        }
-                    }
-                }
-            }
-        }
+        VCSFileProxySupport.delete(wc);
+//        if(wc.exists()) {
+//            VCSFileProxy[] files = wc.listFiles();
+//            if(files != null) {
+//                for (VCSFileProxy file : files) {
+//                    if(!file.getName().equals("cache")) { // do not delete the cache
+//                        FileObject fo = file.toFileObject();
+//                        if (fo != null) {
+//                            fo.delete();
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     protected void assertStatus(SVNStatusKind status, VCSFileProxy wc) throws SVNClientException {

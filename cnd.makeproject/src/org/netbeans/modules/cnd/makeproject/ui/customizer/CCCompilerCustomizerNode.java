@@ -66,18 +66,23 @@ class CCCompilerCustomizerNode extends CustomizerNode {
         switch (getContext().getKind()) {
             case Item:
                 SharedItemConfiguration[] configurations = getContext().getItems();
-                List<Sheet> out = new ArrayList<>();
+                List<Sheet> itemSheets = new ArrayList<>();
                 for (SharedItemConfiguration cfg : configurations) {
                     ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
                     if (itemConfiguration != null) {
                         Item item = cfg.getItem();
-                        out.add(itemConfiguration.getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null, item));
+                        itemSheets.add(itemConfiguration.getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null, item));
                     }
                 }
-                return out.toArray(new Sheet[out.size()]);
+                return itemSheets.toArray(new Sheet[itemSheets.size()]);
             case Folder:
-                Folder folder = getContext().getFolder();
-                return new Sheet[]{folder.getFolderConfiguration(configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, folder, null)};
+                Folder[] folders = getContext().getFolders();
+                List<Sheet> folderSheets = new ArrayList<>();
+                for (Folder folder: folders) {
+                    Sheet sheet = folder.getFolderConfiguration(configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, folder, null);
+                    folderSheets.add(sheet);
+                }
+                return folderSheets.toArray(new Sheet[folderSheets.size()]);
             case Project:
                 return new Sheet[]{((MakeConfiguration) configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null, null)};
         }
