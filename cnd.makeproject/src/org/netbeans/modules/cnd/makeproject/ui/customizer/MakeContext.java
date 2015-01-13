@@ -76,7 +76,7 @@ public class MakeContext {
     private final ExecutionEnvironment env;
     private final Configuration[] selectedConfigurations;
     private SharedItemConfiguration[] items;
-    private Folder folder;
+    private Folder[] folders;
     private JPanel container;
     private ConfigurationDescriptor configurationDescriptor;
     private final Set<Savable> listeners = new WeakSet<>();
@@ -98,8 +98,8 @@ public class MakeContext {
         return this;
     }
 
-    public MakeContext setFolder(Folder folder) {
-        this.folder = folder;
+    public MakeContext setFolders(Folder[] folders) {
+        this.folders = folders;
         return this;
     }
 
@@ -137,7 +137,7 @@ public class MakeContext {
     }
 
     /**
-     * @return the item
+     * @return items or NULL if items were not set
      */
     /*package*/ SharedItemConfiguration[] getItems() {
         return items;
@@ -146,8 +146,8 @@ public class MakeContext {
     /**
      * @return the folder
      */
-    /*package*/ Folder getFolder() {
-        return folder;
+    /*package*/ Folder[] getFolders() {
+        return folders;
     }
 
     /**

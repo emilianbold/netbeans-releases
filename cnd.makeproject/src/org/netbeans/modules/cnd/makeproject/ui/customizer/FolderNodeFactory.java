@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import java.util.ArrayList;
@@ -54,17 +53,25 @@ import org.openide.util.NbBundle;
  * @author as204739
  */
 public class FolderNodeFactory {
+
     private FolderNodeFactory() {
     }
 
-    public static  Node createRootNodeFolder(Lookup lookup) {
+    public static Node createRootNodeFolder(Lookup lookup) {
         ArrayList<CustomizerNode> descriptions = new ArrayList<>(); //new CustomizerNode[2];
         descriptions.add(createGeneralFolderDescription(lookup));
         descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
         descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
 
-        Folder folder = lookup.lookup(Folder.class);
-        if(folder != null && (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder())) {
+        //TODO
+        ArrayList<Folder> folders = lookup.lookup(ArrayList.class); //FIX
+        boolean linker = true;
+        for (Folder folder : folders) {
+            if (folder == null || (!folder.isTest() && !folder.isTestLogicalFolder() && !folder.isTestRootFolder())) {
+                linker = false;
+            }
+        }
+        if (linker) {
             descriptions.add(createLinkerDescription(lookup));
         }
 

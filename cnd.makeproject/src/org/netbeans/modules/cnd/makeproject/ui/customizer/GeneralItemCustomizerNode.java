@@ -62,10 +62,12 @@ class GeneralItemCustomizerNode extends CustomizerNode {
     public Sheet[] getSheets(Configuration configuration) {
         SharedItemConfiguration[] sharedConfigurations = getContext().getItems();
         List<Sheet> out = new ArrayList<>();
-        for (SharedItemConfiguration cfg : sharedConfigurations) {
-            ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
-            if (itemConfiguration != null) {
-                out.add(itemConfiguration.getGeneralSheet());
+        if (sharedConfigurations != null) {
+            for (SharedItemConfiguration cfg : sharedConfigurations) {
+                ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
+                if (itemConfiguration != null) {
+                    out.add(itemConfiguration.getGeneralSheet());
+                }
             }
         }
         return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
