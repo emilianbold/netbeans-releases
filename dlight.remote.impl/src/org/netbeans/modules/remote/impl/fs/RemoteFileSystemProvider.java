@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -487,5 +488,11 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     @Override
     public String resolveLink(FileObject fo) throws IOException {
         return fo.readSymbolicLinkPath();
+    }
+
+    @Override
+    public InputStream getInputStream(FileObject fo, int maxSize) throws IOException {
+        // instance check is in isMine
+        return ((RemoteFileObject) fo).getInputStream(maxSize);
     }
 }

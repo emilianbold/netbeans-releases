@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.spi;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -103,4 +104,5 @@ public interface FileSystemProviderImplementation {
     boolean isLink(ExecutionEnvironment env, String path);
     boolean isLink(FileObject fo);
     String resolveLink(FileObject fo) throws IOException;
+    InputStream getInputStream(FileObject fo, int maxSize) throws IOException;
 }

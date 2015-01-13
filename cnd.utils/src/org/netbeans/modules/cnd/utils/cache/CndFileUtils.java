@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.utils.cache;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
@@ -161,6 +162,10 @@ public final class CndFileUtils {
         for (CndFileExistSensitiveCache cache : getCaches()) {
             cache.invalidateAll();
         }
+    }
+
+    public static InputStream getInputStream(FileObject fo, int maxSize) throws IOException {
+        return CndFileSystemProvider.getInputStream(fo, maxSize);
     }
 
     /**

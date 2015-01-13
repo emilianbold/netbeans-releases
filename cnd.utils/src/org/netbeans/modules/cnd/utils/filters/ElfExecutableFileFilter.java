@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -97,7 +99,7 @@ public class ElfExecutableFileFilter extends FileAndFileObjectFilter {
             if (f instanceof File) {
                 is = new FileInputStream((File) f);
             } else { // (f instanceof FileObject)
-                is = ((FileObject) f).getInputStream();
+                is = CndFileUtils.getInputStream((FileObject) f, left);
             }
 	    while (left > 0) {
 		int n = is.read(b, offset, left);

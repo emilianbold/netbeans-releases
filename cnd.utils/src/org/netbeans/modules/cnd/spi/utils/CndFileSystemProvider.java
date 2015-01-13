@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.spi.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -113,7 +114,11 @@ public abstract class CndFileSystemProvider {
         }
         return file;
     }
-    
+
+    public static InputStream getInputStream(FileObject fo, int maxSize) throws IOException {
+        return getDefault().getInputStreamImpl(fo, maxSize);
+    }
+
     /**
      * JFileChooser works in the term of files.
      * For such "perverted" files FileUtil.toFileObject won't work.
@@ -223,6 +228,7 @@ public abstract class CndFileSystemProvider {
     protected abstract Boolean existsImpl(CharSequence path);
     protected abstract Boolean canReadImpl(CharSequence path);
     protected abstract FileInfo[] getChildInfoImpl(CharSequence path);
+    protected abstract InputStream getInputStreamImpl(FileObject fo, int maxSize) throws IOException;
 
     /** a bridge from cnd.utils to dlight.remote */
     protected abstract FileObject toFileObjectImpl(CharSequence absPath);
@@ -578,6 +584,14 @@ public abstract class CndFileSystemProvider {
                 return provider.isWindowsImpl(fs);
             }
             return Utilities.isWindows();
-        }        
+        }
+
+        @Override
+        protected InputStream getInputStreamImpl(FileObject fo, int maxSize) throws IOException {
+            for (CndFileSystemProvider provider : cache) {
+                return provider.getInputStreamImpl(fo, maxSize);
+            }
+            return fo.getInputStream();
+        }
     }
 }
