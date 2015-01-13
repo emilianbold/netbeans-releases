@@ -71,6 +71,9 @@ public class InterceptorModifyTest extends RemoteVersioningTestBase {
     }
     
     public void modifyFileOnDemandLock () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(file);
@@ -97,6 +100,9 @@ public class InterceptorModifyTest extends RemoteVersioningTestBase {
     }
     
     public void isModifiedAttributeFile () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // file is outside of versioned space, attribute should be unknown
         
         FileObject fo = fs.createTempFile(fs.getTempFolder(), "testIsModifiedAttributeFile", "txt", true);
