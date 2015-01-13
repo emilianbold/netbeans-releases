@@ -226,14 +226,23 @@ public class SearchPanel extends javax.swing.JPanel {
     private void librarySelected(Library library) {
         assert EventQueue.isDispatchThread();
         synchronized (this) {
+            if (selectedLibrary == library) {
+                return;
+            }
             selectedLibrary = library;
         }
         updateLibraryDetail(null, null);
         if (library == null) {
             return;
         }
-        loadingLabel.setText(Bundle.SearchPanel_message_loadingDetail());
         final String libraryName = library.getName();
+        Library details = libraryProvider.libraryDetails(libraryName, true);
+        if (details == null) {
+            loadingLabel.setText(Bundle.SearchPanel_message_loadingDetail());
+        } else {
+            updateLibraryDetail(libraryName, details);
+            return;
+        }
         RP.post(new Runnable() { 
             @Override
             public void run() {
