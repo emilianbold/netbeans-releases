@@ -301,7 +301,7 @@ public final class LineDocumentUtils {
      *
      * @param doc document to operate on
      * @param offset offset of first character to examine for WS.
-     * @param limitOffset offset above the last character to examine for WS.
+     * @param limitOffset the offset of the last character to examine for WS.
      * @return position of the next non-WS character or -1 if not found.
      */
     public static int getPreviousNonWhitespace(@NonNull LineDocument doc, int offset, int limitOffset)
