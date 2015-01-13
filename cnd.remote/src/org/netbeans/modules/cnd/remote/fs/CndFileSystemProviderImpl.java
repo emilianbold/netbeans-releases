@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -368,6 +369,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
                return false; // remote is not windows
            }
        }
+    }
+
+    @Override
+    protected InputStream getInputStreamImpl(FileObject fo, int maxSize) throws IOException {
+        return FileSystemProvider.getInputStream(fo, maxSize);
     }
 
     private static class ProblemListenerAdapter implements FileSystemProblemListener {

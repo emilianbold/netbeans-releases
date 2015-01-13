@@ -65,7 +65,7 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class MagicCache {
-    private static final int BUF_LENGTH = 4000;
+    static final int BUF_LENGTH = 4000;
     private static final String cacheName = ".rfs_magic"; // NOI18N
     private final RemoteDirectory dir;
     private Map<String, byte[]> cache;
