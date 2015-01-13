@@ -315,19 +315,23 @@ public class ForkedJavaOverride extends Java {
                             out.write(c);
                             out.flush();
                         } else {
-                            synchronized (foldingHelper) {
+                            synchronized (this) {
                                 if (c == '\n') {
                                     String str = currentLine.toString(encoding);
                                     int len = str.length();
                                     if (len > 0 && str.charAt(len - 1) == '\r') {
                                         str = str.substring(0, len - 1);
                                     }
-                                    // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
+
                                     foldingHelper.checkFolds(str, err, session);
                                     if (str.length() < LOGGER_MAX_LINE_LENGTH) { // not too long message, probably interesting
+                                        // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
                                         if (!STACK_TRACE.matcher(str).find()) {
                                             StandardLogger.findHyperlink(str, session, null).println(session, err);
                                         }
+                                    } else {
+                                        // do not match long strings, directly create a trivial hyperlink
+                                        StandardLogger.findHyperlink(str, session, null).println(session, err);
                                     }
                                     log(str, logLevel);
                                     currentLine.reset();
@@ -341,6 +345,9 @@ public class ForkedJavaOverride extends Java {
                 } finally {
                     if (logLevel != null) {
                         maybeFlush();
+                        if (err) {
+                            foldingHelper.clearHandle();
+                        }
                     }
                 }
             } catch (IOException x) {
@@ -388,13 +395,14 @@ public class ForkedJavaOverride extends Java {
         boolean inStackTrace = false;
 
         private void checkFolds(String s, boolean error, AntSession session) {
-            if (s.length() < LOGGER_MAX_LINE_LENGTH && error) { // too long message, probably coming from user, so no need for folds
-                if (EXCEPTION.matcher(s).find()) {
-                    inStackTrace = true;
-                    clearHandle();
-                }
-            } else if (s.length() < LOGGER_MAX_LINE_LENGTH && inStackTrace && error) { // too long message, probably coming from user, so no need for folds
-                if (foldHandle == null && STACK_TRACE.matcher(s).find()) {
+            // ignore too long, expensive messages, probably coming from user, so no need for folds
+            boolean cheap = s.length() < LOGGER_MAX_LINE_LENGTH;
+            if (cheap && error && EXCEPTION.matcher(s).find()) {
+                clearHandle();
+                inStackTrace = true;
+            } else if (cheap && error && inStackTrace
+                    && STACK_TRACE.matcher(s).find()) {
+                if (foldHandle == null) {
                     foldHandle = IOFolding.startFold(session.getIO(), true);
                 }
             } else {
@@ -403,7 +411,7 @@ public class ForkedJavaOverride extends Java {
             }
         }
 
-        private void clearHandle() {
+        void clearHandle() {
             if (foldHandle != null) {
                 if (!foldHandle.isFinished()) {
                     foldHandle.finish();
