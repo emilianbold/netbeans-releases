@@ -197,7 +197,7 @@ public class RemoteVcsSupportUtil {
             String parentPath = PathUtilities.getDirName(path);
             FileObject parentFO = fileSystem.findResource(parentPath);
             while (parentFO == null) {
-                parentPath = PathUtilities.getDirName(path);
+                parentPath = PathUtilities.getDirName(parentPath);
                 parentFO = fileSystem.findResource(parentPath);
             }
             if (parentFO == null) {
