@@ -214,7 +214,7 @@ public class InterceptorCopyDOTest extends RemoteVersioningTestBase {
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(fromFile);
-        VCSFileProxy unversionedFolder = VCSFileProxy.createFileProxy(dataRootDir, getName() + "_unversioned");
+        VCSFileProxy unversionedFolder = VCSFileProxy.createFileProxy(dataRootDir, testName + "_unversioned");
         VCSFileProxySupport.mkdirs(unversionedFolder);
         
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(unversionedFolder, fromFile.getName());
@@ -283,7 +283,7 @@ public class InterceptorCopyDOTest extends RemoteVersioningTestBase {
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(fromFolder, "file");
         VCSFileProxySupport.createNew(fromFile);
 
-        VCSFileProxy unversionedFolder = VCSFileProxy.createFileProxy(dataRootDir, getName() + "_unversioned");
+        VCSFileProxy unversionedFolder = VCSFileProxy.createFileProxy(dataRootDir, testName + "_unversioned");
         VCSFileProxySupport.mkdirs(unversionedFolder);
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(unversionedFolder, fromFolder.getName());
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());

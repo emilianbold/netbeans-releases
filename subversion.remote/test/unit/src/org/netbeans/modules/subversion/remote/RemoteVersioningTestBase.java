@@ -95,6 +95,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     protected VCSFileProxy repo2Dir;
     protected SVNUrl repo2Url;
     private boolean skipTest = false;
+    protected String testName;
     
     public RemoteVersioningTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -174,10 +175,10 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         remoteDir = remoteDirFO.getPath();
         //
         dataRootDir = VCSFileProxy.createFileProxy(remoteDirFO);
-        String name = getName();
-        name = name.substring(0, name.indexOf('[')).trim();
-        wc = VCSFileProxy.createFileProxy(dataRootDir, name + "_wc");
-        wc2 = VCSFileProxy.createFileProxy(dataRootDir, name + "_wc2");
+        testName = getName();
+        testName = testName.substring(0, testName.indexOf('[')).trim();
+        wc = VCSFileProxy.createFileProxy(dataRootDir, testName + "_wc");
+        wc2 = VCSFileProxy.createFileProxy(dataRootDir, testName + "_wc2");
         repoDir = VCSFileProxy.createFileProxy(dataRootDir, "repo");
         String repoPath = repoDir.getPath();
         if(repoPath.startsWith("/")) {
@@ -188,7 +189,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         repo2Dir = VCSFileProxy.createFileProxy(dataRootDir, "repo2");
         repo2Url = new SVNUrl(TestUtilities.formatFileURL(repo2Dir));
 
-        System.setProperty("netbeans.user", remoteDir + "/userdir");
+        //System.setProperty("netbeans.user", remoteDir + "/userdir");
         cache = Subversion.getInstance().getStatusCache();
         cache.cleanUp();
         
@@ -208,8 +209,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         if (skipTest) {
             return;
         }
-        cleanUpWC(wc);
-        cleanUpWC(wc2);
+        VCSFileProxySupport.delete(dataRootDir);
     }
 
     @Override

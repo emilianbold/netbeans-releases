@@ -75,7 +75,7 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
         addTest(suite, InterceptorCopyFOTest.class, "copyAddedFile2VersionedFolder_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyA2B2C_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyVersionedFolder_FO");
-        addTest(suite, InterceptorCopyFOTest.class, "copyFileTree_FO");
+        addTest(suite, InterceptorCopyFOTest.class, "copyFileTree_FO"); //failed
         addTest(suite, InterceptorCopyFOTest.class, "copyVersionedFile2Repos_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyVersionedFolder2Repos_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyFileTree2Repos_FO");
@@ -287,7 +287,7 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
         // init
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(wc, "file");
         VCSFileProxySupport.createNew(fromFile);
-        VCSFileProxy toFolder = VCSFileProxy.createFileProxy(dataRootDir, getName() + "toFolder");
+        VCSFileProxy toFolder = VCSFileProxy.createFileProxy(dataRootDir, testName + "toFolder");
         VCSFileProxySupport.mkdirs(toFolder);
 
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
@@ -355,7 +355,7 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
         VCSFileProxySupport.mkdir(fromFolder);
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(fromFolder, "file");
         VCSFileProxySupport.createNew(fromFile);
-        VCSFileProxy toFolder = VCSFileProxy.createFileProxy(dataRootDir, getName() + "toFolder");
+        VCSFileProxy toFolder = VCSFileProxy.createFileProxy(dataRootDir, testName + "toFolder");
 
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
