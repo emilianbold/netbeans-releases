@@ -138,7 +138,7 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
         }
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
-        VCSFileProxySupport.createNew(file);
+        wc.toFileObject().createData(file.getName());
         assertCachedStatus(file, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
         commit(wc);
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
