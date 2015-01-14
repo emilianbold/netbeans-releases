@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -60,7 +61,6 @@ import org.netbeans.modules.nativeexecution.test.ClassForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
-import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
 import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.subversion.remote.api.ISVNStatus;
@@ -70,13 +70,13 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.utils.TestUtilities;
-import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 
 /**
@@ -157,7 +157,14 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
             skipTest = true;
             return;
         }
-        VersioningManager.getInstance();
+        
+        File cacheFile = Places.getCacheSubdirectory("svnremotecache");
+        File[] listFiles = cacheFile.listFiles();
+        if (listFiles != null) {
+            for(File f : listFiles) {
+                f.delete();
+            }
+        }
         MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, SubversionVCS.class, FilesystemInterceptorProviderImpl.class});
         // create temporary folder
         String remoteDir = mkTempAndRefreshParent(true);
@@ -258,7 +265,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
 
     protected int getCachedStatus(VCSFileProxy file, int exceptedStatus) throws Exception, InterruptedException {
         FileInformation info = null;
-        for (int i = 0; i < 600; i++) {
+        for (int i = 0; i < 200; i++) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
