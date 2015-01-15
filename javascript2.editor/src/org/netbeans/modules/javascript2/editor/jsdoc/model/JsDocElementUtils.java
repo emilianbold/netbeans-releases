@@ -132,7 +132,7 @@ public class JsDocElementUtils {
         return DeclarationElement.create(elementType, createTypeUsage(type, typeOffset));
     }
 
-    private static TypeUsage createTypeUsage(String type, int offset) {
+    protected static TypeUsage createTypeUsage(String type, int offset) {
         // see issue #233176
         if (LOWERCASED_STRING.equals(type)) {
             return new TypeUsageImpl(Type.STRING, offset);
@@ -228,4 +228,24 @@ public class JsDocElementUtils {
         return currentOffset;
     }
 
+    public static class GoogleCompilerSytax {
+        public static boolean canBeThisSyntax(String type) {
+            boolean result = (type.charAt(type.length() - 1) == '=');
+            return result;
+        }
+        
+        public static boolean isMarkedAsOptional(String type) {
+            boolean result = (type.charAt(type.length() - 1) == '=');
+            return result;
+        }
+        
+        public static String removeSyntax(String type) {
+            String result = type;
+            if (isMarkedAsOptional(type)) {
+                result = result.substring(0, result.length() - 1);
+            }
+            return result;
+        }
+    }
+    
 }
