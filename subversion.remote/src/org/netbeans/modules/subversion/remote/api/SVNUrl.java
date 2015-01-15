@@ -54,7 +54,7 @@ import java.util.Objects;
 public class SVNUrl {
 
     public static final String SVN_PROTOCOL = "svn"; //NOI18N
-    public static final String SVNSSH_PROTOCOL = "svn+"; //NOI18N
+    public static final String SVNSSH_PROTOCOL = "svn+ssh"; //NOI18N
     public static final String HTTP_PROTOCOL = "http"; //NOI18N
     public static final String HTTPS_PROTOCOL = "https"; //NOI18N
     public static final String FILE_PROTOCOL = "file"; //NOI18N
