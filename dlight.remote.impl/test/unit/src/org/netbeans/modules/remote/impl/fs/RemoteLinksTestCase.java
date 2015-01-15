@@ -185,7 +185,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             refreshFor(dataFileFO.getPath());
             assertTrue("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
             readContent = readFile(dataFileFO);
-            assertEquals("File content differ", content2, readContent.toString());
+            assertEquals("File content differ", content2 + '\n', readContent.toString());
 
         } finally {
             removeRemoteDirIfNotNull(baseDir);
