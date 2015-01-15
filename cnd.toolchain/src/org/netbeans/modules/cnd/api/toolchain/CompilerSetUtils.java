@@ -67,6 +67,9 @@ public final class CompilerSetUtils {
     public static String getCommandFolder(CompilerSet cs) {
         String res = null;
         if (cs != null) {
+            if (cs.getCompilerFlavor().isCygwinCompiler()) {
+                return res;
+            }
             res = cs.getCommandFolder();
         }
         if (res != null) {
