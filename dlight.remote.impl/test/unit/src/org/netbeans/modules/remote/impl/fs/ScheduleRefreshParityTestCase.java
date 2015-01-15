@@ -177,9 +177,11 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
             
             doTestScheduleRefresh2(remoteBaseDirFO, remoteLog, recursive);
             doTestScheduleRefresh2(localBaseDirFO, localLog, recursive);
-            
-            printFile(localLog, "LOCAL ", System.out);
-            printFile(remoteLog, "REMOTE", System.out);
+
+            if (RemoteApiTest.TRACE_LISTENERS) {
+                printFile(localLog, "LOCAL ", System.out);
+                printFile(remoteLog, "REMOTE", System.out);
+            }
             sortFile(localLog);
             sortFile(remoteLog);
             File diff = new File(workDir, "diff.diff");

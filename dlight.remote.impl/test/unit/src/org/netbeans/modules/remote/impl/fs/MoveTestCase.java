@@ -81,7 +81,6 @@ public class MoveTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testMoveToExistent() throws Exception {
-        RemoteLogger.getInstance().setLevel(Level.FINE);
         String baseDir = null;
         try {
             baseDir = mkTempAndRefreshParent(true);

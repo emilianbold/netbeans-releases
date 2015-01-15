@@ -193,10 +193,12 @@ public class RemoteLinksChangeLinkTestCase2 extends RemoteFileTestBase {
             accessor2.join(2000);
             changer.join(20000);
 
-            System.err.printf("testClassCast_iz209461 changes count:   %d\n", changeCount.get());
-            System.err.printf("testClassCast_iz209461 plain count:     %d\n", plainFileCount.get());
-            System.err.printf("testClassCast_iz209461 links count:     %d\n", childLinkCount.get());
-            System.err.printf("testClassCast_iz209461 null count:      %d\n", nullCount.get());
+            if (Boolean.getBoolean("RemoteLinksChangeLinkTestCase2.trace")) {
+                System.out.printf("testClassCast_iz209461 changes count:   %d\n", changeCount.get());
+                System.out.printf("testClassCast_iz209461 plain count:     %d\n", plainFileCount.get());
+                System.out.printf("testClassCast_iz209461 links count:     %d\n", childLinkCount.get());
+                System.out.printf("testClassCast_iz209461 null count:      %d\n", nullCount.get());
+            }
 
             if (!exceptions.isEmpty()) {
                 System.err.printf("There were %d exceptions; throwing first one.\n", exceptions.size());

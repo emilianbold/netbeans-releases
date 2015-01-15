@@ -54,6 +54,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 
@@ -62,6 +63,11 @@ import org.openide.filesystems.FileObject;
  * @author vkvashin
  */
 public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
+
+//    static {
+//        System.setProperty("remote.fs_server.verbose", "8");
+//        System.setProperty("remote.fs_server.suppress.stderr", "false");
+//    }
 
     public RemoteVcsSupportUtilTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -258,8 +264,10 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
     private void refreshParentAndRecurse(String path) throws Exception {
         String parentPath = PathUtilities.getDirName(path);
         final RemoteFileObject parentFO = getFileObject(parentPath);
-        parentFO.refresh();
-        recurse(parentFO);
+        FileSystemProvider.refresh(parentFO, false);
+        FileObject fo = getFileObject(path);
+        fo.refresh();
+        recurse(fo);
     }
 
     private void recurse(FileObject fo) {
