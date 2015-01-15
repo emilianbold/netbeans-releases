@@ -53,14 +53,15 @@ import java.util.List;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.NbCollections;
 
 class VolumeContentModel extends AbstractListModel/*<String>*/ {
 
-    private LibraryImplementation impl;
-    private LibraryImplementation2 impl2;
-    private LibraryStorageArea area;
-    private String volumeType;
+    private final LibraryImplementation impl;
+    private final LibraryStorageArea area;
+    private final String volumeType;
+    private final boolean supportsURIContent;
     private List<Object> content;
 
     public VolumeContentModel (LibraryImplementation impl, LibraryStorageArea area, String volumeType) {
@@ -68,11 +69,9 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
         this.impl = impl;
         this.area = area;
         this.volumeType = volumeType;
-        if (impl instanceof LibraryImplementation2) {
-            impl2 = (LibraryImplementation2)impl;
-        }
-        if (impl2 != null) {
-            List<URI> l = impl2.getURIContent (volumeType);
+        this.supportsURIContent = LibrariesSupport.supportsURIContent(impl);
+        if (supportsURIContent) {
+            List<URI> l = LibrariesSupport.getURIContent(impl, volumeType, LibrariesSupport.ConversionMode.FAIL);
             if (l != null) {
                 content = new ArrayList<Object>(l);
             }
@@ -101,8 +100,8 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
         return content.get (index);
     }
 
-    public void addResource (URL resource) {        
-        assert impl2 == null;
+    public void addResource (URL resource) {
+        assert !supportsURIContent;
         content.add (resource);
         int index = content.size()-1;
         propagateContent();
@@ -110,16 +109,20 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
     }
 
     public void addResource (URI resource) {
-        assert impl2 != null;
+        assert supportsURIContent;
         content.add (resource);
         int index = content.size()-1;
         propagateContent();
         fireIntervalAdded(this,index,index);
     }
-    
+
     private void propagateContent() {
-        if (impl2 != null) {
-            impl2.setURIContent (volumeType, NbCollections.checkedListByCopy(content, URI.class, true));
+        if (supportsURIContent) {
+            LibrariesSupport.setURIContent(
+                impl,
+                volumeType,
+                NbCollections.checkedListByCopy(content, URI.class, true),
+                LibrariesSupport.ConversionMode.FAIL);
         } else {
             impl.setContent (volumeType, NbCollections.checkedListByCopy(content, URL.class, true));
         }

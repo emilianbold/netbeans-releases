@@ -157,8 +157,8 @@ public final class Library {
      * @since org.netbeans.modules.project.libraries/1 1.18
      */
     public List<URI> getURIContent(final String volumeType) {
-        if (impl instanceof LibraryImplementation2) {
-            return ((LibraryImplementation2)impl).getURIContent(volumeType);
+        if (LibrariesSupport.supportsURIContent(impl)) {
+            return LibrariesSupport.getURIContent(impl, volumeType, LibrariesSupport.ConversionMode.FAIL);
         } else {
             return LibrariesSupport.convertURLsToURIs(
                 impl.getContent(volumeType),
@@ -176,8 +176,8 @@ public final class Library {
      */
     @NonNull
     public Map<String,String> getProperties() {
-        if (impl instanceof LibraryImplementation3) {
-            return Collections.unmodifiableMap(((LibraryImplementation3)impl).getProperties());
+        if (LibrariesSupport.supportsProperties(impl)) {
+            return Collections.unmodifiableMap(LibrariesSupport.getProperties(impl));
         } else {
             return Collections.<String,String>emptyMap();
         }

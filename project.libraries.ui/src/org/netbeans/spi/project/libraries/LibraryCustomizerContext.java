@@ -44,6 +44,8 @@
 
 package org.netbeans.spi.project.libraries;
 
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+
 /**
  * Context class which is passed to library customizer (via <code>JComponent.setObject</code>).
  * Do not extend or instantiate this class directly.
@@ -81,7 +83,7 @@ public class LibraryCustomizerContext {
      * @return can be null
      */
     public LibraryImplementation2 getLibraryImplementation2() {
-        return libraryImplementation instanceof LibraryImplementation2 ? 
+        return LibrariesSupport.supportsURIContent(libraryImplementation)?
             (LibraryImplementation2)libraryImplementation : null;
     }
 
