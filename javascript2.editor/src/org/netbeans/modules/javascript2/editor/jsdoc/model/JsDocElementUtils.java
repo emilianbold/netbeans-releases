@@ -186,10 +186,30 @@ public class JsDocElementUtils {
             // get name value (mandatory part)
             if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
                 nameOffset = descStartOffset + elementText.indexOf(parts[process], types.length());
-                name.append(parts[process].trim());
-                process++;
-                if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N
-                    process = buildNameForString(name, process, parts);
+                if (parts[process].trim().charAt(0) == '[') {
+                    // has default value
+                    int start = elementText.indexOf('[', types.length());
+                    if (start > 0) {
+                        int end = elementText.indexOf(']', start);
+                        if (end > 0) {
+                            name.append(elementText.substring(start, end + 1));
+                        } else {
+                            name.append(elementText.substring(start)).append(']');// close the default value
+                        }
+                    }
+                    while (process < parts.length && parts[process].trim().charAt(parts[process].length() - 1) != ']') {
+                        process++;
+                    }
+                    
+                    if (process < parts.length && parts[process].trim().charAt(parts[process].length() - 1) == ']') {
+                        process++;
+                    }
+                } else {
+                    name.append(parts[process].trim());
+                    process++;
+                    if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N
+                        process = buildNameForString(name, process, parts);
+                    }
                 }
             }
 

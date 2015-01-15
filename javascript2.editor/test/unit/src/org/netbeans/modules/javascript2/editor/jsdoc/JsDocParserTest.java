@@ -184,6 +184,19 @@ public class JsDocParserTest extends JsTestBase {
         assertEquals("String", namedParameter.getParamTypes().get(0).getType());
         assertEquals("somebody", namedParameter.getParamName().getName());
     }
+    
+    public void testIssue249834() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue249834.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.PARAM, tags.get(0).getType());
+        assertTrue(tags.get(0) instanceof NamedParameterElement);
+        NamedParameterElement namedParameter = (NamedParameterElement) tags.get(0);
+        assertEquals("String", namedParameter.getParamTypes().get(0).getType());
+        assertEquals("somebody", namedParameter.getParamName().getName());
+        assertEquals(true, namedParameter.isOptional());
+        // tested two spaces
+        assertEquals("John  Doe", namedParameter.getDefaultValue());
+    }
 
     private void checkElementTypes(String filePath) {
         Source source = getTestSource(getTestFile(filePath));
