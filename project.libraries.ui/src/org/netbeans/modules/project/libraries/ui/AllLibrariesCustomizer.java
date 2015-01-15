@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.libraries.LibraryManager;
 import static org.netbeans.modules.project.libraries.ui.Bundle.*;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
@@ -70,7 +71,7 @@ class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
 
     AllLibrariesCustomizer() {
         initComponents();
-        librariesCustomizer = new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer(null);
+        librariesCustomizer = new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer(LibraryStorageArea.GLOBAL);
         placeholder.add(librariesCustomizer);
         initModel();
     }
@@ -162,8 +163,9 @@ class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
             librariesCustomizer.setLibraryStorageArea(findLibraryStorageArea(u));
         }
     }//GEN-LAST:event_libraryManagerComboBoxActionPerformed
-    
-    private LibraryStorageArea findLibraryStorageArea(URL u) {
+
+    @NonNull
+    private LibraryStorageArea findLibraryStorageArea(@NonNull final URL u) {
         for (ArealLibraryProvider<?,?> alp : Lookup.getDefault().lookupAll(ArealLibraryProvider.class)) {
             for (LibraryStorageArea area : alp.getOpenAreas()) {
                 if (u.toString().equals(area.getLocation().toString())) {
@@ -171,7 +173,7 @@ class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
                 }
             }
         }
-        return null;
+        return LibraryStorageArea.GLOBAL;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
