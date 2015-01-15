@@ -321,8 +321,7 @@ public abstract class RemoteFileObjectBase {
 //        FileEvent fe = new FileEvent(fo, fo, true);
 //        for(RemoteFileObjectBase child: getExistentChildren(true)) {
 //            fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
-//        }                
-        getFileSystem().getFactory().invalidate(this);
+//        }
         RemoteFileObjectBase p = getParent();
         if (p != null) {
             p.postDeleteOrCreateChild(getOwnerFileObject(), entryList);
