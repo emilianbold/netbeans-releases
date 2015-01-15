@@ -44,22 +44,22 @@ package org.netbeans.modules.cnd.toolchain.compilerset;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.BaseFolder;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
@@ -75,7 +75,6 @@ import org.openide.util.Utilities;
  */
 public final class ToolUtils {
     private static String cygwinBase;
-    private static final Map<ToolchainDescriptor, String> commandsFolders = new HashMap<ToolchainDescriptor, String>(8);
     private static final WeakHashMap<String, String> commandCache = new WeakHashMap<String, String>();
 
     private ToolUtils() {
@@ -117,49 +116,41 @@ public final class ToolUtils {
     /**
      * Get the command folder (toolchain definition, which users the Windows registry) or the user's path
      */
-    public static String getCommandFolder(ToolchainDescriptor descriptor) {
+    public static String getCommandFolder(CompilerSet cs) {
         if (!Utilities.isWindows()) {
             return null;
         }
-        String res = getCommandDir(descriptor);
+        String res = detectCommandFolder(cs);
         if (res != null) {
             return res;
+        }
+        return null;
+    }
+
+    /**
+     * Find command folder by toolchain definitions, which users the Windows registry or the user's path
+     */
+    public static String getCommandFolder() {
+        if (!Utilities.isWindows()) {
+            return null;
+        }
+        CompilerSetManager csm = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal());
+        for(CompilerSet cs : csm.getCompilerSets()) {
+            String res = cs.getCommandFolder();
+            if (res != null) {
+                return res;
+            }
         }
         ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
         for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
             if (td != null) {
-                res = getCommandDir(td);
+                String res = detectCommandFolder(td);
                 if (res != null) {
                     return res;
                 }
             }
         }
-        for (String dir : Path.getPath()) {
-            dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
-            if (dir.contains("/msys/1.0") && dir.contains("/bin")) { // NOI18N
-                return dir;
-            }
-        }
-        return null;
-    }
-
-    private static String getCommandDir(ToolchainDescriptor td) {
-        if (td != null) {
-            String dir = commandsFolders.get(td);
-            if (dir == null) {
-                String msysBin = getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                if (msysBin != null) {
-                    dir = msysBin.replace("\\", "/"); // NOI18N
-                } else {
-                    dir = ""; // NOI18N
-                }
-                commandsFolders.put(td, dir);
-            }
-            if (dir.length() > 0) {
-                return dir;
-            }
-        }
-        return null;
+        return findMsysInPath();
     }
 
     public static String getPlatformName(int platform) {
@@ -254,10 +245,10 @@ public final class ToolUtils {
         }
     }
 
-    public static String findCommand(String name) {
+    public static String findCommand(CompilerSet cs, String name) {
         String path = Path.findCommand(name);
         if (path == null) {
-            String dir = ToolUtils.getCommandFolder(null);
+            String dir = cs.getCommandFolder();
             if (dir != null) {
                 path = findCommand(name, dir); // NOI18N
             }
@@ -493,10 +484,7 @@ public final class ToolUtils {
         return null;
     }
 
-    public static String getCommandFolder(ToolchainDescriptor d, int platform) {
-        if (platform != PlatformTypes.PLATFORM_WINDOWS) {
-            return null;
-        }
+    private static String detectCommandFolder(ToolchainDescriptor d) {
         List<BaseFolder> list = d.getCommandFolders();
         if (list == null || list.isEmpty()) {
             return null;
@@ -513,7 +501,9 @@ public final class ToolUtils {
                 base += "\\" + folder.getFolderSuffix(); // NOI18N
             }
             if (base != null) {
-                return base;
+                if (new File(base).exists()) {
+                    return base;
+                }
             }
         }
         for (BaseFolder folder : list) {
@@ -523,8 +513,45 @@ public final class ToolUtils {
                 Pattern p = Pattern.compile(pattern);
                 for (String dir : Path.getPath()) {
                     if (p.matcher(dir).find()) {
+                        if (new File(dir).exists()) {
+                            return dir;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static String detectCommandFolder(CompilerSet cs) {
+        ToolchainDescriptor d = cs.getCompilerFlavor().getToolchainDescriptor();
+        String res = detectCommandFolder(d);
+        if (res != null) {
+            return res;
+        }
+        List<BaseFolder> list = d.getCommandFolders();
+        if (list != null) {
+            for (BaseFolder folder : list) {
+                // search command folder in relative paths
+                String relPath = folder.getRelativePath();
+                if (relPath != null && relPath.length() > 0) {
+                    String dir = cs.getDirectory()+"/"+relPath; // NOI18N
+                    dir = CndFileUtils.normalizeAbsolutePath(dir);
+                    if (new File(dir).exists()) {
                         return dir;
                     }
+                }
+            }
+        }
+        return findMsysInPath();
+    }
+
+    private static String findMsysInPath() {
+        for (String dir : Path.getPath()) {
+            dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
+            if (dir.contains("/msys/1.0") && dir.contains("/bin")) { // NOI18N
+                if (new File(dir).exists()) {
+                    return dir;
                 }
             }
         }

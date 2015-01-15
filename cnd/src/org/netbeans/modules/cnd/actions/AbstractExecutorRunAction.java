@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.*;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -72,7 +73,6 @@ import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -340,7 +340,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (cs != null) {
             defaultPath = cs.getDirectory() + pi.pathSeparator() + defaultPath;
             // TODO Provide platform info
-            String cmdDir = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
+            String cmdDir = CompilerSetUtils.getCommandFolder(cs);
             if (cmdDir != null && 0 < cmdDir.length()) {
                 // Also add msys to path. Thet's where sh, mkdir, ... are.
                 defaultPath = cmdDir + pi.pathSeparator() + defaultPath;

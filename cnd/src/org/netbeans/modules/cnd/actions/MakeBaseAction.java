@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
@@ -191,9 +192,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         }
         final CompilerSet compilerSet = getCompilerSet(project);
         // See bug #229794 (and #228730)
-        if (execEnv.isLocal() && Utilities.isWindows()
-                && compilerSet.getCompilerFlavor().isMinGWCompiler()
-                && executable.contains("make")) { // NOI18N
+        if (execEnv.isLocal() && Utilities.isWindows() && executable.contains("make") && CompilerSetUtils.isMsysBased(compilerSet)) { // NOI18N
             envMap.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(executable)); // NOI18N
         }
         

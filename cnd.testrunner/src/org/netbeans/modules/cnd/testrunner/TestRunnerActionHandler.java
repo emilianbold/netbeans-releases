@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -156,7 +157,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
         final CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String csdirs = compilerSet.getDirectory();
-        String commands = compilerSet.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+        String commands = CompilerSetUtils.getCommandFolder(compilerSet);
         if (commands != null && commands.length() > 0) {
             // Also add msys to path. Thet's where sh, mkdir, ... are.
             csdirs = csdirs + pi.pathSeparator() + commands;
@@ -175,8 +176,8 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
 
         if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows()
-                && cs.getCompilerFlavor().isMinGWCompiler()
-                && pae.getExecutable().contains("make")) { // NOI18N
+                && pae.getExecutable().contains("make") // NOI18N
+                && CompilerSetUtils.isMsysBased(cs)) {
             env.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(pae.getExecutable())); // NOI18N
         }
 

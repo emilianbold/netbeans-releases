@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -229,7 +230,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             cs = conf.getCompilerSet().getCompilerSet();
             if (cs != null) {
                 String csdirs = cs.getDirectory();
-                String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+                String commands = CompilerSetUtils.getCommandFolder(cs);
                 if (commands != null && commands.length() > 0) {
                     // Also add msys to path. Thet's where sh, mkdir, ... are.
                     csdirs = csdirs + pi.pathSeparator() + commands;
@@ -248,7 +249,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             // Build or Clean
             cs = conf.getCompilerSet().getCompilerSet();
             String csdirs = cs.getDirectory();
-            String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+            String commands = CompilerSetUtils.getCommandFolder(cs);
             if (commands != null && commands.length() > 0) {
                 // Also add msys to path. Thet's where sh, mkdir, ... are.
                 csdirs = csdirs + pi.pathSeparator() + commands;
@@ -258,6 +259,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 path = csdirs + pi.pathSeparator() + pi.getPathAsString();
             } else {
                 path = csdirs + pi.pathSeparator() + path;
+            }
+            String baseMinGW = CompilerSetUtils.getMinGWBaseFolder(cs);
+            if (baseMinGW != null) {
+                path = path + pi.pathSeparator() + baseMinGW;
             }
             env.put(pi.getPathName(), path);
             // Pass QMAKE from compiler set to the Makefile (IZ 174731)
@@ -272,9 +277,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
 
             // See bug #228730
-            if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows()
-                    && cs.getCompilerFlavor().isMinGWCompiler()
-                    && pae.getExecutable().contains("make")) { // NOI18N
+            if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows() 
+                    && pae.getExecutable().contains("make") // NOI18N
+                    && CompilerSetUtils.isMsysBased(cs)) {
                 env.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(pae.getExecutable())); // NOI18N
             }
         }

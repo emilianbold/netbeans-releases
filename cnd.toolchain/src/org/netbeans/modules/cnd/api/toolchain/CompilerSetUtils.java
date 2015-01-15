@@ -42,12 +42,8 @@
 
 package org.netbeans.modules.cnd.api.toolchain;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
-import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
-import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 
 /**
@@ -55,9 +51,6 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public final class CompilerSetUtils {
-    private static String cygwinBase;
-    private static Map<ToolchainDescriptor, String> commandsFolders = new HashMap<ToolchainDescriptor, String>(8);
-
     private CompilerSetUtils() {
     }
 
@@ -65,82 +58,63 @@ public final class CompilerSetUtils {
      * Get the Cygwin base directory from Cygwin.xml (toolchain definition, which users the Windows registry) or the user's path
      */
     public static String getCygwinBase() {
-        if (cygwinBase == null) {
-            ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
-            ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
-            if (td != null) {
-                String cygwinBin = ToolUtils.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                if (cygwinBin != null) {
-                    cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
-                }
-            }
-            if (cygwinBase == null) {
-                for (String dir : Path.getPath()) {
-                    dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
-                    if (dir.contains("cygwin")) { // NOI18N
-                        if (dir.endsWith("/")) { // NOI18N
-                            dir = dir.substring(0, dir.length() - 1);
-                        }
-                        if (dir.toLowerCase().endsWith("/usr/bin")) { // NOI18N
-                            cygwinBase = dir.substring(0, dir.length() - 8);
-                            break;
-                        } else if (dir.toLowerCase().endsWith("/bin")) { // NOI18N
-                            cygwinBase = dir.substring(0, dir.length() - 4);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return cygwinBase;
+        return ToolUtils.getCygwinBase();
     }
 
     /**
-     * Get the command folder (toolchain definition, which users the Windows registry) or the user's path
+     * Find command folder by toolchain definitions, which users the Windows registry or the user's path
      */
-    public static String getCommandFolder(ToolchainDescriptor descriptor) {
-        if (!Utilities.isWindows()) {
-            return null;
+    public static String getCommandFolder(CompilerSet cs) {
+        String res = null;
+        if (cs != null) {
+            res = cs.getCommandFolder();
         }
-        String res = getCommandDir(descriptor);
         if (res != null) {
             return res;
         }
-        ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
-        for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
-            if (td != null) {
-                res = getCommandDir(td);
-                if (res != null) {
-                    return res;
-                }
-            }
+        return ToolUtils.getCommandFolder();
+    }
+    
+    /**
+     * 
+     * @param cs tool collection
+     * @return true if tool collection uses msys
+     */
+    public static boolean isMsysBased(CompilerSet cs) {
+        if (!Utilities.isWindows()) {
+            return false;
         }
-        for (String dir : Path.getPath()) {
-            dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
-            if (dir.contains("/msys/1.0") && dir.contains("/bin")) { // NOI18N
-                return dir;
+        if (cs.getCompilerFlavor().isMinGWCompiler()) {
+            return true;
+        }
+        String commandFolder = getCommandFolder(cs);
+        if (commandFolder != null && commandFolder.toLowerCase().replace('\\', '/').contains("/msys")) { // NOI18N
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Find MinGW toolchain folder.
+     * Actual for tool collection based on MinGW tool collection.
+     * For example: Clang reused MinGW linker.
+     */
+    public static String getMinGWBaseFolder(CompilerSet cs) {
+        if (!Utilities.isWindows()) {
+            return null;
+        }
+        if (cs.getCompilerFlavor().isMinGWCompiler()) {
+            return null;
+        }
+        Tool tool = cs.getTool(PredefinedToolKind.CCompiler);
+        if (tool != null && tool.getName().contains("clang")) { // NOI18N
+            CompilerSetManager csm = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal());
+            for(CompilerSet acs : csm.getCompilerSets()) {
+                if (acs.getCompilerFlavor().isMinGWCompiler()) {
+                    return acs.getDirectory();
+                }
             }
         }
         return null;
     }
-
-    private static String getCommandDir(ToolchainDescriptor td) {
-        if (td != null) {
-            String dir = commandsFolders.get(td);
-            if (dir == null) {
-                String msysBin = ToolUtils.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                if (msysBin != null) {
-                    dir = msysBin.replace("\\", "/"); // NOI18N
-                } else {
-                    dir = ""; // NOI18N
-                }
-                commandsFolders.put(td, dir);
-            }
-            if (dir.length() > 0) {
-                return dir;
-            }
-        }
-        return null;
-    }
-
 }
