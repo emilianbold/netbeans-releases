@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -295,7 +294,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
         String folder;
         for (CompilerSet aSet : list) {
-            folder = aSet.getCompilerFlavor().getCommandFolder(PlatformTypes.PLATFORM_WINDOWS);
+            folder = CompilerSetUtils.getCommandFolder(aSet);
             if (folder != null) {
                 newShellCommand = pi.findCommand(folder, shellCommand);
                 if (newShellCommand != null) {

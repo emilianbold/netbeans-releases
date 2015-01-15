@@ -61,13 +61,6 @@ public abstract class CompilerFlavor {
 
     /**
      *
-     * @param platform The Platform kind.
-     * @return The path to folder where unix-like commands are located. Defined for Windows platform.
-     */
-    public abstract String getCommandFolder(int platform);
-
-    /**
-     *
      * @return The tool collection descriptor that loaded from xml file from folder CND/ToolChain/ in file system
      */
     public abstract ToolchainDescriptor getToolchainDescriptor();

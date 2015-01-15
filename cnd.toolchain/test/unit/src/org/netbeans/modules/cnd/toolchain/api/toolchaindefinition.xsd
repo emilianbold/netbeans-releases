@@ -182,6 +182,7 @@
             <xs:attribute name="pattern" type="xs:string" use="optional" />
             <xs:attribute name="suffix" type="xs:string" use="optional" />
             <xs:attribute name="path_patern" type="xs:string" use="optional" />
+            <xs:attribute name="relative_path" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 

@@ -119,6 +119,8 @@ public final class ToolchainManager {
         String getFolderSuffix();
 
         String getFolderPathPattern();
+
+        String getRelativePath();
     }
 
     public interface ToolDescriptor {

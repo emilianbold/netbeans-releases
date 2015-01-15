@@ -96,7 +96,7 @@ public abstract class PositionEstimator {
         this.newL = newL;
         this.diffContext = diffContext;
         this.seq = diffContext != null ? diffContext.tokenSequence : null;
-        if (diffContext.doc != null) {
+        if (diffContext.doc instanceof StyledDocument) {
             this.guards = GuardedSectionManager.getInstance((StyledDocument) diffContext.doc);
         } else {
             this.guards = null;

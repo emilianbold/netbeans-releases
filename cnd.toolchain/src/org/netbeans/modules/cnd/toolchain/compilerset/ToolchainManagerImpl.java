@@ -440,6 +440,9 @@ public final class ToolchainManagerImpl {
                 if (info.getFolderSuffix() != null) {
                     p.setAttribute("suffix", info.getFolderSuffix()); // NOI18N
                 }
+                if (info.getRelativePath() != null) {
+                    p.setAttribute("relative_path", info.getRelativePath()); // NOI18N
+                }
                 element.appendChild(p);
             }
         }
@@ -1166,6 +1169,7 @@ public final class ToolchainManagerImpl {
         String folderPattern;
         String folderSuffix;
         String folderPathPattern;
+        String relativePath;
     }
 
     /**
@@ -1651,6 +1655,7 @@ public final class ToolchainManagerImpl {
                 folder.folderPattern = getValue(attributes, "pattern"); // NOI18N
                 folder.folderSuffix = getValue(attributes, "suffix"); // NOI18N
                 folder.folderPathPattern = getValue(attributes, "path_patern"); // NOI18N
+                folder.relativePath = getValue(attributes, "relative_path"); // NOI18N
                 return;
             } else if (path.indexOf(".default_locations.") > 0) { // NOI18N
                 if (path.endsWith(".platform")) { // NOI18N
@@ -2401,6 +2406,11 @@ public final class ToolchainManagerImpl {
         @Override
         public String getFolderPathPattern() {
             return info.folderPathPattern;
+        }
+
+        @Override
+        public String getRelativePath() {
+            return info.relativePath;
         }
     }
 

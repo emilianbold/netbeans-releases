@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
         <alternative_path>
             <path directory="$MSYS"/>
             <path directory="$PATH"/>
+            <path directory="../msys/1.0/bin"/>
             <path toolchain_name="*"/>
         </alternative_path>
     </make>

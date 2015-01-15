@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -81,6 +80,7 @@ import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ToolChainPathProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -934,7 +934,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                 if ("$PATH".equals(method)){ // NOI18N
                                     if (env.isLocal()) {
                                         for(String name : descriptor.getNames()){
-                                            String path = ToolUtils.findCommand(name);
+                                            String path = ToolUtils.findCommand(cs, name);
                                             if (path != null) {
                                                 if (notSkipedName(cs, descriptor, path, name)) {
                                                     return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
@@ -953,7 +953,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                 } else if ("$MSYS".equals(method)){ // NOI18N
                                     if (env.isLocal()) {
                                         for(String name : descriptor.getNames()){
-                                            String dir = CompilerSetUtils.getCommandFolder(cs.getCompilerFlavor().getToolchainDescriptor());
+                                            String dir = cs.getCommandFolder();
                                             if (dir != null) {
                                                 String path = ToolUtils.findCommand(name, dir); // NOI18N
                                                 if (path != null) {
@@ -969,6 +969,10 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                 } else {
                                     if (env.isLocal()) {
                                         for(String name : descriptor.getNames()){
+                                            if (!CndPathUtilities.isAbsolute(method)) {
+                                                String directory = cs.getDirectory();
+                                                method = CndFileUtils.normalizeAbsolutePath(directory+"/"+method); // NOI18N
+                                            }
                                             String path = ToolUtils.findCommand(name, method);
                                             if (path != null) {
                                                 return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);

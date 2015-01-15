@@ -112,15 +112,6 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
         return "Cygwin".equals(sval) || "Cygwin_4.x".equals(sval); // NOI18N
     }
 
-    @Override
-    public String getCommandFolder(int platform) {
-        ToolchainDescriptor d = getToolchainDescriptor();
-        if (d != null) {
-            return ToolUtils.getCommandFolder(d, platform);
-        }
-        return null;
-    }
-
     public static CompilerFlavor getUnknown(int platform) {
         CompilerFlavor unknownFlavor = unknown.get(platform);
         if (unknownFlavor == null) {

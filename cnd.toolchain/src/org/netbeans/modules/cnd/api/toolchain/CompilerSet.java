@@ -76,6 +76,12 @@ public abstract class CompilerSet {
 
     /**
      *
+     * @return The path to folder with shell commands of MinGW tool collections.
+     */
+    public abstract String getCommandFolder();
+
+    /**
+     *
      * @return The full name of compiler set
      */
     public abstract String getDisplayName();
