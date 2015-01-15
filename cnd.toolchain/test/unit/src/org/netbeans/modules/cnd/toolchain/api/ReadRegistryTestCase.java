@@ -464,7 +464,7 @@ public class ReadRegistryTestCase extends NbTestCase {
 //Copyright (C) 2008 Free Software Foundation, Inc.
 //This is free software; see the source for copying conditions.  There is NO
 //warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("Cygwin_4.x", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         String s = d.getC().getVersionPattern();
 //.*\\(GCC\\) 4\\.[3-9]
