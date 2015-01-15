@@ -118,13 +118,14 @@ public class NamedParameterElement extends ParameterElement implements DocParame
     /**
      * Creates named parameter element.
      * <p>
-     * Also do diagnostics on paramName if the parameter isn't optional and with default value.
+     * Also do diagnostics on paramName if the parameter isn't optional and with default value
+     * and types, whether use in Google Compiler Syntax.
      * @param type type of the element
      * @param paramName name of the parameter
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static NamedParameterElement createWithNameDiagnostics(JsDocElementType type, Identifier paramName,
+    public static NamedParameterElement createWithDiagnostics(JsDocElementType type, Identifier paramName,
             List<Type> paramTypes, String paramDescription) {
         int nameStartOffset = paramName.getOffsetRange().getStart();
         String name = paramName.getName();

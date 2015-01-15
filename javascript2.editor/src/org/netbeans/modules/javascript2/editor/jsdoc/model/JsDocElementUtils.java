@@ -223,7 +223,7 @@ public class JsDocElementUtils {
         }
 
         if (elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
-            return NamedParameterElement.createWithNameDiagnostics(elementType,
+            return NamedParameterElement.createWithDiagnostics(elementType,
                     new IdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
         } else {
             return UnnamedParameterElement.create(elementType, parseTypes(types, typeOffset), desc);
