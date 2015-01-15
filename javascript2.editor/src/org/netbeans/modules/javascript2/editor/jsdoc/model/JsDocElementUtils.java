@@ -132,7 +132,7 @@ public class JsDocElementUtils {
         return DeclarationElement.create(elementType, createTypeUsage(type, typeOffset));
     }
 
-    private static TypeUsage createTypeUsage(String type, int offset) {
+    protected static TypeUsage createTypeUsage(String type, int offset) {
         // see issue #233176
         if (LOWERCASED_STRING.equals(type)) {
             return new TypeUsageImpl(Type.STRING, offset);
@@ -186,10 +186,30 @@ public class JsDocElementUtils {
             // get name value (mandatory part)
             if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
                 nameOffset = descStartOffset + elementText.indexOf(parts[process], types.length());
-                name.append(parts[process].trim());
-                process++;
-                if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N
-                    process = buildNameForString(name, process, parts);
+                if (parts[process].trim().charAt(0) == '[') {
+                    // has default value
+                    int start = elementText.indexOf('[', types.length());
+                    if (start > 0) {
+                        int end = elementText.indexOf(']', start);
+                        if (end > 0) {
+                            name.append(elementText.substring(start, end + 1));
+                        } else {
+                            name.append(elementText.substring(start)).append(']');// close the default value
+                        }
+                    }
+                    while (process < parts.length && parts[process].trim().charAt(parts[process].length() - 1) != ']') {
+                        process++;
+                    }
+                    
+                    if (process < parts.length && parts[process].trim().charAt(parts[process].length() - 1) == ']') {
+                        process++;
+                    }
+                } else {
+                    name.append(parts[process].trim());
+                    process++;
+                    if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N
+                        process = buildNameForString(name, process, parts);
+                    }
                 }
             }
 
@@ -203,7 +223,7 @@ public class JsDocElementUtils {
         }
 
         if (elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
-            return NamedParameterElement.createWithNameDiagnostics(elementType,
+            return NamedParameterElement.createWithDiagnostics(elementType,
                     new IdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
         } else {
             return UnnamedParameterElement.create(elementType, parseTypes(types, typeOffset), desc);
@@ -228,4 +248,24 @@ public class JsDocElementUtils {
         return currentOffset;
     }
 
+    public static class GoogleCompilerSytax {
+        public static boolean canBeThisSyntax(String type) {
+            boolean result = (type.charAt(type.length() - 1) == '=');
+            return result;
+        }
+        
+        public static boolean isMarkedAsOptional(String type) {
+            boolean result = (type.charAt(type.length() - 1) == '=');
+            return result;
+        }
+        
+        public static String removeSyntax(String type) {
+            String result = type;
+            if (isMarkedAsOptional(type)) {
+                result = result.substring(0, result.length() - 1);
+            }
+            return result;
+        }
+    }
+    
 }
