@@ -774,7 +774,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 } else {
                     boolean fileNotFoundException = RemoteFileSystemUtils.isFileNotFoundException(problem);
                     if (fileNotFoundException) {
-                        this.invalidate();
+                        getFileSystem().getFactory().invalidate(this);
                         synchronized (refLock) {
                             storageRef = new SoftReference<DirectoryStorage>(DirectoryStorage.EMPTY);
                         }
