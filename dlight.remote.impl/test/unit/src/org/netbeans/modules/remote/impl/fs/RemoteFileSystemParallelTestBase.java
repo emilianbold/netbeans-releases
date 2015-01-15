@@ -59,7 +59,6 @@ public class RemoteFileSystemParallelTestBase extends RemoteFileTestBase {
         System.setProperty("jsch.connection.timeout", "30000");
     }
 
-
     public RemoteFileSystemParallelTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
@@ -74,7 +73,6 @@ public class RemoteFileSystemParallelTestBase extends RemoteFileTestBase {
             threads[i] = new Thread(worker);
             threads[i].start();
         }
-        System.err.printf("Waiting for threads to finish\n");
         for (int i = 0; i < threadCount; i++) {
             threads[i].join();
         }
@@ -111,9 +109,7 @@ public class RemoteFileSystemParallelTestBase extends RemoteFileTestBase {
         public void run() {            
             Thread.currentThread().setName(name);
             try {
-                System.err.printf("%s waiting on barrier\n", name);
                 barrier.await();
-                System.err.printf("%s working\n", name);
                 work();
             } catch (InterruptedException ex) {
                 ex.printStackTrace(System.err);
@@ -124,8 +120,6 @@ public class RemoteFileSystemParallelTestBase extends RemoteFileTestBase {
             } catch (Exception ex) {
                 ex.printStackTrace(System.err);
                 exceptions.add(ex);
-            } finally {
-                System.err.printf("%s done\n", name);
             }
         }
         protected abstract void work() throws Exception;
