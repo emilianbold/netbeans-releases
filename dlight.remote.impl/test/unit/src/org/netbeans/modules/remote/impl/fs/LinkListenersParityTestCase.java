@@ -139,8 +139,10 @@ public class LinkListenersParityTestCase extends RemoteFileTestBase {
             File localLog = new File(workDir, "local.dat");
             doTestListeners2(remoteBaseDirFO, remoteLog, recursive);
             doTestListeners2(localBaseDirFO, localLog, recursive);
-            printFile(localLog, "LOCAL ", System.out);
-            printFile(remoteLog, "REMOTE", System.out);
+            if (RemoteApiTest.TRACE_LISTENERS) {
+                printFile(localLog, "LOCAL ", System.out);
+                printFile(remoteLog, "REMOTE", System.out);
+            }
             File diff = new File(workDir, "diff.diff");
             try {
                 assertFile("Remote and local events differ, see diff " + remoteLog.getAbsolutePath() + " " + localLog.getAbsolutePath(), remoteLog, localLog, diff);

@@ -53,7 +53,7 @@ import org.openide.util.Utilities;
  */
 public class EscapeWindowsNameTestCase extends NativeExecutionBaseTestCase {
 
-    private static final boolean trace = true;
+    private static final boolean trace = false;
     
     public EscapeWindowsNameTestCase(String name) {
         super(name);

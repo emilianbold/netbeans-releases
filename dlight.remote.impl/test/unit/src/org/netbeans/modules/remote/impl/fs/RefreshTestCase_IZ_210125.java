@@ -82,7 +82,6 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void test_iz_210125() throws Exception {
-        RemoteLogger.getInstance().setLevel(Level.FINE);
         String baseDir = null;
         try {
             baseDir = mkTempAndRefreshParent(true);

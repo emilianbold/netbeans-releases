@@ -150,8 +150,10 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             File localLog = new File(workDir, "local.dat");
             doTestListenersRename2(remoteBaseDirFO, remoteLog, recursive);
             doTestListenersRename2(localBaseDirFO, localLog, recursive);
-            printFile(localLog, "LOCAL ", System.out);
-            printFile(remoteLog, "REMOTE", System.out);
+            if (RemoteApiTest.TRACE_LISTENERS) {
+                printFile(localLog, "LOCAL ", System.out);
+                printFile(remoteLog, "REMOTE", System.out);
+            }
             File diff = new File(workDir, "diff.diff");
             try {
                 assertFile("Remote and local events differ, see diff " + remoteLog.getAbsolutePath() + " " + localLog.getAbsolutePath(), remoteLog, localLog, diff);
@@ -181,8 +183,10 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             File localLog = new File(workDir, "local.dat");
             doTestListenersDelete2(remoteBaseDirFO, remoteLog, recursive);
             doTestListenersDelete2(localBaseDirFO, localLog, recursive);
-            printFile(localLog, "LOCAL ", System.out);
-            printFile(remoteLog, "REMOTE", System.out);
+            if (RemoteApiTest.TRACE_LISTENERS) {
+                printFile(localLog, "LOCAL ", System.out);
+                printFile(remoteLog, "REMOTE", System.out);
+            }
             File diff = new File(workDir, "diff.diff");
             try {
                 assertFile("Remote and local events differ, see diff " + remoteLog.getAbsolutePath() + " " + localLog.getAbsolutePath(), remoteLog, localLog, diff);
@@ -214,8 +218,10 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             // for an external change I wasn't able to make masterfs to fire file change event;
             // but if external change to remote fs behaves the same way internal change for local fs does - then we are fine.
             doTestListenersChange2(localBaseDirFO, localLog, false);
-            printFile(localLog, "LOCAL ", System.out);
-            printFile(remoteLog, "REMOTE", System.out);
+            if (RemoteApiTest.TRACE_LISTENERS) {
+                printFile(localLog, "LOCAL ", System.out);
+                printFile(remoteLog, "REMOTE", System.out);
+            }
             File diff = new File(workDir, "diff.diff");
             try {
                 assertFile("Remote and local events differ, see diff " + remoteLog.getAbsolutePath() + " " + localLog.getAbsolutePath(), remoteLog, localLog, diff);

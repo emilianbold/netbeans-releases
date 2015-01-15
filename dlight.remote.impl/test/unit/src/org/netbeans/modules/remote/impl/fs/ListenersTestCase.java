@@ -88,7 +88,9 @@ public class ListenersTestCase extends RemoteFileTestBase {
             if (map != null) {
                 map.put(fe.getFile(), fe);
             }
-            System.out.printf("FileEvent[%s]: %s %s\n", listenerName, eventKind, fe);
+            if (RemoteApiTest.TRACE_LISTENERS) {
+                System.out.printf("FileEvent[%s]: %s %s\n", listenerName, eventKind, fe);
+            }
         }
         
          @Override

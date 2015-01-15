@@ -53,6 +53,8 @@ import org.netbeans.modules.remote.impl.fs.*;
  */
 public class RemoteApiTest extends NativeExecutionBaseTestSuite {
 
+    public static final boolean TRACE_LISTENERS = Boolean.getBoolean("trace.listener.tests"); //NOI18N
+
     @SuppressWarnings("unchecked")
     public RemoteApiTest() {
         this("Remote API", getTestClasses());
