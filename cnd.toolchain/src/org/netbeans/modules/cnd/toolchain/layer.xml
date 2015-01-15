@@ -227,29 +227,10 @@
             </file>
             <file name="SunStudio_cmake" url="resources/toolchaindefinition/SunStudio_cmake.xml">
             </file>
-<!-- Cygwin_4.x -->
-            <file name="Cygwin_4.x_flavor" url="resources/toolchaindefinition/Cygwin_4.x_flavor.xml">
-                <attr name="extends" stringvalue="GNU_flavor"/>
-            </file>
-            <file name="Cygwin_4.x_c" url="resources/toolchaindefinition/Cygwin_4.x_c.xml">
-                <attr name="extends" stringvalue="GNU_c"/>
-            </file>
-            <file name="Cygwin_4.x_cpp" url="resources/toolchaindefinition/Cygwin_4.x_cpp.xml">
-                <attr name="extends" stringvalue="GNU_cpp"/>
-            </file>
-            <file name="Cygwin_4.x_fortran" url="resources/toolchaindefinition/Cygwin_4.x_fortran.xml">
-                <attr name="extends" stringvalue="GNU_fortran"/>
-            </file>
-            <file name="Cygwin_4.x_assembler" url="resources/toolchaindefinition/Cygwin_4.x_assembler.xml">
-                <attr name="extends" stringvalue="GNU_assembler"/>
-            </file>
-            <file name="Cygwin_4.x_linker" url="resources/toolchaindefinition/Cygwin_4.x_linker.xml">
-                <attr name="extends" stringvalue="GNU_linker"/>
-            </file>
+<!-- Cygwin -->
             <file name="Cygwin_flavor" url="resources/toolchaindefinition/Cygwin_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
-<!-- Cygwin -->
             <file name="Cygwin_c" url="resources/toolchaindefinition/Cygwin_c.xml">
                 <attr name="extends" stringvalue="GNU_c"/>
             </file>
@@ -1207,44 +1188,6 @@
                 </file>
                 <file name="cmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
-                </file>
-            </folder>
-<!-- Cygwin_4.x -->
-            <folder name="Cygwin_4.x">
-                <attr name="position" intvalue="3010"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
-                <file name="flavor.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/Cygwin_4.x_flavor"/>
-                </file>
-                <file name="c.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/Cygwin_4.x_c"/>
-                </file>
-                <file name="cpp.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/Cygwin_4.x_cpp"/>
-                </file>
-                <file name="fortran.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/Cygwin_4.x_fortran"/>
-                </file>
-                <file name="assembler.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/Cygwin_4.x_assembler"/>
-                </file>
-                <file name="scanner.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_scanner"/>
-                </file>
-                <file name="linker.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/Cygwin_4.x_linker"/>
-                </file>
-                <file name="make.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_make"/>
-                </file>
-                <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
-                </file>
-                <file name="qmake.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_qmake"/>
-                </file>
-                <file name="cmake.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
 <!-- Cygwin -->

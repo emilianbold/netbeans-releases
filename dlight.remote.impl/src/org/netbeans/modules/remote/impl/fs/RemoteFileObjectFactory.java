@@ -269,7 +269,7 @@ public class RemoteFileObjectFactory {
         fileObjectsCache.tryCleaningDeadEntries();
         synchronized (lock) {
             RemoteFileObjectBase prev = fileObjectsCache.get(remotePath);
-            if (prev == null) {
+            if (prev == null || !prev.isValid()) {
                 List<FileChangeListener> listeners = pendingListeners.remove(remotePath);
                 if (listeners != null) {
                     for (FileChangeListener l : listeners) {
@@ -320,6 +320,12 @@ public class RemoteFileObjectFactory {
         } else {
             fo.removeFileChangeListener(listener);
         }
+    }
+
+    public void invalidate(RemoteFileObjectBase fo) {
+        fo.invalidate();
+        String path = PathUtilities.normalizeUnixPath(fo.getPath());
+        fileObjectsCache.remove(path);
     }
 
     /**
