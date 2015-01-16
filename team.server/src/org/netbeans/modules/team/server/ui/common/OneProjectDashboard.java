@@ -406,7 +406,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             
             if( null != this.login ) {
                 this.login.addPropertyChangeListener(userListener);
-                loadSelectedProject();                
+                loadSelectedProject(false);                
             }
         }
     }
@@ -699,7 +699,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         return t;        
     }
 
-    private void loadSelectedProject() {
+    private void loadSelectedProject(final boolean forceRefresh) {
         synchronized( LOCK ) {
             String selectedUrl = getSelectedServerUrl();
             if(selectedUrl != null && selectedUrl.equals(server.getUrl().toString())) {
@@ -709,7 +709,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     if(selectedProjectsLoader != null) {
                         selectedProjectsLoader.cancel();
                     }
-                    selectedProjectsLoader = new SelectedProjectsLoader(id);
+                    selectedProjectsLoader = new SelectedProjectsLoader(id, forceRefresh);
                     selectedProjectsLoader.post();
                 }
             }
@@ -776,11 +776,19 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     }
 
     void switchProject(ProjectHandle ph, ListNode node, boolean hideMenu) {
+        switchProject(ph, node, hideMenu, false);
+    }
+    
+    void switchProject(ProjectHandle ph, ListNode node, boolean hideMenu, boolean forceRefresh) {
         getProjectPicker().setCurrentProject(server, ph, node, hideMenu);
-        switchProject(ph, false);
+        switchProject(ph, hideMenu, forceRefresh);
     }
             
     void switchProject(ProjectHandle project, boolean preserveSelection) {
+        switchProject(project, preserveSelection, false);
+    }
+    
+    void switchProject(ProjectHandle project, boolean preserveSelection, boolean forceRefresh) {
         switchContent();
         dashboardComponent.clear();
         if(project != null) {
@@ -789,7 +797,18 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 if(children == null) {
                     children = createProjectChildren(project);
                     projectChildren.put(project.getId(), children);
-                } 
+                } else if(forceRefresh) {
+                    List<TreeListNode> oldChildren = projectChildren.remove(project.getId());
+                    List<TreeListNode> newChildren = createProjectChildren(project);
+                    projectChildren.put(project.getId(), newChildren);
+                    if(oldChildren != null && oldChildren.size() == newChildren.size()) { // paranoid ?
+                        for (int i = 0; i < oldChildren.size(); i++) {
+                            if(oldChildren.get(i).isExpanded()) {
+                                newChildren.get(i).setExpanded(true);
+                            }
+                        }
+                    }
+                }
                 dashboardComponent.addChildren(getDashboardProvider().createProjectLinksComponent(project), children);
             }
         }
@@ -917,6 +936,11 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         return new CloseProjectAction(currentProject);
     }
 
+    void refresh(ProjectHandle currentProject) {
+        dashboardComponent.clear();
+        loadSelectedProject(true);
+    }
+    
     private void createErrorNode() throws MissingResourceException {
         errorNode = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_LoadingProjects"), new AbstractAction() {
             @Override
@@ -1010,10 +1034,12 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         private Thread t = null;
 
         private final String projectId;
+        private final boolean forceRefresh;
         private RequestProcessor.Task task;
 
-        public SelectedProjectsLoader( String projectId ) {
+        public SelectedProjectsLoader( String projectId, boolean forceRefresh ) {
             this.projectId = projectId;
+            this.forceRefresh = forceRefresh;
         }
 
         @Override
@@ -1023,7 +1049,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 @Override
                 public void run() {
                     ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
-                    ProjectHandle handle = accessor.getNonMemberProject(server, projectId, false);
+                    ProjectHandle handle = accessor.getNonMemberProject(server, projectId, forceRefresh);
                     res[0] = handle;
                 }
             };
@@ -1039,8 +1065,13 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 return;
             }
             if(res[0] != null) {
-                otherProjects.add(res[0]);
-                switchProject(res[0], getProjectNode(res[0]), false);
+                if(memberProjects.remove(res[0])) {
+                    memberProjects.add(res[0]);
+                } else {
+                    otherProjects.remove(res[0]);
+                    otherProjects.add(res[0]);
+                }
+                switchProject(res[0], getProjectNode(res[0]), false, forceRefresh);
             } 
         }
 

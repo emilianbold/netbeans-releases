@@ -95,6 +95,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     private final LinkButton btnBookmark;
     private final ProgressLabel lblBookmarkingProgress;
     private final LinkButton btnClose;
+    private final LinkButton btnRefresh;
     private final JToolBar.Separator separator;
 
     private final MouseOverListener mListener;
@@ -168,6 +169,21 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         lblBookmarkingProgress.setVisible(false);
         toolbar.add(lblBookmarkingProgress);
         
+        Action refreshAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                assert currentProject != null;
+                if(currentProject != null) {
+                    getDashboard(server).refresh(currentProject);
+                }
+            }
+        };
+        btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/refresh.png", true), refreshAction); //NOI18N
+        btnRefresh.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Refresh"));
+        btnRefresh.setVisible(false);
+        btnRefresh.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Refresh"));
+        toolbar.add(btnRefresh);
+        
         Action closeAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -226,6 +242,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                 if (currentProject != null) {
                     boolean isMemberProject = getDashboard(server).isMemberProject(currentProject);
                     btnClose.setVisible(mListener.mouseOver && !isMemberProject);
+                    btnRefresh.setVisible(mListener.mouseOver);
                     
                     if(getDashboard(server).getDashboardProvider().getProjectAccessor().canBookmark()) {
                         btnBookmark.setVisible(mListener.mouseOver && !bookmarking);
@@ -242,6 +259,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                     } 
                 } else {
                     btnClose.setVisible(false);
+                    btnRefresh.setVisible(false);
                     separator.setVisible(false);                    
                     btnBookmark.setVisible(false);
                     lblBookmarkingProgress.setVisible(false);
