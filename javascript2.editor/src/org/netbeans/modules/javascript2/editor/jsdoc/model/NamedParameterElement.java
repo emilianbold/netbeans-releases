@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
@@ -117,18 +118,20 @@ public class NamedParameterElement extends ParameterElement implements DocParame
     /**
      * Creates named parameter element.
      * <p>
-     * Also do diagnostics on paramName if the parameter isn't optional and with default value.
+     * Also do diagnostics on paramName if the parameter isn't optional and with default value
+     * and types, whether use in Google Compiler Syntax.
      * @param type type of the element
      * @param paramName name of the parameter
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static NamedParameterElement createWithNameDiagnostics(JsDocElementType type, Identifier paramName,
+    public static NamedParameterElement createWithDiagnostics(JsDocElementType type, Identifier paramName,
             List<Type> paramTypes, String paramDescription) {
         int nameStartOffset = paramName.getOffsetRange().getStart();
         String name = paramName.getName();
         boolean optional = name.matches("\\[.*\\]"); //NOI18N
         String defaultValue = null;
+        List<Type> correctedTypes = new ArrayList<Type>();
         if (optional) {
             nameStartOffset++;
             name = name.substring(1, name.length() - 1);
@@ -137,8 +140,22 @@ public class NamedParameterElement extends ParameterElement implements DocParame
                 defaultValue = name.substring(indexOfEqual + 1);
                 name = name.substring(0, indexOfEqual);
             }
+            correctedTypes.addAll(paramTypes);
+        } else {
+            for (Type paramType : paramTypes) {
+                if (JsDocElementUtils.GoogleCompilerSytax.canBeThisSyntax(paramType.getType())) {
+                    if (JsDocElementUtils.GoogleCompilerSytax.isMarkedAsOptional(paramType.getType())) {
+                        optional = true;
+                        correctedTypes.add(JsDocElementUtils.createTypeUsage(JsDocElementUtils.GoogleCompilerSytax.removeSyntax(paramType.getType()), paramType.getOffset()));
+                    } else {
+                        correctedTypes.add(paramType);
+                    }
+                } else {
+                    correctedTypes.add(paramType);
+                }
+            }
         }
-        return new NamedParameterElement(type, new IdentifierImpl(name, nameStartOffset), paramTypes,
+        return new NamedParameterElement(type, new IdentifierImpl(name, nameStartOffset), correctedTypes,
                 paramDescription, optional, defaultValue);
     }
 
