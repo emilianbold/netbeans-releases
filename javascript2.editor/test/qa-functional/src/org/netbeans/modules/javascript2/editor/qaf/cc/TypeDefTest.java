@@ -77,7 +77,7 @@ public class TypeDefTest extends GeneralJavaScript {
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("completionTest");
         evt.waitNoEvent(2000);
-        openFile("typedef.js", "completionTest");
+        openFile("typdef.js", "completionTest");
         endTest();
     }
 
