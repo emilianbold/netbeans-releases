@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author alsimon
  */
-@ClassForAllEnvironments
+@ClassForAllEnvironments(section = "remote.svn")
 public class InterceptorDeleteTest extends RemoteVersioningTestBase {
 
     public InterceptorDeleteTest(String testName, ExecutionEnvironment execEnv) {
