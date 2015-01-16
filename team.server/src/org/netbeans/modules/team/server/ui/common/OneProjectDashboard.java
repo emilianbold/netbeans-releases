@@ -1260,11 +1260,13 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             for( TreeListNode node : model.getRootNodes() ) {
                 model.removeRoot(node);
             }
+            panel.removeAll();
+            panel.repaint();
         }
 
         @Override
         void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
-            panel.removeAll();
+            clear(); 
             projectLinks.setBorder(new EmptyBorder(5, 10, 5, 0));
             panel.add(projectLinks, BorderLayout.NORTH);
             panel.add(treeList, BorderLayout.CENTER);
