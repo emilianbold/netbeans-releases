@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.modules.project.libraries.LibrariesModule;
@@ -566,6 +567,18 @@ public final class LibrariesSupport {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns the {@link LibraryImplementation} for given {@link Library}.
+     * @param library the {@link Library} to return SPI for.
+     * @return the {@link LibraryImplementation}
+     * @since 1.51
+     */
+    @NonNull
+    public static LibraryImplementation getLibraryImplementation(@NonNull final Library library) {
+        Parameters.notNull("library", library); //NOI18N
+        return LibraryAccessor.getInstance().getLibraryImplementation(library);
     }
 
     private static String getLocalizedString (

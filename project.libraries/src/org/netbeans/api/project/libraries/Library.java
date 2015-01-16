@@ -98,7 +98,7 @@ public final class Library {
     private static final Logger LOG = Logger.getLogger(Library.class.getName());
 
     // delegating peer
-    private LibraryImplementation impl;
+    private final LibraryImplementation impl;
 
     private List<PropertyChangeListener> listeners;
 
@@ -319,6 +319,10 @@ public final class Library {
             @NonNull
             public LibraryStorageArea getArea(@NonNull final LibraryManager manager) {
                 return manager.getArea();
+            }
+            @NonNull
+            public LibraryImplementation getLibraryImplementation(@NonNull final Library library) {
+                return library.getLibraryImplementation();
             }
         });
     }

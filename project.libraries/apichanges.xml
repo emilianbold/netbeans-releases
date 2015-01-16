@@ -107,6 +107,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
 
+    <change id="LibrariesSupport-getLibraryImplementation">
+        <api name="general"/>
+        <summary>Added <code>LibrariesSupport.getLibraryImplementation</code>to obtain SPI for <code>Library</code></summary>
+        <version major="1" minor="51"/>
+        <date day="16" month="1" year="2015"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added <code>LibrariesSupport.getLibraryImplementation</code> into SPI support to obtain the SPI
+            for given <code>Library</code>. Needed to remove an implementation dependency among project.libraries and project.libraries.ui.
+        </description>
+        <class package="org.netbeans.spi.project.libraries.support" name="LibrariesSupport"/>
+    </change>
     <change id="Libraries-UI-split">
         <api name="general"/>
         <summary>Moved the UI part of the <code>project.libraries</code> into a new <code>project.libraries.ui</code>module</summary>
