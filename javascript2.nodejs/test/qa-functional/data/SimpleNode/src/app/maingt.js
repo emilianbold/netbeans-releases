@@ -82,7 +82,7 @@ var _2 = o2;
 _2.pokus2;//gt;7;literalRef.js;18;5
 
 var _3 = p;
-p.bar();//gt;5;func.js;8;10
+_3.bar();//gt;5;func.js;8;10
 
 var _4 = o4;
 _4.fakeOrigin;//gt;11;instance.js;46;18
