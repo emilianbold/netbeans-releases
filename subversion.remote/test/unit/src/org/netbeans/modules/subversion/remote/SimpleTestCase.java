@@ -76,7 +76,7 @@ public class SimpleTestCase extends RemoteVersioningTestBase {
         return Level.FINE;
     }
 
-    @ForAllEnvironments
+    @ForAllEnvironments(section = "remote.svn")
     public void testCreateNewFile() throws Exception {
         if (skipTest()) {
             return;
