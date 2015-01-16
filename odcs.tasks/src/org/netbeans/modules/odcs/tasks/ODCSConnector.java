@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
-import java.io.IOException;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamProject;
@@ -50,7 +49,6 @@ import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
-import org.openide.util.Exceptions;
 
 /**
  *

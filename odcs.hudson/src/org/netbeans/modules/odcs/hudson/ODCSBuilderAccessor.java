@@ -118,7 +118,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
     }
 
     @NbBundle.Messages(
-            {"MSG_from_odcs_project=(from ODCS project)"}
+            {"MSG_from_odcs_project=(from Developer project)"}
     )
     private List<JobHandle> getJobs(ProjectHandle<ODCSProject> projectHandle,
             boolean onlyWatched) {
