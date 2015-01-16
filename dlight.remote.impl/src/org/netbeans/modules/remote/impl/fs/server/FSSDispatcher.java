@@ -526,7 +526,7 @@ import org.openide.util.RequestProcessor;
             if (state == NativeProcess.State.FINISHED) {
                 //int rc = server.getProcess().waitFor();
                 //if (rc == FSSExitCodes.FAILURE_LOCKING_LOCK_FILE) {
-                throw new InitializationException(lastErrorMessage.get());
+                throw new InitializationException(createInitializerExceptionMessage());
                 //}
             }
         } else {
@@ -540,7 +540,27 @@ import org.openide.util.RequestProcessor;
             checkVersions(MIN_SERVER_VERSION, rest);
         }
     }
-    
+
+    private String createInitializerExceptionMessage() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("fs_server failed at ").append(env.toString()).append(' '); //NOI18N
+        if (HostInfoUtils.isHostInfoAvailable(env)) {
+            try {
+                HostInfo hi = HostInfoUtils.getHostInfo(env);
+                sb.append('(').append(hi.getOS().getName()).append(' ').append(hi.getCpuFamily()).append(' ');
+                sb.append(" - ").append(hi.getOS().getVersion()).append(')');
+            } catch (ConnectionManager.CancellationException | IOException ex) {
+                Exceptions.printStackTrace(ex); // never occurs
+            }
+        }
+        NativeProcess process = server.getProcess();
+        if (process != null) {
+            sb.append(" rc=").append(process.exitValue()).append(' ');
+        }
+        sb.append(' ').append(lastErrorMessage.get());
+        return sb.toString();
+    }
+
     /** 
      * Checks versions in format N.N.N where N a number that has 1 or more digits 
      */
