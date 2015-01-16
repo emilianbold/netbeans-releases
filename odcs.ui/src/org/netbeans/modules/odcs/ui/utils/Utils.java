@@ -228,7 +228,7 @@ public class Utils {
     @Messages({
         "MSG_Error=Following error occurred:",
         "CTL_CommandReport_OK=OK",
-        "MSG_CommandFailed_Title=ODCS Command Failed"
+        "MSG_CommandFailed_Title=Developer Server Command Failed"
     })
     private static void annotate (String msg) {
         ErrorReport report = new ErrorReport(MSG_Error(), msg);
