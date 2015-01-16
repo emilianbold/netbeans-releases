@@ -311,7 +311,7 @@ public final class QuerySupport {
             sourcePathIds,
             libraryPathIds,
             binaryLibraryPathIds);
-        final Map<Project,Collection<FileObject>> rbp = reduceRootsByProjects(roots, projects);
+        final Map<Project,Collection<FileObject>> rbp = reduceRootsByProjects(roots, toSet(projects));
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(
@@ -852,7 +852,7 @@ public final class QuerySupport {
     @NonNull
     private static Map<Project,Collection<FileObject>> reduceRootsByProjects(
         @NonNull Collection<? extends FileObject> roots,
-        @NonNull Collection<? extends Project> projects) {
+        @NonNull Set<? extends Project> projects) {
          final Map<Project,Collection<FileObject>> rbp = new HashMap<>();
          for (FileObject root : roots) {
              final Project p = FileOwnerQuery.getOwner(root);
@@ -866,6 +866,16 @@ public final class QuerySupport {
              }
          }
          return rbp;
+    }
+
+    @NonNull
+    @SuppressWarnings("unchecked")
+    private static<T> Set<T> toSet(@NonNull final Collection<T> c) {
+        if (c instanceof Set) {
+            return (Set<T>) c;
+        } else {
+            return new HashSet<>(c);
+        }
     }
 
     /* test */ static final class IndexerQuery {
