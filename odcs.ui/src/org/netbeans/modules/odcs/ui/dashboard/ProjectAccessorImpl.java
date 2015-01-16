@@ -101,7 +101,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
         try {
             ODCSServer odcsServer = ((ODCSUiServer)server).getServer();
             if (odcsServer != null) {
-                ODCSProject proj = odcsServer.getProject(projectId, false);
+                ODCSProject proj = odcsServer.getProject(projectId, force);
                 if (proj != null) {
                     return new ProjectHandleImpl((ODCSUiServer)server, proj);
                 }
