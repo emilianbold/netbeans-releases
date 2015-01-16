@@ -223,6 +223,8 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         btnNewServer.addMouseMotionListener(mListener);
         btnClose.addMouseListener(mListener);
         btnClose.addMouseMotionListener(mListener);
+        btnRefresh.addMouseListener(mListener);
+        btnRefresh.addMouseMotionListener(mListener);
         btnBookmark.addMouseListener(mListener);
         btnBookmark.addMouseMotionListener(mListener);
         separator.addMouseListener(mListener);
@@ -440,13 +442,17 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         }
         @Override
         public void mouseExited( MouseEvent e ) {
-            mouseOver = false;
-            setButtons();
+            if(mouseOver) {
+                mouseOver = false;
+                setButtons();
+            }
         }
         @Override
         public void mouseMoved( MouseEvent e ) {
-            mouseOver = true;
-            setButtons();
+            if(!mouseOver) {
+                mouseOver = true;
+                setButtons();
+            }
         }
     };
     
