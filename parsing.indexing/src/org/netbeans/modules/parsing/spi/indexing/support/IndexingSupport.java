@@ -129,7 +129,9 @@ public final class IndexingSupport {
      * @return The <code>IndexDocument</code> created for the <code>file</code>.
      * @since 1.22
      */
-    public IndexDocument createDocument(FileObject file) {
+    @NonNull
+    public IndexDocument createDocument(@NonNull final FileObject file) {
+        Parameters.notNull("file", file);   //NOI18N
         FileObject root = context.getRoot();
         if (FileUtil.isParentOf(root, file)) {
             return createDocument(SPIAccessor.getInstance().create(new FileObjectIndexable(root, file)));
