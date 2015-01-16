@@ -59,7 +59,7 @@ function makeSelectWidget(opts) {
 function pokus(aaa, bb) {
 //cc;1;aaa.;0;vlastnost,popis,getDate,pokus,hasOwnProperty;pokus;aaa.pokus;keyField,label
 
-//cc;1;aaa.pokus.;0;pop,push,MAX_VALUE,hasOwnProperty;pokus;aaa.pokus;keyField,label
+//cc;1;aaa.pokus.;0;pop,push,MAX_VALUE,hasOwnProperty;pop;aaa.pokus.pop();keyField,label
 
 //cc;1;aaa.clovek.;0;legs_long,legs,hasOwnProperty;legs;aaa.clovek.legs;getDate,label
 

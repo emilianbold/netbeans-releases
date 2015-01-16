@@ -59,7 +59,7 @@ import org.openide.filesystems.FileSystem;
  *
  * @author alsimon
  */
-@ClassForAllEnvironments
+@ClassForAllEnvironments(section = "remote.svn")
 public class InterceptorCreateTest extends RemoteVersioningTestBase {
 
     public InterceptorCreateTest(String testName, ExecutionEnvironment execEnv) {
