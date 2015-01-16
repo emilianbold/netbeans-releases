@@ -669,6 +669,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 fixPrefSize(modifiedField);
                 
                 String privateNotes = issue.getPrivateNotes();                
+                privateNotesField.setText(privateNotes);
                 setPrivateSectionLabel(privateNotes);
                 
                 dueDatePicker.setDate(issue.getDueDate());
