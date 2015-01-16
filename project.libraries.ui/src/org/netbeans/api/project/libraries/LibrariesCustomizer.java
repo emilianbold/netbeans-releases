@@ -76,7 +76,7 @@ public final class LibrariesCustomizer {
                         LibrariesSupport.getLibraryStorageArea(libraryManager));
         customizer.setBorder(new EmptyBorder(12, 12, 0, 12));
         if (activeLibrary != null) {
-            customizer.setSelectedLibrary (activeLibrary.getLibraryImplementation ());
+            customizer.setSelectedLibrary (LibrariesSupport.getLibraryImplementation(activeLibrary));
         }
         DialogDescriptor descriptor = new DialogDescriptor(customizer, TXT_LibrariesManager());
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -152,7 +152,7 @@ public final class LibrariesCustomizer {
             }
         }
         return null;
-    }                                            
+    }
 
     /**
      * Show library customizer for the given library.
@@ -160,15 +160,15 @@ public final class LibrariesCustomizer {
      * @return true if library was modified or not
      * @since org.netbeans.modules.project.libraries/1 1.16
      */
-    public static boolean showSingleLibraryCustomizer(Library library) {                                             
+    public static boolean showSingleLibraryCustomizer(Library library) {
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
                 new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (
                         LibrariesSupport.getLibraryStorageArea(library.getManager()));
-        return customizeLibrary(customizer, library.getLibraryImplementation());
+        return customizeLibrary(customizer, LibrariesSupport.getLibraryImplementation(library));
     }
     
     @Messages("LibrariesCustomizer.customizeLibrary.title=Customize Library")
-    private static boolean customizeLibrary(org.netbeans.modules.project.libraries.ui.LibrariesCustomizer customizer, 
+    private static boolean customizeLibrary(org.netbeans.modules.project.libraries.ui.LibrariesCustomizer customizer,
             LibraryImplementation activeLibrary) {
         customizer.hideLibrariesList();
         customizer.setBorder(new EmptyBorder(12, 8, 0, 10));

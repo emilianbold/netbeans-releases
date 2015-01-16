@@ -85,6 +85,9 @@ public abstract class LibraryAccessor {
     @NonNull
     public abstract LibraryStorageArea getArea(@NonNull LibraryManager manager);
 
+    @NonNull
+    public abstract LibraryImplementation getLibraryImplementation(@NonNull Library library);
+
     // RADIKAL GENERIC HAX!
 
     /**
