@@ -78,6 +78,8 @@ public interface RemoteVcsSupportImplementation {
 
     public VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException;
 
+    public VCSFileProxy getHome(VCSFileProxy proxy);
+
     public boolean isMac(VCSFileProxy proxy);
 
     public boolean isUnix(VCSFileProxy proxy);
