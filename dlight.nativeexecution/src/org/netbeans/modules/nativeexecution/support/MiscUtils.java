@@ -52,9 +52,16 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public class MiscUtils {
+    // if a remote host echoing some text, this exception will occur many times for sure
+    // will show only once, but change a priority to high
+    private static boolean wasShown = false;
 
     public static boolean isJSCHTooLongException(Exception ex) {
-        return ex.getCause() instanceof JSchException && ex.getCause().getMessage().contains("Received message is too long: ");
+        final String message = "Received message is too long: ";
+        
+        boolean jschEx = ex instanceof JSchException || ex.getCause() instanceof JSchException;
+        boolean longMessage = ex.getMessage().contains(message) || (ex.getCause() != null && ex.getCause().getMessage().contains(message));
+        return jschEx && longMessage;
     }
 
     public static void showJSCHTooLongNotification(String envName) {
@@ -65,9 +72,13 @@ public class MiscUtils {
     }
     
     public static void showNotification(String title, String shortText, String longText) {
+        if (wasShown) {
+            return;
+        }
+        wasShown = true;
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
         longText = "<html>" + longText + "</html>"; // NOI18N
-        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(longText), NotificationDisplayer.Priority.NORMAL, NotificationDisplayer.Category.WARNING);
+        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(longText), NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
     }
     
     public static JComponent getNotificationLabel(String text) {
