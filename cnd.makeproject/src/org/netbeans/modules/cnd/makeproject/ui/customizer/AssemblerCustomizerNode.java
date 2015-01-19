@@ -70,12 +70,10 @@ class AssemblerCustomizerNode extends CustomizerNode {
                     if (itemConfiguration != null) {
                         out.add(itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
                     }
-                    return null;
-                } else {
-                    // TODO investigeate.
-                    out.add(((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
                 }
             }
+        } else {
+            out.add(((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
         }
         return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
     }
