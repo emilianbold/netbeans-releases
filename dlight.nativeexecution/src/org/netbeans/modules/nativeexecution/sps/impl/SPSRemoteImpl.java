@@ -59,6 +59,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner.BufferedLineProcessor;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -178,6 +179,9 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
         } catch (JSchException ex) {
             Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
+            if (MiscUtils.isJSCHTooLongException(ex)) {
+                MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
+            }
         } finally {
             if (status != 0) {
                 if (!Boolean.getBoolean("nativeexecution.mode.unittest") && !"true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N)

@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
@@ -53,6 +54,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
+import javax.imageio.IIOException;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -62,6 +64,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
 import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
@@ -214,6 +217,11 @@ public class HelperUtility {
                     cache.put(env, result);
                 } catch (MissingResourceException ex) {
                     return null;
+                } catch (JSchException ex) {
+                  if (MiscUtils.isJSCHTooLongException(ex)) {
+                      MiscUtils.showJSCHTooLongNotification(env.getDisplayName());
+                  }  
+                  throw new IOException(ex);
                 } catch (IOException ex) {
                     throw ex;
                 } catch (Exception ex) {

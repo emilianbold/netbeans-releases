@@ -107,6 +107,9 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     @SuppressWarnings("unchecked")
     private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
         super(lookup, FOLDER, provider);
+        // Fix for bug 219113 - see also getShortDescription
+        setValue("nodeDescription", 
+                NbBundle.getMessage(ConnectionNode.class, "ND_Column"));
         columnHandle = getLookup().lookup(MetadataElementHandle.class);
         connection = getLookup().lookup(DatabaseConnection.class);
     }
@@ -377,6 +380,10 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
     @Override
     public String getShortDescription() {
+        // the description is intended to be used by the tooltips and in this
+        // case shows info about column, the node description (used in the 
+        // property sheet display) is overrriden via 
+        // putValue("nodeDescription", ...) in the constructor)
         return description;
     }
 
