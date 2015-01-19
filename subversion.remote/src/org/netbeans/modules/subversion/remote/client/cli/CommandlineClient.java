@@ -86,6 +86,7 @@ import org.netbeans.modules.subversion.remote.client.cli.commands.ImportCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.InfoCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.ListCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.ListPropertiesCommand;
+import org.netbeans.modules.subversion.remote.client.cli.commands.LockCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.LogCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.MergeCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.MkdirCommand;
@@ -100,6 +101,7 @@ import org.netbeans.modules.subversion.remote.client.cli.commands.RevertCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.StatusCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.StatusCommand.Status;
 import org.netbeans.modules.subversion.remote.client.cli.commands.SwitchToCommand;
+import org.netbeans.modules.subversion.remote.client.cli.commands.UnlockCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.UpdateCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.UpgradeCommand;
 import org.netbeans.modules.subversion.remote.client.parser.EntriesCache;
@@ -1041,13 +1043,15 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public void unlock(VCSFileProxy[] vcsFileProxy, boolean b) {
-        throw new UnsupportedOperationException();
+    public void unlock(VCSFileProxy[] vcsFileProxy, boolean b) throws SVNClientException {
+        UnlockCommand cmd = new UnlockCommand(fileSystem, vcsFileProxy);
+        exec(cmd);
     }
 
     @Override
-    public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b) {
-        throw new UnsupportedOperationException();
+    public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b) throws SVNClientException {
+        LockCommand cmd = new LockCommand(fileSystem, vcsFileProxy);
+        exec(cmd);
     }
 
     @Override
