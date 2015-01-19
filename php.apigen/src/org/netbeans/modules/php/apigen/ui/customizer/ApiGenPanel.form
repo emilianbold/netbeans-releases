@@ -21,19 +21,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
-              <Component id="excludesTextField" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
-              <Component id="charsetsTextField" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
-              <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
-              <Component id="titleTextField" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
-              <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="116" max="-2" attributes="0"/>
               <Component id="targetTextField" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="targetButton" min="-2" max="-2" attributes="0"/>
@@ -50,15 +38,20 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="noConfigRadioButton" min="-2" max="-2" attributes="0"/>
                   <Component id="configRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="targetLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="titleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="charsetsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="excludesLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="accessLevelLabel" min="-2" max="-2" attributes="0"/>
-                      </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="targetLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="titleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="charsetsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="excludesLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="accessLevelLabel" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="accessLevelPublicCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -79,16 +72,22 @@
                           <Component id="sourceCodeCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
-                      <Component id="charsetsInfoLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
-                      <Component id="excludesInfoLabel" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="charsetsTextField" max="32767" attributes="0"/>
+                          <Component id="excludesTextField" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="excludesInfoLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="charsetsInfoLabel" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="0" pref="242" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="titleTextField" alignment="0" max="32767" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
