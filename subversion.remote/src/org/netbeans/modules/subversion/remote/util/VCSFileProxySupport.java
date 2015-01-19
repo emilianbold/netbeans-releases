@@ -446,9 +446,7 @@ public final class VCSFileProxySupport {
     }
     
     public static VCSFileProxy getHome(VCSFileProxy file){
-        //TODO: implement it!
-        // temporary use local home path for remote home
-        return VCSFileProxySupport.getResource(file, System.getProperty("user.home"));
+        return RemoteVcsSupport.getHome(file);
     }
 
     /**
