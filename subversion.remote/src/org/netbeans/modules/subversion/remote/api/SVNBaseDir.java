@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.api;
 
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -48,26 +49,77 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author Alexander Simon
  */
 public class SVNBaseDir {
+
     private SVNBaseDir() {
     }
 
-    public static VCSFileProxy getBaseDir(VCSFileProxy file) {
-        return null;
-    }
-
     public static VCSFileProxy getBaseDir(VCSFileProxy[] files) {
-        return null;
+        VCSFileProxy rootDir = getRootDir(files);
+        return rootDir;
+        //VCSFileProxy baseDir = getCommonPart(rootDir, new File("."));
+        //return baseDir;
     }
 
     public static VCSFileProxy getRootDir(VCSFileProxy[] files) {
-        return null;
-    }
+        if (files == null || files.length == 0) {
+            return null;
+        }
 
-    public static String getRelativePath(VCSFileProxy rootDir, VCSFileProxy file) throws SVNClientException {
-        return null;
+        VCSFileProxy commonPart = files[0];
+        for (int i = 0; i < files.length; i++) {
+            commonPart = getCommonPart(commonPart, files[i]);
+            if (commonPart == null) {
+                return null;
+            }
+        }
+
+        if (commonPart.isFile()) {
+            return commonPart.getParentFile();
+        } else {
+            return commonPart;
+        }
     }
 
     private static VCSFileProxy getCommonPart(VCSFileProxy file1, VCSFileProxy file2) {
-        return null;
+        if (file1 == null) {
+            return null;
+        }
+        if (file2 == null) {
+            return null;
+        }
+        String file1AbsPath = file1.getPath();
+        String file2AbsPath = file2.getPath();
+        if (file1AbsPath.equals(file2AbsPath)) {
+            return file1;
+        }
+        String file1Parts[] = file1AbsPath.split("/"); //NOI18N
+        String file2Parts[] = file2AbsPath.split("/"); //NOI18N
+        if (file1Parts[0].equals("")) { //NOI18N
+            file1Parts[0] = "/"; //NOI18N
+        }
+        if (file2Parts[0].equals("")) { //NOI18N
+            file2Parts[0] = "/"; //NOI18N
+        }
+        int parts1Length = file1Parts.length;
+        int parts2Length = file2Parts.length;
+        int minLength = parts1Length >= parts2Length ? parts2Length : parts1Length;
+        StringBuilder commonsPart = new StringBuilder();
+        for (int i = 0; i < minLength; i++) {
+            String part1 = file1Parts[i];
+            String part2 = file2Parts[i];
+            if (!part1.equals(part2)) {
+                break;
+            }
+            if (i > 0) {
+                commonsPart.append("/");
+            }
+            commonsPart.append(part1);
+        }
+
+        if (commonsPart.length() == 0) {
+            return null;
+        } else {
+            return VCSFileProxySupport.getResource(file1, commonsPart.toString());
+        }
     }
 }
