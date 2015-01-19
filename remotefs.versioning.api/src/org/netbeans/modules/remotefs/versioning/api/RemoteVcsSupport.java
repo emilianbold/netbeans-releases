@@ -111,6 +111,10 @@ public final class RemoteVcsSupport {
         return getImpl().getCanonicalPath(proxy);
     }    
 
+    public static VCSFileProxy getHome(VCSFileProxy proxy) {
+        return getImpl().getHome(proxy);
+    }
+
     public static boolean isMac(VCSFileProxy proxy) {
         return getImpl().isMac(proxy);
     }

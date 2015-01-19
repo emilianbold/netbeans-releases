@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remotefs.versioning.spi;
+package org.netbeans.modules.subversion.remote.client.cli.commands;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import javax.swing.JFileChooser;
-import org.netbeans.modules.remotefs.versioning.api.*;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author vkvashin
+ * @author as204739
  */
-public interface RemoteVcsSupportImplementation {
+public class LockCommand extends SvnCommand {
 
-    /**
-     * @param proxy defines FS and initial selection
-     * @return file chooser
-     */
-    JFileChooser createFileChooser(VCSFileProxy proxy);
-
-    VCSFileProxy getSelectedFile(JFileChooser chooser);
-
-    FileSystem getFileSystem(VCSFileProxy proxy);
-
-    FileSystem[] getFileSystems();
-
-    FileSystem getDefaultFileSystem();
-
-    boolean isSymlink(VCSFileProxy proxy);
+    private final VCSFileProxy[] file;    
     
-    boolean canRead(VCSFileProxy proxy);
-
-    public boolean canRead(VCSFileProxy base, String subdir);
-
-    public String getCanonicalPath(VCSFileProxy proxy) throws IOException;
-
-    public VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException;
-
-    public VCSFileProxy getHome(VCSFileProxy proxy);
-
-    public boolean isMac(VCSFileProxy proxy);
-
-    public boolean isUnix(VCSFileProxy proxy);
-
-    public long getSize(VCSFileProxy proxy);
-
-    public String getFileSystemKey(FileSystem proxy);
-
-    public String toString(VCSFileProxy proxy);
-
-    public VCSFileProxy fromString(String proxy);
-
-    public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
+    public LockCommand(FileSystem fileSystem, VCSFileProxy[] file) {
+        super(fileSystem);
+        this.file = file;
+    }
+    
+    @Override
+    protected ISVNNotifyListener.Command getCommand() {
+        return ISVNNotifyListener.Command.LOCK;
+    }
+    
+    @Override
+    public void prepareCommand(Arguments arguments) throws IOException {        
+        arguments.add("lock"); //NOI18N
+        arguments.add(file);
+        setCommandWorkingDirectory(file);
+    }    
 }

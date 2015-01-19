@@ -247,8 +247,8 @@ public interface SvnClient extends Cancellable, SvnClientDescriptor {
 
     void upgrade(VCSFileProxy wcRoot) throws SVNClientException;
 
-    public void unlock(VCSFileProxy[] vcsFileProxy, boolean b);
+    public void unlock(VCSFileProxy[] vcsFileProxy, boolean b) throws SVNClientException;
 
-    public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b);
+    public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b) throws SVNClientException;
     
 }

@@ -91,6 +91,7 @@ public final class ApiGenScript {
     public static final boolean DEFAULT_DOWNLOAD = false;
     public static final boolean DEFAULT_SOURCE_CODE = true;
 
+    private static final String GENERATE_PARAM = "generate"; // NOI18N
     private static final String SOURCE_PARAM = "--source"; // NOI18N
     private static final String DESTINATION_PARAM = "--destination"; // NOI18N
     private static final String TITLE_PARAM = "--title"; // NOI18N
@@ -104,14 +105,7 @@ public final class ApiGenScript {
     private static final String DEPRECATED_PARAM = "--deprecated"; // NOI18N
     private static final String TODO_PARAM = "--todo"; // NOI18N
     private static final String DOWNLOAD_PARAM = "--download"; // NOI18N
-    private static final String SOURCE_CODE_PARAM = "--source-code"; // NOI18N
-    private static final String COLORS_PARAM = "--colors"; // NOI18N
-    private static final String UPDATE_CHECK_PARAM = "--update-check"; // NOI18N
-
-    private static final String LIST_SEPARATOR = ","; // NOI18N
-
-    // check for update just once
-    private static boolean updateChecked = false;
+    private static final String NO_SOURCE_CODE_PARAM = "--no-source-code"; // NOI18N
 
     private final String apiGenPath;
 
@@ -157,7 +151,7 @@ public final class ApiGenScript {
                 .optionsSubcategory(ApiGenOptionsPanelController.OPTIONS_SUBPATH)
                 .workDir(FileUtil.toFile(phpModule.getProjectDirectory()))
                 .displayName(Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()))
-                .additionalParameters(getParams(phpModule))
+                .additionalParameters(getGenerateParams(phpModule))
                 .run(getDescriptor());
         try {
             File targetDir = new File(target);
@@ -191,8 +185,9 @@ public final class ApiGenScript {
                 .inputVisible(false);
     }
 
-    private List<String> getParams(PhpModule phpModule) {
+    private List<String> getGenerateParams(PhpModule phpModule) {
         List<String> params = new ArrayList<>();
+        params.add(GENERATE_PARAM);
         if (ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.HAS_CONFIG)) {
             addConfig(phpModule, params);
         } else {
@@ -209,9 +204,7 @@ public final class ApiGenScript {
             addTodo(phpModule, params);
             addDownload(phpModule, params);
             addSourceCode(phpModule, params);
-            addColors(phpModule, params);
         }
-        addUpdateCheck(phpModule, params);
         return params;
     }
 
@@ -253,8 +246,10 @@ public final class ApiGenScript {
     }
 
     private void addAccessLevels(PhpModule phpModule, List<String> params) {
-        params.add(ACCESS_LEVELS_PARAM);
-        params.add(StringUtils.implode(ApiGenPreferences.getMore(phpModule, ApiGenPreferences.ACCESS_LEVELS), LIST_SEPARATOR));
+        for (String level : ApiGenPreferences.getMore(phpModule, ApiGenPreferences.ACCESS_LEVELS)) {
+            params.add(ACCESS_LEVELS_PARAM);
+            params.add(level);
+        }
     }
 
     private void addInternal(PhpModule phpModule, List<String> params) {
@@ -282,24 +277,18 @@ public final class ApiGenScript {
     }
 
     private void addSourceCode(PhpModule phpModule, List<String> params) {
-        addBoolean(params, SOURCE_CODE_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.SOURCE_CODE));
-    }
-
-    // always set colors since output windows supports ANSI coloring
-    private void addColors(PhpModule phpModule, List<String> params) {
-        addBoolean(params, COLORS_PARAM, true);
-    }
-
-    private void addUpdateCheck(PhpModule phpModule, List<String> params) {
-        addBoolean(params, UPDATE_CHECK_PARAM, !updateChecked);
-        if (!updateChecked) {
-            updateChecked = true;
+        if (ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.SOURCE_CODE)) {
+            // enabled by default
+            return;
         }
+        params.add(NO_SOURCE_CODE_PARAM);
     }
 
     private void addBoolean(List<String> params, String param, boolean value) {
+        if (!value) {
+            return;
+        }
         params.add(param);
-        params.add(value ? "yes" : "no"); // NOI18N
     }
 
 }

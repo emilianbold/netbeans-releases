@@ -153,27 +153,36 @@ public class ApiGenOptionsPanel extends JPanel {
         searchButton = new JButton();
         hintLabel = new JLabel();
         noteLabel = new JLabel();
+        versionLabel = new JLabel();
         installationInstructionsLabel = new JLabel();
         learnMoreLabel = new JLabel();
         errorLabel = new JLabel();
 
         apiGenLabel.setLabelFor(apiGenTextField);
         Mnemonics.setLocalizedText(apiGenLabel, NbBundle.getMessage(ApiGenOptionsPanel.class, "ApiGenOptionsPanel.apiGenLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(ApiGenOptionsPanel.class, "ApiGenOptionsPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(ApiGenOptionsPanel.class, "ApiGenOptionsPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(hintLabel, "HINT"); // NOI18N
+
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(ApiGenOptionsPanel.class, "ApiGenOptionsPanel.noteLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(ApiGenOptionsPanel.class, "ApiGenOptionsPanel.versionLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(installationInstructionsLabel, NbBundle.getMessage(ApiGenOptionsPanel.class, "ApiGenOptionsPanel.installationInstructionsLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(ApiGenOptionsPanel.class, "ApiGenOptionsPanel.learnMoreLabel.text")); // NOI18N
         learnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
@@ -183,12 +192,12 @@ public class ApiGenOptionsPanel extends JPanel {
                 learnMoreLabelMousePressed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(apiGenLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -203,22 +212,22 @@ public class ApiGenOptionsPanel extends JPanel {
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(searchButton))))
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(installationInstructionsLabel)
-                    .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(errorLabel))
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(installationInstructionsLabel)
+                    .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(versionLabel))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseButton, searchButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(apiGenTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -229,6 +238,8 @@ public class ApiGenOptionsPanel extends JPanel {
                 .addComponent(hintLabel)
                 .addGap(18, 18, 18)
                 .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(versionLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(installationInstructionsLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -306,6 +317,7 @@ public class ApiGenOptionsPanel extends JPanel {
     private JLabel learnMoreLabel;
     private JLabel noteLabel;
     private JButton searchButton;
+    private JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

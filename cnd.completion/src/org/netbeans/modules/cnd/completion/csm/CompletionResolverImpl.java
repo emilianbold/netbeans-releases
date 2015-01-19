@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -965,7 +966,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         CsmClass funClass = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
         CsmClass contextClass = CsmContextUtilities.getClass(context, false, false);
-        CsmClass clazz = funClass != null ? funClass : contextClass;
+        CsmClassifier clazz = funClass != null ? funClass : contextClass;
+        if (clazz == null && CsmKindUtilities.isClassForwardDeclaration(context.getLastScope())) {
+            // Bug 249752. Wee need to collect template parameters from forward classifiers as well
+            clazz = (CsmClassForwardDeclaration) context.getLastScope();
+        }
         if (clazz != null) {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.

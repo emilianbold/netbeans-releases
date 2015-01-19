@@ -85,7 +85,8 @@ import org.openide.util.NetworkSettings;
  * @author Tomas Stupka
  */
 public class SvnConfigFiles {
-
+    public static final boolean USE_LOCAL_PROXY_SETTINGS = false;
+    
     /** the only SvnConfigFiles instance */
     private static final Map<FileSystem,SvnConfigFiles> instances = new HashMap<>();
 
@@ -259,27 +260,35 @@ public class SvnConfigFiles {
             Subversion.LOG.log(Level.INFO, null, ex);
             return passwordAdded;
         }
-        String proxyHost = NetworkSettings.getProxyHost(uri);
-        // check DIRECT connection
-        if(proxyHost != null && proxyHost.length() > 0) {
-            String proxyPort = NetworkSettings.getProxyPort(uri);
-            assert proxyPort != null;
-            nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
-            nbGlobalSection.put("http-proxy-port", proxyPort);                     // NOI18N
+        if (USE_LOCAL_PROXY_SETTINGS) {
+            String proxyHost = NetworkSettings.getProxyHost(uri);
+            // check DIRECT connection
+            if(proxyHost != null && proxyHost.length() > 0) {
+                String proxyPort = NetworkSettings.getProxyPort(uri);
+                assert proxyPort != null;
+                nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
+                nbGlobalSection.put("http-proxy-port", proxyPort);                     // NOI18N
 
-            // and the authentication
-            String username = NetworkSettings.getAuthenticationUsername(uri);
-            if(username != null) {
-                String password = getProxyPassword(NetworkSettings.getKeyForAuthenticationPassword(uri));
+                // and the authentication
+                String username = NetworkSettings.getAuthenticationUsername(uri);
+                if(username != null) {
+                    String password = getProxyPassword(NetworkSettings.getKeyForAuthenticationPassword(uri));
 
-                nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
-                nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
-                passwordAdded = true;
+                    nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
+                    nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
+                    passwordAdded = true;
+                }
             }
+            // check if there are also some no proxy settings
+            // we should get from the original svn servers file
+            mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
+        } else {
+            // TODO: implementation uses setting in remote home folder ".subversion"
+            // Alternatives:
+            // 1. get env variable http-proxy to setup proxy settings
+            // 2. support proxy settings per host
+            mergeAllKeys(host, svnGlobalSection, nbGlobalSection);
         }
-        // check if there are also some no proxy settings
-        // we should get from the original svn servers file
-        mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
         return passwordAdded;
     }
 
@@ -303,6 +312,24 @@ public class SvnConfigFiles {
         }
     }
     
+    private void mergeAllKeys(String host, Ini.Section svnGlobalSection, Ini.Section nbGlobalSection) {                             
+        if(svnGlobalSection != null) {
+            // if there is a global section, than get the no proxy settings                                                                 
+            mergeAllKeys(svnGlobalSection, nbGlobalSection);
+        }
+        Ini.Section svnHostGroup = getServerGroup(host);
+        if(svnHostGroup != null) {
+            // if there is a section for the given host, than get the no proxy settings                                                                 
+            mergeAllKeys(svnHostGroup, nbGlobalSection);                
+        }                                
+    }
+
+    private void mergeAllKeys(Ini.Section source, Ini.Section target) {
+        for (String key : source.keySet()) {
+            target.put(key, source.get(key));                                                
+        }
+    }
+
     public void setExternalCommand(String tunnelName, String command) {
         if (command == null) {
             return;

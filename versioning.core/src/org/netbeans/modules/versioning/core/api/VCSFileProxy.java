@@ -132,7 +132,11 @@ public final class VCSFileProxy {
         if (p.endsWith("/")) {   // NOI18N
             return new VCSFileProxy(p + child, parent.proxy); 
         } else {
-            return new VCSFileProxy(p + "/" + child, parent.proxy);   // NOI18N
+            if (p.isEmpty() && child.startsWith("/")) {
+                return new VCSFileProxy(child, parent.proxy);   // NOI18N
+            } else {
+                return new VCSFileProxy(p + "/" + child, parent.proxy);   // NOI18N
+            }
         }
     }
     
