@@ -192,7 +192,14 @@ class SftpSupport {
         if (channel == null) {
             throw new ExecutionException("ConnectionManagerAccessor returned null channel while waitIfNoAvailable was set to true", new NullPointerException()); //NOI18N
         }
-        channel.connect();
+        try {
+            channel.connect();
+        } catch (JSchException ex) {
+            if (MiscUtils.isJSCHTooLongException(ex)) {
+                MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
+            }
+            throw ex;
+        }
         incrementStatistics();
         return channel;
     }
@@ -242,8 +249,6 @@ class SftpSupport {
                     // do anything with this ;(
                     if (isUnitTest) {
                         logException(ex, null);
-                    } else {
-                        MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
                     }
                     rc = 7;
                 } else {
@@ -456,8 +461,6 @@ class SftpSupport {
                     // do anything with this ;(
                     if (isUnitTest) {
                         logException(ex, error);
-                    } else {
-                        MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
                     }
                     rc = 7;
                 } else {
