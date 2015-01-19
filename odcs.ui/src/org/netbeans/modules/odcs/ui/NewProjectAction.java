@@ -67,7 +67,7 @@ import org.openide.util.Lookup;
 @ActionID(id = "org.netbeans.modules.odcs.ui.NewProjectAction", category = "Team")
 @ActionRegistration(displayName = "#CTL_NewProjectAction")
 @Messages({"CTL_NewProjectAction=New Project...",
-    "NewProjectAction.dialogTitle=New Project on Developer Server"
+    "NewProjectAction.dialogTitle=New Project on Oracle Developer Cloud Service"
 })
 public final class NewProjectAction extends AbstractAction {
 
