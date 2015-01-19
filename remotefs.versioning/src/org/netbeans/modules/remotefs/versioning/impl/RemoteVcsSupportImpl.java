@@ -218,6 +218,33 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     }
 
     @Override
+    public VCSFileProxy getHome(VCSFileProxy proxy) {
+        File file = proxy.toFile();
+        if (file != null) {
+            return VCSFileProxy.createFileProxy(new File(System.getProperty("user.home")));
+        } else {
+            FileSystem fs = getFileSystem(proxy);
+            ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    String userDir = HostInfoUtils.getHostInfo(env).getUserDir();
+                    VCSFileProxy root = getRootFileProxy(proxy);
+                    return VCSFileProxy.createFileProxy(root, userDir);
+                } catch (IOException ex) {
+                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                } catch (ConnectionManager.CancellationException ex) {
+                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
+            } else {
+                // TODO: what to return here???
+                return null;
+            }
+        }     
+    }
+
+    @Override
     public boolean isMac(VCSFileProxy proxy) {
         File file = proxy.toFile();
         if (file != null) {
