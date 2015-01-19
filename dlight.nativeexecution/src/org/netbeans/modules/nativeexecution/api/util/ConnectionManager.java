@@ -392,9 +392,6 @@ public final class ConnectionManager {
                     initiateConnection(env, jsch);
                     return;
                 } catch (IOException e) {
-                    if (MiscUtils.isJSCHTooLongException(e)) {
-                        MiscUtils.showJSCHTooLongNotification(env.getDisplayName());
-                    }
                     if (!(e.getCause() instanceof JSchException)) {
                         throw e;
                         }
