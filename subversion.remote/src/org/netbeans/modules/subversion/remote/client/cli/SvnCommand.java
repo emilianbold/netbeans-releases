@@ -67,6 +67,8 @@ import org.openide.filesystems.FileSystem;
  * @author Maros Sandor
  */
 public abstract class SvnCommand implements CommandNotificationListener {
+    
+    private static final boolean EXPAND_TARGETS_OPTION = true;
                
     private final List<String> cmdError = new ArrayList<>(10);
        
@@ -400,13 +402,29 @@ public abstract class SvnCommand implements CommandNotificationListener {
         }                    
 
         public void addPathArguments(String... paths) throws IOException {        
-            add("--targets"); //NOI18N
-            add(createTempCommandFile(paths));
+            if (EXPAND_TARGETS_OPTION && paths.length > 0 && paths.length < 500) {
+                for(String path : paths) {
+                    add("'"+path+"'"); //NOI18N
+                }
+            } else {
+                add("--targets"); //NOI18N
+                add(createTempCommandFile(paths));
+            }
         }
         
         public void addFileArguments(VCSFileProxy... files) throws IOException {        
-            add("--targets"); //NOI18N
-            add(createTempCommandFile(files));
+            if (EXPAND_TARGETS_OPTION && files.length > 0 && files.length < 500) {
+                for(VCSFileProxy file : files) {
+                    String path = file.getPath();            
+                    if (path.indexOf('@') != -1) { //NOI18N
+                        path += '@'; //NOI18N
+                    }
+                    add("'"+path+"'"); //NOI18N
+                }
+            } else {
+                add("--targets"); //NOI18N
+                add(createTempCommandFile(files));
+            }
         }
 
         public void addUrlArguments(SVNUrl... urls) throws IOException {        
@@ -414,8 +432,14 @@ public abstract class SvnCommand implements CommandNotificationListener {
             for (int i = 0; i < urls.length; i++) {
                 paths[i] = makeCliUrlString(urls[i], true);
             }
-            add("--targets"); //NOI18N
-            add(createTempCommandFile(paths));
+            if (EXPAND_TARGETS_OPTION && paths.length > 0 && paths.length < 500) {
+                for(String path : paths) {
+                    add("'"+path+"'"); //NOI18N
+                }
+            } else {
+                add("--targets"); //NOI18N
+                add(createTempCommandFile(paths));
+            }
         }
 
         private String makeCliUrlString(SVNUrl url, boolean appendAtSign) {
