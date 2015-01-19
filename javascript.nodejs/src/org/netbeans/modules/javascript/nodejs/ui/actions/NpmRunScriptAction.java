@@ -107,7 +107,8 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
         }
         setEnabled(project != null);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        putValue(Action.NAME, Bundle.NpmRunScriptAction_name());
+        // hide this action from Tools > Keymap
+        putValue(Action.NAME, ""); // NOI18N
     }
 
     @Override
