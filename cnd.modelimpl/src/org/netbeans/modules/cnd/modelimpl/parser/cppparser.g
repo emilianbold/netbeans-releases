@@ -2818,15 +2818,15 @@ direct_declarator[int kind, int level]
 		(parameter_list[false])?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator[kind, level+1] RPAREN
-                (options {greedy=true;} :variable_attribute_specification)?
-                (
-                    {_ts != tsInvalid}?
-                        (options {greedy=true;} : declarator_suffixes)?
-                |
-                    declarator_suffixes
-                )   
-                (options {greedy=true;} :variable_attribute_specification)?
+        LPAREN declarator[kind, level+1] RPAREN
+        (options {greedy=true;} :variable_attribute_specification)?
+        (
+            {_ts != tsInvalid}?
+                (options {greedy=true;} : declarator_suffixes)?
+        |
+            declarator_suffixes
+        )   
+        (options {greedy=true;} :variable_attribute_specification)?
 
 /* **            
              // Issue #87792  Parser reports error on declarations with name in parenthesis.
