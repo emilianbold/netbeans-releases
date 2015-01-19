@@ -58,7 +58,6 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.awt.ActionID;
@@ -70,6 +69,7 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
@@ -117,13 +117,16 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
 
     @Override
     public Action createContextAwareInstance(Lookup context) {
-        Project contextProject = NodeJsUtils.getPackageJsonProject(context);
+        Pair<Project, PackageJson> data = NodeJsUtils.getProjectAndPackageJson(context);
+        Project contextProject = data.first();
         if (contextProject == null) {
             return this;
         }
-        Map<String, Object> allScripts = NodeJsSupport.forProject(contextProject)
-                .getPackageJson()
-                .getContentValue(Map.class, PackageJson.FIELD_SCRIPTS);
+        PackageJson packageJson = data.second();
+        if (packageJson == null) {
+            return this;
+        }
+        Map<String, Object> allScripts = packageJson.getContentValue(Map.class, PackageJson.FIELD_SCRIPTS);
         if (allScripts == null
                 || allScripts.isEmpty()) {
             return this;

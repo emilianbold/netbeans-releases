@@ -168,7 +168,16 @@ public final class NodeJsUtils {
     }
 
     @CheckForNull
+    public static PackageJson getPackageJson(Lookup context) {
+        return getProjectAndPackageJson(context).second();
+    }
+
+    @CheckForNull
     public static Project getPackageJsonProject(Lookup context) {
+        return getProjectAndPackageJson(context).first();
+    }
+
+    public static Pair<Project, PackageJson> getProjectAndPackageJson(Lookup context) {
         Project project = context.lookup(Project.class);
         PackageJson packageJson = null;
         if (project != null) {
@@ -188,13 +197,18 @@ public final class NodeJsUtils {
                 project = FileOwnerQuery.getOwner(file);
             }
         }
+        if (project == null) {
+            return Pair.of(null, null);
+        }
         if (packageJson == null) {
-            return null;
+            return Pair.of(null, null);
         }
         if (!packageJson.exists()) {
-            return null;
+            return Pair.of(null, null);
         }
-        return project;
+        assert project != null;
+        assert packageJson != null;
+        return Pair.of(project, packageJson);
     }
 
     @CheckForNull
