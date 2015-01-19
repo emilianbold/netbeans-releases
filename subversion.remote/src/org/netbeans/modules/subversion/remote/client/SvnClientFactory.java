@@ -195,6 +195,8 @@ public class SvnClientFactory {
             }
         } catch (SVNClientException e) {
             exception = e;
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
         }
     }
 
