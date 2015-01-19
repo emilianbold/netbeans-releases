@@ -61,6 +61,7 @@ import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -224,11 +225,25 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
             return;
         }
         File nodeSources = NodeJsUtils.getNodeSources(project);
-        if (nodeSources == null
-                || !nodeSources.isDirectory()) {
+        if (nodeSources == null) {
             // no sources
             String message = Bundle.NodeJsProblemProvider_error(Bundle.NodeJsProblemProvider_node_sources());
             ProjectProblem problem = ProjectProblem.createError(
+                    message,
+                    message,
+                    new NodeSourcesProblemResolver(project));
+            currentProblems.add(problem);
+            return;
+        }
+        ValidationResult result = new ValidationResult();
+        ValidationUtils.validateNodeSources(result, nodeSources.getAbsolutePath());
+        if (!result.isFaultless()) {
+            String message = result.getFirstErrorMessage();
+            if (message == null) {
+                message = result.getFirstWarningMessage();
+            }
+            assert message != null : result;
+            ProjectProblem problem = ProjectProblem.createWarning(
                     message,
                     message,
                     new NodeSourcesProblemResolver(project));
