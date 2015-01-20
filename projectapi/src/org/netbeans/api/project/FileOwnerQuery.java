@@ -141,7 +141,8 @@ public class FileOwnerQuery {
             }
         }
         if (!uri.isAbsolute() || uri.isOpaque()) {
-            throw new IllegalArgumentException("Bad URI: " + uri); // NOI18N
+            //throw new IllegalArgumentException("Bad URI: " + uri); // NOI18N
+            return null;
         }
         for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(uri);

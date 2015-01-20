@@ -1119,7 +1119,7 @@ public class BinaryAnalyser {
         protected boolean executeImpl() throws IOException {
             while (todo.hasMoreElements()) {
                 FileObject fo = todo.nextElement();
-                if (accepts(fo.getName())) {
+                if (accepts(fo.getNameExt())) {
                     final String rp = FileObjects.stripExtension(FileUtil.getRelativePath(root, fo));
                     report(
                         ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(rp)),

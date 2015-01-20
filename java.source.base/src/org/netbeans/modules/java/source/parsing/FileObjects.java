@@ -143,7 +143,8 @@ public class FileObjects {
 
     public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
 
-    private static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();    
+    private static final Charset SYSTEM_ENCODING = Charset.defaultCharset();
+    private static final Charset UTF8_ENCODING = Charset.forName("UTF-8");  //NOI18N
     //todo: If more clients than btrace will need this, create a SPI.
     private static final Set<String> javaFlavorExt = new HashSet<String>();
     static {
@@ -226,7 +227,24 @@ public class FileObjects {
         assert zipFile != null;
         return new CachedZipFileObject (zipFile, pathToRootInArchive, folder, baseName, mtime);
     }
-            
+
+    /**
+     * Creates {@link JavaFileObject} for a  {@link FileObject}
+     * @param file for which the {@link JavaFileObject} should be created
+     * @param root - the classpath root owning the file
+     * @param filter the preprocessor filter or null
+     * @param encoding - the file's encoding or null for non source file
+     * @return {@link JavaFileObject}, never returns null
+     */
+    @NonNull
+    public static PrefetchableJavaFileObject fileObjectFileObject( final @NonNull FileObject file, final @NonNull FileObject root,
+            final @NullAllowed JavaFileFilterImplementation filter, final @NullAllowed Charset encoding) {
+        assert file != null;
+        assert root != null;
+        final String[] pkgNamePair = getFolderAndBaseName(FileUtil.getRelativePath(root,file), NBFS_SEPARATOR_CHAR);
+        return new FileObjectBase(file, convertFolder2Package(pkgNamePair[0], NBFS_SEPARATOR_CHAR), pkgNamePair[1], filter, encoding);
+    }
+
     /**
      * Creates {@link JavaFileObject} for a regular {@link File}
      * @param file for which the {@link JavaFileObject} should be created
@@ -917,9 +935,15 @@ public class FileObjects {
         protected final JavaFileObject.Kind kind;
         protected final String pkgName;
         protected final String nameWithoutExt;
-        protected final String ext;        
-        
-        protected Base (final String pkgName, final String name) {
+        protected final String ext;
+        protected final Charset encoding;
+        protected final boolean caseSensitive;
+
+        protected Base (
+                final String pkgName,
+                final String name,
+                final Charset encoding,
+                final boolean caseSensitive) {
             assert pkgName != null;
             assert name != null;
             this.pkgName = pkgName;
@@ -927,28 +951,31 @@ public class FileObjects {
             this.nameWithoutExt = res[0];
             this.ext = res[1];
             this.kind = FileObjects.getKind (this.ext);
+            this.encoding = encoding;
+            this.caseSensitive = caseSensitive;
         }
-                
+
         @Override
         public JavaFileObject.Kind getKind() {
             return this.kind;
         }
-        
+
         @Override
         public boolean isNameCompatible (String simplename, JavaFileObject.Kind k) {
-            return this.kind == k && nameWithoutExt.equals(simplename);
-	}        
-        
+            return this.kind == k &&
+                (caseSensitive ? nameWithoutExt.equals(simplename) : nameWithoutExt.equalsIgnoreCase(simplename));
+	}
+
         @Override
         public NestingKind getNestingKind() {
             return null;
         }
-        
+
         @Override
         public Modifier getAccessLevel() {
             return null;
         }
-    
+
         @Override
         public String toString() {
             return this.toUri().toString();
@@ -963,7 +990,7 @@ public class FileObjects {
         public String getNameWithoutExtension () {
             return this.nameWithoutExt;
         }
-        
+
         @Override
         @NonNull
         public String getName () {
@@ -989,11 +1016,11 @@ public class FileObjects {
             }
             return res;
         }
-        
+
         public boolean isVirtual () {
             return false;
         }
-        
+
         @Override
         @NonNull
         public final String inferBinaryName () {
@@ -1003,11 +1030,33 @@ public class FileObjects {
                 sb.append('.'); //NOI18N
             }
             sb.append(this.nameWithoutExt);
-            return sb.toString();   
+            return sb.toString();
         }
-        
+
+        @Override
+	public Reader openReader(boolean b) throws IOException {
+            if (this.getKind() == JavaFileObject.Kind.CLASS) {
+                throw new UnsupportedOperationException();
+            } else {
+                return encoding == null ?
+                    new InputStreamReader(openInputStream()):
+                    new InputStreamReader(openInputStream(), encoding);
+            }
+	}
+
+        @Override
+	public Writer openWriter() throws IOException {
+            if (this.getKind() == JavaFileObject.Kind.CLASS) {
+                throw new UnsupportedOperationException();
+            } else {
+                return encoding != null ?
+                    new OutputStreamWriter(openOutputStream(), encoding) :
+                    new OutputStreamWriter(openOutputStream());
+            }
+	}
+
         private static String[] getNameExtPair (String name) {
-            int index = name.lastIndexOf ('.');            
+            int index = name.lastIndexOf ('.');
             String namenx;
             String ext;
             if (index <= 0) {
@@ -1030,26 +1079,64 @@ public class FileObjects {
         }
     }
 
-    @Trusted
-    public static class FileBase extends Base implements PrefetchableJavaFileObject {
+    public static abstract class PrefetchableBase extends Base implements PrefetchableJavaFileObject {
 
-        private static final boolean isWindows = BaseUtilities.isWindows();
+        private volatile CharSequence data;
+
+        protected PrefetchableBase(
+                @NonNull final String pkgName,
+                @NonNull final String name,
+                @NullAllowed final Charset encoding,
+                final boolean caseSensitive) {
+            super(pkgName, name, encoding, caseSensitive);
+        }
+
+        @Override
+	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+            CharSequence res = data;
+            if (res == null) {
+                res = getCharContentImpl(ignoreEncodingErrors);
+            }
+            return res;
+        }
+
+        @Override
+        public int prefetch() throws IOException {
+            final CharSequence chc = getCharContentImpl(true);
+            data = chc;
+            return chc.length();
+        }
+
+        @Override
+        public int dispose() {
+            final CharSequence _data = data;
+            if (_data != null) {
+                data = null;
+                return _data.length();
+            } else {
+                return 0;
+            }
+        }
+
+        protected abstract CharSequence getCharContentImpl(boolean ignoreEncodingErrors) throws IOException;
+    }
+
+    @Trusted
+    public static class FileBase extends PrefetchableBase {
+
         protected final File f;
         protected final JavaFileFilterImplementation filter;
-        protected final Charset encoding;
-        URI uriCache;
-        private volatile CharSequence data;
+        private volatile URI uriCache;
 
         protected FileBase (final File file,
                 final String pkgName,
                 final String name,
                 final JavaFileFilterImplementation filter,
                 final Charset encoding) {
-            super (pkgName, name);
+            super (pkgName, name, encoding, !BaseUtilities.isWindows());
             assert file != null;
             this.f = file;
             this.filter = filter;
-            this.encoding = encoding;
         }
 
         public File getFile () {
@@ -1062,35 +1149,12 @@ public class FileObjects {
 	}
 
         @Override
-	public Reader openReader (boolean b) throws IOException {
-	    return encoding == null ?
-                new InputStreamReader(openInputStream()):
-                new InputStreamReader(openInputStream(), encoding);
-	}
-
-        @Override
 	public OutputStream openOutputStream() throws IOException {
             final File parent = f.getParentFile();
             if (!parent.exists()) {
                 parent.mkdirs();
             }
 	    return new FileOutputStream(f);
-	}
-
-        @Override
-	public Writer openWriter() throws IOException {
-            if (encoding != null) {
-                return new OutputStreamWriter(openOutputStream(), encoding);
-            } else {
-                return new OutputStreamWriter(openOutputStream());
-            }
-	}
-
-        @Override
-	public boolean isNameCompatible(String simplename, JavaFileObject.Kind kind) {
-            return isWindows ?
-                this.kind == kind && nameWithoutExt.equalsIgnoreCase(simplename) :
-                super.isNameCompatible(simplename, kind);
 	}
 
         @Override
@@ -1111,14 +1175,75 @@ public class FileObjects {
 	    return f.delete();
 	}
 
+	@Override
+	public boolean equals(final Object other) {
+	    if (!(other instanceof FileBase))
+		return false;
+	    final FileBase o = (FileBase) other;
+	    return f.equals(o.f);
+	}
+
+	@Override
+	public int hashCode() {
+	    return f.hashCode();
+	}
+
         @Override
-	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-            CharSequence res = data;
-            if (res == null) {
-                res = getCharContentImpl(ignoreEncodingErrors);
+        protected CharSequence getCharContentImpl(boolean ignoreEncodingErrors) throws IOException {
+            return FileObjects.getCharContent(openInputStream(), encoding, filter, f.length(), ignoreEncodingErrors);
+        }
+    }
+
+    @Trusted
+    public static class FileObjectBase extends PrefetchableBase {
+
+        protected final FileObject f;
+        protected final JavaFileFilterImplementation filter;
+        private volatile URI uriCache;
+
+        protected FileObjectBase (final FileObject file,
+                final String pkgName,
+                final String name,
+                final JavaFileFilterImplementation filter,
+                final Charset encoding) {
+            super (pkgName, name, encoding, !BaseUtilities.isWindows());
+            assert file != null;
+            this.f = file;
+            this.filter = filter;
+        }
+
+        @Override
+        public InputStream openInputStream() throws IOException {
+	    return new BufferedInputStream (f.getInputStream());
+	}
+
+        @Override
+	public OutputStream openOutputStream() throws IOException {
+            throw new UnsupportedOperationException();
+	}
+
+        @Override
+        public URI toUri () {
+            if (this.uriCache == null) {
+                this.uriCache = f.toURI();
             }
-            return res;
-        }        
+            return this.uriCache;
+        }
+
+        @Override
+        public long getLastModified() {
+	    return f.lastModified().getTime();
+	}
+
+        @Override
+	public boolean delete() {
+            try {
+                f.delete();
+                return true;
+            } catch (IOException ex) {
+                return false;
+            }
+	}
 
 	@Override
 	public boolean equals(final Object other) {
@@ -1132,30 +1257,13 @@ public class FileObjects {
 	public int hashCode() {
 	    return f.hashCode();
 	}
-        
+
         @Override
-        public int prefetch() throws IOException {
-            final CharSequence chc = getCharContentImpl(true);
-            data = chc;
-            return chc.length();
-        }
-        
-        @Override
-        public int dispose() {
-            final CharSequence _data = data;
-            if (_data != null) {
-                data = null;
-                return _data.length();
-            } else {
-                return 0;
-            }
-        }
-        
-        private CharSequence getCharContentImpl(boolean ignoreEncodingErrors) throws IOException {
-            return FileObjects.getCharContent(openInputStream(), encoding, filter, f.length(), ignoreEncodingErrors);
+        protected CharSequence getCharContentImpl(boolean ignoreEncodingErrors) throws IOException {
+            return FileObjects.getCharContent(openInputStream(), encoding, filter, f.getSize(), ignoreEncodingErrors);
         }
     }
-        
+
     @Trusted
     private static final class NewFromTemplateFileObject extends FileBase {
 
@@ -1219,16 +1327,16 @@ public class FileObjects {
     }
 
     abstract static class ZipFileBase extends Base {
-        
+
         protected final long mtime;
         protected final String resName;
-        
+
         public ZipFileBase (
                 @NullAllowed final String pathToRootInArchive,
                 @NonNull final String folderName,
                 @NonNull final String baseName,
                 final long mtime) {
-            super (convertFolder2Package(folderName),baseName);
+            super (convertFolder2Package(folderName), baseName, FileObjects.SYSTEM_ENCODING, true);
             assert pathToRootInArchive == null || pathToRootInArchive.charAt(pathToRootInArchive.length()-1) == NBFS_SEPARATOR_CHAR;
             this.mtime = mtime;
             if (folderName.length() == 0) {
@@ -1263,21 +1371,6 @@ public class FileObjects {
 	}
 
         @Override
-	public Reader openReader(boolean b) throws IOException {
-            if (this.getKind() == JavaFileObject.Kind.CLASS) {
-                throw new UnsupportedOperationException();
-            }
-            else {
-                return new InputStreamReader (openInputStream(),FileObjects.encodingName);
-            }
-	}
-
-        @Override
-        public Writer openWriter() throws IOException {
-	    throw new UnsupportedOperationException();
-	}
-        
-        @Override
         public long getLastModified() {
 	    return mtime;
 	}
@@ -1288,34 +1381,15 @@ public class FileObjects {
 	}
 
         @Override
-        @SuppressWarnings("empty-statement")
-	public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
-	    Reader r = openReader(ignoreEncodingErrors);
-            try {
-                int red = 0, rv;
-
-                int len = (int)this.getSize();
-                char[] result = new char [len+1];
-                while ((rv=r.read(result,red,len-red))>0 && (red=red+rv)<len);
-
-                int j=0;
-                for (int i=0; i<red;i++) {
-                    if (result[i] =='\r') {                                          //NOI18N
-                        if (i+1>=red || result[i+1]!='\n') {                         //NOI18N
-                            result[j++] = '\n';                                      //NOI18N
-                        }
-                    }
-                    else {
-                        result[j++] = result[i];
-                    }
-                }
-                result[j]='\n';                                                      //NOI18N
-                return CharBuffer.wrap (result,0,j);
-            } finally {
-                r.close();
-            }
+	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+	    return FileObjects.getCharContent(
+                openInputStream(),
+                encoding,
+                null,
+                (int)this.getSize(),
+                ignoreEncodingErrors);
 	}
-        
+
         @Override
         public final URI toUri () {
             URI  zdirURI = this.getArchiveURI();
@@ -1549,8 +1623,8 @@ public class FileObjects {
         final boolean isVirtual;
         
         public MemoryFileObject(final String packageName, final String fileName,
-                final URI uri, final long lastModified, final CharBuffer cb ) {            
-            super (packageName, fileName);    //NOI18N
+                final URI uri, final long lastModified, final CharBuffer cb ) {
+            super (packageName, fileName, UTF8_ENCODING, true);    //NOI18N
             this.cb = cb;
             this.lastModified = lastModified;
             this.uri = uri;
@@ -1603,7 +1677,7 @@ public class FileObjects {
          */
         @Override
         public InputStream openInputStream() throws java.io.IOException {
-            return new ByteArrayInputStream(cb.toString().getBytes("UTF-8"));
+            return new ByteArrayInputStream(cb.toString().getBytes(encoding));
         }
 
         /**
@@ -1661,9 +1735,6 @@ public class FileObjects {
         public int dispose() {
             return 0;
         }
-        
-        
-        
     }
 
     @Trusted

@@ -51,15 +51,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.logging.Logger;
 import java.util.zip.ZipFile;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs.NBJRTUtil;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -73,16 +77,29 @@ public class Util {
     private Util () {
     }
 
-    static ClassPath createClassPath(String classpath) {
+    @NonNull
+    static ClassPath createClassPath(@NonNull final String classpath) {
         Parameters.notNull("classpath", classpath);
         StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
-        List<PathResourceImplementation> list = new ArrayList<PathResourceImplementation>();
+        List<PathResourceImplementation> list = new ArrayList<>();
         while (tokenizer.hasMoreTokens()) {
             String item = tokenizer.nextToken();
-            File f = FileUtil.normalizeFile(new File(item));            
-            URL url = getRootURL (f);
-            if (url!=null) {
-                list.add(ClassPathSupport.createResource(url));
+            File f = FileUtil.normalizeFile(new File(item));
+            final URI imageURI;
+            if ((imageURI = NBJRTUtil.getImageURI(f)) != null) {
+                try {
+                    FileObject root = URLMapper.findFileObject(imageURI.toURL());
+                    for (FileObject c : root.getChildren()) {
+                        list.add(ClassPathSupport.createResource(c.toURL()));
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                URL url = getRootURL (f);
+                if (url!=null) {
+                    list.add(ClassPathSupport.createResource(url));
+                }
             }
         }
         return ClassPathSupport.createClassPath(list);

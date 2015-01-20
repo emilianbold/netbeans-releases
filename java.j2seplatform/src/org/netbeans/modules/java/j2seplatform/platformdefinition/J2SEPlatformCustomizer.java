@@ -66,6 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -75,6 +76,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
@@ -88,16 +90,19 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs.NBJRTUtil;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -108,17 +113,20 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     static final int PREF_HEIGHT = 350;
 
     private static final Logger LOG = Logger.getLogger(J2SEPlatformCustomizer.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(J2SEPlatformCustomizer.class);
+    private static final SpecificationVersion JDK_19 = new SpecificationVersion("1.9"); //NOI18N
 
     private static final String CUSTOMIZERS_PATH =
         "org-netbeans-api-java/platform/j2seplatform/customizers/";  //NOI18N
     private static final String SUPPORTS_DEFAULT_PLATFORM =
         "supportsDefaultPlatform";  //NOI18N
+    private static final String URL_SEPARATOR = "/";    //NOI18N
 
     static final int CLASSPATH = 0;
     static final int SOURCES = 1;
     static final int JAVADOC = 2;
 
-    private J2SEPlatformImpl platform;    
+    private J2SEPlatformImpl platform;
 
     public J2SEPlatformCustomizer (J2SEPlatformImpl platform) {
         this.platform = platform;
@@ -178,9 +186,9 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             this.initComponents (platform);
         }
 
-        private void initComponents (J2SEPlatformImpl platform) {
+        private void initComponents (final J2SEPlatformImpl platform) {
             this.setLayout(new GridBagLayout());
-            JLabel label = new JLabel ();
+            final JLabel label = new JLabel ();
             String key = null;
             String mneKey = null;
             String ad = null;
@@ -216,14 +224,16 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             ((GridBagLayout)this.getLayout()).setConstraints(label,c);
             this.add (label);
             this.resources = new JList(new PathModel(platform,type));
+            this.resources.setCellRenderer(new PathRenderer());
             label.setLabelFor (this.resources);
             this.resources.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEPlatformCustomizer.class,ad));
             this.resources.addListSelectionListener(new ListSelectionListener() {
+                @Override
                 public void valueChanged(ListSelectionEvent e) {
                     selectionChanged ();
                 }
             });
-            JScrollPane spane = new JScrollPane (this.resources);            
+            JScrollPane spane = new JScrollPane (this.resources);
             spane.setPreferredSize(new Dimension(400,200));
             c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
@@ -235,8 +245,8 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             c.weightx = 1.0;
             c.weighty = 1.0;
             ((GridBagLayout)this.getLayout()).setConstraints(spane,c);
-            this.add (spane);            
-            if (type == SOURCES || type == JAVADOC) {                
+            this.add (spane);
+            if (type == SOURCES || type == JAVADOC) {
                 this.addButton = new JButton ();
                 String text;
                 char mne;
@@ -339,7 +349,36 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 c.insets = new Insets (5,6,6,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(moveDownButton,c);
                 this.add (moveDownButton);
-            }            
+            } else if (platform.getSpecification().getVersion().compareTo(JDK_19) >= 0) {
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!SwingUtilities.isEventDispatchThread()) {
+                            boolean hasModules = false;
+                            final ClassPath boot = platform.getBootstrapLibraries();
+                            for (ClassPath.Entry e : boot.entries()) {
+                                try {
+                                    if (NBJRTUtil.parseURI(e.getURL().toURI()) != null) {
+                                        hasModules = true;
+                                    }
+                                } catch (URISyntaxException ex) {
+                                    LOG.log(
+                                        Level.WARNING,
+                                        "Cannot resolve URI: {0}",  //NOI18N
+                                        e.getURL());
+                                }
+                            }
+                            if (hasModules) {
+                                SwingUtilities.invokeLater(this);
+                            }
+                        } else {
+                            label.setText(NbBundle.getMessage(J2SEPlatformCustomizer.class, "TXT_JDKModules"));
+                            label.setDisplayedMnemonic(
+                                NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_JDKClasspath").charAt(0));
+                        }
+                    }
+                });
+            }
         }
 
         private void addURLElement() {
@@ -524,9 +563,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     }
 
 
-    static class PathModel extends AbstractListModel/*<String>*/ {
-        
-        private static final RequestProcessor RP = new RequestProcessor(PathModel.class);
+    static class PathModel extends AbstractListModel/*<URL>*/ {
 
         private J2SEPlatformImpl platform;
         private int type;
@@ -543,24 +580,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
         public Object getElementAt(int index) {
             java.util.List<URL> list = this.getData();
-            URL url = list.get(index);
-            if ("jar".equals(url.getProtocol())) {      //NOI18N
-                URL fileURL = FileUtil.getArchiveFile (url);
-                if (FileUtil.getArchiveRoot(fileURL).equals(url)) {
-                    // really the root
-                    url = fileURL;
-                } else {
-                    // some subdir, just show it as is
-                    return url.toExternalForm();
-                }
-            }
-            if ("file".equals(url.getProtocol())) {
-                File f = Utilities.toFile(URI.create(url.toExternalForm()));
-                return f.getAbsolutePath();
-            }
-            else {
-                return url.toExternalForm();
-            }
+            return list.get(index);
         }
 
         private void removePath (int[] indices) {
@@ -649,9 +669,9 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         private static URL safeRoot(@NonNull URL url) {
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot (url);
-            } else if (!url.toExternalForm().endsWith("/")){    //NOI18N
+            } else if (!url.toExternalForm().endsWith(URL_SEPARATOR)) {
                 try {
-                    url = new URL (url.toExternalForm()+"/");
+                    url = new URL (url.toExternalForm()+URL_SEPARATOR);
                 } catch (MalformedURLException mue) {
                     Exceptions.printStackTrace(mue);
                 }
@@ -761,6 +781,47 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
     }
 
+    static class PathRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value instanceof URL) {
+                value = getDisplayName((URL)value);
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+
+        @NonNull
+        private static String getDisplayName(@NonNull URL url) {
+            try {
+                final Pair<File,String> parsed = NBJRTUtil.parseURI(url.toURI());
+                if (parsed != null) {
+                    String moduleName = parsed.second();
+                    if (moduleName.endsWith(URL_SEPARATOR)) {
+                        moduleName = moduleName.substring(0, moduleName.length() - URL_SEPARATOR.length());
+                    }
+                    return moduleName;
+                }
+            } catch (URISyntaxException e) {
+                //pass
+            }
+            if ("jar".equals(url.getProtocol())) {      //NOI18N
+                URL fileURL = FileUtil.getArchiveFile (url);
+                if (FileUtil.getArchiveRoot(fileURL).equals(url)) {
+                    // really the root
+                    url = fileURL;
+                } else {
+                    // some subdir, just show it as is
+                    return url.toExternalForm();
+                }
+            }
+            if ("file".equals(url.getProtocol())) { //NOI18N
+                File f = Utilities.toFile(URI.create(url.toExternalForm()));
+                return f.getAbsolutePath();
+            } else {
+                return url.toExternalForm();
+            }
+        }
+    }
 
     private static class ArchiveFileFilter extends FileFilter {
 
