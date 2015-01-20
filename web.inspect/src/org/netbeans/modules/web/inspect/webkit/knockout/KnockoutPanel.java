@@ -54,7 +54,6 @@ import javax.swing.border.Border;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
@@ -78,25 +77,32 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     private final WebKitPageModel pageModel;
     /** View that displays Knockout context of the selected node. */
     private OutlineView contextView;
+    /** Component show on the binding context tab. */
+    private JComponent bindingContextComponent;
     /** Page model listener. */
     private Listener pageModelListener;
     /** Determines whether we found Knockout in the current page already. */
     boolean knockoutFound;
     /** The current selected node. */
     Node selectedNode;
+    private final UnusedBindingsPanel realUnusedBindingsPanel = new UnusedBindingsPanel();
 
     /**
      * Creates a new {@code KnockoutPanel}.
      */
+    @NbBundle.Messages({
+        "KnockoutPanel.messageLabel.noInspection=<No Inspected Web Page>"
+    })
     public KnockoutPanel(WebKitPageModel pageModel) {
         this.pageModel = pageModel;
 
         initContextView();
         initComponents();
         initToolBar();
-        contentPanel.add(contextView);
+        realUnusedBindingsPanel.setPageModel(pageModel);
+//        unusedBindingsPanel = realUnusedBindingsPanel;
         if (pageModel == null) {
-            messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noInspection")); // NOI18N
+            messageLabel.setText(Bundle.KnockoutPanel_messageLabel_noInspection());
             add(messageLabel);
         } else {
             pageModelListener = new Listener();
@@ -108,15 +114,18 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     /**
      * Initializes the context view.
      */
+    @NbBundle.Messages({
+        "KnockoutPanel.contextView.name=Name",
+        "KnockoutPanel.contextView.value=Value"
+    })
     private void initContextView() {
-        contextView = new OutlineView(
-                NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.contextView.name")); // NOI18N
+        contextView = new OutlineView(Bundle.KnockoutPanel_contextView_name());
         contextView.setAllowedDragActions(DnDConstants.ACTION_NONE);
         contextView.setAllowedDropActions(DnDConstants.ACTION_NONE);
         contextView.setShowNodeIcons(false);
         contextView.addPropertyColumn(
                 KnockoutNode.ValueProperty.NAME,
-                NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.contextView.value")); // NOI18N
+                Bundle.KnockoutPanel_contextView_value());
 
         Outline outline = contextView.getOutline();
         outline.setRootVisible(false);
@@ -147,7 +156,7 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     private static boolean isXPTheme() {
         Boolean isXP = (Boolean) Toolkit.getDefaultToolkit().
                 getDesktopProperty("win.xpstyle.themeActive"); // NOI18N
-        return isXP == null ? false : isXP.booleanValue();
+        return isXP == null ? false : isXP;
     }
 
     /**
@@ -158,6 +167,15 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
             pageModel.removePropertyChangeListener(pageModelListener);
             pageModelListener = null;
         }
+    }
+
+    /**
+     * Returns page model of this panel.
+     * 
+     * @return page model of this panel.
+     */
+    WebKitPageModel getPageModel() {
+        return pageModel;
     }
 
     @Override
@@ -171,6 +189,11 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
      * @param documentUpdated {@code true} when the document was updated,
      * {@code false} otherwise.
      */
+    @NbBundle.Messages({
+        "KnockoutPanel.messageLabel.noKnockout=<Knockout Not Found (Yet?)>",
+        "KnockoutPanel.messageLabel.noSelection=<No Element Selected>",
+        "KnockoutPanel.messageLabel.noSingleSelection=<Multiple Elements Selected>"
+    })
     final void update(final boolean documentUpdated) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
@@ -184,31 +207,36 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         selectedNode = null;
         if (documentUpdated) {
             knockoutFound = false;
+            realUnusedBindingsPanel.setKnockoutUsed(false);
         }
-        List<? extends Node> selection = pageModel.getSelectedNodes();
         JComponent componentToShow;
-        if (selection.isEmpty()) {
-            messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noSelection")); // NOI18N
-            componentToShow = messageLabel;
-        } else if (selection.size() > 1) {
-            messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noSingleSelection")); // NOI18N
-            componentToShow = messageLabel;
-        } else {
-            selectedNode = selection.get(0);
-            org.netbeans.modules.web.webkit.debugging.api.dom.Node webKitNode =
-                selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
-            WebKitDebugging webKit = pageModel.getWebKit();
-            Node rootNode = new AbstractNode(Children.create(new KnockoutChildFactory(webKit, webKitNode), true));
-            getExplorerManager().setRootContext(rootNode);
-            if (knockoutFound) {
-                componentToShow = mainPanel;
-                expandDataNode();
+        if (knockoutFound) {
+            List<? extends Node> selection = pageModel.getSelectedNodes();
+            if (selection.isEmpty()) {
+                messageLabel.setText(Bundle.KnockoutPanel_messageLabel_noSelection());
+                bindingContextComponent = messageLabel;
+            } else if (selection.size() > 1) {
+                messageLabel.setText(Bundle.KnockoutPanel_messageLabel_noSingleSelection());
+                bindingContextComponent = messageLabel;
             } else {
-                messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.checkingKnockout")); // NOI18N
-                componentToShow = messageLabel;
-                checkKnockout(selectedNode);
+                selectedNode = selection.get(0);
+                org.netbeans.modules.web.webkit.debugging.api.dom.Node webKitNode =
+                    selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+                WebKitDebugging webKit = pageModel.getWebKit();
+                Node rootNode = new AbstractNode(Children.create(new KnockoutChildFactory(webKit, webKitNode), true));
+                getExplorerManager().setRootContext(rootNode);
+                bindingContextComponent = contextView;
+                expandDataNode();
             }
+            if (bindingContextButton.isSelected()) {
+                showInContentPanel(bindingContextComponent);
+            }
+            componentToShow = mainPanel;
+        } else {
+            messageLabel.setText(Bundle.KnockoutPanel_messageLabel_noKnockout());
+            componentToShow = messageLabel;
         }
+        
         if (componentToShow.getParent() == null) {
             removeAll();
             add(componentToShow);
@@ -218,35 +246,12 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     }
 
     /**
-     * Checks if the page uses Knockout. 
-     * 
-     * @param node node whose selection triggered this check.
+     * Invoked when knockout is found in the page.
      */
-    private void checkKnockout(final Node node) {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("window.NetBeans && NetBeans.usesKnockout()"); // NOI18N
-                final boolean found = "true".equals(remoteObject.getValueAsString()); // NOI18N
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (node == selectedNode) {
-                            knockoutFound = found;
-                            if (found) {
-                                removeAll();
-                                add(mainPanel);
-                                expandDataNode();
-                                revalidate();
-                                repaint();
-                            } else {
-                                messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noKnockout")); // NOI18N
-                            }
-                        }
-                    }
-                });
-            }
-        });
+    void knockoutUsed() {
+        knockoutFound = true;
+        realUnusedBindingsPanel.setKnockoutUsed(true);
+        update(false);
     }
 
     /**
@@ -351,7 +356,7 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     }// </editor-fold>//GEN-END:initComponents
 
     private void bindingContextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bindingContextButtonActionPerformed
-        showInContentPanel(contextView);
+        showInContentPanel(bindingContextComponent);
     }//GEN-LAST:event_bindingContextButtonActionPerformed
 
     private void unusedBindingsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unusedBindingsButtonActionPerformed
