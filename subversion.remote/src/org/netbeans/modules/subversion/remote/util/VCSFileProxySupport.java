@@ -85,31 +85,10 @@ public final class VCSFileProxySupport {
     }
     
     public static void delete(VCSFileProxy file) {
-        File javaFile = file.toFile();
-        if (javaFile != null) {
-            deleteRecursively(javaFile);
-        } else {
-            // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
-                    "rm", "-rf", file.getPath()); //NOI18N
-            if (!status.isOK()) {
-                ProcessUtils.LOG.log(Level.INFO, status.toString());
-            }
-        }
+        // TODO: should not it return status or throw an exception on failure?
+        RemoteVcsSupport.delete(file);
     }
-    
-    private static void deleteRecursively(File file) {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            if (files != null) {
-                for (int i = 0; i < files.length; i++) {
-                    deleteRecursively(files[i]);
-                }
-            }
-        }
-         file.delete();
-     }
-    
+
     public static void deleteOnExit(VCSFileProxy file) {
         //TODO: implemetn it!
     }
@@ -423,6 +402,7 @@ public final class VCSFileProxySupport {
     }
     
     public static VCSFileProxy getResource(VCSFileProxy file, String absPath) {
+        assert absPath.startsWith("/") : "Path "+absPath+"must be absolute";
         VCSFileProxy parent = file;
         while (true) {
             parent = file.getParentFile();
@@ -475,6 +455,14 @@ public final class VCSFileProxySupport {
     
     public static String getFileSystemKey(FileSystem file) {
         return RemoteVcsSupport.getFileSystemKey(file);
+    }
+    
+    public static boolean isConnectedFileSystem(FileSystem file) {
+        return RemoteVcsSupport.isConnectedFileSystem(file);
+    }
+
+    public static void connectFileSystem(FileSystem file) {
+        RemoteVcsSupport.connectFileSystem(file);
     }
     
     public static String toString(VCSFileProxy file) {

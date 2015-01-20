@@ -86,6 +86,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.remote.config.CertificateFile;
+import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
@@ -292,10 +293,12 @@ public class SvnClientExceptionHandler {
         // copy the certificate if it already exists        
         VCSFileProxy certFile = CertificateFile.getSystemCertFile(adapter.getFileSystem(), realmString);
         try {
-            VCSFileProxy nbCertFile = CertificateFile.getNBCertFile(adapter.getFileSystem(), realmString);
-            if( !nbCertFile.exists() &&  certFile.exists() ) {            
-                VCSFileProxySupport.copyFile(certFile, nbCertFile);
-                return true;
+            if (SvnConfigFiles.COPY_CONFIG_FILES) {
+                VCSFileProxy nbCertFile = CertificateFile.getNBCertFile(adapter.getFileSystem(), realmString);
+                if( !nbCertFile.exists() &&  certFile.exists() ) {            
+                    VCSFileProxySupport.copyFile(certFile, nbCertFile);
+                    return true;
+                }
             }
         } catch (IOException ex) {
             throw new SVNClientException(ex);

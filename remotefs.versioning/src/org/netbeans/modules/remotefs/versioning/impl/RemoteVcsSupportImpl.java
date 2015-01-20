@@ -42,7 +42,6 @@
 package org.netbeans.modules.remotefs.versioning.impl;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -336,6 +335,18 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     }
 
     @Override
+    public boolean isConnectedFileSystem(FileSystem file) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(file);
+        return ConnectionManager.getInstance().isConnectedTo(env);
+    }
+
+    @Override
+    public void connectFileSystem(FileSystem file) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(file);
+        ConnectionManager.getInstance().connect(env);
+    }
+
+    @Override
     public String toString(VCSFileProxy proxy) {
         return FileSystemProvider.toUrl(getFileSystem(proxy), proxy.getPath());
     }
@@ -346,5 +357,27 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         FileObject root = fs.getRoot();
         VCSFileProxy rootProxy = VCSFileProxy.createFileProxy(fs.getRoot());
         return VCSFileProxy.createFileProxy(rootProxy, proxyString);
+    }
+
+    @Override
+    public void delete(VCSFileProxy file) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            deleteRecursively(javaFile);
+        } else {
+            RemoteVcsSupportUtil.delete(getFileSystem(file), file.getPath());
+        }
+    }
+
+    private static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    deleteRecursively(files[i]);
+                }
+            }
+        }
+        file.delete();
     }
 }

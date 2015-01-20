@@ -203,7 +203,11 @@ public class PasswordFile extends SVNCredentialFile {
     }
     
     private static VCSFileProxy getFile(FileSystem fileSystem, String realmString) throws IOException {
-        return VCSFileProxy.createFileProxy(SvnConfigFiles.getNBConfigPath(fileSystem), "auth/svn.simple/" + getFileName(realmString)); // NOI18N
+        if (SvnConfigFiles.COPY_CONFIG_FILES) {
+            return VCSFileProxy.createFileProxy(SvnConfigFiles.getNBConfigPath(fileSystem), "auth/svn.simple/" + getFileName(realmString)); // NOI18N
+        } else {
+            return VCSFileProxy.createFileProxy(SvnConfigFiles.getUserConfigPath(fileSystem), "auth/svn.simple/" + getFileName(realmString)); // NOI18N
+        }
     }
     
     private Key getPasstypeKey() {

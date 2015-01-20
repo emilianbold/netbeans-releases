@@ -85,7 +85,8 @@ import org.openide.util.NetworkSettings;
  * @author Tomas Stupka
  */
 public class SvnConfigFiles {
-    public static final boolean USE_LOCAL_PROXY_SETTINGS = false;
+    public static final boolean USE_LOCAL_PROXY_SETTINGS = "true".equals(System.getProperty("remote.subversion.manage.proxy", "false"));
+    public static final boolean COPY_CONFIG_FILES = "true".equals(System.getProperty("remote.subversion.manage.config", "false"));
     
     /** the only SvnConfigFiles instance */
     private static final Map<FileSystem,SvnConfigFiles> instances = new HashMap<>();
@@ -124,13 +125,15 @@ public class SvnConfigFiles {
         @Override
         public void patch(Ini file) {
             // patch store-auth-creds to "no"
-            Ini.Section auth = file.get("auth");                  // NOI18N
-            if(auth == null) {
-                auth = file.add("auth");                                        // NOI18N
+            if (COPY_CONFIG_FILES) {
+                Ini.Section auth = file.get("auth");                  // NOI18N
+                if(auth == null) {
+                    auth = file.add("auth");                                        // NOI18N
+                }
+                auth.put("store-auth-creds", "yes");                                // NOI18N
+                auth.put("store-passwords", "no");                                  // NOI18N
+                auth.put("password-stores", "");                                    // NOI18N
             }
-            auth.put("store-auth-creds", "yes");                                // NOI18N
-            auth.put("store-passwords", "no");                                  // NOI18N
-            auth.put("password-stores", "");                                    // NOI18N
         }
     }
 
@@ -199,7 +202,9 @@ public class SvnConfigFiles {
             // we need the settings only for remote http and https repositories
             return sensitiveConfigFile;
         }
-
+        if (!COPY_CONFIG_FILES) {
+            return null;
+        }
         boolean changes = false;
         Ini nbServers = new Ini();   
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
@@ -334,9 +339,11 @@ public class SvnConfigFiles {
         if (command == null) {
             return;
         }
-        Ini.Section tunnels = getSection(config, "tunnels", true); //NOI18N
-        tunnels.put(tunnelName, command);
-        storeIni(config, "config");                                                     // NOI18N
+        if (COPY_CONFIG_FILES) {
+            Ini.Section tunnels = getSection(config, "tunnels", true); //NOI18N
+            tunnels.put(tunnelName, command);
+            storeIni(config, "config");                                                     // NOI18N
+        }
     }
 
     public String getExternalCommand(String tunnelName) {
@@ -354,6 +361,9 @@ public class SvnConfigFiles {
     }
     
     private VCSFileProxy storeIni (Ini ini, String iniFile) {
+        if (!COPY_CONFIG_FILES) {
+            return null;
+        }
         BufferedOutputStream bos = null;
         VCSFileProxy file = null;
         try {
@@ -454,7 +464,9 @@ public class SvnConfigFiles {
      *
      */ 
     public static VCSFileProxy getNBConfigPath(FileSystem fileSystem) throws IOException {
-        
+        if (!COPY_CONFIG_FILES) {
+            return null;
+        }
         //T9Y - nb svn confing should be changable
         String t9yNbConfigPath = System.getProperty("netbeans.t9y.svn.nb.config.path");
         if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
@@ -538,26 +550,28 @@ public class SvnConfigFiles {
      */
     private Ini copyConfigFileToIDEConfigDir(String fileName, IniFilePatcher patcher) {
         Ini systemIniFile = loadSystemIniFile(fileName);
+        if (COPY_CONFIG_FILES) {
 
-        patcher.patch(systemIniFile);
-        BufferedOutputStream bos = null;
-        try {
-            VCSFileProxy file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), fileName);
-            VCSFileProxySupport.mkdirs(file.getParentFile());
-            FileObject fo = file.toFileObject();
-            if (fo == null || !fo.isValid()) {
-                fo = file.getParentFile().toFileObject().createData(file.getName());
-            }
-            bos = new BufferedOutputStream(fo.getOutputStream());
-            systemIniFile.store(bos);
-        } catch (IOException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
-        } finally {
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch (IOException ex) {
-                    Subversion.LOG.log(Level.INFO, null, ex);
+            patcher.patch(systemIniFile);
+            BufferedOutputStream bos = null;
+            try {
+                VCSFileProxy file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), fileName);
+                VCSFileProxySupport.mkdirs(file.getParentFile());
+                FileObject fo = file.toFileObject();
+                if (fo == null || !fo.isValid()) {
+                    fo = file.getParentFile().toFileObject().createData(file.getName());
+                }
+                bos = new BufferedOutputStream(fo.getOutputStream());
+                systemIniFile.store(bos);
+            } catch (IOException ex) {
+                Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
+            } finally {
+                if (bos != null) {
+                    try {
+                        bos.close();
+                    } catch (IOException ex) {
+                        Subversion.LOG.log(Level.INFO, null, ex);
+                    }
                 }
             }
         }

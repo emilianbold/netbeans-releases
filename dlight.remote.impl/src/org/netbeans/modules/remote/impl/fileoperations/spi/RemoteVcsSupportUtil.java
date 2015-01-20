@@ -41,24 +41,24 @@
  */
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.nio.channels.InterruptedByTimeoutException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-import javax.imageio.IIOException;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
-import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -192,6 +192,11 @@ public class RemoteVcsSupportUtil {
     }
 
     public static OutputStream getOutputStream(FileSystem fileSystem, String path) throws IOException {            
+        FileObject fo = getFileObject(fileSystem, path);
+        return fo.getOutputStream();
+    }
+
+    private static FileObject getFileObject(FileSystem fileSystem, String path) throws IOException {
         FileObject fo = fileSystem.findResource(path);
         if (fo == null)  {
             String parentPath = PathUtilities.getDirName(path);
@@ -205,11 +210,39 @@ public class RemoteVcsSupportUtil {
             }
             parentFO.refresh();
         }
-
         fo = fileSystem.findResource(path);
         if (fo == null) {
             fo = FileUtil.createData(fileSystem.getRoot(), path);
         }
-        return fo.getOutputStream();
+        return fo;
+    }
+
+    private static void deleteExternally(ExecutionEnvironment env, String path) {
+        final ExitStatus res = ProcessUtils.execute(env, "rm", "-rf", path);
+        if (!res.isOK()) {
+            RemoteLogger.info("Error deleting {0}:{1} rc={2} {3}", env, path, res.exitCode, res.error); //NOI18N
+        }
+    }
+
+    public static void delete(FileSystem fs, String path) {
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        if (fs instanceof RemoteFileSystem) {
+            final RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            final ExecutionEnvironment env = rfs.getExecutionEnvironment();
+            if (rfs.isInsideVCS()) {
+                deleteExternally(env, path);
+            } else {
+                try {
+                    FileObject fo = getFileObject(fs, path);
+                    if (fo != null) {
+                        fo.delete();
+                    } else {
+                        RemoteLogger.info("Can not delete inexistent file {0}:{1}", env, path);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.err);
+                }
+            }
+        }
     }
 }

@@ -44,7 +44,6 @@ package org.netbeans.modules.remotefs.versioning.spi;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.remotefs.versioning.api.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 
@@ -88,9 +87,15 @@ public interface RemoteVcsSupportImplementation {
 
     public String getFileSystemKey(FileSystem proxy);
 
+    public boolean isConnectedFileSystem(FileSystem file);
+
+    public void connectFileSystem(FileSystem file);
+
     public String toString(VCSFileProxy proxy);
 
     public VCSFileProxy fromString(String proxy);
 
     public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
+
+    public void delete(VCSFileProxy file);
 }
