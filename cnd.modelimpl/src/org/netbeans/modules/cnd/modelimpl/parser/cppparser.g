@@ -2763,6 +2763,9 @@ direct_declarator[int kind, int level]
         (ELLIPSIS)? id = qualified_id
         {declaratorID(id, qiVar);}
         (variable_attribute_specification)?
+        // TODO: initializer should be removed from here because it is already present
+        // in init_declarator. That change may require some improvements in
+        // AstRenderer as it may be useful to preserve offsets of declarations.
         LPAREN
         (expression_list)?
         RPAREN
