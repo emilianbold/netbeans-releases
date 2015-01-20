@@ -380,4 +380,14 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         }
         file.delete();
     }
+
+    @Override
+    public void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            javaFile.setLastModified(referenceFile.lastModified());
+        } else {
+            RemoteVcsSupportUtil.setLastModified(getFileSystem(file), file.getPath(), referenceFile.getPath());
+        }
+    }
 }

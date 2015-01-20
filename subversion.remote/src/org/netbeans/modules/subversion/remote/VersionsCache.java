@@ -298,7 +298,7 @@ public class VersionsCache {
                     return expanded;
                 }
                 expanded = getContentBase(referenceFile, expanded);
-                VCSFileProxySupport.setLastModified(expanded, svnBase.lastModified());
+                VCSFileProxySupport.setLastModified(expanded, svnBase);
                 return expanded;
             }
         } catch (SVNClientException e) {
