@@ -2767,7 +2767,7 @@ direct_declarator[int kind, int level]
         // in init_declarator. That change may require some improvements in
         // AstRenderer as it may be useful to preserve offsets of declarations.
         LPAREN
-        (expression_list)?
+        (expression_list | array_initializer)?
         RPAREN
         {#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
     |
