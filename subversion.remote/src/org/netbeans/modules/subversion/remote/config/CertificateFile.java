@@ -98,8 +98,13 @@ public class CertificateFile extends SVNCredentialFile {
     }
 
     public static VCSFileProxy getNBCertFile(FileSystem fileSystem, String realmString) throws IOException {
-        VCSFileProxy file = VCSFileProxy.createFileProxy(SvnConfigFiles.getNBConfigPath(fileSystem), "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
-        return file.normalizeFile();
+        if (SvnConfigFiles.COPY_CONFIG_FILES) {
+            VCSFileProxy file = VCSFileProxy.createFileProxy(SvnConfigFiles.getNBConfigPath(fileSystem), "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
+            return file.normalizeFile();
+        } else {
+            VCSFileProxy file = VCSFileProxy.createFileProxy(SvnConfigFiles.getUserConfigPath(fileSystem), "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
+            return file.normalizeFile();
+        }
     }
 
     private Key getCertKey() {

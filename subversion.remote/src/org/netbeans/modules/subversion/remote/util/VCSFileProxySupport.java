@@ -402,6 +402,7 @@ public final class VCSFileProxySupport {
     }
     
     public static VCSFileProxy getResource(VCSFileProxy file, String absPath) {
+        assert absPath.startsWith("/") : "Path "+absPath+"must be absolute";
         VCSFileProxy parent = file;
         while (true) {
             parent = file.getParentFile();
@@ -454,6 +455,14 @@ public final class VCSFileProxySupport {
     
     public static String getFileSystemKey(FileSystem file) {
         return RemoteVcsSupport.getFileSystemKey(file);
+    }
+    
+    public static boolean isConnectedFileSystem(FileSystem file) {
+        return RemoteVcsSupport.isConnectedFileSystem(file);
+    }
+
+    public static void connectFileSystem(FileSystem file) {
+        RemoteVcsSupport.connectFileSystem(file);
     }
     
     public static String toString(VCSFileProxy file) {
