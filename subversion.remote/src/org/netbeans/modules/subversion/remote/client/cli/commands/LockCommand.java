@@ -70,5 +70,10 @@ public class LockCommand extends SvnCommand {
         arguments.add("lock"); //NOI18N
         arguments.add(file);
         setCommandWorkingDirectory(file);
-    }    
+    }
+
+    @Override
+    public String getAbsolutePath(String path) {
+        return getAbsolutePath(path, file);
+    }
 }
