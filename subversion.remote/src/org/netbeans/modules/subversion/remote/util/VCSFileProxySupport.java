@@ -93,8 +93,14 @@ public final class VCSFileProxySupport {
         //TODO: implemetn it!
     }
 
-    public static void setLastModified(VCSFileProxy file, long time) {
-        throw new UnsupportedOperationException();
+    /**
+     * Sets file timestamp equals to the timestamp of another (reference) file
+     * @param file file to set timestamp
+     * @param referenceFile reference file
+     * NB: both files must be on the same file system !!!
+     */
+    public static void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile) {
+        RemoteVcsSupport.setLastModified(file, referenceFile);
     }
     
     public static boolean mkdir(VCSFileProxy file) {
@@ -259,7 +265,11 @@ public final class VCSFileProxySupport {
     }
     
     public static VCSFileProxy generateTemporaryFile(VCSFileProxy file, String name) {
-        throw new UnsupportedOperationException();
+        VCSFileProxy tmp = VCSFileProxy.createFileProxy(file, name);
+        while (tmp.exists()) {
+            tmp = VCSFileProxy.createFileProxy(file, name + Long.toString(System.currentTimeMillis()));
+        }
+        return tmp;
     }
 
     public static VCSFileProxy createTempFile(VCSFileProxy file, String prefix, String suffix, boolean deleteOnExit) throws IOException {

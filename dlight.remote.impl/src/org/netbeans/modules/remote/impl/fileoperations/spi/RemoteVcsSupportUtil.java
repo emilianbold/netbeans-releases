@@ -56,12 +56,14 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Static methods that are need for RemoteVcsSupportImpl
@@ -242,6 +244,34 @@ public class RemoteVcsSupportUtil {
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }
+            }
+        }
+    }
+
+    public static void setLastModified(FileSystem fs, String path, String referenceFile) {
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        if (fs instanceof RemoteFileSystem) {
+            final RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            final ExecutionEnvironment env = rfs.getExecutionEnvironment();
+            final ExitStatus res = ProcessUtils.execute(env, "touch", "-r", path, referenceFile);
+            if (res.isOK()) {
+                try {
+                    String base1 = PathUtilities.getDirName(path);
+                    String base2 = PathUtilities.getDirName(referenceFile);
+                    FileObject baseFO1 = (base1 == null) ? fs.getRoot() : getFileObject(fs, base1);
+                    FileObject baseFO2 = (base2 == null) ? fs.getRoot() : getFileObject(fs, base2);
+                    if (baseFO1 instanceof RemoteFileObject) {
+                        ((RemoteFileObject) baseFO1).nonRecursiveRefresh();
+                    }
+                    if (baseFO2 instanceof RemoteFileObject && ! baseFO2.equals(baseFO1)) {
+                        ((RemoteFileObject) baseFO2).nonRecursiveRefresh();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.err);
+                }
+            } else {
+                RemoteLogger.info("Error setting timestamp for {0}:{1} from {2} rc={3} {4}", //NOI18N
+                        env, path, env, referenceFile, res.exitCode, res.error);
             }
         }
     }

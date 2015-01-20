@@ -56,6 +56,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -252,6 +253,34 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
             RemoteFileObject fo = getFileObject(path);
             String actualText = readFile(fo);
             assertEquals(text, actualText);
+        } finally {
+            if (basePath != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(),
+                        "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
+            }
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testSetLastModified() throws Exception {
+        String basePath = mkTemp(execEnv, true);
+        try {
+            String file = "file.1";
+            String refFile = "file.2";
+            final String script =
+                    "touch " + file + "; " +
+                    "sleep 2; " +
+                    "touch " + refFile + ";";
+            ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(basePath, execEnv, "sh", "-c", script);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            //VCSFileProxy baseProxy = VCSFileProxy.createFileProxy(getFileObject(basePath));
+            //VCSFileProxy proxy = VCSFileProxy.createFileProxy(baseProxy, file);
+            //VCSFileProxy refProxy = VCSFileProxy.createFileProxy(baseProxy, refFile);
+            refreshParentAndRecurse(basePath);
+            RemoteFileObject fo = getFileObject(basePath + '/' + file);
+            RemoteFileObject refFo = getFileObject(basePath + '/' + refFile);
+            assertEquals(refFo.lastModified(), fo.lastModified());            
         } finally {
             if (basePath != null) {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(),

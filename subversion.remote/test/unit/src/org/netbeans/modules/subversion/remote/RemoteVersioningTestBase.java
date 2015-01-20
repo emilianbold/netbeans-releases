@@ -71,6 +71,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.utils.TestUtilities;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -177,6 +178,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         dataRootDir = VCSFileProxy.createFileProxy(remoteDirFO);
         testName = getName();
         testName = testName.substring(0, testName.indexOf('[')).trim();
+        //VersioningSupport.refreshFor(new VCSFileProxy[]{dataRootDir});
         wc = VCSFileProxy.createFileProxy(dataRootDir, testName + "_wc");
         wc2 = VCSFileProxy.createFileProxy(dataRootDir, testName + "_wc2");
         repoDir = VCSFileProxy.createFileProxy(dataRootDir, "repo");
@@ -199,7 +201,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         
         VCSFileProxySupport.mkdirs(wc);
         VCSFileProxySupport.mkdirs(wc2);
-        remoteDirFO.refresh();
+        VersioningSupport.refreshFor(new VCSFileProxy[]{dataRootDir});
         svnimport();                   
     }
     

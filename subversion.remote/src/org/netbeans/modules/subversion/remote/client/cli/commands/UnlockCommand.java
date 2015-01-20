@@ -70,5 +70,10 @@ public class UnlockCommand extends SvnCommand {
         arguments.add("unlock"); //NOI18N
         arguments.add(file);
         setCommandWorkingDirectory(file);
-    }    
+    }
+    
+    @Override
+    public String getAbsolutePath(String path) {
+        return getAbsolutePath(path, file);
+    }
 }

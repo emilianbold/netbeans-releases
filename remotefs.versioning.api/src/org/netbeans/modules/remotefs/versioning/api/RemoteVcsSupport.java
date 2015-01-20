@@ -154,6 +154,10 @@ public final class RemoteVcsSupport {
         getImpl().delete(file);
     }
 
+    public static void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile) {
+        getImpl().setLastModified(file, referenceFile);
+    }
+
     private static RemoteVcsSupportImplementation getImpl() {
         RemoteVcsSupportImplementation impl = Lookup.getDefault().lookup(RemoteVcsSupportImplementation.class);
         if (impl == null) {

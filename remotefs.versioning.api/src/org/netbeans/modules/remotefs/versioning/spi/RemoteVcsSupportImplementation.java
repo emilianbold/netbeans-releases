@@ -98,4 +98,6 @@ public interface RemoteVcsSupportImplementation {
     public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
 
     public void delete(VCSFileProxy file);
+
+    public void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile);
 }

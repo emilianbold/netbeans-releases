@@ -52,6 +52,7 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
@@ -219,12 +220,12 @@ public class InterceptorCreateTest extends RemoteVersioningTestBase {
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
         
         VCSFileProxySupport.delete(file);
-        file.toFileObject().refresh();
+        VersioningSupport.refreshFor(new VCSFileProxy[]{file});
         assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
         assertCachedStatus(file, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY);
         
         TestKit.write(file, "modification");
-        file.getParentFile().toFileObject().refresh();
+        VersioningSupport.refreshFor(new VCSFileProxy[]{file.getParentFile()});
         assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_CONTENT);
         assertEquals(SVNStatusKind.MODIFIED, getSVNStatus(file).getTextStatus());
     }
