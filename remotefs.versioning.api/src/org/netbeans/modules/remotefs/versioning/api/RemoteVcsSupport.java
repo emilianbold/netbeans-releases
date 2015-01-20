@@ -143,6 +143,10 @@ public final class RemoteVcsSupport {
         return getImpl().getOutputStream(proxy);
     }
 
+    public static void delete(VCSFileProxy file) {
+        getImpl().delete(file);
+    }
+
     private static RemoteVcsSupportImplementation getImpl() {
         RemoteVcsSupportImplementation impl = Lookup.getDefault().lookup(RemoteVcsSupportImplementation.class);
         if (impl == null) {

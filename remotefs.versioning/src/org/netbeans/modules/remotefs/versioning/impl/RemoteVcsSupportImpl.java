@@ -347,4 +347,26 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         VCSFileProxy rootProxy = VCSFileProxy.createFileProxy(fs.getRoot());
         return VCSFileProxy.createFileProxy(rootProxy, proxyString);
     }
+
+    @Override
+    public void delete(VCSFileProxy file) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            deleteRecursively(javaFile);
+        } else {
+            RemoteVcsSupportUtil.delete(getFileSystem(file), file.getPath());
+        }
+    }
+
+    private static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    deleteRecursively(files[i]);
+                }
+            }
+        }
+        file.delete();
+    }
 }

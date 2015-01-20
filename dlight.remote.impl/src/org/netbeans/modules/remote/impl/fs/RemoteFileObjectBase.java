@@ -300,17 +300,22 @@ public abstract class RemoteFileObjectBase {
         }
         DirEntryList entryList = null;
         if (interceptor != null) {
-            FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
-            IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
-            if (deleteHandler != null) {
-                deleteHandler.handle();
-            } else {
-                entryList = deleteImpl(lock);
+            try {
+                getFileSystem().setInsideVCS(true);
+                FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
+                IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
+                if (deleteHandler != null) {
+                    deleteHandler.handle();
+                } else {
+                    entryList = deleteImpl(lock);
+                }
+                // TODO remove attributes
+                // TODO clear cache?
+                // TODO fireFileDeletedEvent()?
+                interceptor.deleteSuccess(fileProxy);
+            } finally {
+                getFileSystem().setInsideVCS(false);
             }
-            // TODO remove attributes
-            // TODO clear cache?
-            // TODO fireFileDeletedEvent()?
-            interceptor.deleteSuccess(fileProxy);
         } else {
             entryList = deleteImpl(lock);
         }
@@ -416,7 +421,12 @@ public abstract class RemoteFileObjectBase {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                return !canWriteImpl(orig) && isValid();
+                try {
+                    getFileSystem().setInsideVCS(true);
+                    return !canWriteImpl(orig) && isValid();
+                } finally {
+                    getFileSystem().setInsideVCS(false);
+                }
             }
         }
         return !canRead();
@@ -491,7 +501,12 @@ public abstract class RemoteFileObjectBase {
                 if (!result && USE_VCS) {
                     FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
                     if (interceptor != null) {
-                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
+                        try {
+                            getFileSystem().setInsideVCS(true);
+                            result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
+                        } finally {
+                            getFileSystem().setInsideVCS(false);
+                        }
                     }
                 }
                 if (!result) {
@@ -691,29 +706,34 @@ public abstract class RemoteFileObjectBase {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
-                interceptor.beforeCopy(from, to);
-                FileObject result = null;
                 try {
-                    final IOHandler copyHandler = interceptor.getCopyHandler(from, to);
-                    if (copyHandler != null) {
-                        copyHandler.handle();
-                        refresh(true);
-                        //perfromance bottleneck to call refresh on folder
-                        //(especially for many files to be copied)
-                        target.refresh(true); // XXX ?
-                        result = target.getFileObject(name, ext); // XXX ?
-                        assert result != null : "Cannot find " + target + " with " + name + "." + ext;
-                        FileUtil.copyAttributes(getOwnerFileObject(), result);
-                    } else {
-                        result = RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
+                    getFileSystem().setInsideVCS(true);
+                    FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
+                    FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
+                    interceptor.beforeCopy(from, to);
+                    FileObject result = null;
+                    try {
+                        final IOHandler copyHandler = interceptor.getCopyHandler(from, to);
+                        if (copyHandler != null) {
+                            copyHandler.handle();
+                            refresh(true);
+                            //perfromance bottleneck to call refresh on folder
+                            //(especially for many files to be copied)
+                            target.refresh(true); // XXX ?
+                            result = target.getFileObject(name, ext); // XXX ?
+                            assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                            FileUtil.copyAttributes(getOwnerFileObject(), result);
+                        } else {
+                            result = RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
+                        }
+                    } catch (IOException ioe) {
+                        throw ioe;
                     }
-                } catch (IOException ioe) {
-                    throw ioe;
+                    interceptor.copySuccess(from, to);
+                    return result;
+                } finally {
+                    getFileSystem().setInsideVCS(false);
                 }
-                interceptor.copySuccess(from, to);
-                return result;
             }
         }
         return RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
@@ -730,32 +750,37 @@ public abstract class RemoteFileObjectBase {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
-                FileObject result = null;
                 try {
-                    final IOHandler moveHandler = interceptor.getMoveHandler(from, to);
-                    if (moveHandler != null) {
-                        Map<String,Object> attr = getAttributesMap();
-                        moveHandler.handle();
-                        refresh(true);
-                        //perfromance bottleneck to call refresh on folder
-                        //(especially for many files to be moved)
-                        target.refresh(true);
-                        result = target.getFileObject(name, ext); // XXX ?
-                        assert result != null : "Cannot find " + target + " with " + name + "." + ext;
-                        //FileUtil.copyAttributes(this, result);
-                        if (result instanceof RemoteFileObject) {
-                            setAttributeMap(attr, (RemoteFileObject)result);
+                    getFileSystem().setInsideVCS(true);
+                    FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
+                    FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
+                    FileObject result = null;
+                    try {
+                        final IOHandler moveHandler = interceptor.getMoveHandler(from, to);
+                        if (moveHandler != null) {
+                            Map<String,Object> attr = getAttributesMap();
+                            moveHandler.handle();
+                            refresh(true);
+                            //perfromance bottleneck to call refresh on folder
+                            //(especially for many files to be moved)
+                            target.refresh(true);
+                            result = target.getFileObject(name, ext); // XXX ?
+                            assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                            //FileUtil.copyAttributes(this, result);
+                            if (result instanceof RemoteFileObject) {
+                                setAttributeMap(attr, (RemoteFileObject)result);
+                            }
+                        } else {
+                            result = superMove(lock, target, name, ext);
                         }
-                    } else {
-                        result = superMove(lock, target, name, ext);
+                    } catch (IOException ioe) {
+                        throw ioe;
                     }
-                } catch (IOException ioe) {
-                    throw ioe;
+                    interceptor.afterMove(from, to);
+                    return result;
+                } finally {
+                    getFileSystem().setInsideVCS(false);
                 }
-                interceptor.afterMove(from, to);
-                return result;
             }
         }
         return superMove(lock, target, name, ext);

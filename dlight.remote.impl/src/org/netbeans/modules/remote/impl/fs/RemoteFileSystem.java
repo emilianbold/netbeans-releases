@@ -138,12 +138,14 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
     private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<RemoteFileObjectBase>();
     private final RemoteFileZipper remoteFileZipper;
+    private final ThreadLocal<Boolean> isInsideVCS = new ThreadLocal<Boolean>();
 
     private final RequestProcessor RP = new RequestProcessor("Connection and R/W change", 1); //NOI18N
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
+        this.isInsideVCS.set(Boolean.FALSE);
         this.remoteFileSupport = new RemoteFileSupport();
         factory = new RemoteFileObjectFactory(this);
         refreshManager = new RefreshManager(execEnv, factory);
@@ -185,6 +187,14 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         });
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
         remoteFileZipper = new RemoteFileZipper(execEnv);
+    }
+
+    public boolean isInsideVCS() {
+        return isInsideVCS.get().booleanValue();
+    }
+
+    public void setInsideVCS(boolean value) {
+        isInsideVCS.set(value);
     }
 
     void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
@@ -531,7 +541,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             if (RemoteFileObjectBase.USE_VCS) {
                 FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(this);
                 if (interceptor != null) {
-                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(file.getOwnerFileObject()), attrName);
+                    try {
+                        setInsideVCS(true);
+                        return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(file.getOwnerFileObject()), attrName);
+                    } finally {
+                        setInsideVCS(false);
+                    }
                 }
             }
         }
@@ -1033,7 +1048,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         public Object getAttribute(String attrName) {
             if (FileOperationsProvider.ATTRIBUTE.equals(attrName)) {
                 if (USE_VCS) {
-                    return FileOperationsProvider.getDefault().getFileOperations(getFileSystem());
+                    try {
+                        getFileSystem().setInsideVCS(true);
+                        return FileOperationsProvider.getDefault().getFileOperations(getFileSystem());
+                    } finally {
+                        getFileSystem().setInsideVCS(false);
+                    }
                 }
             }
             return super.getAttribute(attrName);

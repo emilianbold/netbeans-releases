@@ -93,4 +93,6 @@ public interface RemoteVcsSupportImplementation {
     public VCSFileProxy fromString(String proxy);
 
     public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
+
+    public void delete(VCSFileProxy file);
 }
