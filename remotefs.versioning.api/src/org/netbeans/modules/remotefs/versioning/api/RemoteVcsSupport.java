@@ -49,7 +49,6 @@ import org.netbeans.modules.remotefs.versioning.spi.RemoteVcsSupportImplementati
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.*;
-import static org.openide.util.lookup.Lookups.proxy;
 
 /**
  *
@@ -129,6 +128,14 @@ public final class RemoteVcsSupport {
 
     public static String getFileSystemKey(FileSystem proxy) {
         return getImpl().getFileSystemKey(proxy);
+    }
+    
+    public static boolean isConnectedFileSystem(FileSystem file) {
+        return getImpl().isConnectedFileSystem(file);
+    }
+
+    public static void connectFileSystem(FileSystem file) {
+        getImpl().connectFileSystem(file);
     }
 
     public static String toString(VCSFileProxy proxy) {

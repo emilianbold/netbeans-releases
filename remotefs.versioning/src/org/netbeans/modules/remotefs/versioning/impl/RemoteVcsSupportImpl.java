@@ -42,7 +42,6 @@
 package org.netbeans.modules.remotefs.versioning.impl;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -333,6 +332,18 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     public String getFileSystemKey(FileSystem fs) {
         final String toUrl = FileSystemProvider.toUrl(fs, "/"); // NOI18N
         return toUrl.substring(0, toUrl.indexOf('/')); //NOI18N
+    }
+
+    @Override
+    public boolean isConnectedFileSystem(FileSystem file) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(file);
+        return ConnectionManager.getInstance().isConnectedTo(env);
+    }
+
+    @Override
+    public void connectFileSystem(FileSystem file) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(file);
+        ConnectionManager.getInstance().connect(env);
     }
 
     @Override
