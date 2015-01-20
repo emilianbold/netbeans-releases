@@ -261,7 +261,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
-                interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), name, directory);
+                try {
+                    getFileSystem().setInsideVCS(true);
+                    interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), name, directory);
+                } finally {
+                    getFileSystem().setInsideVCS(false);
+                }
             }
         }
         ProcessUtils.ExitStatus res;
@@ -284,17 +289,22 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
                 }
                 if (USE_VCS) {
-                    FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-                    if (interceptor != null) {
-                        if (this == orig) {
-                            interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(fo));
-                        } else {
-                            RemoteFileObject originalFO = orig.getFileObject(name, new HashSet<String>());
-                            if (originalFO == null) {
-                                throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
+                    try {
+                        getFileSystem().setInsideVCS(true);
+                        FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+                        if (interceptor != null) {
+                            if (this == orig) {
+                                interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(fo));
+                            } else {
+                                RemoteFileObject originalFO = orig.getFileObject(name, new HashSet<String>());
+                                if (originalFO == null) {
+                                    throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
+                                }
+                                interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(originalFO));
                             }
-                            interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(originalFO));
                         }
+                    } finally {
+                        getFileSystem().setInsideVCS(false);
                     }
                 }
                 return fo;
@@ -325,9 +335,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private void creationFalure(String name, boolean directory, RemoteFileObjectBase orig) {
         if (USE_VCS) {
-            FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-            if (interceptor != null) {
-                interceptor.createFailure(FilesystemInterceptorProvider.toFileProxy(getOwnerFileObject()), name, directory);
+            try {
+                getFileSystem().setInsideVCS(true);
+                FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+                if (interceptor != null) {
+                    interceptor.createFailure(FilesystemInterceptorProvider.toFileProxy(getOwnerFileObject()), name, directory);
+                }
+            } finally {
+                getFileSystem().setInsideVCS(false);
             }
         }
     }
@@ -741,13 +756,18 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (trace) {trace("renaming");} // NOI18N
             boolean isRenamed = false;
             if (USE_VCS) {
-                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-                if (interceptor != null) {
-                    FilesystemInterceptorProvider.IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), newNameExt);
-                    if (renameHandler != null) {
-                        renameHandler.handle();
-                        isRenamed = true;
+                try {
+                    getFileSystem().setInsideVCS(true);
+                    FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+                    if (interceptor != null) {
+                        FilesystemInterceptorProvider.IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), newNameExt);
+                        if (renameHandler != null) {
+                            renameHandler.handle();
+                            isRenamed = true;
+                        }
                     }
+                } finally {
+                    getFileSystem().setInsideVCS(false);
                 }
             }
             if (!isRenamed) {
@@ -1282,7 +1302,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             for (DirEntry entry : entriesToFireCreated) {
                 RemoteFileObject fo = getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
                 if (interceptor != null && expectedCreated != null && !expectedCreated.equals(entry)) {
-                    interceptor.createdExternally(FilesystemInterceptorProvider.toFileProxy(fo));
+                    try {
+                        getFileSystem().setInsideVCS(true);
+                        interceptor.createdExternally(FilesystemInterceptorProvider.toFileProxy(fo));
+                    } finally {
+                        getFileSystem().setInsideVCS(false);
+                    }
                 }
                 fireRemoteFileObjectCreated(fo);
             }
@@ -1328,11 +1353,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 Enumeration<FileChangeListener> listeners = c.getListeners();
                 RemoteFileObject childFO = c.getOwnerFileObject();
                 if (interceptor != null) {
-                    getFileSystem().setExternallyRemoved(childFO.getImplementor());
                     try {
-                        interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(childFO));
+                        getFileSystem().setInsideVCS(true);
+                        getFileSystem().setExternallyRemoved(childFO.getImplementor());
+                        try {
+                            interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(childFO));
+                        } finally {
+                            getFileSystem().setExternallyRemoved(null);
+                        }
                     } finally {
-                        getFileSystem().setExternallyRemoved(null);
+                        getFileSystem().setInsideVCS(false);
                     }
                 }
                 c.fireFileDeletedEvent(listeners, new FileEvent(childFO, childFO, expected));
@@ -1343,8 +1373,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (interceptor != null) {
             getFileSystem().setExternallyRemoved(fo.getImplementor());
             try {
+                getFileSystem().setInsideVCS(true);
                 interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(fo));
             } finally {
+                getFileSystem().setInsideVCS(false);
                 getFileSystem().setExternallyRemoved(null);
             }
         }

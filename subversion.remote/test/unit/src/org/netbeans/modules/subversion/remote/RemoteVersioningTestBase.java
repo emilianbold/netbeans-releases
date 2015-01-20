@@ -209,7 +209,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         if (skipTest) {
             return;
         }
-        VCSFileProxySupport.delete(dataRootDir);
+        VCSFileProxySupport.delete(dataRootDir.getParentFile());
     }
 
     @Override

@@ -45,6 +45,8 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
@@ -111,6 +113,9 @@ public final class KnockoutTC extends TopComponent {
                 currentPanel.dispose();
             }
             currentPanel = new KnockoutPanel((WebKitPageModel)pageModel);
+            if (lastKnockoutPageModel != null && lastKnockoutPageModel.get() == pageModel) {
+                currentPanel.knockoutUsed();
+            }
             add(currentPanel);
             ((KnockoutTCLookup)getLookup()).setPanel(currentPanel);
             revalidate();
@@ -135,6 +140,24 @@ public final class KnockoutTC extends TopComponent {
     protected void componentClosed() {
         super.componentClosed();
         update();
+    }
+
+    private Reference<PageModel> lastKnockoutPageModel;
+
+    /**
+     * Invoked when page knockout is found in the specified page model.
+     * 
+     * @param pageModel page model where knockout was found.
+     */
+    void knockoutUsed(PageModel pageModel) {
+        assert EventQueue.isDispatchThread();
+        if (currentPanel != null) {
+            if (currentPanel.getPageModel() == pageModel) {
+                currentPanel.knockoutUsed();
+            } else {
+                lastKnockoutPageModel = new WeakReference<PageModel>(pageModel);
+            }
+        }
     }
 
     /**

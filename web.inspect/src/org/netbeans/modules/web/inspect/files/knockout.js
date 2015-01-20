@@ -1,7 +1,7 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remotefs.versioning.spi;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import javax.swing.JFileChooser;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileSystem;
-
-/**
- *
- * @author vkvashin
- */
-public interface RemoteVcsSupportImplementation {
-
-    /**
-     * @param proxy defines FS and initial selection
-     * @return file chooser
-     */
-    JFileChooser createFileChooser(VCSFileProxy proxy);
-
-    VCSFileProxy getSelectedFile(JFileChooser chooser);
-
-    FileSystem getFileSystem(VCSFileProxy proxy);
-
-    FileSystem[] getFileSystems();
-
-    FileSystem getDefaultFileSystem();
-
-    boolean isSymlink(VCSFileProxy proxy);
-    
-    boolean canRead(VCSFileProxy proxy);
-
-    public boolean canRead(VCSFileProxy base, String subdir);
-
-    public String getCanonicalPath(VCSFileProxy proxy) throws IOException;
-
-    public VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException;
-
-    public VCSFileProxy getHome(VCSFileProxy proxy);
-
-    public boolean isMac(VCSFileProxy proxy);
-
-    public boolean isUnix(VCSFileProxy proxy);
-
-    public long getSize(VCSFileProxy proxy);
-
-    public String getFileSystemKey(FileSystem proxy);
-
-    public boolean isConnectedFileSystem(FileSystem file);
-
-    public void connectFileSystem(FileSystem file);
-
-    public String toString(VCSFileProxy proxy);
-
-    public VCSFileProxy fromString(String proxy);
-
-    public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
-
-    public void delete(VCSFileProxy file);
-}
+; // Intentional "redundant" semi-colon. It ensures that our code is not
+  // misinterpreted when the previous statement is not ended properly.
+(function() {
+    if (typeof(NetBeans) !== 'object') {
+        NetBeans = new Object();
+    }
+    if (NetBeans.knockoutMarkers) {
+        return;
+    }
+    NetBeans.knockoutMarkers = [];
+    var createMarker = function(node, bindingName) {
+        var marker = {
+            invoked: false,
+            binding: bindingName,
+            node: node
+        };
+        NetBeans.knockoutMarkers.push(marker);
+        return marker;
+    };
+    var delegate = ko.bindingProvider.instance.getBindingAccessors;
+    if (delegate) {
+        ko.bindingProvider.instance.getBindingAccessors = function(node) {
+            var accessors = delegate.apply(this, arguments);
+            if (accessors) {
+                for (var accessorName in accessors) {
+                    if (accessors.hasOwnProperty(accessorName)) {
+                        var originalAccessor = accessors[accessorName];
+                        accessors[accessorName] = (function(marker) {
+                            return function() {
+                                marker.invoked = true;
+                                return originalAccessor();
+                            };
+                        })(createMarker(node, accessorName));
+                    }
+                }
+            }
+            return accessors;
+        };
+    } // else not using Knockout 3+ probably
+})();

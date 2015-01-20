@@ -53,6 +53,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -66,7 +67,7 @@ implements FileChangeListener {
     private final FileChangeListener fcl;
     private final Set<FileObject> kept;
 
-    public RecursiveListener(FileObject source, FileChangeListener fcl, boolean keep) {
+    public RecursiveListener(RemoteFileObject source, FileChangeListener fcl, boolean keep) {
         super(source);
         this.fcl = fcl;
         this.kept = keep ? new HashSet<FileObject>() : null;
@@ -78,16 +79,22 @@ implements FileChangeListener {
         }
     }
     
-    private void init(FileObject source, long previous, boolean expected) throws FileStateInvalidException {
+    private void init(RemoteFileObject source, long previous, boolean expected) throws FileStateInvalidException {
         if (RemoteFileObjectBase.USE_VCS) {
-            FilesystemInterceptor interseptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(source.getFileSystem());
-            LinkedList<FileProxyI> list = new LinkedList<FileProxyI>();
-            if (interseptor != null) {
-                long tc = interseptor.listFiles(FilesystemInterceptorProvider.toFileProxy(source), previous, list);
-            }
-            for (FileProxyI proxy : list) {
-                FileObject fo = source.getFileSystem().findResource(proxy.getPath());
-                // TODO what should be fire?
+            try {
+                final FileSystem fileSystem = source.getFileSystem();
+                source.getFileSystem().setInsideVCS(true);
+                FilesystemInterceptor interseptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+                LinkedList<FileProxyI> list = new LinkedList<FileProxyI>();
+                if (interseptor != null) {
+                    long tc = interseptor.listFiles(FilesystemInterceptorProvider.toFileProxy(source), previous, list);
+                }
+                for (FileProxyI proxy : list) {
+                    FileObject fo = source.getFileSystem().findResource(proxy.getPath());
+                    // TODO what should be fire?
+                }
+            } finally {
+                source.getFileSystem().setInsideVCS(false);
             }
         }
     }

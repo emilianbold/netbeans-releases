@@ -59,8 +59,6 @@ import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -183,9 +181,13 @@ public class SvnClientFactory {
     private void setup() {
         try {
             exception = null;
+            if (!VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
+                VCSFileProxySupport.connectFileSystem(fileSystem);
+                //throw new SVNClientException("Remote host "+fileSystem+" is not connected."); //NOI18N
+            }
             // ping config file copying
             SvnConfigFiles.getInstance(fileSystem);
-
+            
             String factoryType = getDefaultFactoryType();
             
             if(factoryType.trim().equals(FACTORY_TYPE_COMMANDLINE)) {
@@ -195,8 +197,8 @@ public class SvnClientFactory {
             }
         } catch (SVNClientException e) {
             exception = e;
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err);
+        } catch (Throwable ex) {
+            exception = new SVNClientException(ex);
         }
     }
 
@@ -294,8 +296,11 @@ public class SvnClientFactory {
     private void setConfigDir (SvnClient client) {
         if (client != null) {
             try {
-                VCSFileProxy configDir = SvnConfigFiles.getNBConfigPath(fileSystem).normalizeFile();
-                client.setConfigDirectory(configDir);
+                VCSFileProxy nbConfigPath = SvnConfigFiles.getNBConfigPath(fileSystem);
+                if (nbConfigPath != null) {
+                    VCSFileProxy configDir = nbConfigPath.normalizeFile();
+                    client.setConfigDirectory(configDir);
+                }
             } catch (SVNClientException | IOException ex) {
                 // not interested, just log
                 LOG.log(Level.INFO, null, ex);
@@ -381,8 +386,11 @@ public class SvnClientFactory {
             // do not set password for javahl, it seems that in that case the password is stored permanently in ~/.subversion/auth
             adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             try {
-                VCSFileProxy configDir = SvnConfigFiles.getNBConfigPath(fileSystem).normalizeFile();
-                adapter.setConfigDirectory(configDir);
+                VCSFileProxy nbConfigPath = SvnConfigFiles.getNBConfigPath(fileSystem);
+                if (nbConfigPath != null) {
+                    VCSFileProxy configDir = nbConfigPath.normalizeFile();
+                    adapter.setConfigDirectory(configDir);
+                }
             } catch (SVNClientException | IOException ex) {
                 SvnClientExceptionHandler.notifyException(new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot())), ex, false, false);
             }

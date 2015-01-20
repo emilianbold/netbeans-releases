@@ -389,11 +389,14 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         }
         FileLock lock = super.lockImpl(orig);
         if (interceptor != null) {
+            getFileSystem().setInsideVCS(true);
             try {
                 interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
             } catch (IOException ex){
                 lock.releaseLock();
                 throw ex;
+            } finally {
+                getFileSystem().setInsideVCS(false);
             }
         }
         return lock;
@@ -427,6 +430,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             }
             if (rwl.tryWriteLock()) {
+                // setInsideVCS() is inside
                 return new DelegateOutputStream(interceptor, orig, this);
             } else {
                 throw new FileAlreadyLockedException("Cannot write to locked file: " + this);  //NOI18N
@@ -452,7 +456,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         return FileType.fromChar(fileTypeChar);
     }
 
-    private static class DelegateOutputStream extends OutputStream {
+    private class DelegateOutputStream extends OutputStream {
 
         private final FileOutputStream delegate;
         private boolean closed;
@@ -460,7 +464,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
         public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor, RemoteFileObjectBase orig, RemotePlainFile file) throws IOException {
             if (interceptor != null) {
-                interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
+                try {
+                    getFileSystem().setInsideVCS(true);
+                    interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
+                } finally {
+                    getFileSystem().setInsideVCS(false);
+                }
             }
             this.file = file;
             delegate = new FileOutputStream(file.getCache());

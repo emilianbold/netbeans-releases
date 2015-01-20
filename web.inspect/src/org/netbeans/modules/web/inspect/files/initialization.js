@@ -45,7 +45,9 @@ if (!(typeof(NetBeans) === 'object'
     && typeof(NetBeans.GLASSPANE_ID) === 'string'
     && document.getElementById(NetBeans.GLASSPANE_ID) !== null)) {
 
-NetBeans = new Object();
+if (typeof(NetBeans) !== 'object') {
+    NetBeans = new Object();
+}
 
 // Name of attribute used to mark document elements created by NetBeans
 NetBeans.ATTR_ARTIFICIAL = ':netbeans_generated';
@@ -643,6 +645,38 @@ NetBeans.getKnockout = function() {
 NetBeans.usesKnockout = function() {
     var ko = this.getKnockout();
     return !!(ko && ko.observable && ko.applyBindings);
+};
+
+// Determines whether unused binding information is available
+NetBeans.unusedBindingsAvailable = function() {
+    return !!NetBeans.knockoutMarkers;
+};
+
+// Returns information about unused Knockout bindings
+NetBeans.unusedBindings = function() {
+    var infos = null;
+    if (this.unusedBindingsAvailable()) {
+        infos = [];
+        var i;
+        for (i=0; i<NetBeans.knockoutMarkers; i++) {
+            var marker = NetBeans.knockoutMarkers[i];
+            if (!marker.invoked) {
+                infos.push({
+                    name: marker.binding,
+                    id: i,
+                    nodeTagName: marker.node.tagName,
+                    nodeId: marker.node.getAttribute('id'),
+                    nodeClasses: marker.node.getAttribute('class')
+                });
+            }
+        }
+    }
+    return infos;
+};
+
+// Returns the node that owns the unused binding with the specified ID
+NetBeans.ownerOfUnusedBinding = function(id) {
+    return NetBeans.knockoutMarkers[id].node;
 };
 
 // Insert glass-pane into the inspected page

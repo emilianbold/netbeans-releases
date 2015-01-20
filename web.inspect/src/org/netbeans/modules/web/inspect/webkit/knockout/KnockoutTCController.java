@@ -126,12 +126,9 @@ public class KnockoutTCController implements PropertyChangeListener {
             }
             getKnockoutTCGroup().close();
         } else {
-            boolean isOpened = getKnockoutTC().isOpened();
-            if (!isOpened) {
-                synchronized (this) {
-                    currentChecker = new KnockoutChecker((WebKitPageModel)inspectedPage);
-                    currentChecker.startCheck();
-                }
+            synchronized (this) {
+                currentChecker = new KnockoutChecker((WebKitPageModel)inspectedPage);
+                currentChecker.startCheck();
             }
         }
     }
@@ -229,7 +226,9 @@ public class KnockoutTCController implements PropertyChangeListener {
                 @Override
                 public void run() {
                     TopComponentGroup group = getKnockoutTCGroup();
-                    Mode mode = WindowManager.getDefault().findMode(getKnockoutTC());
+                    KnockoutTC knockoutTC = (KnockoutTC)getKnockoutTC();
+                    knockoutTC.knockoutUsed(pageModel);
+                    Mode mode = WindowManager.getDefault().findMode(knockoutTC);
                     TopComponent selectedTC = mode.getSelectedTopComponent();
                     group.open();
                     if (selectedTC != null) {
