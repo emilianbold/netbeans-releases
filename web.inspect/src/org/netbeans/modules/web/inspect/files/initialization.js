@@ -658,7 +658,7 @@ NetBeans.unusedBindings = function() {
     if (this.unusedBindingsAvailable()) {
         infos = [];
         var i;
-        for (i=0; i<NetBeans.knockoutMarkers; i++) {
+        for (i=0; i<NetBeans.knockoutMarkers.length; i++) {
             var marker = NetBeans.knockoutMarkers[i];
             if (!marker.invoked) {
                 infos.push({
