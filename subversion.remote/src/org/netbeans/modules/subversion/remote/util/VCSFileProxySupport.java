@@ -265,7 +265,11 @@ public final class VCSFileProxySupport {
     }
     
     public static VCSFileProxy generateTemporaryFile(VCSFileProxy file, String name) {
-        throw new UnsupportedOperationException();
+        VCSFileProxy tmp = VCSFileProxy.createFileProxy(file, name);
+        while (tmp.exists()) {
+            tmp = VCSFileProxy.createFileProxy(file, name + Long.toString(System.currentTimeMillis()));
+        }
+        return tmp;
     }
 
     public static VCSFileProxy createTempFile(VCSFileProxy file, String prefix, String suffix, boolean deleteOnExit) throws IOException {
