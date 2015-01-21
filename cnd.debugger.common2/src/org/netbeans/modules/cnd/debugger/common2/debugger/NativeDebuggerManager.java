@@ -165,7 +165,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     private final static boolean standalone = "on".equals(System.getProperty("spro.dbxtool")); // NOI18N
     private static final boolean pl = "on".equals(System.getProperty("PL_MODE")); // NOI18N;
 
-    private NativeDebugger currentDebugger;
+    private volatile NativeDebugger currentDebugger;
     private InputOutput io;
 
     // Keep a strong reference to 'changeListener' so it doesn't get GC'ed
