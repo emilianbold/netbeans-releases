@@ -61,6 +61,9 @@ public enum SVNNodeKind {
                 return r;
             }
         }
+        if ("directory".equals(s)) { //NOI18N
+            return DIR;
+        }
         return null;
     }
 

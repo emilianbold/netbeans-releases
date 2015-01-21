@@ -250,6 +250,8 @@ public class RemoteVcsSupportUtil {
 
     public static void setLastModified(FileSystem fs, String path, String referenceFile) {
         RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        RemoteLogger.assertTrue(path.startsWith("/")); //NOI18N
+        RemoteLogger.assertTrue(referenceFile.startsWith("/")); //NOI18N
         if (fs instanceof RemoteFileSystem) {
             final RemoteFileSystem rfs = (RemoteFileSystem) fs;
             final ExecutionEnvironment env = rfs.getExecutionEnvironment();
