@@ -63,6 +63,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -294,10 +295,12 @@ public class BinaryAnalyser {
         } else {
             final FileObject rootFo =  URLMapper.findFileObject(root);
             if (rootFo != null) {
-                final Object path = rootFo.getAttribute(Path.class.getName());
-                return (path instanceof Path) ?
-                    new PathProcessor(root, (Path) path, ctx) :
-                    new NBFSProcessor(rootFo, ctx);
+                if (!isUpToDate(ROOT, rootFo.lastModified().getTime())) {
+                    final Object path = rootFo.getAttribute(Path.class.getName());
+                    return (path instanceof Path) ?
+                        new PathProcessor(root, (Path) path, ctx) :
+                        new NBFSProcessor(rootFo, ctx);
+                }
             } else {
                 return new DeletedRootProcessor(ctx);
             }
