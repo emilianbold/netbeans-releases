@@ -6,6 +6,13 @@
             <code-name-base>org.netbeans.modules.cnd.kit</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.clank</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
