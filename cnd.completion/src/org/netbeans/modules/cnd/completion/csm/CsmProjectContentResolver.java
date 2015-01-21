@@ -254,7 +254,7 @@ public final class CsmProjectContentResolver {
             return Collections.emptyList();
         }
         CsmNamespace globNS = project.getGlobalNamespace();
-        List<CsmNamespace> res = getNestedNamespaces(globNS, strPrefix, match);
+        List<CsmNamespace> res = getNestedNamespaces(globNS, strPrefix, match, false);
         if (res != null && sort) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -923,8 +923,8 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
-    public List<CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match) {
-        Map<CharSequence, CsmNamespace> set = getNestedNamespaces(ns, strPrefix, match, new HashSet<CsmNamespace>());
+    public List<CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match, boolean searchNestedNamespaces) {
+        Map<CharSequence, CsmNamespace> set = getNestedNamespaces(ns, strPrefix, match, searchNestedNamespaces, new HashSet<CsmNamespace>());
         List<CsmNamespace> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmNamespace>(set.values());
@@ -937,7 +937,7 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
-    private Map<CharSequence, CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match, Set<CsmNamespace> handledNS) {
+    private Map<CharSequence, CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match, boolean searchNestedUnnamedNamespaces, Set<CsmNamespace> handledNS) {
         Map<CharSequence, CsmNamespace> res = new LinkedHashMap<CharSequence, CsmNamespace>(); // order is important
         if(ns != null) {
             handledNS.add(ns);
@@ -947,7 +947,7 @@ public final class CsmProjectContentResolver {
                 for (CsmProject lib : nsProject.getLibraries()) {
                     CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
                     if (n != null && !handledNS.contains(n)) {
-                        res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+                        res.putAll(getNestedNamespaces(n, strPrefix, match, searchNestedUnnamedNamespaces, handledNS));
                     }
                 }
                 for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
@@ -955,11 +955,10 @@ public final class CsmProjectContentResolver {
                     // TODO: consider when we add nested namespaces
                     if ((nestedNs.getName().length() != 0) && matchName(nestedNs.getName(), strPrefix, match)) {
                         res.put(nestedNs.getQualifiedName(), nestedNs);
-                        
-                        // TODO: Think if we really need nested namespaces here
-                        if (nestedNs.isInline()) {
-                            res.putAll(getNestedNamespaces(nestedNs, strPrefix, match, handledNS));
-                        }
+                    } 
+                    
+                    if ((searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || nestedNs.isInline()) {
+                        res.putAll(getNestedNamespaces(nestedNs, strPrefix, match, searchNestedUnnamedNamespaces, handledNS));
                     }
                 }
             }
@@ -1461,7 +1460,7 @@ public final class CsmProjectContentResolver {
         if (!namespacesToSearchIn.isEmpty()) {
           for (it = namespacesToSearchIn.iterator(); it.hasNext();) {
               CsmNamespace nestedNs = (CsmNamespace) it.next();
-
+              
               boolean goDeeper = (searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || nestedNs.isInline();
 
               // we need nested namespaces only if they do not modify qualified path (they names are empty) or they are inlined
@@ -1507,7 +1506,7 @@ public final class CsmProjectContentResolver {
             }
         }
     }
-
+    
     @SuppressWarnings("unchecked")
     /*package*/ void filterDeclarations(final Iterator in, final Collection out, final CsmDeclaration.Kind kinds[], final String strPrefix, final boolean match, final boolean returnUnnamedMembers) {
         while (in.hasNext()) {
@@ -1668,7 +1667,7 @@ public final class CsmProjectContentResolver {
             nextInheritanceLevel = CHILD_INHERITANCE;
         }
         return new VisibilityInfo(nextInheritanceLevel, nextMinVisibility, false);
-    }
+    }    
 
     public static CharSequence[] splitQualifiedName(String qualified) {
         List<CharSequence> v = new ArrayList<CharSequence>();
