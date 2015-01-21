@@ -57,7 +57,7 @@ public class MiscUtils {
     private static boolean wasShown = false;
 
     public static boolean isJSCHTooLongException(Exception ex) {
-        final String message = "Received message is too long: ";
+        final String message = "Received message is too long: "; //NOI18N
         
         boolean jschEx = ex instanceof JSchException || ex.getCause() instanceof JSchException;
         boolean longMessage = ex.getMessage().contains(message) || (ex.getCause() != null && ex.getCause().getMessage().contains(message));
