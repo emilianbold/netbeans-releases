@@ -144,6 +144,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private GdbEngineProvider engineProvider;
     private Gdb gdb;				// gdb proxy
     private GdbVersionPeculiarity peculiarity;  // gdb version differences
+    private final DebuggerSettingsBridge profileBridge;
     
     static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
 
@@ -279,6 +280,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public String debuggerType() {
         return "gdb"; // NOI18N
+    }
+
+    @Override
+    public DebuggerSettingsBridge profileBridge() {
+        return profileBridge;
     }
 
     public Gdb gdb() {
@@ -708,7 +714,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         postedKillEngine = true;
-        session = null;
 	state().isLoaded = false;
 	stateChanged();
         

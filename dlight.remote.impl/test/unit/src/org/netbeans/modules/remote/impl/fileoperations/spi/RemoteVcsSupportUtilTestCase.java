@@ -278,6 +278,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
             //VCSFileProxy proxy = VCSFileProxy.createFileProxy(baseProxy, file);
             //VCSFileProxy refProxy = VCSFileProxy.createFileProxy(baseProxy, refFile);
             refreshParentAndRecurse(basePath);
+            RemoteVcsSupportUtil.setLastModified(fs, file, refFile);
             RemoteFileObject fo = getFileObject(basePath + '/' + file);
             RemoteFileObject refFo = getFileObject(basePath + '/' + refFile);
             assertEquals(refFo.lastModified(), fo.lastModified());            

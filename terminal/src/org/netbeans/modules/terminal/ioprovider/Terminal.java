@@ -85,6 +85,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import static javax.swing.Action.NAME;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -137,6 +138,7 @@ import org.netbeans.lib.terminalemulator.Extent;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.terminal.PinPanel;
+import org.netbeans.modules.terminal.actions.ActionFactory;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.DetailsStateListener;
@@ -146,6 +148,7 @@ import org.openide.DialogDescriptor;
 import static org.openide.DialogDescriptor.DEFAULT_ALIGN;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -155,6 +158,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.InputOutput;
@@ -375,6 +379,14 @@ public final class Terminal extends JComponent {
 	shortcutsDir.addFileChangeListener(shortcutsListener);
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
+	
+	/* Do not use this actions -- they are here only for keybindings */
+	final Action copyAction = ActionFactory.forID(ActionFactory.COPY_ACTION_ID);
+	final Action pasteAction = ActionFactory.forID(ActionFactory.PASTE_ACTION_ID);
+	final Action findAction = ActionFactory.forID(ActionFactory.FIND_ACTION_ID);
+	final Action wrapAction = ActionFactory.forID(ActionFactory.WRAP_ACTION_ID);
+	final Action clearAction = ActionFactory.forID(ActionFactory.CLEAR_ACTION_ID);
+	final Action closeAction = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
 
 	final Set<Action> actions = new HashSet<Action>();
 	actions.add(copyAction);
@@ -384,8 +396,28 @@ public final class Terminal extends JComponent {
 	actions.add(clearAction);
 	actions.add(closeAction);
 	
-	pinTabAction = new PinTabAction();
-	actions.add(pinTabAction);
+	final TerminalPinSupport support = TerminalPinSupport.getDefault();
+	TerminalPinSupport.DetailsStateListener listener = new TerminalPinSupport.DetailsStateListener() {
+
+	    @Override
+	    public void detailsAdded(Term notifiedTerm) {
+		if (notifiedTerm != term) {
+		    return;
+		}
+		TerminalPinSupport.TerminalPinningDetails pinDetails = support.findPinningDetails(notifiedTerm);
+		if (pinDetails != null) {
+		    boolean customTitle = pinDetails.isCustomTitle();
+		    setCustomTitle(customTitle);
+		    if (customTitle) {
+			setTitle(pinDetails.getTitle());
+		    }
+		    pin(true);
+		}
+	    }
+	};
+
+	support.addDetailsStateListener(listener);
+	
 	setupKeymap(actions);
 
         mouseAdapter = new MouseAdapter() {
@@ -592,29 +624,11 @@ public final class Terminal extends JComponent {
         return title;
     }
 
-    FindState getFindState() {
+    public FindState getFindState() {
         return findState;
     }
 
-    private final class ClearAction extends AbstractAction {
-        public ClearAction() {
-            super(Catalog.get("CTL_Clear"));	// NOI18N
-	    /* OLD
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E,
-                                                           InputEvent.ALT_MASK);
-            putValue(ACCELERATOR_KEY, accelerator);
-	    */
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
-                return;
-            term.clear();
-        }
-    }
-    
-    private void changeFontSizeBy(final int d) {
+    public void changeFontSizeBy(final int d) {
 	int oldFontSize = termOptions.getFontSize();
 	
 	int newFontSze = oldFontSize + d;
@@ -626,351 +640,22 @@ public final class Terminal extends JComponent {
 	
 	TermOptions.getDefault(prefs).setFontSize(newFontSze);
     }
-    
-    private final class LargerFontAction extends AbstractAction{
 
-	public LargerFontAction() {
-	    super(Catalog.get("CTL_LargerFont")); //NOI18N
-	}
+    public boolean isPinned() {
+	return pinned;
+    }
 
-	@Override
-	public void actionPerformed(final ActionEvent e) {
-	    changeFontSizeBy(+1);
-	}
+    public void setPinned(boolean pinned) {
+	this.pinned = pinned;
     }
     
-    private final class SmallerFontAction extends AbstractAction{
-
-	public SmallerFontAction() {
-	    super(Catalog.get("CTL_SmallerFont")); //NOI18N
-	}
-
-	@Override
-	public void actionPerformed(final ActionEvent e) {
-	    changeFontSizeBy(-1);
-	}
-    }
-    
-
-    private final class CloseAction extends AbstractAction {
-        public CloseAction() {
-            super(Catalog.get("CTL_Close"));	// NOI18N
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_W,
-                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
-            putValue(ACCELERATOR_KEY, accelerator);
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
-                return;
-            close();
-        }
-
-	@Override
-	public boolean isEnabled() {
-	    return closable;
-	}
-    }
-    
-        private final class DumpSequencesAction extends AbstractAction {
-        public DumpSequencesAction() {
-            super("Dump Sequences");	// NOI18N
-        }
-
-        private void dump(String title, Set<String> set) {
-            File file = new File(String.format("/tmp/term-sequences-%s", title)); // NOI18N
-            PrintStream ps;
-            try {
-                ps = new PrintStream(file);
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(Terminal.class.getName()).log(Level.SEVERE, null, ex);
-                return;
-            }
-
-            if (set != null) {
-                for (String s : set) {
-                    ps.printf("%s\n", s); // NOI18N
-		}
-            }
-
-            ps.close();
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled()) {
-		return;
-	    }
-            dump("completed", term.getCompletedSequences()); // NOI18N
-            dump("unrecognized", term.getUnrecognizedSequences()); // NOI18N
-        }
+    public boolean isCustomTitle() {
+	return customTitle;
     }
 
-    private final class SetTitleAction extends AbstractAction {
-
-	public SetTitleAction() {
-	    super(Catalog.get("CTL_SetTitle"));	// NOI18N
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-	    InputLine inputLine = new NotifyDescriptor.InputLine(Catalog.get("LBL_Title"), Catalog.get("LBL_SetTitle"));// NOI18N
-	    String title = getTitle();
-	    inputLine.setInputText(title);
-	    if (DialogDisplayer.getDefault().notify(inputLine) == NotifyDescriptor.OK_OPTION) {
-		String newTitle = inputLine.getInputText().trim();
-		if (!newTitle.equals(title)) {
-		    if (!newTitle.isEmpty()) {
-			setTitle(newTitle);
-		    } else {
-			resetTitle();
-		    }
-		}
-	    }
-	}
+    public void setCustomTitle(boolean customTitle) {
+	this.customTitle = customTitle;
     }
-
-    private final class CopyAction extends AbstractAction {
-        public CopyAction() {
-            super(Catalog.get("CTL_Copy"));	// NOI18N
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C,
-                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
-            // System.out.printf("Accelerator for Copy: %s\n", accelerator);
-            putValue(ACCELERATOR_KEY, accelerator);
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
-                return;
-            term.copyToClipboard();
-        }
-    }
-
-    private final class PasteAction extends AbstractAction {
-        public PasteAction() {
-            super(Catalog.get("CTL_Paste"));	// NOI18N
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V,
-                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
-            // System.out.printf("Accelerator for Paste: %s\n", accelerator);
-            putValue(ACCELERATOR_KEY, accelerator);
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
-                return;
-            term.pasteFromClipboard();
-        }
-    }
-
-    private final class FindAction extends AbstractAction {
-        public FindAction() {
-            super(Catalog.get("CTL_Find"));	// NOI18N
-	    /* LATER
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F,
-                                                           InputEvent.ALT_MASK);
-            putValue(ACCELERATOR_KEY, accelerator);
-	    */
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
-                return;
-
-	    // OLD ioContainer.find(Terminal.this);
-	    // the following is code that used to be in TerminalContainer.find():
-	    FindState findState = getFindState();
-	    if (findState.isVisible()) {
-		return;
-	    }
-	    findState.setVisible(true);
-	    /* LATER
-	    findBar.setState(findState);
-	    add(findBar, BorderLayout.SOUTH);
-	    validate();
-	     */
-        }
-    }
-
-    private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";	// NOI18N
-    private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";	// NOI18N
-
-    private final class WrapAction extends AbstractAction {
-        public WrapAction() {
-            super(Catalog.get("CTL_Wrap"));	// NOI18N
-            // LATER KeyStroke accelerator = Utilities.stringToKey("A-R");
-            putValue(BOOLEAN_STATE_ACTION_KEY, true);
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
-                return;
-            boolean hs = term.isHorizontallyScrollable();
-            term.setHorizontallyScrollable(!hs);
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(BOOLEAN_STATE_ENABLED_KEY))
-                return ! term.isHorizontallyScrollable();
-            else
-                return super.getValue(key);
-
-        }
-    }
-
-    private final class PinTabAction extends AbstractAction {
-	private final String pinMessage = NbBundle.getMessage(Terminal.class, "CTL_PinTab");
-	private final String unpinMessage = NbBundle.getMessage(Terminal.class, "CTL_UnpinTab");
-
-	private final TerminalPinSupport support = TerminalPinSupport.getDefault();
-	private final ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/terminal/support/pin.png", false); //NOI18N
-	
-	private String cwd = null;
-
-	public PinTabAction() {
-	    
-	    putValue(NAME, pinMessage);
-	    putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-	    listener = new DetailsStateListener() {
-		
-		@Override
-		public void detailsAdded(Term term) {
-		    if (term != term()) {
-			return;
-		    }
-		    TerminalPinningDetails pinDetails = support.findPinningDetails(term);
-		    if (pinDetails != null) {
-			customTitle = pinDetails.isCustomTitle();
-			if (customTitle) {
-			    setTitle(pinDetails.getTitle());
-			}
-			pin(true);
-		    } 
-		}
-	    };
-
-	    DetailsStateListener create = WeakListeners.create(DetailsStateListener.class, listener, support);
-	    support.addDetailsStateListener(create);
-	    
-	    term.addListener(new TermListener() {
-
-		@Override
-		public void sizeChanged(Dimension cells, Dimension pixels) {
-		}
-
-		@Override
-		public void titleChanged(String title) {
-		}
-
-		@Override
-		public void cwdChanged(String aCwd) {
-		    cwd = aCwd;
-		}
-	    });
-	}
-	private final DetailsStateListener listener;
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-	    TerminalPinningDetails pinningDetails = support.findPinningDetails(term);
-	    boolean oldState = pinningDetails == null ? false: pinningDetails.isPinned();
-	    boolean newState = !oldState;
-	    
-	    if (newState) {
-		TerminalPinningDetails defaultValues = TerminalPinningDetails.create(customTitle, customTitle ? title : name, cwd, enabled);
-		PinPanel pinPanel = new PinPanel(new TerminalDetails(support.findCreationDetails(term), defaultValues));
-
-		DialogDescriptor dd = new DialogDescriptor(
-			pinPanel, 
-			NbBundle.getMessage(Terminal.class, "LBL_PinTab"), 
-			true,
-			DialogDescriptor.OK_CANCEL_OPTION,
-			DialogDescriptor.OK_OPTION, 
-			null
-		);
-
-		Dialog cfgDialog = DialogDisplayer.getDefault().createDialog(dd);
-
-		try {
-		    cfgDialog.setVisible(true);
-		} catch (Throwable th) {
-		    if (!(th.getCause() instanceof InterruptedException)) {
-			throw new RuntimeException(th);
-		    }
-		    dd.setValue(DialogDescriptor.CANCEL_OPTION);
-		} finally {
-		    cfgDialog.dispose();
-		}
-
-		if (dd.getValue() != DialogDescriptor.OK_OPTION) {
-		    return;
-		}
-		
-		String chosenTitle = pinPanel.getTitle();
-		boolean chosenIsCustom = pinPanel.isCustomTitle();
-		String chosenDirectory = pinPanel.getDirectory();
-		
-		if (chosenDirectory.isEmpty()) {
-		    chosenDirectory = null;
-		}
-		
-		support.tabWasPinned(
-			term,
-		    TerminalPinningDetails.create(
-				chosenIsCustom,
-				chosenIsCustom ? chosenTitle : name,
-				chosenDirectory,
-				enabled
-			)
-		);
-		
-		if (chosenIsCustom && !title.equals(chosenTitle)) {
-		    customTitle = true;
-		    updateName(chosenTitle);
-		}
-	    } else {
-		support.tabWasUnpinned(term);
-	    }
-	    
-	    pin(newState);
-	}
-
-	private void pin(boolean isPinned) {
-	    if (isPinned) {
-		setIcon(icon);
-	    } else {
-		setIcon(null);
-	    }
-	    support.findPinningDetails(term).setPinned(isPinned);
-	    putValue(NAME, getMessage(isPinned));
-
-	    pinned = isPinned;
-	}
-
-
-	private String getMessage(boolean isPinned) {
-	    return isPinned ? unpinMessage : pinMessage;
-	}
-    }
-
-    private final Action copyAction = new CopyAction();
-    private final Action setTitleAction = new SetTitleAction();
-    private final Action pasteAction = new PasteAction();
-    private final Action findAction = new FindAction();
-    private final Action wrapAction = new WrapAction();
-    private final Action clearAction = new ClearAction();
-    private final Action closeAction = new CloseAction();
-    private final Action largerFontAction = new LargerFontAction();
-    private final Action smallerFontAction = new SmallerFontAction();
-    private final Action dumpSequencesAction = new DumpSequencesAction();
-    private final Action pinTabAction;
-
-
 
     // Ideally IOContainer.remove() would be unconditional and we could check
     // the isClosable() and vetoing here. However, Closing a tab via it's 'X'
@@ -999,7 +684,7 @@ public final class Terminal extends JComponent {
 	    return;
 	}
 
-	if (false) {
+	if (isPinnable()) {
 	    /* Will be enabled after delegating actions from TerminalContainerTabber will 
 	     * be implemented. Enabling this now will cause inconsistensy or copy-pasting.
 	     */
@@ -1026,6 +711,7 @@ public final class Terminal extends JComponent {
 			String command = e.getActionCommand();
 
 			if (CMD_CLOSE_AND_UNPIN.equals(command)) {
+			    Action pinTabAction = ActionFactory.forID(ActionFactory.PIN_TAB_ACTION_ID);
 			    if (pinTabAction != null) {
 				pinTabAction.actionPerformed(null);
 			    }
@@ -1171,26 +857,50 @@ public final class Terminal extends JComponent {
 	Task task = new Task.SetIcon(ioContainer, this, icon);
 	task.post();
     }
+        
+    private final ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/terminal/support/pin.png", false); //NOI18N
+
+    public void pin(boolean newState) {
+	if (newState) {
+	    setIcon(icon);
+	} else {
+	    setIcon(null);
+	}
+	TerminalPinSupport.getDefault().findPinningDetails(term).setPinned(newState);
+
+	setPinned(newState);
+    }
+    
+    private boolean isPinnable() {
+	Object clientProperty = this.getClientProperty("pinAction");
+	return clientProperty != null && clientProperty.equals("enabled");
+    }
+
+    /* 
+    private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";	// NOI18N
+    private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";	// NOI18N
 
     private boolean isBooleanStateAction(Action a) {
-        Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);	//
-        return isBooleanStateAction != null && isBooleanStateAction;
+	Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);	//
+	return isBooleanStateAction != null && isBooleanStateAction;
     }
 
+    // not used
     private void addMenuItem(JPopupMenu menu, Object o) {
-        if (o instanceof JSeparator) {
-            menu.add((JSeparator) o);
-        } else if (o instanceof Action) {
-            Action a = (Action) o;
-            if (isBooleanStateAction(a)) {
-                JCheckBoxMenuItem item = new JCheckBoxMenuItem(a);
-                item.setSelected((Boolean) a.getValue(BOOLEAN_STATE_ENABLED_KEY));
-                menu.add(item);
-            } else {
-                menu.add((Action) o);
-            }
-        }
+	if (o instanceof JSeparator) {
+	    menu.add((JSeparator) o);
+	} else if (o instanceof Action) {
+	    Action a = (Action) o;
+	    if (isBooleanStateAction(a)) {
+		JCheckBoxMenuItem item = new JCheckBoxMenuItem(a);
+		item.setSelected((Boolean) a.getValue(BOOLEAN_STATE_ENABLED_KEY));
+		menu.add(item);
+	    } else {
+		menu.add((Action) o);
+	    }
+	}
     }
+    */
 
     private void setupKeymap(Set<Action> actions) {
 	// We need to do two things.
@@ -1246,9 +956,45 @@ public final class Terminal extends JComponent {
     }
 
     private void postPopupMenu(Point p) {
-        JPopupMenu menu = new JPopupMenu();
+	final Action copyAction = ActionFactory.forID(ActionFactory.COPY_ACTION_ID);
+	final Action pasteAction = ActionFactory.forID(ActionFactory.PASTE_ACTION_ID);
+	final Action findAction = ActionFactory.forID(ActionFactory.FIND_ACTION_ID);
+	final Action wrapAction = ActionFactory.forID(ActionFactory.WRAP_ACTION_ID);
+	final Action largerFontAction = ActionFactory.forID(ActionFactory.LARGER_FONT_ACTION_ID);
+	final Action smallerFontAction = ActionFactory.forID(ActionFactory.SMALLER_FONT_ACTION_ID);
+	final Action setTitleAction = ActionFactory.forID(ActionFactory.SET_TITLE_ACTION_ID);
+	final Action pinTabAction = ActionFactory.forID(ActionFactory.PIN_TAB_ACTION_ID);
+	final Action clearAction = ActionFactory.forID(ActionFactory.CLEAR_ACTION_ID);
+	final Action dumpSequencesAction = ActionFactory.forID(ActionFactory.DUMP_SEQUENCE_ACTION_ID);
+	final Action closeAction = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
+
+	findAction.setEnabled(!findState.isVisible());
+
+	// TMP Find is not operation so keep it disabled
+	// TODO IG fix
+	findAction.setEnabled(false);
+	
+	JPopupMenu menu = Utilities.actionsToPopup(
+		new Action[]{
+		    copyAction,
+		    pasteAction,
+		    null,
+		    findAction,
+		    null,
+		    wrapAction,
+		    largerFontAction,
+		    smallerFontAction,
+		    null,
+		    setTitleAction,
+		    isPinnable() ? pinTabAction : null, //NOI18N
+		    null,
+		    clearAction,
+		    isClosable() ? closeAction : null, // it's ok to have null as last element,
+		    (System.getProperty("Term.debug") != null) ? dumpSequencesAction : null
+		}, Lookups.fixed(this)
+	);
 	menu.putClientProperty("container", ioContainer); // NOI18N
-        menu.putClientProperty("component", this);             // NOI18N
+	menu.putClientProperty("component", this);             // NOI18N
 
 	/* LATER?
 	 * NB IO APIS don't add sidebar actions to menu
@@ -1262,31 +1008,7 @@ public final class Terminal extends JComponent {
                 menu.add(new JSeparator());
         }
 	 */
-        addMenuItem(menu, copyAction);
-        addMenuItem(menu, pasteAction);
-        addMenuItem(menu, new JSeparator());
-        addMenuItem(menu, findAction);
-        addMenuItem(menu, new JSeparator());
-        addMenuItem(menu, wrapAction);
-        addMenuItem(menu, largerFontAction);
-        addMenuItem(menu, smallerFontAction);
-	addMenuItem(menu, new JSeparator());
-	addMenuItem(menu, setTitleAction);
-	addMenuItem(menu, pinTabAction);
-        addMenuItem(menu, new JSeparator());
-        addMenuItem(menu, clearAction);
-	if (isClosable())
-	    addMenuItem(menu, closeAction);
-
-	if (System.getProperty("Term.debug") != null) {
-            addMenuItem(menu, dumpSequencesAction);
-        }
-
-        findAction.setEnabled(! findState.isVisible());
-
-	// TMP Find is not operation so keep it disabled
-	findAction.setEnabled(false);
-
+	
         menu.addPopupMenuListener(new PopupMenuListener() {
 	    @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {

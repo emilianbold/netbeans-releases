@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,70 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.terminal.actions;
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+import javax.swing.Action;
+import org.openide.awt.Actions;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author igromov
  */
-public class FileModelTest3 extends TraceModelTestBase {
+public class ActionFactory {
 
-    public FileModelTest3(String testName) {
-        super(testName);
-    }
+    public static final String CATEGORY = "Terminal"; //NOI18N
+    public static final String ACTIONS_PATH = "Actions/Terminal"; //NOI18N
+    public static final String DUMP_SEQUENCE_ACTION_ID = "org.netbeans.modules.terminal.actions.DumpSequenceAction"; //NOI18N
+    public static final String COPY_ACTION_ID = "org.netbeans.modules.terminal.actions.CopyAction"; //NOI18N
+    public static final String CLOSE_ACTION_ID = "org.netbeans.modules.terminal.actions.CloseAction"; //NOI18N
+    public static final String PASTE_ACTION_ID = "org.netbeans.modules.terminal.actions.PasteAction"; //NOI18N
+    public static final String FIND_ACTION_ID = "org.netbeans.modules.terminal.actions.FindAction"; //NOI18N
+    public static final String CLEAR_ACTION_ID = "org.netbeans.modules.terminal.actions.ClearAction"; //NOI18N
+    public static final String LARGER_FONT_ACTION_ID = "org.netbeans.modules.terminal.actions.LargerFontAction"; //NOI18N
+    public static final String SMALLER_FONT_ACTION_ID = "org.netbeans.modules.terminal.actions.SmallerFontAction"; //NOI18N
+    public static final String WRAP_ACTION_ID = "org.netbeans.modules.terminal.actions.WrapAction"; //NOI18N
+    public static final String SET_TITLE_ACTION_ID = "org.netbeans.modules.terminal.actions.SetTitleAction"; //NOI18N
+    public static final String PIN_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.PinTabAction"; //NOI18N
 
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-//        System.setProperty("cnd.modelimpl.trace.registration", "true");
-//        System.setProperty("cnd.modelimpl.parser.threads", "1");
-        super.setUp();
-    }
-
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_01() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_02() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-    
-    public void testBug242674() throws Exception {
-        performTest("bug242674.cpp"); // NOI18N
-    }    
-    
-    public void testBug242861() throws Exception {
-        performTest("bug242861.cpp");
-    }
-    
-    public void testBug243546() throws Exception {
-        performTest("bug243546.cpp");
-    }
-    
-    public void testBug248661() throws Exception {
-        performTest("bug248661.cpp");
-    }
-    
-    public void testBug249746() throws Exception {
-        performTest("bug249746.cpp");
-    }
-
-    @Override
-    protected Class<?> getTestCaseDataClass() {
-        return FileModelTest.class;
+    public static Action forID(String id) {
+	return Actions.forID(CATEGORY, id);
     }
 }

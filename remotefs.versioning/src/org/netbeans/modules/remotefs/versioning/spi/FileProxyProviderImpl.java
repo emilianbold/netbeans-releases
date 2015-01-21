@@ -236,23 +236,12 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
             if (fo == null) {
                 if (file.exists()) {
                     VCSFileProxy parent = file.getParentFile();
-                    LinkedList<VCSFileProxy> stack = new LinkedList<VCSFileProxy>();
                     while(parent != null) {
                         FileObject parentFO = parent.toFileObject();
                         if (parentFO != null) {
                             parentFO.refresh();
-                            while(!stack.isEmpty()) {
-                                parent = stack.removeLast();
-                                parentFO = parent.toFileObject();
-                                if (parentFO != null) {
-                                    parentFO.refresh();
-                                } else {
-                                    throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
-                                }
-                            }
                             break;
                         }
-                        stack.addLast(parent);
                         parent = parent.getParentFile();
                     }
                 }
@@ -260,6 +249,8 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
                 if (fo == null) {
                     throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
                 }
+            } else {
+                fo.refresh();
             }
             return getInputStream(fo, checkLock);
         }

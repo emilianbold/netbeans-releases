@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,70 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.terminal.actions;
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
+import org.netbeans.lib.terminalemulator.Term;
+import org.netbeans.modules.terminal.ioprovider.Terminal;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author igromov
  */
-public class FileModelTest3 extends TraceModelTestBase {
+@ActionID(id = ActionFactory.CLEAR_ACTION_ID, category = ActionFactory.CATEGORY)
+@ActionRegistration(displayName = "#CTL_Clear", lazy = false) //NOI18N
+@ActionReferences({
+    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "ClearAction") //NOI18N
+})
+public class ClearAction extends TerminalAction {
 
-    public FileModelTest3(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-//        System.setProperty("cnd.modelimpl.trace.registration", "true");
-//        System.setProperty("cnd.modelimpl.parser.threads", "1");
-        super.setUp();
-    }
-
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_01() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_02() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-    
-    public void testBug242674() throws Exception {
-        performTest("bug242674.cpp"); // NOI18N
-    }    
-    
-    public void testBug242861() throws Exception {
-        performTest("bug242861.cpp");
-    }
-    
-    public void testBug243546() throws Exception {
-        performTest("bug243546.cpp");
-    }
-    
-    public void testBug248661() throws Exception {
-        performTest("bug248661.cpp");
-    }
-    
-    public void testBug249746() throws Exception {
-        performTest("bug249746.cpp");
+    public ClearAction(Lookup context) {
+	super(context);
+	putValue(NAME, getMessage("CTL_Clear")); //NOI18N
+	/* OLD
+	 KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E,
+	 InputEvent.ALT_MASK);
+	 putValue(ACCELERATOR_KEY, accelerator);
+	 */
     }
 
     @Override
-    protected Class<?> getTestCaseDataClass() {
-        return FileModelTest.class;
+    public void actionPerformed(ActionEvent e) {
+	Terminal terminal = getTerminal();
+	Term term = terminal.term();
+
+	if (!terminal.isEnabled()) {
+	    return;
+	}
+	term.clear();
+    }
+
+    // --------------------------------------------- 
+    public ClearAction() {
+	super(null);
+    }
+
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+	return new ClearAction(actionContext);
     }
 }

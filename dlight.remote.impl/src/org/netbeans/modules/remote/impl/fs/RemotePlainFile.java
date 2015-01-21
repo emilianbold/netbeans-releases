@@ -59,6 +59,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -108,12 +109,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public final RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
+    public final RemoteFileObject getFileObject(String name, String ext, @NonNull Set<String> antiLoop) {
         return null;
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+    public RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop) {
         // taken from FileObject.getFileObject(String relativePath)
         if (relativePath.startsWith("/")) { //NOI18N
             relativePath = relativePath.substring(1);

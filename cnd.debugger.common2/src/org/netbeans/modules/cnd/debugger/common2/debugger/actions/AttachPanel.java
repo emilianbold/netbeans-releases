@@ -672,12 +672,7 @@ public final class AttachPanel extends TopComponent {
         // compile and validate 'regexp' into 're'
         Pattern re = null;
         try {
-            // 6646694
-            String regexp2 = regexp;
-            if (regexp.equals("")) {
-                regexp2 = ".*";		// NOI18N
-            }
-            re = Pattern.compile(regexp2);
+            re = Pattern.compile(regexp, Pattern.LITERAL);
         } catch (PatternSyntaxException e) {
             if (e.getLocalizedMessage() != null) {
                 StatusDisplayer.getDefault().setStatusText(e.getLocalizedMessage());
@@ -1032,7 +1027,7 @@ public final class AttachPanel extends TopComponent {
 
         @Override
         public boolean load(Properties props) {
-            Vector<Vector<String>> processes = psData.processes(Pattern.compile(props.getString(COMMAND_PROP, NO_EXISTING_PROCESS)));
+            Vector<Vector<String>> processes = psData.processes(Pattern.compile(props.getString(COMMAND_PROP, NO_EXISTING_PROCESS), Pattern.LITERAL));
             if (processes.isEmpty()) {
                 return false;
             }

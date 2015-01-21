@@ -670,8 +670,8 @@ tokens {
 	//protected int finalQualifier() { return finalQualifier(1); }
 	//protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
-        protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
+    protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
+    protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
 	// isClassName is used in CPPParserEx only
 	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected void end_of_stmt() {}
@@ -711,7 +711,8 @@ tokens {
 	protected void endConstructorDeclaration() {}
 	protected void beginDestructorDeclaration(String s) {}
 	protected void endDestructorDeclaration() {}
-	protected void beginParameterDeclaration() {}
+	protected boolean beginParameterDeclaration() { _ts = tsInvalid; return true; }
+    protected boolean endParameterDeclaration(int oldTs) { _ts = oldTs; return true; }
 	protected void beginFieldDeclaration() {}
 	//protected void beginFunctionDefinition() {}
 	//protected void endFunctionDefinition() {}
@@ -2763,8 +2764,11 @@ direct_declarator[int kind, int level]
         (ELLIPSIS)? id = qualified_id
         {declaratorID(id, qiVar);}
         (variable_attribute_specification)?
+        // TODO: initializer should be removed from here because it is already present
+        // in init_declarator. That change may require some improvements in
+        // AstRenderer as it may be useful to preserve offsets of declarations.
         LPAREN
-        (expression_list)?
+        (expression_list | array_initializer)?
         RPAREN
         {#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
     |
@@ -2818,15 +2822,15 @@ direct_declarator[int kind, int level]
 		(parameter_list[false])?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator[kind, level+1] RPAREN
-                (options {greedy=true;} :variable_attribute_specification)?
-                (
-                    {_ts != tsInvalid}?
-                        (options {greedy=true;} : declarator_suffixes)?
-                |
-                    declarator_suffixes
-                )   
-                (options {greedy=true;} :variable_attribute_specification)?
+        LPAREN declarator[kind, level+1] RPAREN
+        (options {greedy=true;} :variable_attribute_specification)?
+        (
+            {_ts != tsInvalid}?
+                (options {greedy=true;} : declarator_suffixes)?
+        |
+            declarator_suffixes
+        )   
+        (options {greedy=true;} :variable_attribute_specification)?
 
 /* **            
              // Issue #87792  Parser reports error on declarations with name in parenthesis.
@@ -2862,13 +2866,13 @@ declarator_suffixes
 	{TypeQualifier tq;}  
 	:
 	(
-		(options {warnWhenFollowAmbig = false;}:
-		 LSQUARE (constant_expression)? RSQUARE)+
+        (options {warnWhenFollowAmbig = false;}: LSQUARE (constant_expression)? RSQUARE)+
 		{declaratorArray();}
-        |
-                (LPAREN RPAREN) => declarator_param_list
-	|	{(!((LA(1)==LPAREN)&&(LA(2)==IDENT||LA(2)==LITERAL_final))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
-		declarator_param_list
+    |
+        (LPAREN RPAREN) => declarator_param_list
+	|	
+        {(!((LA(1)==LPAREN)&&(LA(2)==IDENT||LA(2)==LITERAL_final))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
+        declarator_param_list
 //	|	// DW 28/06/04 deleted Assume either following bracketed declaration
 //		// empty
 	)
@@ -3272,7 +3276,8 @@ parameter_declaration_list [boolean symTabCheck]
 	;
 
 parameter_declaration[boolean inTemplateParams]
-	:	{beginParameterDeclaration();}
+    { int oldTs = _ts; }
+	:	({beginParameterDeclaration()}?)
 		(
 			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
 			    (!(LA(1)==SCOPE||LA(1)==IDENT||LA(1)==LITERAL_final) ||
@@ -3297,6 +3302,7 @@ parameter_declaration[boolean inTemplateParams]
                         assignment_expression
                     )
 		)?
+        ({endParameterDeclaration(oldTs)}?)
 		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
 	;
 

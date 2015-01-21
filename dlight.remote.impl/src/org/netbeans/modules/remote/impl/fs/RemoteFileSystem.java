@@ -63,6 +63,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -393,7 +394,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         throw new IOException("Cannot create temporary file"); // NOI18N
     }
     
-    public RemoteFileObjectBase findResourceImpl(String name, Set<String> antiloop) {
+    public RemoteFileObjectBase findResourceImpl(String name, @NonNull Set<String> antiloop) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
             return getRoot().getImplementor();
         } else {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,70 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.terminal.actions;
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
+import org.netbeans.modules.terminal.ioprovider.Terminal;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author igromov
  */
-public class FileModelTest3 extends TraceModelTestBase {
+@ActionID(id = ActionFactory.SMALLER_FONT_ACTION_ID, category = ActionFactory.CATEGORY)
+@ActionRegistration(displayName = "#CTL_SmallerFont", lazy = false) //NOI18N
+@ActionReferences({
+    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "SmallerFontAction") //NOI18N
+})
+public class SmallerFontAction extends TerminalAction {
 
-    public FileModelTest3(String testName) {
-        super(testName);
-    }
+    public SmallerFontAction(Lookup context) {
+	super(context);
 
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-//        System.setProperty("cnd.modelimpl.trace.registration", "true");
-//        System.setProperty("cnd.modelimpl.parser.threads", "1");
-        super.setUp();
+	putValue(NAME, getMessage("CTL_SmallerFont")); //NOI18N
     }
 
     @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
+    public void actionPerformed(final ActionEvent e) {
+	Terminal terminal = getTerminal();
+
+	terminal.changeFontSizeBy(-1);
     }
 
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_01() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_02() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-    
-    public void testBug242674() throws Exception {
-        performTest("bug242674.cpp"); // NOI18N
-    }    
-    
-    public void testBug242861() throws Exception {
-        performTest("bug242861.cpp");
-    }
-    
-    public void testBug243546() throws Exception {
-        performTest("bug243546.cpp");
-    }
-    
-    public void testBug248661() throws Exception {
-        performTest("bug248661.cpp");
-    }
-    
-    public void testBug249746() throws Exception {
-        performTest("bug249746.cpp");
+    // --------------------------------------------- 
+    public SmallerFontAction() {
+	super(null);
     }
 
     @Override
-    protected Class<?> getTestCaseDataClass() {
-        return FileModelTest.class;
+    public Action createContextAwareInstance(Lookup actionContext) {
+	return new SmallerFontAction(actionContext);
     }
 }
