@@ -138,6 +138,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettingsBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNode;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNodeChildren;
@@ -165,6 +166,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         implements BreakpointProvider, CommonDbx.Factory.Listener {
 
     private DbxEngineProvider engineProvider;
+    private final DebuggerSettingsBridge profileBridge;
     private Dbx dbx;				// corresponding glue surrogate
     private final DbxHandlerExpert handlerExpert;
     private RtcState rtcState = new RtcState();
@@ -226,6 +228,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     @Override
     public String debuggerType() {
         return "dbx"; // NOI18N
+    }
+
+    @Override
+    public DebuggerSettingsBridge profileBridge() {
+        return profileBridge;
     }
 
     public Dbx dbx() {
@@ -1091,7 +1098,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, x);
         }
 
-        session = null;
         state().isLoaded = false;
         stateChanged();
 
