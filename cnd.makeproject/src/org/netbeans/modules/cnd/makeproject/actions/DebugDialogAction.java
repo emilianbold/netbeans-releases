@@ -155,25 +155,25 @@ public class DebugDialogAction extends NodeAction {
 
                 @Override
                 public void run(Project project) {
-                    performDebug(project, runDialogPanel.getExecutablePath());
+                    performDebug(project, runDialogPanel.getExecutablePath() + " " + runDialogPanel.getArguments());
                 }
             });
         }
     }
 
-    private void performDebug(Project project, String executable) {
+    private void performDebug(Project project, String runCommand) {
         final LaunchersRegistry registry = LaunchersRegistryFactory.getInstance(project.getProjectDirectory());
         Launcher launcher = null;
         if (registry.hasLaunchers()) {
             for (Launcher l : registry.getLaunchers()) {
-                if (executable.startsWith(l.getCommand())) {
+                if (runCommand.equals(l.getCommand())) {
                     launcher = l;
                     break;
                 }
             }
         }
         if (launcher == null) {
-            launcher = new Launcher(executable, null);
+            launcher = new Launcher(runCommand, null);
             registry.add(launcher);
         }
         // we do not have API to "execute" launcher, so

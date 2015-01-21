@@ -1180,6 +1180,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         return executableTextField.getText();
     }
     
+    public String getArguments() {
+        return argumentTextField.getText();
+    }
+    
     private void setErrorMsg(String msg) {
         errorLabel.setText(msg);
     }
