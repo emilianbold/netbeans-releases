@@ -2865,13 +2865,13 @@ declarator_suffixes
 	{TypeQualifier tq;}  
 	:
 	(
-		(options {warnWhenFollowAmbig = false;}:
-		 LSQUARE (constant_expression)? RSQUARE)+
+        (options {warnWhenFollowAmbig = false;}: LSQUARE (constant_expression)? RSQUARE)+
 		{declaratorArray();}
-        |
-                (LPAREN RPAREN) => declarator_param_list
-	|	{(!((LA(1)==LPAREN)&&(LA(2)==IDENT||LA(2)==LITERAL_final))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
-		declarator_param_list
+    |
+        (LPAREN RPAREN) => declarator_param_list
+	|	
+        {(!((LA(1)==LPAREN)&&(LA(2)==IDENT||LA(2)==LITERAL_final))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
+        declarator_param_list
 //	|	// DW 28/06/04 deleted Assume either following bracketed declaration
 //		// empty
 	)
