@@ -671,7 +671,7 @@ NetBeans.unusedBindings = function() {
             }
         }
     }
-    return infos;
+    return JSON.stringify(infos);
 };
 
 // Returns the node that owns the unused binding with the specified ID
