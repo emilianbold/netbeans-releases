@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
  * @author igromov
  */
 @ActionID(id = ActionFactory.SMALLER_FONT_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_SmallerFont", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_SmallerFont", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "SmallerFontAction") //NOI18N
 })

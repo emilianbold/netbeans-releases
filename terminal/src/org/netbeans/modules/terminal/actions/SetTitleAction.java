@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
  * @author igromov
  */
 @ActionID(id = ActionFactory.SET_TITLE_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_SetTitle", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_SetTitle", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "SetTitleAction") //NOI18N
 })
@@ -65,12 +65,13 @@ public class SetTitleAction extends TerminalAction {
 
     public SetTitleAction(Lookup context) {
 	super(context);
-	
+
 	putValue(NAME, getMessage("CTL_SetTitle")); //NOI18N
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+	super.actionPerformed(e);
 	Terminal terminal = getTerminal();
 
 	NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(getMessage("LBL_Title"), getMessage("LBL_SetTitle")); // NOI18N

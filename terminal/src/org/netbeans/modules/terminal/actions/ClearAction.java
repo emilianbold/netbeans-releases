@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
  * @author igromov
  */
 @ActionID(id = ActionFactory.CLEAR_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_Clear", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_Clear", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "ClearAction") //NOI18N
 })
@@ -73,7 +73,7 @@ public class ClearAction extends TerminalAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 

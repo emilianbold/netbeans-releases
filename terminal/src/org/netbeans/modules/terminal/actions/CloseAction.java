@@ -42,45 +42,34 @@
 package org.netbeans.modules.terminal.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import javax.swing.Action;
-import static javax.swing.Action.ACCELERATOR_KEY;
-import javax.swing.KeyStroke;
-import org.netbeans.lib.terminalemulator.Term;
-import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.Lookup;
-import org.openide.windows.InputOutput;
 
 /**
  *
  * @author igromov
  */
 @ActionID(id = ActionFactory.CLOSE_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_Close", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_Close", lazy = true) //NOI18N
 @ActionReferences({
-    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "CloseAction") //NOI18N
+    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "CloseAction"), //NOI18N
+    @ActionReference(path = "Shortcuts", name = "CS-W")
 })
 public final class CloseAction extends TerminalAction {
 
     public CloseAction(Lookup context) {
 	super(context);
-	KeyStroke accelerator = KeyStroke.getKeyStroke(
-		KeyEvent.VK_W,
-		InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK
-	);
 
 	putValue(NAME, getMessage("CTL_Close")); //NOI18N
-	putValue(ACCELERATOR_KEY, accelerator);
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
 	Terminal terminal = getTerminal();
 
 	if (!isEnabled()) {

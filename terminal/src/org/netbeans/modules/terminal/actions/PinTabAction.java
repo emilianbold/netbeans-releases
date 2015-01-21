@@ -44,10 +44,8 @@ package org.netbeans.modules.terminal.actions;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import static javax.swing.Action.NAME;
-import javax.swing.ImageIcon;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.modules.terminal.PinPanel;
@@ -60,17 +58,15 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author igromov
  */
 @ActionID(id = ActionFactory.PIN_TAB_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_PinTab", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_PinTab", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "PinTabAction") //NOI18N
 })
@@ -111,7 +107,7 @@ public class PinTabAction extends TerminalAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
 	final Terminal terminal = getTerminal();
 	final Term term = terminal.term();
 

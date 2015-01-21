@@ -48,7 +48,6 @@ import java.io.PrintStream;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
@@ -63,7 +62,7 @@ import org.openide.util.Lookup;
  * @author igromov
  */
 @ActionID(id = ActionFactory.DUMP_SEQUENCE_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_DumpSequences", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_DumpSequences", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "DumpSequencesAction") //NOI18N
 })
@@ -95,7 +94,7 @@ public class DumpSequencesAction extends TerminalAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 
