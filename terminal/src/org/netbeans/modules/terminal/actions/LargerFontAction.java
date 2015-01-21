@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
 @ActionID(id = ActionFactory.LARGER_FONT_ACTION_ID, category = ActionFactory.CATEGORY)
 @ActionRegistration(displayName = "#CTL_LargerFont", lazy = false) //NOI18N
 @ActionReferences({
-    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "LargerFont") //NOI18N
+    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "LargerFontAction") //NOI18N
 })
 public class LargerFontAction extends TerminalAction {
 

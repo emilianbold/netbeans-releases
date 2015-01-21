@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
 @ActionID(id = ActionFactory.SMALLER_FONT_ACTION_ID, category = ActionFactory.CATEGORY)
 @ActionRegistration(displayName = "#CTL_SmallerFont", lazy = false) //NOI18N
 @ActionReferences({
-    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "SmallerFont") //NOI18N
+    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "SmallerFontAction") //NOI18N
 })
 public class SmallerFontAction extends TerminalAction {
 
