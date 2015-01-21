@@ -231,7 +231,7 @@ public class RemoteVcsSupportUtil {
         if (fs instanceof RemoteFileSystem) {
             final RemoteFileSystem rfs = (RemoteFileSystem) fs;
             final ExecutionEnvironment env = rfs.getExecutionEnvironment();
-            if (rfs.isInsideVCS()) {
+            if (true || rfs.isInsideVCS()) {
                 deleteExternally(env, path);
             } else {
                 try {

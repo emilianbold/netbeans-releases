@@ -94,7 +94,7 @@ abstract public class FileOperationsProvider {
         private static final boolean USE_CACHE;
         static {
             String text = System.getProperty("rfs.vcs.cache");
-            USE_CACHE = (text == null) ? true : Boolean.parseBoolean(text);
+            USE_CACHE = false;//(text == null) ? true : Boolean.parseBoolean(text);
         }
 
         protected FileOperations(FileSystem fs) {
