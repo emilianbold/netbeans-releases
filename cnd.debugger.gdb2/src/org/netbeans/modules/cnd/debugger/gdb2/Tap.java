@@ -252,9 +252,13 @@ import org.openide.util.RequestProcessor;
 
             // do some pattern recognition and alternative colored output.
             if (line.startsWith("~")) { // NOI18N
-                // comment line
-                toTermBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
-                toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+                if (TRACING_IN_CONSOLE) {
+                    // comment line
+                    toTermBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
+                    toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+                } else {
+                    toTermBuf.delete(0, toTermBuf.length());
+                }
             } else if (line.startsWith("&") || line.startsWith("*") || line.startsWith("=")) { // NOI18N
                 if (TRACING_IN_CONSOLE) {
                     // output
