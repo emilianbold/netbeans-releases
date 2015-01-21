@@ -67,12 +67,12 @@
                 for (var accessorName in accessors) {
                     if (accessors.hasOwnProperty(accessorName)) {
                         var originalAccessor = accessors[accessorName];
-                        accessors[accessorName] = (function(marker) {
+                        accessors[accessorName] = (function(marker, accessor) {
                             return function() {
                                 marker.invoked = true;
-                                return originalAccessor();
+                                return accessor();
                             };
-                        })(createMarker(node, accessorName));
+                        })(createMarker(node, accessorName), originalAccessor);
                     }
                 }
             }
