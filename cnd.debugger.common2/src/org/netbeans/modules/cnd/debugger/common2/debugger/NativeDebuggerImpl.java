@@ -192,10 +192,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
         session = ctxProvider.lookupFirst(null, NativeSession.class);
 
-        if (session == null) {
-            throw new AssertionError("session was not initialized");     // NOI18N
-        }
-//        assert session != null : "NativeDebuggerImpl created session";
+        assert session != null : "NativeDebuggerImpl created session";
         session.setDebugger((NativeDebugger) this);
 
         currentPCMarker =
