@@ -47,12 +47,14 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.terminal.actions.ActionFactory;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -60,7 +62,10 @@ import org.openide.NotifyDescriptor.InputLine;
 import org.openide.awt.MouseUtils;
 
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
@@ -71,7 +76,6 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
 
     private JTabbedPane tabbedPane;
     private JComponent soleComponent;
-    private JPopupMenu pop;
     private PopupListener popL;
     
     public TerminalContainerTabbed(TopComponent owner, String originalName) {
@@ -102,12 +106,6 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
             }
         });
 	
-	pop = new JPopupMenu();
-	pop.add(new Close());
-	pop.add(new CloseAll());
-	pop.add(new CloseAllButCurrent());
-	pop.add(new JSeparator());
-	pop.add(new SetTitleAction());
 	popL = new PopupListener();
 
 	tabbedPane.addMouseListener(popL);
@@ -277,19 +275,23 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
 
 	@Override
 	protected void showPopup(MouseEvent e) {
-	    pop.show(TerminalContainerTabbed.this, e.getX(), e.getY());
-	}
-    }
-
-    private class Close extends AbstractAction {
-
-	public Close() {
-	    super(NbBundle.getMessage(TerminalContainerTabbed.class, "LBL_CloseWindow"));  //NOI18N
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-	    removeTab(TerminalContainerTabbed.this.getSelected());
+	    Action close = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
+	    Action setTitle = ActionFactory.forID(ActionFactory.SET_TITLE_ACTION_ID);
+	    Action pin = ActionFactory.forID(ActionFactory.PIN_TAB_ACTION_ID);
+	    Action closeAll = new CloseAll();
+	    Action closeAllBut = new CloseAllButCurrent();
+		    
+	    JPopupMenu menu = Utilities.actionsToPopup(
+		    new Action[]{
+			close,
+			closeAll,
+			closeAllBut,
+			null,
+			setTitle,
+			pin
+		    }, Lookups.fixed(getSelected())
+	    );
+	    menu.show(TerminalContainerTabbed.this, e.getX(), e.getY());
 	}
     }
 
@@ -314,40 +316,6 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 	    closeAll(true);
-	}
-    }
-    
-    private final class SetTitleAction extends AbstractAction {
-
-	public SetTitleAction() {
-	    super(NbBundle.getMessage(TerminalContainerTabbed.class, "CTL_SetTitle"));	// NOI18N
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-	    InputLine inputLine = new NotifyDescriptor.InputLine(NbBundle.getMessage(TerminalContainerTabbed.class, "LBL_Title"), NbBundle.getMessage(TerminalContainerTabbed.class, "LBL_SetTitle"));// NOI18N
-	    JComponent selected = getSelected();
-	    String title = selected.getName();
-	    if (selected instanceof Terminal) {
-		title = ((Terminal)selected).getTitle();
-	    }
-	    inputLine.setInputText(title);
-	    if (DialogDisplayer.getDefault().notify(inputLine) == NotifyDescriptor.OK_OPTION) {
-		String newTitle = inputLine.getInputText().trim();
-		if (!newTitle.equals(title)) {
-		    if (selected instanceof Terminal) {
-			Terminal terminal = ((Terminal)selected);
-			if (!newTitle.isEmpty()) {
-			    terminal.setTitle(newTitle);
-			} else {
-			    terminal.resetTitle();
-			}
-		    } else {
-			setTitle(selected, newTitle);
-		    }
-		}
-	    }
-
 	}
     }
 }
