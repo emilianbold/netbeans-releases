@@ -670,8 +670,8 @@ tokens {
 	//protected int finalQualifier() { return finalQualifier(1); }
 	//protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
-        protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
+    protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
+    protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
 	// isClassName is used in CPPParserEx only
 	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected void end_of_stmt() {}
@@ -711,7 +711,8 @@ tokens {
 	protected void endConstructorDeclaration() {}
 	protected void beginDestructorDeclaration(String s) {}
 	protected void endDestructorDeclaration() {}
-	protected void beginParameterDeclaration() {}
+	protected boolean beginParameterDeclaration() { _ts = tsInvalid; return true; }
+    protected boolean endParameterDeclaration(int oldTs) { _ts = oldTs; return true; }
 	protected void beginFieldDeclaration() {}
 	//protected void beginFunctionDefinition() {}
 	//protected void endFunctionDefinition() {}
@@ -3275,7 +3276,8 @@ parameter_declaration_list [boolean symTabCheck]
 	;
 
 parameter_declaration[boolean inTemplateParams]
-	:	{beginParameterDeclaration();}
+    { int oldTs = _ts; }
+	:	({beginParameterDeclaration()}?)
 		(
 			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
 			    (!(LA(1)==SCOPE||LA(1)==IDENT||LA(1)==LITERAL_final) ||
@@ -3300,6 +3302,7 @@ parameter_declaration[boolean inTemplateParams]
                         assignment_expression
                     )
 		)?
+        ({endParameterDeclaration(oldTs)}?)
 		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
 	;
 
