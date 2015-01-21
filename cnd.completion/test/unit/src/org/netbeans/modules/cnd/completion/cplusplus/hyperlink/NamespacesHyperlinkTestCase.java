@@ -444,6 +444,14 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug243087.cpp", 4, 20, "bug243087.cpp", 1, 1);
     }        
     
+    public void testBug249613() throws Exception {
+        // Bug 249613 - Code assistance fails for some inline namespaces
+        performTest("bug249613.cpp", 22, 30, "bug249613.cpp", 5, 17);
+        performTest("bug249613.cpp", 23, 30, "bug249613.cpp", 14, 17);
+        performTest("bug249613.cpp", 24, 25, "bug249613.cpp", 9, 13);
+        performTest("bug249613.cpp", 25, 25, "bug249613.cpp", 17, 13);
+    }        
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
