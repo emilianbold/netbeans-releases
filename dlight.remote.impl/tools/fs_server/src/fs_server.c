@@ -804,6 +804,8 @@ static void response_copy(const fs_request* request) {
             response_end(request->id, request->path2);
         }
         free(dst_parent);
+    } else {
+        response_end(request->id, request->path2);
     }
 }
 
