@@ -65,6 +65,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -123,7 +124,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
+    public RemoteFileObject getFileObject(String name, String ext,  @NonNull Set<String> antiLoop) {
          return getFileObject(composeName(name, ext), antiLoop);
     }
 
@@ -352,7 +353,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+    public RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop) {
         Parameters.notNull("path", relativePath);
         relativePath = PathUtilities.normalizeUnixPath(relativePath);
         if ("".equals(relativePath)) { // NOI18N
@@ -383,7 +384,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             String childNameExt = relativePath.substring(slashPos + 1);
             RemoteFileObject parentFileObject = getFileSystem().findResource(parentRemotePath, antiLoop);
             if (parentFileObject != null &&  parentFileObject.isFolder()) {
-                RemoteFileObject result = parentFileObject.getFileObject(childNameExt);
+                RemoteFileObject result = parentFileObject.getFileObject(childNameExt, antiLoop);
                 return result;
             } else {
                 return null;

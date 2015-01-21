@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -135,7 +136,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    public RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
+    public RemoteFileObject getFileObject(String name, String ext, @NonNull Set<String> antiLoop) {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject fo = delegate.getFileObject(name, ext, antiLoop);
@@ -148,7 +149,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+    public RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop) {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject fo = delegate.getFileObject(relativePath, antiLoop);
