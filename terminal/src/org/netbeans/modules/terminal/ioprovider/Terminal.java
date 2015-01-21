@@ -684,7 +684,7 @@ public final class Terminal extends JComponent {
 	    return;
 	}
 
-	if (true) {
+	if (isPinnable()) {
 	    /* Will be enabled after delegating actions from TerminalContainerTabber will 
 	     * be implemented. Enabling this now will cause inconsistensy or copy-pasting.
 	     */
@@ -870,6 +870,11 @@ public final class Terminal extends JComponent {
 
 	setPinned(newState);
     }
+    
+    private boolean isPinnable() {
+	Object clientProperty = this.getClientProperty("pinAction");
+	return clientProperty != null && clientProperty.equals("enabled");
+    }
 
     /* 
     private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";	// NOI18N
@@ -981,7 +986,7 @@ public final class Terminal extends JComponent {
 		    smallerFontAction,
 		    null,
 		    setTitleAction,
-		    pinTabAction,
+		    isPinnable() ? pinTabAction : null, //NOI18N
 		    null,
 		    clearAction,
 		    isClosable() ? closeAction : null, // it's ok to have null as last element,
@@ -989,7 +994,7 @@ public final class Terminal extends JComponent {
 		}, Lookups.fixed(this)
 	);
 	menu.putClientProperty("container", ioContainer); // NOI18N
-        menu.putClientProperty("component", this);             // NOI18N
+	menu.putClientProperty("component", this);             // NOI18N
 
 	/* LATER?
 	 * NB IO APIS don't add sidebar actions to menu

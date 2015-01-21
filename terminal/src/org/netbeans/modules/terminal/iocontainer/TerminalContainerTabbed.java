@@ -184,6 +184,8 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
 	    // for first component we act as if select was called
 	    checkSelectionChange();
 	}
+	
+	comp.putClientProperty("pinAction", "enabled"); //NOI18N
 
 	revalidate();
     }
