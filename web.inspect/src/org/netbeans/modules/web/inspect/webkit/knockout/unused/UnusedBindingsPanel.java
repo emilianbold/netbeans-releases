@@ -40,25 +40,41 @@
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.inspect.webkit.knockout;
+package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
 import java.awt.EventQueue;
+import java.awt.dnd.DnDConstants;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.page.Page;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.RequestProcessor;
 
 /**
+ * Panel showing information about unused bindings.
  *
  * @author Jan Stola
  */
-public class UnusedBindingsPanel extends javax.swing.JPanel {
+public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerManager.Provider  {
     /** Request processor used by this class. */
     private static final RequestProcessor RP = new RequestProcessor(UnusedBindingsPanel.class);
     /** Page model for this panel. */
     private WebKitPageModel pageModel;
+    /** Explorer manager provided by this panel. */
+    private final ExplorerManager manager = new ExplorerManager();
+    /** Tree with unused bindings. */
+    private BeanTreeView treeView;
 
     /**
      * Creates a new {@code UnusedBindingsPanel}.
@@ -66,6 +82,17 @@ public class UnusedBindingsPanel extends javax.swing.JPanel {
     public UnusedBindingsPanel() {
         initComponents();
         add(findPanel);
+        initTreeView();
+        dataPanel.add(treeView);
+    }
+
+    /**
+     * Initializes the three with unused bindings.
+     */
+    private void initTreeView() {
+        treeView = new BeanTreeView();
+        treeView.setAllowedDragActions(DnDConstants.ACTION_NONE);
+        treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
     }
 
     /**
@@ -73,10 +100,19 @@ public class UnusedBindingsPanel extends javax.swing.JPanel {
      * 
      * @param pageModel page model for this panel
      */
-    void setPageModel(WebKitPageModel pageModel) {
+    public void setPageModel(WebKitPageModel pageModel) {
         this.pageModel = pageModel;
     }
 
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+
+    /**
+     * Prepares the page for the collection of unused binding information.
+     * It reloads the page with a special JavaScript preprocessor.
+     */
     void preparePage() {
         RP.post(new Runnable() {
             @Override
@@ -101,7 +137,13 @@ public class UnusedBindingsPanel extends javax.swing.JPanel {
         });
     }
 
-    void setKnockoutUsed(boolean knockoutUsed) {
+    /**
+     * This method is invoked to notify the panel about usage of Knockout
+     * in the inspected page.
+     * 
+     * @param knockoutUsed determines whether Knockout is used or not.
+     */
+    public void setKnockoutUsed(boolean knockoutUsed) {
         if (knockoutUsed) {
             RP.post(new Runnable() {
                 @Override
@@ -109,6 +151,7 @@ public class UnusedBindingsPanel extends javax.swing.JPanel {
                     RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("window.NetBeans && NetBeans.unusedBindingsAvailable()"); // NOI18N
                     final boolean found = "true".equals(remoteObject.getValueAsString()); // NOI18N
                     if (found) {
+                        updateData();
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -123,11 +166,56 @@ public class UnusedBindingsPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Shows the specified component in this panel.
+     * 
+     * @param component component to show in the panel.
+     */
     void showComponent(JComponent component) {
         removeAll();
         add(component);
         revalidate();
         repaint();
+    }
+
+    /**
+     * Updates the unused binding information shown in the panel.
+     */
+    void updateData() {
+        RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("NetBeans.unusedBindings()"); // NOI18N
+        String json = remoteObject.getValueAsString();
+        manager.setRootContext(new UnusedRootNode(parse(json)));
+    }
+
+    /**
+     * Parses the information about unused bindings.
+     * 
+     * @param json information about unused bindings (in JSON string).
+     * @return information about unused bindings {@code (name -> (id -> binding))} map.
+     */
+    private Map<String,Map<Integer,UnusedBinding>> parse(String json) {
+        Map<String,Map<Integer,UnusedBinding>> map = new HashMap<String,Map<Integer,UnusedBinding>>();
+        try {
+            JSONArray array = (JSONArray)new JSONParser().parse(json);
+            for (Object o : array) {
+                JSONObject jsonBinding = (JSONObject)o;
+                String name = (String)jsonBinding.get("name"); // NOI18N
+                int id = ((Number)jsonBinding.get("id")).intValue();
+                UnusedBinding binding = new UnusedBinding(id, name,
+                    (String)jsonBinding.get("nodeTagName"), // NOI18N
+                    (String)jsonBinding.get("nodeId"), // NOI18N
+                    (String)jsonBinding.get("nodeClasses")); // NOI18N
+                Map<Integer,UnusedBinding> innerMap = map.get(name);
+                if (innerMap == null) {
+                    innerMap = new HashMap<Integer,UnusedBinding>();
+                    map.put(name, innerMap);
+                }
+                innerMap.put(id, binding);
+            }
+        } catch (ParseException pex) {
+            Logger.getLogger(UnusedBindingsPanel.class.getName()).log(Level.INFO, null, pex);
+        }
+        return map;
     }
 
     /**
@@ -143,6 +231,8 @@ public class UnusedBindingsPanel extends javax.swing.JPanel {
         findButton = new javax.swing.JButton();
         findLabel = new javax.swing.JLabel();
         dataPanel = new javax.swing.JPanel();
+        refreshPanel = new javax.swing.JPanel();
+        refreshButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(findButton, org.openide.util.NbBundle.getMessage(UnusedBindingsPanel.class, "UnusedBindingsPanel.findButton.text")); // NOI18N
         findButton.addActionListener(new java.awt.event.ActionListener() {
@@ -174,16 +264,33 @@ public class UnusedBindingsPanel extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout dataPanelLayout = new javax.swing.GroupLayout(dataPanel);
-        dataPanel.setLayout(dataPanelLayout);
-        dataPanelLayout.setHorizontalGroup(
-            dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
+        dataPanel.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(UnusedBindingsPanel.class, "UnusedBindingsPanel.refreshButton.text")); // NOI18N
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout refreshPanelLayout = new javax.swing.GroupLayout(refreshPanel);
+        refreshPanel.setLayout(refreshPanelLayout);
+        refreshPanelLayout.setHorizontalGroup(
+            refreshPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(refreshPanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(refreshButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        dataPanelLayout.setVerticalGroup(
-            dataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
+        refreshPanelLayout.setVerticalGroup(
+            refreshPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(refreshPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(refreshButton)
+                .addContainerGap())
         );
+
+        dataPanel.add(refreshPanel, java.awt.BorderLayout.PAGE_END);
 
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
@@ -192,11 +299,22 @@ public class UnusedBindingsPanel extends javax.swing.JPanel {
         preparePage();
     }//GEN-LAST:event_findButtonActionPerformed
 
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                updateData();
+            }
+        });
+    }//GEN-LAST:event_refreshButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel dataPanel;
     private javax.swing.JButton findButton;
     private javax.swing.JLabel findLabel;
     private javax.swing.JPanel findPanel;
+    private javax.swing.JButton refreshButton;
+    private javax.swing.JPanel refreshPanel;
     // End of variables declaration//GEN-END:variables
 }
