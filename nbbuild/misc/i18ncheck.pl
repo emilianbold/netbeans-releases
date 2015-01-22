@@ -234,6 +234,7 @@ sub checkline {
             && ! m,new PropertyDescriptor\s*\(,
             && ! m,setIconBase\s*\(,
             && ! m,setIconBaseWithExtension\s*\(,
+            && ! m,setPrototypeDisplayValue\s*\(,
             && ! m,loadImage\s*\(,
             && ! m,getResource(AsStream)?\s*\(,
             && ! m,findResource ?\s*\(,
