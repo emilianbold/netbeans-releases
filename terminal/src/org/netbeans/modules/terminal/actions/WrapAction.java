@@ -59,7 +59,7 @@ import org.openide.util.actions.Presenter;
  * @author igromov
  */
 @ActionID(id = ActionFactory.WRAP_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_Wrap", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_Wrap", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "Wrap") //NOI18N
 })
@@ -76,7 +76,7 @@ public class WrapAction extends TerminalAction implements Presenter.Popup {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 
@@ -91,6 +91,9 @@ public class WrapAction extends TerminalAction implements Presenter.Popup {
     public Object getValue(String key) {
 	if (key.equals(BOOLEAN_STATE_ENABLED_KEY)) {
 	    Terminal terminal = getTerminal();
+	    if (terminal == null) {
+		return false;
+	    }
 	    Term term = terminal.term();
 	    return !term.isHorizontallyScrollable();
 	} else {

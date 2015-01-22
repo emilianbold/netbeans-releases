@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
  * @author igromov
  */
 @ActionID(id = ActionFactory.FIND_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_Find", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_Find", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "FindAction") //NOI18N
 })
@@ -73,7 +73,7 @@ public class FindAction extends TerminalAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
 	Terminal terminal = getTerminal();
 
 	if (!terminal.isEnabled()) {

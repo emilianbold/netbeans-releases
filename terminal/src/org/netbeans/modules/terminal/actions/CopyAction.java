@@ -59,26 +59,21 @@ import org.openide.util.Lookup;
  * @author igromov
  */
 @ActionID(id = ActionFactory.COPY_ACTION_ID, category = ActionFactory.CATEGORY)
-@ActionRegistration(displayName = "#CTL_Copy", lazy = false) //NOI18N
+@ActionRegistration(displayName = "#CTL_Copy", lazy = true) //NOI18N
 @ActionReferences({
-    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "CopyAction") //NOI18N
+    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "CopyAction"), //NOI18N
+    @ActionReference(path = "Shortcuts", name = "CS-C")
 })
 public final class CopyAction extends TerminalAction {
 
     public CopyAction(Lookup context) {
 	super(context);
-	KeyStroke accelerator = KeyStroke.getKeyStroke(
-		KeyEvent.VK_C,
-		InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK
-	);
 
-	// System.out.printf("Accelerator for Copy: %s\n", accelerator);
 	putValue(NAME, getMessage("CTL_Copy")); //NOI18N
-	putValue(ACCELERATOR_KEY, accelerator);
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 
