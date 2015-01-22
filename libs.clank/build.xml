@@ -45,4 +45,36 @@ made subject to such option by the copyright holder.
 -->
 <project name="libs.clank" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <!--load env variables-->
+    <property environment="env"/>
+    <property name="env.SPUTNIK" value=""/>
+    
+    <property name="clank.suite.dir" value="${env.SPUTNIK}/clank.suite"/>
+    <property name="clank.suite.jars.dir" value="${clank.suite.dir}/build/cluster/modules"/>
+    <property name="clank.dest.dir" value="${basedir}/external"/>
+    
+    <target name="-check-clank-paths"> 
+      <condition property="SPUTNIK.found">
+          <not>
+              <equals arg1="${env.SPUTNIK}" arg2=""/>
+          </not>
+      </condition>
+      <fail unless="SPUTNIK.found" message="${SPUTNIK} is not set."/>      
+      
+      <condition property="clank.suite.built">
+        <available file="${clank.suite.jars.dir}" type="dir"/>
+      </condition>      
+      <fail unless="clank.suite.built" message="${clank.suite.jars.dir} doesn't exist. ${clank.suite.dir} was not built?"/>      
+
+      <fileset dir="${clank.suite.jars.dir}" id="clank.jars.fileset" includes="*.jar"/>
+      <pathconvert refid="clank.jars.fileset" property="clank.suite.contains-files" setonempty="false"/>  
+      <fail unless="clank.suite.contains-files" message="${clank.suite.jars.dir} doesn't contain jar files. ${clank.suite.dir} was not built?"/>        
+    </target>
+    
+    <target name="jar-prep" depends="-check-clank-paths,projectized-common.jar-prep">
+      <echo message="copy ${clank.suite.jars.dir}/*.jar into ${clank.dest.dir}" />
+      <copy todir="${clank.dest.dir}" overwrite="true">
+        <fileset refid="clank.jars.fileset"/>
+      </copy>
+    </target>
 </project>
