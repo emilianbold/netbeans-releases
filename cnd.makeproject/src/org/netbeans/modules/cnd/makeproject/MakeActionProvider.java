@@ -1890,9 +1890,12 @@ public final class MakeActionProvider implements ActionProvider {
         private ConfSelectorPanel confSelectorPanel;
         private String command = null;
         private Dialog dialog = null;
+        private final String recentSelectionKey;
 
         BatchConfigurationSelector(MakeProject project, Configuration[] confs) {
             confSelectorPanel = new ConfSelectorPanel(getString("CheckLabel"), getString("CheckLabelMn").charAt(0), confs, new JButton[]{buildButton, rebuildButton, cleanButton});
+            recentSelectionKey = project.getProjectDirectory().getPath();
+            confSelectorPanel.restoreSelection(recentSelectionKey);
 
             String dialogTitle = MessageFormat.format(getString("BatchBuildTitle"), // NOI18N
                     new Object[]{ProjectUtils.getInformation(project).getDisplayName()});
@@ -1945,6 +1948,7 @@ public final class MakeActionProvider implements ActionProvider {
                 assert false;
             }
             dialog.dispose();
+            confSelectorPanel.storeSelection(recentSelectionKey);
         }
     }
 

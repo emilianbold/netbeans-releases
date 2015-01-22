@@ -72,7 +72,6 @@ enum fs_response_kind {
     FS_RSP_CHANGE = 'c',
     FS_RSP_ERROR = 'E',
     FS_RSP_REFRESH = 'R',
-    FS_RSP_DELETE = 'd',
     FS_RSP_SERVER_INFO = 'i'
 };
 

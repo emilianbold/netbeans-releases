@@ -53,7 +53,6 @@ package org.netbeans.modules.remote.impl.fs.server;
     FS_RSP_CHANGE('c'),
     FS_RSP_ERROR('E'),
     FS_RSP_REFRESH('R'),
-    FS_RSP_DELETE('d'),
     FS_RSP_SERVER_INFO('i');
 
     private final char letter;
