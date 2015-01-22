@@ -181,8 +181,8 @@ public abstract class SvnCommand implements CommandNotificationListener {
                     Subversion.LOG.fine("outputText [" + line.getPath() + "]");
                 }
                 String path = getAbsolutePath(line.getPath());
-                if (!path.startsWith("/")) {
-                    path = "/"+path;
+                if (!path.startsWith("/")) { //NOI18N
+                    path = "/"+path; //NOI18N
                 }
                 notificationHandler.notifyListenersOfChange(VCSFileProxySupport.getResource(fileSystem, path));
             }
@@ -196,9 +196,9 @@ public abstract class SvnCommand implements CommandNotificationListener {
     }
     
     protected final  String getAbsolutePath(String path, VCSFileProxy... files) {
-        if (!path.startsWith("/")) {
+        if (!path.startsWith("/")) { //NOI18N
             for(VCSFileProxy f : files){
-                if (f.getPath().endsWith("/"+path)) {
+                if (f.getPath().endsWith("/"+path)) { //NOI18N
                     return f.getPath();
                 }
             }

@@ -111,7 +111,7 @@ public class SVNBaseDir {
                 break;
             }
             if (i > 0) {
-                commonsPart.append("/");
+                commonsPart.append("/"); //NOI18N
             }
             commonsPart.append(part1);
         }
