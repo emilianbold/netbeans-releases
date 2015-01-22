@@ -423,6 +423,7 @@ FormatToken{kind=EOL, offset=457, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=458, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_RIGHT_PARENTHESIS, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=459, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null, id=null}

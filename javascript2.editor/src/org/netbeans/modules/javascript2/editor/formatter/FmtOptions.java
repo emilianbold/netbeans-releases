@@ -102,15 +102,13 @@ public class FmtOptions {
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
     public static final String initialIndent = "init.indent"; //NOI18N
 
-    public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
-    public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
+    public static final String functionDeclBracePlacement = "functionDeclBracePlacement"; //NOI18N
     public static final String ifBracePlacement = "ifBracePlacement"; //NOI18N
     public static final String forBracePlacement = "forBracePlacement"; //NOI18N
     public static final String whileBracePlacement = "whileBracePlacement"; //NOI18N
     public static final String switchBracePlacement = "switchBracePlacement"; //NOI18N
     public static final String catchBracePlacement = "catchBracePlacement"; //NOI18N
-    public static final String useTraitBodyBracePlacement = "useTraitBodyBracePlacement"; //NOI18N
-    public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
+    public static final String withBracePlacement = "withBracePlacement"; //NOI18N
 
     public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
     public static final String blankLinesAfterNamespace = "blankLinesAfterNamespace"; //NOI18N
@@ -282,15 +280,13 @@ public class FmtOptions {
             { rightMargin, "80"}, //NOI18N
             { initialIndent, "0"}, //NOI18N
 
-	    { classDeclBracePlacement, OBRACE_SAMELINE },
-	    { methodDeclBracePlacement, OBRACE_SAMELINE },
-	    { ifBracePlacement, OBRACE_SAMELINE },
-	    { forBracePlacement, OBRACE_SAMELINE },
-	    { whileBracePlacement, OBRACE_SAMELINE },
-	    { switchBracePlacement, OBRACE_SAMELINE },
-	    { catchBracePlacement, OBRACE_SAMELINE },
-        { useTraitBodyBracePlacement, OBRACE_SAMELINE },
-	    { otherBracePlacement, OBRACE_SAMELINE },
+	    { functionDeclBracePlacement, OBRACE_PRESERVE },
+	    { ifBracePlacement, OBRACE_PRESERVE },
+	    { forBracePlacement, OBRACE_PRESERVE },
+	    { whileBracePlacement, OBRACE_PRESERVE },
+	    { switchBracePlacement, OBRACE_PRESERVE },
+	    { catchBracePlacement, OBRACE_PRESERVE },
+            { withBracePlacement, OBRACE_PRESERVE },
 
             { blankLinesBeforeNamespace, "1"}, //NOI18N
             { blankLinesAfterNamespace, "1"}, //NOI18N
