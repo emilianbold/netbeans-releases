@@ -54,7 +54,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,16 +62,14 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -510,27 +507,17 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                     pathToRename = null;
                     pathToUpload = file.getPath(); //NOI18N
                 }
-
-                CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
-                        file.getCache(), file.getExecutionEnvironment(), pathToUpload, pathToRename, -1, false, null);
-                Future<UploadStatus> task = CommonTasksSupport.uploadFile(params);
                 try {
-                    UploadStatus uploadStatus = task.get();
-                    if (uploadStatus.isOK()) {
-                        RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} succeeded", this);
-                        file.getParent().updateStat(file, uploadStatus.getStatInfo());
-                        FileEvent ev = new FileEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), false, uploadStatus.getStatInfo().getLastModified().getTime());
-                        file.getOwnerFileObject().fireFileChangedEvent(file.getListeners(), ev);
-                        RemoteDirectory parent = file.getParent();
-                        if (parent != null) {
-                            ev = new FileEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), false, uploadStatus.getStatInfo().getLastModified().getTime());
-                            parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);
-                        }
-                    } else {
-                        RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
-                        file.setPendingRemoteDelivery(false);
-                        throw new IOException(uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N
-                    }
+                    FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.uploadAndRename(
+                            file.getExecutionEnvironment(), file.getCache(), pathToUpload, pathToRename);                    
+                    file.getParent().updateStat(file, statInfo);
+                    FileEvent ev = new FileEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), false, statInfo.getLastModified().getTime());
+                    file.getOwnerFileObject().fireFileChangedEvent(file.getListeners(), ev);
+                    RemoteDirectory parent = file.getParent();
+                    if (parent != null) {
+                        ev = new FileEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), false, statInfo.getLastModified().getTime());
+                        parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);
+                    }                
                 } catch (InterruptedException ex) {
                     throw newIOException(ex);
                 } catch (ExecutionException ex) {

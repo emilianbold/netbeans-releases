@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.CancellationException;
@@ -182,6 +183,12 @@ public abstract class RemoteFileSystemTransport {
             throws IOException, InterruptedException, CancellationException, ExecutionException {
         return getInstance(execEnv).move(from, to);
     }
+    
+    public static FileInfoProvider.StatInfo uploadAndRename(ExecutionEnvironment execEnv, File src, 
+            String pathToUpload, String pathToRename) 
+            throws IOException, InterruptedException, ExecutionException, InterruptedException {
+        return getInstance(execEnv).uploadAndRename(src, pathToUpload, pathToRename);
+    }
 
     private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
@@ -220,6 +227,9 @@ public abstract class RemoteFileSystemTransport {
     protected abstract void unregisterDirectoryImpl(String path);
 
     protected abstract void scheduleRefresh(Collection<String> paths);
+    
+    protected abstract FileInfoProvider.StatInfo uploadAndRename(File srcFile, String pathToUpload, String pathToRename)
+            throws IOException, InterruptedException, ExecutionException, InterruptedException;
     
     /** 
      * Deletes the file, returns parent directory content.

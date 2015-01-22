@@ -55,6 +55,7 @@ enum fs_request_kind {
     FS_REQ_STAT = 'S',
     FS_REQ_LSTAT = 's',
     FS_REQ_COPY = 'C',
+    FS_REQ_MOVE = 'm',
     FS_REQ_QUIT = 'q',
     FS_REQ_SLEEP = 'P',
     FS_REQ_ADD_WATCH = 'W',

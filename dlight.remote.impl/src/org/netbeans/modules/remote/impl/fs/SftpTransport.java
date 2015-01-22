@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
@@ -52,12 +53,14 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  * Note: public access is needed for tests
@@ -200,4 +203,21 @@ public class SftpTransport extends RemoteFileSystemTransport {
         }
         return null;
     }
+
+    @Override
+    protected StatInfo uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
+            throws IOException, InterruptedException, ExecutionException, InterruptedException {
+        
+        CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
+                srcFile, execEnv, pathToUpload, pathToRename, -1, false, null);
+        Future<CommonTasksSupport.UploadStatus> task = CommonTasksSupport.uploadFile(params);
+        CommonTasksSupport.UploadStatus uploadStatus = task.get();
+        if (uploadStatus.isOK()) {
+            RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} succeeded", this);
+            return uploadStatus.getStatInfo();
+        } else {
+            RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
+            throw new IOException(uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N            
+        }
+    }    
 }
