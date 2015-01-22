@@ -64,6 +64,7 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -181,7 +182,7 @@ public class AddInstanceAction extends AbstractAction {
                 true,
                 new Object[] {addButton, CANCEL_BUTTON}, addButton,
                 DialogDescriptor.DEFAULT_ALIGN,
-                null,
+                new HelpCtx(ID),
                 bl
                 );
         tsInstanceCustomizer.setNotificationsSupport(dd.createNotificationLineSupport());
