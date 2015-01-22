@@ -238,6 +238,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.debugger.jpda.jdi.event</package>
                 <package>org.netbeans.modules.debugger.jpda.jdi.request</package>
                 <package>org.netbeans.modules.debugger.jpda.models</package>
+                <package>org.netbeans.modules.debugger.jpda.spi</package>
                 <package>org.netbeans.modules.debugger.jpda.util</package>
             </friend-packages>
         </data>
