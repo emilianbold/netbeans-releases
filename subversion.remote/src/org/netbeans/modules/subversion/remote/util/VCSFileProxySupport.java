@@ -251,7 +251,7 @@ public final class VCSFileProxySupport {
     public static OutputStream getOutputStream(VCSFileProxy file) throws IOException {
         return RemoteVcsSupport.getOutputStream(file);
     }
-    
+
     public static long length(VCSFileProxy file) {
         return RemoteVcsSupport.getSize(file);
     }
@@ -412,7 +412,9 @@ public final class VCSFileProxySupport {
     }
     
     public static VCSFileProxy getResource(VCSFileProxy file, String absPath) {
-        assert absPath.startsWith("/") : "Path "+absPath+"must be absolute";
+        if (!absPath.startsWith("/")) { //NOI18N
+            assert absPath.startsWith("/") : "Path "+absPath+"must be absolute";
+        }
         VCSFileProxy parent = file;
         while (true) {
             parent = file.getParentFile();

@@ -118,7 +118,7 @@ class Commandline {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.fine("cli: process created");                        // NOI18N
             }
-            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir("/", getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args);
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir("/", getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args); //NOI18N
 
             if(command.hasBinaryOutput()) {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
