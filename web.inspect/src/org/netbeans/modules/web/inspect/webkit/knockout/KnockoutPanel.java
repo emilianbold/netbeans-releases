@@ -53,6 +53,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.netbeans.modules.web.inspect.webkit.knockout.unused.UnusedBindingsPanel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
@@ -82,10 +83,11 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     /** Page model listener. */
     private Listener pageModelListener;
     /** Determines whether we found Knockout in the current page already. */
-    boolean knockoutFound;
+    private boolean knockoutFound;
     /** The current selected node. */
     Node selectedNode;
-    private final UnusedBindingsPanel realUnusedBindingsPanel = new UnusedBindingsPanel();
+    /** Unused bindings panel. */
+    private UnusedBindingsPanel unusedBindingsPanel;
 
     /**
      * Creates a new {@code KnockoutPanel}.
@@ -99,8 +101,8 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         initContextView();
         initComponents();
         initToolBar();
-        realUnusedBindingsPanel.setPageModel(pageModel);
-//        unusedBindingsPanel = realUnusedBindingsPanel;
+        unusedBindingsPanel = new UnusedBindingsPanel();
+        unusedBindingsPanel.setPageModel(pageModel);
         if (pageModel == null) {
             messageLabel.setText(Bundle.KnockoutPanel_messageLabel_noInspection());
             add(messageLabel);
@@ -207,7 +209,7 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         selectedNode = null;
         if (documentUpdated) {
             knockoutFound = false;
-            realUnusedBindingsPanel.setKnockoutUsed(false);
+            unusedBindingsPanel.setKnockoutUsed(false);
         }
         JComponent componentToShow;
         if (knockoutFound) {
@@ -250,7 +252,7 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
      */
     void knockoutUsed() {
         knockoutFound = true;
-        realUnusedBindingsPanel.setKnockoutUsed(true);
+        unusedBindingsPanel.setKnockoutUsed(true);
         update(false);
     }
 
@@ -303,8 +305,6 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         bindingContextButton = new javax.swing.JToggleButton();
         unusedBindingsButton = new javax.swing.JToggleButton();
         contentPanel = new javax.swing.JPanel();
-        unusedBindingsPanel = new javax.swing.JPanel();
-        commingSoonLabel = new javax.swing.JLabel();
 
         messageLabel.setBackground(contextView.getViewport().getView().getBackground());
         messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -346,12 +346,6 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         contentPanel.setLayout(new java.awt.BorderLayout());
         mainPanel.add(contentPanel, java.awt.BorderLayout.CENTER);
 
-        unusedBindingsPanel.setLayout(new java.awt.BorderLayout());
-
-        commingSoonLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        org.openide.awt.Mnemonics.setLocalizedText(commingSoonLabel, org.openide.util.NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.commingSoonLabel.text")); // NOI18N
-        unusedBindingsPanel.add(commingSoonLabel, java.awt.BorderLayout.CENTER);
-
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
 
@@ -365,14 +359,12 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton bindingContextButton;
-    private javax.swing.JLabel commingSoonLabel;
     private javax.swing.JPanel contentPanel;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JToolBar toolBar;
     private javax.swing.ButtonGroup toolBarButtonGroup;
     private javax.swing.JToggleButton unusedBindingsButton;
-    private javax.swing.JPanel unusedBindingsPanel;
     // End of variables declaration//GEN-END:variables
 
     /**
