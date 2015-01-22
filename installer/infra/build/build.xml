@@ -1376,7 +1376,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-cnd"  version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="1"/> <!-- TODO version -->
+            <component uid="jre-nested"  version="1.7.0.71.0"/> <!-- TODO version -->
 	    <bundleProperty name="${welcome.type}" value="cnd"/>
             <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
@@ -1394,7 +1394,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base"      version="${nb.full.version}"/>
             <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="1"/> <!-- TODO version -->
+            <component uid="jre-nested"  version="1.7.0.71.0"/> <!-- TODO version -->
 	    <bundleProperty name="${welcome.type}" value="html"/>
             <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
@@ -1413,7 +1413,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-webcommon" version="${nb.full.version}"/>
             <component uid="nb-php"       version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="1"/> <!-- TODO version -->
+            <component uid="jre-nested"  version="1.7.0.71.0"/> <!-- TODO version -->
 	    <bundleProperty name="${welcome.type}" value="php"/>
             <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>

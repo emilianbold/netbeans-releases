@@ -87,6 +87,7 @@ public class NbBasePanel extends DestinationPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private JdkLocationPanel jdkLocationPanel;
+    private boolean hasNestedJre = false;
     
     public NbBasePanel() {
         jdkLocationPanel = new JdkLocationPanel();
@@ -178,9 +179,12 @@ public class NbBasePanel extends DestinationPanel {
             // do not check preferred version of the dependent nb product :
             // it is not clear how to handle that
             }
+            
+            if (product.getUid().equals("jre-nested")) {                
+                hasNestedJre = true;
+            }
         }
-
-
+        
         String finalMinVersion = (min == null) ? null : min.toString();
         String finalMaxVersion = (max == null) ? null : max.toString();
         String preferedVersion = (preferred == null) ? null : preferred.toString();
@@ -222,6 +226,10 @@ public class NbBasePanel extends DestinationPanel {
         if(jdkLocation!=null && !jdkLocation.getPath().equals(StringUtils.EMPTY_STRING)) {
             jdkLocationPanel.setLocation(jdkLocation);
         }        
+    }
+    
+    public boolean hasNestedJre() {
+        return hasNestedJre;
     }
     
     public JdkLocationPanel getJdkLocationPanel() {
@@ -454,39 +462,41 @@ public class NbBasePanel extends DestinationPanel {
             // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new NbiDirectoryChooser();
             
-            // this /////////////////////////////////////////////////////////////////
-            add(jdkLocationLabel, new GridBagConstraints(
-                    0, 2,                             // x, y
-                    2, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(11, 11, 0, 11),        // padding
-                    0, 0));                           // padx, pady - ???
-            add(jdkLocationComboBox, new GridBagConstraints(
-                    0, 3,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(4, 11, 0, 0),          // padding
-                    0, 0));                           // padx, pady - ???
-            add(browseButton, new GridBagConstraints(
-                    1, 3,                             // x, y
-                    1, 1,                             // width, height
-                    0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(4, 4, 0, 11),          // padding
-                    0, 0));                           // padx, pady - ???
-            add(statusLabel, new GridBagConstraints(
-                    0, 4,                             // x, y
-                    2, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(4, 11, 0, 11),         // padding
-                    0, 0));                           // padx, pady - ???
+            if(!panel.hasNestedJre()){
+                // this /////////////////////////////////////////////////////////////////
+                add(jdkLocationLabel, new GridBagConstraints(
+                        0, 2,                             // x, y
+                        2, 1,                             // width, height
+                        1.0, 0.0,                         // weight-x, weight-y
+                        GridBagConstraints.LINE_START,    // anchor
+                        GridBagConstraints.HORIZONTAL,    // fill
+                        new Insets(11, 11, 0, 11),        // padding
+                        0, 0));                           // padx, pady - ???
+                add(jdkLocationComboBox, new GridBagConstraints(
+                        0, 3,                             // x, y
+                        1, 1,                             // width, height
+                        1.0, 0.0,                         // weight-x, weight-y
+                        GridBagConstraints.LINE_START,    // anchor
+                        GridBagConstraints.HORIZONTAL,    // fill
+                        new Insets(4, 11, 0, 0),          // padding
+                        0, 0));                           // padx, pady - ???
+                add(browseButton, new GridBagConstraints(
+                        1, 3,                             // x, y
+                        1, 1,                             // width, height
+                        0.0, 0.0,                         // weight-x, weight-y
+                        GridBagConstraints.LINE_START,    // anchor
+                        GridBagConstraints.HORIZONTAL,    // fill
+                        new Insets(4, 4, 0, 11),          // padding
+                        0, 0));                           // padx, pady - ???
+                add(statusLabel, new GridBagConstraints(
+                        0, 4,                             // x, y
+                        2, 1,                             // width, height
+                        1.0, 0.0,                         // weight-x, weight-y
+                        GridBagConstraints.LINE_START,    // anchor
+                        GridBagConstraints.HORIZONTAL,    // fill
+                        new Insets(4, 11, 0, 11),         // padding
+                        0, 0));                           // padx, pady - ???
+            }
         }
         
         private Text getVersionWarningMessage() {

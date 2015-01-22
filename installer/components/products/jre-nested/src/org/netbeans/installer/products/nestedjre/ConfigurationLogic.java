@@ -54,6 +54,7 @@ import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 
 /**
@@ -62,8 +63,12 @@ import org.netbeans.installer.wizard.components.WizardComponent;
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
 
-    public ConfigurationLogic() throws InitializationException {
+    private List<WizardComponent> wizardComponents;
 
+    public ConfigurationLogic() throws InitializationException {
+        wizardComponents = Wizard.loadWizardComponents(
+                WIZARD_COMPONENTS_URI,
+                getClass().getClassLoader());
     }
 
     @Override
@@ -79,7 +84,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             List<File> deletedFiles = deletePacks(copiedFiles);
             List<File> files = copiedFiles.toList();
             files.removeAll(deletedFiles);
-            
+
             filesList.add(files);
         } catch (IOException ex) {
             Logger.getLogger(ConfigurationLogic.class.getName()).log(Level.SEVERE, null, ex);
@@ -96,7 +101,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
     @Override
     public List<WizardComponent> getWizardComponents() {
-        return Collections.EMPTY_LIST;
+        return wizardComponents;
     }
 
     @Override
@@ -116,12 +121,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
     private List<File> deletePacks(FilesList filesList) {
         List<File> deleted = new ArrayList();
-        
+
         if (filesList != null) {
             List<File> files = filesList.toList();
 
             for (File file : files) {
-                if (file.getName().endsWith("pack.gz")) {
+                if (file.getName().endsWith("pack.gz")) { //NOI18N
                     try {
                         FileUtils.deleteFile(file);
                     } catch (IOException ex) {
@@ -131,7 +136,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 }
             }
         }
-        
+
         return deleted;
     }
+
+    public static final String WIZARD_COMPONENTS_URI
+            = "resource:" + // NOI18N
+            "org/netbeans/installer/products/nestedjre/wizard.xml"; // NOI18N
 }
