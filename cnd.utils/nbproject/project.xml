@@ -185,6 +185,7 @@
                 <friend>com.sun.tools.tuxedo.ubb</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.analysis.api</friend>
+                <friend>org.netbeans.modules.cnd.api.codemodel</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
                 <friend>org.netbeans.modules.cnd.api.project</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
@@ -194,6 +195,11 @@
                 <friend>org.netbeans.modules.cnd.cesredirector</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
+                <friend>org.netbeans.modules.cnd.codemodel.bridge</friend>
+                <friend>org.netbeans.modules.cnd.codemodel.completion</friend>
+                <friend>org.netbeans.modules.cnd.codemodel.highlight</friend>
+                <friend>org.netbeans.modules.cnd.codemodel.navigation</friend>
+                <friend>org.netbeans.modules.cnd.codemodel.utils</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.dbx</friend>
