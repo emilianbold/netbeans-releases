@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -670,6 +671,9 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public List<String> getIgnoredPatterns(VCSFileProxy file) throws SVNClientException {
+        if (!file.isDirectory()) {
+            return null;
+        }
         List<String> res = new ArrayList<>();
         for(ISVNProperty property : getProperties(file)) {
             if (ISVNProperty.IGNORE.equals(property.getName())) {
@@ -687,6 +691,9 @@ public class CommandlineClient implements SvnClient {
     @Override
     public void addToIgnoredPatterns(VCSFileProxy file, String value) throws SVNClientException {
         List<String> ignoredPatterns = getIgnoredPatterns(file);
+        if (ignoredPatterns == null) {
+            return;
+        }
         if (!ignoredPatterns.contains(value)) {
             ignoredPatterns.add(value);
             setIgnoredPatterns(file, ignoredPatterns);
@@ -695,6 +702,9 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void setIgnoredPatterns(VCSFileProxy file, List<String>  l) throws SVNClientException {
+        if (!file.isDirectory()) {
+            return;
+        }
         StringBuilder buf = new StringBuilder();
         for(String s : l) {
             buf.append(s);

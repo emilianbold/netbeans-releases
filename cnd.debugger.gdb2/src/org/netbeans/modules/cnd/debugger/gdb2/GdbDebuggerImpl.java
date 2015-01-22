@@ -1152,6 +1152,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }  
 
         @Override
+        protected void onDone(MIRecord record) {
+            // Logging output for user-typed commands
+            gdb.tap().log(getConsoleStream());
+        }
+        
+        @Override
         protected void onError(MIRecord record) {
             String errMsg = getErrMsg(record);
             if (!errMsg.isEmpty()) {

@@ -266,8 +266,10 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
     public void testSetLastModified() throws Exception {
         String basePath = mkTemp(execEnv, true);
         try {
-            String file = "file.1";
-            String refFile = "file.2";
+            final String file = "file.1";
+            final String refFile = "file.2";
+            final String absPath = basePath + '/' + file;
+            final String absRefPath = basePath + '/' + refFile;
             final String script =
                     "touch " + file + "; " +
                     "sleep 2; " +
@@ -278,9 +280,9 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
             //VCSFileProxy proxy = VCSFileProxy.createFileProxy(baseProxy, file);
             //VCSFileProxy refProxy = VCSFileProxy.createFileProxy(baseProxy, refFile);
             refreshParentAndRecurse(basePath);
-            RemoteVcsSupportUtil.setLastModified(fs, file, refFile);
-            RemoteFileObject fo = getFileObject(basePath + '/' + file);
-            RemoteFileObject refFo = getFileObject(basePath + '/' + refFile);
+            RemoteVcsSupportUtil.setLastModified(fs, absPath, absRefPath);
+            RemoteFileObject fo = getFileObject(absPath);
+            RemoteFileObject refFo = getFileObject(absRefPath);
             assertEquals(refFo.lastModified(), fo.lastModified());            
         } finally {
             if (basePath != null) {

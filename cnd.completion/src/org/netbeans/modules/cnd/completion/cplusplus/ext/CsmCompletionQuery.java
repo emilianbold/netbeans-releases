@@ -2156,7 +2156,7 @@ abstract public class CsmCompletionQuery {
                                 if (lastNamespace != null && needToCheckNS) { // currently package
                                     String searchPkg = (lastNamespace.isGlobal() ? "" : (lastNamespace.getQualifiedName() + CsmCompletion.SCOPE)) + var;
                                     if (findType || !last) {
-                                        List<?> res = finder.findNestedNamespaces(lastNamespace, var, true, false); // find matching nested namespaces
+                                        List<?> res = finder.findNestedNamespaces(lastNamespace, var, true, true); // find matching nested namespaces
                                         CsmNamespace curNs = res.isEmpty() ? null : (CsmNamespace) res.get(0);
                                         if (curNs != null) {
                                             lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), curNs);
@@ -2173,7 +2173,7 @@ abstract public class CsmCompletionQuery {
                                         }
                                     } else { // last and searching for completion output
                                         if (last) { // get all matching fields/methods/packages
-                                            List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
+                                            List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, true); // find matching nested namespaces
                                             res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, true, false)); // matching classes
                                             res.addAll(finder.findStaticNamespaceElements(lastNamespace, var, openingSource)); // matching static elements
                                             result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
@@ -2952,7 +2952,7 @@ abstract public class CsmCompletionQuery {
                                     final boolean exactMatch = (last ? openingSource : true);
                                     CsmNamespace curNs = lastNamespace;
                                     lastNamespace = null;
-                                    List<CsmNamespace> res = finder.findNestedNamespaces(curNs, mtdName, exactMatch, false); // find matching nested namespaces
+                                    List<CsmNamespace> res = finder.findNestedNamespaces(curNs, mtdName, exactMatch, true); // find matching nested namespaces
                                     for (CsmNamespace csmNamespace : res) {
                                         lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), csmNamespace);
                                         break;
