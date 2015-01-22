@@ -113,8 +113,11 @@ public final class KnockoutTC extends TopComponent {
                 currentPanel.dispose();
             }
             currentPanel = new KnockoutPanel((WebKitPageModel)pageModel);
-            if (lastKnockoutPageModel != null && lastKnockoutPageModel.get() == pageModel) {
-                currentPanel.knockoutUsed();
+            if (lastKnockoutPageModel != null) {
+                PageModel knockoutPageModel = lastKnockoutPageModel.get();
+                if (knockoutPageModel != null && knockoutPageModel == pageModel) {
+                    currentPanel.knockoutUsed();
+                }
             }
             add(currentPanel);
             ((KnockoutTCLookup)getLookup()).setPanel(currentPanel);
