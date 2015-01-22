@@ -462,6 +462,7 @@ public class NbBasePanel extends DestinationPanel {
             // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new NbiDirectoryChooser();
             
+            // don't show JDK panel when JRE is nested in bin/jre
             if(!panel.hasNestedJre()){
                 // this /////////////////////////////////////////////////////////////////
                 add(jdkLocationLabel, new GridBagConstraints(
