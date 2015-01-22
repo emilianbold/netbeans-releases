@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.netbeans.debugger.registry.ContextAwareServicePath;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.openide.util.Cancellable;
@@ -244,6 +245,11 @@ public final class ActionsManager {
                         }
                     }
                 };
+                if (postedActions.size() > 1) {
+                    // We have more than one action provider for a single action.
+                    // Check their paths and choose the most specific one:
+                    postedActions = selectTheMostSpecific(postedActions);
+                }
                 count[0] = k = postedActions.size();
                 fireActionToBeRun(action);
                 for (i = 0; i < k; i++) {
@@ -260,7 +266,7 @@ public final class ActionsManager {
         }
         return task;
     }
-    
+
     private Task postActionWithLazyInit(final Object action) {
         final AsynchActionTask task = new AsynchActionTask(Collections.emptyList());
         new RequestProcessor(ActionsManager.class).post(new Runnable() {
@@ -275,7 +281,94 @@ public final class ActionsManager {
         });
         return task;
     }
-                                                                                
+    
+    private static List<ActionsProvider> selectTheMostSpecific(List<ActionsProvider> aps) {
+        Iterator<ActionsProvider> it = aps.iterator();
+        ActionsProvider ap = it.next();
+        String path = getPath(ap);
+        if (path == null) {
+            return aps;
+        }
+        /*
+        Map<String, ActionsProvider> providersByPath = new LinkedHashMap<String, ActionsProvider>();
+        providersByPath.put(path, ap);
+        while(it.hasNext()) {
+            ap = it.next();
+            path = getPath(ap);
+            if (path == null) {
+                return aps;
+            } else {
+                providersByPath.put(path, ap);
+            }
+        }
+        for (String p1 : providersByPath.keySet()) {
+            
+        }*/
+        int n = aps.size();
+        String[] paths = new String[n];
+        ActionsProvider[] apArr = new ActionsProvider[n];
+        int i = 0;
+        paths[i] = path;
+        apArr[i] = ap;
+        while(it.hasNext()) {
+            ap = it.next();
+            path = getPath(ap);
+            if (path == null) {
+                return aps;
+            } else {
+                i++;
+                paths[i] = path;
+                apArr[i] = ap;
+            }
+        }
+        
+        for (i = 0; i < n; i++) {
+            String p1 = paths[i];
+            for (int j = 0; j < n; j++) {
+                if (i == j) {
+                    continue;
+                }
+                String p2 = paths[j];
+                if (p1.startsWith(p2)) {
+                    // p1 is more specific than p2, abandon p2
+                    String[] newPaths = new String[n-1];
+                    ActionsProvider[] newApArr = new ActionsProvider[n-1];
+                    if (j > 0) {
+                        System.arraycopy(paths, 0, newPaths, 0, j);
+                        System.arraycopy(apArr, 0, newApArr, 0, j);
+                    }
+                    if (j < (n-1)) {
+                        System.arraycopy(paths, j+1, newPaths, j, n-1-j);
+                        System.arraycopy(apArr, j+1, newApArr, j, n-1-j);
+                    }
+                    paths = newPaths;
+                    apArr = newApArr;
+                    i--;
+                    n--;
+                    break;
+                }
+            }
+        }
+        if (n < aps.size()) {
+            aps = Arrays.asList(apArr);
+        }
+        return aps;
+    }
+    
+    private static String getPath(ActionsProvider ap) {
+        if (ap instanceof ContextAwareServicePath) {
+            String path = ((ContextAwareServicePath) ap).getServicePath();
+            int i = path.lastIndexOf('/');
+            if (i > 0) {
+                return path.substring(0, i);
+            } else {
+                return "";
+            }
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Returns true if given action can be performed on this DebuggerEngine.
      * 
