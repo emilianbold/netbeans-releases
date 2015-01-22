@@ -74,7 +74,7 @@ public enum SVNStatusKind {
         if ("non-svn".equals(s)) { //NOI18N
             return NONE;
         }
-        return null;
+        throw new IllegalArgumentException("Unknown status " + s); //NOI18N
     }
 
     @Override

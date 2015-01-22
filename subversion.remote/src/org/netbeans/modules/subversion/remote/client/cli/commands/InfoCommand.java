@@ -284,10 +284,10 @@ public class InfoCommand extends SvnCommand {
         @Override
 	public String getPath() {
             final String path = infoMap.get(INFO_PATH);
-            if (path.startsWith("/")) {
+            if (path.startsWith("/")) { //NOI18N
                 return path;
             } else {
-                return "/"+path;
+                return "/"+path; //NOI18N
             }
 	}
         
