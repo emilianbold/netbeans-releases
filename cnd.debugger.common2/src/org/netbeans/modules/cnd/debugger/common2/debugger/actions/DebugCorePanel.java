@@ -164,7 +164,6 @@ final class DebugCorePanel extends javax.swing.JPanel {
         }
 	initRemoteHost();
 	initEngine();
-	lastHostChoice = null;
 	adjustAutoCore();
 
         projectComboBox.addItemListener(validationWorker);
@@ -177,6 +176,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
                 lastSelectedProject = getSelectedProject();
                 lastSelectedEngine = getEngine();
                 lastSelectedCorefile = getCorefilePath();
+                lastHostChoice = getHostName();
                 
                 executablePickList.addElement(getExecutablePath());
                 corefilePickList.addElement(getCorefilePath());
