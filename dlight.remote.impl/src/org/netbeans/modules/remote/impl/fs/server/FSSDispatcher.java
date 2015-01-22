@@ -56,6 +56,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -252,6 +253,16 @@ import org.openide.util.RequestProcessor;
                             }
                         }
                     }
+                }
+                Collection<FSSResponse> respCopy;
+                synchronized (responseLock) {
+                    respCopy = new ArrayList<>(responses.values());
+                    responses.clear();
+                }                
+                ExecutionException ex = new ExecutionException(new ConnectException(
+                        RemoteFileSystemUtils.getConnectExceptionMessage(env)));
+                for (FSSResponse resp : respCopy) {
+                    resp.failed(ex);
                 }
                 NativeProcess process = server.getProcess();
                 if (!ProcessUtils.isAlive(process)) {
