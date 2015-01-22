@@ -324,10 +324,6 @@ public final class DatabaseConnection implements DBConnection {
             return false;
         }
         try {
-            SQLWarning warnings = conn.getWarnings();
-            if (LOGGER.isLoggable(Level.FINE) && warnings != null) {
-                LOGGER.log(Level.FINE, "Warnings while trying vitality of connection: " + warnings);
-            }
             return !checkClosedWithTimeout(conn);
         } catch (Exception ex) {
             if (dbconn != null) {
@@ -351,6 +347,13 @@ public final class DatabaseConnection implements DBConnection {
             @Override
             public Boolean call() {
                 try {
+                    SQLWarning warnings = connection.getWarnings();
+                    if (LOGGER.isLoggable(Level.FINE) && warnings != null) {
+                        LOGGER.log(
+                                Level.FINE, 
+                                "Warnings while trying vitality of connection: {0}",
+                                warnings);
+                    }
                     return connection.isClosed();
                 } catch (SQLException ex) {
                     LOGGER.log(Level.FINE,
