@@ -160,6 +160,9 @@ public class CallStackFrameImpl implements CallStackFrame {
             return getLineNumberDefault(struts);
         }
         StrataProvider strataProvider = getStrataProvider();
+        if (strataProvider == null) {
+            return getLineNumberDefault(struts);
+        }
         getLineNumberLoopControl.set(Boolean.TRUE);
         try {
             return strataProvider.getStrataLineNumber(this, struts);
