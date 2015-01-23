@@ -66,6 +66,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.Task;
@@ -106,9 +107,16 @@ public class AddParameterOrLocalFix implements EnhancedFix {
                                   int /*!!!Position*/ unresolvedVariable) {
         this.file = info.getFileObject();
         if (type.getKind() == TypeKind.NULL) {
-            type = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            TypeElement te = info.getElements().getTypeElement("java.lang.Object"); // NOI18N
+            if (te != null) {
+                type = te.asType();
+                this.type = TypeMirrorHandle.create(type);
+            } else {
+                this.type = null;
+            }
+        } else {
+            this.type = TypeMirrorHandle.create(type);
         }
-        this.type = TypeMirrorHandle.create(type);
         this.name = name;
         this.parameter = parameter;
 

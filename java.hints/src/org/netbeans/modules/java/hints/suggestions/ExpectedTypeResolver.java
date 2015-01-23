@@ -353,7 +353,11 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
                 return null;
             }
             // initializer and update operation can have any result type, including none
-            return Collections.singletonList(info.getElements().getTypeElement("java.lang.Void").asType()); // NOI18N
+            TypeElement tel = info.getElements().getTypeElement("java.lang.Void");
+            if (tel == null) {
+                return null;
+            }
+            return Collections.singletonList(tel.asType()); // NOI18N
         }
     }
 
@@ -949,7 +953,11 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         if (theExpression == null) {
             initExpression(new TreePath(getCurrentPath(), node.getExpression()));
         }
-        return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType()); // NOI18N
+        TypeElement tel = info.getElements().getTypeElement("java.lang.Object");
+        if (tel == null) {
+            return null;
+        }
+        return Collections.singletonList(tel.asType()); // NOI18N
     }
     
     /**

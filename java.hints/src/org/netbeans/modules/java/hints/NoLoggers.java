@@ -233,6 +233,10 @@ public final class NoLoggers {
 
             // logger type
             TypeElement loggerTypeElement = wc.getElements().getTypeElement("java.util.logging.Logger"); // NOI18N
+            if (loggerTypeElement == null) {
+                // TODO: report to the user
+                return;
+            }
             ExpressionTree loggerClassQualIdent = m.QualIdent(loggerTypeElement);
 
             // initializer

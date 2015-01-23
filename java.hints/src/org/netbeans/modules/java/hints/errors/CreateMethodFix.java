@@ -103,7 +103,8 @@ public final class CreateMethodFix implements Fix {
         this.targetFile = targetFile;
         this.target = ElementHandle.create(target);
         if (returnType != null && returnType.getKind() == TypeKind.NULL) {
-            returnType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            TypeElement te = info.getElements().getTypeElement("java.lang.Object");
+            returnType = te == null ? null : te.asType(); // NOI18N
         }
         this.returnType = returnType != null ? TypeMirrorHandle.create(returnType) : null;
         this.argumentTypes = new ArrayList<TypeMirrorHandle>();

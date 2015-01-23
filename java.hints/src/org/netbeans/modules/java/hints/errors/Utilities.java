@@ -551,7 +551,8 @@ public class Utilities {
             if (tmirr != null)
                 return tmirr;
             else { //no extends, just '?'
-                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+                TypeElement te = info.getElements().getTypeElement("java.lang.Object"); // NOI18N
+                return te == null ? null : te.asType();
             }
                 
         }
@@ -1055,6 +1056,9 @@ public class Utilities {
 
             if (tm.getKind() == TypeKind.NULL) {
                 tm = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+                if (tm == null) {
+                    return null;
+                }
             }
 
             argumentTypes.add(tm);
