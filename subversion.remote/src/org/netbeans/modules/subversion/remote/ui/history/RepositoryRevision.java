@@ -538,7 +538,7 @@ final class RepositoryRevision {
                     if (f != null) {
                         for (VCSFileProxy selectionRoot : selectionRoots) {
                             // TODO: CND does not support flat folders, Probably should?
-                            if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(selectionRoot, f)) {
+                            if (VCSFileProxySupport.isAncestorOrEqual(selectionRoot, f)) {
                                 break;
                             }
                         }
