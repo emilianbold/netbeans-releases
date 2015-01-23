@@ -72,6 +72,7 @@ import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
 import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
+import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryDelta;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.internal.tasks.core.UnmatchedTaskContainer;
 import org.eclipse.mylyn.internal.tasks.core.data.ITaskDataManagerListener;
@@ -869,5 +870,9 @@ public class MylynSupport {
 
     void taskModified (ITask task) {
         taskList.notifyElementChanged(task);
+    }
+
+    void notifyCredentialsChanged(TaskRepository repository) {
+        taskRepositoryManager.notifyRepositorySettingsChanged(repository, new TaskRepositoryDelta(TaskRepositoryDelta.Type.CREDENTIALS));
     }
 }
