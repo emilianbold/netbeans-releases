@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
 import java.util.Map;
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -65,6 +66,11 @@ public class UnusedGroupNode extends AbstractNode {
         UnusedBinding binding = unusedBindings.values().iterator().next();
         setDisplayName(binding.getName());
         setIconBaseWithExtension("org/netbeans/modules/web/inspect/resources/binding.png"); // NOI18N
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[0];
     }
 
     /**
