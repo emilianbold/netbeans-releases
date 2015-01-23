@@ -188,7 +188,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
             } catch (CancellationException ex) {
                 // don't report CancellationException
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                io.getErr().println(ex.getLocalizedMessage());
             }
         }
         final ExecLogWrapper wrapper = new ExecLogWrapper(execLog, execEnv);
