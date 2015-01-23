@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 
@@ -68,6 +69,11 @@ public class UnusedBindingNode extends AbstractNode {
     @Override
     public String getHtmlDisplayName() {
         return unusedBinding.getNodeDisplayName();
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[0];
     }
 
 }
