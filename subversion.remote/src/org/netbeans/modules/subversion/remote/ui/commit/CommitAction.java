@@ -86,7 +86,7 @@ import org.netbeans.modules.subversion.remote.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.remote.util.ClientCheckSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
@@ -1246,9 +1246,9 @@ public class CommitAction extends ContextAction {
         for (VCSFileProxy parent : files) {
             Set<VCSFileProxy> toRemove = new HashSet<>(filteredFiles.size());
             for (VCSFileProxy f : filteredFiles) {
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(f, parent)) {
+                if (VCSFileProxySupport.isAncestorOrEqual(f, parent)) {
                     continue;
-                } else if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(parent, f)) {
+                } else if (VCSFileProxySupport.isAncestorOrEqual(parent, f)) {
                     toRemove.add(f);
                 } 
             }

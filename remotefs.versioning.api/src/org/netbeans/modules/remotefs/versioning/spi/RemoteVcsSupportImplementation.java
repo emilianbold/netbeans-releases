@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.swing.JFileChooser;
@@ -100,4 +102,8 @@ public interface RemoteVcsSupportImplementation {
     public void delete(VCSFileProxy file);
 
     public void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile);
+
+    public FileSystem readFileSystem(DataInputStream is) throws IOException ;
+
+    public void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException ;
 }
