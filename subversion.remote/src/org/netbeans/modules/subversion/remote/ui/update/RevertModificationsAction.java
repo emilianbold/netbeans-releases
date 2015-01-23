@@ -176,7 +176,7 @@ public class RevertModificationsAction extends ContextAction {
         if (onlySelectedFiles) {
             split = new VCSFileProxy[2][0];
         } else {
-            split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(files);
+            split = VCSFileProxySupport.splitFlatOthers(files);
         }
         try {
             SvnUtils.runWithoutIndexing(new Callable<Void>() {

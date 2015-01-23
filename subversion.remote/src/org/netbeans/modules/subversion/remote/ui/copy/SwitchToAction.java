@@ -47,6 +47,7 @@ package org.netbeans.modules.subversion.remote.ui.copy;
 import java.awt.EventQueue;
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.RepositoryFile;
 import org.netbeans.modules.subversion.remote.Subversion;
@@ -216,7 +217,7 @@ public class SwitchToAction extends ContextAction {
     }        
 
     static void performSwitch(final RepositoryFile toRepositoryFile, final VCSFileProxy root, final SvnProgressSupport support) {
-        VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(new VCSFileProxy[] {root} );
+        VCSFileProxy[][] split = VCSFileProxySupport.splitFlatOthers(new VCSFileProxy[] {root} );
         boolean recursive;
         // there can be only 1 root file
         if(split[0].length > 0) {

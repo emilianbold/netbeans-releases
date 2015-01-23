@@ -53,18 +53,27 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.*;
 
 /**
  *
@@ -551,6 +560,86 @@ public final class VCSFileProxySupport {
         }
         return false;
     }
+    
+    /**
+     * Opens a file in the editor area.
+     *
+     * @param file a File to open
+     */
+    public static void openFile(VCSFileProxy file) {
+        FileObject fo = file.toFileObject();
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                OpenCookie oc = dao.getLookup().lookup(OpenCookie.class);
+                if (oc != null) {
+                    oc.open();
+                }
+            } catch (DataObjectNotFoundException e) {
+                // nonexistent DO, do nothing
+            }
+        }
+    }
+    
+    /**
+     * Splits files/folders into 2 groups: flat folders and other files
+     *
+     * @param files array of files to split
+     * @return File[][] the first array File[0] contains flat folders (
+     * @see #flatten for their direct descendants), File[1] contains all other
+     * files
+     */
+    public static VCSFileProxy[][] splitFlatOthers(VCSFileProxy[] files) {
+        Set<VCSFileProxy> flat = new HashSet<>(1);
+        for (int i = 0; i < files.length; i++) {
+            if (VersioningSupport.isFlat(files[i])) {
+                flat.add(files[i]);
+            }
+        }
+        if (flat.isEmpty()) {
+            return new VCSFileProxy[][]{new VCSFileProxy[0], files};
+        } else {
+            Set<VCSFileProxy> allFiles = new HashSet<>(Arrays.asList(files));
+            allFiles.removeAll(flat);
+            return new VCSFileProxy[][]{
+                        flat.toArray(new VCSFileProxy[flat.size()]),
+                        allFiles.toArray(new VCSFileProxy[allFiles.size()])
+                    };
+        }
+    }
+    
+    /**
+     * Flattens the given collection of files and removes those that do not respect the flat folder logic,
+     * i.e. those that lie deeper under a flat folder.
+     * @param roots selected files with flat folders
+     * @param files
+     * @return 
+     */
+    public static Set<VCSFileProxy> flattenFiles (VCSFileProxy[] roots, Collection<VCSFileProxy> files) {
+        VCSFileProxy[][] split = splitFlatOthers(roots);
+        Set<VCSFileProxy> filteredFiles = new HashSet<>(files);
+        if (split[0].length > 0) {
+            outer:
+            for (Iterator<VCSFileProxy> it = filteredFiles.iterator(); it.hasNext(); ) {
+                VCSFileProxy f = it.next();
+                // file is directly under a flat folder
+                for (VCSFileProxy flat : split[0]) {
+                    if (f.getParentFile().equals(flat)) {
+                        continue outer;
+                    }
+                }
+                // file lies under a recursive folder
+                for (VCSFileProxy folder : split[1]) {
+                    if (isAncestorOrEqual(folder, f)) {
+                        continue outer;
+                    }
+                }
+                it.remove();
+            }
+        }
+        return filteredFiles;
+    }
+
 //</editor-fold>
     
 }

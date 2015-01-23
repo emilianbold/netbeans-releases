@@ -57,6 +57,7 @@ import java.util.*;
 import java.util.List;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
@@ -497,7 +498,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                     Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(drev[0].getFile().normalizeFile());
+                            VCSFileProxySupport.openFile(drev[0].getFile().normalizeFile());
                         }
                     });
                 }

@@ -164,33 +164,6 @@ public class Utils {
         return kenaiAccessor;
     }
     
-        /**
-     * Splits files/folders into 2 groups: flat folders and other files
-     *
-     * @param files array of files to split
-     * @return File[][] the first array File[0] contains flat folders (
-     * @see #flatten for their direct descendants), File[1] contains all other
-     * files
-     */
-    public static VCSFileProxy[][] splitFlatOthers(VCSFileProxy[] files) {
-        Set<VCSFileProxy> flat = new HashSet<>(1);
-        for (int i = 0; i < files.length; i++) {
-            if (VersioningSupport.isFlat(files[i])) {
-                flat.add(files[i]);
-            }
-        }
-        if (flat.isEmpty()) {
-            return new VCSFileProxy[][]{new VCSFileProxy[0], files};
-        } else {
-            Set<VCSFileProxy> allFiles = new HashSet<>(Arrays.asList(files));
-            allFiles.removeAll(flat);
-            return new VCSFileProxy[][]{
-                        flat.toArray(new VCSFileProxy[flat.size()]),
-                        allFiles.toArray(new VCSFileProxy[allFiles.size()])
-                    };
-        }
-    }
-
     /**
      * Tests whether all files belong to the same data object.
      *
@@ -222,26 +195,6 @@ public class Utils {
             }
         }
         return null;
-    }
-    
-    /**
-     * Opens a file in the editor area.
-     *
-     * @param file a File to open
-     */
-    public static void openFile(VCSFileProxy file) {
-        FileObject fo = file.toFileObject();
-        if (fo != null) {
-            try {
-                DataObject dao = DataObject.find(fo);
-                OpenCookie oc = dao.getLookup().lookup(OpenCookie.class);
-                if (oc != null) {
-                    oc.open();
-                }
-            } catch (DataObjectNotFoundException e) {
-                // nonexistent DO, do nothing
-            }
-        }
     }
     
     /**
