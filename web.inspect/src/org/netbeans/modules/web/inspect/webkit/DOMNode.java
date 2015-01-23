@@ -126,6 +126,45 @@ public class DOMNode extends AbstractNode {
         return Lookups.fixed(items.toArray());
     }
 
+    /**
+     * Returns HTML display name for a node with the specified tag name and selector.
+     * 
+     * @param tagName tag name of the node.
+     * @param selector selector of the node.
+     * @return HTML display name for the node.
+     */
+    public static String htmlDisplayName(String tagName, String selector) {
+        String pattern = NbBundle.getMessage(DOMNode.class, "DOMNode.elementDisplayName"); //NOI18N
+        int maxSelectorLength = 100;
+        if (selector.length() > maxSelectorLength) {
+            selector = selector.substring(0, maxSelectorLength) + "..."; // NOI18N
+        }
+        return MessageFormat.format(pattern, tagName.toLowerCase(), selector);
+    }
+
+    /**
+     * Returns a selector for a node with the specified ID and classes
+     * (value of {@code class} attribute).
+     * 
+     * @param nodeId node ID.
+     * @param nodeClasses node classes (value of {@code class} attribute).
+     * @return selector for the node.
+     */
+    public static String selector(String nodeId, String nodeClasses) {
+        StringBuilder selector = new StringBuilder();
+        if (nodeId != null) {
+            selector.append('#').append(nodeId);
+        }
+        if (nodeClasses != null) {
+            StringTokenizer st = new StringTokenizer(nodeClasses);
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
+                selector.append('.').append(token.trim());
+            }
+        }
+        return selector.toString();
+    }
+
     @Override
     public String getHtmlDisplayName() {
         ResourceBundle bundle = NbBundle.getBundle(DOMNode.class);
@@ -133,14 +172,9 @@ public class DOMNode extends AbstractNode {
         int nodeType = node.getNodeType();
         if (nodeType == org.w3c.dom.Node.ELEMENT_NODE) {
             // Element
-            String pattern = bundle.getString("DOMNode.elementDisplayName"); //NOI18N
             String tagName = node.getNodeName().toLowerCase(Locale.ENGLISH);
             String selector = getSelector();
-            int maxSelectorLength = 100;
-            if (selector.length() > maxSelectorLength) {
-                selector = selector.substring(0, maxSelectorLength) + "..."; // NOI18N
-            }
-            displayName = MessageFormat.format(pattern, tagName, selector);
+            displayName = htmlDisplayName(tagName, selector);
         } else if (nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
             displayName = bundle.getString("DOMNode.documentDisplayName"); //NOI18N
         } else if (nodeType == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
@@ -181,20 +215,11 @@ public class DOMNode extends AbstractNode {
      * @return ID and class-based selector that corresponds to this node.
      */
     private String getSelector() {
-        StringBuilder selector = new StringBuilder();
         Node.Attribute idAttr = node.getAttribute("id"); // NOI18N
-        if (idAttr != null) {
-            selector.append('#').append(idAttr.getValue());
-        }
+        String nodeId = (idAttr == null) ? null : idAttr.getValue();
         Node.Attribute classAttr = node.getAttribute("class"); // NOI18
-        if (classAttr != null) {
-            StringTokenizer st = new StringTokenizer(classAttr.getValue());
-            while (st.hasMoreTokens()) {
-                String token = st.nextToken();
-                selector.append('.').append(token.trim());
-            }
-        }
-        return selector.toString();
+        String nodeClasses = (classAttr == null) ? null : classAttr.getValue();
+        return selector(nodeId, nodeClasses);
     }
 
     @Override

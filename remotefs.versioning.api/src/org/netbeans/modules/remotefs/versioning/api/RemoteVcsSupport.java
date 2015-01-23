@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.remotefs.versioning.api;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -144,6 +146,14 @@ public final class RemoteVcsSupport {
 
     public static VCSFileProxy fromString(String proxy) {
         return getImpl().fromString(proxy);
+    }
+    
+    public static FileSystem readFileSystem(DataInputStream is) throws IOException {
+        return getImpl().readFileSystem(is);
+    }
+
+    public static void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
+        getImpl().writeFileSystem(os, fs);
     }
 
     public static OutputStream getOutputStream(VCSFileProxy proxy) throws IOException {

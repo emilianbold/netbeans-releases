@@ -93,6 +93,7 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
         treeView = new BeanTreeView();
         treeView.setAllowedDragActions(DnDConstants.ACTION_NONE);
         treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
+        treeView.setRootVisible(false);
     }
 
     /**

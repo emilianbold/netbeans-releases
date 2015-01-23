@@ -54,7 +54,7 @@ import org.netbeans.modules.subversion.remote.VersionsCache;
 import org.netbeans.modules.subversion.remote.client.PropertiesClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.lookup.Lookups;

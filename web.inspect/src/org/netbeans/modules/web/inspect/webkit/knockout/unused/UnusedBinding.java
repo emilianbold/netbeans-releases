@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
+import org.netbeans.modules.web.inspect.webkit.DOMNode;
+
 /**
  * An unused binding.
  *
@@ -95,9 +97,14 @@ public class UnusedBinding {
         return name;
     }
 
-    public String getDisplayName() {
-        // PENDING
-        return nodeTagName;
+    /**
+     * Returns (HTML) display name of the owner of this binding.
+     * 
+     * @return (HTML) display name of the owner of this binding.
+     */
+    public String getNodeDisplayName() {
+        String selector = DOMNode.selector(nodeId, nodeClasses);
+        return DOMNode.htmlDisplayName(nodeTagName, selector);
     }
 
 }

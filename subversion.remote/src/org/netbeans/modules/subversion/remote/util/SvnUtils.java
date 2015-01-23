@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
@@ -1943,7 +1944,7 @@ public class SvnUtils {
             if (!recursiveRoots.contains(f)) {
                 boolean contained = false;
                 for (VCSFileProxy root : recursiveRoots) {
-                    if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(root, f)) {
+                    if (VCSFileProxySupport.isAncestorOrEqual(root, f)) {
                         contained = true;
                         break;
                     }
