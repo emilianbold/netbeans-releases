@@ -97,6 +97,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
+import org.netbeans.modules.debugger.jpda.spi.StrataProvider;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
@@ -145,13 +146,29 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
 
     // public interface ........................................................
+    
+    private final ThreadLocal<Boolean> getLineNumberLoopControl = new ThreadLocal<Boolean>();
         
     /**
     * Returns line number of this frame in this callstack.
     *
     * @return Returns line number of this frame in this callstack.
     */
-    public synchronized int getLineNumber (String struts) {
+    public int getLineNumber (String struts) {
+        Boolean looping = getLineNumberLoopControl.get();
+        if (looping != null && looping) {
+            return getLineNumberDefault(struts);
+        }
+        StrataProvider strataProvider = getStrataProvider();
+        getLineNumberLoopControl.set(Boolean.TRUE);
+        try {
+            return strataProvider.getStrataLineNumber(this, struts);
+        } finally {
+            getLineNumberLoopControl.remove();
+        }
+    }
+    
+    private synchronized int getLineNumberDefault (String struts) {
         if (!valid && sfLocation == null) return 0;
         try {
             Location l = getStackFrameLocation();
@@ -241,8 +258,11 @@ public class CallStackFrameImpl implements CallStackFrame {
     *
     * @return name of default stratum
     */
+    @Override
     public synchronized String getDefaultStratum () {
-        if (!valid && sfLocation == null) return "";
+        if (!valid && sfLocation == null) {
+            return "";
+        }
         if (stratum == null) {
             initStrata();
         }
@@ -254,8 +274,11 @@ public class CallStackFrameImpl implements CallStackFrame {
     *
     * @return name of default stratum
     */
+    @Override
     public synchronized List<String> getAvailableStrata () {
-        if (!valid && sfLocation == null) return Collections.emptyList();
+        if (!valid && sfLocation == null) {
+            return Collections.emptyList();
+        }
         if (availableStrata == null) {
             initStrata();
         }
@@ -263,6 +286,18 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
     
     private synchronized void initStrata() {
+        StrataProvider strataProvider = getStrataProvider();
+        if (strataProvider != null) {
+            String ds = strataProvider.getDefaultStratum(this);
+            if (ds != null) {
+                List<String> as = strataProvider.getAvailableStrata(this);
+                if (as != null) {
+                    this.stratum = ds;
+                    this.availableStrata = as;
+                    return ;
+                }
+            }
+        }
         String s;
         List<String> as;
         try {
@@ -311,6 +346,42 @@ public class CallStackFrameImpl implements CallStackFrame {
         }
         this.stratum = s;
         this.availableStrata = as;
+    }
+    
+    private StrataProvider getStrataProvider() {
+        final List<? extends StrataProvider> providers = debugger.getSession().lookup(null, StrataProvider.class);
+        if (providers.isEmpty()) {
+            return null;
+        }
+        if (providers.size() == 1) {
+            return providers.get(0);
+        }
+        return new StrataProvider() {
+            @Override
+            public String getDefaultStratum(CallStackFrameImpl csf) {
+                for (StrataProvider sp : providers) {
+                    String defaultStratum = sp.getDefaultStratum(csf);
+                    if (defaultStratum != null) {
+                        return defaultStratum;
+                    }
+                }
+                return null;
+            }
+            @Override
+            public List<String> getAvailableStrata(CallStackFrameImpl csf) {
+                for (StrataProvider sp : providers) {
+                    List<String> availableStrata1 = sp.getAvailableStrata(csf);
+                    if (availableStrata1 != null) {
+                        return availableStrata1;
+                    }
+                }
+                return null;
+            }
+            @Override
+            public int getStrataLineNumber(CallStackFrameImpl csf, String stratum) {
+                return csf.getLineNumberDefault(stratum);
+            }
+        };
     }
 
     /**

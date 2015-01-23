@@ -16,6 +16,7 @@ FormatToken{kind=EOL, offset=15, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=16, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=17, text=
 , id=EOL}
@@ -37,6 +38,7 @@ FormatToken{kind=TEXT, offset=34, text=b, id=IDENTIFIER}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=35, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=36, text=
 , id=EOL}
@@ -79,6 +81,7 @@ FormatToken{kind=TEXT, offset=71, text=xxx, id=IDENTIFIER}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=74, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=75, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}
@@ -157,6 +160,7 @@ FormatToken{kind=EOL, offset=160, text=
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=161, text=    , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=165, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=166, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}
@@ -191,6 +195,7 @@ FormatToken{kind=TEXT, offset=204, text=x, id=IDENTIFIER}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=205, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=206, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}

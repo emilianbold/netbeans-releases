@@ -64,6 +64,7 @@ ide/docs/html5doc.zip                                                 HTML5DOC
 ide/docs/jquery-api.xml                                               MIT-jquery
 ide/jsstubs/corestubs.zip                                             BSD-ecmascript
 ide/jsstubs/domstubs.zip                                              W3C (the original at http://www.w3.org/TR/#tr_DOM)
+ide/modules/com-googlecode-javaewah-JavaEWAH.jar                      Apache-2.0
 ide/modules/com-jcraft-jsch.jar                                       BSD-jsch
 ide/modules/com-jcraft-jzlib.jar                                      BSD-jzlib
 ide/modules/dict/ispell-enwl-3.1.20.zip                               BSD-ispell-enwl
@@ -159,7 +160,7 @@ java/modules/ext/hibernate4                                           LGPL-2.1 (
 java/modules/ext/jaxws22/stax2-api.jar                                BSD-woodstox
 java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/maven/indexer-artifact-5.1.1.jar                     Apache-2.0
-java/modules/ext/maven/indexer-core-5.1.1.jar                         Apache-2.0
+java/modules/ext/maven/indexer-core-5.1.1-patched.jar                 Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                                   Apache-JDOM
 java/modules/ext/maven/lucene-core-3.6.2.jar                          Apache-2.0
 java/modules/ext/maven/lucene-highlighter-3.6.2.jar                   Apache-2.0
@@ -211,6 +212,7 @@ php/docs/phpdocdesc.zip                                               LGPL-2.1
 php/docs/predefined_vars.zip                                          LGPL-2.1
 php/modules/ext/java-cup-11a.jar                                      JavaCUP-LICENSE
 php/phpstubs/phpruntime                                               PHP-LICENSE
+platform/core/asm-all-5.0.1.jar                                       BSD-ASM50
 platform/docs/swing-layout-1.0.4-doc.zip                              LGPL-2.1
 platform/docs/swing-layout-1.0.4-src.zip                              LGPL-2.1
 platform/docs/testng-6.8.1-javadoc.zip                                Apache-2.0
@@ -227,7 +229,7 @@ webcommon/bin/ios-sim                                                 MIT-sim
 webcommon/bin/libimobiledevice.4.dylib                                LGPL-2.1
 webcommon/bin/libplist.1.dylib                                        LGPL-2.1
 webcommon/bin/libusbmuxd.2.dylib                                      LGPL-2.1
-webcommon/modules/ext/cdnjs.zip                                       MIT-cdnjs
+webcommon/modules/ext/commons-compress-1.8.1.jar                      Apache-2.0
 webcommon/modules/ext/dd-plist.jar                                    MIT-plist
 
 
@@ -2011,32 +2013,6 @@ SOFTWARE.
 
 ===
 =====
-======================== MIT-cdnjs =========================
-
-Copyright (c) 2011-2013 Ryan Kirkman, Thomas Davis
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-===
-======
 ========================= MPL-1.0 =========================
 
 ------------------------------------------------------------
