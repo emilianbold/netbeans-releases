@@ -195,7 +195,7 @@ public class UpdateAction extends ContextAction {
     }
 
     private static void update(VCSFileProxy[] roots, final SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, final SVNRevision revision) {
-        VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(roots);
+        VCSFileProxy[][] split = VCSFileProxySupport.splitFlatOthers(roots);
         final List<VCSFileProxy> recursiveFiles = new ArrayList<>();
         final List<VCSFileProxy> flatFiles = new ArrayList<>();
         

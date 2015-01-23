@@ -45,6 +45,7 @@
 package org.netbeans.modules.subversion.remote.ui.copy;
 
 import java.util.concurrent.Callable;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.RepositoryFile;
 import org.netbeans.modules.subversion.remote.Subversion;
@@ -148,7 +149,7 @@ public class MergeAction extends ContextAction {
      * @param partOfMultiFile 
      */
     private void performMerge(final Merge merge, RepositoryFile repositoryRoot, final VCSFileProxy file, SvnProgressSupport support, boolean partOfMultiFile) {
-        VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(new VCSFileProxy[] {file} );
+        VCSFileProxy[][] split = VCSFileProxySupport.splitFlatOthers(new VCSFileProxy[] {file} );
         final boolean recursive;
         // there can be only 1 root file
         if(split[0].length > 0) {

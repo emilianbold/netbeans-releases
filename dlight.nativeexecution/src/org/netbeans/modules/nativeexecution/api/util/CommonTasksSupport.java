@@ -592,7 +592,7 @@ public final class CommonTasksSupport {
         }
 
         public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, String dstFileToRename, int mask, boolean checkMd5, ChangeListener callback) {
-            this(srcFile, dstExecEnv, dstFileName, dstFileToRename, mask, false, null, true);
+            this(srcFile, dstExecEnv, dstFileName, dstFileToRename, mask, checkMd5, callback, true);
         }
 
         public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, String dstFileToRename, int mask, boolean checkMd5, ChangeListener callback, boolean returnStat) {

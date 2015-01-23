@@ -434,7 +434,7 @@ public class Annotator extends VCSAnnotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !SvnUtils.isFromMultiFileDataObject(context);
+            folderAnnotation = !VCSFileProxySupport.isFromMultiFileDataObject(context);
         }
 
         if (mostImportantInfo == null) {
@@ -593,7 +593,7 @@ public class Annotator extends VCSAnnotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !SvnUtils.isFromMultiFileDataObject(context);
+            folderAnnotation = !VCSFileProxySupport.isFromMultiFileDataObject(context);
         }
 
         if (folderAnnotation == false) {

@@ -109,8 +109,10 @@ public class HelperLibraryUtility {
                             final String remoteFile = hinfo.getTempDir() + '/' + fileFolder +'/' +fileName;
 
                             Future<CommonTasksSupport.UploadStatus> uploadTask = CommonTasksSupport.uploadFile(lf, env, remoteFile, 0755, true);
-                            if (!uploadTask.get().isOK()) {
-                                throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName()); // NOI18N
+                            CommonTasksSupport.UploadStatus status = uploadTask.get();
+                            if (!status.isOK()) {
+                                throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName() + ':' + remoteFile
+                                        + " rc=" + status.getExitCode() + ' ' + status.getError()); // NOI18N
                             }
                             result.add(remoteFile);
                         }

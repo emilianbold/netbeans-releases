@@ -144,7 +144,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 JOptionPane.showMessageDialog(null, NbBundle.getMessage(ResolveConflictsExecutor.class, "MSG_NestedConflicts"), 
                                               NbBundle.getMessage(ResolveConflictsExecutor.class, "MSG_NestedConflicts_Title"), 
                                               JOptionPane.WARNING_MESSAGE);
-                org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(file);
+                VCSFileProxySupport.openFile(file);
             } else {
                 Subversion.LOG.log(Level.SEVERE, null, ioex);
             }

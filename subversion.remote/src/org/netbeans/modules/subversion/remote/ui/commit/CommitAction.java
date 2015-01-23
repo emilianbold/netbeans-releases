@@ -452,7 +452,7 @@ public class CommitAction extends ContextAction {
                     }
                 }
                 // get all changed files while honoring the flat folder logic
-                VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(contextFiles);
+                VCSFileProxy[][] split = VCSFileProxySupport.splitFlatOthers(contextFiles);
                 Set<VCSFileProxy> fileSet = new LinkedHashSet<>();
                 for (int c = 0; c < split.length; c++) {
                     contextFiles = split[c];

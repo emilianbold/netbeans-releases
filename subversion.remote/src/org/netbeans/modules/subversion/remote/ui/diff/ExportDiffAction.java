@@ -301,7 +301,7 @@ public class ExportDiffAction extends ContextAction {
                 if (exportedFiles == 0) {
                     VCSFileProxySupport.delete(destination);
                 } else {
-                    org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(destination.normalizeFile());
+                    VCSFileProxySupport.openFile(destination.normalizeFile());
                 }
             } else {
                 VCSFileProxySupport.delete(destination);

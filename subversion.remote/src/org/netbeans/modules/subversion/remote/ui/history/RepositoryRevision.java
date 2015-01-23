@@ -343,7 +343,7 @@ final class RepositoryRevision {
                             Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(getFile().normalizeFile());
+                                    VCSFileProxySupport.openFile(getFile().normalizeFile());
                                 }
                             });
                         }
