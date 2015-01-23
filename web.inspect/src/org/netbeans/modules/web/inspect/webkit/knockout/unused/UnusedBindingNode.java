@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,40 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
-/** 
- * Request and response kind 
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+
+/**
+ * Node representing an unused binding.
+ *
+ * @author Jan Stola
  */
- public enum FSSResponseKind {
-    FS_RSP_LS('l'), 
-    FS_RSP_RECURSIVE_LS('r'), 
-    FS_RSP_ENTRY('e'), 
-    FS_RSP_END('x'),
-    FS_RSP_CHANGE('c'),
-    FS_RSP_ERROR('E'),
-    FS_RSP_REFRESH('R'),
-    FS_RSP_SERVER_INFO('i');
+public class UnusedBindingNode extends AbstractNode {
+    /** Unused binding represented by this node. */
+    private final UnusedBinding unusedBinding;
 
-    private final char letter;
-
-    private FSSResponseKind(char letter) {
-        this.letter = letter;
+    /**
+     * Creates a new {@code UnusedBindingNode}.
+     * 
+     * @param unusedBinding unused binding to represent by the node.
+     */
+    public UnusedBindingNode(UnusedBinding unusedBinding) {
+        super(Children.LEAF);
+        this.unusedBinding = unusedBinding;
+        setDisplayName(unusedBinding.getDisplayName());
     }
 
-    public char getChar() {
-        return letter;
-    }
-    
-    public static FSSResponseKind fromChar(char c) {
-        for (FSSResponseKind v : values()) {
-            if (v.letter == c) {
-                return v;
-            }
-        }
-        return null;
-    }
 }

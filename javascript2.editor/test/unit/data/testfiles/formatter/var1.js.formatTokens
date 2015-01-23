@@ -76,6 +76,7 @@ FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=70, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=71, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=72, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}

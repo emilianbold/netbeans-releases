@@ -139,13 +139,8 @@ public final class CodeStyle {
 
     // Brace placement --------------------------------------------------------
 
-    public BracePlacement getClassDeclBracePlacement() {
-        String placement = preferences.get(classDeclBracePlacement, provider.getDefaultAsString(classDeclBracePlacement));
-        return BracePlacement.valueOf(placement);
-    }
-
-    public BracePlacement getMethodDeclBracePlacement() {
-        String placement = preferences.get(methodDeclBracePlacement, provider.getDefaultAsString(methodDeclBracePlacement));
+    public BracePlacement getFunctionDeclBracePlacement() {
+        String placement = preferences.get(functionDeclBracePlacement, provider.getDefaultAsString(functionDeclBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
@@ -174,13 +169,8 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
-    public BracePlacement getUseTraitBodyBracePlacement() {
-        String placement = preferences.get(useTraitBodyBracePlacement, provider.getDefaultAsString(useTraitBodyBracePlacement));
-        return BracePlacement.valueOf(placement);
-    }
-
-    public BracePlacement getOtherBracePlacement() {
-        String placement = preferences.get(otherBracePlacement, provider.getDefaultAsString(otherBracePlacement));
+    public BracePlacement getWithBracePlacement() {
+        String placement = preferences.get(withBracePlacement, provider.getDefaultAsString(withBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
@@ -692,9 +682,7 @@ public final class CodeStyle {
 
         final int rightMargin;
 
-        final CodeStyle.BracePlacement classDeclBracePlacement;
-
-        final CodeStyle.BracePlacement methodDeclBracePlacement;
+        final CodeStyle.BracePlacement functionDeclBracePlacement;
 
         final CodeStyle.BracePlacement ifBracePlacement;
 
@@ -706,9 +694,7 @@ public final class CodeStyle {
 
         final CodeStyle.BracePlacement catchBracePlacement;
 
-        final CodeStyle.BracePlacement useTraitBodyBracePlacement;
-
-        final CodeStyle.BracePlacement otherBracePlacement;
+        final CodeStyle.BracePlacement withBracePlacement;
 
         final boolean spaceBeforeWhile;
 
@@ -869,15 +855,13 @@ public final class CodeStyle {
             indentHtml = style.indentHtml();
             rightMargin = style.getRightMargin();
 
-            classDeclBracePlacement = style.getClassDeclBracePlacement();
-            methodDeclBracePlacement = style.getMethodDeclBracePlacement();
+            functionDeclBracePlacement = style.getFunctionDeclBracePlacement();
             ifBracePlacement = style.getIfBracePlacement();
             forBracePlacement = style.getForBracePlacement();
             whileBracePlacement = style.getWhileBracePlacement();
             switchBracePlacement = style.getSwitchBracePlacement();
             catchBracePlacement = style.getCatchBracePlacement();
-            useTraitBodyBracePlacement = style.getUseTraitBodyBracePlacement();
-            otherBracePlacement = style.getOtherBracePlacement();
+            withBracePlacement = style.getWithBracePlacement();
 
             spaceBeforeWhile = style.spaceBeforeWhile();
             spaceBeforeElse = style.spaceBeforeElse();

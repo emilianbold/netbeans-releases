@@ -173,6 +173,7 @@ public class FormatVisitor extends NodeVisitor {
             return null;
         }
 
+        markEndCurlyBrace(whileNode.getBody());
         return super.enter(whileNode);
     }
 
@@ -206,6 +207,7 @@ public class FormatVisitor extends NodeVisitor {
             return null;
         }
 
+        markEndCurlyBrace(doWhileNode.getBody());
         return super.enter(doWhileNode);
     }
 
@@ -253,6 +255,7 @@ public class FormatVisitor extends NodeVisitor {
             return null;
         }
 
+        markEndCurlyBrace(forNode.getBody());
         return super.enter(forNode);
     }
 
@@ -273,6 +276,7 @@ public class FormatVisitor extends NodeVisitor {
             handleVirtualBlock(body, FormatToken.Kind.AFTER_IF_START);
         } else {
             enter(body);
+            markEndCurlyBrace(body);
         }
 
         // fail block
@@ -297,6 +301,7 @@ public class FormatVisitor extends NodeVisitor {
                 markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
 
                 enter(body);
+                markEndCurlyBrace(body);
             }
         }
 
@@ -324,6 +329,7 @@ public class FormatVisitor extends NodeVisitor {
             return null;
         }
 
+        markEndCurlyBrace(body);
         return super.enter(withNode);
     }
 
@@ -407,6 +413,8 @@ public class FormatVisitor extends NodeVisitor {
                                 FormatToken.Kind.AFTER_STATEMENT));
                     }
                 }
+
+                markEndCurlyBrace(functionNode);
             }
 
         }
@@ -575,6 +583,7 @@ public class FormatVisitor extends NodeVisitor {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
 
+        markEndCurlyBrace(switchNode);
         return super.enter(switchNode);
     }
 
@@ -672,6 +681,7 @@ public class FormatVisitor extends NodeVisitor {
         // mark space before left brace
         markSpacesBeforeBrace(catchNode.getBody(), FormatToken.Kind.BEFORE_CATCH_BRACE);
 
+        markEndCurlyBrace(catchNode.getBody());
         return super.enter(catchNode);
     }
 
@@ -686,6 +696,8 @@ public class FormatVisitor extends NodeVisitor {
             markSpacesBeforeBrace(tryNode.getFinallyBody(), FormatToken.Kind.BEFORE_FINALLY_BRACE);
         }
 
+        markEndCurlyBrace(tryNode.getBody());
+        markEndCurlyBrace(finallyBody);
         return super.enter(tryNode);
     }
 
@@ -1031,6 +1043,23 @@ public class FormatVisitor extends NodeVisitor {
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken,
                     FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY), checkDuplicity);
+        }
+    }
+
+    private void markEndCurlyBrace(Node node) {
+        if (node != null) {
+            FormatToken formatToken = tokenStream.getToken(getFinish(node) - 1);
+            if (formatToken != null) {
+                while (formatToken.isVirtual()) {
+                    formatToken = formatToken.previous();
+                    if (formatToken == null) {
+                        return;
+                    }
+                }
+                if (formatToken.getId() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_END_BRACE));
+                }
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,40 +37,67 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
-/** 
- * Request and response kind 
+/**
+ * An unused binding.
+ *
+ * @author Jan Stola
  */
- public enum FSSResponseKind {
-    FS_RSP_LS('l'), 
-    FS_RSP_RECURSIVE_LS('r'), 
-    FS_RSP_ENTRY('e'), 
-    FS_RSP_END('x'),
-    FS_RSP_CHANGE('c'),
-    FS_RSP_ERROR('E'),
-    FS_RSP_REFRESH('R'),
-    FS_RSP_SERVER_INFO('i');
+public class UnusedBinding {
+    /** ID of the binding. */
+    private final int id;
+    /** Name of the binding. */
+    private final String name;
+    /** Tag name of the owner of this binding. */
+    private final String nodeTagName;
+    /** ID of the owner of this binding. */
+    private final String nodeId;
+    /** Classes (value if the {@code class} attribute) of the owner of this binding. */
+    private final String nodeClasses;
 
-    private final char letter;
-
-    private FSSResponseKind(char letter) {
-        this.letter = letter;
+    /**
+     * Creates a new {@code UnusedBinding}.
+     * 
+     * @param id ID of the binding.
+     * @param name name of the binding.
+     * @param nodeTagName tag name of the owner of the binding.
+     * @param nodeId ID of the owner of the binding.
+     * @param nodeClasses classes (value of the {@code class} attribute)
+     * of the owner of the binding.
+     */
+    public UnusedBinding(int id, String name, String nodeTagName, String nodeId, String nodeClasses) {
+        this.id = id;
+        this.name = name;
+        this.nodeTagName = nodeTagName;
+        this.nodeId = nodeId;
+        this.nodeClasses = nodeClasses;
     }
 
-    public char getChar() {
-        return letter;
+    /**
+     * Returns the ID of this binding.
+     * 
+     * @return ID of this binding.
+     */
+    public int getId() {
+        return id;
     }
-    
-    public static FSSResponseKind fromChar(char c) {
-        for (FSSResponseKind v : values()) {
-            if (v.letter == c) {
-                return v;
-            }
-        }
-        return null;
+
+    /**
+     * Returns the name of this binding.
+     * 
+     * @return name of this binding.
+     */
+    public String getName() {
+        return name;
     }
+
+    public String getDisplayName() {
+        // PENDING
+        return nodeTagName;
+    }
+
 }
