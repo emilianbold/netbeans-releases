@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.lookup.Lookups;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -83,6 +84,7 @@ class UpdateResultNode extends AbstractNode {
     
     private String htmlDisplayName;
     private String relativePath;
+    private boolean displayNameHasHtml;
 
     /**
      * I/O accessed, do not call in AWT
@@ -138,19 +140,25 @@ class UpdateResultNode extends AbstractNode {
     }
     
     private void refreshHtmlDisplayName() {
-        String name = getName();        
+        String name = getName();
+        AnnotationColorProvider acp = AnnotationColorProvider.getInstance();
+        displayNameHasHtml = false;
         if ( (info.getAction() & FileUpdateInfo.ACTION_ADDED) != 0 ) { 
-            htmlDisplayName = addedFormat.format(new Object [] {  name } );     
+            htmlDisplayName = acp.ADDED_LOCALLY_FILE.getFormat().format(new Object [] {  name } );     
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Added"); // NOI18N 
+            displayNameHasHtml = true;
         } else if ( (info.getAction() & FileUpdateInfo.ACTION_CONFLICTED) != 0 ) {
-            htmlDisplayName = conflictFormat.format(new Object [] { name });
+            htmlDisplayName = acp.CONFLICT_FILE.getFormat().format(new Object [] { name });
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Conflict"); // NOI18N
+            displayNameHasHtml = true;
         } else if ( (info.getAction() & FileUpdateInfo.ACTION_DELETED) != 0 ) {
-            htmlDisplayName = removedFormat.format(new Object [] { name });            
+            htmlDisplayName = acp.REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name });            
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Removed"); // NOI18N
+            displayNameHasHtml = true;
         } else if ( (info.getAction() & FileUpdateInfo.ACTION_MERGED) != 0 ) {
-            htmlDisplayName = mergedFormat.format(new Object [] { name });            
+            htmlDisplayName = acp.MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name });            
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Merged"); // NOI18N
+            displayNameHasHtml = true;
         } else if ( (info.getAction() & FileUpdateInfo.ACTION_UPDATED) != 0 ) {
             htmlDisplayName = name;            
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Updated"); // NOI18N
@@ -165,6 +173,14 @@ class UpdateResultNode extends AbstractNode {
 
     public String getHtmlDisplayName() {
         return htmlDisplayName;
+    }
+
+    public String getHtmlDisplayName (boolean addHtmlPrefix) {
+        String retval = htmlDisplayName;
+        if (displayNameHasHtml) {
+            retval = "<html>" + retval;
+        }
+        return retval;
     }
 
     public void refresh() {
