@@ -129,6 +129,9 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     };
     
     private boolean isStreamAlike(CompilationInfo info, TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
         for (String fqn : STREAM_ALIKE_CLASSES) {
             Element inputStream = info.getElements().getTypeElement(fqn);
             

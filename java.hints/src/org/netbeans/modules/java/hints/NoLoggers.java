@@ -195,6 +195,11 @@ public final class NoLoggers {
             TreeMaker m = wc.getTreeMaker();
             ClassTree classTree = (ClassTree) tp.getLeaf();
             Element cls = wc.getTrees().getElement(tp);
+            
+            if (cls == null) {
+                // TODO: log/inform user
+                return;
+            }
 
             // find free field name
             String loggerFieldName = null;

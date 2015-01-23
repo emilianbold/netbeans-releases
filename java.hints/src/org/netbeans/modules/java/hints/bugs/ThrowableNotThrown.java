@@ -310,6 +310,9 @@ public class ThrowableNotThrown {
                     }
                     case MEMBER_SELECT: {
                         Element el = info.getTrees().getElement(excPath);
+                        if (el == null) {
+                            return true;
+                        }
                         if (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR) {
                             ExecutableElement xel = (ExecutableElement)el;
                             TypeMirror tm = xel.getReturnType();

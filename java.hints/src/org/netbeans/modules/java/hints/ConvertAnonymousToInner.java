@@ -383,19 +383,21 @@ public class ConvertAnonymousToInner extends AbstractHint {
         TypeMirror superType = copy.getTrees().getTypeMirror(new TreePath(newClassToConvert, nct.getIdentifier()));
         Element superTypeElement = copy.getTrees().getElement(new TreePath(newClassToConvert, nct.getIdentifier()));
         
-        boolean isStaticContext = true;
+        boolean isStaticContext = targetElement != null && superTypeElement != null;
         Element currElement = superTypeElement;
-        while (currElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
-            if (!currElement.getModifiers().contains(Modifier.STATIC)) {
-                isStaticContext = false;
-                break;
-            }
+        if (isStaticContext) {
+            while (currElement != null && currElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+                if (!currElement.getModifiers().contains(Modifier.STATIC)) {
+                    isStaticContext = false;
+                    break;
+                }
 
-            currElement = currElement.getEnclosingElement();
+                currElement = currElement.getEnclosingElement();
+            }
         }
         
         if (isStaticContext) {
-            while (targetElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+            while (targetElement != null && targetElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
                 if (!targetElement.getModifiers().contains(Modifier.STATIC)) {
                     isStaticContext = false;
                     break;

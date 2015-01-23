@@ -157,6 +157,9 @@ public class AddParameterOrLocalFix implements EnhancedFix {
                     MethodTree targetTree = (MethodTree) targetPath.getLeaf();
 
                     Element el = working.getTrees().getElement(targetPath);
+                    if (el == null) {
+                        return;
+                    }
                     int index = targetTree.getParameters().size();
 
                     if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
@@ -254,6 +257,9 @@ public class AddParameterOrLocalFix implements EnhancedFix {
         final String name = ((IdentifierTree) tp.getLeaf()).getName().toString();
         
         final Element el = wc.getTrees().getElement(tp);
+        if (el == null) {
+            return;
+        }
         
         //find first usage of this (undeclared) variable:
         TreePath blockPath = findOutmostBlock(tp);

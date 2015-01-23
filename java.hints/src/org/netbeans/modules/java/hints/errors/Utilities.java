@@ -1481,7 +1481,7 @@ public class Utilities {
 
         Element targetPackage = outterMostTarget.getEnclosingElement();
 
-        if (sourcePackage.equals(targetPackage)) {
+        if (sourcePackage != null && sourcePackage.equals(targetPackage)) {
             return Visibility.PACKAGE_PRIVATE;
         }
 

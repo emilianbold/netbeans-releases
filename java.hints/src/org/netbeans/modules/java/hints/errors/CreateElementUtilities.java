@@ -969,6 +969,9 @@ public final class CreateElementUtilities {
                 return true;
             }
             TypeElement source = (TypeElement)info.getTrees().getElement(classTree);
+            if (source == null) {
+                return false;
+            }
             // FIXME: the check is insufficient; the symbol may be assigned in other parts of the code
             // despite it's undefined at the moment. The IDE will generate final field based on ctor analysis,
             // but then report errors on the field's assignments in regular methods.

@@ -218,7 +218,10 @@ public class ConvertToLambdaConverter {
 
                 CharSequence newName = getUniqueName(variableDeclTree.getName());
 
-                originalToNewName.put(trees.getElement(path), newName);
+                Element el = trees.getElement(path);
+                if (el != null) {
+                    originalToNewName.put(el, newName);
+                }
 
                 VariableTree newTree = copy.getTreeMaker()
                         .Variable(variableDeclTree.getModifiers(), newName, variableDeclTree.getType(), variableDeclTree.getInitializer());
