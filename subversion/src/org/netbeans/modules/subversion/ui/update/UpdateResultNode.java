@@ -75,11 +75,6 @@ class UpdateResultNode extends AbstractNode {
     static final String COLUMN_NAME_PATH        = "path";   // NOI18N
     static final String COLUMN_NAME_STATUS      = "status"; // NOI18N
     
-    private final MessageFormat conflictFormat  = new MessageFormat("<font color=\"#FF0000\">{0}</font>");  // NOI18N
-    private final MessageFormat mergedFormat    = new MessageFormat("<font color=\"#0000FF\">{0}</font>");  // NOI18N
-    private final MessageFormat removedFormat   = new MessageFormat("<font color=\"#999999\">{0}</font>");  // NOI18N
-    private final MessageFormat addedFormat     = new MessageFormat("<font color=\"#008000\">{0}</font>");    // NOI18N   
-    
     private String statusDisplayName;
     
     private String htmlDisplayName;
