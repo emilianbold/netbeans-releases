@@ -50,6 +50,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
@@ -158,6 +159,7 @@ public class ApiTest extends NbTestCase {
 
     }
 
+    @RandomlyFails
     public void testCheckoutLocalLevel() throws MalformedURLException, SVNClientException, IOException {
         FileUtils.deleteRecursively(workDir);
         TestKit.mkdirs(repoDir, "testCheckoutLocalLevelfolder1/folder2/folder3");
