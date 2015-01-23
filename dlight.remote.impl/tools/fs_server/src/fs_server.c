@@ -256,7 +256,7 @@ static bool is_prohibited(const char* abspath) {
 }
 
 static bool has_second_path(enum  fs_request_kind kind) {
-    return kind == FS_REQ_COPY;
+    return kind == FS_REQ_COPY || kind == FS_REQ_MOVE;
 }
 
 static void clone_request(fs_request* dst, fs_request* src) {
@@ -955,6 +955,28 @@ static void response_lstat(int request_id, const char* path) {
     buffer_free(&work_buf);
 }
 
+static void response_move(const fs_request* request) {
+    // check whether it is directory and print clear error message
+    // (copy_plain_file will print unclear "Operation not permitted" in this case)
+    struct stat stat_buf;
+    if (lstat(request->path, &stat_buf) == -1) {
+        response_error(request->id, request->path, errno, err_to_string(errno));
+        return;
+    }
+    if (S_ISDIR(stat_buf.st_mode)) {
+        response_error(request->id, request->path2, 0, "can not move directory");
+        return;
+    }
+    if (copy_plain_file(request->path, request->path2, request->id)) {
+        if (unlink(request->path)) {
+            response_error(request->id, request->path, errno, "can't remove file");
+            return;
+        }
+        response_lstat(request->id, request->path2);
+    }
+    // in the case of failure, copy_plain_file() already reported it)
+}
+
 static void response_add_or_remove_watch(int request_id, const char* path, bool add) {
     dirtab_element *el = dirtab_get_element(path);
     dirtab_lock(el);
@@ -1233,6 +1255,9 @@ static void process_request(fs_request* request) {
             break;
         case FS_REQ_COPY:
             response_copy(request);
+            break;
+        case FS_REQ_MOVE:
+            response_move(request);
             break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);

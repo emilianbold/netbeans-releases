@@ -70,7 +70,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
@@ -369,20 +368,24 @@ class SftpSupport {
                     cftp.chmod(parameters.mask, dstFileName);
                     if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Chmod {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
                 }
-                time = System.currentTimeMillis();
-                SftpATTRS attrs = cftp.lstat(dstFileName);
-                if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Getting stat for {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
-                // can't use PathUtilities since we are in ide cluster
-                int slashPos = dstFileName.lastIndexOf('/');
-                String dirName, baseName;
-                if (slashPos < 0) {
-                    dirName = dstFileName;
-                    baseName = "";
+                if (parameters.returnStat) {
+                    time = System.currentTimeMillis();
+                    SftpATTRS attrs = cftp.lstat(dstFileName);
+                    if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Getting stat for {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
+                    // can't use PathUtilities since we are in ide cluster
+                    int slashPos = dstFileName.lastIndexOf('/');
+                    String dirName, baseName;
+                    if (slashPos < 0) {
+                        dirName = dstFileName;
+                        baseName = "";
+                    } else {
+                        dirName = dstFileName.substring(0, slashPos);
+                        baseName = dstFileName.substring(slashPos + 1);
+                    }
+                    statInfo = createStatInfo(dirName, baseName, attrs, cftp);
                 } else {
-                    dirName = dstFileName.substring(0, slashPos);
-                    baseName = dstFileName.substring(slashPos + 1);
+                    statInfo = null;
                 }
-                statInfo = createStatInfo(dirName, baseName, attrs, cftp);
             } catch (SftpException e) {
                 if (MiscUtils.mightBrokeSftpChannel(e)) {
                     cftp.quit();

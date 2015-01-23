@@ -42,6 +42,7 @@ package org.netbeans.modules.remote.impl.fs.server;
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -56,9 +57,11 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
@@ -152,25 +155,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             }
             FSSResponse.Package pkg = response.getNextPackage();
             if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
-                Buffer buf = pkg.getBuffer();
-                char kindChar = buf.getChar();
-                assert kindChar == pkg.getKind().getChar();
-                assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
-                int id = buf.getInt();
-                assert id == request.getId();
-                String name = buf.getString();
-                int uid = buf.getInt();
-                int gid = buf.getInt();
-                int mode = buf.getInt();
-                long size = buf.getLong();
-                long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
-                String linkTarget = buf.getString();
-                if (linkTarget.isEmpty()) {
-                    linkTarget = null;
-                }
-                StatInfo statInfo = new StatInfo(name, uid, gid, size,
-                        linkTarget, mode, new Date(mtime));
-                return statInfo;
+                return createStatInfo(pkg, request.getId());
             } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
                 IOException ioe = createIOException(pkg);
                 throw new ExecutionException(ioe);
@@ -338,24 +323,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             for (FSSResponse.Package pkg : packages) {
                 try {
                     assert pkg != null;
-                    Buffer buf = pkg.getBuffer();
-                    char kindChar = buf.getChar();
-                    assert kindChar == pkg.getKind().getChar();
-                    assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
-                    int id = buf.getInt();
-                    assert id == reqId;
-                    String name = buf.getString();
-                    int uid = buf.getInt();
-                    int gid = buf.getInt();
-                    int mode = buf.getInt();
-                    long size = buf.getLong();
-                    long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
-                    String linkTarget = buf.getString();
-                    if (linkTarget.isEmpty()) {
-                        linkTarget = null;
-                    }
-                    StatInfo statInfo = new StatInfo(name, uid, gid, size,
-                            linkTarget, mode, new Date(mtime));
+                    StatInfo statInfo = createStatInfo(pkg, reqId);
                     DirEntry entry = new DirEntrySftp(statInfo, statInfo.getName());
                     // TODO: windows names
                     result.add(entry);
@@ -366,6 +334,28 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             return new DirEntryList(result, System.currentTimeMillis());
         } finally {
         }
+    }
+
+    private StatInfo createStatInfo(FSSResponse.Package pkg, long reqId) {
+        Buffer buf = pkg.getBuffer();
+        char kindChar = buf.getChar();
+        assert kindChar == pkg.getKind().getChar();
+        assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
+        int id = buf.getInt();
+        assert id == reqId;
+        String name = buf.getString();
+        int uid = buf.getInt();
+        int gid = buf.getInt();
+        int mode = buf.getInt();
+        long size = buf.getLong();
+        long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
+        String linkTarget = buf.getString();
+        if (linkTarget.isEmpty()) {
+            linkTarget = null;
+        }
+        StatInfo statInfo = new StatInfo(name, uid, gid, size,
+                linkTarget, mode, new Date(mtime));
+        return statInfo;
     }
     
     @Override
@@ -482,6 +472,58 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
     }
 
+    @Override
+    protected StatInfo uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
+            throws IOException, InterruptedException, ExecutionException, InterruptedException {
+        
+        CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
+                srcFile, env, pathToUpload, null, -1, false, null, false);        
+        Future<CommonTasksSupport.UploadStatus> task = CommonTasksSupport.uploadFile(params);
+        CommonTasksSupport.UploadStatus uploadStatus = task.get();
+        if (uploadStatus.isOK()) {
+            RemoteLogger.getInstance().log(Level.FINEST, "Uploading {0} succeeded", this);
+            if(pathToRename == null) { // possible if parent directory is r/o
+                return lstat(pathToUpload);
+            } else {
+                return renameAfterUpload(pathToUpload, pathToRename);
+            }
+        } else {
+            RemoteLogger.getInstance().log(Level.FINEST, "Uploading {0} failed", this);
+            throw new IOException(uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N
+        }
+    }
+    
+    private StatInfo renameAfterUpload(String pathToUpload, String pathToRename)
+            throws IOException, InterruptedException, CancellationException, ExecutionException {
+
+        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_MOVE, pathToUpload, pathToRename);
+        FSSResponse response = null;
+        RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_rename_afre_upload", pathToUpload, pathToRename); // NOI18N
+        long time = System.currentTimeMillis();
+        try {
+            RemoteLogger.finest("Sending request #{0} for renaming {1} to {2} to fs_server", request.getId(), pathToUpload, pathToRename);
+            response = dispatcher.dispatch(request);
+            FSSResponse.Package pkg = response.getNextPackage();
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
+                IOException ex = createIOException(pkg);
+                throw ex;
+            } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
+                return createStatInfo(pkg, request.getId());
+            } else {
+                throw new IOException("Unexpected package kind: " + pkg.getKind()); // NOI18N
+            }
+        } catch (ConnectException ex) {
+            throw new IOException(ex);
+        } finally {
+            RemoteStatistics.stopChannelActivity(activityID, 0);
+            RemoteLogger.finest("Communication #{0} with fs_server for renaming {1} to {2} took {3} ms",
+                    request.getId(), pathToUpload, pathToRename, System.currentTimeMillis() - time);
+            if (response != null) {
+                response.dispose();
+            }
+        }
+    }
+    
     private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {
 
         private final String path;

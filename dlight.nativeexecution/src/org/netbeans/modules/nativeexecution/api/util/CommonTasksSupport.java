@@ -579,7 +579,9 @@ public final class CommonTasksSupport {
          * Of true, then the source file will be copied to destination only if
          * destination does not exist or exists but its md5 sum differs from local one
          */
-        public boolean checkMd5;
+        public final boolean checkMd5;
+        
+        public final boolean returnStat;
 
         public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName) {
             this(srcFile, dstExecEnv, dstFileName, null, -1, false, null);
@@ -590,6 +592,10 @@ public final class CommonTasksSupport {
         }
 
         public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, String dstFileToRename, int mask, boolean checkMd5, ChangeListener callback) {
+            this(srcFile, dstExecEnv, dstFileName, dstFileToRename, mask, false, null, true);
+        }
+
+        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, String dstFileToRename, int mask, boolean checkMd5, ChangeListener callback, boolean returnStat) {
             this.srcFile = srcFile;
             this.dstExecEnv = dstExecEnv;
             this.dstFileName = dstFileName;
@@ -597,6 +603,7 @@ public final class CommonTasksSupport {
             this.mask = mask;
             this.checkMd5 = checkMd5;
             this.callback = callback;
+            this.returnStat = returnStat;
         }
 
         @Override
