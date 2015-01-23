@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.util;
+package org.netbeans.modules.remotefs.versioning.api;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -57,9 +57,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
-import org.netbeans.modules.subversion.remote.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileObject;
@@ -513,16 +511,46 @@ public final class VCSFileProxySupport {
     }
     
     public static FileSystem readFileSystem(DataInputStream is) throws IOException {
-        String uri = is.readUTF();
-        try {
-            return FileSystemProvider.getFileSystem(new URI(uri));
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex);
-        }
+        return RemoteVcsSupport.readFileSystem(is);
     }
 
     public static void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
-        //TODO: implement it!
-        os.writeUTF(fs.getRoot().toURI().toString());
+        RemoteVcsSupport.writeFileSystem(os, fs);
     }
+
+//<editor-fold defaultstate="collapsed" desc="methods from org.netbeans.modules.versioning.util.Utils">
+    public static boolean isAncestorOrEqual(VCSFileProxy ancestor, VCSFileProxy file) {
+        String ancestorPath = ancestor.getPath();
+        String filePath = file.getPath();
+        if (VCSFileProxySupport.isMac(ancestor)) {
+            // Mac is not case sensitive, cannot use the else statement
+            if(filePath.length() < ancestorPath.length()) {
+                return false;
+            }
+        } else {
+            if(!filePath.startsWith(ancestorPath)) {
+                return false;
+            }
+        }
+        
+        // get sure as it still could be something like:
+        // ancestor: /home/dil
+        // file:     /home/dil1/dil2
+        for (; file != null; file = file.getParentFile()) {
+            if(ancestor == null) {
+                // XXX have to rely on path because of fileproxy being created from
+                // io.file even if it was originaly stored from a remote
+                if (file.getPath().equals(ancestorPath)) {
+                    return true;
+                }
+            } else {
+                if (file.equals(ancestor)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+//</editor-fold>
+    
 }

@@ -7,4 +7,4 @@ OpenIDE-Module-Specification-Version: 0.1
 OpenIDE-Module-Requires: org.netbeans.api.debugger.jpda.JPDADebuggerEngineImpl,
   org.netbeans.spi.debugger.ui
 OpenIDE-Module-Package-Dependencies: com.sun.jdi[VirtualMachineManager]
-
+AutoUpdate-Show-In-Client: true

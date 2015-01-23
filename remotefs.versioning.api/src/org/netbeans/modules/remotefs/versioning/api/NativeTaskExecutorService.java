@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.util;
+package org.netbeans.modules.remotefs.versioning.api;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;

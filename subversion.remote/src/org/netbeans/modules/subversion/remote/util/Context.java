@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -103,7 +104,7 @@ public class Context {
             VCSFileProxy root = i.next();
             for (Iterator<VCSFileProxy> j = exclusions.iterator(); j.hasNext();) {
                 VCSFileProxy exclusion = j.next();
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(exclusion, root)) {
+                if (VCSFileProxySupport.isAncestorOrEqual(exclusion, root)) {
                     j.remove();
                     exclusionRemoved(exclusion, root);
                     return true;
@@ -121,10 +122,10 @@ public class Context {
             VCSFileProxy file = i.next();
             for (Iterator<VCSFileProxy> j = newFiles.iterator(); j.hasNext();) {
                 VCSFileProxy includedFile = j.next();
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) {
+                if (VCSFileProxySupport.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) {
                     continue outter;
                 }
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
+                if (VCSFileProxySupport.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
                     j.remove();
                 }
             }
@@ -141,7 +142,7 @@ public class Context {
         }
         for (int i = 0; i < exclusionChildren.length; i++) {
             VCSFileProxy child = exclusionChildren[i];
-            if (!org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(root, child)) {
+            if (!VCSFileProxySupport.isAncestorOrEqual(root, child)) {
                 exclusions.add(child);
             }
         }
@@ -176,7 +177,7 @@ public class Context {
             if (SvnUtils.isParentOrEqual(root, file)) {
                 for (Iterator j = exclusions.iterator(); j.hasNext();) {
                     VCSFileProxy excluded = (VCSFileProxy) j.next();
-                    if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(excluded, file)) {
+                    if (VCSFileProxySupport.isAncestorOrEqual(excluded, file)) {
                         continue outter;
                     }
                 }

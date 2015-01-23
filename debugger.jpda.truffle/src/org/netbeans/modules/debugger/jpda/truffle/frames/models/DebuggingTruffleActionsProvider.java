@@ -69,7 +69,7 @@ import org.openide.util.RequestProcessor;
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
                              types=NodeActionsProviderFilter.class,
-                             position=21000)
+                             position=24000)
 public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilter {
     
     private final JPDADebugger debugger;
