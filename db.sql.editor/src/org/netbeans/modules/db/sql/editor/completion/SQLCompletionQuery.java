@@ -277,6 +277,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeInsert () {
         InsertStatement insertStatement = (InsertStatement) statement;
+        tablesClause = insertStatement.getTablesInEffect(env.getCaretOffset());
         includeViews = false;
         switch (context) {
             case INSERT:
@@ -290,6 +291,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 break;
             case VALUES:
                 break;
+            default:
+                if (!insertStatement.getSubqueries().isEmpty()) {
+                    completeSelect();
+                } else if (tablesClause != null) {
+                    completeColumnWithDefinedTuple(ident);
+                }
         }
     }
 

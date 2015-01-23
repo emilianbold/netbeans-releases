@@ -40,38 +40,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.analyzer;
+package org.netbeans.modules.db.sql.editor.completion;
 
-import java.util.List;
-import java.util.SortedMap;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Skrivanek
  */
-public class InsertStatement extends SelectStatement {
+public class InsertCompletionQueryTest extends SelectCompletionQueryTest {
 
-    private final List<String> columns;
-    private final List<String> values;
-    private final QualIdent table;
-
-    InsertStatement(int startOffset, int endOffset, QualIdent table, List<String> columns, List<String> values, SortedMap<Integer, Context> offset2Context, TablesClause tablesClause, List<SelectStatement> subqueries) {
-        super(startOffset, endOffset, null, tablesClause, subqueries, offset2Context);
-        this.kind = SQLStatementKind.INSERT;
-        this.columns = columns;
-        this.values = values;
-        this.table = table;
+    public InsertCompletionQueryTest(String testName) {
+        this(testName, false);
     }
 
-    public QualIdent getTable () {
-        return table;
+    /**
+     * @param testName golden file name
+     * @param stdout true to print completion results to stdout
+     */
+    public InsertCompletionQueryTest(String testName, boolean stdout) {
+        super(testName, stdout);
     }
 
-    public List<String> getColumns() {
-        return columns;
-    }
-
-    public List<String> getValues() {
-        return values;
+    public static Test suite() throws Exception {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new InsertCompletionQueryTest("insertSet"));
+        suite.addTest(new InsertCompletionQueryTest("insertSetSubselect"));
+        return suite;
     }
 }
