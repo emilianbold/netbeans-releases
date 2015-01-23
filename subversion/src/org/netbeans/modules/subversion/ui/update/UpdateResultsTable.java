@@ -422,7 +422,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             if (modelColumnIndex == 0) {
                 UpdateResultNode node = nodes[sorter.modelIndex(row)];
                 if (!isSelected) {
-                    value = "<html>" + node.getHtmlDisplayName(); // NOI18N
+                    value = node.getHtmlDisplayName(true);
                 }
             }
             if (modelColumnIndex == 2) {
