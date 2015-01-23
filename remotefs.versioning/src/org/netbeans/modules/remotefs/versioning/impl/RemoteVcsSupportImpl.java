@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.remotefs.versioning.impl;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -389,5 +393,20 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         } else {
             RemoteVcsSupportUtil.setLastModified(getFileSystem(file), file.getPath(), referenceFile.getPath());
         }
+    }
+
+    @Override
+    public FileSystem readFileSystem(DataInputStream is)  throws IOException {
+        String uri = is.readUTF();
+        try {
+            return FileSystemProvider.getFileSystem(new URI(uri));
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    @Override
+    public void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
+        os.writeUTF(fs.getRoot().toURI().toString());
     }
 }

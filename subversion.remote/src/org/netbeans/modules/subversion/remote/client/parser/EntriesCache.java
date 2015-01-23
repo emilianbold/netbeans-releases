@@ -60,7 +60,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.client.parser.ConflictDescriptionParser.ParserConflictDescriptor;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;

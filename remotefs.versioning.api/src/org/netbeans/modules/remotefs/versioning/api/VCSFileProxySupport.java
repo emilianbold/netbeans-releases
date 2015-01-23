@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.util;
+package org.netbeans.modules.remotefs.versioning.api;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -57,9 +57,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
-import org.netbeans.modules.subversion.remote.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileObject;
@@ -513,16 +511,10 @@ public final class VCSFileProxySupport {
     }
     
     public static FileSystem readFileSystem(DataInputStream is) throws IOException {
-        String uri = is.readUTF();
-        try {
-            return FileSystemProvider.getFileSystem(new URI(uri));
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex);
-        }
+        return RemoteVcsSupport.readFileSystem(is);
     }
 
     public static void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
-        //TODO: implement it!
-        os.writeUTF(fs.getRoot().toURI().toString());
+        RemoteVcsSupport.writeFileSystem(os, fs);
     }
 }

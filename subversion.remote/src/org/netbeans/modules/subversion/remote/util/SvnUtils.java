@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;

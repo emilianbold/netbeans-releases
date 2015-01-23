@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.remotefs.versioning.api</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.45</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.versioning.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

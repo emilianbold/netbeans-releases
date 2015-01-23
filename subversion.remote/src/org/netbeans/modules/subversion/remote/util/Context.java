@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
