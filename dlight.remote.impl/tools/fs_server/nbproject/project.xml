@@ -22,19 +22,11 @@
                     <type>0</type>
                 </confElem>
                 <confElem>
-                    <name>Solaris_Townes</name>
-                    <type>0</type>
-                </confElem>
-                <confElem>
                     <name>FreeBSD</name>
                     <type>0</type>
                 </confElem>
                 <confElem>
                     <name>MacOS</name>
-                    <type>0</type>
-                </confElem>
-                <confElem>
-                    <name>Test_on_Linux</name>
                     <type>0</type>
                 </confElem>
                 <confElem>
