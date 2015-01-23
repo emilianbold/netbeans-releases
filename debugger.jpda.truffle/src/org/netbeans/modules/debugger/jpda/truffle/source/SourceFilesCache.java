@@ -42,15 +42,9 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.source;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.Places;
 
 /**
  *
