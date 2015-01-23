@@ -429,37 +429,4 @@ public class Utils {
         }
     }
     
-    public static boolean isAncestorOrEqual(VCSFileProxy ancestor, VCSFileProxy file) {
-        String ancestorPath = ancestor.getPath();
-        String filePath = file.getPath();
-        if (VCSFileProxySupport.isMac(ancestor)) {
-            // Mac is not case sensitive, cannot use the else statement
-            if(filePath.length() < ancestorPath.length()) {
-                return false;
-            }
-        } else {
-            if(!filePath.startsWith(ancestorPath)) {
-                return false;
-            }
-        }
-
-        // get sure as it still could be something like:
-        // ancestor: /home/dil
-        // file:     /home/dil1/dil2
-        for (; file != null; file = file.getParentFile()) {
-            if(ancestor == null) {
-                // XXX have to rely on path because of fileproxy being created from 
-                // io.file even if it was originaly stored from a remote
-                if (file.getPath().equals(ancestorPath)) {
-                    return true;
-                } 
-            } else {
-                if (file.equals(ancestor)) {
-                    return true;
-                } 
-            }
-        }
-        return false;
-    }
-
 }

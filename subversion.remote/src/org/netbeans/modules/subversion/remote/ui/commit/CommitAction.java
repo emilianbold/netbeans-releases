@@ -1246,9 +1246,9 @@ public class CommitAction extends ContextAction {
         for (VCSFileProxy parent : files) {
             Set<VCSFileProxy> toRemove = new HashSet<>(filteredFiles.size());
             for (VCSFileProxy f : filteredFiles) {
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(f, parent)) {
+                if (VCSFileProxySupport.isAncestorOrEqual(f, parent)) {
                     continue;
-                } else if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(parent, f)) {
+                } else if (VCSFileProxySupport.isAncestorOrEqual(parent, f)) {
                     toRemove.add(f);
                 } 
             }
