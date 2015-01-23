@@ -62,7 +62,12 @@ public class UnusedBindingNode extends AbstractNode {
     public UnusedBindingNode(UnusedBinding unusedBinding) {
         super(Children.LEAF);
         this.unusedBinding = unusedBinding;
-        setDisplayName(unusedBinding.getDisplayName());
+        setIconBaseWithExtension("org/netbeans/modules/web/inspect/resources/domElement.png"); // NOI18N
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        return unusedBinding.getNodeDisplayName();
     }
 
 }

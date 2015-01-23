@@ -64,6 +64,7 @@ public class UnusedGroupNode extends AbstractNode {
         super(new UnusedGroupChildren(unusedBindings));
         UnusedBinding binding = unusedBindings.values().iterator().next();
         setDisplayName(binding.getName());
+        setIconBaseWithExtension("org/netbeans/modules/web/inspect/resources/binding.png"); // NOI18N
     }
 
     /**
