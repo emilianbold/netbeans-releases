@@ -147,7 +147,13 @@ public class SQLStatement {
         CREATE_PROCEDURE(710),
         CREATE_FUNCTION(720),
         BEGIN(730),
-        END(740);
+        END(740),
+        CREATE_TABLE(750),
+        CREATE_TEMPORARY_TABLE(760),
+        CREATE_DATABASE(770),
+        CREATE_SCHEMA(780),
+        CREATE_VIEW(790),
+        CREATE_VIEW_AS(800);
 
         private final int order;
 

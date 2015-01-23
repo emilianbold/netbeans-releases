@@ -49,14 +49,14 @@ import java.util.SortedMap;
  *
  * @author Jiri Rechtacek
  */
-public class InsertStatement extends SQLStatement {
+public class InsertStatement extends SelectStatement {
 
     private final List<String> columns;
     private final List<String> values;
     private final QualIdent table;
 
-    InsertStatement(int startOffset, int endOffset, QualIdent table, List<String> columns, List<String> values, SortedMap<Integer, Context> offset2Context) {
-        super(startOffset, endOffset, offset2Context);
+    InsertStatement(int startOffset, int endOffset, QualIdent table, List<String> columns, List<String> values, SortedMap<Integer, Context> offset2Context, TablesClause tablesClause, List<SelectStatement> subqueries) {
+        super(startOffset, endOffset, null, tablesClause, subqueries, offset2Context);
         this.kind = SQLStatementKind.INSERT;
         this.columns = columns;
         this.values = values;

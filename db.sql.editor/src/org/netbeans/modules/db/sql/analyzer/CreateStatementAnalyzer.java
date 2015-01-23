@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.db.sql.analyzer;
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
@@ -70,7 +72,7 @@ class CreateStatementAnalyzer extends SQLStatementAnalyzer {
         }
         CreateStatementAnalyzer sa = new CreateStatementAnalyzer(seq, quoter);
         sa.parse();
-        return new CreateStatement(sa.startOffset, seq.offset() + seq.token().length(), sa.offset2Context, sa.bodyStartOffset, sa.bodyEndOffset);
+        return new CreateStatement(sa.startOffset, seq.offset() + seq.token().length(), sa.offset2Context, sa.bodyStartOffset, sa.bodyEndOffset, null, Collections.unmodifiableList(sa.subqueries));
     }
 
     private CreateStatementAnalyzer(TokenSequence<SQLTokenId> seq, Quoter quoter) {
@@ -91,6 +93,16 @@ class CreateStatementAnalyzer extends SQLStatementAnalyzer {
                         moveToContext(Context.CREATE_PROCEDURE);
                     } else if (SQLStatementAnalyzer.isKeyword("FUNCTION", seq)) { // NOI18N
                         moveToContext(Context.CREATE_FUNCTION);
+                    } else if (SQLStatementAnalyzer.isKeyword("TABLE", seq)) {
+                        moveToContext(Context.CREATE_TABLE);
+                    } else if (SQLStatementAnalyzer.isKeyword("TEMPORARY", seq)) {
+                        moveToContext(Context.CREATE_TEMPORARY_TABLE);
+                    } else if (SQLStatementAnalyzer.isKeyword("DATABASE", seq)) {
+                        moveToContext(Context.CREATE_DATABASE);
+                    } else if (SQLStatementAnalyzer.isKeyword("SCHEMA", seq)) {
+                        moveToContext(Context.CREATE_SCHEMA);
+                    } else if (SQLStatementAnalyzer.isKeyword("VIEW", seq)) {
+                        moveToContext(Context.CREATE_VIEW);
                     }
                     break;
                 case CREATE_PROCEDURE:
@@ -104,6 +116,21 @@ class CreateStatementAnalyzer extends SQLStatementAnalyzer {
                     if (SQLStatementAnalyzer.isKeyword("END", seq)) { // NOI18N
                         moveToContext(Context.END);
                         bodyEndOffset = seq.offset();
+                    }
+                    break;
+                case CREATE_TEMPORARY_TABLE:
+                    if (SQLStatementAnalyzer.isKeyword("TABLE", seq)) {
+                        moveToContext(Context.CREATE_TABLE);
+                    }
+                    break;
+                case CREATE_VIEW:
+                    if(SQLStatementAnalyzer.isKeyword("AS", seq)) {
+                        moveToContext(Context.CREATE_VIEW_AS);
+                    }
+                    break;
+                case CREATE_VIEW_AS:
+                    if(SQLStatementAnalyzer.isKeyword("SELECT", seq)) {
+                        moveToContext(Context.SELECT);
                     }
                     break;
                 default:

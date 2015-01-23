@@ -53,9 +53,9 @@ public class KeywordCompletionQueryTest extends CompletionQueryTestCase {
 
     public void testEmptyStatement() {
         String sql = "|";
-        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        assertItems(doQuery(sql), "CREATE", "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
         sql = " |";
-        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        assertItems(doQuery(sql), "CREATE", "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
         sql = "D|";
         assertItems(doQuery(sql), "DELETE", "DROP");
     }

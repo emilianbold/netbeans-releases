@@ -39,39 +39,34 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.sql.analyzer;
 
-import java.util.List;
-import java.util.SortedMap;
+package org.netbeans.modules.db.sql.editor.completion;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *
  * @author Jiri Skrivanek
  */
-public class CreateStatement extends SelectStatement {
+public class InsertCompletionQueryTest extends SelectCompletionQueryTest {
 
-    private int bodyStartOffset;
-    private int bodyEndOffset;
-
-    CreateStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, int bodyStartOffset, int bodyEndOffset, TablesClause tablesClause, List<SelectStatement> subqueries) {
-        super(startOffset, endOffset, null, tablesClause, subqueries, offset2Context);
-        this.bodyStartOffset = bodyStartOffset;
-        this.bodyEndOffset = bodyEndOffset;
-        this.kind = SQLStatementKind.CREATE;
+    public InsertCompletionQueryTest(String testName) {
+        this(testName, false);
     }
 
-    /** Returns true if statement has some body after BEGIN. */
-    public boolean hasBody() {
-        return this.bodyEndOffset > this.bodyStartOffset;
+    /**
+     * @param testName golden file name
+     * @param stdout true to print completion results to stdout
+     */
+    public InsertCompletionQueryTest(String testName, boolean stdout) {
+        super(testName, stdout);
     }
 
-    /** Returns start offset of script after BEGIN. */
-    public int getBodyStartOffset() {
-        return this.bodyStartOffset;
-    }
-
-    /** Returns end offset of script after BEGIN. */
-    public int getBodyEndOffset() {
-        return this.bodyEndOffset;
+    public static Test suite() throws Exception {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new InsertCompletionQueryTest("insertSet"));
+        suite.addTest(new InsertCompletionQueryTest("insertSetSubselect"));
+        return suite;
     }
 }

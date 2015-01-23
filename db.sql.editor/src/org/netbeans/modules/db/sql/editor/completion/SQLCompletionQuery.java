@@ -175,12 +175,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         substitutionOffset = 0;
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
         if (env.getTokenSequence().isEmpty()) {
-            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE", "CREATE");  //NOI18N
             return items;
         }
         statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
         if (statement == null) {
-            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE", "CREATE");  //NOI18N
             return items;
         }
         if (statement.getKind() == SQLStatementKind.CREATE && ((CreateStatement) statement).hasBody()) {
@@ -189,7 +189,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
         context = statement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
-            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE", "CREATE");  //NOI18N
             return items;
         }
         ident = findIdentifier();
@@ -216,10 +216,33 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case DELETE:
                 completeDelete();
                 break;
+            case CREATE:
+                completeCreate();
+                break;
         }
         return items;
     }
 
+    private void completeCreate() {
+        CreateStatement createStatement = (CreateStatement) statement;
+        tablesClause = createStatement.getTablesInEffect(env.getCaretOffset());
+        switch(context) {
+            case CREATE:
+            case CREATE_DATABASE:
+            case CREATE_FUNCTION:
+            case CREATE_PROCEDURE:
+            case CREATE_SCHEMA:
+            case CREATE_TABLE:
+            case CREATE_TEMPORARY_TABLE:
+            case CREATE_VIEW:
+            case CREATE_VIEW_AS:
+                completeKeyword(context);
+                break;
+            default:
+                completeSelect();
+        }
+    }
+    
     private void completeSelect() {
         SelectStatement selectStatement = (SelectStatement) statement;
         tablesClause = selectStatement.getTablesInEffect(env.getCaretOffset());
@@ -254,6 +277,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeInsert () {
         InsertStatement insertStatement = (InsertStatement) statement;
+        tablesClause = insertStatement.getTablesInEffect(env.getCaretOffset());
         includeViews = false;
         switch (context) {
             case INSERT:
@@ -267,6 +291,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 break;
             case VALUES:
                 break;
+            default:
+                if (!insertStatement.getSubqueries().isEmpty()) {
+                    completeSelect();
+                } else if (tablesClause != null) {
+                    completeColumnWithDefinedTuple(ident);
+                }
         }
     }
 
@@ -400,6 +430,18 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case VALUES:
                 // nothing to complete
                 break;
+            case CREATE:
+                completeKeyword("PROCEDURE", "FUNCTION", "TABLE", "DATABASE", "SCHEMA", "TEMPORARY", "VIEW");  //NOI18N
+                break;
+            case CREATE_TEMPORARY_TABLE:
+                completeKeyword("TABLE");  //NOI18N
+                break;
+            case CREATE_VIEW:
+                completeKeyword("AS");
+                break;
+            case CREATE_VIEW_AS:
+                completeKeyword("SELECT");
+                break;
         }
     }
 
@@ -458,11 +500,10 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     /** Adds columns, tuples, schemas and catalogs according to given identifier. */
     private void completeColumnSimpleIdent(String typedPrefix, boolean quoted) {
-        if (tablesClause != null) {
+        if (tablesClause != null && !(tablesClause.getUnaliasedTableNames().isEmpty() && tablesClause.getAliasedTableNames().isEmpty())) {
             completeSimpleIdentBasedOnFromClause(typedPrefix, quoted);
         } else {
-            Schema defaultSchema = metadata.getDefaultSchema();
-            if (defaultSchema != null) {
+            Schema defaultSchema = metadata.getDefaultSchema();            if (defaultSchema != null) {
                 // All columns in default schema, but only if a prefix has been typed, otherwise there
                 // would be too many columns.
                 if (typedPrefix != null) {
@@ -542,7 +583,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     /** Adds columns, tuples, schemas and catalogs according to given identifier. */
     private void completeColumnQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
-        if (tablesClause != null) {
+        if (tablesClause != null && !(tablesClause.getUnaliasedTableNames().isEmpty() && tablesClause.getAliasedTableNames().isEmpty())) {
             completeQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, quoted);
         } else {
             // Assume fullyTypedIdent is a tuple.
