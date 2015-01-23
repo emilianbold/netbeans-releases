@@ -66,6 +66,7 @@ import org.netbeans.api.actions.Openable;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -639,6 +640,32 @@ public final class VCSFileProxySupport {
         }
         return filteredFiles;
     }
+    
+    /**
+     * Checks if the context was originally created from files, not from nodes
+     * and if so then it tries to determine if those original files are part of
+     * a single DataObject. Call only if the context was created from files (not
+     * from nodes), otherwise always returns false.
+     *
+     * @param ctx context to be checked
+     * @return true if the context was created from files of the same DataObject
+     */
+    public static boolean isFromMultiFileDataObject(VCSContext ctx) {
+        if (ctx != null) {
+            Collection<? extends Set> allSets = ctx.getElements().lookupAll(Set.class);
+            if (allSets != null) {
+                for (Set contextElements : allSets) {
+                    // private contract with org.openide.loaders - original files from multifile dataobjects are passed as
+                    // org.openide.loaders.DataNode$LazyFilesSet
+                    if ("org.openide.loaders.DataNode$LazyFilesSet".equals(contextElements.getClass().getName())) { //NOI18N
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
 //</editor-fold>
     
