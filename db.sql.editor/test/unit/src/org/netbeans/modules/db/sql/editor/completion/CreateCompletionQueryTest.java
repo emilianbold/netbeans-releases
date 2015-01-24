@@ -56,7 +56,7 @@ public class CreateCompletionQueryTest extends CompletionQueryTestCase {
             "CREATE PROCEDURE p1()\n" +
             "BEGIN\n" +
             "|";
-        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        assertItems(doQuery(sql), "CREATE", "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
         sql =
             "CREATE PROCEDURE p1()\n" +
             "BEGIN\n" +
@@ -77,7 +77,7 @@ public class CreateCompletionQueryTest extends CompletionQueryTestCase {
             "BEGIN\n" +
             "  SELECT * FROM tab_customer;\n" +
             "|";
-        assertItems(doQuery(sql), "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
+        assertItems(doQuery(sql), "CREATE", "DELETE", "DROP", "INSERT", "SELECT", "UPDATE");
         sql =
             "CREATE PROCEDURE p1()\n" +
             "BEGIN\n" +
@@ -91,5 +91,21 @@ public class CreateCompletionQueryTest extends CompletionQueryTestCase {
             "  SELECT | FROM tab_customer;\n" +
             "END";
         assertItems(doQuery(sql), "col_customer_id", "tab_customer");
+        sql = "C|";
+        assertItems(doQuery(sql), "CREATE");
+        sql = "CREATE |";
+        assertItems(doQuery(sql), "DATABASE", "FUNCTION", "PROCEDURE",
+                                  "SCHEMA", "TABLE", "TEMPORARY", "VIEW");
+        sql = "CREATE TEMPORARY |";
+        assertItems(doQuery(sql), "TABLE");
+        sql = "CREATE VIEW |";
+        assertItems(doQuery(sql), "AS");
+        sql = "CREATE VIEW xy AS |";
+        assertItems(doQuery(sql), "SELECT");
+        // This is a basic to verify "normal" select behaviour, based on
+        // structure from CompletionQueryTestCase.java
+        sql = "CREATE VIEW xy AS SELECT |";
+        assertItems(doQuery(sql), "tab_customer", "sch_accounting", "sch_customer",
+                                  "catalog_1", "catalog_2");
     }
 }
