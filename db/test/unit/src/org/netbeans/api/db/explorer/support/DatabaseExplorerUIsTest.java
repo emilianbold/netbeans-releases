@@ -62,13 +62,17 @@ public class DatabaseExplorerUIsTest extends TestBase {
         super(testName);
     }
 
-    private void initConnections() throws Exception {
-        JDBCDriver driver = Util.createDummyDriver();
+    private void clearConnections() throws Exception {
         DatabaseConnection[] connections = ConnectionManager.getDefault().getConnections();
         for (DatabaseConnection dc : connections) {
             ConnectionManager.getDefault().removeConnection(dc);
         }
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
+    }
+    
+    private void initConnections() throws Exception {
+        clearConnections();
+        JDBCDriver driver = Util.createDummyDriver();
         dbconn1 = DatabaseConnection.create(driver, "db", "dbuser", "dbschema", "dbpassword", true);
         dbconn2 = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
         ConnectionManager.getDefault().addConnection(dbconn1);
@@ -82,10 +86,14 @@ public class DatabaseExplorerUIsTest extends TestBase {
         return combo;
     }
 
-    public void testEmptyComboboxContent() {
+    public void testEmptyComboboxContent() throws Exception {
+        clearConnections();
+        
         JComboBox combo = connect();
 
-        assertTrue("Wrong number of items in the empty combobox", combo.getItemCount() == 1);
+        forceFlush();
+        
+        assertEquals("Wrong number of items in the empty combobox", 1, combo.getItemCount());
     }
 
     public void testComboboxWithConnections() throws Exception {
