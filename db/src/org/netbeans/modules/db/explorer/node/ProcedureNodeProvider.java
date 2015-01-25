@@ -74,6 +74,7 @@ import org.openide.util.Lookup;
  * @author Rob Englander, Jiri Rechtacek
  */
 public class ProcedureNodeProvider extends NodeProvider {
+    private static final Logger LOG = Logger.getLogger(ProcedureNodeProvider.class.getName());
 
     // lazy initialization holder class idiom for static fields is used
     // for retrieving the factory
@@ -92,7 +93,7 @@ public class ProcedureNodeProvider extends NodeProvider {
     }
 
     private final DatabaseConnection connection;
-    private MetadataElementHandle<Schema> schemaHandle;
+    private final MetadataElementHandle<Schema> schemaHandle;
     private String schemaName;
 
     @SuppressWarnings("unchecked")
@@ -177,15 +178,13 @@ public class ProcedureNodeProvider extends NodeProvider {
                         new Action<Metadata>() {
                             @Override
                             public void run(Metadata metaData) {
-                                Statement stmt;
-                                object2type = new HashMap<String, ProcedureNode.Type> ();
-                                validObjects = new HashSet<String> ();
-                                try {
-                                    stmt = connection.getConnection().createStatement();
-                                    ResultSet rs = stmt.executeQuery("SELECT NAME, TYPE" // NOI18N
+                                object2type = new HashMap<>();
+                                validObjects = new HashSet<>();
+                                String query = "SELECT NAME, TYPE" // NOI18N
                                             + " FROM mysql.proc" // NOI18N
-                                            + " WHERE TYPE = 'PROCEDURE' OR TYPE = 'FUNCTION'"); // NOI18N
-
+                                            + " WHERE TYPE = 'PROCEDURE' OR TYPE = 'FUNCTION'"; // NOI18N
+                                try(Statement stmt = connection.getConnection().createStatement();
+                                    ResultSet rs = stmt.executeQuery(query)) {
                                     while(rs.next()) {
                                         // name of procedure
                                         String objectName = rs.getString("NAME"); // NOI18N
@@ -201,17 +200,14 @@ public class ProcedureNodeProvider extends NodeProvider {
                                         // XXX: all procedurec are valid in MySQL
                                         validObjects.add(objectName);
                                     }
-                                    rs.close();
-                                    stmt.close();
                                 } catch (SQLException ex) {
-                                    Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of procedures in schema " + schemaName);
+                                    LOG.log(Level.INFO, ex + "{0} while refreshStatuses() of triggers in schema {1}", new Object[] {ex, schemaName});
                                 }
-                                try {
-                                    stmt = connection.getConnection().createStatement();
-                                    ResultSet rs = stmt.executeQuery("SELECT TRIGGER_NAME" // NOI18N
-                                            + " FROM information_schema.triggers"); // NOI18N
-
-                                    while(rs.next()) {
+                                String query2 = "SELECT TRIGGER_NAME" // NOI18N
+                                            + " FROM information_schema.triggers"; // NOI18N
+                                try (Statement stmt = connection.getConnection().createStatement();
+                                        ResultSet rs = stmt.executeQuery(query2)) {
+                                    while (rs.next()) {
                                         // name of procedure
                                         String objectName = rs.getString("TRIGGER_NAME"); // NOI18N
                                         // type of procedure is trigger
@@ -220,7 +216,7 @@ public class ProcedureNodeProvider extends NodeProvider {
                                         validObjects.add(objectName);
                                     }
                                 } catch (SQLException ex) {
-                                    Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of triggers in schema " + schemaName);
+                                    LOG.log(Level.INFO, ex + "{0} while refreshStatuses() of triggers in schema {1}", new Object[] {ex, schemaName});
                                 }
                             }
                         }
@@ -235,7 +231,7 @@ public class ProcedureNodeProvider extends NodeProvider {
             boolean connected = !connection.getConnector().isDisconnected();
             MetadataModel metaDataModel = connection.getMetadataModel();
             if (schemaName == null) {
-                Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, "No schema for " + this);
+                LOG.log(Level.INFO, "No schema for {0}", this);
                 return ;
             }
             if (connected && metaDataModel != null) {
@@ -244,15 +240,15 @@ public class ProcedureNodeProvider extends NodeProvider {
                         new Action<Metadata>() {
                             @Override
                             public void run(Metadata metaData) {
-                                Statement stmt;
-                                validObjects = new HashSet<String> ();
-                                object2type = new HashMap<String, ProcedureNode.Type> ();
-                                try {
-                                    stmt = connection.getConnection().createStatement();
-                                    ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME, STATUS, OBJECT_TYPE" // NOI18N
-                                            + " FROM SYS.ALL_OBJECTS WHERE OWNER='" + schemaName + "'" // NOI18N
-                                            + " AND ( OBJECT_TYPE = 'PROCEDURE' OR OBJECT_TYPE = 'TRIGGER' OR OBJECT_TYPE = 'FUNCTION' )"); // NOI18N
-
+                                validObjects = new HashSet<>();
+                                object2type = new HashMap<>();
+                                String schemaEscaped = schemaName.replace("'", "''");
+                                String query = "SELECT OBJECT_NAME, STATUS, OBJECT_TYPE" // NOI18N
+                                        + " FROM SYS.ALL_OBJECTS " // NOI18N
+                                        + " WHERE OWNER='" + schemaEscaped + "' "// NOI18N
+                                        + " AND ( OBJECT_TYPE = 'PROCEDURE' OR OBJECT_TYPE = 'TRIGGER' OR OBJECT_TYPE = 'FUNCTION' )";  // NOI18N
+                                try (Statement stmt = connection.getConnection().createStatement();
+                                        ResultSet rs = stmt.executeQuery(query);) {
                                     while(rs.next()) {
                                         // name of procedure
                                         String objectName = rs.getString("OBJECT_NAME"); // NOI18N
@@ -274,10 +270,8 @@ public class ProcedureNodeProvider extends NodeProvider {
                                             assert false : "Unknown type " + objectType;
                                         }                                    
                                     }
-                                    rs.close();
-                                    stmt.close();
                                 } catch (SQLException ex) {
-                                    Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of procedures in schema" + schemaName);
+                                    LOG.log(Level.INFO, "{0} while refreshStatuses() of procedures in schema {1}", new Object[] {ex, schemaName});
                                 }
                             }
                         }

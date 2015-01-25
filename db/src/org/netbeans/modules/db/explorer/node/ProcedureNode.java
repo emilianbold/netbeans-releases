@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.CommandNotSupportedException;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
@@ -73,6 +74,8 @@ import org.openide.util.NbBundle;
  * @author Rob Englander, Jiri Rechtacek
  */
 public class ProcedureNode extends BaseNode {
+    private static final Logger LOG = Logger.getLogger(ProcedureNode.class.getName());
+    
     private static final String ICON_VALID_P = "org/netbeans/modules/db/resources/procedure.png";
     private static final String ICON_VALID_F = "org/netbeans/modules/db/resources/function.png";
     private static final String ICON_VALID_T = "org/netbeans/modules/db/resources/trigger.png";
@@ -84,9 +87,9 @@ public class ProcedureNode extends BaseNode {
     private static final String DELIMITER = "@@"; // NOI18N
     private static final String SPACE = " "; // NOI18N
     private static final String NEW_LINE = "\n"; // NOI18N
-    private static String TRIGGER = "TRIGGER"; // NOI18N
-    private static String FUNCTION = "FUNCTION"; // NOI18N
-    private static String PROCEDURE = "PROCEDURE"; // NOI18N
+    private static final String TRIGGER = "TRIGGER"; // NOI18N
+    private static final String FUNCTION = "FUNCTION"; // NOI18N
+    private static final String PROCEDURE = "PROCEDURE"; // NOI18N
 
     /**
      * Create an instance of ProcedureNode.
@@ -231,7 +234,7 @@ public class ProcedureNode extends BaseNode {
                     assert false : "Unknown type " + getType();
             }
             if (command == null) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, "No command found for droping " + getName());
+                LOG.log(Level.INFO, "No command found for droping {0}", getName());
                 return ;
             }
             if (getOwner() != null) {
@@ -240,15 +243,15 @@ public class ProcedureNode extends BaseNode {
             command.execute();
             remove();
         } catch (DDLException e) {
-            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting " + getTypeName(getType()) + " " + getName());
+            LOG.log(Level.INFO, "{0} while deleting {1} {2}", new Object[] {e, getTypeName(getType()), getName()});
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-        } catch (Exception e) {
-            Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, e + " while deleting " + getTypeName(getType()) + " " + getName());
+        } catch (CommandNotSupportedException e) {
+            LOG.log(Level.INFO, "{0} while deleting {1} {2}", new Object[] {e, getTypeName(getType()), getName()});
         }
     }
     
     private String getOwner() {
-        String owner = null;
+        String owner;
         if (schemaName == null) {
             owner = catalogName;
         } else {
@@ -355,34 +358,42 @@ public class ProcedureNode extends BaseNode {
         public String getSource() {
             String source = "";
             try {
+                String query = "";
+                String escapedName = "";
                 boolean function = false;
                 switch (getType()) {
                     case Function:
                         function = true;
                     case Procedure:
-                        Statement stat = connection.getConnection().createStatement();
-                        ResultSet rs = stat.executeQuery("SELECT param_list, returns, body, db FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
-                        while(rs.next()) {
-                            String parent = rs.getString("db"); // NOI18N
-                            if (parent != null && parent.trim().length() > 0) {
-                                parent = parent + '.'; //  NOI18N
-                            } else {
-                                parent = "";
+                        escapedName = getName().replace("'", "''");
+                        query = "SELECT param_list, returns, body, db FROM mysql.proc WHERE name = '"
+                                + escapedName + "';"; // NOI18N
+                        try (Statement stat = connection.getConnection().createStatement();
+                                ResultSet rs = stat.executeQuery(query);) {
+
+                            while (rs.next()) {
+                                String parent = rs.getString("db"); // NOI18N
+                                if (parent != null && parent.trim().length() > 0) {
+                                    parent += '.'; //  NOI18N
+                                } else {
+                                    parent = "";
+                                }
+                                String params = rs.getString("param_list"); // NOI18N
+
+                                String returns = null;
+                                if (function) {
+                                    returns = rs.getString("returns"); // NOI18N
+                                }
+                                String body = rs.getString("body"); // NOI18N
+                                source = getTypeName(getType()) + " " + parent
+                                        + getName() + "\n" + // NOI18N
+                                        "(" + params + ")" + "\n"
+                                        + // NOI18N
+                                        (function ? "RETURNS " + returns + "\n" : "")
+                                        + // NOI18N                                   
+                                        body;
                             }
-                            String params = rs.getString("param_list"); // NOI18N
-                            
-                            String returns = null;
-                            if (function) {
-                                returns = rs.getString("returns"); // NOI18N
-                            }
-                            String body = rs.getString("body"); // NOI18N
-                            source = getTypeName(getType()) + " " + parent + getName() + "\n" + // NOI18N
-                                    "(" + params + ")" + "\n" + // NOI18N
-                                    (function ? "RETURNS " + returns + "\n" : "") + // NOI18N                                   
-                                    body;
                         }
-                        rs.close();
-                        stat.close();
                         break;
                     case Trigger:
                         /*
@@ -391,36 +402,46 @@ public class ProcedureNode extends BaseNode {
                             TRIGGER trigger_name trigger_time trigger_event
                             ON tbl_name FOR EACH ROW trigger_body
                          */
-                        Statement stat2 = connection.getConnection().createStatement();
-                        ResultSet rs2 = stat2.executeQuery("SELECT ACTION_STATEMENT, EVENT_OBJECT_SCHEMA, EVENT_OBJECT_TABLE,"
+                        escapedName = getName().replace("'", "''");
+                        query = "SELECT ACTION_STATEMENT, EVENT_OBJECT_SCHEMA, EVENT_OBJECT_TABLE,"
                                 + " ACTION_TIMING, EVENT_MANIPULATION, TRIGGER_SCHEMA"
-                                + " FROM information_schema.triggers WHERE TRIGGER_NAME = '" + getName() + "';"); // NOI18N
-                        while(rs2.next()) {
-                            String parent = rs2.getString("TRIGGER_SCHEMA"); // NOI18N
-                            if (parent != null && parent.trim().length() > 0) {
-                                parent = parent + '.'; //  NOI18N
-                            } else {
-                                parent = "";
+                                + " FROM information_schema.triggers WHERE TRIGGER_NAME = '"
+                                + escapedName + "';";  // NOI18N
+
+                        try (Statement stat = connection.getConnection().createStatement();
+                                ResultSet rs = stat.executeQuery(query);) {
+                            while (rs.next()) {
+                                String parent = rs.getString("TRIGGER_SCHEMA"); // NOI18N
+                                if (parent != null && parent.trim().length() > 0) {
+                                    parent += '.'; //  NOI18N
+                                } else {
+                                    parent = "";
+                                }
+                                String trigger_body = rs.getString("ACTION_STATEMENT"); // NOI18N
+                                String trigger_time = rs.getString("ACTION_TIMING"); // NOI18N
+                                String trigger_event = rs.getString("EVENT_MANIPULATION"); // NOI18N
+                                String tbl_schema = rs.getString("EVENT_OBJECT_SCHEMA"); // NOI18N
+                                String tbl_table_name = rs.getString("EVENT_OBJECT_TABLE"); // NOI18N
+                                String tbl_name;
+                                if(tbl_schema == null || tbl_schema.length() == 0 ) {
+                                    tbl_name = tbl_table_name;
+                                } else {
+                                    tbl_name = tbl_schema + '.' + tbl_table_name; // NOI18N
+                                }
+                                source = TRIGGER + " " + parent + getName()
+                                        + '\n' + // NOI18N
+                                        trigger_time + ' ' + trigger_event
+                                        + " ON " + tbl_name + '\n'
+                                        + "FOR EACH ROW" + '\n' + // NOI18N
+                                        trigger_body;
                             }
-                            String trigger_body = rs2.getString("ACTION_STATEMENT"); // NOI18N
-                            String trigger_time = rs2.getString("ACTION_TIMING"); // NOI18N
-                            String trigger_event = rs2.getString("EVENT_MANIPULATION"); // NOI18N
-                            String tbl_schema = rs2.getString("EVENT_OBJECT_SCHEMA"); // NOI18N
-                            String tbl_table_name = rs2.getString("EVENT_OBJECT_TABLE"); // NOI18N
-                            String tbl_name = tbl_schema == null || tbl_schema.length() == 0 ? tbl_table_name : tbl_schema + '.' + tbl_table_name; // NOI18N
-                            source = TRIGGER + " " + parent + getName() + '\n' + // NOI18N
-                                    trigger_time + ' ' + trigger_event + " ON " + tbl_name + '\n' +
-                                    "FOR EACH ROW" + '\n' + // NOI18N
-                                    trigger_body;
                         }
-                        rs2.close();
-                        stat2.close();
                         break;
                     default:
                         assert false : "Unknown type" + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of " + getTypeName(getType()) + " " + getName());
+                LOG.log(Level.INFO, "{0} while get source of {1} {2}", new Object[] {ex, getTypeName(getType()), getName()});
             }
             return source;
         }
@@ -428,40 +449,51 @@ public class ProcedureNode extends BaseNode {
         @Override
         public String getParams() {
             String params = "";
+            String escapedName = "";
+            String query = "";
             try {
                 switch (getType()) {
                     case Function:
                     case Procedure:
-                        Statement stat = connection.getConnection().createStatement();
-                        ResultSet rs = stat.executeQuery("SELECT param_list FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
-                        while(rs.next()) {
-                            params = rs.getString("param_list"); // NOI18N
+                        escapedName = getName().replace("'", "''");
+                        query = "SELECT param_list FROM mysql.proc WHERE name = '" // NOI18N
+                                + escapedName + "';"; // NOI18N
+                        try (Statement stat = connection.getConnection().createStatement();
+                                ResultSet rs = stat.executeQuery(query);) {
+                            while (rs.next()) {
+                                params = rs.getString("param_list"); // NOI18N
+                            }
                         }
-                        rs.close();
-                        stat.close();
                         break;
                     case Trigger:
-                        Statement stat2 = connection.getConnection().createStatement();
-                        ResultSet rs2 = stat2.executeQuery("SELECT ACTION_STATEMENT, EVENT_OBJECT_SCHEMA, EVENT_OBJECT_TABLE,"
+                        escapedName = getName().replace("'", "''");
+                        query = "SELECT ACTION_STATEMENT, EVENT_OBJECT_SCHEMA, EVENT_OBJECT_TABLE,"
                                 + " ACTION_TIMING, EVENT_MANIPULATION"
-                                + " FROM information_schema.triggers WHERE TRIGGER_NAME = '" + getName() + "';"); // NOI18N
-                        while(rs2.next()) {
-                            String trigger_time = rs2.getString("ACTION_TIMING"); // NOI18N
-                            String trigger_event = rs2.getString("EVENT_MANIPULATION"); // NOI18N
-                            String tbl_schema = rs2.getString("EVENT_OBJECT_SCHEMA"); // NOI18N
-                            String tbl_table_name = rs2.getString("EVENT_OBJECT_TABLE"); // NOI18N
-                            String tbl_name = tbl_schema == null || tbl_schema.length() == 0 ? tbl_table_name : tbl_schema + '.' + tbl_table_name; // NOI18N
-                            params = trigger_time + ' ' + trigger_event + " ON " + tbl_name + '\n' +
-                                    "FOR EACH ROW" + '\n'; // NOI18N
+                                + " FROM information_schema.triggers WHERE TRIGGER_NAME = '" + escapedName + "';";
+                        try (Statement stat = connection.getConnection().createStatement();
+                                ResultSet rs = stat.executeQuery(query);) {
+                            while (rs.next()) {
+                                String trigger_time = rs.getString("ACTION_TIMING"); // NOI18N
+                                String trigger_event = rs.getString("EVENT_MANIPULATION"); // NOI18N
+                                String tbl_schema = rs.getString("EVENT_OBJECT_SCHEMA"); // NOI18N
+                                String tbl_table_name = rs.getString("EVENT_OBJECT_TABLE"); // NOI18N
+                                String tbl_name;
+                                if (tbl_schema == null || tbl_schema.length() == 0) {
+                                    tbl_name = tbl_table_name;
+                                } else {
+                                    tbl_name = tbl_schema + '.' + tbl_table_name; // NOI18N
+                                }
+                                params = trigger_time + ' ' + trigger_event
+                                        + " ON " + tbl_name + '\n'
+                                        + "FOR EACH ROW" + '\n'; // NOI18N
+                            }
                         }
-                        rs2.close();
-                        stat2.close();
                         break;
                     default:
                         assert false : "Unknown type " + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get params of " + getTypeName(getType()) + " " + getName());
+                LOG.log(Level.INFO, "{0} while get params of {1} {2}", new Object[] {ex, getTypeName(getType()), getName()});
             }
             return params;
         }
@@ -469,32 +501,37 @@ public class ProcedureNode extends BaseNode {
         @Override
         public String getBody() {
             String body = "";
+            String escapedName = "";
+            String query = "";
             try {
                 switch (getType()) {
                     case Function:
                     case Procedure:
-                        Statement stat = connection.getConnection().createStatement();
-                        ResultSet rs = stat.executeQuery("SELECT body FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
-                        while(rs.next()) {
-                            body = rs.getString("body"); // NOI18N
+                        escapedName = getName().replace("'", "''");
+                        query = "SELECT body FROM mysql.proc WHERE name = '" + escapedName + "';"; // NOI18N
+                        try (Statement stat = connection.getConnection().createStatement();
+                                ResultSet rs = stat.executeQuery(query);) {
+                            while (rs.next()) {
+                                body = rs.getString("body"); // NOI18N
+                            }
                         }
-                        rs.close();
-                        stat.close();
                         break;
                     case Trigger:
-                        Statement stat2 = connection.getConnection().createStatement();
-                        ResultSet rs2 = stat2.executeQuery("SELECT ACTION_STATEMENT FROM information_schema.triggers WHERE TRIGGER_NAME = '" + getName() + "';"); // NOI18N
-                        while(rs2.next()) {
-                            body = rs2.getString("ACTION_STATEMENT"); // NOI18N
+                        escapedName = getName().replace("'", "''");
+                        query = "SELECT ACTION_STATEMENT FROM information_schema.triggers WHERE TRIGGER_NAME = '"  // NOI18N
+                                + escapedName + "';"; // NOI18N
+                        try (Statement stat = connection.getConnection().createStatement();
+                                ResultSet rs = stat.executeQuery(query)) {
+                            while (rs.next()) {
+                                body = rs.getString("ACTION_STATEMENT"); // NOI18N
+                            }
                         }
-                        rs2.close();
-                        stat2.close();
                         break;
                     default:
                         assert false : "Unknown type" + getType();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get body of " + getTypeName(getType()) + " " + getName());
+                LOG.log(Level.INFO, "{0} while get body of {1} {2}", new Object[] {ex, getTypeName(getType()), getName()});
             }
             return body;
         }
@@ -509,10 +546,11 @@ public class ProcedureNode extends BaseNode {
         @Override
         public String getDDL() {
             StringBuilder expression = new StringBuilder();
+            String escapedName = getName().replace("'", "''");
             // set delimiter
             expression.append("DELIMITER ").append(DELIMITER).append(NEW_LINE); // NOI18N
             // DDL
-            expression.append("DROP ").append(getTypeName(getType())).append(" ").append(getName()).append(SPACE).append(DELIMITER).append(NEW_LINE);
+            expression.append("DROP ").append(getTypeName(getType())).append(" ").append(escapedName).append(SPACE).append(DELIMITER).append(NEW_LINE);
             expression.append("CREATE ").append(getSource());
             expression.append(SPACE).append(DELIMITER).append(SPACE).append(NEW_LINE); // NOI18N
             // unset delimiter
@@ -612,19 +650,24 @@ public class ProcedureNode extends BaseNode {
             StringBuilder sb = new StringBuilder();
             String owner = "";
             try {
-                Statement stat = connection.getConnection().createStatement();
+                String escapedName = getName().replace("'", "''");
+                String escapedSchemaName = schema.toUpperCase().replace("'", "''");
                 // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
-                String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" + getName() + "' AND OWNER='" + schema.toUpperCase() + "'" // NOI18N
-                        + " ORDER BY LINE"; // NOI18N
-                ResultSet rs = stat.executeQuery(q);
-                while(rs.next()) {
-                    sb.append(rs.getString("text")); // NOI18N
-                    owner = rs.getString("owner"); // NOI18N
+                try (Statement stat = connection.getConnection().createStatement()) {
+                    // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
+                    String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" // NOI18N
+                            + escapedName + "' AND OWNER='" + escapedSchemaName // NOI18N
+                            + "'" // NOI18N
+                            + " ORDER BY LINE"; // NOI18N
+                    try (ResultSet rs = stat.executeQuery(q)) {
+                        while (rs.next()) {
+                            sb.append(rs.getString("text")); // NOI18N
+                            owner = rs.getString("owner"); // NOI18N
+                        }
+                    }
                 }
-                rs.close();
-                stat.close();
             } catch (SQLException ex) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of " + getTypeName(getType()) + " " + getName());
+                LOG.log(Level.INFO, "{0} while get source of {1} {2}", new Object[] {ex, getTypeName(getType()), getName()});
             }
             return fqn(sb.toString(), owner);
         }
@@ -691,9 +734,7 @@ public class ProcedureNode extends BaseNode {
         node.addProperty(ps);
         Type type = provider.getType(node.getName());
         if (type == null) {
-            Logger.getLogger(ProcedureNode.class.getName()).log(
-                    Level.WARNING, "Unknown type of object " //NOI18N
-                    + node.getName(), new Exception());
+            LOG.log(Level.INFO, "Unknown type of object {0}", node.getName()); //NOI18N
             return;
         }
         switch (type) {
