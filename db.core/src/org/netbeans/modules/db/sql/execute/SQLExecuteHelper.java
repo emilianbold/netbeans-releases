@@ -221,14 +221,14 @@ public final class SQLExecuteHelper {
         private static final int STATE_MAYBE_BLOCK_COMMENT = 3;
         private static final int STATE_BLOCK_COMMENT = 4;
         private static final int STATE_MAYBE_END_BLOCK_COMMENT = 5;
-        private static final int STATE_STRING = 6;
+        private static final int STATE_QUOTED = 6;
         
-        private String sql;
-        private int sqlLength;
-        private boolean useHashComments;
+        private final String sql;
+        private final int sqlLength;
+        private final boolean useHashComments;
         
-        private StringBuffer statement = new StringBuffer();
-        private List<StatementInfo> statements = new ArrayList<StatementInfo>();
+        private final StringBuilder statement = new StringBuilder();
+        private final List<StatementInfo> statements = new ArrayList<StatementInfo>();
         
         private int pos = 0;
         private int line = -1;
@@ -263,6 +263,7 @@ public final class SQLExecuteHelper {
 
         private void parse() {
             checkDelimiterStatement();
+            int startQuote = -1;
             while (pos < sqlLength) {
                 char ch = sql.charAt(pos);
                 
@@ -294,8 +295,9 @@ public final class SQLExecuteHelper {
                             if (statement.length() == 0 || !Character.isLetterOrDigit(statement.charAt(statement.length() - 1))) {
                                 state = STATE_LINE_COMMENT;
                             }
-                        } else if (ch == '\'') {
-                            state = STATE_STRING;
+                        } else if (isStartQuote(ch)) {
+                            startQuote = ch;
+                            state = STATE_QUOTED;
                         }
                         break;
                         
@@ -344,9 +346,24 @@ public final class SQLExecuteHelper {
                         }
                         break;
                         
-                    case STATE_STRING:
-                        if (ch == '\'') {
-                            state = STATE_MEANINGFUL_TEXT;
+                    case STATE_QUOTED:
+                        int lookAhead = -1;
+                        if((pos + 1) < sqlLength) {
+                            lookAhead = sql.charAt(pos + 1);
+                        }
+                        if (isEndQuote(startQuote, ch)) {
+                            if (lookAhead >= 0 && isEndQuote(startQuote, lookAhead)) {
+                                statement.append(ch);
+                                statement.append((char) lookAhead);
+                                pos += 2;
+                                // the end offset is the character after the last non-whitespace character
+                                if (state == STATE_QUOTED || !Character.isWhitespace(ch)) {
+                                    endOffset = pos + 1;
+                                }
+                                continue;
+                            } else {
+                                state = STATE_MEANINGFUL_TEXT;
+                            }
                         }
                         break;
                         
@@ -354,7 +371,7 @@ public final class SQLExecuteHelper {
                         assert false;
                 }
                 
-                if (state == STATE_MEANINGFUL_TEXT || state == STATE_STRING) {
+                if (state == STATE_MEANINGFUL_TEXT || state == STATE_QUOTED) {
                     // don't append leading whitespace
                     if (statement.length() > 0 || !Character.isWhitespace(ch)) {
                         // remember the position of the first appended char
@@ -372,7 +389,7 @@ public final class SQLExecuteHelper {
                         }
                         statement.append(ch);
                         // the end offset is the character after the last non-whitespace character
-                        if (state == STATE_STRING || !Character.isWhitespace(ch)) {
+                        if (state == STATE_QUOTED || !Character.isWhitespace(ch)) {
                             endOffset = pos + 1;
                         }
                     }
@@ -383,7 +400,45 @@ public final class SQLExecuteHelper {
             rawEndOffset = pos;
             addStatement();
         }
+
+        // The methods to detect quoting chars are copied from SQLLexer from the 
+        // org.netbeans.modules.db.sql.editor module
+        // Copied to not introduce another dependency
+        private static boolean isStartQuote(int start) {
+            return isStartStringQuoteChar(start) || isStartIdentifierQuoteChar(start);
+        }
         
+        private static boolean isEndQuote(int start, int end) {
+            return isEndIdentifierQuoteChar(start, end) || isEndStringQuoteChar(start, end);
+        }
+        
+        private static boolean isStartStringQuoteChar(int start) {
+            return start == '\'';  // SQL-99 string
+        }
+
+        private static boolean isStartIdentifierQuoteChar(int start) {
+            return start == '\"' || // SQL-99
+                    start == '`' || // MySQL
+                    start == '[';    // MS SQL Server
+        }
+
+        private static int getMatchingQuote(int start) {
+            switch (start) {
+                case '[':
+                    return ']';
+                default:
+                    return start;
+            }
+        }
+
+        private static boolean isEndIdentifierQuoteChar(int start, int end) {
+            return isStartIdentifierQuoteChar(start) && end == getMatchingQuote(start);
+        }
+
+        private static boolean isEndStringQuoteChar(int start, int end) {
+            return isStartStringQuoteChar(start) && end == getMatchingQuote(start);
+        }
+
         /**
          * See if the user wants to use a different delimiter for splitting
          * up statements.  This is useful if, for example, their SQL contains

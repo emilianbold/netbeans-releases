@@ -139,6 +139,28 @@ public class SQLExecuteHelperTest extends NbTestCase {
         assertSplit(sql, new StatementInfo("select foo", 0, 32, 5, 0, 42, 44));
     }
     
+    public void testQuoteHandling() {
+        assertSplit("select * from b where a = ';';"   // Normal String quoting
+                + "select * from b where \";\" = 'a';" // SQL Identifier quoting
+                + "select * from b where [;] = 'a';" // MSSQL Identifier Quoting
+                + "select * from b where `;` = 'a';" // MySQL Identifier Quoting
+                // The follwing statemens are variants of the four previous
+                // statements with identifier escaping
+                + "select * from b where a = ''';';" 
+                + "select * from b where \";\"\"\" = 'a';"
+                + "select * from b where []];] = 'a';"
+                + "select * from b where `;``` = 'a';"
+                , "select * from b where a = ';'"
+                , "select * from b where \";\" = 'a'"
+                , "select * from b where [;] = 'a'"
+                , "select * from b where `;` = 'a'"
+                , "select * from b where a = ''';'"
+                , "select * from b where \";\"\"\" = 'a'"
+                , "select * from b where []];] = 'a'"
+                , "select * from b where `;``` = 'a'"
+        );
+    }
+    
     private static void assertSplit(String script, String... expected) {
         assertSplit(script, true, expected);
     }
