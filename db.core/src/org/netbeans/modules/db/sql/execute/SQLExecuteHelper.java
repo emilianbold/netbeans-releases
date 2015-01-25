@@ -264,6 +264,7 @@ public final class SQLExecuteHelper {
         private void parse() {
             checkDelimiterStatement();
             int startQuote = -1;
+            int commentStart = 0;
             while (pos < sqlLength) {
                 char ch = sql.charAt(pos);
                 
@@ -303,6 +304,7 @@ public final class SQLExecuteHelper {
                         
                     case STATE_MAYBE_LINE_COMMENT:
                         if (ch == '-') {
+                            commentStart = pos + 1;
                             state = STATE_LINE_COMMENT;
                         } else {
                             state = STATE_MEANINGFUL_TEXT;
@@ -313,12 +315,14 @@ public final class SQLExecuteHelper {
                         
                     case STATE_LINE_COMMENT:
                         if (ch == '\n') {
+                            checkForDelimiterStmt(commentStart, pos - 1);
                             state = STATE_MEANINGFUL_TEXT;
                         } 
                         break;
                         
                     case STATE_MAYBE_BLOCK_COMMENT:
                         if (ch == '*') {
+                            commentStart = pos + 1;
                             state = STATE_BLOCK_COMMENT;
                         } else {
                             statement.append('/'); // previous char
@@ -337,6 +341,7 @@ public final class SQLExecuteHelper {
                         
                     case STATE_MAYBE_END_BLOCK_COMMENT:
                         if (ch == '/') {
+                            checkForDelimiterStmt(commentStart, pos - 2);
                             state = STATE_MEANINGFUL_TEXT;
                             // avoid writing the final / to the result
                             pos++;
@@ -438,7 +443,7 @@ public final class SQLExecuteHelper {
         private static boolean isEndStringQuoteChar(int start, int end) {
             return isStartStringQuoteChar(start) && end == getMatchingQuote(start);
         }
-
+        
         /**
          * See if the user wants to use a different delimiter for splitting
          * up statements.  This is useful if, for example, their SQL contains
@@ -484,6 +489,47 @@ public final class SQLExecuteHelper {
             rawStartOffset = pos;
 
             return true;
+        }
+        
+        /**
+         * Check for Delimiter Statement in comment.
+         * 
+         * Simulates regular behaviour found in checkDelimiterStatement
+         */
+        private void checkForDelimiterStmt(int initialOffset, int end) {
+            int start = initialOffset;
+            while(Character.isWhitespace(sql.charAt(start)) && start < end) {
+                start++;
+            }
+            if(start >= end && (end - start + 1) <= DELIMITER_TOKEN.length()) {
+                return;
+            }
+            boolean delimiterMatched = true;
+            for(int i = 0; i < DELIMITER_TOKEN.length(); i++) {
+                if(Character.toUpperCase(sql.charAt(start)) != 
+                        Character.toUpperCase(DELIMITER_TOKEN.charAt(i))) {
+                    delimiterMatched = false;
+                    break;
+                }
+                start++;
+            }
+            if(! delimiterMatched) {
+                return;
+            }
+            while (Character.isWhitespace(sql.charAt(start)) && start < end) {
+                start++;
+            }
+            StringBuilder sb = new  StringBuilder();
+            for(int i = start; i <= end; i++) {
+                if(! Character.isWhitespace(sql.charAt(i))) {
+                    sb.append(sql.charAt(i));
+                } else {
+                    break;
+                }
+            }
+            if(sb.length() > 0) {
+                delimiter = sb.toString();
+            }
         }
         
         private void skipWhitespace() {

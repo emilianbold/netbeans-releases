@@ -161,6 +161,37 @@ public class SQLExecuteHelperTest extends NbTestCase {
         );
     }
     
+    public void testDelimiterComment() {
+        // See bug #234246)
+        // Block comment
+        assertSplit("SELECT * FROM a;SELECT * FROM b/*DELIMITER //*///"
+                + "SELECT * FROM a//SELECT * FROM b"
+                , "SELECT * FROM a"
+                , "SELECT * FROM b"
+                , "SELECT * FROM a"
+                , "SELECT * FROM b");
+        // Line comment
+        assertSplit("SELECT * FROM a;\n"
+                + "SELECT * FROM b\n"
+                + "--   DELIMITER //\n"
+                + "//"
+                + "SELECT * FROM a//\n"
+                + "SELECT * FROM b"
+                , "SELECT * FROM a"
+                , "SELECT * FROM b"
+               , "SELECT * FROM a", "SELECT * FROM b");
+        // Block comment
+        assertSplit("/*DELIMITER --*--*/\n"
+                + "SELECT * FROM a\n"
+                + "--*--"
+                + "SELECT * FROM b\n"
+                , "SELECT * FROM a"
+                , "SELECT * FROM b");
+        // Guard against problems at line end
+        assertSplit("SELECT * FROM b/*DELIMITER --*--*/", "SELECT * FROM b");
+        assertSplit("SELECT * FROM b--DELIMITER --*--", "SELECT * FROM b");
+    }
+    
     private static void assertSplit(String script, String... expected) {
         assertSplit(script, true, expected);
     }
