@@ -58,6 +58,43 @@ public class InnerToOutterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test249299() throws Exception { // #249299 - JavaDoc comments for enum values are lost during Refactor -> Move Inner to Outer level 
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    /**\n"
+                        + "     * JavaDoc for SampleEnum\n"
+                        + "     */\n"
+                        + "    public enum SampleEnum {\n"
+                        + "        /**\n"
+                        + "         * JavaDoc for value1\n"
+                        + "         */\n"
+                        + "        Value1,\n"
+                        + "        /**\n"
+                        + "         * JavaDoc for value2\n"
+                        + "         */\n"
+                        + "        Value2;\n"
+                        + "    }\n"
+                        + "}"));
+        performInnerToOuterTest(null);
+        verifyContent(src,
+                      new File("t/SampleEnum.java", "/* * Refactoring License */ package t;\n"
+                        + "/**\n"
+                        + " * JavaDoc for SampleEnum\n"
+                        + " */\n"
+                        + "public enum SampleEnum {\n"
+                        + "    /**\n"
+                        + "     * JavaDoc for value1\n"
+                        + "     */\n"
+                        + "    Value1,\n"
+                        + "    /**\n"
+                        + "     * JavaDoc for value2\n"
+                        + "     */\n"
+                        + "    Value2\n"
+                        + "}\n"),
+                      new File("t/A.java", "package t; public class A { }"));
+    }
+    
     public void test100305() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { class B { } class F { F(int outer) { System.out.println(outer); } } }"));
