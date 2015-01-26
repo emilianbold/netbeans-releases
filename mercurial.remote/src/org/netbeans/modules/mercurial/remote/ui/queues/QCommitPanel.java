@@ -115,7 +115,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
     public static QCommitPanel createNewPanel (final VCSFileProxy[] roots, final VCSFileProxy repository, String commitMessage,
             final String helpCtxId) {
-        final Preferences preferences = HgModuleConfig.getDefault().getPreferences();
+        final Preferences preferences = HgModuleConfig.getDefault(root).getPreferences();
         List<String> recentUsers = getRecentUsers(repository);
         final DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null, recentUsers);
         final Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
@@ -134,7 +134,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
     public static QCommitPanel createRefreshPanel (final VCSFileProxy[] roots, final VCSFileProxy repository,
             String commitMessage, final QPatch patch, final HgRevision parentRevision, final String helpCtxId) {
-        final Preferences preferences = HgModuleConfig.getDefault().getPreferences();
+        final Preferences preferences = HgModuleConfig.getDefault(root).getPreferences();
         List<String> recentUsers = getRecentUsers(repository);
         final DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch, recentUsers);
         final Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
@@ -157,10 +157,10 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         HgConfigFiles config = new HgConfigFiles(repository);
         String userName = config.getUserName(false);
         if (userName.isEmpty()) {
-            config = HgConfigFiles.getSysInstance();
+            config = HgConfigFiles.getSysInstance(repository);
             userName = config.getUserName(false);
         }
-        List<String> recentUsers = HgModuleConfig.getDefault().getRecentCommitAuthors();
+        List<String> recentUsers = HgModuleConfig.getDefault(root).getRecentCommitAuthors();
         if (!userName.isEmpty()) {
             recentUsers.remove(userName);
             recentUsers.add(0, userName);

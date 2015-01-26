@@ -1052,7 +1052,7 @@ itor tabs #66700).
                     NbBundle.getMessage(HgUtils.class, "LBL_FileSelector_Title"),
                     NbBundle.getMessage(HgUtils.class, "FileSelector.jLabel1.text"),
                     new HelpCtx("org.netbeans.modules.mercurial.FileSelector"),
-                    HgModuleConfig.getDefault().getPreferences());
+                    HgModuleConfig.getDefault(root).getPreferences());
             if(fs.show(repoRoots.toArray(new VCSFileProxy[repoRoots.size()]))) {
                 VCSFileProxy selection = fs.getSelectedFile();
                 List<VCSFileProxy> l = map.get(selection);
@@ -1277,7 +1277,7 @@ itor tabs #66700).
         List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
         for (int i = 0; i < all.length; i++) {
             VCSFileProxy file = all[i];
-            if (!testCommitExclusions || !HgModuleConfig.getDefault().isExcludedFromCommit(file.getPath())) {
+            if (!testCommitExclusions || !HgModuleConfig.getDefault(root).isExcludedFromCommit(file.getPath())) {
                 files.add(file);
             }
         }
@@ -1802,7 +1802,7 @@ itor tabs #66700).
         for (int i = 0; i < nodes.length; i++) {
             HgFileNode node = nodes[i];
             VCSFileProxy file = node.getFile();
-            if (HgModuleConfig.getDefault().isExcludedFromCommit(file.getPath())) {
+            if (HgModuleConfig.getDefault(root).isExcludedFromCommit(file.getPath())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
                 switch (node.getInformation().getStatus()) {

@@ -140,7 +140,7 @@ public final class RebaseCommand extends HgCommand<RebaseCommand.Result> {
                 .addRepositoryLocation(repository.getPath());
         
         List<String> command = args.toCommand();
-        output = exec(command);
+        output = exec(repository, command);
         if (!output.isEmpty() && isErrorAbort(output.get(0))) {
             handleError(command, output, Bundle.MSG_HgCommand_Rebase_failed(), logger);
         }

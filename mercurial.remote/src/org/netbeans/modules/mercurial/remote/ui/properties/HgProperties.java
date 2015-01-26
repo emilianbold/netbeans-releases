@@ -73,8 +73,6 @@ public class HgProperties implements ListSelectionListener {
     private VCSFileProxy root;
     private final PropertiesTable propTable;
     private HgProgressSupport support;
-    private VCSFileProxy loadedValueFile;
-    private Font fontTextArea;
     private HgPropertiesNode[] initHgProps;
     
     /** Creates a new instance of HgProperties */
@@ -114,7 +112,7 @@ public class HgProperties implements ListSelectionListener {
             support = new HgProgressSupport() {
                 @Override
                 protected void perform() {
-                    Properties props = HgModuleConfig.getDefault().getProperties(root);
+                    Properties props = HgModuleConfig.getDefault(root).getProperties(root);
                     if (props == null) {
                         return;
                     }
@@ -153,13 +151,13 @@ public class HgProperties implements ListSelectionListener {
                             boolean bPropChanged = !(initHgProps[i].getValue()).equals(hgPropertyValue);
                             if (bPropChanged && hgPropertyValue.trim().length() >= 0) {
                                 if (hgPropertyName.equals(HGPROPNAME_USERNAME) &&
-                                        !HgModuleConfig.getDefault().isUserNameValid(hgPropertyValue)) {
+                                        !HgModuleConfig.getDefault(root).isUserNameValid(hgPropertyValue)) {
                                     JOptionPane.showMessageDialog(null,
                                             NbBundle.getMessage(HgProperties.class, "MSG_WARN_USER_NAME_TEXT"), // NOI18N
                                             NbBundle.getMessage(HgProperties.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
                                             JOptionPane.WARNING_MESSAGE);
                                 } else {
-                                    HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                                    HgModuleConfig.getDefault(root).setProperty(root, hgPropertyName, hgPropertyValue);
                                 }
                             }
                         }

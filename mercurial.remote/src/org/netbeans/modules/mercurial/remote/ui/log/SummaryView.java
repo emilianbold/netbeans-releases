@@ -43,18 +43,27 @@
  */
 package org.netbeans.modules.mercurial.remote.ui.log;
 
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.nodes.Node;
-import javax.swing.*;
-import java.awt.event.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.Mercurial;
@@ -68,16 +77,20 @@ import org.netbeans.modules.mercurial.remote.ui.update.RevertModificationsAction
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
-import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 
 /**
  * @author Maros Sandor
@@ -616,7 +629,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private static void revertImpl(RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
         List<VCSFileProxy> revertFiles = new ArrayList<VCSFileProxy>();
-        boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
+        boolean doBackup = HgModuleConfig.getDefault(root).getBackupOnRevertModifications();
         if (revisions != null) {
             for (RepositoryRevision revision : revisions) {
                 VCSFileProxy root = revision.getRepositoryRoot();

@@ -44,14 +44,7 @@
 
 package org.netbeans.modules.mercurial.remote.ui.actions;
 
-import org.openide.util.actions.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
-import org.openide.LifecycleManager;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.Set;
@@ -60,10 +53,16 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
+import org.openide.windows.TopComponent;
 
 /**
  * Base for all context-sensitive HG actions.
@@ -170,7 +169,7 @@ public abstract class ContextAction extends NodeAction {
         return false;
     }
     
-    protected String getContextDisplayName(VCSContext ctx) {
+    protected static String getContextDisplayName(VCSContext ctx) {
         // TODO: reuse this code in getActionName()
         Set<VCSFileProxy> nodes = ctx.getFiles();
         int objectCount = nodes.size();

@@ -45,6 +45,7 @@
 package org.netbeans.modules.mercurial.remote.ui.log;
 
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,9 +56,9 @@ import org.openide.util.NbBundle;
 class SearchCriteriaPanel extends javax.swing.JPanel {
     
     /** Creates new form SearchCriteriaPanel */
-    public SearchCriteriaPanel() {
+    public SearchCriteriaPanel(VCSFileProxy[] roots) {
         initComponents();
-        showMergesChkBox.setSelected(HgModuleConfig.getDefault().getShowHistoryMerges());
+        showMergesChkBox.setSelected(HgModuleConfig.getDefault(roots[0]).getShowHistoryMerges());
         tfLimit.setText(Integer.toString(SearchExecutor.DEFAULT_LIMIT));
     }
 

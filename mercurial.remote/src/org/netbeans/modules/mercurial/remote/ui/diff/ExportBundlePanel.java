@@ -186,7 +186,7 @@ public class ExportBundlePanel extends JPanel {
     }
 
     private void setDefaultOutputFile() {
-        String folderName = HgModuleConfig.getDefault().getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault().getExportFolder()); // NOI18N
+        String folderName = HgModuleConfig.getDefault(root).getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault(root).getExportFolder()); // NOI18N
         String fileName = repository.getName(); //NOI18N
         VCSFileProxy file = VCSFileProxySupport.getResource(repository, folderName + "/" + fileName + ".hg"); //NOI18N
         p.setOutputFileText(file.getPath());

@@ -75,13 +75,13 @@ public class QFileNode extends VCSFileNode<FileInformation> {
 
     @Override
     public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
-        if (withExclusions && HgModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
+        if (withExclusions && HgModuleConfig.getDefault(root).isExcludedFromCommit(getFile().getAbsolutePath())) {
             return EXCLUDE;
         } else {
             if ((getInformation().getStatus() & (FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) != 0) {
                 return VCSCommitOptions.COMMIT_REMOVE;
             } else if ((getInformation().getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
-                return HgModuleConfig.getDefault().getExludeNewFiles() ? EXCLUDE : INCLUDE;
+                return HgModuleConfig.getDefault(root).getExludeNewFiles() ? EXCLUDE : INCLUDE;
             } else {
                 return INCLUDE;
             }

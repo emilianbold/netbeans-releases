@@ -149,7 +149,7 @@ public class ExportDiffChangesAction extends ContextAction {
         }
         VCSFileProxy contextFile = roots[0];
         final VCSFileProxy root = Mercurial.getInstance().getRepositoryRoot(contextFile);
-        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new VCSFileProxy[] {contextFile}, HgModuleConfig.getDefault().getPreferences()) {
+        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new VCSFileProxy[] {contextFile}, HgModuleConfig.getDefault(root).getPreferences()) {
             @Override
             public void writeDiffFile(final VCSFileProxy toFile) {
                 ExportDiffAction.saveFolderToPrefs(toFile);

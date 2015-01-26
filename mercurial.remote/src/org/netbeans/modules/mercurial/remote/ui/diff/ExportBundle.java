@@ -95,7 +95,7 @@ class ExportBundle extends ExportDiffSupport implements ActionListener, Property
     private final JButton selectButton;
 
     public ExportBundle(VCSFileProxy repository) {
-        super(new VCSFileProxy[]{repository}, HgModuleConfig.getDefault().getPreferences());
+        super(new VCSFileProxy[]{repository}, HgModuleConfig.getDefault(repository).getPreferences());
         this.repository = repository;
         panel = new ExportBundlePanel(repository);
         okButton = new JButton();
@@ -235,7 +235,7 @@ class ExportBundle extends ExportDiffSupport implements ActionListener, Property
                 final String revTo = getTopRevision();
                 OutputLogger logger = getLogger();
                 if (toFile.getParentFile() != null) {
-                    HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParentFile().getPath()); // NOI18N
+                    HgModuleConfig.getDefault(repository).getPreferences().put("ExportDiff.saveFolder", toFile.getParentFile().getPath()); // NOI18N
                 }
                 try {
                     logger.outputInRed(NbBundle.getMessage(ExportBundleAction.class, "MSG_EXPORT_BUNDLE_TITLE")); // NOI18N

@@ -48,26 +48,27 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
-import org.netbeans.api.diff.StreamSource;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.diff.Difference;
+import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.VersionsCache;
-import org.netbeans.modules.versioning.util.Utils;
-
-import java.util.*;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
-
-import org.openide.util.*;
-import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Stream source for diffing CVS managed files.

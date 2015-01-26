@@ -73,7 +73,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         //putProperty(PROP_DISPLAY_NAME, getDisplayName()); // NOI18N
         //putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_MainMenu")); // NOI18N
         
-        HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        HgModuleConfig.getDefault(root).getPreferences().addPreferenceChangeListener(this);
         Mercurial.getInstance().register(this);        
     }
 

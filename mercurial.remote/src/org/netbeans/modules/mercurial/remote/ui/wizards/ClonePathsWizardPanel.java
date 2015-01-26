@@ -151,7 +151,7 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel {
         Mnemonics.setLocalizedText(set,   getMessage("changePullPushPath.Set"));   //NOI18N
         Mnemonics.setLocalizedText(clear, getMessage("changePullPushPath.Clear")); //NOI18N
 
-        final Repository repository = new Repository(repoModeMask, title, true);
+        final Repository repository = new Repository(repoModeMask, title, true, root);
         set.setEnabled(repository.isValid());
         clear.setDefaultCapable(false);
 

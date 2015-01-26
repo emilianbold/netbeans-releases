@@ -191,13 +191,13 @@ public class Mercurial {
     private void setDefaultPath() {
         // Set default executable location for mercurial on mac
         if (System.getProperty("os.name").equals("Mac OS X")) { // NOI18N
-            String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath ();
+            String defaultPath = HgModuleConfig.getDefault(root).getExecutableBinaryPath ();
             if (defaultPath == null || defaultPath.length() == 0) {
                 String[] pathNames  = {"/Library/Frameworks/Python.framework/Versions/Current/bin", // NOI18N
                                         "/usr/bin", "/usr/local/bin","/opt/local/bin/", "/sw/bin"}; // NOI18N
                 for (int i = 0; i < pathNames.length; i++) {
-                    if (HgModuleConfig.getDefault().isExecPathValid(pathNames[i])) {
-                        HgModuleConfig.getDefault().setExecutableBinaryPath (pathNames[i]); // NOI18N
+                    if (HgModuleConfig.getDefault(root).isExecPathValid(pathNames[i])) {
+                        HgModuleConfig.getDefault(root).setExecutableBinaryPath (pathNames[i]); // NOI18N
                         break;
                      }
                  }

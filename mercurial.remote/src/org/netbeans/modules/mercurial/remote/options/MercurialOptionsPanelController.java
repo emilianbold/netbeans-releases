@@ -63,10 +63,8 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.MercurialAnnotator;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
-import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -74,6 +72,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.mercurial.remote.util.HgCommand.HG_COMMAND;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 
@@ -180,7 +179,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     private boolean validateFields() {
         getPanel().showError(null);
         String username = panel.userNameTextField.getText();
-        if (!HgModuleConfig.getDefault().isUserNameValid(username)) {
+        if (!HgModuleConfig.getDefault(root).isUserNameValid(username)) {
             getPanel().showError(NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_USER_NAME_TEXT")); //NOI18N
             return false;
         }
@@ -192,7 +191,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         if (hgExecutableParent == null) {
             hgExecutableParent = execpath;
         }
-        if (!HgModuleConfig.getDefault().isExecPathValid(hgExecutableParent)) {
+        if (!HgModuleConfig.getDefault(root).isExecPathValid(hgExecutableParent)) {
             getPanel().showError(NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT")); //NOI18N
             return false;
         }
@@ -203,19 +202,9 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         return true;
     }
 
-    private static String getHgWindowsExecutableParent(String pathToCheck) {
-        for (String hgExecutable : HgCommand.HG_WINDOWS_EXECUTABLES) {
-            if (pathToCheck.endsWith(hgExecutable)) {
-                return pathToCheck.substring(0, pathToCheck.length()
-                                                - hgExecutable.length());
-            }
-        }
-        return null;
-    }
-
     private void onExportFilenameBrowseClick() {
         VCSFileProxy oldFile = getExecutableFile();
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(MercurialOptionsPanelController.class, "ACSD_ExportBrowseFolder"), oldFile);   // NOI18N
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(MercurialOptionsPanelController.class, "ExportBrowse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
@@ -224,21 +213,21 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
             fileChooser.removeChoosableFileFilter(fileFilter);
         }
         fileChooser.showDialog(panel, NbBundle.getMessage(MercurialOptionsPanelController.class, "OK_Button"));                                            // NOI18N
-        VCSFileProxy f = fileChooser.getSelectedFile();
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
-            panel.exportFilenameTextField.setText(f.getAbsolutePath());
+            panel.exportFilenameTextField.setText(f.getPath());
         }
     }
 
     private void onExecPathBrowseClick() {
         VCSFileProxy oldFile = getExportFile();
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(MercurialOptionsPanelController.class, "ACSD_BrowseFolder"), oldFile);   // NOI18N
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(MercurialOptionsPanelController.class, "Browse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.showDialog(panel, NbBundle.getMessage(MercurialOptionsPanelController.class, "OK_Button"));                                            // NOI18N
-        VCSFileProxy f = fileChooser.getSelectedFile();
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
-            panel.executablePathTextField.setText(f.getAbsolutePath());
+            panel.executablePathTextField.setText(f.getPath());
         }
     }
 

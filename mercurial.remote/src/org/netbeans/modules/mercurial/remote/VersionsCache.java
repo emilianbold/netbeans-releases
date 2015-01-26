@@ -45,12 +45,13 @@
 package org.netbeans.modules.mercurial.remote;
 
 import java.io.IOException;
-import org.netbeans.modules.versioning.historystore.Storage;
-import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
-import org.netbeans.modules.mercurial.remote.util.*;
+import org.netbeans.modules.mercurial.remote.util.HgCommand;
+import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.historystore.Storage;
+import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
@@ -95,8 +96,7 @@ public class VersionsCache {
             return base;
         } else {
             try {
-                VCSFileProxy tempFile = new VCSFileProxy(Utils.getTempFolder(), "nb-hg-" + base.getName()); //NOI18N
-                tempFile.deleteOnExit();
+                VCSFileProxy tempFile = VCSFileProxy.createFileProxy(VCSFileProxySupport.getTempFolder(repository, true), "nb-hg-" + base.getName()); //NOI18N
                 if (HgRevision.BASE.equals(revision)) {
                     HgCommand.doCat(repository, base, tempFile, null);
                 } else {

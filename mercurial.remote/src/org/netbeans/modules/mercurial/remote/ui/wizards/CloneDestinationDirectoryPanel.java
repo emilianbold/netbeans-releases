@@ -63,7 +63,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         directoryBrowseButton.addActionListener(this);    
         scanForProjectsCheckBox.addActionListener(this);    
         directoryField.setText(defaultWorkingDirectory().getPath());
-        scanForProjectsCheckBox.setSelected(HgModuleConfig.getDefault().getShowCloneCompleted());
+        scanForProjectsCheckBox.setSelected(HgModuleConfig.getDefault(root).getShowCloneCompleted());
     }
     
     @Override
@@ -201,7 +201,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         if (evt.getSource() == directoryBrowseButton) {
             onBrowseClick();
         } else if (evt.getSource() == scanForProjectsCheckBox) {
-            HgModuleConfig.getDefault().setShowCloneCompleted(scanForProjectsCheckBox.isSelected());
+            HgModuleConfig.getDefault(root).setShowCloneCompleted(scanForProjectsCheckBox.isSelected());
         }
     }
 
@@ -258,7 +258,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         }
         
         if (defaultDir == null) {
-            String cloneDir = HgModuleConfig.getDefault().getPreferences().get(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, null);
+            String cloneDir = HgModuleConfig.getDefault(root).getPreferences().get(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, null);
             if (cloneDir != null) {
                 defaultDir = new VCSFileProxy(cloneDir);               
             }            

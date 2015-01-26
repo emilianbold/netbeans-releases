@@ -86,7 +86,7 @@ class QUtils {
             accepted = true;
         } else {
             assert !EventQueue.isDispatchThread();
-            HgConfigFiles config = HgConfigFiles.getSysInstance();
+            HgConfigFiles config = HgConfigFiles.getSysInstance(repository);
             config.doReload();
             if (config.getException() != null) {
                 Mercurial.LOG.log(Level.INFO, null, config.getException());

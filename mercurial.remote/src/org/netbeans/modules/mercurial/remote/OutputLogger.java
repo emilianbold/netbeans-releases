@@ -111,7 +111,7 @@ public class OutputLogger {
             log = IOProvider.getDefault().getIO(repositoryRootString, false);
             if (!openedWindows.contains(repositoryRootString)) {
                 // log window has been opened
-                writable = HgModuleConfig.getDefault().getAutoOpenOutput();
+                writable = HgModuleConfig.getDefault(root).getAutoOpenOutput();
                 openedWindows.add(repositoryRootString);
                 if (!writable) {
                     // close it again
@@ -120,7 +120,7 @@ public class OutputLogger {
             }
         }
         if (log.isClosed()) {
-            if (HgModuleConfig.getDefault().getAutoOpenOutput()) {
+            if (HgModuleConfig.getDefault(root).getAutoOpenOutput()) {
                 Mercurial.LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRootString);
                 log = IOProvider.getDefault().getIO(repositoryRootString, false);
                 try {

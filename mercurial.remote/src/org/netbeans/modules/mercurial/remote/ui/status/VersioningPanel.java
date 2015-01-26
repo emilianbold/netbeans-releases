@@ -189,7 +189,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     @Override
     public void addNotify() {
         super.addNotify();
-        HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        HgModuleConfig.getDefault(root).getPreferences().addPreferenceChangeListener(this);
         mercurial.getFileStatusCache().addPropertyChangeListener(this);        
         mercurial.addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
@@ -199,7 +199,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     @Override
     public void removeNotify() {
-        HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        HgModuleConfig.getDefault(root).getPreferences().removePreferenceChangeListener(this);
         mercurial.getFileStatusCache().removePropertyChangeListener(this);
         mercurial.removePropertyChangeListener(this);
         explorerManager.removePropertyChangeListener(this);

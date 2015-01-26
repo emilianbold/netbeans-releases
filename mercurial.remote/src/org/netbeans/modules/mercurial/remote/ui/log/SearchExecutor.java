@@ -142,7 +142,7 @@ class SearchExecutor extends HgProgressSupport {
     public void start () {
         if (!HgBranch.DEFAULT_NAME.equals(branchName)) {
             // only for branches other than default
-            HgModuleConfig.getDefault().setSearchOnBranchEnabled(master.getCurrentBranch(), !branchName.isEmpty());
+            HgModuleConfig.getDefault(root).setSearchOnBranchEnabled(master.getCurrentBranch(), !branchName.isEmpty());
         }
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);

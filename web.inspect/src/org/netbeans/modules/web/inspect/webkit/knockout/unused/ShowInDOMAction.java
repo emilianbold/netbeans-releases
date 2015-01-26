@@ -42,42 +42,75 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import java.awt.EventQueue;
+import java.util.Collections;
+import org.netbeans.modules.web.inspect.ui.DomTC;
+import org.netbeans.modules.web.inspect.webkit.DOMNode;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
- * Node representing an unused binding.
+ * Shows the owner of an unused binding in DOM Tree view.
  *
  * @author Jan Stola
  */
-public class UnusedBindingNode extends AbstractNode {
-    /** Unused binding represented by this node. */
-    private final UnusedBinding unusedBinding;
+public class ShowInDOMAction extends NodeAction {
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        Node selection = activatedNodes[0];
+        UnusedBinding unusedBinding = selection.getLookup().lookup(UnusedBinding.class);
+        DOMNode node = unusedBinding.getNode();
+        if (node != null) {
+            unusedBinding.getPage().setSelectedNodes(Collections.singletonList(node));
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    activateDOMView();
+                }
+            });
+        }
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length == 1) {
+            Node selection = activatedNodes[0];
+            UnusedBinding unusedBinding = selection.getLookup().lookup(UnusedBinding.class);
+            return (unusedBinding != null);
+        }
+        return false;
+    }
 
     /**
-     * Creates a new {@code UnusedBindingNode}.
-     * 
-     * @param unusedBinding unused binding to represent by the node.
+     * Activates the DOM Tree view.
      */
-    public UnusedBindingNode(UnusedBinding unusedBinding) {
-        super(Children.LEAF, Lookups.fixed(unusedBinding));
-        this.unusedBinding = unusedBinding;
-        setIconBaseWithExtension("org/netbeans/modules/web/inspect/resources/domElement.png"); // NOI18N
+    void activateDOMView() {
+        TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
+        tc.open();
+        tc.requestActive();
     }
 
     @Override
-    public String getHtmlDisplayName() {
-        return unusedBinding.getNodeDisplayName();
+    @NbBundle.Messages({
+        "ShowInDOMAction.name=Show in Browser DOM"
+    })
+    public String getName() {
+        return Bundle.ShowInDOMAction_name();
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(ShowInDOMAction.class)
-        };
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return true;
     }
 
 }

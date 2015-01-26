@@ -154,7 +154,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
             support = new HgProgressSupport() {
                 @Override
                 protected void perform() {
-                    Properties props = HgModuleConfig.getDefault().getProperties(root, "extensions"); // NOI18N
+                    Properties props = HgModuleConfig.getDefault(root).getProperties(root, "extensions"); // NOI18N
                     final HgPropertiesNode[] hgProps = new HgPropertiesNode[props.size()];
                     int i = 0;
 
@@ -214,12 +214,12 @@ public class HgExtProperties implements ActionListener, DocumentListener {
                 @Override
                 protected void perform() {
                     try {
-                        HgModuleConfig.getDefault().clearProperties(root, "extensions"); // NOI18N
+                        HgModuleConfig.getDefault(root).clearProperties(root, "extensions"); // NOI18N
                         HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
                         for (int i = 0; i < hgPropertiesNodes.length; i++) {
                             String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(i)].getName();
                             String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(i)].getValue();
-                            HgModuleConfig.getDefault().setProperty(root, "extensions", hgPropertyName, hgPropertyValue, true); // NOI18N
+                            HgModuleConfig.getDefault(root).setProperty(root, "extensions", hgPropertyName, hgPropertyValue, true); // NOI18N
                         }
                     } catch (IOException ex) {
                         HgModuleConfig.notifyParsingError();

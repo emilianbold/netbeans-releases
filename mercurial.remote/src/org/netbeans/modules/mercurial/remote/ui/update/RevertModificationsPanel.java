@@ -86,13 +86,13 @@ public class RevertModificationsPanel extends ChangesetPickerPanel {
 
         doBackupChxBox = new JCheckBox();
         org.openide.awt.Mnemonics.setLocalizedText(doBackupChxBox, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.doBackupChxBox.text")); // NOI18N
-        boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
+        boolean doBackup = HgModuleConfig.getDefault(getRepository()).getBackupOnRevertModifications();
         doBackupChxBox.setSelected(doBackup);
         doPurgeChxBox = new JCheckBox();
         org.openide.awt.Mnemonics.setLocalizedText(doPurgeChxBox, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.doPurgeChxBox.text")); // NOI18N
         doPurgeChxBox.setToolTipText(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.doPurgeChxBox.desc")); // NOI18N
         doPurgeChxBox.getAccessibleContext().setAccessibleDescription(doPurgeChxBox.getToolTipText());
-        boolean doPurge = HgModuleConfig.getDefault().isRemoveNewFilesOnRevertModifications();
+        boolean doPurge = HgModuleConfig.getDefault(getRepository()).isRemoveNewFilesOnRevertModifications();
         doPurgeChxBox.setSelected(doPurge);
         JPanel optionsPanel = new JPanel();
         optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));

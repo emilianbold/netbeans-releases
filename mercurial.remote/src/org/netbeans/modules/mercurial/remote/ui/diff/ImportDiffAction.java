@@ -72,8 +72,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.merge.MergeAction;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
 
@@ -111,14 +111,13 @@ public class ImportDiffAction extends ContextAction {
             return;
         }
         final VCSFileProxy root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-
-        final JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ImportDiffAction.class, "ACSD_ImportBrowseFolder"), null);   // NO I18N
+        VCSFileProxy oldFolder = VCSFileProxySupport.getResource(root, HgModuleConfig.getDefault(root).getImportFolder());
+        final JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFolder);
         fileChooser.setDialogTitle(NbBundle.getMessage(ImportDiffAction.class, "ImportBrowse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
         fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ImportDiffAction.class, "Import").charAt(0));                      // NO I18N
         fileChooser.setApproveButtonText(NbBundle.getMessage(ImportDiffAction.class, "Import"));                                        // NO I18N
-        fileChooser.setCurrentDirectory(new VCSFileProxy(HgModuleConfig.getDefault().getImportFolder()));
         JPanel panel = new JPanel();
         final JRadioButton asPatch = new JRadioButton(NbBundle.getMessage(ImportDiffAction.class, "CTL_Import_PatchOption")); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(asPatch, asPatch.getText()); // NOI18N
@@ -141,9 +140,9 @@ public class ImportDiffAction extends ContextAction {
             public void actionPerformed(ActionEvent e) {
                 String state = e.getActionCommand();
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
-                    final VCSFileProxy patchFile = fileChooser.getSelectedFile();
+                    final VCSFileProxy patchFile = VCSFileProxySupport.getSelectedFile(fileChooser);
 
-                    HgModuleConfig.getDefault().setImportFolder(patchFile.getParent());
+                    HgModuleConfig.getDefault(root).setImportFolder(patchFile.getParentFile().getPath());
                     RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                     ImportDiffProgressSupport.Kind kind;
                     if (asBundle.isSelected()) {

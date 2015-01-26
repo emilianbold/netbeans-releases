@@ -52,9 +52,9 @@ import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.explorer.ExplorerUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
@@ -191,7 +191,7 @@ public final class KnockoutTC extends TopComponent {
          * @param panel new panel to display in {@code KnockoutTC}.
          */
         void setPanel(KnockoutPanel panel) {
-            Lookup lookup = ExplorerUtils.createLookup(panel.getExplorerManager(), getActionMap());
+            Lookup lookup = Lookups.proxy(panel.createLookupProvider(getActionMap()));
             setLookups(lookup);
         }
 

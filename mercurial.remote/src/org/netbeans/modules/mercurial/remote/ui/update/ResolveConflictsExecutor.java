@@ -72,6 +72,7 @@ import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.spi.diff.MergeVisualizer;
@@ -228,8 +229,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
      */
     private Difference[] copyParts(boolean generateDiffs, VCSFileProxy source,
                                    VCSFileProxy dest, boolean leftPart, Charset charset) throws IOException {
-        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(source), charset));
-        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
+        BufferedReader r = new BufferedReader(new InputStreamReader(source.getInputStream(false), charset));
+        BufferedWriter w =new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(dest), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
             diffList = new ArrayList<Difference>();
@@ -507,7 +508,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
             if (fo != null) {
                 w = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
             } else {
-                w = new OutputStreamWriter(new FileOutputStream(outputFile), encoding);
+                w = new OutputStreamWriter(VCSFileProxySupport.getOutputStream(outputFile), encoding);
             }
             if (conflicts == null || conflicts.length == 0) {
                 fileToRepairEntriesOf = outputFile;

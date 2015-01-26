@@ -48,10 +48,11 @@
 
 package org.netbeans.modules.mercurial.remote.ui.create;
 
+import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,9 +60,12 @@ import org.openide.util.NbBundle;
  * @author Ondra Vrabec
  */
 public class CreatePanel extends javax.swing.JPanel {
+    
+    private final VCSFileProxy root;
 
     /** Creates new form CreatePanel */
-    public CreatePanel() {
+    public CreatePanel(VCSFileProxy root) {
+        this.root = root;
         initComponents();
     }
 
@@ -128,8 +132,8 @@ public class CreatePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed
-        VCSFileProxy oldFile = new File(tfRootPath.getText());
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(CreatePanel.class, "ACSD_BrowseFolder"), oldFile); //NOI18N
+        VCSFileProxy oldFile = VCSFileProxySupport.getResource(root, tfRootPath.getText());
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(CreatePanel.class, "Browse_title")); //NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
@@ -149,9 +153,9 @@ public class CreatePanel extends javax.swing.JPanel {
         });
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(this, NbBundle.getMessage(CreatePanel.class, "OK_Button")); //NOI18N
-        File f = fileChooser.getSelectedFile();
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
-            tfRootPath.setText(f.getAbsolutePath());
+            tfRootPath.setText(f.getPath());
         }
     }//GEN-LAST:event_btnBrowseActionPerformed
 

@@ -131,10 +131,6 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     private final VCSFileProxy root;
     private Map<String, String> storedPaths = Collections.<String, String>emptyMap();
 
-    public Repository(int modeMask, String titleLabel, boolean bPushPull) {
-        this(modeMask, titleLabel, bPushPull, null);
-    }
-
     public Repository(int modeMask, String titleLabel, boolean bPushPull, VCSFileProxy repositoryRoot) {
         
         this.modeMask = modeMask;
@@ -159,7 +155,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         }
         maxNeededSize = repositoryPanel.getPreferredSize();
 
-        repositoryPanel.savePasswordCheckBox.setSelected(HgModuleConfig.getDefault().getSavePassword());
+        repositoryPanel.savePasswordCheckBox.setSelected(HgModuleConfig.getDefault(root).getSavePassword());
         repositoryPanel.schedulePostInitRoutine(new Runnable() {
                     @Override
                     public void run() {
@@ -180,7 +176,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     }    
     
     private void initPanel() {
-        repositoryPanel = new RepositoryPanel();
+        repositoryPanel = new RepositoryPanel(root);
 
         urlComboEditor = (JTextComponent) repositoryPanel.urlComboBox
                                           .getEditor().getEditorComponent();
@@ -349,7 +345,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
 
         Vector<Object> result;
 
-        List<RepositoryConnection> recentUrls = HgModuleConfig.getDefault().getRecentUrls();
+        List<RepositoryConnection> recentUrls = HgModuleConfig.getDefault(root).getRecentUrls();
         Scheme[] schemes = HgURL.Scheme.values();
 
         // acquire stored paths
@@ -811,7 +807,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
         if (name != null) {
-            dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), name)); // NOI18N
+            dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault(root).getPreferences(), name)); // NOI18N
         }
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Repository.class, "ACSD_RepositoryPanel"));
 

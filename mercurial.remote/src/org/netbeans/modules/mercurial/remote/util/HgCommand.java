@@ -525,7 +525,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_MERGE_FORCE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
-        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+        if (HgModuleConfig.getDefault(repository).isInternalMergeToolEnabled()) {
             command.add(HG_CONFIG_OPTION_CMD);
             command.add(HG_MERGE_SIMPLE_TOOL);
         }
@@ -534,7 +534,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         }
         env.add(HG_MERGE_ENV);
 
-        List<String> list = execEnv(command, env);
+        List<String> list = execEnv(repository, command, env);
         return list;
     }
 
@@ -567,7 +567,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         if (bForce) {
             command.add(HG_UPDATE_FORCE_ALL_CMD);
         }
-        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+        if (HgModuleConfig.getDefault(repository).isInternalMergeToolEnabled()) {
             command.add(HG_CONFIG_OPTION_CMD);
             command.add(HG_MERGE_SIMPLE_TOOL);
         }
@@ -577,7 +577,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.add(revision);
         }
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (bThrowException) {
             if (!list.isEmpty()) {
                 if  (isErrorUpdateSpansBranches(list.get(0))) {
@@ -624,7 +624,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (list.isEmpty()) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ROLLBACK_FAILED"), logger);
         }
@@ -663,9 +663,9 @@ public abstract class HgCommand<T> implements Callable<T> {
 
         List<String> list;
         if(doMerge){
-            list = execEnv(command, env);
+            list = execEnv(repository, command, env);
         }else{
-            list = exec(command);
+            list = exec(repository, command);
         }
         if (list.isEmpty()) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_BACKOUT_FAILED"), logger);
@@ -698,7 +698,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.add(revision);
         }
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (list.isEmpty() && doBackup) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_STRIP_FAILED"), logger);
         }
@@ -717,7 +717,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (list.isEmpty()) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_VERIFY_FAILED"), logger);
         }
@@ -768,7 +768,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
-        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+        if (HgModuleConfig.getDefault(repository).isInternalMergeToolEnabled()) {
             command.add(HG_CONFIG_OPTION_CMD);
             command.add(HG_MERGE_SIMPLE_TOOL);
         }
@@ -787,9 +787,9 @@ public abstract class HgCommand<T> implements Callable<T> {
         if(proxy != null){
             List<String> env = new ArrayList<String>();
             env.add(HG_PROXY_ENV + proxy);
-            list = execEnv(command, env);
+            list = execEnv(repository, command, env);
         }else{
-            list = exec(command);
+            list = exec(repository, command);
         }
 
         if (!list.isEmpty() &&
@@ -824,7 +824,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
-        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+        if (HgModuleConfig.getDefault(repository).isInternalMergeToolEnabled()) {
             command.add(HG_CONFIG_OPTION_CMD);
             command.add(HG_MERGE_SIMPLE_TOOL);
         }
@@ -832,7 +832,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.add(bundle.getPath());
         }
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
@@ -874,9 +874,9 @@ public abstract class HgCommand<T> implements Callable<T> {
         if(proxy != null){
             List<String> env = new ArrayList<String>();
             env.add(HG_PROXY_ENV + proxy);
-            cmdOutput = execEnv(command, env);
+            cmdOutput = execEnv(repository, command, env);
         }else{
-            cmdOutput = exec(command);
+            cmdOutput = exec(repository, command);
         }
 
         if (!cmdOutput.isEmpty() &&
@@ -1040,9 +1040,9 @@ public abstract class HgCommand<T> implements Callable<T> {
 
         if(HgUtils.isSolaris()){
             env.add(HG_HGK_PATH_SOLARIS10_ENV);
-            list = execEnv(command, env);
+            list = execEnv(repository, command, env);
         }else{
-            list = exec(command);
+            list = exec(repository, command);
         }
 
         if (!list.isEmpty()) {
@@ -1130,7 +1130,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
             command.additionalOptions.add(HG_FETCH_EXT_CMD);
         }
-        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+        if (HgModuleConfig.getDefault(repository).isInternalMergeToolEnabled()) {
             command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
             command.additionalOptions.add(HG_MERGE_SIMPLE_TOOL);
         }
@@ -1444,7 +1444,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
 
         try {
-            List<String> list = exec(command);
+            List<String> list = exec(repository, command);
             if (!list.isEmpty() && isErrorAbort(list.get(0))) {
                 return false;
             } else {
@@ -1490,7 +1490,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             tempFolder = VCSFileProxySupport.getTempFolder(repository, false);
             command.add(prepareLogTemplate(tempFolder, HG_LOG_ONLY_FILE_COPIES_CHANGESET_NAME));
             command.add(file.getPath());
-            list = exec(command);
+            list = exec(repository, command);
             if (list.isEmpty() || isErrorAbort(list.get(0))) {
                 return null;
             }
@@ -1628,7 +1628,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                     command.add(f.getPath());
                 }
             }
-            List<String> list = exec(command);
+            List<String> list = exec(repository, command);
             if (!list.isEmpty()) {
                 if (isErrorNoRepository(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
@@ -1675,7 +1675,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         try {
             tempFolder = VCSFileProxySupport.getTempFolder(repository, false);
             command.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
-            List<String> list = exec(command);
+            List<String> list = exec(repository, command);
             if (!list.isEmpty()) {
                 if (isErrorNoRepository(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
@@ -1754,9 +1754,9 @@ public abstract class HgCommand<T> implements Callable<T> {
             if(proxy != null){
                 List<String> env = new ArrayList<String>();
                 env.add(HG_PROXY_ENV + proxy);
-                list = execEnv(command, env);
+                list = execEnv(repository, command, env);
             }else{
-                list = exec(command);
+                list = exec(repository, command);
             }
             if (!list.isEmpty()) {
                 if(isErrorNoDefaultPush(list.get(0))){
@@ -1886,9 +1886,9 @@ public abstract class HgCommand<T> implements Callable<T> {
             if (proxy != null) {
                 List<String> env = new ArrayList<String>();
                 env.add(HG_PROXY_ENV + proxy);
-                list = execEnv(command, env);
+                list = execEnv(repository, command, env);
             } else {
-                list = exec(command);
+                list = exec(repository, command);
             }
 
             if (!list.isEmpty()) {
@@ -1928,7 +1928,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             tempFolder = VCSFileProxySupport.getTempFolder(repository, false);
             command.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
             List<String> list;
-            list = exec(command);
+            list = exec(repository, command);
 
             if (!list.isEmpty()) {
                 if (isErrorNoRepository(list.get(0))) {
@@ -2214,7 +2214,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             Mercurial.LOG.log(Level.INFO, null, e); // NOI18N
             throw new HgException(e.getMessage());
         }
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
 
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
@@ -2255,15 +2255,15 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @return void
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static HgRevision getCommonAncestor(String rootURL, String rev1, String rev2, OutputLogger logger) throws HgException {
-        HgRevision res = getCommonAncestor(rootURL, rev1, rev2, false, logger);
+    public static HgRevision getCommonAncestor(VCSFileProxy repository, String rootURL, String rev1, String rev2, OutputLogger logger) throws HgException {
+        HgRevision res = getCommonAncestor(repository, rootURL, rev1, rev2, false, logger);
         if( res == null){
-            res = getCommonAncestor(rootURL, rev1, rev2, true, logger);
+            res = getCommonAncestor(repository, rootURL, rev1, rev2, true, logger);
         }
         return res;
     }
 
-    private static HgRevision getCommonAncestor(String rootURL, String rev1, String rev2, boolean bUseIndex, OutputLogger logger) throws HgException {
+    private static HgRevision getCommonAncestor(VCSFileProxy repository, String rootURL, String rev1, String rev2, boolean bUseIndex, OutputLogger logger) throws HgException {
         if (rootURL == null ) {
             return null;
         }
@@ -2281,7 +2281,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_OPT_CWD_CMD);
         command.add(rootURL);
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty()){
             String splits[] = list.get(0).split(":"); // NOI18N
             String tmp = splits != null && splits.length >= 1 ? splits[0]: null;
@@ -2317,7 +2317,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_CREATE_CMD);
         command.add(root.getPath());
 
-        List<String> list = exec(command);
+        List<String> list = exec(root, command);
         if (!list.isEmpty()) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_CREATE_FAILED"), logger);
         }
@@ -2399,9 +2399,9 @@ public abstract class HgCommand<T> implements Callable<T> {
             if (proxy != null) {
                 List<String> env = new ArrayList<String>();
                 env.add(HG_PROXY_ENV + proxy);
-                list = execEnv(command, env);
+                list = execEnv(repository, command, env);
             } else {
-                list = exec(command);
+                list = exec(repository, command);
             }
             try {
                 if (!list.isEmpty()) {
@@ -2421,7 +2421,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                         if (url.getPassword() != null && !supp.isKenai(rawUrl)) { // not kenai, credentials can be saved
                             try {
                                 // for kenai this is handled in CloneAction
-                                HgModuleConfig.getDefault().setProperty(target, HgConfigFiles.HG_DEFAULT_PULL,
+                                HgModuleConfig.getDefault(root).setProperty(target, HgConfigFiles.HG_DEFAULT_PULL,
                                         new HgURL(url.toUrlStringWithoutUserInfo(), url.getUsername(), null).toCompleteUrlString());
                             } catch (URISyntaxException ex) {
                                 Mercurial.LOG.log(Level.INFO, null, ex);
@@ -2478,7 +2478,7 @@ public abstract class HgCommand<T> implements Callable<T> {
 
         if (user == null) {
             String projectUserName = new HgConfigFiles(repository).getUserName(false);
-            String globalUsername = HgModuleConfig.getDefault().getSysUserName();
+            String globalUsername = HgModuleConfig.getDefault(root).getSysUserName();
             if (projectUserName != null && projectUserName.length() > 0) {
                 user = projectUserName;
             } else if (globalUsername != null && globalUsername.length() > 0) {
@@ -2506,8 +2506,8 @@ public abstract class HgCommand<T> implements Callable<T> {
 
             // Write to temp file
             BufferedWriter out = new BufferedWriter(ENCODING == null 
-                    ? new OutputStreamWriter(new FileOutputStream(tempfile)) 
-                    : new OutputStreamWriter(new FileOutputStream(tempfile), ENCODING));
+                    ? new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempfile))
+                    : new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempfile), ENCODING));
             out.write(commitMessage);
             out.close();
 
@@ -2525,7 +2525,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                     command.add(f.getPath().substring(repoPath.length()));
                 }
             }
-            List<String> list = exec(command);
+            List<String> list = exec(repository, command);
             //#132984: range of issues with upgrade to Hg 1.0, new restriction whereby you cannot commit using explicit file names after a merge.
             if (!list.isEmpty() && isCommitAfterMerge(list.get(list.size() -1))) {
                 throw new HgException(COMMIT_AFTER_MERGE);
@@ -2588,7 +2588,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(sourceFile.getPath().substring(repoPath.length()));
         command.add(destFile.getPath().substring(repoPath.length()));
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
             if (!bAfter || !isErrorAbortNoFilesToCopy(list.get(list.size() -1))) {
@@ -2642,7 +2642,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(sourceFile.getPath().substring(repository.getPath().length() + 1));
         command.add(destFile.getPath().substring(repository.getPath().length() + 1));
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
             if (!bAfter || !isErrorAbortNoFilesToCopy(list.get(list.size() -1))) {
@@ -2679,7 +2679,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         for (List<String> attributes : attributeGroups) {
             List<String> command = new ArrayList<String>(basicCommand);
             command.addAll(attributes);
-            List<String> list = exec(command);
+            List<String> list = exec(repository, command);
             if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0)) && !isAddingLine(list.get(0))) {
                 if (getFilesWithPerformanceWarning(list).isEmpty()) {
                     // XXX we could notify the user about the performance warning and abort the command
@@ -2724,7 +2724,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         for(VCSFileProxy f: revertFiles){
             command.add(f.getPath());
         }
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() && isErrorNoChangeNeeded(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
         }
@@ -2759,7 +2759,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         for (VCSFileProxy f : revertFiles){
             command.add(f.getPath());
         }
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty()) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
         }
@@ -2796,7 +2796,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
 
         command.add(file.getPath());
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"), logger);
         }
@@ -2831,7 +2831,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_ANNOTATE_FLAGL_CMD);
         command.add(HG_OPT_FOLLOW);
         command.add(file.getPath());
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
@@ -2876,7 +2876,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty()){
             return list.get(0);
         }else{
@@ -2892,17 +2892,6 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> getHeadRevisions(VCSFileProxy repository) throws HgException {
-        return getHeadInfo(repository, true, HG_REV_TEMPLATE_CMD, false);
-    }
-
-    /**
-     * Returns the revision number for the heads in a repository
-     *
-     * @param String repository of the mercurial repository
-     * @return List<String> of revision numbers.
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> getHeadRevisions(String repository) throws HgException {
         return getHeadInfo(repository, true, HG_REV_TEMPLATE_CMD, false);
     }
 
@@ -2955,7 +2944,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
         command.add(branchName);
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
@@ -2996,7 +2985,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         }
 
         command.add(tagName);
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
@@ -3021,7 +3010,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_TAG_OPT_REMOVE);
 
         command.add(tagName);
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
@@ -3032,7 +3021,7 @@ public abstract class HgCommand<T> implements Callable<T> {
     }
 
     private static Boolean topoAvailable;
-    private static List<String> getHeadInfo (String repository, boolean topo, String template, boolean useStyle) throws HgException {
+    private static List<String> getHeadInfo (VCSFileProxy repository, boolean topo, String template, boolean useStyle) throws HgException {
         if (repository == null) {
             return null;
         }
@@ -3048,7 +3037,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             }
         }
         command.add(HG_OPT_REPOSITORY);
-        command.add(repository);
+        command.add(repository.getPath());
         VCSFileProxy tempFolder = null;
         try {
             tempFolder = VCSFileProxySupport.getTempFolder(repository, false);
@@ -3057,7 +3046,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             } else {
                 command.add(template);
             }
-            List<String> output = exec(command);
+            List<String> output = exec(repository, command);
             if (topo && topoAvailable && output.contains("hg heads: option --topo not recognized")) { //NOI18N
                 topoAvailable = false;
                 return getHeadInfo(repository, topo, template, useStyle);
@@ -3073,13 +3062,6 @@ public abstract class HgCommand<T> implements Callable<T> {
         }
     }
 
-    private static List<String> getHeadInfo(VCSFileProxy repository, boolean topo, String template, boolean useStyle) throws HgException {
-        if (repository == null) {
-            return null;
-        }
-        return getHeadInfo(repository.getPath(), topo, template, useStyle);
-    }
-
     private static List<String> getBranches (VCSFileProxy repository) throws HgException {
         if (repository == null) {
             return null;
@@ -3091,7 +3073,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_BRANCHES_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
-        return exec(command);
+        return exec(repository, command);
     }
 
     private static List<String> getTags (VCSFileProxy repository) throws HgException {
@@ -3106,7 +3088,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getPath());
-        return exec(command);
+        return exec(repository, command);
     }
 
     /**
@@ -3139,7 +3121,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.add(file.getPath());
         }
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty()){
             return new StringBuffer(list.get(0)).toString();
         }else{
@@ -3165,7 +3147,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         if (revisions.size() > 1) {
             String rev1 = revisions.get(0).getRevisionNumber();
             String rev2 = revisions.get(1).getRevisionNumber();
-            parentRevision = HgCommand.getCommonAncestor(repository.getPath(), rev1, rev2, OutputLogger.getLogger(null));
+            parentRevision = HgCommand.getCommonAncestor(repository, repository.getPath(), rev1, rev2, OutputLogger.getLogger(null));
         } else if (revisions.size() == 1) {
             parentRevision = revisions.get(0).getHgRevision();
         }
@@ -3200,7 +3182,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             if (file != null) {
                 command.add(file.getPath());
             }
-            List<String> list = exec(command);
+            List<String> list = exec(repository, command);
             if (!list.isEmpty()) {
                 if (isErrorNotFoundInManifest(list.get(0))) {
                     return Collections.<HgLogMessage>emptyList();
@@ -3278,7 +3260,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         for (List<String> attributes : attributeGroups) {
             List<String> command = new ArrayList<String>(basicCommand);
             command.addAll(attributes);
-            List<String> list = exec(command);
+            List<String> list = exec(repository, command);
             if (!list.isEmpty()) {
                 handleError(command, list, list.get(0), logger);
             }
@@ -3307,7 +3289,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.add(f.getPath()); // don't give up
         }
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"), logger);
         }
@@ -3325,10 +3307,10 @@ public abstract class HgCommand<T> implements Callable<T> {
      */
     public static List<String> doExport(VCSFileProxy repository, String revStr, String outputFileName, OutputLogger logger)  throws HgException {
         // Ensure that parent directory of target exists, creating if necessary
-        VCSFileProxy fileTarget = new VCSFileProxy (outputFileName);
+        VCSFileProxy fileTarget = VCSFileProxySupport.getResource(repository, outputFileName);
         VCSFileProxy parentTarget = fileTarget.getParentFile();
         try {
-            if (!parentTarget.mkdir()) {
+            if (!VCSFileProxySupport.mkdir(parentTarget)) {
                 if (!parentTarget.isDirectory()) {
                     Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : {0}", parentTarget.getPath()); // NOI18N
                     throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
@@ -3352,7 +3334,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.add(revStr);
         }
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_EXPORT_FAILED"), logger);
@@ -3398,7 +3380,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         }
         command.add(outputFile.getPath());
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_BUNDLE_FAILED"), logger);
@@ -3418,10 +3400,10 @@ public abstract class HgCommand<T> implements Callable<T> {
      */
     public static List<String> doExportFileDiff(VCSFileProxy repository, VCSFileProxy file, String revStr, String outputFileName, OutputLogger logger)  throws HgException {
         // Ensure that parent directory of target exists, creating if necessary
-        VCSFileProxy fileTarget = new VCSFileProxy (outputFileName);
+        VCSFileProxy fileTarget = VCSFileProxySupport.getResource(repository, outputFileName);
         VCSFileProxy parentTarget = fileTarget.getParentFile();
         try {
-            if (!parentTarget.mkdir()) {
+            if (!VCSFileProxySupport.mkdir(parentTarget)) {
                 if (!parentTarget.isDirectory()) {
                     Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : {0}", parentTarget.getPath()); // NOI18N
                     throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
@@ -3444,7 +3426,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_OPTION_GIT);
         command.add(file.getPath());
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_EXPORT_FAILED"), logger);
@@ -3489,7 +3471,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
         command.add(patchFile.getPath());
 
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
             logger.output(list); // need the failure info from import
@@ -3614,7 +3596,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             }
             List<String> finalCommand = new ArrayList<String>(command);
             finalCommand.addAll(attributes);
-            List<String> list = exec(finalCommand);
+            List<String> list = exec(repository, finalCommand);
             if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
                 OutputLogger logger = OutputLogger.getLogger(repository);
                 try {
@@ -3662,7 +3644,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
         command.addAll(attributes);
         
-        List<String> list =  exec(command);
+        List<String> list =  exec(repository, command);
         // filter out resolved files - they could be wrongly considered as removed - common R status
         // also removes error lines
         for (ListIterator<String> it = list.listIterator(); it.hasNext(); ) {
@@ -3700,7 +3682,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_SUMMARY);
         
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         QPatch[] patches;
         if (list.isEmpty()) {
             patches = new QPatch[0];
@@ -3765,7 +3747,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
         command.add(HG_OPT_LIST);
         
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         Queue[] queues;
         if (list.isEmpty()) {
             queues = new Queue[0];
@@ -3789,7 +3771,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
         command.add(queueName);
         
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() && isErrorAbort(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QQUEUE_SWITCH_FAILED"), logger); //NOI18N
         }
@@ -3813,7 +3795,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.add(onTopPatch);
         }
         
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() && isErrorAbort(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QPUSH_FAILED"), logger); //NOI18N
         }
@@ -3838,7 +3820,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             command.add(onTopPatch);
         }
         
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() && isErrorAbort(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QPOP_FAILED"), logger); //NOI18N
         }
@@ -3858,7 +3840,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
         command.add(patch);
         
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() && isErrorAbort(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QGOTO_FAILED"), logger); //NOI18N
         }
@@ -3923,7 +3905,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
 
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
-        String globalUsername = HgModuleConfig.getDefault().getSysUserName();
+        String globalUsername = HgModuleConfig.getDefault(repository).getSysUserName();
         if (user == null) {
             if(projectUserName != null && projectUserName.length() > 0) {
                 user = projectUserName;
@@ -3948,8 +3930,8 @@ public abstract class HgCommand<T> implements Callable<T> {
 
             // Write to temp file
             BufferedWriter out = new BufferedWriter(ENCODING == null 
-                    ? new OutputStreamWriter(new FileOutputStream(tempfile)) 
-                    : new OutputStreamWriter(new FileOutputStream(tempfile), ENCODING));
+                    ? new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempfile)) 
+                    : new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempfile), ENCODING));
             out.write(commitMessage);
             out.close();
 
@@ -3976,7 +3958,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                     command.add(f.getPath().substring(repository.getPath().length() + 1));
                 }
             }
-            List<String> list = exec(command);
+            List<String> list = exec(repository, command);
             //#132984: range of issues with upgrade to Hg 1.0, new restriction whereby you cannot commit using explicit file names after a merge.
             if (!list.isEmpty() && isCommitAfterMerge(list.get(list.size() -1))) {
                 throw new HgException(COMMIT_AFTER_MERGE);
@@ -4013,14 +3995,14 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(repository.getPath());
         command.add(patch);
         
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         if (!list.isEmpty() && isErrorAbort(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
         }
     }
 
-    private static List<String> execEnv(List<? extends Object> command, List<String> env) throws HgException{
-        return execEnv(command, env, true);
+    private static List<String> execEnv(VCSFileProxy repository, List<? extends Object> command, List<String> env) throws HgException{
+        return execEnv(command, env, true, repository);
     }
 
     /**
@@ -4029,7 +4011,7 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @param command to execute
      * @return List of the command's output or an exception if one occured
      */
-    private static List<String> execEnv(final List<? extends Object> command, List<String> env, boolean logUsage) throws HgException {
+    private static List<String> execEnv(final List<? extends Object> command, List<String> env, boolean logUsage, VCSFileProxy repo) throws HgException {
         if( EventQueue.isDispatchThread()){
             Mercurial.LOG.log(Level.FINE, "WARNING execEnv():  calling Hg command in AWT Thread - could stall UI"); // NOI18N
         }
@@ -4268,8 +4250,8 @@ public abstract class HgCommand<T> implements Callable<T> {
                                                 "hg-output-style",      //NOI18N
                                                 null);    //extension (default)
                     Writer writer = ENCODING == null 
-                            ? new OutputStreamWriter(new FileOutputStream(tempFile)) 
-                            : new OutputStreamWriter(new FileOutputStream(tempFile), ENCODING);
+                            ? new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempFile)) 
+                            : new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempFile), ENCODING);
                     try {
                         writer.append("changeset = ")                   //NOI18N
                               .append('"').append(template).append('"'); //NOI18N
@@ -4295,7 +4277,7 @@ public abstract class HgCommand<T> implements Callable<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<String> toCommandList(List<? extends Object> cmdLine, File styleFile) {
+    private static List<String> toCommandList(List<? extends Object> cmdLine, VCSFileProxy styleFile) {
         if (cmdLine.isEmpty()) {
             return (List<String>) cmdLine;
         }
@@ -4379,18 +4361,18 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @param command to execute
      * @return List of the command's output or an exception if one occured
      */
-    protected static List<String> exec(List<? extends Object> command) throws HgException{
+    protected static List<String> exec(VCSFileProxy repository, List<? extends Object> command) throws HgException{
         if(!Mercurial.getInstance().isAvailable()){
             return new ArrayList<String>();
         }
-        return execEnv(command, null);
+        return execEnv(repository, command, null);
     }
     private static List<String> execForVersionCheck() throws HgException{
         List<String> command = new ArrayList<String>();
         command.add(getHgCommand());
         command.add(HG_VERSION_CMD);
 
-        return execEnv(command, null, false);
+        return execEnv(command, null, false, repository);
     }
 
     protected static String getHgCommand() {
@@ -4398,7 +4380,7 @@ public abstract class HgCommand<T> implements Callable<T> {
     }
 
     private static List<String> makeHgLauncherCommandLine() {
-        String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath();
+        String defaultPath = HgModuleConfig.getDefault(root).getExecutableBinaryPath();
 
         if (defaultPath == null || defaultPath.length() == 0) {
             return Collections.singletonList(HG_COMMAND);
@@ -4666,7 +4648,7 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @param logger
      * @throws HgException
      */
-    public static void markAsResolved (VCSFileProxy repository, VCSFileProxy file, OutputLogger logger) throws HgException {
+    public static void markAsResolved (final VCSFileProxy repository, VCSFileProxy file, OutputLogger logger) throws HgException {
         if (file == null) {
             return;
         }
@@ -4687,7 +4669,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             list = Mercurial.getInstance().runWithoutExternalEvents(repository, HG_RESOLVE_CMD, new Callable<List<String>>() {
                 @Override
                 public List<String> call () throws Exception {
-                    return exec(command);
+                    return exec(repository, command);
                 }
             });
         } catch (HgException ex) {
@@ -4857,7 +4839,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             }
         }
         command.addAll(attributes);
-        List<String> list = exec(command);
+        List<String> list = exec(repository, command);
         List<String> changedFiles = new ArrayList<String>(list.size());
         if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
             OutputLogger logger = OutputLogger.getLogger(repository);
@@ -4973,7 +4955,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         private void saveCredentials (String propertyName) {
             try {
                 // user logged-in successfully during the process and checked 'Save values'
-                HgModuleConfig.getDefault().setProperty(repository, propertyName, new HgURL(remoteUrl.toHgCommandUrlString(), credentials.getUserName(), null).toCompleteUrlString());
+                HgModuleConfig.getDefault(repository).setProperty(repository, propertyName, new HgURL(remoteUrl.toHgCommandUrlString(), credentials.getUserName(), null).toCompleteUrlString());
             } catch (URISyntaxException ex) {
                 Mercurial.LOG.log(Level.INFO, null, ex);
             } catch (IOException ex) {
@@ -5035,9 +5017,9 @@ public abstract class HgCommand<T> implements Callable<T> {
                     if (proxy != null) {
                         List<String> env = new ArrayList<String>();
                         env.add(HG_PROXY_ENV + proxy);
-                        list = execEnv(command, env);
+                        list = execEnv(repository, command, env);
                     } else {
-                        list = exec(command);
+                        list = exec(repository, command);
                     }
                     // clear the cached password, remove it from memory
                     if (url != remoteUrl) {

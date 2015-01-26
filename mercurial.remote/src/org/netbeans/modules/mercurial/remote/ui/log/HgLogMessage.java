@@ -236,7 +236,7 @@ public class HgLogMessage {
         }
         if(bMerged){
             try{
-                ancestor = HgCommand.getCommonAncestor(rootURL, parentOneRev.getRevisionNumber(), parentTwoRev.getRevisionNumber(), getLogger());
+                ancestor = HgCommand.getCommonAncestor(file, rootURL, parentOneRev.getRevisionNumber(), parentTwoRev.getRevisionNumber(), getLogger());
             } catch (HgException ex) {
                 Mercurial.LOG.log(ex instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, ex);
                 return HgRevision.EMPTY;

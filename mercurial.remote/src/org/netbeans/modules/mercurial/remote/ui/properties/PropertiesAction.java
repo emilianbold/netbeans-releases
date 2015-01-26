@@ -99,7 +99,7 @@ public class PropertiesAction extends ContextAction {
         }
         final VCSFileProxy root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
-        final PropertiesPanel panel = new PropertiesPanel();
+        final PropertiesPanel panel = new PropertiesPanel(root);
 
         final PropertiesTable propTable;
 

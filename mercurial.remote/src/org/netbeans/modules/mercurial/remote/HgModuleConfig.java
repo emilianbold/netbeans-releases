@@ -66,12 +66,14 @@ import org.netbeans.modules.mercurial.remote.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -112,14 +114,25 @@ public class HgModuleConfig {
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N           
 
     private static final String DEFAULT_EXPORT_FILENAME = "%b_%r_%h";                                  // NOI18N
-    private static final HgModuleConfig INSTANCE = new HgModuleConfig();
+    private static final Map<FileSystem,HgModuleConfig> INSTANCE = new HashMap<FileSystem,HgModuleConfig>();
     private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled."; //NOI18N
     private static final String KEY_REMOVE_NEW_FILES_ON_REVERT = "removeNewFilesOnRevert"; //NOI18N
     
     private static String userName;
+    private final FileSystem fileSystem;
 
-    public static HgModuleConfig getDefault() {
-        return INSTANCE;
+    public static synchronized HgModuleConfig getDefault(VCSFileProxy root) {
+        FileSystem fileSystem = VCSFileProxySupport.getFileSystem(root);
+        HgModuleConfig res = INSTANCE.get(fileSystem);
+        if (res == null) {
+            res = new HgModuleConfig(fileSystem);
+            INSTANCE.put(fileSystem, res);
+        }
+        return res;
+    }
+    
+    private HgModuleConfig(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
     
     private Set<String> exclusions;
@@ -128,7 +141,11 @@ public class HgModuleConfig {
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     public Preferences getPreferences() {
-        return NbPreferences.forModule(HgModuleConfig.class);
+        if (fileSystem == null) {
+            return NbPreferences.forModule(HgModuleConfig.class).node("commonRemoteMercurial"); //NOI18N
+        } else {
+            return NbPreferences.forModule(HgModuleConfig.class).node(VCSFileProxySupport.getFileSystemKey(fileSystem));
+        }
     }
     
     public boolean getShowCloneCompleted() {
@@ -248,7 +265,7 @@ public class HgModuleConfig {
      * or a default username if none is found.
      */
     public String getSysUserName() {
-        userName = HgConfigFiles.getSysInstance().getSysUserName();
+        userName = HgConfigFiles.getSysInstance(VCSFileProxy.createFileProxy(fileSystem.getRoot())).getSysUserName();
         if (userName.length() == 0) {
             String userId = System.getProperty("user.name"); // NOI18N
             String hostName;
@@ -262,27 +279,16 @@ public class HgModuleConfig {
         return userName;
     }
 
-    public String getSysPushPath() {
-        return HgConfigFiles.getSysInstance().getSysPushPath();
+    private String getSysPushPath(VCSFileProxy file) {
+        return HgConfigFiles.getSysInstance(file).getSysPushPath();
     }
     
-    public String getSysPullPath() {
-        return HgConfigFiles.getSysInstance().getSysPullPath();
+    private String getSysPullPath(VCSFileProxy file) {
+        return HgConfigFiles.getSysInstance(file).getSysPullPath();
     }
 
-    public void addHgkExtension() throws IOException {
-        HgConfigFiles hcf = HgConfigFiles.getSysInstance();
-        if (hcf.getException() == null) {
-            hcf.setProperty("hgext.hgk", ""); //NOI18N
-        } else {
-            Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set hgext.hgk property"); // NOI18N
-            Mercurial.LOG.log(Level.INFO, null, hcf.getException());
-            throw hcf.getException();
-        }
-    }
-    
     public void setUserName(String name) throws IOException {
-        HgConfigFiles hcf = HgConfigFiles.getSysInstance();
+        HgConfigFiles hcf = HgConfigFiles.getSysInstance(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
         if (hcf.getException() == null) {
             hcf.setUserName(name);
         } else {
@@ -306,7 +312,7 @@ public class HgModuleConfig {
         if (name.length() == 0) {
             return true;
         }
-        VCSFileProxy file = new VCSFileProxy(name, HgCommand.HG_COMMAND); // NOI18N
+        VCSFileProxy file = VCSFileProxySupport.getResource(fileSystem, name + "/" + HgCommand.HG_COMMAND); // NOI18N
         // I would like to call canExecute but that requires Java SE 6.
         if(file.exists() && file.isFile()) {
             return true;
@@ -340,7 +346,7 @@ public class HgModuleConfig {
         
         name = hgconfig.getDefaultPull(false);
         if (name.length() == 0) {
-            name = getSysPullPath();
+            name = getSysPullPath(file);
         }
         if (name.length() > 0) { 
             props.setProperty("default-pull", name); // NOI18N
@@ -350,7 +356,7 @@ public class HgModuleConfig {
         
         name = hgconfig.getDefaultPush(false);
         if (name.length() == 0) {
-            name = getSysPushPath();
+            name = getSysPushPath(file);
         }
         if (name.length() > 0) { 
             props.setProperty("default-push", name); // NOI18N
@@ -449,7 +455,7 @@ public class HgModuleConfig {
 
     private HgConfigFiles getHgConfigFiles(VCSFileProxy file) {
         if (file == null) {
-            return HgConfigFiles.getSysInstance();
+            return HgConfigFiles.getSysInstance(repository);
         } else {
             return new HgConfigFiles(file); 
         }

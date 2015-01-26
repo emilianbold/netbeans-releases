@@ -695,7 +695,39 @@ public final class VCSFileProxySupport {
         }
         return false;
     }
+    
+    /**
+     * Tests whether all files belong to the same data object.
+     *
+     * @param files array of Files
+     * @return true if all files share common DataObject (even null), false
+     * otherwise
+     */
+    public static boolean shareCommonDataObject(VCSFileProxy[] files) {
+        if (files == null || files.length < 2) {
+            return true;
+        }
+        DataObject common = findDataObject(files[0]);
+        for (int i = 1; i < files.length; i++) {
+            DataObject dao = findDataObject(files[i]);
+            if (dao != common && (dao == null || !dao.equals(common))) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    private static DataObject findDataObject(VCSFileProxy file) {
+        FileObject fo = file.toFileObject();
+        if (fo != null) {
+            try {
+                return DataObject.find(fo);
+            } catch (DataObjectNotFoundException e) {
+                // ignore
+            }
+        }
+        return null;
+    }
 
 //</editor-fold>
     

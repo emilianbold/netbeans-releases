@@ -48,7 +48,9 @@ import java.io.FileNotFoundException;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -59,8 +61,7 @@ import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.util.HgRepositoryContextCache;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -81,7 +82,7 @@ public class HgConfigFiles {
     public static final String HG_DEFAULT_PULL_VALUE = "default";  // NOI18N
 
     /** The HgConfigFiles instance for user and system defaults */
-    private static HgConfigFiles instance;
+    private static final Map<FileSystem, HgConfigFiles> instance = new HashMap<FileSystem,HgConfigFiles>();
 
     /** the Ini instance holding the configuration values stored in the <b>hgrc</b>
      * file used by the Mercurial module */    
@@ -100,29 +101,36 @@ public class HgConfigFiles {
      * fileName of the configuration file
      */
     private String configFileName;
-    /**
-     * Creates a new instance
-     */
-    private HgConfigFiles() {
-        bIsProjectConfig = false;
-        // get the system hgrc file
-        Config.getGlobal().setEscape(false); // escaping characters disabled
-        hgrc = loadSystemAndGlobalFile(new String[] {HG_RC_FILE});
-    }
-    
+    private final FileSystem fileSystem;
+
     /**
      * Returns a singleton instance
      *
      * @return the HgConfiles instance
      */
-    public static HgConfigFiles getSysInstance() {
-        if (instance==null) {
-            instance = new HgConfigFiles();
+    public static synchronized HgConfigFiles getSysInstance(VCSFileProxy root) {
+        FileSystem fileSystem = VCSFileProxySupport.getFileSystem(root);
+        HgConfigFiles res = instance.get(fileSystem);
+        if (res == null) {
+            res = new HgConfigFiles(fileSystem);
+            instance.put(fileSystem, res);
         }
-        return instance;
+        return res;
     }
 
+    /**
+     * Creates a new instance
+     */
+    private HgConfigFiles(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+        bIsProjectConfig = false;
+        // get the system hgrc file
+        Config.getGlobal().setEscape(false); // escaping characters disabled
+        hgrc = loadSystemAndGlobalFile(fileSystem, new String[] {HG_RC_FILE});
+    }
+    
     public HgConfigFiles(VCSFileProxy file) {
+        fileSystem = VCSFileProxySupport.getFileSystem(file);
         Config.getGlobal().setEscape(false); // escaping characters disabled
         bIsProjectConfig = true;
         dir = file;        
@@ -258,7 +266,7 @@ public class HgConfigFiles {
 
     public void doReload () {
         if (dir == null) {
-            hgrc = loadSystemAndGlobalFile(new String[] {HG_RC_FILE});
+            hgrc = loadSystemAndGlobalFile(fileSystem, new String[] {HG_RC_FILE});
         } else {
             hgrc = loadRepoHgrcFile(dir);                                      
         }
@@ -276,13 +284,13 @@ public class HgConfigFiles {
         assert initException == null;
         BufferedOutputStream bos = null;
         try {
-            String filePath;
+            VCSFileProxy filePath;
             if (dir != null) {
-                filePath = dir.getPath() + "/" + HG_REPO_DIR + "/" + iniFile; // NOI18N 
+                filePath = VCSFileProxy.createFileProxy(dir, HG_REPO_DIR + "/" + iniFile); // NOI18N 
             } else {
-                filePath =  getUserConfigPath() + iniFile;
+                filePath =  VCSFileProxy.createFileProxy(getUserConfigPath(), iniFile);
             }
-            VCSFileProxy file = FileUtil.normalizeFile(new File(filePath));
+            VCSFileProxy file = filePath.normalizeFile();
             VCSFileProxySupport.mkdirs(file.getParentFile());
             ini.store(bos = new BufferedOutputStream(VCSFileProxySupport.getOutputStream(file)));
         } catch (IOException ex) {
@@ -340,9 +348,9 @@ public class HgConfigFiles {
      * Loads Repository configuration file  <repo>/.hg/hgrc on all platforms
      * */
     private Ini loadRepoHgrcFile(VCSFileProxy dir) {
-        String filePath = dir.getPath() + "/" + HG_REPO_DIR + "/" + HG_RC_FILE; // NOI18N
+        VCSFileProxy filePath = VCSFileProxy.createFileProxy(dir, HG_REPO_DIR + "/" + HG_RC_FILE); // NOI18N
         configFileName = HG_RC_FILE;
-        VCSFileProxy file = FileUtil.normalizeFile(new File(filePath));
+        VCSFileProxy file = filePath.normalizeFile();
         Ini system = null;
         system = createIni(file);
         
@@ -363,12 +371,12 @@ public class HgConfigFiles {
      * @param fileName the file name
      * @return an Ini instance holding the configuration file. 
      */       
-    private Ini loadSystemAndGlobalFile(String[] fileNames) {
+    private Ini loadSystemAndGlobalFile(FileSystem fileSystem, String[] fileNames) {
         // config files from userdir
         Ini system = null;
         for (String userConfigFileName : fileNames) {
-            String filePath = getUserConfigPath() + userConfigFileName;
-            VCSFileProxy file = FileUtil.normalizeFile(new File(filePath));
+            VCSFileProxy filePath = VCSFileProxy.createFileProxy(getUserConfigPath(), userConfigFileName);
+            VCSFileProxy file = filePath.normalizeFile();
             system = createIni(file);
             if (system != null) {
                 configFileName = userConfigFileName;
@@ -384,7 +392,7 @@ public class HgConfigFiles {
         }
         
         Ini global = null;
-        VCSFileProxy gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + "/" + fileNames[0])); //NOI18N
+        VCSFileProxy gFile = VCSFileProxySupport.getResource(fileSystem, getGlobalConfigPath()+"/"+fileNames[0]); //NOI18N
         global = createIni(gFile);   // NOI18N
 
         if(global != null) {
@@ -422,9 +430,8 @@ public class HgConfigFiles {
     /**
      * Return the path for the user command lines configuration directory 
      */
-    private static VCSFileProxy getUserConfigPath() {
-        VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystem.getRoot());
-        return VCSFileProxySupport.getHome(root);
+    private VCSFileProxy getUserConfigPath() {
+        return VCSFileProxySupport.getHome(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
     }
 
 
@@ -432,10 +439,7 @@ public class HgConfigFiles {
      * Return the path for the systemwide command lines configuration directory 
      */
     private static String getGlobalConfigPath () {
-        if(Utilities.isUnix()) {
-            return "/etc/mercurial";               // NOI18N
-        } 
-        return "";                                  // NOI18N
+        return "/etc/mercurial";               // NOI18N
     }
 
     private static String removeTrailingBackslahes (String value) {

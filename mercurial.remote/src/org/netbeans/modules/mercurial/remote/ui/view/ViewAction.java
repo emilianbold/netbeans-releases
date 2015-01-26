@@ -86,7 +86,6 @@ public class ViewAction extends ContextAction {
         }
         final VCSFileProxy root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
-        String repository = root.getPath();
         RequestProcessor rp = Mercurial.getInstance().getParallelRequestProcessor();
         rp.post(new Runnable() {
             @Override
@@ -112,7 +111,7 @@ public class ViewAction extends ContextAction {
                     bHgkFound = true;
                 }
             }
-            boolean bHgkPropExists = HgConfigFiles.getSysInstance().containsProperty(
+            boolean bHgkPropExists = HgConfigFiles.getSysInstance(root).containsProperty(
                             HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_HGK);
             
             if(!bHgkFound){
@@ -130,7 +129,7 @@ public class ViewAction extends ContextAction {
                 if (bConfirmSetHgkProp) {
                     logger.outputInRed(
                             NbBundle.getMessage(ViewAction.class, "MSG_VIEW_SETHGK_PROP_DO_INFO")); // NOI18N
-                    HgConfigFiles hcf = HgConfigFiles.getSysInstance();
+                    HgConfigFiles hcf = HgConfigFiles.getSysInstance(root);
                     if (hcf.getException() == null) {
                         hcf.setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
                     } else {

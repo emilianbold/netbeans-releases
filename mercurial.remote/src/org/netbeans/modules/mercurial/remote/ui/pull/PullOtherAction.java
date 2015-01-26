@@ -177,7 +177,7 @@ public class PullOtherAction extends ContextAction {
             @Override
             public void perform() { 
                 if (rc != null) {
-                    HgModuleConfig.getDefault().insertRecentUrl(rc);
+                    HgModuleConfig.getDefault(root).insertRecentUrl(rc);
                 }
                 PullAction.performPull(PullAction.PullType.OTHER, root, pullSource, fromPrjName, toPrjName, null, null, this);
             }
