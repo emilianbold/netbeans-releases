@@ -616,7 +616,7 @@ public class WebKitPageModel extends PageModel {
      * @param nodeId ID of the requested {@code DOMNode}.
      * @return {@code DOMNode} with the specified ID.
      */
-    synchronized DOMNode getNode(int nodeId) {
+    public synchronized DOMNode getNode(int nodeId) {
         return nodes.get(nodeId);
     }
 
