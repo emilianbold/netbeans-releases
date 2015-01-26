@@ -100,6 +100,7 @@ perl nbbuild/misc/bundlecheck.pl -q `pwd`/terminal/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/remotefs.versioning/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/remotefs.versioning.api/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/subversion.remote/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/mercurial.remote/src | tee ${LOG}
 
 cnt=`cat ${LOG} | wc -l`
 if [ ${cnt} -gt 0 ]; then
