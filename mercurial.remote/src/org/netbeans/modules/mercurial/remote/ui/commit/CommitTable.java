@@ -93,24 +93,22 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     
     private TableSorter         sorter;
     private String[]            columns;
-    private String[]            sortByColumns;
+    private final String[]      sortByColumns;
     private CommitPanel commitPanel;
     private Set<VCSFileProxy> modifiedFiles = Collections.<VCSFileProxy>emptySet();
     private boolean changesEnabled = true;
+    private final VCSFileProxy repository;
     
     
-    public CommitTable(JLabel label, String[] columns, String[] sortByColumns) {
+    public CommitTable(VCSFileProxy repository, JLabel label, String[] columns, String[] sortByColumns) {
+        this.repository = repository;
         init(label, columns, null);
         this.sortByColumns = sortByColumns;        
         setSortingStatus();            
     }
 
-    public CommitTable(JLabel label, String[] columns, TableSorter sorter) {
-        init(label, columns, sorter);        
-    }
-    
     private void init(JLabel label, String[] columns, TableSorter sorter) {
-        tableModel = new CommitTableModel(columns);
+        tableModel = new CommitTableModel(repository, columns);
         tableModel.addTableModelListener(this);
         if(sorter == null) {
             sorter = new TableSorter(tableModel);

@@ -115,7 +115,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
 
     private void initComponents(final VCSFileProxy[] roots, String from, String to, String branchName) {
         setLayout(new BorderLayout());
-        scp = new SearchCriteriaPanel();
+        scp = new SearchCriteriaPanel(roots);
         if (from != null){ 
             scp.setFrom(from);
         }
@@ -125,7 +125,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         shp = new SearchHistoryPanel(roots, scp);
         add(shp);
         shp.setCurrentBranch(branchName);
-        if (!HgBranch.DEFAULT_NAME.equals(branchName) && HgModuleConfig.getDefault().isSearchOnBranchEnabled(branchName)) {
+        if (!HgBranch.DEFAULT_NAME.equals(branchName) && HgModuleConfig.getDefault(roots[0]).isSearchOnBranchEnabled(branchName)) {
             // only for branches other than default
             scp.setBranch(branchName);
         }

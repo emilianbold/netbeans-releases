@@ -264,7 +264,7 @@ public class ExportDiffAction extends ContextAction {
 
     static void saveFolderToPrefs (final VCSFileProxy file) {
         if (file.getParentFile()!= null) {
-            HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", file.getParentFile().getPath()); // NOI18N
+            HgModuleConfig.getDefault(file).getPreferences().put("ExportDiff.saveFolder", file.getParentFile().getPath()); // NOI18N
         }
     }
     

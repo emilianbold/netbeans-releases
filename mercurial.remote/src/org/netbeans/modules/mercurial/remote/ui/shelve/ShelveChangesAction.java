@@ -129,12 +129,12 @@ public class ShelveChangesAction extends ContextAction {
             org.openide.awt.Mnemonics.setLocalizedText(doBackupChxBox, org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doBackupChxBox.text")); //NOI18N
             doBackupChxBox.setToolTipText(org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doBackupChxBox.desc")); //NOI18N
             doBackupChxBox.getAccessibleContext().setAccessibleDescription(doBackupChxBox.getToolTipText());
-            doBackupChxBox.setSelected(HgModuleConfig.getDefault().getBackupOnRevertModifications());
+            doBackupChxBox.setSelected(HgModuleConfig.getDefault(root).getBackupOnRevertModifications());
             doPurgeChxBox = new JCheckBox();
             org.openide.awt.Mnemonics.setLocalizedText(doPurgeChxBox, org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doPurgeChxBox.text")); //NOI18N
             doPurgeChxBox.setToolTipText(org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doPurgeChxBox.desc")); //NOI18N
             doPurgeChxBox.getAccessibleContext().setAccessibleDescription(doPurgeChxBox.getToolTipText());
-            doPurgeChxBox.setSelected(HgModuleConfig.getDefault().isRemoveNewFilesOnRevertModifications());
+            doPurgeChxBox.setSelected(HgModuleConfig.getDefault(root).isRemoveNewFilesOnRevertModifications());
             optionsPanel = new JPanel();
             optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
             optionsPanel.add(doBackupChxBox);
@@ -187,8 +187,8 @@ public class ShelveChangesAction extends ContextAction {
             if (retval) {
                 doBackup = doBackupChxBox.isSelected();
                 doPurge = doPurgeChxBox.isSelected();
-                HgModuleConfig.getDefault().setBackupOnRevertModifications(doBackup);
-                HgModuleConfig.getDefault().setRemoveNewFilesOnRevertModifications(doPurge);
+                HgModuleConfig.getDefault(root).setBackupOnRevertModifications(doBackup);
+                HgModuleConfig.getDefault(root).setRemoveNewFilesOnRevertModifications(doPurge);
             }
             return retval;
         }

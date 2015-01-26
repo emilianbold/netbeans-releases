@@ -44,20 +44,19 @@
 
 package org.netbeans.modules.mercurial.remote.ui.commit;
 
-import java.util.Set;
-import java.util.List;
 import java.util.ArrayList;
-
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.util.RequestProcessor;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.openide.nodes.*;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -99,7 +98,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
     }
     
     public int getActionStatus(VCSContext ctx) {
-        HgModuleConfig config = HgModuleConfig.getDefault();
+        HgModuleConfig config = HgModuleConfig.getDefault(HgUtils.getRootFile(ctx));
         int status = UNDEFINED;
         if (ctx == null) {
             ctx = HgUtils.getCurrentContext(null);
@@ -128,7 +127,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
-                HgModuleConfig config = HgModuleConfig.getDefault();
+                HgModuleConfig config = HgModuleConfig.getDefault(HgUtils.getRootFile(ctx));
                 int status = getActionStatus(ctx);
                 Set<VCSFileProxy> files = ctx.getRootFiles();
                 List<String> paths = new ArrayList<String>(files.size());

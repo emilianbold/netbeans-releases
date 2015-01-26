@@ -174,7 +174,7 @@ public class PushAction extends ContextAction {
 
         final String fromPrjName = HgProjectUtils.getProjectName(root);
         final String toPrjName = pushTarget.isFile()
-                                 ? HgProjectUtils.getProjectName(new VCSFileProxy(pushTarget.getPath()))
+                                 ? HgProjectUtils.getProjectName(VCSFileProxySupport.getResource(root, pushTarget.getPath()))
                                  : null;
         performPush(root, pushTarget, fromPrjName, toPrjName, revisionToPush,
                 branchToPush, logger, true);
@@ -420,7 +420,7 @@ public class PushAction extends ContextAction {
                             "MSG_PUSH_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(pushFile, null, logger);
                 } else {
-                    List<String> headRevList = HgCommand.getHeadRevisions(pushPath);
+                    List<String> headRevList = HgCommand.getHeadRevisions(pushFile);
                     if (headRevList != null && headRevList.size() > 1) {
                         MergeAction.printMergeWarning(headRevList, logger);
                     }

@@ -113,7 +113,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
             repository = new Repository(
                     FLAG_URL_ENABLED | FLAG_SHOW_HINTS | FLAG_SHOW_PROXY,
                     getMessage("CTL_Repository_Location"),
-                    false);
+                    false, root);
             repository.addChangeListener(this);
 
             support = new RepositoryStepProgressSupport();
@@ -316,7 +316,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     private void storeHistory() {
         RepositoryConnection rc = getRepositoryConnection();
         if(rc != null) {
-            HgModuleConfig.getDefault().insertRecentUrl(rc);
+            HgModuleConfig.getDefault(root).insertRecentUrl(rc);
         }
     }
 

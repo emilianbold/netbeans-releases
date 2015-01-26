@@ -62,9 +62,9 @@ import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.queues.CreateRefreshAction.Cmd.CreateRefreshPatchCmd;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.mercurial.remote.versioning.hooks.HgQueueHook;
+import org.netbeans.modules.mercurial.remote.versioning.hooks.HgQueueHookContext;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.hooks.HgQueueHook;
-import org.netbeans.modules.versioning.hooks.HgQueueHookContext;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
@@ -144,7 +144,7 @@ abstract class CreateRefreshAction extends ContextAction {
                     Collection<HgQueueHook> hooks = panel.getHooks();
                     String user = panel.getParameters().getUser();
                     if (user != null) {
-                        HgModuleConfig.getDefault().putRecentCommitAuthors(user);
+                        HgModuleConfig.getDefault(root).putRecentCommitAuthors(user);
                     }
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                     for (QFileNode node : commitFiles) {
@@ -173,7 +173,7 @@ abstract class CreateRefreshAction extends ContextAction {
                     try {
                         logger.outputInRed(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_TITLE." + bundleKeyPostfix)); //NOI18N
                         logger.outputInRed(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_TITLE_SEP." + bundleKeyPostfix)); //NOI18N
-                        logger.output(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_INFO_SEP." + bundleKeyPostfix, patchName, root.getAbsolutePath())); //NOI18N
+                        logger.output(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_INFO_SEP." + bundleKeyPostfix, patchName, root.getPath())); //NOI18N
 
                         new Cmd.AddCmd(root, addCandidates, logger, null, "hg add {0} into {1}").handle();
                         new Cmd.RemoveCmd(root, deleteCandidates, logger, null, "hg delete {0} from {1}").handle();
@@ -182,7 +182,7 @@ abstract class CreateRefreshAction extends ContextAction {
                         if (hooks.size() > 0) {
                             hookFiles = commitCandidates.toArray(new VCSFileProxy[commitCandidates.size()]);
                         }
-                        HgModuleConfig.getDefault().setLastUsedQPatchMessage(patchName, message);
+                        HgModuleConfig.getDefault(root).setLastUsedQPatchMessage(patchName, message);
                         HgQueueHookContext context = new HgQueueHookContext(hookFiles, message, patchName);
                         for (HgQueueHook hook : hooks) {
                             try {

@@ -326,13 +326,13 @@ final class MercurialPanel extends javax.swing.JPanel {
     
     private void nameChange() {
         boolean isChanged = (userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText()))
-                || !HgModuleConfig.getDefault().getExecutableBinaryPath().equals(executablePathTextField.getText())
-                || !HgModuleConfig.getDefault().getExportFilename().equals(exportFilenameTextField.getText())
-                || !HgModuleConfig.getDefault().getAnnotationFormat().equals(annotationTextField.getText())
-                || HgModuleConfig.getDefault().getAutoOpenOutput() != cbOpenOutputWindow.isSelected()
-                || HgModuleConfig.getDefault().getConfirmCommitAfterMerge() != cbAskBeforeCommitAfterMerge.isSelected()
-                || HgModuleConfig.getDefault().isInternalMergeToolEnabled() != cbInternalMergeToolEnabled.isSelected()
-                || HgModuleConfig.getDefault().getExludeNewFiles() != excludeNewFiles.isSelected();
+                || !HgModuleConfig.getDefault(root).getExecutableBinaryPath().equals(executablePathTextField.getText())
+                || !HgModuleConfig.getDefault(root).getExportFilename().equals(exportFilenameTextField.getText())
+                || !HgModuleConfig.getDefault(root).getAnnotationFormat().equals(annotationTextField.getText())
+                || HgModuleConfig.getDefault(root).getAutoOpenOutput() != cbOpenOutputWindow.isSelected()
+                || HgModuleConfig.getDefault(root).getConfirmCommitAfterMerge() != cbAskBeforeCommitAfterMerge.isSelected()
+                || HgModuleConfig.getDefault(root).isInternalMergeToolEnabled() != cbInternalMergeToolEnabled.isSelected()
+                || HgModuleConfig.getDefault(root).getExludeNewFiles() != excludeNewFiles.isSelected();
         controller.changed(isChanged);
     }
 
@@ -350,7 +350,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
-                initialUserName = HgModuleConfig.getDefault().getSysUserName();
+                initialUserName = HgModuleConfig.getDefault(root).getSysUserName();
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
@@ -360,13 +360,13 @@ final class MercurialPanel extends javax.swing.JPanel {
                 });
             }
         });
-        executablePathTextField.setText(HgModuleConfig.getDefault().getExecutableBinaryPath());
-        exportFilenameTextField.setText(HgModuleConfig.getDefault().getExportFilename());
-        annotationTextField.setText(HgModuleConfig.getDefault().getAnnotationFormat());
-        cbOpenOutputWindow.setSelected(HgModuleConfig.getDefault().getAutoOpenOutput());
-        cbAskBeforeCommitAfterMerge.setSelected(HgModuleConfig.getDefault().getConfirmCommitAfterMerge());
-        cbInternalMergeToolEnabled.setSelected(HgModuleConfig.getDefault().isInternalMergeToolEnabled());
-        excludeNewFiles.setSelected(HgModuleConfig.getDefault().getExludeNewFiles());
+        executablePathTextField.setText(HgModuleConfig.getDefault(root).getExecutableBinaryPath());
+        exportFilenameTextField.setText(HgModuleConfig.getDefault(root).getExportFilename());
+        annotationTextField.setText(HgModuleConfig.getDefault(root).getAnnotationFormat());
+        cbOpenOutputWindow.setSelected(HgModuleConfig.getDefault(root).getAutoOpenOutput());
+        cbAskBeforeCommitAfterMerge.setSelected(HgModuleConfig.getDefault(root).getConfirmCommitAfterMerge());
+        cbInternalMergeToolEnabled.setSelected(HgModuleConfig.getDefault(root).isInternalMergeToolEnabled());
+        excludeNewFiles.setSelected(HgModuleConfig.getDefault(root).getExludeNewFiles());
     }
     
     void store() {
@@ -379,19 +379,19 @@ final class MercurialPanel extends javax.swing.JPanel {
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
         if(userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText())) {
             try {
-                HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
+                HgModuleConfig.getDefault(root).setUserName(userNameTextField.getText());
             } catch (IOException ex) {
                 HgModuleConfig.notifyParsingError();
             }
         }
-        HgModuleConfig.getDefault().setExecutableBinaryPath(executablePathTextField.getText());
+        HgModuleConfig.getDefault(root).setExecutableBinaryPath(executablePathTextField.getText());
 	Mercurial.getInstance().asyncInit();
-        HgModuleConfig.getDefault().setExportFilename(exportFilenameTextField.getText());
-        HgModuleConfig.getDefault().setAnnotationFormat(annotationTextField.getText());
-        HgModuleConfig.getDefault().setAutoOpenOutput(cbOpenOutputWindow.isSelected());
-        HgModuleConfig.getDefault().setConfirmCommitAfterMerge(cbAskBeforeCommitAfterMerge.isSelected());
-        HgModuleConfig.getDefault().setInternalMergeToolEnabled(cbInternalMergeToolEnabled.isSelected());
-        HgModuleConfig.getDefault().setExcludeNewFiles(excludeNewFiles.isSelected());
+        HgModuleConfig.getDefault(root).setExportFilename(exportFilenameTextField.getText());
+        HgModuleConfig.getDefault(root).setAnnotationFormat(annotationTextField.getText());
+        HgModuleConfig.getDefault(root).setAutoOpenOutput(cbOpenOutputWindow.isSelected());
+        HgModuleConfig.getDefault(root).setConfirmCommitAfterMerge(cbAskBeforeCommitAfterMerge.isSelected());
+        HgModuleConfig.getDefault(root).setInternalMergeToolEnabled(cbInternalMergeToolEnabled.isSelected());
+        HgModuleConfig.getDefault(root).setExcludeNewFiles(excludeNewFiles.isSelected());
     }
  
     // Variables declaration - do not modify//GEN-BEGIN:variables

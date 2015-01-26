@@ -48,7 +48,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.swing.JFileChooser;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.diff.options.AccessibleJFileChooser;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 
@@ -59,9 +59,11 @@ import org.openide.util.NbBundle;
 public class RepositoryPanel extends javax.swing.JPanel {
 
     private Runnable postInitRoutine;
+    private final VCSFileProxy root;
 
     /** Creates new form RepositoryPanel */
-    public RepositoryPanel() {
+    public RepositoryPanel(VCSFileProxy root) {
+        this.root = root;
         initComponents();
     }
 
@@ -248,19 +250,18 @@ public class RepositoryPanel extends javax.swing.JPanel {
         VCSFileProxy file = null;
         try {
             URI uri = new URI(comboEditor.getText());
-            file = new VCSFileProxy(uri);
+            file = VCSFileProxySupport.fromURI(uri);
         } catch (URISyntaxException ex) {
             //
         }
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Descritpion"), //NOI18N
-                file);
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(file);
         fileChooser.setDialogTitle(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Title")); //NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(this, null);
-        VCSFileProxy f = fileChooser.getSelectedFile();
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
-            comboEditor.setText(f.toURI().toString());
+            comboEditor.setText(VCSFileProxySupport.toURI(f).toString());
         }
     }//GEN-LAST:event_chooseFolderButtonActionPerformed
     

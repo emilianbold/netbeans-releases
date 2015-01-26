@@ -156,7 +156,7 @@ public class QFinishPatchesAction extends ContextAction {
                             break;
                         }
                         HgCommand.qFinishPatches(root, patch.getId(), logger);
-                        HgModuleConfig.getDefault().setLastUsedQPatchMessage(patch.getId(), null); // cleanup preferences
+                        HgModuleConfig.getDefault(root).setLastUsedQPatchMessage(patch.getId(), null); // cleanup preferences
                         message = getRevision(message.getRevisionNumber());
                         if (message == null) {
                             logger.outputInRed(NbBundle.getMessage(QFinishPatchesAction.class, "MSG_FINISH_ERR_NOSUCHREVISION", patch.getId())); //NOI18N

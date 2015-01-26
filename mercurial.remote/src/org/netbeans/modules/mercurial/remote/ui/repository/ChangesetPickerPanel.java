@@ -147,6 +147,10 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
         return roots;
     }
 
+    public VCSFileProxy getRepository() {
+        return repository;
+    }
+
     /**
      * Returns a selected revision or null if no revision is selected.
      * @return

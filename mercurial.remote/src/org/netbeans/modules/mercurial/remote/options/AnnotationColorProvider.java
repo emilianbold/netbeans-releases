@@ -136,7 +136,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
 
     @Override
     protected Color getSavedColor (String key, Color defaultColor) {
-        return HgModuleConfig.getDefault().getColor(key, defaultColor);
+        return HgModuleConfig.getDefault(null).getColor(key, defaultColor);
     }
 
     @Override
@@ -156,7 +156,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     protected void saveColors (Collection<AnnotationFormat> colors) {
         for (AnnotationFormat af : colors) {
             if (af != null) {
-                HgModuleConfig.getDefault().setColor(getColorKey(af.getKey()), af.getActualColor());
+                HgModuleConfig.getDefault(null).setColor(getColorKey(af.getKey()), af.getActualColor());
             }
         }
         Mercurial.getInstance().getRequestProcessor().post(new Runnable() {

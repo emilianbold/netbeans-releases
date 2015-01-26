@@ -44,53 +44,72 @@
 
 package org.netbeans.modules.mercurial.remote.ui.status;
 
-import org.netbeans.modules.mercurial.remote.HgModuleConfig;
-import org.netbeans.modules.mercurial.remote.Mercurial;
-import org.netbeans.modules.mercurial.remote.FileStatusCache;
-import org.netbeans.modules.mercurial.remote.FileInformation;
-import org.netbeans.modules.mercurial.remote.util.HgUtils;
-import org.netbeans.modules.mercurial.remote.MercurialAnnotator;
-import org.netbeans.modules.mercurial.remote.ui.diff.DiffAction;
-import org.netbeans.modules.mercurial.remote.ui.update.RevertModificationsAction;
-import org.netbeans.modules.mercurial.remote.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.mercurial.remote.ui.annotate.AnnotateAction;
-import org.openide.explorer.view.NodeTableModel;
-import org.openide.nodes.*;
-import org.openide.nodes.PropertySupport.ReadOnly;
-import org.openide.windows.TopComponent;
-import org.openide.util.NbBundle;
-import org.openide.awt.MouseUtils;
-import org.openide.awt.Mnemonics;
-import org.netbeans.modules.versioning.util.FilePathCellRenderer;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.event.AncestorEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.Component;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.mercurial.remote.FileInformation;
+import org.netbeans.modules.mercurial.remote.FileStatusCache;
+import org.netbeans.modules.mercurial.remote.HgModuleConfig;
+import org.netbeans.modules.mercurial.remote.Mercurial;
+import org.netbeans.modules.mercurial.remote.MercurialAnnotator;
 import org.netbeans.modules.mercurial.remote.ui.add.AddAction;
+import org.netbeans.modules.mercurial.remote.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.remote.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.remote.ui.commit.DeleteLocalAction;
+import org.netbeans.modules.mercurial.remote.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.mercurial.remote.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.remote.ui.update.ResolveConflictsAction;
+import org.netbeans.modules.mercurial.remote.ui.update.RevertModificationsAction;
+import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
+import org.openide.awt.Mnemonics;
+import org.openide.awt.MouseUtils;
+import org.openide.explorer.view.NodeTableModel;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport.ReadOnly;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.TopComponent;
 
 /**
  * Controls the {@link #getComponent() tsble} that displays nodes
@@ -552,7 +571,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 if (!isSelected) {
                     value = "<html>" + node.getHtmlDisplayName(); // NOI18N
                 }
-                if (HgModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getPath())) {
+                if (HgModuleConfig.getDefault(root).isExcludedFromCommit(node.getFile().getPath())) {
                     String nodeName = node.getDisplayName();
                     if (isSelected) {
                         value = "<html><s>" + nodeName + "</s></html>"; // NOI18N

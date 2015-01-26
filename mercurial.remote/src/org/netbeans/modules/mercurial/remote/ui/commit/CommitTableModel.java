@@ -44,14 +44,17 @@
 
 package org.netbeans.modules.mercurial.remote.ui.commit;
 
-import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.remote.HgFileNode;
-import org.netbeans.modules.mercurial.remote.FileInformation;
-import org.netbeans.modules.mercurial.remote.util.HgUtils;
-
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 import javax.swing.table.AbstractTableModel;
-import java.util.*;
+import org.netbeans.modules.mercurial.remote.FileInformation;
+import org.netbeans.modules.mercurial.remote.HgFileNode;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
+import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.NbBundle;
 
 /**
  * Table model for the Commit dialog table.
@@ -105,19 +108,21 @@ public class CommitTableModel extends AbstractTableModel {
     private HgFileNode []      nodes;
     
     private String [] columns;
+    private final VCSFileProxy repository;
 
     /**
      * Create stable with name, status, action and path columns
      * and empty nodes {@link #setNodes model}.
      */
-    public CommitTableModel(String[] columns) {
+    public CommitTableModel(VCSFileProxy repository, String[] columns) {
+        this.repository = repository;
         setColumns(columns);
         setNodes(new HgFileNode[0]);
     }
 
     void setNodes(HgFileNode [] nodes) {
         this.nodes = nodes;
-        commitOptions = HgUtils.createDefaultCommitOptions(nodes, HgModuleConfig.getDefault().getExludeNewFiles());
+        commitOptions = HgUtils.createDefaultCommitOptions(nodes, HgModuleConfig.getDefault(repository).getExludeNewFiles());
         fireTableDataChanged();
     }
     

@@ -67,7 +67,7 @@ public abstract class ExportDiff extends ExportDiffSupport {
     
     /** Creates a new instance of ExportDiff */
     public ExportDiff(VCSFileProxy repository, HgLogMessage repoRev, VCSFileProxy [] roots, VCSFileProxy fileToDiff) {
-        super(roots == null ? new VCSFileProxy[] {fileToDiff} : roots, HgModuleConfig.getDefault().getPreferences());
+        super(roots == null ? new VCSFileProxy[] {fileToDiff} : roots, HgModuleConfig.getDefault(root).getPreferences());
         this.fileToDiff = fileToDiff;
 
         panel = new ExportDiffPanel(repository, repoRev, roots, fileToDiff);

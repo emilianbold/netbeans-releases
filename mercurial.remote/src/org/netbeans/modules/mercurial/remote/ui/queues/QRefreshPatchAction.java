@@ -100,9 +100,9 @@ public class QRefreshPatchAction extends CreateRefreshAction {
                 DialogDisplayer.getDefault().notifyLater(e);
             } else {
                 final HgLogMessage.HgRevision parent = HgCommand.getParent(root, null, currentPatch.getId());
-                String commitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + currentPatch.getId());
+                String commitMessage = HgModuleConfig.getDefault(root).getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + currentPatch.getId());
                 if (commitMessage.isEmpty()) {
-                    commitMessage = HgModuleConfig.getDefault().getLastUsedQPatchMessage(currentPatch.getId());
+                    commitMessage = HgModuleConfig.getDefault(root).getLastUsedQPatchMessage(currentPatch.getId());
                     if (commitMessage.isEmpty()) {
                         List<HgLogMessage> msgs = HgCommand.getParents(root, null, null);
                         if (!msgs.isEmpty()) {
@@ -137,7 +137,7 @@ public class QRefreshPatchAction extends CreateRefreshAction {
 
     @Override
     void persistCanceledCommitMessage (QCreatePatchParameters params, String canceledCommitMessage) {
-        HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + params.getPatch().getId(), canceledCommitMessage);
+        HgModuleConfig.getDefault(root).setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + params.getPatch().getId(), canceledCommitMessage);
     }
     
 }

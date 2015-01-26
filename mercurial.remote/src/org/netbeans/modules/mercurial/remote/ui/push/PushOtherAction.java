@@ -174,7 +174,7 @@ public class PushOtherAction extends ContextAction {
             @Override
             public void perform() { 
                 if (rc != null) {
-                    HgModuleConfig.getDefault().insertRecentUrl(rc);
+                    HgModuleConfig.getDefault(root).insertRecentUrl(rc);
                 }
                PushAction.performPush(root, pushPath, fromPrjName, toPrjName, null, null, this.getLogger(), false);
             } 

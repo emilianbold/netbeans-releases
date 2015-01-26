@@ -108,7 +108,7 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
 
     @Override
     public String getLastCanceledCommitMessage () {
-        return HgModuleConfig.getDefault().getLastCanceledCommitMessage(QCreatePatchAction.KEY_CANCELED_MESSAGE);
+        return HgModuleConfig.getDefault(root).getLastCanceledCommitMessage(QCreatePatchAction.KEY_CANCELED_MESSAGE);
     }
 
     List<String> getCommitMessages () {

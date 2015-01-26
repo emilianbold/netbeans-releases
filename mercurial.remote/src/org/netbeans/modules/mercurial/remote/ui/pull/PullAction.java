@@ -45,55 +45,57 @@ package org.netbeans.modules.mercurial.remote.ui.pull;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.util.ListIterator;
 import java.net.URISyntaxException;
-import org.netbeans.modules.versioning.core.spi.VCSContext;
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.mercurial.remote.FileInformation;
 import org.netbeans.modules.mercurial.remote.FileStatusCache;
 import org.netbeans.modules.mercurial.remote.HgException;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.OutputLogger;
-import org.netbeans.modules.mercurial.remote.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.remote.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.remote.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.remote.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.remote.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.remote.ui.rebase.RebaseAction;
+import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.remote.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.DialogDisplayer;
-import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
-import org.openide.DialogDescriptor;
-import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.remote.util.HgUtils.isNullOrEmpty;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -270,7 +272,7 @@ public class PullAction extends ContextAction {
         PullType pullType;
 
         if (pullSource.isFile()) {
-            fromPrjName = HgProjectUtils.getProjectName(new VCSFileProxy(pullSource.getPath()));
+            fromPrjName = HgProjectUtils.getProjectName(VCSFileProxySupport.getResource(root, pullSource.getPath()));
             pullType = (fromPrjName != null) ? PullType.LOCAL
                                              : PullType.OTHER;
         } else {

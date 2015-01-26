@@ -229,11 +229,11 @@ public class CommitAction extends ContextAction {
         }
 
         // show commit dialog
-        final CommitPanel panel = new CommitPanel();
+        final CommitPanel panel = new CommitPanel(repository);
         final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
 
         panel.setHooks(hooks, new HgHookContext(ctx.getRootFiles().toArray( new VCSFileProxy[ctx.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
-        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {CommitTableModel.COLUMN_NAME_PATH });
+        final CommitTable data = new CommitTable(repository, panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {CommitTableModel.COLUMN_NAME_PATH });
 
         panel.setCommitTable(data);
         data.setCommitPanel(panel);
@@ -315,7 +315,7 @@ public class CommitAction extends ContextAction {
         panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        WindowListener windowListener = new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), "hg.commit.dialog"); // NOI18N
+        WindowListener windowListener = new DialogBoundsPreserver(HgModuleConfig.getDefault(repository).getPreferences(), "hg.commit.dialog"); // NOI18N
         dialog.addWindowListener(windowListener);
         dialog.pack();
         windowListener.windowOpened(new WindowEvent(dialog, WindowEvent.WINDOW_OPENED));
@@ -327,7 +327,7 @@ public class CommitAction extends ContextAction {
 
         final String message = panel.getCommitMessage().trim();
         if (dd.getValue() != commitButton && !message.isEmpty()) {
-            HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, message);
+            HgModuleConfig.getDefault(repository).setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, message);
         }
         if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
             al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
@@ -337,11 +337,11 @@ public class CommitAction extends ContextAction {
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<VCSFileProxy, Set<VCSFileProxy>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             final boolean commitAllFiles = panel.cbAllFiles.isSelected() || afterMerge.get();
-            HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, ""); //NOI18N
-            Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
+            HgModuleConfig.getDefault(repository).setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, ""); //NOI18N
+            Utils.insert(HgModuleConfig.getDefault(repository).getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             final String user = panel.getUser();
             if (user != null) {
-                HgModuleConfig.getDefault().putRecentCommitAuthors(user);
+                HgModuleConfig.getDefault(repository).putRecentCommitAuthors(user);
             }
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {
@@ -429,10 +429,10 @@ public class CommitAction extends ContextAction {
                 HgConfigFiles config = new HgConfigFiles(repository);
                 String userName = config.getUserName(false);
                 if (userName.isEmpty()) {
-                    config = HgConfigFiles.getSysInstance();
+                    config = HgConfigFiles.getSysInstance(repository);
                     userName = config.getUserName(false);
                 }
-                List<String> recentUsers = HgModuleConfig.getDefault().getRecentCommitAuthors();
+                List<String> recentUsers = HgModuleConfig.getDefault(repository).getRecentCommitAuthors();
                 if (!userName.isEmpty()) {
                     recentUsers.remove(userName);
                     recentUsers.add(0, userName);
@@ -581,10 +581,10 @@ public class CommitAction extends ContextAction {
         }
 
         if (!excPaths.isEmpty()) {
-            HgModuleConfig.getDefault().addExclusionPaths(excPaths);
+            HgModuleConfig.getDefault(rootFiles.entrySet().iterator().next().getKey()).addExclusionPaths(excPaths);
         }
         if (!incPaths.isEmpty()) {
-            HgModuleConfig.getDefault().removeExclusionPaths(incPaths);
+            HgModuleConfig.getDefault(rootFiles.entrySet().iterator().next().getKey()).removeExclusionPaths(incPaths);
         }
 
         try {
@@ -665,7 +665,7 @@ public class CommitAction extends ContextAction {
     private static boolean commitAfterMerge (boolean locallyModifiedExcluded, VCSFileProxy repository) {
         // XXX consider usage of repository to determine if there are any non-included files which have to be committed, too
         // and thus removing the option HgModuleConfig.getDefault().getConfirmCommitAfterMerge()
-        if (locallyModifiedExcluded || HgModuleConfig.getDefault().getConfirmCommitAfterMerge()) { // ask before commit?
+        if (locallyModifiedExcluded || HgModuleConfig.getDefault(repository).getConfirmCommitAfterMerge()) { // ask before commit?
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_AFTER_MERGE_QUERY")); // NOI18N
             descriptor.setTitle(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_AFTER_MERGE_TITLE")); // NOI18N
             descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);

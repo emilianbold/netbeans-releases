@@ -122,20 +122,20 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
     }
 
     private void setDefaultOutputFile() {
-        String folderName = HgModuleConfig.getDefault().getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault().getExportFolder()); // NOI18N
+        String folderName = HgModuleConfig.getDefault(root).getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault(root).getExportFolder()); // NOI18N
         String fileName;
         if (fileToDiff != null && repoRev != null && repo != null) { //"<filename-ext>_%b_%r_%h"
             fileName = fileToDiff.getName().replace('.', '-') + "_" +  //NOI18N
                     repoRev.getRevisionNumber() + "_" +  //NOI18N
                     repoRev.getCSetShortID(); //NOI18N
         } else if (repoRev != null && repo != null) {
-            fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repo.getName()); //NOI18N
+            fileName = HgModuleConfig.getDefault(root).getExportFilename().replace("%b", repo.getName()); //NOI18N
             fileName = fileName.replace("%r", repoRev.getRevisionNumber()); //NOI18N
             fileName = fileName.replace("%h", repoRev.getCSetShortID()); //NOI18N
         }else if (repo != null){
-            fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repo.getName()); //NOI18N
+            fileName = HgModuleConfig.getDefault(root).getExportFilename().replace("%b", repo.getName()); //NOI18N
         }else{
-            fileName = HgModuleConfig.getDefault().getExportFilename();            
+            fileName = HgModuleConfig.getDefault(root).getExportFilename();            
         }
         VCSFileProxy file = VCSFileProxy.createFileProxy(repo, folderName + "/" + fileName + ".patch");  //NOI18N
         p.setOutputFileText(file.getPath());

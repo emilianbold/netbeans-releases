@@ -93,11 +93,11 @@ public class QCreatePatchAction extends CreateRefreshAction {
 
     @Override
     QCommitPanel createPanel (VCSFileProxy root, VCSFileProxy[] roots) {
-        return QCommitPanel.createNewPanel(roots, root, HgModuleConfig.getDefault().getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE), QCreatePatchAction.class.getName());
+        return QCommitPanel.createNewPanel(roots, root, HgModuleConfig.getDefault(root).getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE), QCreatePatchAction.class.getName());
     }
 
     @Override
     void persistCanceledCommitMessage (QCreatePatchParameters params, String canceledCommitMessage) {
-        HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, canceledCommitMessage);
+        HgModuleConfig.getDefault(root).setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, canceledCommitMessage);
     }
 }

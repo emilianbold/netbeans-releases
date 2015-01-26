@@ -44,24 +44,29 @@
 
 package org.netbeans.modules.mercurial.remote.ui.update;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.mercurial.remote.Mercurial;
-import org.netbeans.modules.mercurial.remote.OutputLogger;
-import org.netbeans.modules.mercurial.remote.FileStatusCache;
 import org.netbeans.modules.mercurial.remote.FileInformation;
-import org.netbeans.modules.mercurial.remote.util.HgUtils;
-import org.netbeans.modules.mercurial.remote.HgProgressSupport;
+import org.netbeans.modules.mercurial.remote.FileStatusCache;
 import org.netbeans.modules.mercurial.remote.HgException;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
+import org.netbeans.modules.mercurial.remote.HgProgressSupport;
+import org.netbeans.modules.mercurial.remote.Mercurial;
+import org.netbeans.modules.mercurial.remote.OutputLogger;
 import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.remote.ui.repository.ChangesetPickerPanel;
-import org.openide.util.RequestProcessor;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
+import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Reverts local changes.
@@ -126,8 +131,8 @@ public class RevertModificationsAction extends ContextAction {
         final String revStr = revertModifications.getSelectionRevision();
         final boolean doBackup = revertModifications.isBackupRequested();
         final boolean removeNewFiles = revertModifications.isRemoveNewFilesRequested();
-        HgModuleConfig.getDefault().setRemoveNewFilesOnRevertModifications(removeNewFiles);
-        HgModuleConfig.getDefault().setBackupOnRevertModifications(doBackup);
+        HgModuleConfig.getDefault(repository).setRemoveNewFilesOnRevertModifications(removeNewFiles);
+        HgModuleConfig.getDefault(repository).setBackupOnRevertModifications(doBackup);
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {

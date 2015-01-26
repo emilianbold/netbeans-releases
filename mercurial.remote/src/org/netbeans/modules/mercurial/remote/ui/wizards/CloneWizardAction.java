@@ -102,14 +102,14 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         VCSFileProxy cloneFile = null;
         if (!cancelled) {
             String targetFolderPath = (String) wizardDescriptor.getProperty("directory"); //NOI18N
-            HgModuleConfig.getDefault().getPreferences().put(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, targetFolderPath);
+            HgModuleConfig.getDefault(root).getPreferences().put(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, targetFolderPath);
             final HgURL repository = (HgURL) wizardDescriptor.getProperty("repository"); // NOI18N
             final VCSFileProxy directory = new VCSFileProxy(targetFolderPath);
             final String cloneName = (String) wizardDescriptor.getProperty("cloneName"); // NOI18N
             final HgURL pullPath = (HgURL) wizardDescriptor.getProperty("defaultPullPath"); // NOI18N
             final HgURL pushPath = (HgURL) wizardDescriptor.getProperty("defaultPushPath"); // NOI18N
             cloneFile = new VCSFileProxy(directory, cloneName);
-            Task t = CloneAction.performClone(repository, cloneFile, true, null, pullPath, pushPath, HgModuleConfig.getDefault().getShowCloneCompleted());
+            Task t = CloneAction.performClone(repository, cloneFile, true, null, pullPath, pushPath, HgModuleConfig.getDefault(root).getShowCloneCompleted());
             if (waitFinished) {
                 t.waitFinished();
             }

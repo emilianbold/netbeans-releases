@@ -67,12 +67,11 @@ import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
-import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -906,7 +905,13 @@ public class MercurialInterceptor extends VCSInterceptor {
                         rp.post(new Runnable () {
                             @Override
                             public void run() {
-                                FileUtil.addRecursiveListener(fList, hgFolder);
+                                final FileObject fo = hgFolder.toFileObject();
+                                if (fo != null) {
+                                    fo.addFileChangeListener(fList);
+                                } else {
+                                    //TODO:
+                                    //FileUtil.addRecursiveListener(fList, hgFolder);
+                                }
                             }
                         });
                     }
@@ -918,7 +923,13 @@ public class MercurialInterceptor extends VCSInterceptor {
                         rp.post(new Runnable () {
                             @Override
                             public void run() {
-                                FileUtil.removeRecursiveListener(fList, hgFolder);
+                                final FileObject fo = hgFolder.toFileObject();
+                                if (fo != null) {
+                                    fo.removeRecursiveListener(fList);;
+                                } else {
+                                    //TODO:
+                                    //FileUtil.removeRecursiveListener(fList, hgFolder);
+                                }
                             }
                         });
                     }

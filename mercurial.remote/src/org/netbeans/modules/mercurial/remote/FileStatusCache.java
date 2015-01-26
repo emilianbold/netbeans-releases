@@ -709,7 +709,7 @@ public class FileStatusCache {
     private boolean hasStatus (VCSFileProxy file, int includeStatus, boolean checkExclusions) {
         FileInformation info = getCachedStatus(file);
         return (info.getStatus() & includeStatus) != 0
-                && (!checkExclusions || !HgModuleConfig.getDefault().isExcludedFromCommit(file.getPath()));
+                && (!checkExclusions || !HgModuleConfig.getDefault(file).isExcludedFromCommit(file.getPath()));
     }
 
     /**

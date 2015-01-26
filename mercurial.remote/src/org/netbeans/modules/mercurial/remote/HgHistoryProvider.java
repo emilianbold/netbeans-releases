@@ -353,7 +353,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                                     root,   
                                     getHgRevision(entry).getRevisionNumber(),                           
                                     new LinkedList<VCSFileProxy>(files), 
-                                    HgModuleConfig.getDefault().getBackupOnRevertModifications(), 
+                                    HgModuleConfig.getDefault(root).getBackupOnRevertModifications(), 
                                     false, 
                                     this.getLogger());
                             }

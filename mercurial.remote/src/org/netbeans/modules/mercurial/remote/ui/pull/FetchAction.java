@@ -43,21 +43,15 @@
  */
 package org.netbeans.modules.mercurial.remote.ui.pull;
 
-import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.mercurial.remote.Mercurial;
-import org.netbeans.modules.mercurial.remote.OutputLogger;
-import org.netbeans.modules.mercurial.remote.HgException;
-import org.netbeans.modules.mercurial.remote.util.HgCommand;
-import org.netbeans.modules.mercurial.remote.util.HgUtils;
-import org.openide.DialogDisplayer;
-import org.openide.util.RequestProcessor;
-
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.remote.HgException;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
+import org.netbeans.modules.mercurial.remote.Mercurial;
+import org.netbeans.modules.mercurial.remote.OutputLogger;
 import org.netbeans.modules.mercurial.remote.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
@@ -65,14 +59,19 @@ import org.netbeans.modules.mercurial.remote.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.remote.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.remote.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
+import org.netbeans.modules.mercurial.remote.util.HgCommand;
+import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -177,7 +176,7 @@ public class FetchAction extends ContextAction {
             
             boolean enableFetch = !config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_FETCH);
             if (enableFetch) {
-                HgConfigFiles sysConfig = HgConfigFiles.getSysInstance();
+                HgConfigFiles sysConfig = HgConfigFiles.getSysInstance(root);
                 sysConfig.doReload();
                 enableFetch = !sysConfig.containsProperty(HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_FETCH);
             }

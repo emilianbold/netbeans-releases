@@ -107,7 +107,6 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
@@ -194,6 +193,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private int lastDividerLoc;
     private int requestedRightLine = -1;
     private int requestedLeftLine = -1;
+    private final VCSFileProxy root;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -207,6 +207,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private MultiDiffPanel (VCSContext context, String contextName, HgRevision revisionLeft,
             HgRevision revisionRight, boolean fixedRevisions) {
         this.context = context;
+        this.root = context.getRootFiles().iterator().next();
         this.contextName = contextName;
         this.revisionLeft = revisionOriginalLeft = revisionLeft;
         this.revisionRight = revisionOriginalRight = revisionRight;
@@ -279,7 +280,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         // mimics refreshSetups()
         Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, fi, forceNonEditable)};
-        VCSFileProxy root = Mercurial.getInstance().getRepositoryRoot(file);
+        root = Mercurial.getInstance().getRepositoryRoot(file);
         localSetups[0].setNode(new DiffNode(localSetups[0], new HgFileNode(root, file)));
         setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(localSetups[0], 0, false);
@@ -393,7 +394,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 continue;
             }
 
-            FileObject fileObj = FileUtil.toFileObject(baseFile);
+            FileObject fileObj = baseFile.toFileObject();
             if (fileObj == null) {
                 continue;
             }
@@ -503,7 +504,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private void initFileComponent() {
         fileListComponent = new DiffFileTable(this);
         fileTreeComponent = new DiffFileTreeImpl(this);
-        int viewMode = HgModuleConfig.getDefault().getDiffViewMode(VIEW_MODE_TABLE);
+        int viewMode = HgModuleConfig.getDefault(root).getDiffViewMode(VIEW_MODE_TABLE);
         if (viewMode == VIEW_MODE_TREE) {
             treeButton.setSelected(true);
             setActiveComponent(fileTreeComponent);
@@ -584,7 +585,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         super.addNotify();
         if (refreshTask != null) {
             Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
-            HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+            HgModuleConfig.getDefault(root).getPreferences().addPreferenceChangeListener(this);
         }
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
@@ -635,7 +636,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
         Mercurial.getInstance().getFileStatusCache().removePropertyChangeListener(this);
         if (refreshTask != null) {
-            HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+            HgModuleConfig.getDefault(root).getPreferences().removePreferenceChangeListener(this);
         }
         super.removeNotify();
     }
@@ -1193,7 +1194,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             return;
         }
         activeComponent = fileComponent;
-        HgModuleConfig.getDefault().setDiffViewMode(activeComponent == fileListComponent
+        HgModuleConfig.getDefault(root).setDiffViewMode(activeComponent == fileListComponent
                 ? VIEW_MODE_TABLE : VIEW_MODE_TREE);
         int gg = splitPane.getDividerLocation();
         splitPane.setTopComponent(getActiveFileComponent().getComponent());

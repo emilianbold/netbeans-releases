@@ -157,7 +157,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     }
 
     public void refresh() {
-        String string = HgModuleConfig.getDefault().getAnnotationFormat();
+        String string = HgModuleConfig.getDefault(root).getAnnotationFormat();
         if (string != null && !string.trim().equals("")) { // NOI18N
             string = HgUtils.createAnnotationFormat(string);
             if (!HgUtils.isAnnotationFormatValid(string))   {

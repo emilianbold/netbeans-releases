@@ -63,6 +63,7 @@ import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.OutputLogger;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -243,7 +244,7 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
     private VCSFileProxy selectRootToManage () {
         VCSFileProxy rootPath = getSuggestedRoot();
 
-        final CreatePanel panel = new CreatePanel();
+        final CreatePanel panel = new CreatePanel(rootPath);
         panel.lblMessage.setVisible(false);
         final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateAction.class, "LBL_Create_Panel_Label"), //NOI18N
                 true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN,
@@ -257,7 +258,7 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
                 String validatedPath = panel.tfRootPath.getText();
                 String errorMessage = null;
                 boolean valid = !validatedPath.trim().isEmpty();
-                VCSFileProxy dir = new VCSFileProxy(validatedPath);
+                VCSFileProxy dir = VCSFileProxySupport.getResource(rootFiles[0], validatedPath);
                 // must be an existing directory
                 if (!dir.isDirectory()) {
                     errorMessage = NbBundle.getMessage(CreateAction.class, "LBL_Create_Panel_Error_Directory"); //NOI18N
@@ -337,7 +338,7 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
         do {
             dialog.setVisible(true);
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                rootPath = new VCSFileProxy(panel.tfRootPath.getText());
+                rootPath = VCSFileProxySupport.getResource(rootFiles[0], panel.tfRootPath.getText());
                 validateTask.run();
             } else {
                 rootPath = null;

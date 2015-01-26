@@ -290,7 +290,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getActionMap().put("jumpNext", nextAction); // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
         
-        fileInfoCheckBox.setSelected(HgModuleConfig.getDefault().getShowFileInfo());
+        fileInfoCheckBox.setSelected(HgModuleConfig.getDefault(roots[0]).getShowFileInfo());
     }
 
     private final ExplorerManager             explorerManager;
@@ -410,7 +410,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         searchStarted = true;
         cancelBackgroundSearch();
         setResults(null, null, true, -1);
-        HgModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());
+        HgModuleConfig.getDefault(roots[0]).setShowHistoryMerges(criteria.isIncludeMerges());
         currentSearch = new SearchExecutor(this);
         currentSearch.start();
     }
@@ -681,7 +681,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }//GEN-LAST:event_onViewToggle
 
 private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileInfoCheckBoxActionPerformed
-        HgModuleConfig.getDefault().setShowFileInfo( fileInfoCheckBox.isSelected() && fileInfoCheckBox.isEnabled());
+        HgModuleConfig.getDefault(roots[0]).setShowFileInfo( fileInfoCheckBox.isSelected() && fileInfoCheckBox.isEnabled());
         if (summaryView != null) {
             summaryView.refreshView();
         }

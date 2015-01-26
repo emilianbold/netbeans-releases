@@ -45,12 +45,12 @@ package org.netbeans.modules.mercurial.remote.ui.clone;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
@@ -168,7 +168,7 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
 
     private void onBrowseClick() {
         VCSFileProxy oldFile = defaultWorkingDirectory();
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ClonePanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(ClonePanel.class, "Browse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
@@ -178,6 +178,7 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
 
         }
         fileChooser.addChoosableFileFilter(new FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.isDirectory();
             }
@@ -188,9 +189,9 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
         });
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(this, NbBundle.getMessage(ClonePanel.class, "OK_Button"));                                            // NO I18N
-        File f = fileChooser.getSelectedFile();
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
-            toTextField.setText(f.getAbsolutePath());
+            toTextField.setText(f.getPath());
         }
     }
     /**
@@ -202,10 +203,10 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
      * <ul>
      */
     private VCSFileProxy defaultWorkingDirectory() {
-        File defaultDir = null;
+        VCSFileProxy defaultDir = null;
         String current = toTextField.getText();
         if (current != null && !(current.trim().equals(""))) {  // NOI18N
-            File currentFile = new File(current);
+            VCSFileProxy currentFile = VCSFileProxySupport.getResource(repository, current);
             while (currentFile != null && currentFile.exists() == false) {
                 currentFile = currentFile.getParentFile();
             }
@@ -218,16 +219,17 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
             }
         }
 
-        if (defaultDir == null) {
-            File projectFolder = ProjectChooser.getProjectsFolder();
-            if (projectFolder.exists() && projectFolder.isDirectory()) {
-                defaultDir = projectFolder;
-            }
+        //TODO: get last selected project
+//        if (defaultDir == null) {
+//            VCSFileProxy projectFolder = ProjectChooser.getProjectsFolder();
+//            if (projectFolder.exists() && projectFolder.isDirectory()) {
+//                defaultDir = projectFolder;
+//            }
+//
+//        }
 
-        }
-
         if (defaultDir == null) {
-            defaultDir = new File(System.getProperty("user.home"));  // NOI18N
+            defaultDir = VCSFileProxySupport.getHome(repository);
         }
 
         return defaultDir;

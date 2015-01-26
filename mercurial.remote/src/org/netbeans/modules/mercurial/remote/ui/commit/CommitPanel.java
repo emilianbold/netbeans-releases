@@ -44,37 +44,21 @@
 
 package org.netbeans.modules.mercurial.remote.ui.commit;
 
-import javax.swing.LayoutStyle;
-import javax.swing.Icon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.netbeans.modules.versioning.util.UndoRedoSupport;
-import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.mercurial.remote.HgFileNode;
-import org.netbeans.modules.versioning.util.TemplateSelector;
 import java.awt.Component;
+import static java.awt.Component.BOTTOM_ALIGNMENT;
+import static java.awt.Component.CENTER_ALIGNMENT;
+import static java.awt.Component.LEFT_ALIGNMENT;
 import java.awt.Container;
-import javax.swing.Box;
-import org.netbeans.modules.mercurial.remote.HgModuleConfig;
-import org.netbeans.modules.versioning.util.ListenersSupport;
-import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.versioning.util.StringSelector;
-import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
-import org.openide.cookies.SaveCookie;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-
-import javax.swing.event.TableModelListener;
-import javax.swing.event.TableModelEvent;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,47 +66,62 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import static javax.swing.BorderFactory.createEmptyBorder;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
+import static javax.swing.BoxLayout.X_AXIS;
+import static javax.swing.BoxLayout.Y_AXIS;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.LayoutStyle;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.SwingConstants.SOUTH;
+import static javax.swing.SwingConstants.WEST;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.mercurial.remote.HgFileNode;
+import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.ui.diff.MultiDiffPanel;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.remote.versioning.hooks.HgHook;
+import org.netbeans.modules.mercurial.remote.versioning.hooks.HgHookContext;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
+import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
+import org.netbeans.modules.versioning.util.StringSelector;
+import org.netbeans.modules.versioning.util.TemplateSelector;
+import org.netbeans.modules.versioning.util.UndoRedoSupport;
+import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 import org.netbeans.modules.versioning.util.common.SectionButton;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.cookies.EditorCookie;
-import org.openide.util.ImageUtilities;
-import static java.awt.Component.BOTTOM_ALIGNMENT;
-import static java.awt.Component.CENTER_ALIGNMENT;
-import static java.awt.Component.LEFT_ALIGNMENT;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import static javax.swing.BorderFactory.createEmptyBorder;
-import static javax.swing.BoxLayout.X_AXIS;
-import static javax.swing.BoxLayout.Y_AXIS;
-import javax.swing.JComboBox;
-import static javax.swing.SwingConstants.SOUTH;
-import static javax.swing.SwingConstants.WEST;
-import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.HgHook;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.HgHookContext;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -165,9 +164,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private String warningMessage;
     private boolean userValid;
     private String user;
+    private final VCSFileProxy repository;
 
     /** Creates new form CommitPanel */
-    public CommitPanel() {
+    public CommitPanel(VCSFileProxy repository) {
+        this.repository = repository;
         initComponents();
         initInteraction();
     }
@@ -195,17 +196,17 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     public void addNotify() {
         super.addNotify();
 
-        HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        HgModuleConfig.getDefault(repository).getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         initCollapsibleSections();
-        TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
+        TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault(repository).getPreferences());
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
         } else {
-            String lastCommitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage(CommitAction.KEY_CANCELED_MESSAGE);
-            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault().getPreferences()).isAutoFill()) {
-                List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+            String lastCommitMessage = HgModuleConfig.getDefault(repository).getLastCanceledCommitMessage(CommitAction.KEY_CANCELED_MESSAGE);
+            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault(repository).getPreferences()).isAutoFill()) {
+                List<String> messages = Utils.getStringList(HgModuleConfig.getDefault(repository).getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
                 if (messages.size() > 0) {
                     lastCommitMessage = messages.get(0);
                 }
@@ -333,7 +334,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
-        HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        HgModuleConfig.getDefault(repository).getPreferences().removePreferenceChangeListener(this);
         if (um != null) {
             um.unregister();
             um = null;
@@ -350,17 +351,17 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private void onBrowseRecentMessages() {
-        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault().getPreferences());
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault(repository).getPreferences());
         String message = selector.getRecentMessage(getMessage("CTL_CommitForm_RecentTitle"),  // NOI18N
                                                getMessage("CTL_CommitForm_RecentPrompt"),  // NOI18N
-            Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
+            Utils.getStringList(HgModuleConfig.getDefault(repository).getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             messageTextArea.replaceSelection(message);
         }
     }
 
     private void onTemplate() {
-        TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
+        TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault(repository).getPreferences());
         if(ts.show("org.netbeans.modules.mercurial.remote.ui.commit.TemplatePanel")) { //NOI18N
             messageTextArea.setText(ts.getTemplate());
         }

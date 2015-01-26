@@ -64,7 +64,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
     private final MultiDiffPanel master;
 
-    {
+    static {
         ResourceBundle loc = NbBundle.getBundle(DiffFileTreeImpl.class);
         columnLabels.put(DiffNode.COLUMN_NAME_STATUS, new String [] { 
                 loc.getString("CTL_DiffTable_Column_Status_Title"), 
@@ -100,7 +100,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         return new AbstractRenderDataProvider() {
             @Override
             protected String annotateName (DiffNode node, String originalLabel) {
-                if (HgModuleConfig.getDefault().isExcludedFromCommit(node.getSetup().getBaseFile().getPath())) {
+                if (HgModuleConfig.getDefault(root).isExcludedFromCommit(node.getSetup().getBaseFile().getPath())) {
                     originalLabel = "<s>" + (originalLabel == null ? node.getName() : originalLabel) + "</s>"; //NOI18N
                 }
                 return originalLabel;

@@ -55,6 +55,7 @@ import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.remote.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileObject;
@@ -139,7 +140,7 @@ public class LogAction extends SearchHistoryAction {
                     return;
                 }
                 outputSearchContextTab(repositoryRoot, files, "MSG_Log_Title"); //NOI18N
-                final boolean startSearch = files != null && (files.length == 1 && !files[0].isDirectory() || files.length > 1 && Utils.shareCommonDataObject(files));
+                final boolean startSearch = files != null && (files.length == 1 && !files[0].isDirectory() || files.length > 1 && VCSFileProxySupport.shareCommonDataObject(files));
                 final String branchName;
                 if (revision != null && !revision.isEmpty()) {
                     branchName = ""; //NOI18N
