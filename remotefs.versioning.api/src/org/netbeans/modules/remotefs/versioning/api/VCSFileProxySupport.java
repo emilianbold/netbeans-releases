@@ -61,8 +61,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import org.netbeans.api.actions.Openable;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -74,7 +74,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.*;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -323,6 +323,36 @@ public final class VCSFileProxySupport {
                 return false;
             } else {
                 return true;
+            }
+        }
+    }
+    
+    public static void copyDirFiles(VCSFileProxy sourceDir, VCSFileProxy targetDir, boolean preserveTimestamp) {
+        VCSFileProxy[] files = sourceDir.listFiles();
+
+        if(files==null || files.length == 0) {
+            mkdirs(targetDir);
+            if(preserveTimestamp) {
+                setLastModified(targetDir, sourceDir);
+            }
+            return;
+        }
+        if(preserveTimestamp) {
+            setLastModified(targetDir, sourceDir);
+        }
+        for (int i = 0; i < files.length; i++) {
+            try {
+                VCSFileProxy target = VCSFileProxy.createFileProxy(targetDir, files[i].getName()).normalizeFile();
+                if(files[i].isDirectory()) {
+                    copyDirFiles(files[i], target, preserveTimestamp);
+                } else {
+                    copyFile(files[i], target);
+                    if(preserveTimestamp) {
+                        setLastModified(target, files[i]);
+                    }
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(VCSFileProxySupport.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
             }
         }
     }
