@@ -559,5 +559,10 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-    
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return treeView.requestFocusInWindow();
+    }
+
 }

@@ -42,7 +42,11 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.web.inspect.webkit.DOMNode;
+import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 
 /**
  * An unused binding.
@@ -60,6 +64,8 @@ public class UnusedBinding {
     private final String nodeId;
     /** Classes (value if the {@code class} attribute) of the owner of this binding. */
     private final String nodeClasses;
+    /** Owning page. */
+    private final WebKitPageModel page;
 
     /**
      * Creates a new {@code UnusedBinding}.
@@ -70,13 +76,16 @@ public class UnusedBinding {
      * @param nodeId ID of the owner of the binding.
      * @param nodeClasses classes (value of the {@code class} attribute)
      * of the owner of the binding.
+     * @param page owning page.
      */
-    public UnusedBinding(int id, String name, String nodeTagName, String nodeId, String nodeClasses) {
+    public UnusedBinding(int id, String name, String nodeTagName, String nodeId,
+            String nodeClasses, WebKitPageModel page) {
         this.id = id;
         this.name = name;
         this.nodeTagName = nodeTagName;
         this.nodeId = nodeId;
         this.nodeClasses = nodeClasses;
+        this.page = page;
     }
 
     /**
@@ -98,6 +107,15 @@ public class UnusedBinding {
     }
 
     /**
+     * Returns the owning page.
+     * 
+     * @return owning page.
+     */
+    public WebKitPageModel getPage() {
+        return page;
+    }
+
+    /**
      * Returns (HTML) display name of the owner of this binding.
      * 
      * @return (HTML) display name of the owner of this binding.
@@ -105,6 +123,26 @@ public class UnusedBinding {
     public String getNodeDisplayName() {
         String selector = DOMNode.selector(nodeId, nodeClasses);
         return DOMNode.htmlDisplayName(nodeTagName, selector);
+    }
+
+    /**
+     * Returns the owning node.
+     * 
+     * @return owning node (or {@code null} if the node cannot be found).
+     */
+    public DOMNode getNode() {
+        assert !EventQueue.isDispatchThread();
+        WebKitDebugging webKit = page.getWebKit();
+        RemoteObject remoteObject = webKit.getRuntime().evaluate("NetBeans.ownerOfUnusedBinding("+id+")"); // NOI18N
+        org.netbeans.modules.web.webkit.debugging.api.dom.Node webKitNode = null;
+        if (remoteObject != null) {
+            webKitNode = webKit.getDOM().requestNode(remoteObject);
+        }
+        DOMNode node = null;
+        if (webKitNode != null) {
+            node = page.getNode(webKitNode.getNodeId());
+        }
+        return node;
     }
 
 }
