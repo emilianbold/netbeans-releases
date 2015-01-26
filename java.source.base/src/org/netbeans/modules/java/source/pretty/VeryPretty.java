@@ -409,7 +409,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 //XXX: should be able to use handlePossibleOldTrees over the individual variables:
                 FieldGroupTree fgt = (FieldGroupTree) t;
                 if (fgt.isEnum()) {
-                    printEnumConstants(List.from(fgt.getVariables().toArray(new JCTree[0])), !fgt.isEnum() || fgt.moreElementsFollowEnum());
+                    printEnumConstants(List.from(fgt.getVariables().toArray(new JCTree[0])), !fgt.isEnum() || fgt.moreElementsFollowEnum(), printComments);
                 } else {
                     java.util.List<JCVariableDecl> remainder = printOriginalPartOfFieldGroup(fgt);
                     
@@ -420,7 +420,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                         oldTrees.remove(var);
                         assert !isEnumerator(var);
                         assert !isSynthetic(var);
-                        printStat(var, true, firstMember, true, true);
+                        printStat(var, true, firstMember, true, true, printComments);
                         firstMember = false;
                     }
                 }
@@ -710,7 +710,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         }
         printImportsBlock(imports, !l.isEmpty());
 	while (l.nonEmpty()) {
-            printStat(l.head, true, false, false, true);
+            printStat(l.head, true, false, false, true, false);
             l = l.tail;
 	}
     }
@@ -792,12 +792,12 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : (flags & ENUM) != 0 ? cs.getBlankLinesAfterEnumHeader() : cs.getBlankLinesAfterClassHeader());
             boolean firstMember = true;
             if ((tree.mods.flags & ENUM) != 0 && members.get(0) instanceof FieldGroupTree && ((FieldGroupTree) members.get(0)).isEnum()) {
-                printEnumConstants(((FieldGroupTree) members.get(0)).getVariables(), false);
+                printEnumConstants(((FieldGroupTree) members.get(0)).getVariables(), false, false);
                 firstMember = false;
                 members.remove(0);
             }
             for (JCTree t : members) {
-                printStat(t, true, firstMember, true, true);
+                printStat(t, true, firstMember, true, true, false);
                 firstMember = false;
             }
 	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : (flags & ENUM) != 0 ? cs.getBlankLinesBeforeEnumClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
@@ -810,7 +810,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	enclClassName = enclClassNamePrev;
     }
 
-    private void printEnumConstants(java.util.List<? extends JCTree> defs, boolean forceSemicolon) {
+    private void printEnumConstants(java.util.List<? extends JCTree> defs, boolean forceSemicolon, boolean printComments) {
         boolean first = true;
         boolean hasNonEnumerator = false;
         for (JCTree c : defs) {
@@ -839,7 +839,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                         break;
                     }
                 }
-                printStat(c, true, false, col, false);
+                printStat(c, true, false, col, false, printComments);
             } else if (!isSynthetic(c))
                 hasNonEnumerator = true;
         }
@@ -2629,7 +2629,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
     
     private void printStat(JCTree tree, boolean member, boolean first) {
-        printStat(tree, member, first, false, false);
+        printStat(tree, member, first, false, false, false);
     }
 
     /**
@@ -2642,7 +2642,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
      * @param col
      * @param nl 
      */
-    private void printStat(JCTree tree, boolean member, boolean first, boolean col, boolean nl) {
+    private void printStat(JCTree tree, boolean member, boolean first, boolean col, boolean nl, boolean printComments) {
 	if(tree==null) {
             if (col) {
                 toColExactly(out.leftMargin);
@@ -2659,7 +2659,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 toColExactly(out.leftMargin);
             }
             // because of comment duplication 
-//	    printPrecedingComments(tree, !member);
+	    if(printComments) printPrecedingComments(tree, !member);
             printInnerCommentsAsTrailing(tree, !member);
             printExpr(tree, TreeInfo.notExpression);
 	    int tag = tree.getTag().ordinal();//XXX: comparing ordinals!!!
@@ -2717,7 +2717,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
         boolean first = true;
 	for (JCTree t : filtered) {
-	     printStat(t, members, first, true, false);
+	     printStat(t, members, first, true, false, false);
             first = false;
 	}
     }

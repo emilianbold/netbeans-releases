@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
@@ -363,7 +364,21 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         for (Element privEl : this.referencedPrivateElement) {
             problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "WRN_InnerToOuterRefToPrivate", privEl));
         }
-
+        
+        Trees trees = workingCopy.getTrees();
+        CompilationUnitTree newNode = node;
+        for (ImportTree imp : node.getImports()) {
+            if(imp.isStatic()) {
+                Tree qualIdent = imp.getQualifiedIdentifier();
+                TypeElement el = workingCopy.getElements().getTypeElement(qualIdent.toString());
+                if(inner.equals(el)) {
+                    newNode = make.removeCompUnitImport(newNode, imp);
+                }
+            }
+        }
+        if(newNode != node) {
+            rewrite(node, newNode);
+        }
         return result;
     }
     

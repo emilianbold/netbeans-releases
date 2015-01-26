@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.refactoring.java.callhierarchy;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.openide.text.PositionBounds;
 
@@ -89,11 +91,27 @@ final class CallOccurrence implements CallDescriptor {
             CompilationInfo javac, TreePath selection, Call parent) {
         WhereUsedElement wue = WhereUsedElement.create(javac, selection, false);
         CallOccurrence c = new CallOccurrence();
+        if(!javac.getTreeUtilities().isSynthetic(selection)) {
+            selection = getEnclosingTree(selection);
+            if (javac.getTreeUtilities().isSynthetic(selection)) {
+                selection = getEnclosingTree(selection.getParentPath());
+            }
+        }
         c.occurrence = TreePathHandle.create(selection, javac);
         c.displayName = selection.getLeaf().toString();
         c.htmlDisplayName = String.format("<html>%s</html>", wue.getDisplayText());
         c.selectionBounds = wue.getPosition();
         return c;
     }
-
+    
+    private static TreePath getEnclosingTree(TreePath tp) {
+        while(tp != null) {
+            Tree tree = tp.getLeaf();
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT || tree.getKind() == tree.getKind().VARIABLE) {
+                return tp;
+            } 
+            tp = tp.getParentPath();
+        }
+        return null;
+    }
 }
