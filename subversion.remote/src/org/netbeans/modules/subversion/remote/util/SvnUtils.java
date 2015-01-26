@@ -1648,7 +1648,7 @@ public class SvnUtils {
         }
 
         roots = l.toArray(new VCSFileProxy[l.size()]);
-        if(org.netbeans.modules.subversion.remote.versioning.util.Utils.shareCommonDataObject(roots)) {
+        if(VCSFileProxySupport.shareCommonDataObject(roots)) {
             return roots;
         }
 
