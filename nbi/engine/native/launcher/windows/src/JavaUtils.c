@@ -684,6 +684,21 @@ void installBundledJVMs(LauncherProperties * props) {
         }
     }
 }
+void searchJavaInstallationFolder(LauncherProperties * props) {   
+    char executablePath [MAX_PATH];
+    GetModuleFileName(0, executablePath, MAX_PATH);
+    char *pch = strrchr(executablePath, '\\');    
+    char installationFolder [MAX_PATH]= "";
+    int i = 0;
+    int end = (int) (pch - executablePath);
+    printf("%i", end);
+    for(i; i < end; i++) {
+        installationFolder[i] = executablePath[i];
+    }
+    strcat(installationFolder, "\\bin\\jre");
+    
+    trySetCompatibleJava(toWCHAR(installationFolder), props);
+}
 void searchJavaSystemLocations(LauncherProperties * props) {
     if ( props->jvms->size > 0 ) {
         DWORD i=0;
@@ -696,8 +711,7 @@ void searchJavaSystemLocations(LauncherProperties * props) {
                     break;
                 }
             }
-        }
-        
+        }        
     }
 }
 void findSystemJava(LauncherProperties *props) {
@@ -706,6 +720,11 @@ void findSystemJava(LauncherProperties *props) {
     installBundledJVMs(props);
     
     if(!isOK(props) || isTerminated(props)) return;
+    // search in <installation folder>/bin/jre
+    if(props->java==NULL) {
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in installation folder", 1);
+        searchJavaInstallationFolder(props);
+    }
     // search JVM in the system paths    
     if(props->java==NULL) {
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in the system paths", 1);
