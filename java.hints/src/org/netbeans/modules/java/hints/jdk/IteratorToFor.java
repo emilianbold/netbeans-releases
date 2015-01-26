@@ -277,6 +277,9 @@ public class IteratorToFor {
     // adapted from org.netbeans.modules.java.hints.declarative.conditionapi.Matcher.referencedIn
     private static boolean uses(final HintContext ctx, Collection<? extends TreePath> statements, TreePath var) {
         final Element e = ctx.getInfo().getTrees().getElement(var);
+        if (e == null) {
+            return false;
+        }
         for (TreePath tp : statements) {
             boolean occurs = Boolean.TRUE.equals(new TreePathScanner<Boolean, Void>() {
                 @Override public Boolean scan(Tree tree, Void p) {

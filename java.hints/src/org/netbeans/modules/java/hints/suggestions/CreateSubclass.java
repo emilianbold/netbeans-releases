@@ -135,7 +135,7 @@ public class CreateSubclass {
 
         TypeElement typeElement = (TypeElement) info.getTrees().getElement(tp);
 
-        if (typeElement.getModifiers().contains(Modifier.FINAL)) return null;
+        if (typeElement == null || typeElement.getModifiers().contains(Modifier.FINAL)) return null;
         
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject root = cp.findOwnerRoot(info.getFileObject());
