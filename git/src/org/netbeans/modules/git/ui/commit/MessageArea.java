@@ -71,7 +71,7 @@ public class MessageArea extends JTextArea {
                 g.setColor(Color.red);
                 g.drawLine(x, intersect.y, x, intersect.y + intersect.height);
             }
-            bodyLineStarts = charHeight;
+            bodyLineStarts = 2 * charHeight;
         }
         if (messageWidth > 0) {
             int x = messageWidth * charWidth;
