@@ -42,48 +42,62 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.web.inspect.webkit.DOMNode;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * Node representing an unused binding.
+ * Go to (unused binding) source action.
  *
  * @author Jan Stola
  */
-public class UnusedBindingNode extends AbstractNode {
-    /** Unused binding represented by this node. */
-    private final UnusedBinding unusedBinding;
+public class GoToBindingSourceAction extends NodeAction {
 
-    /**
-     * Creates a new {@code UnusedBindingNode}.
-     * 
-     * @param unusedBinding unused binding to represent by the node.
-     */
-    public UnusedBindingNode(UnusedBinding unusedBinding) {
-        super(Children.LEAF, Lookups.fixed(unusedBinding));
-        this.unusedBinding = unusedBinding;
-        setIconBaseWithExtension("org/netbeans/modules/web/inspect/resources/domElement.png"); // NOI18N
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        Node selection = activatedNodes[0];
+        UnusedBinding unusedBinding = selection.getLookup().lookup(UnusedBinding.class);
+        final DOMNode node = unusedBinding.getNode();
+        if (node != null) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    node.getPreferredAction().actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, null));
+                }
+            });
+        }
     }
 
     @Override
-    public String getHtmlDisplayName() {
-        return unusedBinding.getNodeDisplayName();
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length == 1) {
+            Node selection = activatedNodes[0];
+            UnusedBinding unusedBinding = selection.getLookup().lookup(UnusedBinding.class);
+            return (unusedBinding != null);
+        }
+        return false;
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(GoToBindingSourceAction.class),
-            SystemAction.get(ShowInDOMAction.class)
-        };
+    @NbBundle.Messages({
+        "GoToBindingSourceAction.name=Go to Source"
+    })
+    public String getName() {
+        return Bundle.GoToBindingSourceAction_name();
     }
 
     @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GoToBindingSourceAction.class);
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return true;
     }
 
 }
