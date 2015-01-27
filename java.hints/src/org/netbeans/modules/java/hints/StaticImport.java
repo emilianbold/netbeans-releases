@@ -130,7 +130,7 @@ public class StaticImport {
             return null;
         }
         Element klass = info.getTrees().getElement(cc);
-        if (klass.getKind() != ElementKind.CLASS) {
+        if (klass == null || klass.getKind() != ElementKind.CLASS) {
             return null;
         }
         String fqn = null;

@@ -652,6 +652,9 @@ public final class GeneratorUtilities {
         ArrayList<Element> elementsToImport = new ArrayList<Element>(toImport.size());
         Set<String> staticImportNames = new HashSet<String>();
         for (Element e : toImport) {
+            if (e == null) {
+                continue;
+            }
             switch (e.getKind()) {
                 case METHOD:
                 case ENUM_CONSTANT:

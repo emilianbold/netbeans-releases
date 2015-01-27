@@ -195,6 +195,11 @@ public final class NoLoggers {
             TreeMaker m = wc.getTreeMaker();
             ClassTree classTree = (ClassTree) tp.getLeaf();
             Element cls = wc.getTrees().getElement(tp);
+            
+            if (cls == null) {
+                // TODO: log/inform user
+                return;
+            }
 
             // find free field name
             String loggerFieldName = null;
@@ -228,6 +233,10 @@ public final class NoLoggers {
 
             // logger type
             TypeElement loggerTypeElement = wc.getElements().getTypeElement("java.util.logging.Logger"); // NOI18N
+            if (loggerTypeElement == null) {
+                // TODO: report to the user
+                return;
+            }
             ExpressionTree loggerClassQualIdent = m.QualIdent(loggerTypeElement);
 
             // initializer

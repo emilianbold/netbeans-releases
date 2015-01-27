@@ -131,7 +131,7 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
             @Override
             public Object visitIdentifier(IdentifierTree node, Object p) {
                 Element el = info.getTrees().getElement(getCurrentPath());
-                if (el.asType() == null || el.asType().getKind() == TypeKind.ERROR) {
+                if (el == null || el.asType() == null || el.asType().getKind() == TypeKind.ERROR) {
                     return null;
                 }
                 if (el.getKind() == ElementKind.LOCAL_VARIABLE || el.getKind() == ElementKind.PARAMETER) {
