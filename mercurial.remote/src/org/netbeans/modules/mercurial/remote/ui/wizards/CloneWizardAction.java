@@ -57,6 +57,7 @@ import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.openide.DialogDisplayer;
 import org.netbeans.modules.mercurial.remote.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.RequestProcessor.Task;
 
@@ -102,13 +103,14 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         VCSFileProxy cloneFile = null;
         if (!cancelled) {
             String targetFolderPath = (String) wizardDescriptor.getProperty("directory"); //NOI18N
+            VCSFileProxy root = (VCSFileProxy) wizardDescriptor.getProperty("root"); // NOI18N
             HgModuleConfig.getDefault(root).getPreferences().put(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, targetFolderPath);
             final HgURL repository = (HgURL) wizardDescriptor.getProperty("repository"); // NOI18N
-            final VCSFileProxy directory = new VCSFileProxy(targetFolderPath);
+            final VCSFileProxy directory = VCSFileProxySupport.getResource(root, targetFolderPath);
             final String cloneName = (String) wizardDescriptor.getProperty("cloneName"); // NOI18N
             final HgURL pullPath = (HgURL) wizardDescriptor.getProperty("defaultPullPath"); // NOI18N
             final HgURL pushPath = (HgURL) wizardDescriptor.getProperty("defaultPushPath"); // NOI18N
-            cloneFile = new VCSFileProxy(directory, cloneName);
+            cloneFile = VCSFileProxy.createFileProxy(directory, cloneName);
             Task t = CloneAction.performClone(repository, cloneFile, true, null, pullPath, pushPath, HgModuleConfig.getDefault(root).getShowCloneCompleted());
             if (waitFinished) {
                 t.waitFinished();

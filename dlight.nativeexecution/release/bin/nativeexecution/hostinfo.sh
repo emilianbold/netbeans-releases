@@ -72,18 +72,18 @@ elif [ "${OSFAMILY}" = "MACOSX" ]; then
    OSBUILD=`hostinfo | sed -n '/kernel version/{n;p;}' | sed 's/[	 ]*\([^:]*\).*/\1/'`
 fi
 
-wx_test() {
+wx_fail() {
     tmp="${1}/wx_test"
     touch ${tmp} 2> /dev/null
     if [ $? -eq 0 ]; then
         chmod u+x ${tmp} 2> /dev/null
         if [ -x ${tmp} ]; then
             rm ${tmp} 2> /dev/null
-            return 0
+            return 1
         fi
     fi
 
-    return 1
+    return 0
 }
 
 USER=${USER:-`logname 2>/dev/null`}
@@ -93,8 +93,8 @@ TMPBASE=${TMPBASE:-/var/tmp}
 SUFFIX=0
 TMPDIRBASE=${TMPBASE}/dlight_${USER}
 
-if ! wx_test ${TMPBASE}; then
-    if ! wx_test ${TMPDIRBASE}; then
+if wx_fail ${TMPBASE}; then
+    if wx_fail ${TMPDIRBASE}; then
         TMPBASE=/tmp
         TMPDIRBASE=${TMPBASE}/dlight_${USER}
     fi
@@ -102,7 +102,7 @@ fi
 
 mkdir -p ${TMPDIRBASE}
 while [ ${SUFFIX} -lt 5 ]; do
-    if ! wx_test ${TMPDIRBASE}; then
+    if wx_fail ${TMPDIRBASE}; then
         echo "Warning: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
         SUFFIX=`expr 1 + ${SUFFIX}`
         TMPDIRBASE=${TMPBASE}/dlight_${USER}_${SUFFIX}
@@ -112,13 +112,15 @@ while [ ${SUFFIX} -lt 5 ]; do
     fi
 done
 
-if wx_test ${TMPDIRBASE}; then
+if wx_fail ${TMPDIRBASE}; then
+    :
+else
     SUFFIX=0
     TMPBASE=${TMPDIRBASE}
     TMPDIRBASE=${TMPBASE}/${NB_KEY}
     mkdir -p ${TMPDIRBASE}
     while [ ${SUFFIX} -lt 5 ]; do
-        if ! wx_test ${TMPDIRBASE}; then
+        if wx_fail ${TMPDIRBASE}; then
             echo "Warning: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
             SUFFIX=`expr 1 + ${SUFFIX}`
             TMPDIRBASE=${TMPBASE}/${NB_KEY}_${SUFFIX}
@@ -129,14 +131,14 @@ if wx_test ${TMPDIRBASE}; then
     done
 fi
 
-if ! wx_test ${TMPDIRBASE}; then
+if wx_fail ${TMPDIRBASE}; then
     TMPDIRBASE=${TMPBASE}
 fi
 
-if ! wx_test ${TMPDIRBASE}; then
+if wx_fail ${TMPDIRBASE}; then
     echo "Error: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
 fi
-\
+
 ENVFILE="${TMPDIRBASE}/env"
 
 ID=`LC_MESSAGES=C /usr/bin/id`

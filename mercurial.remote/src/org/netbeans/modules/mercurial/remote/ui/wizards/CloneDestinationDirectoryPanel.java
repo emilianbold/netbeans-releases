@@ -45,10 +45,12 @@ package org.netbeans.modules.mercurial.remote.ui.wizards;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -56,14 +58,16 @@ import org.openide.util.NbBundle;
 
 public final class CloneDestinationDirectoryPanel extends JPanel implements ActionListener {
     private String message;
+    private final CloneDestinationDirectoryWizardPanel wizardPanel;
     
     /** Creates new form CloneVisualPanel2 */
-    public CloneDestinationDirectoryPanel() {
+    public CloneDestinationDirectoryPanel(CloneDestinationDirectoryWizardPanel wizardPanel) {
+        this.wizardPanel = wizardPanel;
         initComponents();
         directoryBrowseButton.addActionListener(this);    
         scanForProjectsCheckBox.addActionListener(this);    
         directoryField.setText(defaultWorkingDirectory().getPath());
-        scanForProjectsCheckBox.setSelected(HgModuleConfig.getDefault(root).getShowCloneCompleted());
+        scanForProjectsCheckBox.setSelected(HgModuleConfig.getDefault(wizardPanel.getRoot()).getShowCloneCompleted());
     }
     
     @Override
@@ -93,7 +97,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
     public boolean isInputValid() {
         String dir = directoryField.getText();
         String name = nameField.getText();
-        VCSFileProxy file = new VCSFileProxy (dir, name);
+        VCSFileProxy file = VCSFileProxySupport.getResource(wizardPanel.getRoot(), dir+"/"+name);
         if (file.exists()) {
             message = NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "MSG_TARGET_EXISTS"); // NOI18N
             return false;
@@ -201,13 +205,13 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         if (evt.getSource() == directoryBrowseButton) {
             onBrowseClick();
         } else if (evt.getSource() == scanForProjectsCheckBox) {
-            HgModuleConfig.getDefault(root).setShowCloneCompleted(scanForProjectsCheckBox.isSelected());
+            HgModuleConfig.getDefault(wizardPanel.getRoot()).setShowCloneCompleted(scanForProjectsCheckBox.isSelected());
         }
     }
 
     private void onBrowseClick() {
         VCSFileProxy oldFile = defaultWorkingDirectory();
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "Browse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
@@ -216,7 +220,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
             fileChooser.removeChoosableFileFilter(fileFilter);
         }
         fileChooser.addChoosableFileFilter(new FileFilter() {
-            public boolean accept(VCSFileProxy f) {
+            public boolean accept(File f) {
                 return f.isDirectory();
             }
             @Override
@@ -226,7 +230,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         });
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(this, NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "OK_Button"));                                            // NO I18N
-        VCSFileProxy f = fileChooser.getSelectedFile();
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
             directoryField.setText(f.getPath());
         }
@@ -244,7 +248,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         VCSFileProxy defaultDir = null;
         String current = directoryField.getText();
         if (current != null && !(current.trim().equals(""))) {  // NOI18N
-            VCSFileProxy currentFile = new VCSFileProxy(current);
+            VCSFileProxy currentFile = VCSFileProxySupport.getResource(wizardPanel.getRoot(), current);
             while (currentFile != null && currentFile.exists() == false) {
                 currentFile = currentFile.getParentFile();
             }
@@ -258,22 +262,22 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         }
         
         if (defaultDir == null) {
-            String cloneDir = HgModuleConfig.getDefault(root).getPreferences().get(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, null);
+            String cloneDir = HgModuleConfig.getDefault(wizardPanel.getRoot()).getPreferences().get(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, null);
             if (cloneDir != null) {
-                defaultDir = new VCSFileProxy(cloneDir);               
+                defaultDir = VCSFileProxySupport.getResource(wizardPanel.getRoot(), cloneDir);               
             }            
         }
 
-        if (defaultDir == null) {
-            VCSFileProxy projectFolder = ProjectChooser.getProjectsFolder();
-            if (projectFolder.exists() && projectFolder.isDirectory()) {
-                defaultDir = projectFolder;
-            }
+//        if (defaultDir == null) {
+//            VCSFileProxy projectFolder = ProjectChooser.getProjectsFolder();
+//            if (projectFolder.exists() && projectFolder.isDirectory()) {
+//                defaultDir = projectFolder;
+//            }
+//
+//        }
 
-        }
-
         if (defaultDir == null) {
-            defaultDir = new VCSFileProxy(System.getProperty("user.home"));  // NOI18N
+            defaultDir = VCSFileProxySupport.getHome(wizardPanel.getRoot());
         }
 
         return defaultDir;
