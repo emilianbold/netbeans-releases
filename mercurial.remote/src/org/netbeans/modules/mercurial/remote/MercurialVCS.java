@@ -68,12 +68,12 @@ import org.netbeans.spi.queries.CollocationQueryImplementation2;
     actionsCategory="Mercurial", //NOI18N
     metadataFolderNames=".hg") //NOI18N
 public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
-
+    
     public MercurialVCS() {
         //putProperty(PROP_DISPLAY_NAME, getDisplayName()); // NOI18N
         //putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_MainMenu")); // NOI18N
-        
-        HgModuleConfig.getDefault(root).getPreferences().addPreferenceChangeListener(this);
+        // moved to HgModuleConfig
+        //HgModuleConfig.getDefault(root).getPreferences().addPreferenceChangeListener(this);
         Mercurial.getInstance().register(this);        
     }
 

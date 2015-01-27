@@ -90,6 +90,7 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
@@ -136,8 +137,6 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     public static final String ACTIONS_PATH_PREFIX = "Actions/MercurialRemote/"; //NOI18N
 
     private final FileStatusCache cache;
-    private MessageFormat format;
-    private String emptyFormat;
 
     private static final String badgeModified = "org/netbeans/modules/mercurial/remote/resources/icons/modified-badge.png"; //NOI18N
     private static final String badgeConflicts = "org/netbeans/modules/mercurial/remote/resources/icons/conflicts-badge.png"; //NOI18N
@@ -146,6 +145,13 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     private static final String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
     private static final Logger LOG = Logger.getLogger(MercurialAnnotator.class.getName());
+    
+    private final Map<FileSystem, AnnotationFormat> annotationFormat = new HashMap<FileSystem, AnnotationFormat>();
+
+    public static final class AnnotationFormat {
+        private MessageFormat format;
+        private String emptyFormat;
+    }
 
     MercurialAnnotator(FileStatusCache cache) {
         this.cache = cache;
@@ -157,7 +163,18 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     }
 
     public void refresh() {
-        String string = HgModuleConfig.getDefault(root).getAnnotationFormat();
+        for(FileSystem fileSystem : VCSFileProxySupport.getFileSystems()) {
+            initFormat(fileSystem);
+        }
+    }
+
+    private AnnotationFormat initFormat(FileSystem fileSystem) {
+        AnnotationFormat af = annotationFormat.get(fileSystem);
+        if (af == null) {
+            af = new AnnotationFormat();
+            annotationFormat.put(fileSystem, af);
+        }
+        String string = HgModuleConfig.getDefault(VCSFileProxy.createFileProxy(fileSystem.getRoot())).getAnnotationFormat();
         if (string != null && !string.trim().equals("")) { // NOI18N
             string = HgUtils.createAnnotationFormat(string);
             if (!HgUtils.isAnnotationFormatValid(string))   {
@@ -165,9 +182,19 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 Mercurial.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
                 string = org.openide.util.NbBundle.getMessage(MercurialAnnotator.class, "MercurialAnnotator.defaultFormat"); // NOI18N
             }
-            format = new MessageFormat(string);
-            emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
+            af.format = new MessageFormat(string);
+            af.emptyFormat = af.format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
         }
+        return af;
+    }
+
+    public AnnotationFormat getAnnotationFormat(FileSystem fileSystem) {
+        AnnotationFormat af = annotationFormat.get(fileSystem);
+        if (af == null) {
+            af = initFormat(fileSystem);
+            annotationFormat.put(fileSystem, af);
+        }
+        return af;
     }
     
     @Override
@@ -423,9 +450,9 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             statusString,
             stickyString,
         };
-
-        String annotation = format.format(arguments, new StringBuffer(), null).toString().trim();
-        if(annotation.equals(emptyFormat)) {
+        AnnotationFormat af = getAnnotationFormat(VCSFileProxySupport.getFileSystem(file));
+        String annotation = af.format.format(arguments, new StringBuffer(), null).toString().trim();
+        if(annotation.equals(af.emptyFormat)) {
             return ""; // NOI18N
         } else {
             return " " + annotation; // NOI18N
@@ -453,7 +480,8 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         int status = mostImportantInfo.getStatus();
         
         if (annotationsVisible && mostImportantFile != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
-            if (format != null) {
+            AnnotationFormat af = getAnnotationFormat(VCSFileProxySupport.getFileSystem(mostImportantFile));
+            if (af.format != null) {
                 textAnnotation = formatAnnotation(mostImportantInfo, mostImportantFile);
             } else {
                 //String sticky = SvnUtils.getCopy(mostImportantFile);

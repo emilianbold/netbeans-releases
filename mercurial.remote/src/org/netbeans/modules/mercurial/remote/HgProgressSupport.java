@@ -90,10 +90,6 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
         }
     }
     
-    public RequestProcessor.Task start(RequestProcessor rp, String displayName) {
-        return start(rp, new VCSFileProxy(""), displayName);                    //NOI18N
-    }
-
     public RequestProcessor.Task start(RequestProcessor rp, VCSFileProxy repositoryRoot, String displayName) {
         HgURL hgUrl = (repositoryRoot != null) ? new HgURL(repositoryRoot)
                                                : null;

@@ -124,7 +124,7 @@ public class ResolveConflictsAction extends ContextAction {
                         }
                     }
                 }
-            }.start(Mercurial.getInstance().getRequestProcessor(), NbBundle.getMessage(ResolveConflictsAction.class, "MSG_PreparingMerge"));
+            }.start(Mercurial.getInstance().getRequestProcessor(), files[0], NbBundle.getMessage(ResolveConflictsAction.class, "MSG_PreparingMerge"));
         }        
     }
     

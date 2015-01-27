@@ -95,10 +95,10 @@ public class AddAction extends ContextAction {
 
     @Override
     protected void performContextAction (final Node[] nodes) {
+        final VCSContext ctx = HgUtils.getCurrentContext(nodes);
         new HgProgressSupport() {
             @Override
             public void perform () {
-                VCSContext ctx = HgUtils.getCurrentContext(nodes);
                 VCSFileProxy[] allFilesToAdd = HgUtils.getModifiedFiles(ctx, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, true);
                 Map<VCSFileProxy, List<VCSFileProxy>> candidates = filterUnderRepository(allFilesToAdd);
                 addFiles(candidates);
@@ -118,7 +118,7 @@ public class AddAction extends ContextAction {
                 }
                 return filtered;
             }
-        }.start(Mercurial.getInstance().getParallelRequestProcessor(), NbBundle.getMessage(AddAction.class, "MSG_Add_Progress_Init")); //NOI18N
+        }.start(Mercurial.getInstance().getParallelRequestProcessor(), HgUtils.getRootFile(ctx), NbBundle.getMessage(AddAction.class, "MSG_Add_Progress_Init")); //NOI18N
     }
 
     private void addFiles (final Map<VCSFileProxy, List<VCSFileProxy>> candidates) {

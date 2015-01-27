@@ -152,7 +152,7 @@ public final class DeleteLocalAction extends ContextAction {
                 }
             }
         };
-        support.start(Mercurial.getInstance().getRequestProcessor(), NbBundle.getMessage(DeleteLocalAction.class, "LBL_DeleteLocalAction.progress")); //NOI18N
+        support.start(Mercurial.getInstance().getRequestProcessor(), HgUtils.getRootFile(context), NbBundle.getMessage(DeleteLocalAction.class, "LBL_DeleteLocalAction.progress")); //NOI18N
     }
     
 }
