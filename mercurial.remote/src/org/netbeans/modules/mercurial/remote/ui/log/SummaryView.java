@@ -68,6 +68,7 @@ import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.options.AnnotationColorProvider;
+import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.remote.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.remote.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.remote.ui.diff.DiffSetupSource;
@@ -80,7 +81,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -331,8 +331,8 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
     }
     
-    public SummaryView (SearchHistoryPanel master, List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUserMap) {
-        super(createViewSummaryMaster(master), results, kenaiUserMap);
+    public SummaryView (SearchHistoryPanel master, List<? extends LogEntry> results) {
+        super(createViewSummaryMaster(master), results, null);
         this.master = master;
     }
 
@@ -508,7 +508,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                             SystemAction.get(DiffAction.class).diff(master.getRoots(),
                                     info2.getHgRevision(),
                                     info1.getHgRevision(),
-                                    getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))),
+                                    ContextAction.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))),
                                     false, true);
                         }
                     }));
@@ -629,7 +629,6 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private static void revertImpl(RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
         List<VCSFileProxy> revertFiles = new ArrayList<VCSFileProxy>();
-        boolean doBackup = HgModuleConfig.getDefault(root).getBackupOnRevertModifications();
         if (revisions != null) {
             for (RepositoryRevision revision : revisions) {
                 VCSFileProxy root = revision.getRepositoryRoot();
@@ -639,6 +638,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                     }
                     revertFiles.add(event.getFile());
                 }
+                boolean doBackup = HgModuleConfig.getDefault(root).getBackupOnRevertModifications();
                 RevertModificationsAction.performRevert(
                         root, revision.getLog().getRevisionNumber(), revertFiles, doBackup, false, progress.getLogger());
                 revertFiles.clear();
@@ -670,6 +670,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                     revertFiles.add(event.getFile());
                 }
                 if(revEvents != null && !revEvents.isEmpty()){
+                    boolean doBackup = HgModuleConfig.getDefault(root).getBackupOnRevertModifications();
                     // Assuming all files in a given repository reverting to same revision
                     RevertModificationsAction.performRevert(
                         root, revEvents.get(0).getLogInfoHeader().getLog().getRevisionNumber(), revertFiles, doBackup, false, progress.getLogger());

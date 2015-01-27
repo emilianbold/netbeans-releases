@@ -273,6 +273,31 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     }
 
     @Override
+    public boolean isSolaris(VCSFileProxy proxy) {
+        File file = proxy.toFile();
+        if (file != null) {
+            return Utilities.isMac();
+        } else {
+            FileSystem fs = getFileSystem(proxy);
+            ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    return HostInfoUtils.getHostInfo(env).getOSFamily() == HostInfo.OSFamily.SUNOS;
+                } catch (IOException ex) {
+                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    return false;
+                } catch (ConnectionManager.CancellationException ex) {
+                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    return false;
+                }
+            } else {
+                // TODO: what to return here???
+                return false;
+            }
+        }
+    }
+
+    @Override
     public boolean isUnix(VCSFileProxy proxy) {
         File file = proxy.toFile();
         if (file != null) {

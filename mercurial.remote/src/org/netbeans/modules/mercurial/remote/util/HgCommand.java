@@ -47,8 +47,6 @@ package org.netbeans.modules.mercurial.remote.util;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,21 +88,20 @@ import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.OutputLogger;
 import org.netbeans.modules.mercurial.remote.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.remote.config.HgConfigFiles;
-import org.netbeans.modules.mercurial.remote.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.remote.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.remote.ui.queues.Queue;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
-import org.netbeans.modules.mercurial.remote.ui.repository.Repository;
 import org.netbeans.modules.mercurial.remote.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.mercurial.remote.ui.tag.HgTag;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NetworkSettings;
@@ -1038,7 +1035,7 @@ public abstract class HgCommand<T> implements Callable<T> {
 
         List<String> list;
 
-        if(HgUtils.isSolaris()){
+        if(VCSFileProxySupport.isSolaris(repository)){
             env.add(HG_HGK_PATH_SOLARIS10_ENV);
             list = execEnv(repository, command, env);
         }else{
@@ -2367,26 +2364,12 @@ public abstract class HgCommand<T> implements Callable<T> {
 
         List<String> list = null;
         boolean retry = true;
-        // acquire credentials for kenai
         PasswordAuthentication credentials = null;
-        HgKenaiAccessor supp = HgKenaiAccessor.getInstance();
         String rawUrl = repository.toUrlStringWithoutUserInfo();
-        if (supp.isKenai(rawUrl) && supp.isLoggedIntoKenai(rawUrl)) {
-            credentials = supp.getPasswordAuthentication(rawUrl, false);
-        }
 
         HgURL url = repository;
         while (retry) {
             retry = false;
-            try {
-                if (credentials != null) {
-                    url = new HgURL(repository.toHgCommandUrlString(), credentials.getUserName(), credentials.getPassword());
-                }
-            } catch (URISyntaxException ex) {
-                // this should NEVER happen
-                Mercurial.LOG.log(Level.SEVERE, null, ex);
-                break;
-            }
             List<Object> command = new ArrayList<Object>();
 
             command.add(getHgCommand());
@@ -2418,9 +2401,8 @@ public abstract class HgCommand<T> implements Callable<T> {
                         }
                     } else {
                         // save credentials
-                        if (url.getPassword() != null && !supp.isKenai(rawUrl)) { // not kenai, credentials can be saved
+                        if (url.getPassword() != null) { //credentials can be saved
                             try {
-                                // for kenai this is handled in CloneAction
                                 HgModuleConfig.getDefault(target).setProperty(target, HgConfigFiles.HG_DEFAULT_PULL,
                                         new HgURL(url.toUrlStringWithoutUserInfo(), url.getUsername(), null).toCompleteUrlString());
                             } catch (URISyntaxException ex) {
@@ -4030,11 +4012,18 @@ public abstract class HgCommand<T> implements Callable<T> {
                 Mercurial.LOG.log(Level.WARNING, "Failed to create temporary file defining Hg output style."); //NOI18N
             }
             final List<String> commandLine = toCommandList(command, outputStyleFile);
-            final ProcessBuilder pb = new ProcessBuilder(commandLine);
-            if (repository != null && repository.isDirectory()) {
-                pb.directory(repository);
+            //final ProcessBuilder pb = new ProcessBuilder(commandLine);
+            final org.netbeans.api.extexecution.ProcessBuilder pb = VersioningSupport.createProcessBuilder(repo);
+            pb.setExecutable(commandLine.get(0));
+            List<String> args = new ArrayList<String>();
+            for(int i = 1; i < commandLine.size(); i++) {
+                args.add(commandLine.get(i));
             }
-            Map<String, String> envOrig = pb.environment();
+            pb.setArguments(args);
+            if (repository != null && repository.isDirectory()) {
+                pb.setWorkingDirectory(repository.getPath());
+            }
+            Map<String, String> envOrig = new HashMap<String,String>();//pb.environment();
             setGlobalEnvVariables(envOrig);
             if (env != null && env.size() > 0) {
                 for (String s : env) {
@@ -4104,13 +4093,13 @@ public abstract class HgCommand<T> implements Callable<T> {
         }
     }
 
-    private static List<String> exec (List<? extends Object> command, ProcessBuilder pb) throws HgException {
+    private static List<String> exec (List<? extends Object> command, org.netbeans.api.extexecution.ProcessBuilder pb) throws HgException {
         final List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         BufferedReader error = null;
         Process proc = null;
         try{
-            proc = pb.start();
+            proc = pb.call();
 
             input = new BufferedReader(ENCODING == null 
                     ? new InputStreamReader(proc.getInputStream())
@@ -4428,21 +4417,9 @@ public abstract class HgCommand<T> implements Callable<T> {
         PasswordAuthentication credentials = null;
         String msg = cmdOutput.get(cmdOutput.size() - 1).toLowerCase();
         if (isAuthMsg(msg) && showLoginDialog) {
-            HgKenaiAccessor support = HgKenaiAccessor.getInstance();
-            if(support.isKenai(url)) {
-                checkKenaiPermissions(hgCommand, url, support);
-                // try to login
-                credentials = handleKenaiAuthorisation(support, url);
-            } else {
-                credentials = credentialsSupport.getUsernamePasswordCredentials(repository, url, userName);
-            }
+            credentials = credentialsSupport.getUsernamePasswordCredentials(repository, url, userName);
         }
         return credentials;
-    }
-
-    private static PasswordAuthentication handleKenaiAuthorisation(HgKenaiAccessor support, String url) {
-        PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
-        return pa;
     }
 
     public static boolean isAuthMsg(String msg) {
@@ -4966,19 +4943,8 @@ public abstract class HgCommand<T> implements Callable<T> {
             boolean retry = true;
             boolean showLoginWindow = !Boolean.TRUE.equals(disabledUI.get());
             credentials = null;
-            HgKenaiAccessor supp = HgKenaiAccessor.getInstance();
             String rawUrl = remoteUrl.toUrlStringWithoutUserInfo();
-            acquireCredentialsFirst |= supp.isLoggedIntoKenai(rawUrl);
-            if (supp.isKenai(rawUrl)) {
-                if (acquireCredentialsFirst) {
-                    // will force user to login into kenai, if he isn't yet
-                    credentials = supp.getPasswordAuthentication(rawUrl, false);
-                    if (credentials == null) {
-                        // show log window only once, user probably canceled
-                        showLoginWindow = false;
-                    }
-                }
-            } else if (remoteUrl.getUsername() != null && remoteUrl.getPassword() == null) {
+            if (remoteUrl.getUsername() != null && remoteUrl.getPassword() == null) {
                 char[] password = KeyringSupport.read(HgUtils.PREFIX_VERSIONING_MERCURIAL_URL, remoteUrl.toHgCommandStringWithNoPassword()); //NOI18N
                 if (password != null) {
                     credentials = new PasswordAuthentication(remoteUrl.getUsername(), password);
@@ -5032,7 +4998,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                             if ((credentials = handleAuthenticationError(list, repository, rawUrl, credentials == null ? "" : credentials.getUserName(), credentialsSupport, hgCommandType, showLoginWindow)) != null) { //NOI18N
                                 // auth redone, try again
                                 retry = true;
-                                if (!supp.isKenai(rawUrl) && credentials != null) {
+                                if (credentials != null) {
                                     try {
                                         KeyringSupport.save(HgUtils.PREFIX_VERSIONING_MERCURIAL_URL, new HgURL(remoteUrl.toHgCommandUrlString(), credentials.getUserName(), null).toHgCommandStringWithNoPassword(), credentials.getPassword().clone(), null);
                                     } catch (URISyntaxException ex) {
@@ -5046,7 +5012,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                     }
                 }
             } finally {
-                if (!supp.isKenai(rawUrl) && credentials != null) {
+                if (credentials != null) {
                     savePathProperties();
                     Arrays.fill(credentials.getPassword(), '\0');
                 }
@@ -5060,16 +5026,6 @@ public abstract class HgCommand<T> implements Callable<T> {
                     saveCredentials(pathProp);
                 }
             }
-        }
-    }
-
-    private static void checkKenaiPermissions (String hgCommand, String repositoryUrl, HgKenaiAccessor ka) throws HgException {
-        if (HG_PUSH_CMD.equals(hgCommand)) { //NOI18N
-            if (!ka.canWrite(repositoryUrl)) {
-                throw new HgException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.write")); //NOI18N
-            }
-        } else if (!ka.canRead(repositoryUrl)) {
-            throw new HgException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read")); //NOI18N
         }
     }
 

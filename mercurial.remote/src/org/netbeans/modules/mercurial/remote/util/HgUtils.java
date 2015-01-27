@@ -49,9 +49,6 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -190,15 +187,6 @@ public class HgUtils {
         string = string.replaceAll("\\{status\\}", "\\{0\\}");                                      // NOI18N
         string = string.replaceAll("\\{folder\\}", "\\{1\\}");                                      // NOI18N
         return string;
-    }
-
-    /**
-     * isSolaris - check you are running onthe Solaris OS
-     *
-     * @return boolean true - on Solaris, false - not on Solaris
-     */
-    public static boolean isSolaris(){
-        return System.getProperty("os.name").equals("SunOS"); // NOI18N
     }
 
     /**

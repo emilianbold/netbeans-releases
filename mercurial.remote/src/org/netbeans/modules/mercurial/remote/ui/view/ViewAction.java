@@ -105,7 +105,7 @@ public class ViewAction extends ContextAction {
             boolean bHgkFound = false;
             if(HgUtils.isInUserPath(hgkCommand)){
                     bHgkFound = true;                
-            } else if(HgUtils.isSolaris()){
+            } else if(VCSFileProxySupport.isSolaris(root)){
                 VCSFileProxy f = VCSFileProxySupport.getResource(root, HgCommand.HG_HGK_PATH_SOLARIS10+"/"+hgkCommand);
                 if(f.exists() && f.isFile()) {
                     bHgkFound = true;
