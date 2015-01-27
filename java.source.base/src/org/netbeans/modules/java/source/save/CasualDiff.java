@@ -3567,7 +3567,10 @@ public class CasualDiff {
             // obtain a correct position.
             StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
             int pos = estimator.prepare(localPointer, aHead, aTail);
-            copyTo(localPointer, pos, printer);
+            // #248058: do not eat characters if pos < localPointer: diffInnerComments sometimes
+            // advances localPointer, but does not copy non-comment whitespaces, while pos
+            // is positioned at the start of preceding whitespaces.
+            copyUpTo(localPointer, pos, printer);
 
             if (newList.get(0).getKind() == Kind.IMPORT) {
                 printer.printImportsBlock(newList, true);
@@ -5424,13 +5427,17 @@ public class CasualDiff {
         return new int[] { getOldPos(tree, doc), endPos(tree, doc) };
     }
     
-    private int copyUpTo(int from, int to) {
+    private int copyUpTo(int from, int to, VeryPretty printer) {
         if (from < to) {
-            copyTo(from, to);
+            copyTo(from, to, printer);
             return to;
         } else {
             return from;
         }
+    }
+    
+    private int copyUpTo(int from, int to) {
+        return copyUpTo(from, to, printer);
     }
 
     private void copyTo(int from, int to) {

@@ -116,7 +116,7 @@ public class JoinCatches {
             VariableElement excVar = (VariableElement) ctx.getInfo().getTrees().getElement(mainVar);
             TypeMirror mainVarType = ctx.getInfo().getTrees().getTypeMirror(mainVar);
 
-            if (!Utilities.isValidType(mainVarType)) continue;
+            if (excVar == null || !Utilities.isValidType(mainVarType)) continue;
 
             Map<TypeMirror, Integer> duplicates = new LinkedHashMap<TypeMirror, Integer>();
 

@@ -70,6 +70,55 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test236868() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t;\n"
+                        + "public class A {\n"
+                        + "    public int x;\n"
+                        + "        public void method(int x) {\n"
+                        + "        LABEL:\n"
+                        + "        while (x > 0) {\n"
+                        + "            LABEL2:\n"
+                        + "            for (int i = 0; i < 10; i++) {\n"
+                        + "                if (x == 1) {\n"
+                        + "                    break LABEL;\n"
+                        + "                }\n"
+                        + "                if (x == 2) {\n"
+                        + "                    continue LABEL;\n"
+                        + "                }\n"
+                        + "                if (x == 3) {\n"
+                        + "                    break LABEL2;\n"
+                        + "                }\n"
+                        + "            }\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}"));
+        performRename(src.getFileObject("t/A.java"), source.indexOf("LABEL") + 1, "LABEL1", null, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public int x;\n"
+                        + "        public void method(int x) {\n"
+                        + "        LABEL1:\n"
+                        + "        while (x > 0) {\n"
+                        + "            LABEL2:\n"
+                        + "            for (int i = 0; i < 10; i++) {\n"
+                        + "                if (x == 1) {\n"
+                        + "                    break LABEL1;\n"
+                        + "                }\n"
+                        + "                if (x == 2) {\n"
+                        + "                    continue LABEL1;\n"
+                        + "                }\n"
+                        + "                if (x == 3) {\n"
+                        + "                    break LABEL2;\n"
+                        + "                }\n"
+                        + "            }\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}"));
+    }
+    
     public void test238268() throws Exception {
         String source;
         writeFilesAndWaitForScan(src, new File("t/A.java", source = "package t;\n"

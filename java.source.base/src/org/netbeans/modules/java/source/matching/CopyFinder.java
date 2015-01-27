@@ -410,7 +410,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             //TODO: remap with qualified name?
             Element remappable = info.getTrees().getElement(p);
 
-            if (variablesWithAllowedRemap.contains(remappable) && (options.contains(Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION) || node.getKind() == Kind.IDENTIFIER)) {
+            if (remappable != null && variablesWithAllowedRemap.contains(remappable) && (options.contains(Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION) || node.getKind() == Kind.IDENTIFIER)) {
                 TreePath existing = bindState.variablesRemapToTrees.get(remappable);
 
                 if (existing != null) {
