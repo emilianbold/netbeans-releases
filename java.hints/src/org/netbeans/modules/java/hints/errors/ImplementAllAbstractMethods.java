@@ -312,7 +312,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
                         return;
                     }
                     Element el = copy.getTrees().getElement(enumPath);
-                    if (el != null) {
+                    if (el == null) {
                         // TODO: report to user
                         return;
                     }
