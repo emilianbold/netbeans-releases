@@ -31,7 +31,6 @@ switch (color) {
         code = undefined;
 }
 
-
 function CustomColor(red, green, blue) {
     this.red = red;
     this.green = green;
@@ -48,3 +47,11 @@ with (redColor) {
         console.log("unknown");
     }
 }
+
+Object.defineProperty(this, "length",
+        {
+            enumerable: true,
+            get: function () {
+                return length;
+            }
+        });
