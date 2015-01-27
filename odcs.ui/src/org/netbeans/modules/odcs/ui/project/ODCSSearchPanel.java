@@ -50,6 +50,8 @@ package org.netbeans.modules.odcs.ui.project;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,7 +103,6 @@ public class ODCSSearchPanel extends JPanel {
         }
         initComponents();
         setChildrenEnabled(this, ODCSSearchPanel.odcsServer != null);
-        createNewProjectButton.setEnabled(false);
         initSearchField(odcsServer);
         searchTextField.addActionListener(new ActionListener() {
             @Override
@@ -159,6 +160,7 @@ public class ODCSSearchPanel extends JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         searchButtonPanel.add(searchTextField, gridBagConstraints);
     }
 
@@ -217,8 +219,6 @@ public class ODCSSearchPanel extends JPanel {
         searchInfoLabel = new JLabel();
         projectsLabel = new JLabel();
         dummySearchField = new JPanel();
-        createButtonPanel = new JPanel();
-        createNewProjectButton = new JButton();
         searchResultPanel = new JPanel();
         scrollPane = new JScrollPane();
         odcsProjectsList = new JList();
@@ -275,31 +275,20 @@ public class ODCSSearchPanel extends JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         searchButtonPanel.add(dummySearchField, gridBagConstraints);
 
         add(searchButtonPanel, BorderLayout.NORTH);
-
-        createButtonPanel.setLayout(new GridBagLayout());
-
-        Mnemonics.setLocalizedText(createNewProjectButton, NbBundle.getMessage(ODCSSearchPanel.class, "ODCSSearchPanel.createNewProjectButton.text")); // NOI18N
-        createNewProjectButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                createNewProjectButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
-        createButtonPanel.add(createNewProjectButton, gridBagConstraints);
-        createNewProjectButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ODCSSearchPanel.class, "ODCSSearchPanel.createNewProjectButton.AccessibleContext.accessibleDescription")); // NOI18N
-
-        add(createButtonPanel, BorderLayout.SOUTH);
 
         searchResultPanel.setLayout(new BorderLayout());
 
         odcsProjectsList.setSelectionMode(getListSelMode());
         odcsProjectsList.setCellRenderer(new ODCSProjectsListRenderer2());
+        odcsProjectsList.addMouseListener(new MouseAdapter() {
+            public void mouseReleased(MouseEvent evt) {
+                odcsProjectsListMouseReleased(evt);
+            }
+        });
         scrollPane.setViewportView(odcsProjectsList);
 
         searchResultPanel.add(scrollPane, BorderLayout.CENTER);
@@ -314,9 +303,17 @@ public class ODCSSearchPanel extends JPanel {
         invokeSearch();
     }//GEN-LAST:event_searchButtonActionPerformed
 
-    private void createNewProjectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_createNewProjectButtonActionPerformed
-        //new NewODCSProjectAction().actionPerformed(evt);
-    }//GEN-LAST:event_createNewProjectButtonActionPerformed
+    private void odcsProjectsListMouseReleased(MouseEvent evt) {//GEN-FIRST:event_odcsProjectsListMouseReleased
+        if (evt.getClickCount() == 2) {
+            JRootPane rootPane = SwingUtilities.getRootPane(this);
+            if (rootPane != null) {
+                JButton okButton = rootPane.getDefaultButton();
+                if (okButton != null) {
+                    okButton.doClick();
+                }
+            }
+        }
+    }//GEN-LAST:event_odcsProjectsListMouseReleased
 
     private class ODCSProjectsListRenderer2 implements ListCellRenderer {
 
@@ -534,8 +531,6 @@ public class ODCSSearchPanel extends JPanel {
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JPanel createButtonPanel;
-    private JButton createNewProjectButton;
     private JPanel dummySearchField;
     private JList odcsProjectsList;
     private JLabel projectsLabel;
