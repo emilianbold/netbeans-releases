@@ -152,10 +152,12 @@
                 <package>org.netbeans.modules.cnd.api.codemodel</package>
                 <package>org.netbeans.modules.cnd.api.codemodel.completion</package>
                 <package>org.netbeans.modules.cnd.api.codemodel.query</package>
+                <package>org.netbeans.modules.cnd.api.codemodel.storage</package>
                 <package>org.netbeans.modules.cnd.api.codemodel.visit</package>
                 <package>org.netbeans.modules.cnd.spi.codemodel</package>
                 <package>org.netbeans.modules.cnd.spi.codemodel.completion</package>
                 <package>org.netbeans.modules.cnd.spi.codemodel.providers</package>
+                <package>org.netbeans.modules.cnd.spi.codemodel.storage</package>
                 <package>org.netbeans.modules.cnd.spi.codemodel.support</package>
                 <package>org.netbeans.modules.cnd.spi.codemodel.trace</package>
                 <package>org.netbeans.modules.cnd.spi.codemodel.visit</package>
