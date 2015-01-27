@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
@@ -72,6 +73,7 @@ import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 
@@ -131,15 +133,19 @@ public class Mercurial {
     
     private FileStatusCache     fileStatusCache;
     private HashMap<HgURL, RequestProcessor>   processorsToUrl;
-    /**
-     * true if hg is present and it's version is supported
-     */
-    private boolean goodVersion;
-    private String version;
-    /**
-     * true if hg version command has been invoked
-     */
-    private boolean gotVersion;
+    
+    private static final class Version {
+        /**
+         * true if hg is present and it's version is supported
+         */
+        private boolean goodVersion;
+        private String version;
+        /**
+         * true if hg version command has been invoked
+         */
+        private boolean gotVersion;
+    }
+    private final Map<FileSystem, Version> versions = new HashMap<FileSystem, Version>();
 
     private Result<? extends VCSHyperlinkProvider> hpResult;
     private RequestProcessor parallelRP;
@@ -170,24 +176,29 @@ public class Mercurial {
                 return Mercurial.this.getTopmostManagedAncestor(file);
             }
         }, Logger.getLogger("org.netbeans.modules.mercurial.RootsToFile"), statisticsFrequency); //NOI18N
-        asyncInit(); // Does the Hg check but postpones querying user until menu is activated
+        for(FileSystem fs : VCSFileProxySupport.getFileSystems()) {
+            asyncInit(VCSFileProxy.createFileProxy(fs.getRoot())); // Does the Hg check but postpones querying user until menu is activated
+        }
     }
 
     void register (final MercurialVCS mvcs) {
         fileStatusCache.addPropertyChangeListener(mvcs);
         addPropertyChangeListener(mvcs);
-        getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run () {
-                if (isAvailable(false, false)) {
-                    ShelveChangesActionsRegistry.getInstance().registerAction(mvcs, ShelveChangesAction.getProvider());
-                }
-            }
-        });
+        //TODO: support shelve, see bug #249105
+//        getRequestProcessor().post(new Runnable() {
+//            @Override
+//            public void run () {
+//                for(FileSystem fs : VCSFileProxySupport.getFileSystems()) {
+//                    if (isAvailable(VCSFileProxy.createFileProxy(fs.getRoot()), false, false)) {
+//                        ShelveChangesActionsRegistry.getInstance().registerAction(mvcs, ShelveChangesAction.getProvider());
+//                    }
+//                }
+//            }
+//        });
     }
 
-    public void asyncInit() {
-        gotVersion = false;
+    public void asyncInit(final VCSFileProxy root) {
+        getV(root).goodVersion = false;
         RequestProcessor rp = getRequestProcessor();
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.log(Level.FINEST, "Mercurial subsystem initialized", new Exception()); //NOI18N
@@ -197,7 +208,7 @@ public class Mercurial {
             public void run() {
                 HgKenaiAccessor.getInstance().registerVCSNoficationListener();
                 synchronized(Mercurial.this) {
-                    checkVersionIntern();
+                    checkVersionIntern(root);
                 }
             }
 
@@ -205,15 +216,28 @@ public class Mercurial {
         rp.post(init);
     }
 
-    private void checkVersionIntern() {
-        version = HgCommand.getHgVersion();
-        if (version != null) {
-            goodVersion = isSupportedVersion(version);
-        } else {
-            goodVersion = false;
+    private Version getV(final VCSFileProxy root) {
+        FileSystem fileSystem = VCSFileProxySupport.getFileSystem(root);
+        Version v;
+        synchronized(this) {
+            v = versions.get(fileSystem);
+            if (v == null) {
+                v = new Version();
+            }
         }
-        LOG.log(goodVersion ? Level.FINE : Level.INFO, "version: {0}", version); // NOI18N
-        gotVersion = true;
+        return v;
+    }
+
+    private void checkVersionIntern(VCSFileProxy root) {
+        Version v = getV(root);
+        v.version = HgCommand.getHgVersion(root);
+        if (v.version != null) {
+            v.goodVersion = isSupportedVersion(v.version);
+        } else {
+            v.goodVersion = false;
+        }
+        LOG.log(v.goodVersion ? Level.FINE : Level.INFO, "version: {0}", v.version); // NOI18N
+        v.gotVersion = true;
     }
 
     private boolean isSupportedVersion(String version) {
@@ -231,12 +255,8 @@ public class Mercurial {
         return true;
     }
 
-    public boolean isAvailable () {
-        return isAvailable(false, false);
-    }
-
-    public boolean isAvailable (boolean notifyUI) {
-        return isAvailable(false, notifyUI);
+    public boolean isAvailable (VCSFileProxy root) {
+        return isAvailable(root, false, false);
     }
 
     /**
@@ -245,30 +265,31 @@ public class Mercurial {
      * @param notifyUI if true and hg is not available, a dialog will be shown and a message will be printed into a logger
      * @return
      */
-    public boolean isAvailable (boolean forceCheck, boolean notifyUI) {
+    public boolean isAvailable (VCSFileProxy root, boolean forceCheck, boolean notifyUI) {
+        Version v = getV(root);
         synchronized(this) {
-            if (!gotVersion) {
+            if (!v.gotVersion) {
                 // version has not been scanned yet, run the version command
                 LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
                 if(forceCheck) {
                     if (LOG.isLoggable(Level.FINEST)) {
                         LOG.log(Level.FINEST, "isAvailable performed", new Exception()); //NOI18N
                     }
-                    checkVersionIntern();
+                    checkVersionIntern(root);
                 } else {
                     return true;
                 }
             }
         }
-        if (version != null && !goodVersion) {
+        if (v.version != null && !v.goodVersion) {
             // hg is present but it's version is unsupported
             // a warning message is printed into log, always only once per netbeans session
             OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-            logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNRECOGNIZED_VERSION_MSG", version)); // NOI18N);
+            logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNRECOGNIZED_VERSION_MSG", v.version)); // NOI18N);
             logger.closeLog();
-            LOG.log(Level.WARNING, "Using an unsupported hg version: {0}", version); //NOI18N
-            goodVersion = true; // do not show the warning next time
-        } else if (version == null) {
+            LOG.log(Level.WARNING, "Using an unsupported hg version: {0}", v.version); //NOI18N
+            v.goodVersion = true; // do not show the warning next time
+        } else if (v.version == null) {
             // hg is not present at all, show a warning dialog
             if (notifyUI) {
                 OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
@@ -278,7 +299,7 @@ public class Mercurial {
                 LOG.warning("Hg is not available");     //NOI18N
             }
         }
-        return goodVersion; // true if hg is present
+        return v.goodVersion; // true if hg is present
     }
 
     public MercurialAnnotator getMercurialAnnotator() {
@@ -505,8 +526,8 @@ public class Mercurial {
      * Returns scanned version or null if has not been scanned yet
      * @return
      */
-    public String getVersion () {
-        return version;
+    public String getVersion (VCSFileProxy root) {
+        return getV(root).version;
     }
 
     private final Set<VCSFileProxy> knownRoots = Collections.synchronizedSet(new HashSet<VCSFileProxy>());

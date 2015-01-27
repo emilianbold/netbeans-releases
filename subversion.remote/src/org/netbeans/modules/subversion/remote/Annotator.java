@@ -679,9 +679,6 @@ public class Annotator extends VCSAnnotator {
             if (info == null) {
                 filesToRefresh.add(file);
             }
-            if (file.isDirectory()) {
-                org.netbeans.modules.subversion.remote.versioning.util.Utils.addFolderToLog(file);
-            }
         }
         cache.refreshAsync(filesToRefresh);
 

@@ -385,7 +385,7 @@ final class MercurialPanel extends javax.swing.JPanel {
             }
         }
         HgModuleConfig.getDefault(root).setExecutableBinaryPath(executablePathTextField.getText());
-	Mercurial.getInstance().asyncInit();
+	Mercurial.getInstance().asyncInit(root);
         HgModuleConfig.getDefault(root).setExportFilename(exportFilenameTextField.getText());
         HgModuleConfig.getDefault(root).setAnnotationFormat(annotationTextField.getText());
         HgModuleConfig.getDefault(root).setAutoOpenOutput(cbOpenOutputWindow.isSelected());

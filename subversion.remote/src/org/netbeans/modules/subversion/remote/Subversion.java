@@ -45,7 +45,6 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,11 +63,8 @@ import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnClientRefreshHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.remote.config.PasswordFile;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.remote.ui.ignore.IgnoreAction;
-import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
@@ -155,22 +151,11 @@ public class Subversion {
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
         prepareCache();
-
-        asyncInit();
     }
     
     public void attachListeners(SubversionVCS svcs) {
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
-    }
-
-    private void asyncInit() {
-        getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                SvnKenaiAccessor.getInstance().registerVCSNoficationListener();
-            }
-        }, 500);
     }
 
     private RequestProcessor.Task cleanupTask;
@@ -248,27 +233,6 @@ public class Subversion {
         String username = ""; // NOI18N
         char[] password = null;
 
-        SvnKenaiAccessor kenaiSupport = SvnKenaiAccessor.getInstance();
-        if(kenaiSupport.isKenai(repositoryUrl.toString())) {
-            PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(repositoryUrl.toString(), false);
-            if(pa != null) {
-                username = pa.getUserName();
-                password = pa.getPassword();
-            }
-        } else {
-            RepositoryConnection rc = SvnModuleConfig.getDefault(context.getFileSystem()).getRepositoryConnection(repositoryUrl.toString());
-            if(rc != null) {
-                username = rc.getUsername();
-                password = rc.getPassword();
-            } else {
-                PasswordFile pf = PasswordFile.findFileForUrl(context.getFileSystem(), repositoryUrl);
-                if(pf != null) {
-                    username = pf.getUsername();
-                    String psswdString = pf.getPassword();
-                    password = psswdString != null ? psswdString.toCharArray() : null;
-                }
-            }
-        }
         return getClient(context, repositoryUrl, username, password, progressSupport);
     }
 

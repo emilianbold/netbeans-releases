@@ -1838,7 +1838,7 @@ itor tabs #66700).
         Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
-                if (Mercurial.getInstance().isAvailable(true, true)) {
+                if (Mercurial.getInstance().isAvailable(root, true, true)) {
                     EventQueue.invokeLater(runnable);
                 }
             }

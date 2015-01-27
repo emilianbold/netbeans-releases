@@ -81,6 +81,7 @@ wx_fail() {
             rm ${tmp} 2> /dev/null
             return 1
         fi
+        rm ${tmp} 2> /dev/null
     fi
 
     return 0

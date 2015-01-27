@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.subversion.remote.notifications;
 
-import java.awt.EventQueue;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,21 +58,11 @@ import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.FileStatusCache;
 import org.netbeans.modules.subversion.remote.Subversion;
-import org.netbeans.modules.subversion.remote.api.ISVNInfo;
-import org.netbeans.modules.subversion.remote.api.ISVNStatus;
-import org.netbeans.modules.subversion.remote.api.SVNClientException;
-import org.netbeans.modules.subversion.remote.api.SVNRevision;
-import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
-import org.netbeans.modules.subversion.remote.client.SvnClient;
-import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.remote.util.Context;
-import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.VCSNotificationDisplayer;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
@@ -96,7 +84,6 @@ public class NotificationsManager {
     private final RequestProcessor rp;
     private final RequestProcessor.Task notificationTask;
     private final FileStatusCache cache;
-    private final SvnKenaiAccessor kenaiAccessor;
     private Boolean enabled;
 
     private final Map<VCSFileProxy, Long> notifiedFiles = Collections.synchronizedMap(new HashMap<VCSFileProxy, Long>());
@@ -106,7 +93,6 @@ public class NotificationsManager {
         rp = new RequestProcessor("SubversionNotifications", 1, true);  //NOI18N
         notificationTask = rp.create(new NotificationTask());
         cache = Subversion.getInstance().getStatusCache();
-        kenaiAccessor = SvnKenaiAccessor.getInstance();
     }
 
     /**
@@ -187,16 +173,7 @@ public class NotificationsManager {
         }
         boolean retval = false;
         if (enabled.booleanValue()) {
-            if (checkUrl) {
-                assert !EventQueue.isDispatchThread();
-                SVNUrl url = null;
-                try {
-                    url = SvnUtils.getRepositoryRootUrl(file);
-                } catch (SVNClientException ex) { }
-                if (url != null) {
-                    retval = kenaiAccessor.isLogged(url.toString());
-                }
-            } else {
+            if (!checkUrl) {
                 retval = true;
             }
         }
@@ -228,9 +205,6 @@ public class NotificationsManager {
             removeDirectories(filesToScan);
             removeSeenFiles(filesToScan);
             removeNotEnabled(filesToScan);
-            if (!filesToScan.isEmpty()) {
-                scanFiles(filesToScan);
-            }
         }
 
         @Override
@@ -268,162 +242,5 @@ public class NotificationsManager {
             }
         }
 
-        private void scanFiles (Collection<VCSFileProxy> filesToScan) {
-            HashMap<SVNUrl, HashSet<VCSFileProxy>> filesPerRepository = sortByRepository(filesToScan);
-            for (Map.Entry<SVNUrl, HashSet<VCSFileProxy>> entry : filesPerRepository.entrySet()) {
-                SVNUrl repositoryUrl = entry.getKey();
-                HashMap<Long, Notification> notifications = new HashMap<>();
-                try {
-                    HashSet<VCSFileProxy> files = entry.getValue();
-                    VCSFileProxy[] roots = files.toArray(new VCSFileProxy[files.size()]);
-                    final Context context = new Context(roots);
-                    SvnClient client = Subversion.getInstance().getClient(context, repositoryUrl);
-                    if (client != null) {
-                        ISVNStatus[] statuses = client.getStatus(roots);
-                        for (ISVNStatus status : statuses) {
-                            if ((SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())
-                                    || SVNStatusKind.IGNORED.equals(status.getTextStatus()))) {
-                                continue;
-                            }
-                            VCSFileProxy file = status.getFile();
-                            SVNRevision.Number rev = status.getRevision();
-                            // get repository info - last revision if possible
-                            ISVNInfo info = null;
-                            boolean removed = false;
-                            try {
-                                SVNUrl url = status.getUrl();
-                                if (url == null) {
-                                    String canonicalPath;
-                                    try {
-                                        // i suspect the file to be under a symlink folder
-                                        canonicalPath = VCSFileProxySupport.getCanonicalPath(file);
-                                    } catch (IOException ex) {
-                                        canonicalPath = null;
-                                    }
-                                    LOG.log(Level.WARNING, "scanFiles: though versioned it has no svn url: {0}, {1}, {2}, {3}, {4}", //NOI18N
-                                            new Object[] { file, status.getFile(), status.getTextStatus(), status.getUrlString(), canonicalPath });
-                                } else {
-                                    info = client.getInfo(context, url, SVNRevision.HEAD, rev);
-                                }
-                            } catch (SVNClientException ex) {
-                                LOG.log(Level.FINE, null, ex);
-                                // XXX or should we run remote status to determine if the file was deleted?
-                                removed = SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage());
-                            }
-                            if (info != null || removed) {
-                                Long repositoryRev = removed ? null : info.getLastChangedRevision().getNumber();
-                                // XXX some hack to look up deleted file's last revision
-                                if (isModifiedInRepository(rev.getNumber(), repositoryRev)) {
-                                    addToMap(notifications, file, repositoryRev);
-                                    // this will refresh versioning view as well
-                                    cache.refresh(file, new FileStatusCache.RepositoryStatus(status, null));
-                                }
-                            }
-                        }
-                        alreadySeen.addAll(files);
-                    }
-                } catch (SVNClientException ex) {
-                    LOG.log(Level.FINE, null, ex);
-                }
-                notifyChanges(notifications, repositoryUrl);
-            }
-        }
-
-        private boolean isModifiedInRepository (long revision, Long repositoryRevision) {
-            return repositoryRevision == null // file is probably remotely deleted
-                    || revision < repositoryRevision; // base revision is lower than the repository revision
-        }
-
-        /**
-         * Adds new notification or adds file to already existing notification
-         * @param notifications sorted by revision number
-         * @param file file to add to a notification
-         * @param revision repository revision
-         */
-        private void addToMap(HashMap<Long, Notification> notifications, VCSFileProxy file, Long revision) {
-            Notification revisionNotification = notifications.get(revision);
-            if (revisionNotification == null) {
-                revisionNotification = new Notification(revision);
-                notifications.put(revision, revisionNotification);
-            }
-            revisionNotification.addFile(file);
-        }
-
-        private class Notification {
-            private final Set<VCSFileProxy> files;
-            private final Long revision;
-
-            Notification(Long revision) {
-                files = new HashSet<>();
-                this.revision = revision;
-            }
-
-            void addFile(VCSFileProxy file) {
-                files.add(file);
-            }
-
-            VCSFileProxy[] getFiles () {
-                return files.toArray(new VCSFileProxy[files.size()]);
-            }
-
-            Long getRevision() {
-                return revision;
-            }
-        }
-
-        private HashMap<SVNUrl, HashSet<VCSFileProxy>> sortByRepository (Collection<VCSFileProxy> files) {
-            HashMap<SVNUrl, HashSet<VCSFileProxy>> filesByRepository = new HashMap<>();
-            for (VCSFileProxy file : files) {
-                SVNUrl repositoryUrl = getRepositoryRoot(file);
-                if (repositoryUrl != null) {
-                    HashSet<VCSFileProxy> filesPerRepository = filesByRepository.get(repositoryUrl);
-                    if (filesPerRepository == null) {
-                        filesPerRepository = new HashSet<>();
-                        filesByRepository.put(repositoryUrl, filesPerRepository);
-                    }
-                    filesPerRepository.add(file);
-                }
-            }
-            return filesByRepository;
-        }
-
-        private void notifyChanges (HashMap<Long, Notification> notifications, SVNUrl repositoryUrl) {
-            for (Map.Entry<Long, Notification> e : notifications.entrySet()) {
-                Notification notification = e.getValue();
-                VCSFileProxy[] files = notification.getFiles();
-                Long revision = notification.getRevision();
-                notifyFileChange(files, files[0].getParentFile(), repositoryUrl.toString(), revision == null ? null : revision.toString());
-            }
-        }
-
-        /**
-         * Returns repository root url for the given file or null if the repository is unknown or does not belong to allowed urls.
-         * Currently allowed repositories are kenai repositories.
-         * @param file
-         * @return
-         */
-        private SVNUrl getRepositoryRoot (VCSFileProxy file) {
-            SVNUrl repositoryUrl = null;
-            SVNUrl url = getRepositoryUrl(file);
-            if (url != null && kenaiAccessor.isKenai(url.toString()) && kenaiAccessor.isLogged(url.toString())) {
-                repositoryUrl = url;
-            }
-            return repositoryUrl;
-        }
-
-        private SVNUrl getRepositoryUrl (VCSFileProxy file) {
-            SVNUrl url = null;
-            try {
-                url = SvnUtils.getRepositoryRootUrl(file);
-            } catch (SVNClientException ex) {
-                LOG.log(Level.FINE, "getRepositoryUrl: No repository root url found for managed file : [" + file + "]", ex); //NOI18N
-                try {
-                    url = SvnUtils.getRepositoryUrl(file); // try to falback
-                } catch (SVNClientException ex1) {
-                    LOG.log(Level.FINE, "getRepositoryUrl: No repository url found for managed file : [" + file + "]", ex1); //NOI18N
-                }
-            }
-            return url;
-        }
     }
 }
