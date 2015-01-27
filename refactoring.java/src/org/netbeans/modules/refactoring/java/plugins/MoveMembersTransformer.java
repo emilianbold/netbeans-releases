@@ -409,7 +409,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                         TreePath thisPath = new TreePath(currentPath, node);
                         Element el = workingCopy.getTrees().getElement(thisPath);
-                        if (isElementBeingMoved(el) != null) {
+                        if (el != null && isElementBeingMoved(el) != null) {
                             return false;
                         }
                     }
@@ -421,7 +421,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     TreePath thisPath = new TreePath(currentPath, node);
                     Element el = workingCopy.getTrees().getElement(thisPath);
                     
-                    if (isElementBeingMoved(el) == null) {
+                    if (el != null && isElementBeingMoved(el) == null) {
                         String isThis = node.toString();
                         // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
                         if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
@@ -593,13 +593,13 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                             if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                                 TreePath currentPath = new TreePath(resolvedPath, node);
                                 Element el = trees.getElement(currentPath);
-                                if (isElementBeingMoved(el) != null) {
+                                if (el != null && isElementBeingMoved(el) != null) {
                                     return false;
                                 }
                             } else {
                                 TreePath currentPath = new TreePath(resolvedPath, node);
                                 Element el = trees.getElement(currentPath);
-                                if (isElementBeingMoved(el) != null &&
+                                if (el != null && isElementBeingMoved(el) != null &&
                                         el.getKind() != ElementKind.PACKAGE &&
                                         el.getModifiers().contains(Modifier.STATIC)) {
                                     ExpressionTree ident = make.Identifier(target);
@@ -617,7 +617,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
                             boolean result = false;
 
-                            if (isElementBeingMoved(el) == null && el.getKind() != ElementKind.PACKAGE) {
+                            if (el != null && isElementBeingMoved(el) == null && el.getKind() != ElementKind.PACKAGE) {
                                 TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
                                 // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
                                 String isThis = node.toString();
@@ -977,7 +977,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 }
                 Element element = workingCopy.getTrees().getElement(currentPath);
                 ExpressionTree methodSelect = node.getMethodSelect();
-                if (isElementBeingMoved(element) == null) {
+                if (element != null && isElementBeingMoved(element) == null) {
                     if (element.getModifiers().contains(Modifier.STATIC)) {
                         Tree newTree = make.QualIdent(element);
                         original2Translated.put(methodSelect, newTree);
@@ -991,7 +991,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             @Override
             public Void visitMemberSelect(MemberSelectTree node, Void p) {
                 Element element = workingCopy.getTrees().getElement(new TreePath(resolvedPath, node));
-                if (isElementBeingMoved(element) == null && element.getModifiers().contains(Modifier.STATIC)) {
+                if (element != null && isElementBeingMoved(element) == null && element.getModifiers().contains(Modifier.STATIC)) {
                     Tree newTree = make.QualIdent(element);
                     original2Translated.put(node, newTree);
                 }
