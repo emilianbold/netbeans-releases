@@ -85,6 +85,9 @@ import static org.netbeans.modules.mercurial.remote.ui.repository.HgURL.Scheme.H
 import static org.netbeans.modules.mercurial.remote.ui.repository.Repository.FLAG_SHOW_HINTS;
 import static org.netbeans.modules.mercurial.remote.ui.repository.Repository.FLAG_SHOW_PROXY;
 import static org.netbeans.modules.mercurial.remote.ui.repository.Repository.FLAG_URL_ENABLED;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 public class CloneRepositoryWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel, ChangeListener {
     
@@ -97,6 +100,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     private boolean valid;
     private String errorMessage;
     private WizardStepProgressSupport support;
+    private VCSFileProxy root;
 
     public CloneRepositoryWizardPanel() {
         support = new RepositoryStepProgressSupport();
@@ -109,7 +113,9 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     @Override
     public Component getComponent() {
         if (component == null) {
-
+            FileSystem[] fileSystems = VCSFileProxySupport.getFileSystems();
+            root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
+            
             repository = new Repository(
                     FLAG_URL_ENABLED | FLAG_SHOW_HINTS | FLAG_SHOW_PROXY,
                     getMessage("CTL_Repository_Location"),
@@ -119,6 +125,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
             support = new RepositoryStepProgressSupport();
 
             component = new JPanel(new BorderLayout());
+            
             component.add(repository.getPanel(), BorderLayout.CENTER);
             component.add(support.getProgressComponent(), BorderLayout.SOUTH);
 
@@ -292,6 +299,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         if (settings instanceof WizardDescriptor) {
             try {
                 ((WizardDescriptor) settings).putProperty("repository", repository.getUrl()); // NOI18N
+                ((WizardDescriptor) settings).putProperty("root", root); // NOI18N
             } catch (URISyntaxException ex) {
                 /*
                  * The panel's data may not be validated yet (bug #163078)
@@ -355,7 +363,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                 HgURL.Scheme uriSch = hgUrl.getScheme();
                 if (uriSch == FILE) {
                     VCSFileProxy f = HgURL.getFile(hgUrl);
-                    if(!f.exists() || !f.canRead()){
+                    if(!f.exists() || !VCSFileProxySupport.canRead(f)){
                         invalidMsg = getMessage("MSG_Progress_Clone_CannotAccess_Err"); //NOI18N
                         return;
                     }

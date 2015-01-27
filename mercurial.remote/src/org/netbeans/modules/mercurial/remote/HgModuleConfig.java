@@ -133,6 +133,28 @@ public class HgModuleConfig {
     
     private HgModuleConfig(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
+        setDefaultPath();
+        MercurialVCS mercurialVCS = Mercurial.getInstance().getMercurialVCS();
+        if (mercurialVCS != null) {
+            getPreferences().addPreferenceChangeListener(mercurialVCS);
+        }
+    }
+
+    private void setDefaultPath() {
+        // Set default executable location for mercurial on mac
+        if (fileSystem != null && VCSFileProxySupport.isMac(VCSFileProxy.createFileProxy(fileSystem.getRoot()))) { // NOI18N
+            String defaultPath = getExecutableBinaryPath ();
+            if (defaultPath == null || defaultPath.length() == 0) {
+                String[] pathNames  = {"/Library/Frameworks/Python.framework/Versions/Current/bin", // NOI18N
+                                        "/usr/bin", "/usr/local/bin","/opt/local/bin/", "/sw/bin"}; // NOI18N
+                for (int i = 0; i < pathNames.length; i++) {
+                    if (isExecPathValid(pathNames[i])) {
+                        setExecutableBinaryPath (pathNames[i]); // NOI18N
+                        break;
+                     }
+                 }
+            }
+        }
     }
     
     private Set<String> exclusions;
@@ -140,7 +162,7 @@ public class HgModuleConfig {
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    public Preferences getPreferences() {
+    public final Preferences getPreferences() {
         if (fileSystem == null) {
             return NbPreferences.forModule(HgModuleConfig.class).node("commonRemoteMercurial"); //NOI18N
         } else {
@@ -242,6 +264,10 @@ public class HgModuleConfig {
         getPreferences().put(KEY_EXPORT_FILENAME, path);
     }
 
+    /**
+     * one for all file systems
+     * @return 
+     */
     public boolean getAutoOpenOutput() {
         return getPreferences().getBoolean(AUTO_OPEN_OUTPUT_WINDOW, true);
     }
@@ -455,7 +481,7 @@ public class HgModuleConfig {
 
     private HgConfigFiles getHgConfigFiles(VCSFileProxy file) {
         if (file == null) {
-            return HgConfigFiles.getSysInstance(repository);
+            return HgConfigFiles.getSysInstance(null);
         } else {
             return new HgConfigFiles(file); 
         }

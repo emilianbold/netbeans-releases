@@ -147,9 +147,7 @@ public class Mercurial {
     private Mercurial() {
     }
 
-
     private void init() {
-        setDefaultPath();
         fileStatusCache = new FileStatusCache(this);
         mercurialAnnotator = new MercurialAnnotator(fileStatusCache);
         mercurialInterceptor = new MercurialInterceptor(this, fileStatusCache);
@@ -186,23 +184,6 @@ public class Mercurial {
                 }
             }
         });
-    }
-
-    private void setDefaultPath() {
-        // Set default executable location for mercurial on mac
-        if (System.getProperty("os.name").equals("Mac OS X")) { // NOI18N
-            String defaultPath = HgModuleConfig.getDefault(root).getExecutableBinaryPath ();
-            if (defaultPath == null || defaultPath.length() == 0) {
-                String[] pathNames  = {"/Library/Frameworks/Python.framework/Versions/Current/bin", // NOI18N
-                                        "/usr/bin", "/usr/local/bin","/opt/local/bin/", "/sw/bin"}; // NOI18N
-                for (int i = 0; i < pathNames.length; i++) {
-                    if (HgModuleConfig.getDefault(root).isExecPathValid(pathNames[i])) {
-                        HgModuleConfig.getDefault(root).setExecutableBinaryPath (pathNames[i]); // NOI18N
-                        break;
-                     }
-                 }
-            }
-        }
     }
 
     public void asyncInit() {
@@ -399,6 +380,15 @@ public class Mercurial {
         support.removePropertyChangeListener(listener);
     }
 
+    public MercurialVCS getMercurialVCS() {
+        for(PropertyChangeListener listener : support.getPropertyChangeListeners()) {
+            if (listener instanceof MercurialVCS) {
+                return (org.netbeans.modules.mercurial.remote.MercurialVCS) listener;
+            }
+        }
+        return null;
+    }
+    
     public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
         if (LOG.isLoggable(Level.FINE)) {

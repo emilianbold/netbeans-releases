@@ -144,6 +144,6 @@ public final class ExcludeFromCommitAction extends ContextAction {
                 }
             }
         };
-        support.start(rp, "");                                          //NOI18N
+        support.start(rp, HgUtils.getRootFile(ctx), "");                                          //NOI18N
     }
 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.mercurial.remote.ui.shelve;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,7 +108,7 @@ public class ShelveChangesAction extends ContextAction {
             Mercurial.LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
             return;
         }
-        HgShelveChangesSupport supp = new HgShelveChangesSupport();
+        HgShelveChangesSupport supp = new HgShelveChangesSupport(root);
         if (supp.open()) {
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
             supp.startAsync(rp, root, ctx);
@@ -123,8 +124,10 @@ public class ShelveChangesAction extends ContextAction {
         private final JCheckBox doPurgeChxBox;
         private boolean doBackup;
         private boolean doPurge;
+        private final VCSFileProxy root;
 
-        public HgShelveChangesSupport () {
+        public HgShelveChangesSupport (VCSFileProxy root) {
+            this.root = root;
             doBackupChxBox = new JCheckBox();
             org.openide.awt.Mnemonics.setLocalizedText(doBackupChxBox, org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doBackupChxBox.text")); //NOI18N
             doBackupChxBox.setToolTipText(org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doBackupChxBox.desc")); //NOI18N
@@ -141,15 +144,21 @@ public class ShelveChangesAction extends ContextAction {
             optionsPanel.add(doPurgeChxBox);
         }
         
+//        @Override
+//        protected void exportPatch (VCSFileProxy toFile, VCSFileProxy commonParent) throws IOException {
+//            support.setDisplayName(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChanges.progress.exporting")); //NOI18N
+//            List<Setup> setups = new ArrayList<Setup>(filteredRoots.size());
+//            for (VCSFileProxy file : filteredRoots) {
+//                Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
+//                setups.add(setup);
+//            }
+//            SystemAction.get(ExportDiffChangesAction.class).exportDiff(setups, toFile, commonParent, support);
+//        }
+
         @Override
-        protected void exportPatch (VCSFileProxy toFile, VCSFileProxy commonParent) throws IOException {
-            support.setDisplayName(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChanges.progress.exporting")); //NOI18N
-            List<Setup> setups = new ArrayList<Setup>(filteredRoots.size());
-            for (VCSFileProxy file : filteredRoots) {
-                Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
-                setups.add(setup);
-            }
-            SystemAction.get(ExportDiffChangesAction.class).exportDiff(setups, toFile, commonParent, support);
+        protected void exportPatch(File toFile, File commonParent) throws IOException {
+            //TODO: bug #249105
+            throw new UnsupportedOperationException();
         }
 
         @Override

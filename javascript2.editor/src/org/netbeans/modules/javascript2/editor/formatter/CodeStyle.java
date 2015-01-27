@@ -137,6 +137,10 @@ public final class CodeStyle {
         return preferences.getInt(rightMargin, provider.getDefaultAsInt(rightMargin));
     }
 
+    public boolean continuationBeforeObjectLiteral() {
+        return preferences.getBoolean(objectLiteralContinuation, provider.getDefaultAsBoolean(objectLiteralContinuation));
+    }
+
     // Brace placement --------------------------------------------------------
 
     public BracePlacement getFunctionDeclBracePlacement() {
@@ -696,6 +700,8 @@ public final class CodeStyle {
 
         final CodeStyle.BracePlacement withBracePlacement;
 
+        final boolean objectLiteralContinuation;
+
         final boolean spaceBeforeWhile;
 
         final boolean spaceBeforeElse;
@@ -862,6 +868,7 @@ public final class CodeStyle {
             switchBracePlacement = style.getSwitchBracePlacement();
             catchBracePlacement = style.getCatchBracePlacement();
             withBracePlacement = style.getWithBracePlacement();
+            objectLiteralContinuation = style.continuationBeforeObjectLiteral();
 
             spaceBeforeWhile = style.spaceBeforeWhile();
             spaceBeforeElse = style.spaceBeforeElse();
