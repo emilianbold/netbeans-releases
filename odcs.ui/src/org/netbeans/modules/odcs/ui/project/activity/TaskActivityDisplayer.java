@@ -232,12 +232,16 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
 
     private Action getOpenIDEAction() {
         if (openIDEAction == null) {
-            QueryAccessor<ODCSProject> queryAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODCSProject.class);
             final Action action;
-            if (queryAccessor != null) {
-                action = queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());
-            } else {
+            if ("Review".equals(activity.getActivity().getTask().getTaskType())) { // NOI18N
                 action = null;
+            } else {
+                QueryAccessor<ODCSProject> queryAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODCSProject.class);
+                if (queryAccessor != null) {
+                    action = queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());
+                } else {
+                    action = null;
+                }
             }
             openIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
                 @Override
