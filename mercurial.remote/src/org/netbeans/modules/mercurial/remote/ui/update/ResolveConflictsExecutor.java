@@ -48,6 +48,9 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -152,9 +155,9 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                                 final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
         String ext = (fo == null) ? "" : "." + fo.getExt();             //NOI18N
-        VCSFileProxy f1 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
-        VCSFileProxy f2 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
-        VCSFileProxy f3 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
+        File f1 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
+        File f2 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
+        File f3 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
         f1.deleteOnExit();
         f2.deleteOnExit();
         f3.deleteOnExit();
@@ -198,8 +201,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         
         final StreamSource s1;
         final StreamSource s2;
-        Utils.associateEncoding(file, f1);
-        Utils.associateEncoding(file, f2);
+        Utils.associateEncoding(f1, encoding);
+        Utils.associateEncoding(f2, encoding);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
         s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, f2);
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,
@@ -226,9 +229,9 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
      * Copy the file and conflict parts into another file.
      */
     private Difference[] copyParts(boolean generateDiffs, VCSFileProxy source,
-                                   VCSFileProxy dest, boolean leftPart, Charset charset) throws IOException {
+                                   File dest, boolean leftPart, Charset charset) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(source.getInputStream(false), charset));
-        BufferedWriter w =new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(dest), charset));
+        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
             diffList = new ArrayList<Difference>();
@@ -446,7 +449,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
 
     private static class MergeResultWriterInfo extends StreamSource {
         
-        private final VCSFileProxy tempf1, tempf2, tempf3, outputFile;
+        private final File tempf1, tempf2, tempf3;
+        private final VCSFileProxy outputFile;
         private VCSFileProxy fileToRepairEntriesOf;
         private final String mimeType;
         private final String leftFileRevision;
@@ -455,7 +459,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         private FileLock lock;
         private final Charset encoding;
         
-        public MergeResultWriterInfo(VCSFileProxy tempf1, VCSFileProxy tempf2, VCSFileProxy tempf3,
+        public MergeResultWriterInfo(File tempf1, File tempf2, File tempf3,
                                      VCSFileProxy outputFile, String mimeType,
                                      String leftFileRevision, String rightFileRevision,
                                      FileObject fo, FileLock lock, Charset encoding) {
@@ -469,7 +473,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
             this.fo = fo;
             this.lock = lock;
             if (encoding == null) {
-                encoding = FileEncodingQuery.getEncoding(tempf1.toFileObject());
+                encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(tempf1));
             }
             this.encoding = encoding;
         }

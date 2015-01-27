@@ -730,10 +730,10 @@ public abstract class HgCommand<T> implements Callable<T> {
      *
      * @return String
      */
-    public static String getHgVersion() {
+    public static String getHgVersion(VCSFileProxy root) {
         List<String> list;
         try {
-            list = execForVersionCheck();
+            list = execForVersionCheck(root);
         } catch (HgException ex) {
             // Ignore Exception
             return null;
@@ -2399,9 +2399,9 @@ public abstract class HgCommand<T> implements Callable<T> {
             if (proxy != null) {
                 List<String> env = new ArrayList<String>();
                 env.add(HG_PROXY_ENV + proxy);
-                list = execEnv(repository, command, env);
+                list = execEnv(target, command, env);
             } else {
-                list = exec(repository, command);
+                list = exec(target, command);
             }
             try {
                 if (!list.isEmpty()) {
@@ -2421,7 +2421,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                         if (url.getPassword() != null && !supp.isKenai(rawUrl)) { // not kenai, credentials can be saved
                             try {
                                 // for kenai this is handled in CloneAction
-                                HgModuleConfig.getDefault(root).setProperty(target, HgConfigFiles.HG_DEFAULT_PULL,
+                                HgModuleConfig.getDefault(target).setProperty(target, HgConfigFiles.HG_DEFAULT_PULL,
                                         new HgURL(url.toUrlStringWithoutUserInfo(), url.getUsername(), null).toCompleteUrlString());
                             } catch (URISyntaxException ex) {
                                 Mercurial.LOG.log(Level.INFO, null, ex);
@@ -2478,7 +2478,7 @@ public abstract class HgCommand<T> implements Callable<T> {
 
         if (user == null) {
             String projectUserName = new HgConfigFiles(repository).getUserName(false);
-            String globalUsername = HgModuleConfig.getDefault(root).getSysUserName();
+            String globalUsername = HgModuleConfig.getDefault(repository).getSysUserName();
             if (projectUserName != null && projectUserName.length() > 0) {
                 user = projectUserName;
             } else if (globalUsername != null && globalUsername.length() > 0) {
@@ -2502,7 +2502,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                 commitMessage = HG_COMMIT_DEFAULT_MESSAGE;
             }
             // Create temporary file.
-            tempfile = File.createTempFile(HG_COMMIT_TEMPNAME, HG_COMMIT_TEMPNAME_SUFFIX);
+            tempfile = VCSFileProxySupport.createTempFile(VCSFileProxySupport.getTempFolder(repository, true), HG_COMMIT_TEMPNAME, HG_COMMIT_TEMPNAME_SUFFIX, true);
 
             // Write to temp file
             BufferedWriter out = new BufferedWriter(ENCODING == null 
@@ -3031,7 +3031,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(getHgCommand());
         command.add(HG_HEADS_CMD);
         if (topo) {
-            topoAvailable = Boolean.TRUE.equals(topoAvailable) || topoAvailable == null && HgUtils.hasTopoOption(Mercurial.getInstance().getVersion());
+            topoAvailable = Boolean.TRUE.equals(topoAvailable) || topoAvailable == null && HgUtils.hasTopoOption(Mercurial.getInstance().getVersion(repository));
             if (topoAvailable) {
                 command.add(HG_FLAG_TOPO);
             }
@@ -3604,7 +3604,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                 } finally {
                     logger.closeLog();
                 }
-            } else if (workDirStatus && HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+            } else if (workDirStatus && HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion(repository))) {
                 try {
                     List<String> unresolved = getUnresolvedFiles(repository, attributes);
                     list.addAll(unresolved);
@@ -3926,7 +3926,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                 commitMessage = HG_COMMIT_DEFAULT_MESSAGE;
             }
             // Create temporary file.
-            tempfile = File.createTempFile(HG_COMMIT_TEMPNAME, HG_COMMIT_TEMPNAME_SUFFIX);
+            tempfile = VCSFileProxySupport.createTempFile(VCSFileProxySupport.getTempFolder(repository, true), HG_COMMIT_TEMPNAME, HG_COMMIT_TEMPNAME_SUFFIX, true);
 
             // Write to temp file
             BufferedWriter out = new BufferedWriter(ENCODING == null 
@@ -4025,7 +4025,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         final VCSFileProxy repository = getRepositoryFromCommand(command, hgCommand);
         try {
             try {
-                outputStyleFile = createOutputStyleFile(command);
+                outputStyleFile = createOutputStyleFile(command, repo);
             } catch (IOException ex) {
                 Mercurial.LOG.log(Level.WARNING, "Failed to create temporary file defining Hg output style."); //NOI18N
             }
@@ -4227,7 +4227,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         return list;
     }
 
-    private static VCSFileProxy createOutputStyleFile(List<? extends Object> cmdLine) throws IOException {
+    private static VCSFileProxy createOutputStyleFile(List<? extends Object> cmdLine, VCSFileProxy repo) throws IOException {
         VCSFileProxy result = null;
 
         for (Object obj : cmdLine) {
@@ -4246,9 +4246,7 @@ public abstract class HgCommand<T> implements Callable<T> {
 
                     String template = str.substring("--template=".length()); //NOI18N
 
-                    VCSFileProxy tempFile = File.createTempFile(
-                                                "hg-output-style",      //NOI18N
-                                                null);    //extension (default)
+                    VCSFileProxy tempFile = VCSFileProxySupport.createTempFile(VCSFileProxySupport.getTempFolder(repo, true), "hg-output-style", null, true); //NOI18N
                     Writer writer = ENCODING == null 
                             ? new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempFile)) 
                             : new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempFile), ENCODING);
@@ -4362,17 +4360,17 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @return List of the command's output or an exception if one occured
      */
     protected static List<String> exec(VCSFileProxy repository, List<? extends Object> command) throws HgException{
-        if(!Mercurial.getInstance().isAvailable()){
+        if(!Mercurial.getInstance().isAvailable(repository)){
             return new ArrayList<String>();
         }
         return execEnv(repository, command, null);
     }
-    private static List<String> execForVersionCheck() throws HgException{
+    private static List<String> execForVersionCheck(VCSFileProxy root) throws HgException{
         List<String> command = new ArrayList<String>();
         command.add(getHgCommand());
         command.add(HG_VERSION_CMD);
 
-        return execEnv(command, null, false, repository);
+        return execEnv(command, null, false, root);
     }
 
     protected static String getHgCommand() {
@@ -4652,7 +4650,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         if (file == null) {
             return;
         }
-        if (!HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+        if (!HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion(repository))) {
             return;
         }
 

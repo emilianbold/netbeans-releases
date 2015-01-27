@@ -63,7 +63,7 @@ public class HgSearchHistorySupport extends SearchHistorySupport {
     @Override
     protected boolean searchHistoryImpl(final int line) throws IOException {
 
-        if(!Mercurial.getInstance().isAvailable(true, false)) {
+        if(!Mercurial.getInstance().isAvailable(root, true, false)) {
             org.netbeans.modules.mercurial.remote.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
             return false;
         }

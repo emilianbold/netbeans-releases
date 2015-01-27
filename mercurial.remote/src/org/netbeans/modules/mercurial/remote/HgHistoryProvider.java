@@ -101,13 +101,15 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         
         logFiles("retrieving history for files: ", files); //NOI18N
         long t = System.currentTimeMillis();
+        if(files == null || files.length == 0) {
+            return null;
+        }
         
         try {
-            if(!isClientAvailable()) {
+            if(!isClientAvailable(files[0])) {
                 LOG.log(Level.WARNING, "Mercurial client is unavailable");
                 return null;
             }
-
             Set<VCSFileProxy> repositories = getRepositoryRoots(files);
             if(repositories == null) {
                 return null;
@@ -208,7 +210,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
             
-            if(!isClientAvailable()) {
+            if(!isClientAvailable(originalFile)) {
                 LOG.log(Level.WARNING, "Mercurial client is unavailable");
                 return;
             }
@@ -321,14 +323,14 @@ public class HgHistoryProvider implements VCSHistoryProvider {
             openHistory(files);
         }
         private void openHistory(VCSFileProxy[] files) {
-            if(!isClientAvailable()) {
+            if(files == null || files.length == 0) {
+                return;
+            }
+            if(!isClientAvailable(files[0])) {
                 LOG.log(Level.WARNING, "Mercurial client is unavailable"); // NOI18N
                 return;
             }
 
-            if(files == null || files.length == 0) {
-                return;
-            }
             Set<VCSFileProxy> repositories = getRepositoryRoots(files);
             if(repositories == null) {
                 return;
@@ -431,12 +433,8 @@ public class HgHistoryProvider implements VCSHistoryProvider {
      * Does not show any warning dialog.
      * @return true if mercurial client is available.
      */
-    private static boolean isClientAvailable() {
-        return isClientAvailable(false);
-    }
-
-    private static boolean isClientAvailable (boolean notifyUI) {
-        return Mercurial.getInstance().isAvailable(true, notifyUI);
+    private static boolean isClientAvailable(VCSFileProxy root) {
+        return Mercurial.getInstance().isAvailable(root, true, false);
     }
 
     private static Set<VCSFileProxy> getRepositoryRoots(VCSFileProxy... files) {
