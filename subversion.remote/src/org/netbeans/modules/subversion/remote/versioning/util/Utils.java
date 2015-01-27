@@ -43,9 +43,7 @@ package org.netbeans.modules.subversion.remote.versioning.util;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,14 +53,8 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.api.queries.VersioningQuery;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.netbeans.modules.versioning.core.spi.VersioningSystem;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -74,129 +66,9 @@ import org.openide.util.Lookup;
  */
 public class Utils {
     private static final Logger LOG = Logger.getLogger(Utils.class.getName());
-    // -----
-    // Usages logging based on repository URL (for Kenai)
+    private static Map<VCSFileProxy, Charset> fileToCharset;
 
-    private static VCSKenaiAccessor kenaiAccessor;
-    private static final LinkedList<VCSFileProxy> loggedRoots = new LinkedList<>();
-    private static final List<VCSFileProxy> foldersToCheck = new LinkedList<>();
-    private static Runnable loggingTask = null;
 
-    /*
-     * Makes sure repository of given versioned folder is logged for usage
-     * (if on Kenai). Versioned folders are collected and a task invoked in 2s
-     * to process them. Roots are remembered so no subfolder is processed again
-     * (it's enough to log one usage per repository). Called from annotators so
-     * all user visible repositories are logged.
-     */
-    public static void addFolderToLog(VCSFileProxy folder) {
-        if (!checkFolderLogged(folder, false)) {
-            synchronized(foldersToCheck) {
-                foldersToCheck.add(folder);
-                if (loggingTask == null) {
-                    loggingTask = new LogTask();
-                    org.netbeans.modules.versioning.util.Utils.postParallel(loggingTask, 2000);
-                }
-            }
-        }
-    }
-    
-    private static boolean checkFolderLogged(VCSFileProxy folder, boolean add) {
-        synchronized(loggedRoots) {
-            for (VCSFileProxy f : loggedRoots) {
-                String ancestorPath = f.getPath();
-                String folderPath = folder.getPath();
-                if (folderPath.startsWith(ancestorPath)
-                        && (folderPath.length() == ancestorPath.length()
-                             || folderPath.charAt(ancestorPath.length()) == '/')) {
-                    // folder is the same or subfolder of already logged one
-                    return true;
-                }
-            }
-            if (add) {
-                loggedRoots.add(folder);
-            }
-        }
-        return false;
-    }
-
-    private static class LogTask implements Runnable {
-        @Override
-        public void run() {
-            VCSFileProxy[] folders;
-            synchronized (foldersToCheck) {
-                folders = foldersToCheck.toArray(new VCSFileProxy[foldersToCheck.size()]);
-                foldersToCheck.clear();
-                loggingTask = null;
-            }
-            for (VCSFileProxy f : folders) {
-                if (!checkFolderLogged(f, false)) { // if other task has not processed the root yet
-                    VersioningSystem vs = VersioningSupport.getOwner(f);
-                    if (vs != null) {
-                        VCSFileProxy root = vs.getTopmostManagedAncestor(f);
-                        if (root != null) {
-                            checkFolderLogged(root, true); // remember the root
-                            FileObject rootFO = root.toFileObject();
-                            if (rootFO != null) {
-                                String url = VersioningQuery.getRemoteLocation(rootFO.toURI());
-                                if (url != null) {
-                                    logVCSKenaiUsage("Remote Subversion", url);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    public static void logVCSKenaiUsage(String vcs, String repositoryUrl) {
-        VCSKenaiAccessor kenaiSup = getKenaiAccessor();
-        if (kenaiSup != null) {
-            kenaiSup.logVcsUsage(vcs, repositoryUrl);
-        }
-    }
-
-    private static VCSKenaiAccessor getKenaiAccessor() {
-        if (kenaiAccessor == null) {
-            kenaiAccessor = Lookup.getDefault().lookup(VCSKenaiAccessor.class);
-        }
-        return kenaiAccessor;
-    }
-    
-    /**
-     * Tests whether all files belong to the same data object.
-     *
-     * @param files array of Files
-     * @return true if all files share common DataObject (even null), false
-     * otherwise
-     */
-    public static boolean shareCommonDataObject(VCSFileProxy[] files) {
-        if (files == null || files.length < 2) {
-            return true;
-        }
-        DataObject common = findDataObject(files[0]);
-        for (int i = 1; i < files.length; i++) {
-            DataObject dao = findDataObject(files[i]);
-            if (dao != common && (dao == null || !dao.equals(common))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static DataObject findDataObject(VCSFileProxy file) {
-        FileObject fo = file.toFileObject();
-        if (fo != null) {
-            try {
-                return DataObject.find(fo);
-            } catch (DataObjectNotFoundException e) {
-                // ignore
-            }
-        }
-        return null;
-    }
-    
     /**
      * Checks if the file is to be considered as textuall.
      *
@@ -246,8 +118,6 @@ public class Utils {
         }
     }
     
-    private static Map<VCSFileProxy, Charset> fileToCharset;
-
     /**
      * Retrieves the Charset for the referenceFile and associates it weakly with
      * the given file. A following getAssociatedEncoding() call for the file

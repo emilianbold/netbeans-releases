@@ -62,7 +62,6 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.WizardStepProgressSupport;
-import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
@@ -227,7 +226,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                     setCancellableDelegate(client);
                     info = client.getInfo(context, url);
                 } catch (SVNClientException ex) {
-                    if (SvnClientExceptionHandler.isAuthentication(ex.getMessage()) && !SvnKenaiAccessor.getInstance().canRead(SvnUtils.decodeToString(url))) {
+                    if (SvnClientExceptionHandler.isAuthentication(ex.getMessage())) {
                         invalidMsg = new AbstractStep.WizardMessage(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"), false); //NOI18N
                         return;
                     }

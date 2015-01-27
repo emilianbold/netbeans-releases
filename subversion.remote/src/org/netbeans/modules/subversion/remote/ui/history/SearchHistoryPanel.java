@@ -62,11 +62,9 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
@@ -85,7 +83,6 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryTopComponent.DiffResultsViewFactory;
@@ -97,7 +94,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind;
 import org.netbeans.modules.versioning.util.NoContentPanel;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -128,7 +124,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
     private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
     private int showingResults;
-    private Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap;
     private List<SvnLogEntry> logEntries;
     private boolean selectFirstRevision;
     private final FileSystem fileSystem;
@@ -323,7 +318,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             } else {
                 if (tbSummary.isSelected()) {
                     if (summaryView == null) {
-                        summaryView = new SummaryView(this, logEntries = createLogEntries(results), kenaiUserMap);
+                        summaryView = new SummaryView(this, logEntries = createLogEntries(results));
                     }
                     resultsPanel.add(summaryView.getComponent());
                     summaryView.requestFocusInWindow();
@@ -357,13 +352,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
     
-    void setResults (List<RepositoryRevision> newResults, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap, int limit) {
-        setResults(newResults, kenaiUserMap, false, limit);
+    void setResults (List<RepositoryRevision> newResults, int limit) {
+        setResults(newResults, false, limit);
     }
 
-    private void setResults (List<RepositoryRevision> newResults, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap, boolean searching, int limit) {
+    private void setResults (List<RepositoryRevision> newResults, boolean searching, int limit) {
         this.results = newResults;
-        this.kenaiUserMap = kenaiUserMap;
         this.searchInProgress = searching;
         showingResults = limit;
         if (newResults != null && newResults.size() < limit) {
@@ -399,7 +393,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     private synchronized void search() {
         cancelBackgroundTasks();
-        setResults(null, null, true, -1);
+        setResults(null, true, -1);
         currentSearch = new SearchExecutor(fileSystem, this);
         currentSearch.start();
     }
@@ -793,29 +787,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return showingResults > -1;
     }
     
-    static Map<String, VCSKenaiAccessor.KenaiUser> createKenaiUsersMap (List<RepositoryRevision> results) {
-        Map<String, VCSKenaiAccessor.KenaiUser> kenaiUsersMap = new HashMap<>();
-        if (!results.isEmpty()) {
-            SVNUrl url = results.get(0).getRepositoryRootUrl();
-            boolean isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
-            if(isKenaiRepository) {
-                kenaiUsersMap = new HashMap<>();
-                for (RepositoryRevision repositoryRevision : results) {
-                    String author = repositoryRevision.getLog().getAuthor();
-                    if(author != null && !author.isEmpty()) {
-                        if(!kenaiUsersMap.keySet().contains(author)) {
-                            VCSKenaiAccessor.KenaiUser kenaiUser = SvnKenaiAccessor.getInstance().forName(author, url.toString());
-                            if(kenaiUser != null) {
-                                kenaiUsersMap.put(author, kenaiUser);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return kenaiUsersMap;
-    }
-    
     void getMoreRevisions (PropertyChangeListener callback, int count) {
         if (currentSearch == null) {
             throw new IllegalStateException("No search task active"); //NOI18N
@@ -900,7 +871,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         @Override
         protected void perform () {
             final List<RepositoryRevision> newResults = executor.search(repoUrl, count, this);
-            final Map<String, VCSKenaiAccessor.KenaiUser> additionalUsersMap = createKenaiUsersMap(newResults);
             if (!isCanceled()) {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -927,7 +897,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                                 showingResults = -1;
                             }
                             logEntries = createLogEntries(results);
-                            kenaiUserMap.putAll(additionalUsersMap);
                             if (diffView != null) {
                                 diffView.refreshResults(results);
                             }
