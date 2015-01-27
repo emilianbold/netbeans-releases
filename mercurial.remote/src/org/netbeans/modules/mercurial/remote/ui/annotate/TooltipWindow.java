@@ -325,7 +325,8 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                     String commitMessage = annotateLine.getCommitMessage();
                     List<VCSHyperlinkProvider> providers = Mercurial.getInstance().getHyperlinkProviders();
                     for (VCSHyperlinkProvider hp : providers) {
-                        l = IssueLinker.create(hp, hyperlinkStyle, master.getRepositoryRoot(), doc, commitMessage);
+                        //TODO: bug #250045
+                        l = IssueLinker.create(hp, hyperlinkStyle, null/*master.getRepositoryRoot()*/, doc, commitMessage);
                         if (l != null) {
                             linkerSupport.add(l, 0);
                             break;

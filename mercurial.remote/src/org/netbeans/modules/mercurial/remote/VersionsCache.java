@@ -52,7 +52,6 @@ import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
-import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * File revisions cache. It can access pristine files.

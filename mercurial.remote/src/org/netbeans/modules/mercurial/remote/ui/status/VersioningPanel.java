@@ -176,6 +176,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */
     void setContext(VCSContext ctx) {
         context = ctx;
+        context = ctx;
+        if (context != null) {
+             HgModuleConfig.getDefault(HgUtils.getRootFile(context)).getPreferences().addPreferenceChangeListener(this);
+        }
         if (EventQueue.isDispatchThread()) {
             syncTable.setTableModel(new SyncFileNode[0]);
         }
@@ -189,7 +193,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     @Override
     public void addNotify() {
         super.addNotify();
-        HgModuleConfig.getDefault(root).getPreferences().addPreferenceChangeListener(this);
+        if (context != null) {
+            HgModuleConfig.getDefault(HgUtils.getRootFile(context)).getPreferences().addPreferenceChangeListener(this);
+        }
         mercurial.getFileStatusCache().addPropertyChangeListener(this);        
         mercurial.addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
@@ -199,7 +205,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     @Override
     public void removeNotify() {
-        HgModuleConfig.getDefault(root).getPreferences().removePreferenceChangeListener(this);
+        if (context != null) {
+            HgModuleConfig.getDefault(HgUtils.getRootFile(context)).getPreferences().removePreferenceChangeListener(this);
+        }
         mercurial.getFileStatusCache().removePropertyChangeListener(this);
         mercurial.removePropertyChangeListener(this);
         explorerManager.removePropertyChangeListener(this);

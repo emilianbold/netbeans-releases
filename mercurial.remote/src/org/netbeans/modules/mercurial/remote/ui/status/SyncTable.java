@@ -571,7 +571,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 if (!isSelected) {
                     value = "<html>" + node.getHtmlDisplayName(); // NOI18N
                 }
-                if (HgModuleConfig.getDefault(root).isExcludedFromCommit(node.getFile().getPath())) {
+                final VCSFileProxy file = node.getFile();
+                if (HgModuleConfig.getDefault(file).isExcludedFromCommit(node.getFile().getPath())) {
                     String nodeName = node.getDisplayName();
                     if (isSelected) {
                         value = "<html><s>" + nodeName + "</s></html>"; // NOI18N

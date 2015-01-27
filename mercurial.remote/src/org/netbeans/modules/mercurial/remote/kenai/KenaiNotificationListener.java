@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.mercurial.remote.kenai;
 
+import java.io.File;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,7 +71,8 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
             Mercurial.LOG.fine("rejecting VCS notification " + notification + " because not from hg"); // NOI18N
             return;
         }
-        VCSFileProxy projectDir = notification.getProjectDirectory();
+        //TODO: see bug #250044
+        VCSFileProxy projectDir = null;//notification.getProjectDirectory();
         if(!Mercurial.getInstance().isManaged(projectDir)) {
             assert false : " project " + projectDir + " not managed";
             Mercurial.LOG.fine("rejecting VCS notification " + notification + " for " + projectDir + " because not versioned by hg"); // NOI18N
@@ -105,35 +107,42 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
             }
         }
         if(notifyFiles.size() > 0) {
-            notifyFileChange(notifyFiles.toArray(new VCSFileProxy[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
+            //TODO: see bug #250044
+            //notifyFileChange(notifyFiles.toArray(new VCSFileProxy[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
         }
     }
 
-    @Override
-    protected void setupPane(JTextPane pane, final VCSFileProxy[] files, final VCSFileProxy projectDir, final String url, final String revision) {
-        String text = NbBundle.getMessage(
-                KenaiNotificationListener.class,
-                "MSG_NotificationBubble_Description",  //NOI18N
-                getFileNames(files),
-                HgKenaiAccessor.getInstance().getRevisionUrl(url, revision)); //NOI18N
-        pane.setText(text);
+//    @Override
+//    protected void setupPane(JTextPane pane, final VCSFileProxy[] files, final VCSFileProxy projectDir, final String url, final String revision) {
+//        String text = NbBundle.getMessage(
+//                KenaiNotificationListener.class,
+//                "MSG_NotificationBubble_Description",  //NOI18N
+//                getFileNames(files),
+//                HgKenaiAccessor.getInstance().getRevisionUrl(url, revision)); //NOI18N
+//        pane.setText(text);
+//
+//        pane.addHyperlinkListener(new HyperlinkListener() {
+//            @Override
+//            public void hyperlinkUpdate(HyperlinkEvent e) {
+//                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+//                    URL url = e.getURL();
+//                    assert url != null;
+//                    HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+//                    assert displayer != null : "HtmlBrowser.URLDisplayer found.";   //NOI18N
+//                    if (displayer != null) {
+//                        displayer.showURL (url);
+//                    } else {
+//                        Mercurial.LOG.info("No URLDisplayer found.");               //NOI18N
+//                    }
+//                }
+//            }
+//        });
+//    }
 
-        pane.addHyperlinkListener(new HyperlinkListener() {
-            @Override
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-                    URL url = e.getURL();
-                    assert url != null;
-                    HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                    assert displayer != null : "HtmlBrowser.URLDisplayer found.";   //NOI18N
-                    if (displayer != null) {
-                        displayer.showURL (url);
-                    } else {
-                        Mercurial.LOG.info("No URLDisplayer found.");               //NOI18N
-                    }
-                }
-            }
-        });
+    @Override
+    protected void setupPane(JTextPane pane, File[] file, File projectDir, String url, String revision) {
+        //TODO: see bug #250044
+        throw new UnsupportedOperationException();
     }
 
 }

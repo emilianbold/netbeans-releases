@@ -61,6 +61,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -68,6 +70,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.AbstractNode;
@@ -138,14 +141,29 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(this.contentTitle);
-        out.writeObject(context == null ? new VCSFileProxy[0] : context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]));
+        if (context == null) {
+            out.writeInt(0);
+        } else {
+            out.writeInt(context.getRootFiles().size());
+            for(VCSFileProxy root : context.getRootFiles()) {
+                URI uri = VCSFileProxySupport.toURI(root);
+                out.writeObject(uri);
+            }
+        }
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         setContentTitle((String) in.readObject());
-        VCSFileProxy[] files = (VCSFileProxy[]) in.readObject();
+        int size = in.readInt();
+        List<VCSFileProxy> rootFiles = new ArrayList<VCSFileProxy>(size);
+        for(int i = 0; i < size; i++) {
+            URI uri = (URI)in.readObject();
+            VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
+            rootFiles.add(root);
+        }
+        VCSFileProxy[] files = rootFiles.toArray(new VCSFileProxy[size]);
         List<Node> nodes = new LinkedList<Node>();
         for (VCSFileProxy file : files) {
             nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)) {
