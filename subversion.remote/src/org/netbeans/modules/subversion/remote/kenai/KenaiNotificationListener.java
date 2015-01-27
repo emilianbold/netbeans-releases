@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.subversion.remote.kenai;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -52,10 +53,10 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSKenaiAccessor;
-import org.netbeans.modules.subversion.remote.util.VCSKenaiAccessor.VCSKenaiModification;
-import org.netbeans.modules.subversion.remote.util.VCSKenaiAccessor.VCSKenaiNotification;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiModification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiNotification;
 
 /**
  *
@@ -69,7 +70,8 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
             LOG.fine("rejecting VCS notification " + notification + " because not from svn"); // NOI18N
             return;
         }
-        VCSFileProxy projectDir = notification.getProjectDirectory();
+        //TODO: see bug #250044
+        VCSFileProxy projectDir = null;//notification.getProjectDirectory();
         if(!SvnUtils.isManaged(projectDir)) {
             assert false : " project " + projectDir + " not managed"; // NOI18N
             LOG.fine("rejecting VCS notification " + notification + " for " + projectDir + " because not versioned by svn"); // NOI18N
@@ -108,7 +110,8 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
             }
         }
         if(notifyFiles.size() > 0) {
-            notifyFileChange(notifyFiles.toArray(new VCSFileProxy[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
+            //TODO: see bug #250044
+            //notifyFileChange(notifyFiles.toArray(new VCSFileProxy[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
             try {
                 NotificationsManager.getInstance().notfied(files, Long.parseLong(revision));
             } catch (NumberFormatException e) {
@@ -117,9 +120,15 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
         }
     }
 
+//    @Override
+//    protected void setupPane(JTextPane pane, final VCSFileProxy[] files, final VCSFileProxy projectDir, final String url, final String revision) {        
+//        NotificationsManager.getInstance().setupPane(pane, files, getFileNames(files), projectDir, url, revision);
+//    }
+
     @Override
-    protected void setupPane(JTextPane pane, final VCSFileProxy[] files, final VCSFileProxy projectDir, final String url, final String revision) {        
-        NotificationsManager.getInstance().setupPane(pane, files, getFileNames(files), projectDir, url, revision);
+    protected void setupPane(JTextPane pane, File[] file, File projectDir, String url, String revision) {
+        //TODO: see bug #250044
+        throw new UnsupportedOperationException();
     }
 
 }
