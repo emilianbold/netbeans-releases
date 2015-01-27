@@ -48,7 +48,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
-import org.netbeans.modules.mercurial.remote.kenai.HgKenaiAccessor;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
@@ -516,10 +515,6 @@ public final class HgURL {
 
     public boolean isFile() {
         return scheme == Scheme.FILE;
-    }
-
-    public boolean isKenaiURL() {
-        return HgKenaiAccessor.getInstance().isKenai(toUrlStringWithoutUserInfo());
     }
 
     /**

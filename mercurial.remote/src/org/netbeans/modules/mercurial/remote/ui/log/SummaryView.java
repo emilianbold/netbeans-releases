@@ -80,7 +80,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -331,8 +330,8 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
     }
     
-    public SummaryView (SearchHistoryPanel master, List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUserMap) {
-        super(createViewSummaryMaster(master), results, kenaiUserMap);
+    public SummaryView (SearchHistoryPanel master, List<? extends LogEntry> results) {
+        super(createViewSummaryMaster(master), results));
         this.master = master;
     }
 

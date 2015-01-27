@@ -112,7 +112,6 @@ import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.OutputLogger;
 import org.netbeans.modules.mercurial.remote.WorkingCopyInfo;
-import org.netbeans.modules.mercurial.remote.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.remote.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
@@ -123,7 +122,6 @@ import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -229,11 +227,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Repository root of annotated file
      */
     private VCSFileProxy repositoryRoot;
-
-    /**
-     * Holdes kenai users
-     */
-    private Map<String, KenaiUser> kenaiUsersMap = null;
 
     /*
      * Holds parent/previous revisions for each line revision
@@ -408,21 +401,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
 
         final String url = HgUtils.getRemoteRepository(repositoryRoot);
-        final boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
-        if(isKenaiRepository) {
-            kenaiUsersMap = new HashMap<String, KenaiUser>();
-            Iterator<AnnotateLine> it = lines.iterator();
-            while (it.hasNext()) {
-                AnnotateLine line = it.next();
-                String author = line.getAuthor();
-                if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                    KenaiUser ku = HgKenaiAccessor.getInstance().forName(author, url);
-                    if(ku != null) {
-                        kenaiUsersMap.put(author, ku);
-                    }
-                }
-            }
-        }
                 
         // lazy listener registration
         caret.addChangeListener(this);
@@ -654,23 +632,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         });
         popupMenu.add(previousAnnotationsMenu);
-
-        if(isKenai() && al != null) {
-            String author = al.getAuthor();
-            final int lineNr = al.getLineNum();
-            final KenaiUser ku = kenaiUsersMap.get(author);
-            if(ku != null) {
-                popupMenu.addSeparator();
-                JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
-                chatMenu.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
-                    }
-                });
-                popupMenu.add(chatMenu);
-            }
-        }
 
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
@@ -1022,7 +983,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
         char[] data = longestString.toCharArray();
         int w = getGraphics().getFontMetrics().charsWidth(data, 0,  data.length);
-        return w + 4 + (isKenai() ? 18 : 0);
+        return w + 4;
     }
 
     private String getDisplayName(AnnotateLine line) {
@@ -1096,17 +1057,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         int texty = yBase + editorUI.getLineAscent();
         int textx = 2;
         g.drawString(annotation, textx, texty);
-    }
-
-    boolean isKenai() {
-        return kenaiUsersMap != null && kenaiUsersMap.size() > 0;
-    }
-
-    KenaiUser getKenaiUser(String author) {
-        if(kenaiUsersMap == null) {
-            return null;
-        }
-        return kenaiUsersMap.get(author);
     }
 
     /**
