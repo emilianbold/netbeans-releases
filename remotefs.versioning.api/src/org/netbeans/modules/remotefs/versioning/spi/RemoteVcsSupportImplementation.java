@@ -83,6 +83,8 @@ public interface RemoteVcsSupportImplementation {
 
     public boolean isMac(VCSFileProxy proxy);
 
+    public boolean isSolaris(VCSFileProxy proxy);
+
     public boolean isUnix(VCSFileProxy proxy);
 
     public long getSize(VCSFileProxy proxy);

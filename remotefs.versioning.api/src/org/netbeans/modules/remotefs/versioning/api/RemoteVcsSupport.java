@@ -120,6 +120,10 @@ public final class RemoteVcsSupport {
         return getImpl().isMac(proxy);
     }
 
+    static boolean isSolaris(VCSFileProxy file) {
+        return getImpl().isSolaris(file);
+    }
+
     public static boolean isUnix(VCSFileProxy proxy) {
         return getImpl().isUnix(proxy);
     }

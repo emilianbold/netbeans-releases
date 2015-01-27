@@ -498,7 +498,11 @@ public final class VCSFileProxySupport {
     public static boolean isMac(VCSFileProxy file) {
         return RemoteVcsSupport.isMac(file);
     }
-    
+
+    public static boolean isSolaris(VCSFileProxy file) {
+        return RemoteVcsSupport.isSolaris(file);
+    }
+
     public static boolean isUnix(VCSFileProxy file){
         return RemoteVcsSupport.isUnix(file);
     }
