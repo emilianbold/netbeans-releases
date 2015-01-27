@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.codemodel.CMTokenKind;
  */
 public interface CMTokenImplementation {
   CMTokenKind getKind();
-  CharSequence getSpelling();
-  CMSourceLocationImplementation getLocation();
+  CharSequence getSpelling(CMTranslationUnitImplementation tu);
+  CMSourceLocationImplementation getLocation(CMTranslationUnitImplementation tu);
+  CMSourceRangeImplementation getExtent(CMTranslationUnitImplementation tu);
 }

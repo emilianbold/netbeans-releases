@@ -46,5 +46,57 @@ package org.netbeans.modules.cnd.api.codemodel;
  * @author Vladimir Voskresensky
  */
 public enum CMTokenKind {
+    /**
+     * \brief A token that contains some kind of punctuation.
+     */
+    Punctuation(0),
+
+    /**
+     * \brief A language keyword.
+     */
+    Keyword(1),
+
+    /**
+     * \brief An identifier (that is not a keyword).
+     */
+    Identifier(2),
+
+    /**
+     * \brief A numeric, string, or character literal.
+     */
+    Literal(3),
+
+    /**
+     * \brief A comment.
+     */
+    Comment(4),
+    
+    /**
+     * \brief Invalid kind.
+     */
+    Invalid(-1);
   
+    //<editor-fold defaultstate="collapsed" desc="hidden">
+    public static CMTokenKind valueOf(int val) {
+        // FIXME: make constant
+        short kindVal = (short) val;
+        for (CMTokenKind kind : CMTokenKind.values()) {
+            if (kind.value == kindVal) {
+                return kind;
+            }
+        }
+        assert false : "no kind for " + val;
+        return Invalid;
+    }
+    
+    private final short value;
+    
+    private CMTokenKind(int val) {
+        this.value = (short) val;
+    }
+    
+    public int getValue() {
+        return value;
+    }
+    //</editor-fold>  
 }

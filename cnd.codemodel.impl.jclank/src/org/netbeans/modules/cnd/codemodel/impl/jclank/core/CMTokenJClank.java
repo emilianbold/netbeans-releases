@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.codemodel.impl.jclank.core;
 
 import org.netbeans.modules.cnd.api.codemodel.CMTokenKind;
 import org.netbeans.modules.cnd.spi.codemodel.CMSourceLocationImplementation;
+import org.netbeans.modules.cnd.spi.codemodel.CMSourceRangeImplementation;
 import org.netbeans.modules.cnd.spi.codemodel.CMTokenImplementation;
+import org.netbeans.modules.cnd.spi.codemodel.CMTranslationUnitImplementation;
 
 /**
  *
@@ -57,12 +59,17 @@ public class CMTokenJClank implements CMTokenImplementation {
   }
 
   @Override
-  public CharSequence getSpelling() {
+  public CharSequence getSpelling(CMTranslationUnitImplementation tu) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
-  public CMSourceLocationImplementation getLocation() {
+  public CMSourceLocationImplementation getLocation(CMTranslationUnitImplementation tu) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public CMSourceRangeImplementation getExtent(CMTranslationUnitImplementation tu) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
   

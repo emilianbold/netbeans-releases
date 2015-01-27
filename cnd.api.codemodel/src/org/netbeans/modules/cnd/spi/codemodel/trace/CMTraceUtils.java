@@ -395,9 +395,10 @@ public class CMTraceUtils {
             return "null";
         }
         StringBuilder sb = new StringBuilder();
-        sb.append(token.getSpelling()).append(" <"); // NOI18N
+        sb.append(token.getSpelling(null)).append(" <"); // NOI18N
         sb.append(token.getKind()).append("> "); // NOI18N
-        sb.append(String.format("[%s]", toString(token.getLocation()))); // NOI18N
+        sb.append(String.format("[%s]", toString(token.getLocation(null)))); // NOI18N
+        sb.append(String.format("[%s]", toString(token.getExtent(null)))); // NOI18N
         return sb.toString();
     }
 }

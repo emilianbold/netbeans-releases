@@ -62,19 +62,31 @@ public final class CMToken {
     /**
      * \brief Retrieve a spelling representing the token.
      *
+     * @param tu context translation unit
      * @return token spelling
      */
-    public CharSequence getSpelling() {
-        return impl.getSpelling();
+    public CharSequence getSpelling(CMTranslationUnit tu) {
+        return impl.getSpelling(tu.getImpl());
     }
   
     /**
      * \brief Retrieve a source location representing the token.
      *
+     * @param tu context translation unit
      * @return token location
      */
-    public CMSourceLocation getLocation() {
-        return CMSourceLocation.fromImpl(impl.getLocation());
+    public CMSourceLocation getLocation(CMTranslationUnit tu) {
+        return CMSourceLocation.fromImpl(impl.getLocation(tu.getImpl()));
+    }
+
+    /**
+     * \brief Retrieve a source range that covers the given token.
+     *
+     * @param tu context translation unit
+     * @return token range
+     */
+    public CMSourceRange getExtent(CMTranslationUnit tu) {
+        return CMSourceRange.fromImpl(impl.getExtent(tu.getImpl()));
     }
     
     //<editor-fold defaultstate="collapsed" desc="hidden">
