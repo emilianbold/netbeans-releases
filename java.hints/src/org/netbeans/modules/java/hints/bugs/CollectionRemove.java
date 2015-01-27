@@ -216,11 +216,14 @@ public class CollectionRemove {
                 designedType = ((WildcardType) designedType).getExtendsBound();
 
                 if (designedType == null) {
-                    designedType = ctx.getInfo().getElements().getTypeElement("java.lang.Object").asType();
+                    TypeElement te = ctx.getInfo().getElements().getTypeElement("java.lang.Object");
+                    if (te != null) {
+                        designedType = te.asType();
+                    }
                 }
             }
 
-            if (!ctx.getInfo().getTypes().isAssignable(actualParam,designedType)) {
+            if (designedType != null && !ctx.getInfo().getTypes().isAssignable(actualParam,designedType)) {
                 String warningKey;
 
                 if (compatibleTypes(ctx.getInfo(), actualParam,designedType)) {
