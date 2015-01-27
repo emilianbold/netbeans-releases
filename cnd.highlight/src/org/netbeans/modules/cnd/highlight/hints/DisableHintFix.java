@@ -60,7 +60,9 @@ public class DisableHintFix implements EnhancedFix {
 
     @Override
     public String getText() {
-        return NbBundle.getMessage(DisableHintFix.class, "DisableHint"); // NOI18N
+        return NbBundle.getMessage(DisableHintFix.class, "DisableHint") // NOI18N
+                .concat(" - ") // NOI18N
+                .concat(info.getAuditID());
     }
 
     @Override
