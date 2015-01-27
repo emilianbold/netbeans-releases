@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.remote.ui.repository.Repository;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -77,6 +78,7 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel {
     private HgURL pullUrl, pushUrl;
     private HgURL defaultUrl;
     private String defaultUrlString;
+    private VCSFileProxy root;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -294,6 +296,7 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel {
         assert (settings instanceof WizardDescriptor);
 
         defaultUrl = (HgURL) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
+        root = (VCSFileProxy) ((WizardDescriptor) settings).getProperty("root"); // NOI18N
         HgURL repository = defaultUrl;
         boolean repoistoryChanged = !repository.equals(repositoryOrig);
         repositoryOrig = repository;

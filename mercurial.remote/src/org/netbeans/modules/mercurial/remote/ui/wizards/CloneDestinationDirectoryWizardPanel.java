@@ -53,6 +53,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -67,6 +69,7 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
     private CloneDestinationDirectoryPanel component;
     private boolean valid;
     private String errorMessage;
+    private VCSFileProxy root;
     
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -75,7 +78,7 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new CloneDestinationDirectoryPanel();
+            component = new CloneDestinationDirectoryPanel(this);
             component.directoryField.getDocument().addDocumentListener(this);
             component.nameField.getDocument().addDocumentListener(this);
             valid();
@@ -195,10 +198,16 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
     public void readSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
             HgURL repository = (HgURL) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
+            root = (VCSFileProxy) ((WizardDescriptor) settings).getProperty("root"); // NOI18N
 
-            component.nameField.setText(new VCSFileProxy(repository.getPath()).getName());
+            component.nameField.setText(VCSFileProxySupport.getResource(root, repository.getPath()).getName());
         }
     }
+    
+    VCSFileProxy getRoot() {
+        return root;
+    }
+    
     @Override
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
