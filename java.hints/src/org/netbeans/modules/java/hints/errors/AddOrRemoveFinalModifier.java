@@ -137,6 +137,9 @@ public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
 
         if (leaf.getKind() == Kind.IDENTIFIER) {
             Element el = compilationInfo.getTrees().getElement(treePath);
+            if (el == null) {
+                return null;
+            }
             TreePath declaration = compilationInfo.getTrees().getPath(el);
             
             if (declaration != null) {

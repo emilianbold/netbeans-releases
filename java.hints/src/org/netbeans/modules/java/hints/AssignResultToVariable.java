@@ -340,7 +340,7 @@ public class AssignResultToVariable extends AbstractHint {
                         TypeMirror type = copy.getTrees().getTypeMirror(tp);
                         Element el = copy.getTrees().getElement(tp);
                         
-                        if (type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
+                        if (el == null || type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
                             return ;
                         }
 

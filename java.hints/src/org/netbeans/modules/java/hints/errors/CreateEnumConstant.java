@@ -96,9 +96,16 @@ class CreateEnumConstant implements Fix {
         this.targetFile = targetFile;
         this.target = ElementHandle.create(target);
         if (proposedType.getKind() == TypeKind.NULL) {
-            proposedType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            TypeElement tel = info.getElements().getTypeElement("java.lang.Object"); // NOI18N
+            if (tel != null) {
+                proposedType = tel.asType();
+                this.proposedType = TypeMirrorHandle.create(proposedType);
+            } else {
+                this.proposedType = null;
+            }
+        } else {
+            this.proposedType = TypeMirrorHandle.create(proposedType);
         }
-        this.proposedType = TypeMirrorHandle.create(proposedType);
     }
 
     public String getText() {

@@ -128,6 +128,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
                 return null;
             }
         }
+        if (e == null) {
+            return null;
+        }
         List<? extends ExecutableElement> lee = info.getElementUtilities().findUnimplementedMethods((TypeElement)e);
         Scope s = info.getTrees().getScope(path);
         for (ExecutableElement ee : lee) {
@@ -154,6 +157,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
             public void makeClassAbstract(TreePath pathToModify, String className) {
                 Tree toModify = pathToModify.getLeaf();
                 Element el = info.getTrees().getElement(pathToModify);
+                if (el == null) {
+                    return;
+                }
                 if (el.getKind() == ElementKind.ENUM) {
                     result.add(new ImplementOnEnumValues(info.getJavaSource(), offset));
                 } else {
@@ -306,6 +312,10 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
                         return;
                     }
                     Element el = copy.getTrees().getElement(enumPath);
+                    if (el == null) {
+                        // TODO: report to user
+                        return;
+                    }
                     ArrayList<? extends Element> al = new ArrayList(el.getEnclosedElements());
                     Collections.reverse(al);
                     for (VariableElement e : ElementFilter.fieldsIn(al)) {
@@ -342,6 +352,10 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
                         return;
                     }
                     Element el = copy.getTrees().getElement(enumPath);
+                    if (el == null) {
+                        // TODO: report to user
+                        return;
+                    }
                     for (VariableElement e : ElementFilter.fieldsIn(el.getEnclosedElements())) {
                         if (e.getKind() != ElementKind.ENUM_CONSTANT) {
                             continue;

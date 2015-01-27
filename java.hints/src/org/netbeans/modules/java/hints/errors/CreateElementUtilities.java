@@ -81,6 +81,7 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -321,7 +322,11 @@ public final class CreateElementUtilities {
             for (ExpressionTree t : throwList) {
                 if (t == error) {
                     types.add(ElementKind.CLASS);
-                    typeParameterBound[0] = info.getElements().getTypeElement("java.lang.Exception").asType();
+                    TypeElement tel = info.getElements().getTypeElement("java.lang.Exception");
+                    if (tel == null) {
+                        return null;
+                    }
+                    typeParameterBound[0] = tel.asType();
                     break;
                 }
             }
@@ -342,8 +347,9 @@ public final class CreateElementUtilities {
                 types.add(ElementKind.LOCAL_VARIABLE);
                 types.add(ElementKind.FIELD);
 
-                if (bodyStart <= offset && offset <= bodyEnd)
-                    return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
+                if (bodyStart <= offset && offset <= bodyEnd) {
+                    return typeMirrorCollection(info, "java.lang.Object");
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger("global").log(Level.INFO, ex.getMessage(), ex);
@@ -551,7 +557,7 @@ public final class CreateElementUtilities {
         }
         
         if (at.getDetail() == error) {
-            return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
+            return typeMirrorCollection(info, "java.lang.Object");
         }
         
         
@@ -627,11 +633,20 @@ public final class CreateElementUtilities {
             types.add(ElementKind.PARAMETER);
             types.add(ElementKind.LOCAL_VARIABLE);
             types.add(ElementKind.FIELD);
-            
-            return Collections.singletonList(info.getElements().getTypeElement(type).asType());
+            return typeMirrorCollectionOrNull(info, type);
         }
         
         return null;
+    }
+
+    private static List<? extends TypeMirror> typeMirrorCollectionOrNull(CompilationInfo info, String type) {
+            TypeElement tel = info.getElements().getTypeElement(type);
+            return tel == null ? null : Collections.singletonList(tel.asType());
+    }
+    
+    private static List<?extends TypeMirror> typeMirrorCollection(CompilationInfo info, String type) {
+            TypeElement tel = info.getElements().getTypeElement(type);
+            return tel == null ? Collections.<TypeMirror>emptyList() : Collections.singletonList(tel.asType());
     }
     
     private static List<? extends TypeMirror> computeImport(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
@@ -643,7 +658,7 @@ public final class CreateElementUtilities {
             types.add(ElementKind.ENUM);
             types.add(ElementKind.INTERFACE);
             
-            return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
+            return typeMirrorCollectionOrNull(info, "java.lang.Object");
         }
 
         return null;
@@ -903,7 +918,7 @@ public final class CreateElementUtilities {
     private static List<? extends TypeMirror> computeArrayType(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
         types.add(ElementKind.CLASS);
 
-        return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
+        return typeMirrorCollectionOrNull(info, "java.lang.Object");
     }
     
     private static final Set<Kind> STOP_LOOKING_FOR_METHOD = EnumSet.of(Kind.METHOD, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.COMPILATION_UNIT);
@@ -969,6 +984,9 @@ public final class CreateElementUtilities {
                 return true;
             }
             TypeElement source = (TypeElement)info.getTrees().getElement(classTree);
+            if (source == null) {
+                return false;
+            }
             // FIXME: the check is insufficient; the symbol may be assigned in other parts of the code
             // despite it's undefined at the moment. The IDE will generate final field based on ctor analysis,
             // but then report errors on the field's assignments in regular methods.
