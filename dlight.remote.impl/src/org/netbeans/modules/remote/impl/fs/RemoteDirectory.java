@@ -151,17 +151,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     /*package*/ boolean canWrite(String childNameExt) throws IOException, ConnectException {
             DirEntry entry = getEntry(childNameExt);
-            return entry != null && entry.canWrite(getExecutionEnvironment()); //TODO:rfs - check groups
+            return entry != null && entry.canWrite(); //TODO:rfs - check groups
     }
 
     /*package*/ boolean canRead(String childNameExt) throws IOException {
         DirEntry entry = getEntry(childNameExt);
-        return entry != null && entry.canRead(getExecutionEnvironment());
+        return entry != null && entry.canRead();
     }
 
     /*package*/ boolean canExecute(String childNameExt) throws IOException {
         DirEntry entry = getEntry(childNameExt);
-        return entry != null && entry.canExecute(getExecutionEnvironment());
+        return entry != null && entry.canExecute();
     }
 
     @Override
@@ -460,7 +460,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
                 readLock.lock();
                 try {
-                    storage = DirectoryStorage.load(storageFile);
+                    storage = DirectoryStorage.load(storageFile, getExecutionEnvironment());
                 } catch (FormatException e) {
                     FormatException.reportIfNeeded(e);
                     storageFile.delete();
@@ -690,18 +690,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
-        StatInfo statInfo;
+        DirEntry entry;
         try {
-            statInfo = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), absPath);
+            entry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), absPath);
         } catch (ExecutionException e) {
             if (RemoteFileSystemUtils.isFileNotFoundException(e)) {
-                statInfo = null;
+                entry = null;
             } else {
                 throw e;
             }
         }
-        DirEntry entry = (statInfo == null) ? new DirEntryInvalid(childName) : new DirEntrySftp(statInfo, statInfo.getName());
-        return entry;
+        return (entry != null) ? entry : new DirEntryInvalid(childName);
     }
 
     private boolean isAutoMount() {
@@ -860,14 +859,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                 changed = fire = true; // TODO: we forgot old link path, probably should be passed to change event
                                 getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
                             }
-                            if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                            if (! newEntry.isSameAccess(oldEntry)) {
                                 entriesToFireChangedRO.add(newEntry);
-                                changed = fire = true;
-                            }
-                            if (!newEntry.isSameUser(oldEntry)) {
-                                changed = fire = true;
-                            }
-                            if (!newEntry.isSameGroup(oldEntry)) {
                                 changed = fire = true;
                             }
                             if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
@@ -983,10 +976,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    /*package */void updateStat(RemotePlainFile fo, StatInfo statInfo) {
-        RemoteLogger.assertTrue(fo.getNameExt().equals(statInfo.getName()));
-        RemoteLogger.assertFalse(statInfo.isDirectory());
-        RemoteLogger.assertFalse(statInfo.isLink());
+    /*package */void updateStat(RemotePlainFile fo, DirEntry entry) {
+        RemoteLogger.assertTrue(fo.getNameExt().equals(entry.getName()));
+        RemoteLogger.assertFalse(entry.isDirectory());
+        RemoteLogger.assertFalse(entry.isLink());
         Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
         if (trace) {trace("waiting for lock");} // NOI18N
         writeLock.lock();
@@ -996,7 +989,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 Exceptions.printStackTrace(new IllegalStateException("Update stat is called but remote directory cache does not exist")); // NOI18N
             } else {
                 List<DirEntry> entries = storage.listValid(fo.getNameExt());
-                DirEntry entry = new DirEntrySftp(statInfo, fo.getCache().getName());
+                entry.setCache(fo.getCache().getName());
                 entries.add(entry);
                 DirectoryStorage newStorage = new DirectoryStorage(getStorageFile(), entries);
                 try {
@@ -1042,7 +1035,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 try {
                     readLock.lock();
                     try {
-                        storage = DirectoryStorage.load(storageFile);
+                        storage = DirectoryStorage.load(storageFile, getExecutionEnvironment());
                         fromMemOrDiskCache = true;
                         // try to keep loaded cache in memory
                         synchronized (refLock) {
@@ -1196,14 +1189,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             changed = fire = true; // TODO: we forgot old link path, probably should be passed to change event
                             getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
                         }
-                        if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                        if (!newEntry.isSameAccess(oldEntry)) {
                             entriesToFireChangedRO.add(newEntry);
-                            changed = fire = true;
-                        }
-                        if (!newEntry.isSameUser(oldEntry)) {
-                            changed = fire = true;
-                        }
-                        if (!newEntry.isSameGroup(oldEntry)) {
                             changed = fire = true;
                         }
                         if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
@@ -1215,7 +1202,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     } else {
                         changed = true;
                         getFileSystem().getFactory().changeImplementor(this, oldEntry, newEntry);
-                        if (oldEntry.isLink() && newEntry.isPlainFile() && newEntry.canWrite(getExecutionEnvironment())) {
+                        if (oldEntry.isLink() && newEntry.isPlainFile() && newEntry.canWrite()) {
                             entriesToFireChangedRO.add(newEntry);
                         } else {
                             entriesToFireChanged.add(newEntry);

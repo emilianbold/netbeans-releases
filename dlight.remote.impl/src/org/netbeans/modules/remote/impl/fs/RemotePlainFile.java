@@ -508,14 +508,14 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                     pathToUpload = file.getPath(); //NOI18N
                 }
                 try {
-                    FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.uploadAndRename(
+                    DirEntry dirEntry = RemoteFileSystemTransport.uploadAndRename(
                             file.getExecutionEnvironment(), file.getCache(), pathToUpload, pathToRename);                    
-                    file.getParent().updateStat(file, statInfo);
-                    FileEvent ev = new FileEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), false, statInfo.getLastModified().getTime());
+                    file.getParent().updateStat(file, dirEntry);
+                    FileEvent ev = new FileEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
                     file.getOwnerFileObject().fireFileChangedEvent(file.getListeners(), ev);
                     RemoteDirectory parent = file.getParent();
                     if (parent != null) {
-                        ev = new FileEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), false, statInfo.getLastModified().getTime());
+                        ev = new FileEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
                         parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);
                     }                
                 } catch (InterruptedException ex) {

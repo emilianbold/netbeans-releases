@@ -48,7 +48,6 @@ import java.util.Collection;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 
 /**
@@ -127,13 +126,13 @@ public abstract class RemoteFileSystemTransport {
         return entries;
     }
     
-    public static FileInfoProvider.StatInfo stat(ExecutionEnvironment execEnv, String path) 
+    public static DirEntry stat(ExecutionEnvironment execEnv, String path) 
             throws InterruptedException, CancellationException, ExecutionException {
 
         return getInstance(execEnv).stat(path);
     }
     
-    public static FileInfoProvider.StatInfo lstat(ExecutionEnvironment execEnv, String path)
+    public static DirEntry lstat(ExecutionEnvironment execEnv, String path)
             throws InterruptedException, CancellationException, ExecutionException {
 
         return getInstance(execEnv).lstat(path);
@@ -184,7 +183,7 @@ public abstract class RemoteFileSystemTransport {
         return getInstance(execEnv).move(from, to);
     }
     
-    public static FileInfoProvider.StatInfo uploadAndRename(ExecutionEnvironment execEnv, File src, 
+    public static DirEntry uploadAndRename(ExecutionEnvironment execEnv, File src, 
             String pathToUpload, String pathToRename) 
             throws IOException, InterruptedException, ExecutionException, InterruptedException {
         return getInstance(execEnv).uploadAndRename(src, pathToUpload, pathToRename);
@@ -209,10 +208,10 @@ public abstract class RemoteFileSystemTransport {
     protected abstract MoveInfo move(String from, String to)
             throws IOException, InterruptedException, CancellationException, ExecutionException;
 
-    protected abstract FileInfoProvider.StatInfo stat(String path) 
+    protected abstract DirEntry stat(String path) 
             throws InterruptedException, CancellationException, ExecutionException;
     
-    protected abstract FileInfoProvider.StatInfo lstat(String path) 
+    protected abstract DirEntry lstat(String path) 
             throws InterruptedException, CancellationException, ExecutionException;
 
     protected abstract DirEntryList readDirectory(String path) 
@@ -228,7 +227,7 @@ public abstract class RemoteFileSystemTransport {
 
     protected abstract void scheduleRefresh(Collection<String> paths);
     
-    protected abstract FileInfoProvider.StatInfo uploadAndRename(File srcFile, String pathToUpload, String pathToRename)
+    protected abstract DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename)
             throws IOException, InterruptedException, ExecutionException, InterruptedException;
     
     /** 
