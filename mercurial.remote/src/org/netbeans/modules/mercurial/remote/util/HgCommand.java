@@ -47,8 +47,6 @@ package org.netbeans.modules.mercurial.remote.util;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -96,11 +94,12 @@ import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.remote.ui.queues.Queue;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
-import org.netbeans.modules.mercurial.remote.ui.repository.Repository;
 import org.netbeans.modules.mercurial.remote.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.mercurial.remote.ui.tag.HgTag;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
@@ -1036,7 +1035,7 @@ public abstract class HgCommand<T> implements Callable<T> {
 
         List<String> list;
 
-        if(HgUtils.isSolaris()){
+        if(VCSFileProxySupport.isSolaris(repository)){
             env.add(HG_HGK_PATH_SOLARIS10_ENV);
             list = execEnv(repository, command, env);
         }else{
@@ -4013,11 +4012,18 @@ public abstract class HgCommand<T> implements Callable<T> {
                 Mercurial.LOG.log(Level.WARNING, "Failed to create temporary file defining Hg output style."); //NOI18N
             }
             final List<String> commandLine = toCommandList(command, outputStyleFile);
-            final ProcessBuilder pb = new ProcessBuilder(commandLine);
-            if (repository != null && repository.isDirectory()) {
-                pb.directory(repository);
+            //final ProcessBuilder pb = new ProcessBuilder(commandLine);
+            final org.netbeans.api.extexecution.ProcessBuilder pb = VersioningSupport.createProcessBuilder(repo);
+            pb.setExecutable(commandLine.get(0));
+            List<String> args = new ArrayList<String>();
+            for(int i = 1; i < commandLine.size(); i++) {
+                args.add(commandLine.get(i));
             }
-            Map<String, String> envOrig = pb.environment();
+            pb.setArguments(args);
+            if (repository != null && repository.isDirectory()) {
+                pb.setWorkingDirectory(repository.getPath());
+            }
+            Map<String, String> envOrig = new HashMap<String,String>();//pb.environment();
             setGlobalEnvVariables(envOrig);
             if (env != null && env.size() > 0) {
                 for (String s : env) {
@@ -4087,13 +4093,13 @@ public abstract class HgCommand<T> implements Callable<T> {
         }
     }
 
-    private static List<String> exec (List<? extends Object> command, ProcessBuilder pb) throws HgException {
+    private static List<String> exec (List<? extends Object> command, org.netbeans.api.extexecution.ProcessBuilder pb) throws HgException {
         final List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         BufferedReader error = null;
         Process proc = null;
         try{
-            proc = pb.start();
+            proc = pb.call();
 
             input = new BufferedReader(ENCODING == null 
                     ? new InputStreamReader(proc.getInputStream())

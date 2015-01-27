@@ -169,7 +169,7 @@ public abstract class ContextAction extends NodeAction {
         return false;
     }
     
-    protected static String getContextDisplayName(VCSContext ctx) {
+    public static String getContextDisplayName(VCSContext ctx) {
         // TODO: reuse this code in getActionName()
         Set<VCSFileProxy> nodes = ctx.getFiles();
         int objectCount = nodes.size();

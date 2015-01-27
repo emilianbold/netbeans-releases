@@ -238,7 +238,6 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         for (VCSFileProxy file : context.getRootFiles()) {
             if (file.isDirectory()) {
                 folderAnnotation = true;
-                Utils.addFolderToLog(file);
                 break;
             }
         }
