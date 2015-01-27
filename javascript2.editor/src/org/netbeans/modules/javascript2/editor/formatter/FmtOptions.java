@@ -109,6 +109,7 @@ public class FmtOptions {
     public static final String switchBracePlacement = "switchBracePlacement"; //NOI18N
     public static final String catchBracePlacement = "catchBracePlacement"; //NOI18N
     public static final String withBracePlacement = "withBracePlacement"; //NOI18N
+    public static final String objectLiteralContinuation = "objectLiteralContinuation"; //NOI18N
 
     public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
     public static final String blankLinesAfterNamespace = "blankLinesAfterNamespace"; //NOI18N
@@ -287,6 +288,7 @@ public class FmtOptions {
 	    { switchBracePlacement, OBRACE_PRESERVE },
 	    { catchBracePlacement, OBRACE_PRESERVE },
             { withBracePlacement, OBRACE_PRESERVE },
+            { objectLiteralContinuation, TRUE},
 
             { blankLinesBeforeNamespace, "1"}, //NOI18N
             { blankLinesAfterNamespace, "1"}, //NOI18N

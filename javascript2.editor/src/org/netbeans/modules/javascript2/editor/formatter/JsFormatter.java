@@ -930,6 +930,8 @@ public class JsFormatter implements Formatter {
                 FormatToken previous = nonVirtualNext.previous();
                 if (previous == null || previous.getKind() != FormatToken.Kind.BEFORE_OBJECT) {
                     return false;
+                } else if (previous.getKind() == FormatToken.Kind.BEFORE_OBJECT) {
+                    return CodeStyle.get(formatContext).toHolder().objectLiteralContinuation;
                 }
             } else if (JsTokenId.BRACKET_RIGHT_CURLY == nonVirtualNext.getId()
                     || JsTokenId.BRACKET_RIGHT_BRACKET == nonVirtualNext.getId()) {
