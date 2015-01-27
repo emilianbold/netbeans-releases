@@ -42,36 +42,11 @@
 package org.netbeans.modules.cnd.api.codemodel.providers;
 
 import java.io.File;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.codemodel.CMDiagnostic;
-import org.netbeans.modules.cnd.api.codemodel.CMIndex;
-import org.netbeans.modules.cnd.api.codemodel.CMModel;
-import org.netbeans.modules.cnd.api.codemodel.visit.CMDeclaration;
-import org.netbeans.modules.cnd.api.codemodel.visit.CMEntityReference;
-import org.netbeans.modules.cnd.api.codemodel.visit.CMInclude;
-import org.netbeans.modules.cnd.api.codemodel.visit.CMReference;
-import org.netbeans.modules.cnd.api.codemodel.visit.CMReferenceQuery;
-import org.netbeans.modules.cnd.api.codemodel.visit.CMVisitQuery;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.codemodel.bridge.impl.NativeProjectCompilationDataBase;
-import org.netbeans.modules.cnd.codemodel.storage.api.CMStorageManager;
-import org.netbeans.modules.cnd.codemodel.storage.spi.CMStorage;
-import org.netbeans.modules.cnd.spi.codemodel.providers.CMCompilationDataBase;
-import org.netbeans.modules.cnd.spi.codemodel.support.SPIUtilities;
-import org.netbeans.modules.cnd.spi.codemodel.trace.CMTraceUtils;
+import org.netbeans.modules.cnd.api.codemodel.storage.CMStorage;
+import org.netbeans.modules.cnd.api.codemodel.storage.CMStorageManager;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *

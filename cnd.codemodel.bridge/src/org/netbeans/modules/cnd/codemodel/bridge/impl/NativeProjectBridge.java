@@ -52,7 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.codemodel.CMDiagnostic;
@@ -65,13 +64,12 @@ import org.netbeans.modules.cnd.api.codemodel.visit.CMInclude;
 import org.netbeans.modules.cnd.api.codemodel.visit.CMVisitQuery;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
-//import org.netbeans.modules.cnd.codemodel.storage.api.CMStorageManager;
-//import org.netbeans.modules.cnd.codemodel.storage.spi.CMStorage;
+import org.netbeans.modules.cnd.api.codemodel.storage.CMStorage;
+import org.netbeans.modules.cnd.api.codemodel.storage.CMStorageManager;
 import org.netbeans.modules.cnd.spi.codemodel.providers.CMCompilationDataBase;
 import org.netbeans.modules.cnd.spi.codemodel.support.SPIUtilities;
 import org.netbeans.modules.cnd.spi.codemodel.trace.CMTraceUtils;
 import org.openide.modules.OnStart;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 
@@ -81,62 +79,6 @@ import org.openide.util.WeakSet;
  */
 public class NativeProjectBridge implements PropertyChangeListener {
     public static final boolean ENABLED = false;  
-    //stubs for storage classes
-    private final static class CMStorage {
-
-      private boolean needsIndexing(Object object) {
-        return false;
-      }
-
-      private void flush() {
-      }
-
-      private void shutdown() {
-      }
-
-      private void addInclude(CMInclude include) {
-      }
-
-      private void addDeclaration(CMDeclaration declaration) {
-      }
-
-      private void addEntityReference(CMEntityReference entityReference) {
-      }
-    }
-    
-    private final static class CMStorageManager {
-
-        private static final Object lock = "StoragesLock";
-        private static final ConcurrentHashMap<String, CMStorage> storages = new ConcurrentHashMap<String, CMStorage>();
-
-        public static CMStorage getInstance(String storageName, String scheme) {
-            synchronized (lock) {
-                CMStorage storage = storages.get(storageName);
-                if (storage != null) {
-                    return storage;
-                }
-                storage = new CMStorage();
-                CMStorage prev = storages.putIfAbsent(storageName, storage);
-                if (prev != null) {
-                    storage = prev;
-                }
-                storages.putIfAbsent(storageName, storage);
-                return storage;
-            }
-        }
-
-        public static void testShutdown(CMStorage db) {
-            synchronized (lock) {
-                for (Map.Entry<String, CMStorage> entry : storages.entrySet()) {
-                    if (entry.getValue() == db) {
-                        storages.remove(entry.getKey());
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
     
     private static final CMVisitQuery.VisitOptions INDEX_OPTIONS = CMVisitQuery.VisitOptions.valueOf(
             CMVisitQuery.VisitOptions.SuppressWarnings,
