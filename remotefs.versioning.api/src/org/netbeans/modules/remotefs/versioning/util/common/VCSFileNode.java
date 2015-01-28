@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 

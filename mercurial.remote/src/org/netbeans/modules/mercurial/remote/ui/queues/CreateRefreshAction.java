@@ -64,6 +64,7 @@ import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.mercurial.remote.versioning.hooks.HgQueueHook;
 import org.netbeans.modules.mercurial.remote.versioning.hooks.HgQueueHookContext;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
@@ -125,7 +126,7 @@ abstract class CreateRefreshAction extends ContextAction {
     
     private void performAction (final VCSFileProxy root, final VCSFileProxy[] roots, final QCommitPanel panel, final VCSContext ctx) {
         VCSCommitTable<QFileNode> table = panel.getCommitTable();
-        String contentTitle = getContextDisplayName(ctx);
+        String contentTitle = VCSFileProxySupport.getContextDisplayName(ctx);
         boolean ok = panel.open(ctx, panel.getHelpContext(), NbBundle.getMessage(CreateRefreshAction.class, "CTL_RefreshPatchDialog_Title." + bundleKeyPostfix, contentTitle)); //NOI18N
 
         if (ok) {

@@ -53,6 +53,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,11 +62,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -75,12 +79,14 @@ import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -914,6 +920,60 @@ public final class VCSFileProxySupport {
                 fileToCharset = new WeakHashMap<VCSFileProxy, Charset>();
             }
             fileToCharset.put(fo, charset);
+        }
+    }
+    
+    public static String getContextDisplayName(VCSContext ctx) {
+        // TODO: reuse this code in getActionName()
+        Set<VCSFileProxy> nodes = ctx.getFiles();
+        int objectCount = nodes.size();
+        // if all nodes represent project node the use plain name
+        // It avoids "Show changes 2 files" on project node
+        // caused by fact that project contains two source groups.
+
+        Node[] activatedNodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
+        boolean projectsOnly = true;
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node activatedNode = activatedNodes[i];
+            Project project =  (Project) activatedNode.getLookup().lookup(Project.class);
+            if (project == null) {
+                projectsOnly = false;
+                break;
+            }
+        }
+        if (projectsOnly) {
+            objectCount = activatedNodes.length;
+        }
+
+        if (objectCount == 0) {
+            return null;
+        } else if (objectCount == 1) {
+            if (projectsOnly) {
+                return ProjectUtils.getInformation((Project) activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
+            }
+            FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
+            if (fo != null) {
+                return fo.getNameExt();
+            } else {
+                DataObject dao = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                if (dao instanceof DataShadow) {
+                    dao = ((DataShadow) dao).getOriginal();
+                }
+                if (dao != null) {
+                    return dao.getPrimaryFile().getNameExt();
+                } else {
+                    return activatedNodes[0].getDisplayName();
+                }
+            }
+        } else {
+            if (projectsOnly) {
+                try {
+                    return MessageFormat.format(NbBundle.getMessage(VCSFileProxySupport.class, "MSG_ActionContext_MultipleProjects"), objectCount);  // NOI18N
+                } catch (MissingResourceException ex) {
+                    // ignore use files alternative bellow
+                }
+            }
+            return MessageFormat.format(NbBundle.getMessage(VCSFileProxySupport.class, "MSG_ActionContext_MultipleFiles"), objectCount);  // NOI18N
         }
     }
 

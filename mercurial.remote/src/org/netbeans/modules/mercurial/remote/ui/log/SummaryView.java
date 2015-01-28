@@ -517,7 +517,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                             SystemAction.get(DiffAction.class).diff(master.getRoots(),
                                     info2.getHgRevision(),
                                     info1.getHgRevision(),
-                                    ContextAction.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))),
+                                    VCSFileProxySupport.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))),
                                     false, true);
                         }
                     }));

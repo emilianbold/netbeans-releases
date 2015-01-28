@@ -48,6 +48,7 @@ import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -92,7 +93,7 @@ public class DiffToRevisionAction extends ContextAction {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
-                            String contextName = getContextDisplayName(context);
+                            String contextName = VCSFileProxySupport.getContextDisplayName(context);
                             diff(repository, actionRoots, parent, contextName);
                         }
                     });

@@ -53,9 +53,9 @@ import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
 import static org.netbeans.modules.mercurial.remote.ui.diff.Bundle.CTL_DiffPanel_Title;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -101,7 +101,7 @@ public class DiffAction extends ContextAction {
     @Override
     protected void performContextAction(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
-        String contextName = getContextDisplayName(context);
+        String contextName = VCSFileProxySupport.getContextDisplayName(context);
                 
         VCSFileProxy [] files = context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]);
         boolean bNotManaged = !HgUtils.isFromHgRepository(context) || ( files == null || files.length == 0);

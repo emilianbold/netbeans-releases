@@ -51,6 +51,7 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 
@@ -94,7 +95,7 @@ public class StatusAction extends ContextAction {
         }
                 
         final HgVersioningTopComponent stc = HgVersioningTopComponent.findInstance();
-        stc.setContentTitle(getContextDisplayName(context)); 
+        stc.setContentTitle(VCSFileProxySupport.getContextDisplayName(context)); 
         stc.setContext(context);
         stc.open(); 
         stc.requestActive();
