@@ -416,7 +416,7 @@ public final class Terminal extends JComponent {
 	    }
 	};
 
-	support.addDetailsStateListener(listener);
+	support.addDetailsStateListener(WeakListeners.create(DetailsStateListener.class, listener, support));
 	
 	setupKeymap(actions);
 
