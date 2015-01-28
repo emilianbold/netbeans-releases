@@ -80,25 +80,25 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected FileInfoProvider.StatInfo stat(String path) 
+    protected DirEntry stat(String path) 
             throws InterruptedException, ExecutionException {
         return stat_or_lstat(path, false);
     }
 
     @Override
-    protected FileInfoProvider.StatInfo lstat(String path) 
+    protected DirEntry lstat(String path) 
             throws InterruptedException, ExecutionException {
         return stat_or_lstat(path, true);
     }
 
-    private FileInfoProvider.StatInfo stat_or_lstat(String path, boolean lstat) 
+    private DirEntry stat_or_lstat(String path, boolean lstat) 
             throws InterruptedException, ExecutionException {
         
         Future<FileInfoProvider.StatInfo> stat = lstat ?
                 FileInfoProvider.lstat(execEnv, path) :
                 FileInfoProvider.stat(execEnv, path);
         
-        return stat.get();
+        return DirEntryImpl.create(stat.get(), execEnv);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
         List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
         for (StatInfo statInfo : infos) {
             // filtering of "." and ".." is up to provider now
-            newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
+            newEntries.add(DirEntryImpl.create(statInfo, execEnv));
         }
         return new DirEntryList(newEntries, System.currentTimeMillis());
     }
@@ -205,7 +205,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected StatInfo uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
+    protected DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
             throws IOException, InterruptedException, ExecutionException, InterruptedException {
         
         CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
@@ -214,7 +214,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
         CommonTasksSupport.UploadStatus uploadStatus = task.get();
         if (uploadStatus.isOK()) {
             RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} succeeded", this);
-            return uploadStatus.getStatInfo();
+            return DirEntryImpl.create(uploadStatus.getStatInfo(), execEnv);
         } else {
             RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
             throw new IOException(uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N            

@@ -43,43 +43,71 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.util.Date;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public interface DirEntry {
+public abstract class DirEntry {
+
+    private String cache;
+
+    public DirEntry(String cache) {
+        this.cache = cache;
+    }
     
-    String getName();
+    public abstract String getName();
 
-    long getSize();
+    public abstract long getSize();
     
-    boolean canExecute(ExecutionEnvironment execEnv);
-    boolean canRead(ExecutionEnvironment execEnv);
-    boolean canWrite(ExecutionEnvironment execEnv);
+    public abstract boolean canExecute();
+    public abstract boolean canRead();
+    public abstract boolean canWrite();
 
-    String getAccessAsString();
+    /** Device no (stat.st_dev field). Zero value means that it is unknown */
+    public abstract long getDevice();
     
-    Date getLastModified();
+    /** Inode (stat.st_ino field). Zero value means that it is unknown */
+    public abstract long getINode();
 
-    boolean isLink();
-    boolean isDirectory();
-    boolean isPlainFile();
-    boolean isSameLastModified(DirEntry other);
-    boolean isSameType(DirEntry other);
-    FileType getFileType();
+    public abstract Date getLastModified();
 
-    boolean isSameUser(DirEntry other);
-    boolean isSameGroup(DirEntry other);
+    public abstract boolean isLink();
+    public abstract boolean isDirectory();
+    public abstract boolean isPlainFile();
 
-    String getLinkTarget();
-
-    String getCache();
-    void setCache(String cache);
-
-    String toExternalForm();
+    public abstract FileType getFileType();
     
-    boolean isValid();    
+    public boolean isSameLastModified(DirEntry other) {
+        return getLastModified().equals(other.getLastModified());
+    }
+
+    public boolean isSameType(DirEntry other) {
+        return isLink() == other.isLink() && isDirectory() == other.isDirectory() && isPlainFile() == other.isPlainFile();
+    }
+
+    public boolean isSameAccess(DirEntry other) {
+        if (other == null) {
+            return false;
+        } else {
+            return this.canRead() == other.canRead()
+                    && this.canWrite() == other.canWrite()
+                    && this.canExecute() == other.canExecute();
+        }
+    }    
+    
+    public abstract String getLinkTarget();
+
+    public final String getCache() {
+        return cache;
+    }
+    
+    public final void setCache(String cache) {
+        this.cache = cache;
+    }
+
+    public abstract String toExternalForm();
+    
+    public abstract boolean isValid();    
 }

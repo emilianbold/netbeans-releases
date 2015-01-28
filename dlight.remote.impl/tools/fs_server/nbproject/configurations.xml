@@ -40,7 +40,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g"/>
+        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -55,10 +55,10 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>SOLARIS</Elem>
-              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+              <Elem>LINUX</Elem>
+              <Elem>_GNU_SOURCE</Elem>
               <Elem>_REENTRANT</Elem>
-              <Elem>__EXTENSIONS__</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -142,6 +142,9 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -172,22 +175,29 @@
           </preprocessorList>
         </cTool>
       </folder>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+          <preprocessorList>
+            <Elem>LINUX</Elem>
+            <Elem>_REENTRANT</Elem>
+            <Elem>_XOPEN_SOURCE=700</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/queue.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/util.c" ex="false" tool="0" flavor2="2">
       </item>
     </conf>
     <conf name="MacOS" type="0">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>CLang|CLang</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -331,6 +341,9 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -346,50 +359,7 @@
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>_GNU_SOURCE</Elem>
-              <Elem>_XOPEN_SOURCE=700</Elem>
-            </preprocessorList>
-          </cTool>
-        </makeTool>
-        <preBuild>
-          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
-          <preBuildCommand></preBuildCommand>
-        </preBuild>
-      </makefileType>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
-      </item>
-    </conf>
-    <conf name="Debug_Linux64" type="0">
-      <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
-        <dependencyChecking>false</dependencyChecking>
-        <rebuildPropChanged>false</rebuildPropChanged>
-      </toolsSet>
-      <codeAssistance>
-      </codeAssistance>
-      <makefileType>
-        <makeTool>
-          <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile 64BITS=1 </buildCommand>
-          <cleanCommand>${MAKE} -f Makefile clean 64BITS=1</cleanCommand>
-          <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
-          <cTool>
-            <standard>3</standard>
-            <incDir>
-              <pElem>.</pElem>
-            </incDir>
-            <preprocessorList>
-              <Elem>LINUX</Elem>
-              <Elem>_GNU_SOURCE</Elem>
+              <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
             </preprocessorList>
           </cTool>
@@ -410,6 +380,66 @@
       <item path="src/queue.c" ex="false" tool="0" flavor2="3">
       </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="3">
+      </item>
+    </conf>
+    <conf name="Debug_Linux64" type="0">
+      <toolsSet>
+        <compilerSet>GNU|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile 64BITS=1 </buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean 64BITS=1</cleanCommand>
+          <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
+          <cTool>
+            <standard>3</standard>
+            <incDir>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>LINUX</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>_REENTRANT</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
       </item>
     </conf>
     <conf name="Debug_Solaris-x86" type="0">

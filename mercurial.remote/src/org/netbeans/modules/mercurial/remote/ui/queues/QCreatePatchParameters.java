@@ -57,6 +57,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
@@ -73,9 +74,11 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
     private boolean userValid;
     private String user;
     private final List<String> recentUsers;
+    private final VCSFileProxy root;
 
-    public QCreatePatchParameters (Preferences preferences, String commitMessage, QPatch patch, List<String> recentUsers) {
+    public QCreatePatchParameters (VCSFileProxy root, Preferences preferences, String commitMessage, QPatch patch, List<String> recentUsers) {
         super(preferences);
+        this.root = root;
         this.commitMessage = commitMessage;
         this.patch = patch;
         this.recentUsers = recentUsers;

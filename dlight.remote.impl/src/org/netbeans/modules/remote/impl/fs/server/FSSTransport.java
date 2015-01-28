@@ -65,12 +65,11 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
+import org.netbeans.modules.remote.impl.fs.DirEntryImpl;
 import org.netbeans.modules.remote.impl.fs.DirEntryList;
-import org.netbeans.modules.remote.impl.fs.DirEntrySftp;
 import org.netbeans.modules.remote.impl.fs.RemoteDirectory;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
@@ -121,18 +120,18 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     @Override
-    protected FileInfoProvider.StatInfo stat(String path) 
+    protected DirEntry stat(String path) 
             throws InterruptedException, ExecutionException {
         return stat_or_lstat(path, false);
     }
 
     @Override
-    protected FileInfoProvider.StatInfo lstat(String path) 
+    protected DirEntry lstat(String path) 
             throws InterruptedException, ExecutionException {
         return stat_or_lstat(path, true);
     }
 
-    private FileInfoProvider.StatInfo stat_or_lstat(String path, boolean lstat) 
+    private DirEntry stat_or_lstat(String path, boolean lstat) 
             throws InterruptedException, ExecutionException {
 
         if (path.isEmpty()) {
@@ -155,7 +154,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             }
             FSSResponse.Package pkg = response.getNextPackage();
             if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
-                return createStatInfo(pkg, request.getId());
+                return createDirEntry(pkg, request.getId(), env);
             } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
                 IOException ioe = createIOException(pkg);
                 throw new ExecutionException(ioe);
@@ -323,8 +322,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             for (FSSResponse.Package pkg : packages) {
                 try {
                     assert pkg != null;
-                    StatInfo statInfo = createStatInfo(pkg, reqId);
-                    DirEntry entry = new DirEntrySftp(statInfo, statInfo.getName());
+                    DirEntry entry = createDirEntry(pkg, reqId, env);
                     // TODO: windows names
                     result.add(entry);
                 } catch (Throwable thr) {
@@ -336,26 +334,47 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
     }
 
-    private StatInfo createStatInfo(FSSResponse.Package pkg, long reqId) {
-        Buffer buf = pkg.getBuffer();
-        char kindChar = buf.getChar();
-        assert kindChar == pkg.getKind().getChar();
-        assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
-        int id = buf.getInt();
-        assert id == reqId;
-        String name = buf.getString();
-        int uid = buf.getInt();
-        int gid = buf.getInt();
-        int mode = buf.getInt();
-        long size = buf.getLong();
-        long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
-        String linkTarget = buf.getString();
-        if (linkTarget.isEmpty()) {
-            linkTarget = null;
+    private DirEntry createDirEntry(FSSResponse.Package pkg, long reqId, ExecutionEnvironment env) {
+        try {
+            Buffer buf = pkg.getBuffer();
+            char kindChar = buf.getChar();
+            assert kindChar == pkg.getKind().getChar();
+            assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
+            int id = buf.getInt();
+            assert id == reqId;
+            //        name       type size  date          acc dev  ino lnk
+            // e 1 10 lost+found d   16384 1398697954000  --- 2049 11  0 
+            String name = buf.getString();
+
+            char type = buf.getChar();
+            long size = buf.getLong();
+            long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
+
+            char r = buf.getChar();
+            char w = buf.getChar();
+            char x = buf.getChar();
+            buf.getChar(); // space
+
+            if ((r  != 'r' && r != '-') || (w != 'w' && w != '-') || (x != 'x' && x != '-')) {
+                throw new IllegalStateException("Wrong file access format: " + buf); //NO18N
+            }
+            boolean canRead = r == 'r';
+            boolean canWrite = w == 'w';
+            boolean canExec = x == 'x';
+
+            long device = buf.getLong();
+            long inode = buf.getLong();
+
+            String linkTarget = buf.getString();
+            if (linkTarget.isEmpty()) {
+                linkTarget = null;
+            }
+
+            return DirEntryImpl.create(name, size, mtime, canRead, canWrite, canExec,
+                    type, device, inode, linkTarget);
+        } catch (Throwable thr) {
+            throw new IllegalArgumentException("Error processing response " + pkg, thr);
         }
-        StatInfo statInfo = new StatInfo(name, uid, gid, size,
-                linkTarget, mode, new Date(mtime));
-        return statInfo;
     }
     
     @Override
@@ -473,7 +492,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     @Override
-    protected StatInfo uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
+    protected DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
             throws IOException, InterruptedException, ExecutionException, InterruptedException {
         
         CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
@@ -493,7 +512,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
     }
     
-    private StatInfo renameAfterUpload(String pathToUpload, String pathToRename)
+    private DirEntry renameAfterUpload(String pathToUpload, String pathToRename)
             throws IOException, InterruptedException, CancellationException, ExecutionException {
 
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_MOVE, pathToUpload, pathToRename);
@@ -508,7 +527,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 IOException ex = createIOException(pkg);
                 throw ex;
             } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
-                return createStatInfo(pkg, request.getId());
+                return createDirEntry(pkg, request.getId(), env);
             } else {
                 throw new IOException("Unexpected package kind: " + pkg.getKind()); // NOI18N
             }

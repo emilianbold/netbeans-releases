@@ -37,59 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.versioning.hooks;
+package org.netbeans.modules.remotefs.versioning.hooks;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
+import javax.swing.JPanel;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class VCSHooks {
+public abstract class VCSHook<T extends VCSHookContext> {
 
-    private static VCSHooks instance;
-    private Result<? extends VCSHookFactory> hooksResult;
+    public abstract JPanel createComponent(T t);
 
-    private VCSHooks() {
-    }
-
-    public static VCSHooks getInstance() {
-        if (instance == null) {
-            instance = new VCSHooks();
-        }
-        return instance;
-    }
-    
-    public <T extends VCSHook> Collection<T> getHooks(Class<T> clazz) {
-        List<T> ret = new LinkedList<T>();
-        Collection<? extends VCSHookFactory> c = getFactories();
-        for (VCSHookFactory f : c) {
-            if(f.getHookType() == clazz) {
-                VCSHook hook = f.createHook();
-                ret.add((T) hook);
-                continue;
-            }
-        }
-        return ret;
-    }
-
-    private Collection<? extends VCSHookFactory> getFactories() {
-        if(hooksResult == null) {
-            hooksResult = Lookup.getDefault().lookupResult(VCSHookFactory.class);
-        }
-        if(hooksResult == null) {
-            return Collections.EMPTY_LIST;
-        }
-        Collection<VCSHookFactory> c = (Collection<VCSHookFactory>) Lookup.getDefault().lookupAll(VCSHookFactory.class);
-        return hooksResult.allInstances();
-    }
+    public abstract String getDisplayName();
 
 }

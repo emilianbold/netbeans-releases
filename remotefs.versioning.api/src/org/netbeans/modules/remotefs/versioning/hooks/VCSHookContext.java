@@ -40,36 +40,24 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.versioning.hooks;
+package org.netbeans.modules.remotefs.versioning.hooks;
 
-import java.io.IOException;
-import java.util.Map;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class HgHook extends VCSHook<HgHookContext>{
+public class VCSHookContext {
 
-    public HgHookContext beforeCommit(HgHookContext context) throws IOException {
-        return null;
+    private final VCSFileProxy[] files;
+
+    public VCSHookContext(VCSFileProxy[] files) {
+        this.files = files;
     }
 
-    public void afterCommit(HgHookContext context) {
-
+    public VCSFileProxy[] getFiles() {
+        return files;
     }
-
-    public HgHookContext beforePush(HgHookContext context) throws IOException {
-        return null;
-    }
-
-    public void afterPush(HgHookContext context) {
-
-    }
-
-    public void afterCommitReplace (HgHookContext originalContext, HgHookContext newContext,
-            Map<String, String> changesetMapping) {
-        
-    }
-
+    
 }

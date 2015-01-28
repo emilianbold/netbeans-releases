@@ -40,30 +40,36 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.versioning.hooks;
+package org.netbeans.modules.remotefs.versioning.hooks;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  *
- * @author Ondra Vrabec
+ * @author Tomas Stupka
  */
-public abstract class HgQueueHook extends VCSHook<HgQueueHookContext>{
+public abstract class HgHook extends VCSHook<HgHookContext>{
 
-    public HgQueueHookContext beforePatchRefresh (HgQueueHookContext context) throws IOException {
+    public HgHookContext beforeCommit(HgHookContext context) throws IOException {
         return null;
     }
 
-    public void afterPatchRefresh (HgQueueHookContext context) {
+    public void afterCommit(HgHookContext context) {
 
     }
 
-    public HgQueueHookContext beforePatchFinish (HgQueueHookContext context) throws IOException {
+    public HgHookContext beforePush(HgHookContext context) throws IOException {
         return null;
     }
 
-    public void afterPatchFinish (HgQueueHookContext context) {
+    public void afterPush(HgHookContext context) {
 
+    }
+
+    public void afterCommitReplace (HgHookContext originalContext, HgHookContext newContext,
+            Map<String, String> changesetMapping) {
+        
     }
 
 }

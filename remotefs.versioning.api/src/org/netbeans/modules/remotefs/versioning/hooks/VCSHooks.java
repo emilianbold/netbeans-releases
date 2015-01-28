@@ -37,27 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.versioning.hooks;
+package org.netbeans.modules.remotefs.versioning.hooks;
 
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 
 /**
  *
- * @author Ondra Vrabec
+ * @author Tomas Stupka
  */
-public final class HgQueueHookContext extends HgHookContext {
+public class VCSHooks {
 
-    private final String patchId;
+    private static VCSHooks instance;
+    private Result<? extends VCSHookFactory> hooksResult;
 
-    public HgQueueHookContext (VCSFileProxy[] files, String msg, String patchId, LogEntry... entries) {
-        super(files, msg, entries);
-        this.patchId = patchId;
+    private VCSHooks() {
     }
 
-    public String getPatchId () {
-        return patchId;
+    public static VCSHooks getInstance() {
+        if (instance == null) {
+            instance = new VCSHooks();
+        }
+        return instance;
     }
+    
+    public <T extends VCSHook> Collection<T> getHooks(Class<T> clazz) {
+        List<T> ret = new LinkedList<T>();
+        Collection<? extends VCSHookFactory> c = getFactories();
+        for (VCSHookFactory f : c) {
+            if(f.getHookType() == clazz) {
+                VCSHook hook = f.createHook();
+                ret.add((T) hook);
+                continue;
+            }
+        }
+        return ret;
+    }
+
+    private Collection<? extends VCSHookFactory> getFactories() {
+        if(hooksResult == null) {
+            hooksResult = Lookup.getDefault().lookupResult(VCSHookFactory.class);
+        }
+        if(hooksResult == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Collection<VCSHookFactory> c = (Collection<VCSHookFactory>) Lookup.getDefault().lookupAll(VCSHookFactory.class);
+        return hooksResult.allInstances();
+    }
+
 }

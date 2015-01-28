@@ -40,18 +40,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.versioning.hooks;
+package org.netbeans.modules.remotefs.versioning.hooks;
 
-import javax.swing.JPanel;
+import java.io.IOException;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondra Vrabec
  */
-public abstract class VCSHook<T extends VCSHookContext> {
+public abstract class HgQueueHook extends VCSHook<HgQueueHookContext>{
 
-    public abstract JPanel createComponent(T t);
+    public HgQueueHookContext beforePatchRefresh (HgQueueHookContext context) throws IOException {
+        return null;
+    }
 
-    public abstract String getDisplayName();
+    public void afterPatchRefresh (HgQueueHookContext context) {
+
+    }
+
+    public HgQueueHookContext beforePatchFinish (HgQueueHookContext context) throws IOException {
+        return null;
+    }
+
+    public void afterPatchFinish (HgQueueHookContext context) {
+
+    }
 
 }

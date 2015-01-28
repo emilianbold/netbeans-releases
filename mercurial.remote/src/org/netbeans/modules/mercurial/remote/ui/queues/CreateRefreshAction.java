@@ -62,13 +62,13 @@ import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.queues.CreateRefreshAction.Cmd.CreateRefreshPatchCmd;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.HgQueueHook;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.HgQueueHookContext;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.hooks.HgQueueHook;
+import org.netbeans.modules.remotefs.versioning.hooks.HgQueueHookContext;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -131,7 +131,7 @@ abstract class CreateRefreshAction extends ContextAction {
 
         if (ok) {
             final List<QFileNode> commitFiles = table.getCommitFiles();
-            persistCanceledCommitMessage(panel.getParameters(), "");
+            persistCanceledCommitMessage(root, panel.getParameters(), "");
             panel.getParameters().storeCommitMessage();
             new HgProgressSupport() {
                 @Override
@@ -216,7 +216,7 @@ abstract class CreateRefreshAction extends ContextAction {
 
             }.start(Mercurial.getInstance().getRequestProcessor(root), root, NbBundle.getMessage(CreateRefreshAction.class, "LBL_CreateRefreshAction.progress." + bundleKeyPostfix)); //NOI18N
         } else if (!panel.getParameters().getCommitMessage().isEmpty()) {
-            persistCanceledCommitMessage(panel.getParameters(), panel.getParameters().getCommitMessage());
+            persistCanceledCommitMessage(root, panel.getParameters(), panel.getParameters().getCommitMessage());
         }
     }
 
@@ -224,7 +224,7 @@ abstract class CreateRefreshAction extends ContextAction {
             String message, String patchName, String user, String bundleKeyPostfix,
             List<VCSFileProxy> roots, Set<VCSFileProxy> excludedFiles, Set<VCSFileProxy> filesToRefresh);
 
-    abstract void persistCanceledCommitMessage (QCreatePatchParameters parameters, String canceledCommitMessage);
+    abstract void persistCanceledCommitMessage (VCSFileProxy root, QCreatePatchParameters parameters, String canceledCommitMessage);
 
     static abstract class Cmd {
         protected final List<VCSFileProxy> candidates;

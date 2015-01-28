@@ -86,8 +86,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.versioning.hooks.VCSHook;
-import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.openide.DialogDisplayer;
@@ -107,12 +105,15 @@ import static javax.swing.SwingConstants.EAST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import javax.swing.UIManager;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.hooks.VCSHook;
+import org.netbeans.modules.remotefs.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.remotefs.versioning.util.common.CollapsiblePanel.FilesPanel;
 import org.netbeans.modules.remotefs.versioning.util.common.CollapsiblePanel.HookPanel;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanelModifier;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -442,7 +443,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         }        
     }
     
-    @NbBundle.Messages({
+    @Messages({
         "VCSCommitPanel.DiffTab.name=Diff"
     })
     void openDiff (F[] nodes, List<F> allNodes) {

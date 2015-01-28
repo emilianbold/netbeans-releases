@@ -185,7 +185,7 @@ public class BranchMenu extends DynamicMenu implements Presenter.Popup {
             menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(MergeAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"),lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RebaseAction.class), CTL_PopupMenuItem_Rebase(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RebaseAction.class), Bundle.CTL_PopupMenuItem_Rebase(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;

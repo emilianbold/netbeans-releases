@@ -519,7 +519,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setSelected(value == null ? false : (Boolean) value);
             setEnabled(editable);
-            Color c = renderer.getTableCellRendererComponent(table, "value", isSelected, hasFocus, row, column).getBackground();
+            Color c = renderer.getTableCellRendererComponent(table, "value", isSelected, hasFocus, row, column).getBackground(); //NOI18N
             setBackground(new Color(c.getRGB()));
             setOpaque(true);
             setHorizontalAlignment(SwingConstants.LEFT);

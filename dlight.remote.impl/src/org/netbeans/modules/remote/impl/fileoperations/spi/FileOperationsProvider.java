@@ -59,6 +59,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.remote.impl.fs.DirEntry;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
@@ -137,8 +138,8 @@ abstract public class FileOperationsProvider {
                 return false;
             }
             try {
-                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, file.getPath());
-                return statInfo.isDirectory(); 
+                DirEntry entry = RemoteFileSystemTransport.stat(env, file.getPath());
+                return entry.isDirectory(); 
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -160,8 +161,8 @@ abstract public class FileOperationsProvider {
                 return -1;
             }
             try {
-                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, file.getPath());
-                return statInfo.getLastModified().getTime();
+                DirEntry entry = RemoteFileSystemTransport.stat(env, file.getPath());
+                return entry.getLastModified().getTime();
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -183,8 +184,8 @@ abstract public class FileOperationsProvider {
                 return false;
             }
             try {
-                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, file.getPath());
-                return statInfo.isPlainFile(); 
+                DirEntry entry = RemoteFileSystemTransport.stat(env, file.getPath());
+                return entry.isPlainFile(); 
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -200,8 +201,8 @@ abstract public class FileOperationsProvider {
                 return false;
             }
             try {
-                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, file.getPath());
-                return statInfo.canWrite(env); 
+                DirEntry entry = RemoteFileSystemTransport.stat(env, file.getPath());
+                return entry.canWrite();
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -241,9 +242,9 @@ abstract public class FileOperationsProvider {
             }
             try {
                 // shouldn't we use stat instead of lstat?
-                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.lstat(
+                DirEntry entry = RemoteFileSystemTransport.lstat(
                         getExecutionEnvironment(), file.getPath());
-                return statInfo != null;
+                return entry != null;
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
