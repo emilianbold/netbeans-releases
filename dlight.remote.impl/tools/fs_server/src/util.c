@@ -551,19 +551,6 @@ bool is_subdir(const char* child, const char* parent) {
             return true;
         }
         return false;
-        
-        //return *c == '/';
-        
-//        if (*c == 0) {
-//            // child ended, parent did not
-//            return true;
-//        } else if (*c == '/') {
-//            return true;
-//        } else if (p > parent && *(p - 1) == '/') {
-//            return true;
-//        } else {
-//            return false;
-//        }
     } 
 }
 
@@ -572,4 +559,31 @@ char *strncpy_w_zero(char *dst, const char *src, size_t limit) {
     char * res = strncpy(dst, src, limit);
     dst[limit-1] = 0;
     return res;
+}
+
+char file_type_char(int mode) {
+    
+    if (S_ISFIFO(mode)) {
+        return 'p';
+    } else if (S_ISCHR(mode)) {
+        return 'c';
+    } else if(S_ISDIR(mode)) {
+        return 'd';
+    } else if(S_ISBLK(mode)) {
+        return 'b';
+    } else if (S_ISREG(mode)) {
+        return '-';
+    } else if (S_ISLNK(mode)) {
+        return 'l';
+    } else if(S_ISSOCK(mode)) {
+        return 's';
+#if __sun__        
+    } else if(S_ISDOOR(mode)) {
+        return 'D';
+    } else if(S_ISPORT(mode)) {
+        return 'P';
+#endif        
+    } else {
+        return 'u'; // for other stat info to have a default
+    }
 }

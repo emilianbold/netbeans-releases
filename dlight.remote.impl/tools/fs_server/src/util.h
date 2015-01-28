@@ -146,6 +146,8 @@ bool is_subdir(const char* child, const char* parent);
 /** The same as strncpy, but stores trailing zero byte even in src len is more than limit */
 char *strncpy_w_zero(char *dst, const char *src, size_t limit);
 
+char file_type_char(int mode);
+
 #ifdef	__cplusplus
 }
 #endif
