@@ -116,7 +116,7 @@ public final class KnockoutTC extends TopComponent {
             if (lastKnockoutPageModel != null) {
                 PageModel knockoutPageModel = lastKnockoutPageModel.get();
                 if (knockoutPageModel != null && knockoutPageModel == pageModel) {
-                    currentPanel.knockoutUsed();
+                    currentPanel.knockoutUsed(lastKnockoutVersion);
                 }
             }
             add(currentPanel);
@@ -146,19 +146,22 @@ public final class KnockoutTC extends TopComponent {
     }
 
     private Reference<PageModel> lastKnockoutPageModel;
+    private String lastKnockoutVersion;
 
     /**
      * Invoked when page knockout is found in the specified page model.
      * 
      * @param pageModel page model where knockout was found.
+     * @param koVersion version of Knockout used by the inspected page.
      */
-    void knockoutUsed(PageModel pageModel) {
+    void knockoutUsed(PageModel pageModel, String koVersion) {
         assert EventQueue.isDispatchThread();
         if (currentPanel != null) {
             if (currentPanel.getPageModel() == pageModel) {
-                currentPanel.knockoutUsed();
+                currentPanel.knockoutUsed(koVersion);
             } else {
                 lastKnockoutPageModel = new WeakReference<PageModel>(pageModel);
+                lastKnockoutVersion = koVersion;
             }
         }
     }

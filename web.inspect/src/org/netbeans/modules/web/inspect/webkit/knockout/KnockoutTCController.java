@@ -189,14 +189,14 @@ public class KnockoutTCController implements PropertyChangeListener {
                     return; // this checker is obsolete
                 }
             }
-            String expression = "window.NetBeans && NetBeans.usesKnockout()"; // NOI18N
+            String expression = "window.NetBeans ? NetBeans.getKnockoutVersion() : null"; // NOI18N
             RemoteObject object = pageModel.getWebKit().getRuntime().evaluate(expression);
-            boolean koFound = "true".equals(object.getValueAsString()); // NOI18N
+            boolean koFound = (object != null && object.getType() == RemoteObject.Type.STRING);
             if (koFound) {
                 synchronized (this) {
                     currentTask = null;
                 }
-                openKnockoutTCGroup();
+                openKnockoutTCGroup(object.getValueAsString());
             } else {
                 // try it later
                 scheduleKnockoutCheck(false);
@@ -220,14 +220,16 @@ public class KnockoutTCController implements PropertyChangeListener {
 
         /**
          * Opens the Knockout top component group.
+         * 
+         * @param koVersion version of Knockout used by the inspected page.
          */
-        private void openKnockoutTCGroup() {
+        private void openKnockoutTCGroup(final String koVersion) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     TopComponentGroup group = getKnockoutTCGroup();
                     KnockoutTC knockoutTC = (KnockoutTC)getKnockoutTC();
-                    knockoutTC.knockoutUsed(pageModel);
+                    knockoutTC.knockoutUsed(pageModel, koVersion);
                     Mode mode = WindowManager.getDefault().findMode(knockoutTC);
                     TopComponent selectedTC = mode.getSelectedTopComponent();
                     group.open();
