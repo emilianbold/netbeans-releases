@@ -46,8 +46,10 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -256,7 +258,11 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     public void propertyChange(PropertyChangeEvent evt) {}
     
     private static List<FileObject> getProjectSourceRoots(Project project) {
-        return getProjectSourceRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
+        Set<FileObject> sources = new LinkedHashSet<FileObject>();
+        sources.addAll(getProjectSourceRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT));
+        sources.addAll(getProjectSourceRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST));
+        sources.addAll(getProjectSourceRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST_SELENIUM));
+        return new ArrayList<FileObject>(sources);
     }
     
     private static List<FileObject> getProjectSourceRoots(Project project, String type) {
