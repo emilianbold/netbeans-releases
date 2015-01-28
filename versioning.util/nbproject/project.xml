@@ -347,6 +347,7 @@
                 <friend>org.netbeans.modules.mercurial</friend>
                 <friend>org.netbeans.modules.mercurial.remote</friend>
                 <friend>org.netbeans.modules.perforce</friend>
+                <friend>org.netbeans.modules.remotefs.versioning.api</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <friend>org.netbeans.modules.subversion.remote</friend>
                 <friend>org.netbeans.modules.team.ide</friend>

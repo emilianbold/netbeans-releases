@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.remote.util.projects;
+package org.netbeans.modules.remotefs.versioning.util.projects;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
