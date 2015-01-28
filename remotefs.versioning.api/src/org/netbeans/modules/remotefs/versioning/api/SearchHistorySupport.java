@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.remote.versioning.util;
+package org.netbeans.modules.remotefs.versioning.api;
 
 import java.io.IOException;
 import java.util.logging.Level;

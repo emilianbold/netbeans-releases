@@ -47,8 +47,8 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.ui.log.LogAction;
+import org.netbeans.modules.remotefs.versioning.api.SearchHistorySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.SearchHistorySupport;
 
 /**
  *
@@ -63,7 +63,7 @@ public class HgSearchHistorySupport extends SearchHistorySupport {
     @Override
     protected boolean searchHistoryImpl(final int line) throws IOException {
 
-        if(!Mercurial.getInstance().isAvailable(root, true, false)) {
+        if(!Mercurial.getInstance().isAvailable(getFile(), true, false)) {
             org.netbeans.modules.mercurial.remote.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
             return false;
         }
