@@ -237,7 +237,7 @@ abstract class CollapsiblePanel extends JPanel {
             } else {
                 JTabbedPane hooksTabbedPane = new JTabbedPane();
                 for (VCSHook hook : hooks) {
-                    hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName().replaceAll("\\&", ""));
+                    hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName().replaceAll("\\&", "")); //NOI18N
                 }
                 sectionPanel.add(hooksTabbedPane);
             }

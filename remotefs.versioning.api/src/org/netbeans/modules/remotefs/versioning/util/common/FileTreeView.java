@@ -104,6 +104,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
@@ -125,7 +126,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
     
     private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; //NOI18N
     private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; //NOI18N
-    private final static String PATH_SEPARATOR_REGEXP = "/";
+    private final static String PATH_SEPARATOR_REGEXP = "/"; //NOI18N
     
     private static Image FOLDER_ICON;
     
@@ -145,7 +146,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
         
     }
     
-    @NbBundle.Messages({
+    @Messages({
         "CTL_FileTree.treeColumn.Name=File"
     })
     public FileTreeView () {
@@ -159,8 +160,8 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
         view.setPopupAllowed(false);
         view.getOutline().addMouseListener(this);
         view.getOutline().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
-        view.getOutline().getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); //NOI18N
+        view.getOutline().getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(view.getOutline()));
@@ -788,7 +789,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
         String prefix = "";
         if (nodes.length > 0) {
             prefix = nodes[0].getFileNode().getRelativePath();
-            int index = prefix.lastIndexOf("/");
+            int index = prefix.lastIndexOf("/"); //NOI18N
             if (index == -1) {
                 prefix = "";
             } else {
@@ -800,7 +801,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
             String location = n.getFileNode().getRelativePath();
             while (!location.startsWith(prefix)) {
                 slashNeeded = false;
-                int index = prefix.lastIndexOf("/");
+                int index = prefix.lastIndexOf("/"); //NOI18N
                 if (index == -1) {
                     prefix = "";
                 } else {
@@ -808,7 +809,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
                 }
             }
         }
-        return slashNeeded ? prefix + "/" : prefix;
+        return slashNeeded ? prefix + "/" : prefix; //NOI18N
     }
     
     private class NodeChildren extends TreeViewChildren {
@@ -874,7 +875,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
                         name = segments[segments.length - 1];
                     }
                     final Image icon = getFolderIcon(key.file);
-                    NodeChildren ch = new NodeChildren(new NodeData<T>(key.file, key.path + "/", key.nestedNodes), false);
+                    NodeChildren ch = new NodeChildren(new NodeData<T>(key.file, key.path + "/", key.nestedNodes), false); //NOI18N
                     node = new AbstractNode(ch, Lookups.fixed(key.file)) {
                         @Override
                         public String getName () {

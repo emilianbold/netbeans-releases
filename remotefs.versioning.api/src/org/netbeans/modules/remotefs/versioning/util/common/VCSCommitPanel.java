@@ -113,6 +113,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanelModifier;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -442,7 +443,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         }        
     }
     
-    @NbBundle.Messages({
+    @Messages({
         "VCSCommitPanel.DiffTab.name=Diff"
     })
     void openDiff (F[] nodes, List<F> allNodes) {
