@@ -65,7 +65,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
@@ -336,25 +335,46 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     private DirEntry createDirEntry(FSSResponse.Package pkg, long reqId, ExecutionEnvironment env) {
-        Buffer buf = pkg.getBuffer();
-        char kindChar = buf.getChar();
-        assert kindChar == pkg.getKind().getChar();
-        assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
-        int id = buf.getInt();
-        assert id == reqId;
-        String name = buf.getString();
-        int uid = buf.getInt();
-        int gid = buf.getInt();
-        int mode = buf.getInt();
-        long size = buf.getLong();
-        long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
-        String linkTarget = buf.getString();
-        if (linkTarget.isEmpty()) {
-            linkTarget = null;
+        try {
+            Buffer buf = pkg.getBuffer();
+            char kindChar = buf.getChar();
+            assert kindChar == pkg.getKind().getChar();
+            assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
+            int id = buf.getInt();
+            assert id == reqId;
+            //        name       type size  date          acc dev  ino lnk
+            // e 1 10 lost+found d   16384 1398697954000  --- 2049 11  0 
+            String name = buf.getString();
+
+            char type = buf.getChar();
+            long size = buf.getLong();
+            long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
+
+            char r = buf.getChar();
+            char w = buf.getChar();
+            char x = buf.getChar();
+            buf.getChar(); // space
+
+            if ((r  != 'r' && r != '-') || (w != 'w' && w != '-') || (x != 'x' && x != '-')) {
+                throw new IllegalStateException("Wrong file access format: " + buf); //NO18N
+            }
+            boolean canRead = r == 'r';
+            boolean canWrite = w == 'w';
+            boolean canExec = x == 'x';
+
+            long device = buf.getLong();
+            long inode = buf.getLong();
+
+            String linkTarget = buf.getString();
+            if (linkTarget.isEmpty()) {
+                linkTarget = null;
+            }
+
+            return DirEntryImpl.create(name, size, mtime, canRead, canWrite, canExec,
+                    type, device, inode, linkTarget);
+        } catch (Throwable thr) {
+            throw new IllegalArgumentException("Error processing response " + pkg, thr);
         }
-        StatInfo statInfo = new StatInfo(name, uid, gid, size,
-                linkTarget, mode, new Date(mtime));
-        return DirEntryImpl.create(statInfo, env);
     }
     
     @Override

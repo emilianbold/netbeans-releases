@@ -76,23 +76,39 @@ public class DirEntryImpl extends DirEntry {
     }
 
     public static DirEntryImpl create(FileInfoProvider.StatInfo statInfo, String cache, ExecutionEnvironment env) {
-        byte flags = 0;
-        if (statInfo.canRead(env)) {
-            flags |= MASK_CAN_READ;
-        }
-        if (statInfo.canWrite(env)) {
-            flags |= MASK_CAN_WRITE;
-        }
-        if (statInfo.canExecute(env)) {
-            flags |= MASK_CAN_EXECUTE;
-        }
+
         return new DirEntryImpl(cache, statInfo.getName(), statInfo.getSize(), 
-                statInfo.getLastModified().getTime(), flags, statInfo.getFileType().toChar(), 
-                0, 0, statInfo.getLinkTarget());
-        
+                statInfo.getLastModified().getTime(), 
+                makeFlags(statInfo.canRead(env), statInfo.canWrite(env), statInfo.canExecute(env)), 
+                statInfo.getFileType().toChar(),
+                0, 0, statInfo.getLinkTarget());          
     }
     
-    private DirEntryImpl(String cache, String name, long size, long lastModified, byte flags, char fileTypeChar, long device, long inode, String linkTarget) {
+    public static DirEntryImpl create(String name, long size, long lastModified, 
+            boolean canRead, boolean canWrite, boolean canExec,
+            char fileTypeChar, long device, long inode, String linkTarget) {
+        
+        return new DirEntryImpl(name, name, size,
+                lastModified, makeFlags(canRead, canWrite, canExec), fileTypeChar,
+                0, 0, linkTarget);
+    }
+    
+    private static byte makeFlags(boolean canRead, boolean canWrite, boolean canExec) {
+        byte flags = 0;
+        if (canRead) {
+            flags |= MASK_CAN_READ;
+        }
+        if (canWrite) {
+            flags |= MASK_CAN_WRITE;
+        }
+        if (canExec) {
+            flags |= MASK_CAN_EXECUTE;
+        }
+        return flags;
+    }
+    
+    private DirEntryImpl(String cache, String name, long size, long lastModified, 
+            byte flags, char fileTypeChar, long device, long inode, String linkTarget) {
         super(cache);
         this.name = name;
         this.size = size;
@@ -267,7 +283,7 @@ public class DirEntryImpl extends DirEntry {
     
     @Override
     public String toString() {
-        return name + accessAsString() + ' ' + isDirectory() + ' ' + lastModified + ' ' 
+        return name + ' ' + accessAsString() + ' ' + isDirectory() + ' ' + lastModified + ' ' 
                 + (isLink() ? " -> " + linkTarget : size) + 
                 " (" + getCache() + ')' + 
                 (isValid() ? "[valid]" : "[invalid]"); // NOI18N
