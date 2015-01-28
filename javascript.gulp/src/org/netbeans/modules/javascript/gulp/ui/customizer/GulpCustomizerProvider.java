@@ -77,15 +77,15 @@ public final class GulpCustomizerProvider implements ProjectCustomizer.Composite
         return new GulpCustomizerProvider();
     }
 
-    // not ready for it yet (requires support for Build etc. actions)
-    /*@ProjectCustomizer.CompositeCategoryProvider.Registration(
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-php-project", // NOI18N
             position = 401)
     public static ProjectCustomizer.CompositeCategoryProvider forPhpProject() {
         return new GulpCustomizerProvider();
     }
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+    // not ready for it yet (requires support for Build etc. actions)
+    /*@ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-web-project", // NOI18N
             position = 381)
     public static ProjectCustomizer.CompositeCategoryProvider forWebProject() {
