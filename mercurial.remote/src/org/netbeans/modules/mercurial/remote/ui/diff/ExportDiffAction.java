@@ -63,7 +63,6 @@ import org.netbeans.modules.mercurial.remote.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.nodes.Node;
@@ -271,7 +270,7 @@ public class ExportDiffAction extends ContextAction {
     private static void openFile (VCSFileProxy outFile) {
         outFile = outFile.normalizeFile();
         if (HgCommand.ENCODING != null) {
-            Utils.associateEncoding(outFile, Charset.forName(HgCommand.ENCODING));
+            VCSFileProxySupport.associateEncoding(outFile, Charset.forName(HgCommand.ENCODING));
         }
         VCSFileProxySupport.openFile(outFile);
     }

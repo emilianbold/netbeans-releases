@@ -245,7 +245,7 @@ public class DiffStreamSource extends StreamSource {
                 // we cannot move editable documents because that would break Document sharing
                 remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
             } else {
-                VCSFileProxy tempFolder = Utils.getTempFolder();
+                VCSFileProxy tempFolder = VCSFileProxySupport.getTempFolder(baseFile, true);
                 // To correctly get content of the base file, we need to checkout all files that belong to the same
                 // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
                 // if it also finds associate .form file in the same directory
@@ -271,18 +271,18 @@ public class DiffStreamSource extends StreamSource {
                         }
                         VCSFileProxy newRemoteFile = VCSFileProxy.createFileProxy(tempFolder, file.getName());
                         Utils.copyStreamsCloseAll(VCSFileProxySupport.getOutputStream(newRemoteFile), rf.getInputStream(false));
-                        newRemoteFile.deleteOnExit();
+                        VCSFileProxySupport.deleteOnExit(newRemoteFile);
                         if (isBase) {
                             remoteFile = newRemoteFile;
                             encodingHolder = currentPair;
                             if (encodingHolder.exists()) {
-                                Utils.associateEncoding(encodingHolder, newRemoteFile);
+                                VCSFileProxySupport.associateEncoding(encodingHolder, newRemoteFile);
                             } else if (remoteFile != null) {
                                 boolean created = false;
                                 try {
                                     if (encodingHolder.getParentFile().exists()) {
                                         created = encodingHolder.createNewFile();
-                                        Utils.associateEncoding(encodingHolder, newRemoteFile);
+                                        VCSFileProxySupport.associateEncoding(encodingHolder, newRemoteFile);
                                     }
                                 } catch (IOException ex) {
                                     // not interested

@@ -58,7 +58,6 @@ import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
@@ -222,7 +221,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
             }
             remoteFile = VCSFileProxy.createFileProxy(rf);
             if (baseFile != null) {
-                Utils.associateEncoding(baseFile, remoteFile);
+                VCSFileProxySupport.associateEncoding(baseFile, remoteFile);
             }
         } catch (IOException e) {
             if ((e.getCause() != null && SvnClientExceptionHandler.isTargetDirectory(e.getCause().getMessage()) || SvnClientExceptionHandler.isTargetDirectory(e.getMessage()))) {

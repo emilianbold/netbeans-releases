@@ -55,7 +55,6 @@ import org.netbeans.modules.subversion.remote.client.PropertiesClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
@@ -236,7 +235,7 @@ public class DiffStreamSource extends StreamSource {
                         org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(VCSFileProxySupport.getOutputStream(newRemoteFile), rf.getInputStream(false));
                         if (isBase) {
                             remoteFile = newRemoteFile;
-                            Utils.associateEncoding(file, newRemoteFile);                            
+                            VCSFileProxySupport.associateEncoding(file, newRemoteFile);                            
                         }
                     } catch (Exception e) {
                         if (SvnClientExceptionHandler.isTargetDirectory(e.getMessage())

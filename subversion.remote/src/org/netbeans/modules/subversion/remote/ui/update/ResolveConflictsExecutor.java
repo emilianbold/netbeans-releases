@@ -199,8 +199,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         
         final StreamSource s1;
         final StreamSource s2;
-        Utils.associateEncoding(file, f1);
-        Utils.associateEncoding(file, f2);
+        VCSFileProxySupport.associateEncoding(file, f1);
+        VCSFileProxySupport.associateEncoding(file, f2);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, new BufferedReader(new InputStreamReader(f1.getInputStream(false), encoding)));
         s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, new BufferedReader(new InputStreamReader(f2.getInputStream(false), encoding)));
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,
