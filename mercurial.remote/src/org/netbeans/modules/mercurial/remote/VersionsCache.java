@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.mercurial.remote;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
@@ -105,14 +108,14 @@ public class VersionsCache {
                         String changesetId = revision.getChangesetId();
                         Storage cachedVersions = StorageManager.getInstance().getStorage(repository.getPath());
                         String relativePath = HgUtils.getRelativePath(base);
-                        VCSFileProxy cachedFile = cachedVersions.getContent(relativePath, base.getName(), changesetId);
-                        if (VCSFileProxySupport.length(cachedFile) == 0) { // not yet cached
+                        File cachedFile = cachedVersions.getContent(relativePath, base.getName(), changesetId);
+                        if (cachedFile.length() == 0) { // not yet cached
                             HgCommand.doCat(repository, base, tempFile, revisionNumber, null, tryHard);
                             if (VCSFileProxySupport.length(tempFile) != 0) {
-                                cachedVersions.setContent(relativePath, changesetId, tempFile);
+                                cachedVersions.setContent(relativePath, changesetId, tempFile.getInputStream(false));
                             }
                         } else {
-                            tempFile = cachedFile;
+                            VCSFileProxySupport.copyStreamToFile(new BufferedInputStream(new FileInputStream(cachedFile)), tempFile);
                         }
                     }
                 }
@@ -125,14 +128,5 @@ public class VersionsCache {
                 throw new IOException(e);
             }
         }
-    }
-
-    private static boolean isLong (String revision) {
-        boolean isLong = false;
-        try {
-            Long.parseLong(revision);
-            isLong = true;
-        } catch (NumberFormatException ex) { }
-        return isLong;
     }
 }
