@@ -59,6 +59,7 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.page.Page;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -80,9 +81,9 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
      * Creates a new {@code UnusedBindingsPanel}.
      */
     public UnusedBindingsPanel() {
+        initTreeView();
         initComponents();
         add(findPanel);
-        initTreeView();
         dataPanel.add(treeView);
     }
 
@@ -142,10 +143,17 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
      * This method is invoked to notify the panel about usage of Knockout
      * in the inspected page.
      * 
-     * @param knockoutUsed determines whether Knockout is used or not.
+     * @param knockoutVersion version of Knockout used by the inspected page
+     * or {@code null} when the page is not using Knockout
      */
-    public void setKnockoutUsed(boolean knockoutUsed) {
-        if (knockoutUsed) {
+    @NbBundle.Messages({
+        "# {0} - Knockout version",
+        "UnusedBindingsPanel.unsupportedVersion=<html><center>Detection of unused bindings<br>is not supported for<br>Knockout version {0}!"
+    })
+    public void setKnockoutVersion(String knockoutVersion) {
+        if (knockoutVersion == null) {
+            showComponent(findPanel);
+        } else if (isSupportedKnockoutVersion(knockoutVersion)) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
@@ -163,8 +171,21 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
                 }
             });
         } else {
-            showComponent(findPanel);
+            unsupportedVersionLabel.setText(Bundle.UnusedBindingsPanel_unsupportedVersion(knockoutVersion));
+            showComponent(unsupportedVersionLabel);
         }
+    }
+
+    /**
+     * Determines whether the specified version of Knockout supports
+     * the detection of unused bindings or not.
+     * 
+     * @param version version of Knockout.
+     * @return {@code true} when the specified version of Knockout supports
+     * the detection of unused bindings, returns {@code false} otherwise.
+     */
+    private boolean isSupportedKnockoutVersion(String version) {
+        return (version != null) && !version.startsWith("2.") && !version.startsWith("1."); // NOI18N
     }
 
     /**
@@ -236,6 +257,9 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
         dataPanel = new javax.swing.JPanel();
         refreshPanel = new javax.swing.JPanel();
         refreshButton = new javax.swing.JButton();
+        unsupportedVersionLabel = new javax.swing.JLabel();
+
+        findPanel.setBackground(treeView.getViewport().getView().getBackground());
 
         org.openide.awt.Mnemonics.setLocalizedText(findButton, org.openide.util.NbBundle.getMessage(UnusedBindingsPanel.class, "UnusedBindingsPanel.findButton.text")); // NOI18N
         findButton.addActionListener(new java.awt.event.ActionListener() {
@@ -295,6 +319,11 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
 
         dataPanel.add(refreshPanel, java.awt.BorderLayout.PAGE_END);
 
+        unsupportedVersionLabel.setBackground(treeView.getViewport().getView().getBackground());
+        unsupportedVersionLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        unsupportedVersionLabel.setEnabled(false);
+        unsupportedVersionLabel.setOpaque(true);
+
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
 
@@ -319,5 +348,6 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
     private javax.swing.JPanel findPanel;
     private javax.swing.JButton refreshButton;
     private javax.swing.JPanel refreshPanel;
+    private javax.swing.JLabel unsupportedVersionLabel;
     // End of variables declaration//GEN-END:variables
 }
