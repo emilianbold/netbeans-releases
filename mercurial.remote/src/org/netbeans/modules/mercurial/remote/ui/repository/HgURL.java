@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial.remote.ui.repository;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -299,7 +300,7 @@ public final class HgURL {
         }
 
         if (looksLikePlainFilePath(urlString)) {
-            originalUri = new VCSFileProxy(urlString).toURI();
+            originalUri = new File(urlString).toURI();
             scheme = Scheme.FILE;
         } else {
             originalUri = new URI(urlString).parseServerAuthority();
@@ -574,12 +575,12 @@ public final class HgURL {
         return scheme.supportsAuthentication();
     }
 
-    public static VCSFileProxy getFile(HgURL url) {
+    public static VCSFileProxy getFile(VCSFileProxy root, HgURL url) {
         if (!url.isFile()) {
             throw new IllegalArgumentException(
                     "The passed HgURL must represent a file.");         //NOI18N
         }
-        return new VCSFileProxy(url.getPath());
+        return VCSFileProxySupport.getResource(root, url.getPath());
     }
 
     @Override

@@ -81,7 +81,13 @@ public class ShowInOutputFix implements EnhancedFix {
 
     @Override
     public ChangeInfo implement() throws Exception {
-        IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
+        IOSelect.select(
+                io,
+                EnumSet.of(
+                        IOSelect.AdditionalOperation.OPEN,
+                        IOSelect.AdditionalOperation.REQUEST_VISIBLE
+                )
+        );
         position.scrollTo();
 
         return null;
@@ -89,6 +95,6 @@ public class ShowInOutputFix implements EnhancedFix {
 
     @Override
     public CharSequence getSortText() {
-        return "\uAAAA";
+        return "\uAAAA"; //NOI18N
     }
 }

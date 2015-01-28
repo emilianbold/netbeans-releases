@@ -116,7 +116,7 @@ public class DirectoryStorage {
                 throw new FormatException("directory cache file version " + version +  //NNOI18N
                         " not supported: " + storageFile.getAbsolutePath(), true); //NOI18N
             }
-            if (version < ODD_VERSION) {
+            if (version <= ODD_VERSION) {
                 throw new FormatException("Discarding old directory cache file version " + version +  //NNOI18N
                         ' ' + storageFile.getAbsolutePath(), true); //NOI18N
             }
