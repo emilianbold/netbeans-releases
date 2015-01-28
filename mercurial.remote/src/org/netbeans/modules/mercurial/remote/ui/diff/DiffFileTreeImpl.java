@@ -47,7 +47,7 @@ import java.util.ResourceBundle;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
-import org.netbeans.modules.versioning.util.common.FileTreeView;
+import org.netbeans.modules.remotefs.versioning.util.common.FileTreeView;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
