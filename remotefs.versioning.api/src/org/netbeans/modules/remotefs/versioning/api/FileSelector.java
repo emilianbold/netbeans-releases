@@ -46,10 +46,9 @@
  * Created on Dec 1, 2008, 2:41:58 PM
  */
 
-package org.netbeans.modules.subversion.remote.versioning.util;
+package org.netbeans.modules.remotefs.versioning.api;
 
 import java.awt.Dialog;
-import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -59,7 +58,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

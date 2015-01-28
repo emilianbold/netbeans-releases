@@ -104,8 +104,7 @@ import org.netbeans.modules.subversion.remote.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.remote.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.remote.util.projects.ProjectOpener;
-import org.netbeans.modules.subversion.remote.versioning.util.FileSelector;
+import org.netbeans.modules.remotefs.versioning.api.FileSelector;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -1841,8 +1840,7 @@ public class SvnUtils {
             }
         }
         // open project selection
-        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.CHECKOUT, checkedOutProjects, workingFolder);
-        opener.openProjects();
+        org.netbeans.modules.remotefs.versioning.api.ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
     }
 
     /*

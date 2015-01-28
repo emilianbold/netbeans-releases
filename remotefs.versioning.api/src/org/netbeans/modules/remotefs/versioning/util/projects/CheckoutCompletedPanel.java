@@ -42,9 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.remote.util.projects;
+package org.netbeans.modules.remotefs.versioning.util.projects;
 
-import org.netbeans.modules.subversion.remote.util.projects.ProjectOpener.ProjectOpenerType;
+import org.netbeans.modules.remotefs.versioning.util.projects.ProjectOpener.ProjectOpenerType;
 
 
 /**

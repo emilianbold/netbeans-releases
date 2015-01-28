@@ -46,7 +46,7 @@
  * Created on Feb 24, 2009, 1:21:40 PM
  */
 
-package org.netbeans.modules.subversion.remote.util.projects;
+package org.netbeans.modules.remotefs.versioning.util.projects;
 
 /**
  *

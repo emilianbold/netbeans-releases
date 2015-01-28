@@ -41,42 +41,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.remote.ui.clone;
+package org.netbeans.modules.remotefs.versioning.api;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import org.netbeans.api.project.Project;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.mercurial.remote.HgProgressSupport;
+import org.netbeans.modules.remotefs.versioning.util.projects.ProjectOpener;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.ProjectUtilities;
-import org.openide.filesystems.FileObject;
 
 /**
+ * Simpliied nb_all/projects/projectui/src/org/netbeans/modules/project/ui/ProjectUtilities.java,
+ * nb_all/projects/projectui/src/org/netbeans/modules/project/ui/ProjectTab.java and
+ * nb_all/ide/welcome/src/org/netbeans/modules/welcome/ui/TitlePanel.java copy.
  *
- * @author Tomas Stupka
+ * @author Petr Kuzel       
  */
-public class CloneCompleted {
+public final class ProjectUtilities {
 
-    private final VCSFileProxy workingFolder;
-
-    public CloneCompleted(VCSFileProxy workingFolder) {
-        this.workingFolder = workingFolder;
+    /**
+     * Guides user through a project opening process.
+     * @param checkedOutProjects list of scanned checkout projects
+     * @param workingFolder implicit folder to create a new project in if user selects <em>Create New Project</em> in the following dialog
+     */
+    public static void openExportedProjects(Map<Project, Set<Project>> checkedOutProjects, VCSFileProxy workingFolder) {
+        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.EXPORT, checkedOutProjects, workingFolder);
+        opener.openProjects();
     }
 
-    public void scanForProjects(HgProgressSupport support) {
-        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
-        checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
-        VCSFileProxy normalizedWorkingFolder = workingFolder.normalizeFile();
-        FileObject fo = normalizedWorkingFolder.toFileObject();
-        if (fo != null) {
-            ProjectUtilities.scanForProjects(fo, checkedOutProjects);
-        }
-        if (support != null && support.isCanceled()) {
-            return;
-        }
-        // open project selection
-        org.netbeans.modules.remotefs.versioning.api.ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
+    /**
+     * Guides user through a project opening process.
+     * @param checkedOutProjects list of scanned checkout projects
+     * @param workingFolder implicit folder to create a new project in if user selects <em>Create New Project</em> in the following dialog
+     */
+    public static void openCheckedOutProjects(Map<Project, Set<Project>> checkedOutProjects, VCSFileProxy workingFolder) {
+        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.CHECKOUT, checkedOutProjects, workingFolder);
+        opener.openProjects();
+    }
+
+    /**
+     * Guides user through a project opening process.
+     * @param checkedOutProjects list of scanned cloned projects
+     * @param workingFolder implicit folder to create a new project in if user selects <em>Create New Project</em> in the following dialog
+     */
+    public static void openClonedOutProjects(Map<Project, Set<Project>> checkedOutProjects, VCSFileProxy workingFolder) {
+        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.CLONE, checkedOutProjects, workingFolder);
+        opener.openProjects();
     }
 }

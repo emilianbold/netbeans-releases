@@ -49,6 +49,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -97,12 +98,11 @@ import org.netbeans.modules.mercurial.remote.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.ui.status.SyncFileNode;
+import org.netbeans.modules.remotefs.versioning.api.FileSelector;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.diff.DiffUtils;
-import org.netbeans.modules.versioning.util.FileSelector;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -996,7 +996,7 @@ itor tabs #66700).
                     NbBundle.getMessage(HgUtils.class, "LBL_FileSelector_Title"),
                     NbBundle.getMessage(HgUtils.class, "FileSelector.jLabel1.text"),
                     new HelpCtx("org.netbeans.modules.mercurial.FileSelector"),
-                    HgModuleConfig.getDefault(root).getPreferences());
+                    HgModuleConfig.getDefault(repoRoots.iterator().next()).getPreferences());
             if(fs.show(repoRoots.toArray(new VCSFileProxy[repoRoots.size()]))) {
                 VCSFileProxy selection = fs.getSelectedFile();
                 List<VCSFileProxy> l = map.get(selection);
@@ -1361,27 +1361,37 @@ itor tabs #66700).
             VCSFileProxy fileToOpen, HgRevision revisionToOpen, boolean showAnnotations) throws IOException {
         VCSFileProxy file = org.netbeans.modules.mercurial.remote.VersionsCache.getInstance().getFileRevision(fileRevision1, revision1);
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
-            file = VCSFileProxy.createTempFile("tmp", "-" + fileRevision1.getName()); //NOI18N
-            file.deleteOnExit();
+            file = VCSFileProxySupport.createTempFile(fileToOpen, "tmp", "-" + fileRevision1.getName(), true); //NOI18N
         }
         fileRevision1 = file;
         
         file = org.netbeans.modules.mercurial.remote.VersionsCache.getInstance().getFileRevision(fileToOpen, revisionToOpen);
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
-            file = VCSFileProxy.createTempFile("tmp", "-" + fileToOpen.getName()); //NOI18N
-            file.deleteOnExit();
+            file = VCSFileProxySupport.createTempFile(fileToOpen, "tmp", "-" + fileToOpen.getName(), true); //NOI18N
         }
-        int matchingLine = DiffUtils.getMatchingLine(fileRevision1, file, lineNumber);
+        BufferedReader r1 = null;
+        BufferedReader r2 = null;
+        try {
+            r1 = new BufferedReader(new InputStreamReader(fileRevision1.getInputStream(false)));
+            r2 = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+            int matchingLine = DiffUtils.getMatchingLine(r1, r2, lineNumber);
+            openFile(file, fileToOpen, matchingLine, revisionToOpen, showAnnotations);
+        } finally {
+            if (r1 != null) {
+                r1.close();
+            }
+            if (r2 != null) {
+                r2.close();
+            }
+        }
         
-        openFile(file, fileToOpen, matchingLine, revisionToOpen, showAnnotations);
     }
     
     public static void openInRevision (VCSFileProxy originalFile, int lineNumber, HgRevision revision, boolean showAnnotations) throws IOException {
         VCSFileProxy file = org.netbeans.modules.mercurial.remote.VersionsCache.getInstance().getFileRevision(originalFile, revision);
 
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
-            file = VCSFileProxy.createTempFile("tmp", "-" + originalFile.getName()); //NOI18N
-            file.deleteOnExit();
+            file = VCSFileProxySupport.createTempFile(originalFile, "tmp", "-" + originalFile.getName(), true); //NOI18N
         }
         openFile(file, originalFile, lineNumber, revision, showAnnotations);
     }
