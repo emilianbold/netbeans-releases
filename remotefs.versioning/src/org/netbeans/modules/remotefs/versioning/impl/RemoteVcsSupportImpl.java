@@ -276,7 +276,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     public boolean isSolaris(VCSFileProxy proxy) {
         File file = proxy.toFile();
         if (file != null) {
-            return System.getProperty("os.name").equals("SunOS"); // NOI18N
+            return System.getProperty("os.name").startsWith("SunOS"); // NOI18N
         } else {
             FileSystem fs = getFileSystem(proxy);
             ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);

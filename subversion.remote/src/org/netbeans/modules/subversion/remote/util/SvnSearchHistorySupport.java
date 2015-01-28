@@ -48,7 +48,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.remote.versioning.util.SearchHistorySupport;
+import org.netbeans.modules.remotefs.versioning.api.SearchHistorySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**

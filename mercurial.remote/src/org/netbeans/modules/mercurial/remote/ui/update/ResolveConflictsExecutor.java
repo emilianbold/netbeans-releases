@@ -49,7 +49,6 @@ import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilterWriter;
 import java.io.IOException;
@@ -75,7 +74,6 @@ import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.spi.diff.MergeVisualizer;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
@@ -201,8 +199,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         
         final StreamSource s1;
         final StreamSource s2;
-        Utils.associateEncoding(f1, encoding);
-        Utils.associateEncoding(f2, encoding);
+        VCSFileProxySupport.associateEncoding(VCSFileProxy.createFileProxy(f1), encoding);
+        VCSFileProxySupport.associateEncoding(VCSFileProxy.createFileProxy(f2), encoding);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
         s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, f2);
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,

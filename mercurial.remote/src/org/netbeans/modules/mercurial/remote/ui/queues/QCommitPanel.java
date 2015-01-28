@@ -71,17 +71,17 @@ import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.HgQueueHook;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.HgQueueHookContext;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.VCSHookContext;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.VCSHooks;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.hooks.HgQueueHook;
+import org.netbeans.modules.remotefs.versioning.hooks.HgQueueHookContext;
+import org.netbeans.modules.remotefs.versioning.hooks.VCSHookContext;
+import org.netbeans.modules.remotefs.versioning.hooks.VCSHooks;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSCommitDiffProvider;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSCommitFilter;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanelModifier;
-import org.netbeans.modules.versioning.util.common.VCSCommitDiffProvider;
-import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
-import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -115,9 +115,9 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
     public static QCommitPanel createNewPanel (final VCSFileProxy[] roots, final VCSFileProxy repository, String commitMessage,
             final String helpCtxId) {
-        final Preferences preferences = HgModuleConfig.getDefault(root).getPreferences();
+        final Preferences preferences = HgModuleConfig.getDefault(roots[0]).getPreferences();
         List<String> recentUsers = getRecentUsers(repository);
-        final DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null, recentUsers);
+        final DefaultCommitParameters parameters = new QCreatePatchParameters(roots[0], preferences, commitMessage, null, recentUsers);
         final Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
         
         return Mutex.EVENT.readAccess(new Mutex.Action<QCommitPanel>() {
@@ -134,9 +134,9 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
     public static QCommitPanel createRefreshPanel (final VCSFileProxy[] roots, final VCSFileProxy repository,
             String commitMessage, final QPatch patch, final HgRevision parentRevision, final String helpCtxId) {
-        final Preferences preferences = HgModuleConfig.getDefault(root).getPreferences();
+        final Preferences preferences = HgModuleConfig.getDefault(roots[0]).getPreferences();
         List<String> recentUsers = getRecentUsers(repository);
-        final DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch, recentUsers);
+        final DefaultCommitParameters parameters = new QCreatePatchParameters(roots[0], preferences, commitMessage, patch, recentUsers);
         final Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
         
         return Mutex.EVENT.readAccess(new Mutex.Action<QCommitPanel>() {
@@ -160,7 +160,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
             config = HgConfigFiles.getSysInstance(repository);
             userName = config.getUserName(false);
         }
-        List<String> recentUsers = HgModuleConfig.getDefault(root).getRecentCommitAuthors();
+        List<String> recentUsers = HgModuleConfig.getDefault(repository).getRecentCommitAuthors();
         if (!userName.isEmpty()) {
             recentUsers.remove(userName);
             recentUsers.add(0, userName);

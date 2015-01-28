@@ -255,7 +255,7 @@ public final class SvnProperties implements ActionListener {
                 String state = e.getActionCommand();
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
                     VCSFileProxy source = VCSFileProxySupport.getSelectedFile(chooser);
-                    if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(source)) {
+                    if (VCSFileProxySupport.isFileContentText(source)) {
                         if (VCSFileProxySupport.canRead(source)) {
                             StringWriter sw = new StringWriter();
                             try {

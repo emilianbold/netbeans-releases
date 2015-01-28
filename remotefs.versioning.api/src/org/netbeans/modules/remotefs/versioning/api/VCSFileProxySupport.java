@@ -52,6 +52,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,22 +61,32 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.openide.cookies.OpenCookie;
+import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -731,6 +743,238 @@ public final class VCSFileProxySupport {
             }
         }
         return null;
+    }
+    
+    /**
+     * @param file
+     * @return Set<File> all files that belong to the same DataObject as the
+     * argument
+     */
+    public static Set<VCSFileProxy> getAllDataObjectFiles(VCSFileProxy file) {
+        Set<VCSFileProxy> filesToCheckout = new HashSet<>(2);
+        filesToCheckout.add(file);
+        FileObject fo = file.toFileObject();
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                Set<FileObject> fileObjects = dao.files();
+                for (FileObject fileObject : fileObjects) {
+                    filesToCheckout.add(VCSFileProxy.createFileProxy(fileObject));
+                }
+            } catch (DataObjectNotFoundException e) {
+                // no dataobject, never mind
+            }
+        }
+        return filesToCheckout;
+    }
+    
+    /**
+     * Searches for common filesystem parent folder for given files.
+     *
+     * @param a first file
+     * @param b second file
+     * @return File common parent for both input files with the longest
+     * filesystem path or null of these files have not a common parent
+     */
+    public static VCSFileProxy getCommonParent(VCSFileProxy a, VCSFileProxy b) {
+        for (;;) {
+            if (a.equals(b)) {
+                return a;
+            } else if (a.getPath().length() > b.getPath().length()) {
+                a = a.getParentFile();
+                if (a == null) {
+                    return null;
+                }
+            } else {
+                b = b.getParentFile();
+                if (b == null) {
+                    return null;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Checks if the file is to be considered as textuall.
+     *
+     * @param file file to check
+     * @return true if the file can be edited in NetBeans text editor, false otherwise
+     */
+    public static boolean isFileContentText(VCSFileProxy file) {
+        FileObject fo = file.toFileObject();
+        if (fo == null) {
+            return false;
+        }
+        if (fo.getMIMEType().startsWith("text")) { // NOI18N
+            return true;
+        }
+        try {
+            DataObject dao = DataObject.find(fo);
+            return dao.getLookup().lookupItem(new Lookup.Template<>(EditorCookie.class)) != null;
+        } catch (DataObjectNotFoundException e) {
+            // not found, continue
+        }
+        return false;
+    }
+    
+    private static Map<VCSFileProxy, Charset> fileToCharset;
+    private static final Logger LOG = Logger.getLogger(VCSFileProxySupport.class.getName());
+    private static final Object ENCODING_LOCK = new Object();
+
+    /**
+     * Retrieves the Charset for the referenceFile and associates it weakly with
+     * the given file. A following getAssociatedEncoding() call for the file
+     * will then return the referenceFile-s Charset.
+     *
+     * @param referenceFile the file which charset has to be used when encoding
+     * file
+     * @param file file to be encoded with the referenceFile-s charset
+     *
+     */
+    public static void associateEncoding(VCSFileProxy referenceFile, VCSFileProxy file) {
+        FileObject fo = referenceFile.toFileObject();
+        if (fo == null || fo.isFolder()) {
+            return;
+        }
+        Charset c = FileEncodingQuery.getEncoding(fo);
+        if (c == null) {
+            return;
+        }
+        synchronized(ENCODING_LOCK) {
+            if (fileToCharset == null) {
+                fileToCharset = new WeakHashMap<>();
+            }
+            fileToCharset.put(file, c);
+        }
+    }
+
+    /**
+     * Returns a charset for the given file if it was previously registered via
+     * associateEncoding()
+     *
+     * @param fo file for which the encoding has to be retrieved
+     * @return the charset the given file has to be encoded with
+     */
+    public static Charset getAssociatedEncoding(FileObject fo) {
+        try {
+            if (fo == null) {
+                return null;
+            }
+            synchronized(ENCODING_LOCK) {
+                if (fileToCharset == null || fileToCharset.isEmpty()) {
+                    return null;
+                }
+            }
+            if (fo.isFolder()) {
+                return null;
+            }
+            VCSFileProxy file = VCSFileProxy.createFileProxy(fo);
+            if (file == null) {
+                return null;
+            }
+            synchronized(ENCODING_LOCK) {
+                return fileToCharset.get(file);
+            }
+        } catch (Throwable t) {
+            LOG.log(Level.INFO, null, t);
+
+            return null;
+        }
+    }
+
+    /**
+     * Associates a given charset weakly with
+     * the given file. A following getAssociatedEncoding() call for
+     * the file will then return the referenceFile-s Charset.
+     *
+     * @param file file to be encoded with the referenceFile-s charset
+     *
+     */
+    public static void associateEncoding (VCSFileProxy file, Charset charset) {
+        FileObject fo = file.toFileObject();
+        if(fo == null) {
+            LOG.log(Level.WARNING, "associateEncoding() no file object available for {0}", file); // NOI18N
+            return;
+        }
+        associateEncoding(fo, charset);
+    }
+    
+    /**
+     * Associates a given charset weakly with
+     * the given file. A following getAssociatedEncoding() call for
+     * the file will then return the referenceFile-s Charset.
+     *
+     * @param file file to be encoded with the referenceFile-s charset
+     *
+     */
+    public static void associateEncoding (FileObject file, Charset charset) {
+        if(charset == null) {
+            return;
+        }
+        VCSFileProxy fo = VCSFileProxy.createFileProxy(file);
+        if (fo == null) {
+            return;
+        }
+        synchronized(ENCODING_LOCK) {
+            if(fileToCharset == null) {
+                fileToCharset = new WeakHashMap<VCSFileProxy, Charset>();
+            }
+            fileToCharset.put(fo, charset);
+        }
+    }
+    
+    public static String getContextDisplayName(VCSContext ctx) {
+        // TODO: reuse this code in getActionName()
+        Set<VCSFileProxy> nodes = ctx.getFiles();
+        int objectCount = nodes.size();
+        // if all nodes represent project node the use plain name
+        // It avoids "Show changes 2 files" on project node
+        // caused by fact that project contains two source groups.
+
+        Node[] activatedNodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
+        boolean projectsOnly = true;
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node activatedNode = activatedNodes[i];
+            Project project =  (Project) activatedNode.getLookup().lookup(Project.class);
+            if (project == null) {
+                projectsOnly = false;
+                break;
+            }
+        }
+        if (projectsOnly) {
+            objectCount = activatedNodes.length;
+        }
+
+        if (objectCount == 0) {
+            return null;
+        } else if (objectCount == 1) {
+            if (projectsOnly) {
+                return ProjectUtils.getInformation((Project) activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
+            }
+            FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
+            if (fo != null) {
+                return fo.getNameExt();
+            } else {
+                DataObject dao = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                if (dao instanceof DataShadow) {
+                    dao = ((DataShadow) dao).getOriginal();
+                }
+                if (dao != null) {
+                    return dao.getPrimaryFile().getNameExt();
+                } else {
+                    return activatedNodes[0].getDisplayName();
+                }
+            }
+        } else {
+            if (projectsOnly) {
+                try {
+                    return MessageFormat.format(NbBundle.getMessage(VCSFileProxySupport.class, "MSG_ActionContext_MultipleProjects"), objectCount);  // NOI18N
+                } catch (MissingResourceException ex) {
+                    // ignore use files alternative bellow
+                }
+            }
+            return MessageFormat.format(NbBundle.getMessage(VCSFileProxySupport.class, "MSG_ActionContext_MultipleFiles"), objectCount);  // NOI18N
+        }
     }
 
 //</editor-fold>

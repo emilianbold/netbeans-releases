@@ -133,7 +133,7 @@ made subject to such option by the copyright holder.
             <!-- place in between line numbers sidebar and folding sidebar #57544 -->
         </folder>
         <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-mercurial-remote-Annotation.xml" url="hg_annotation.xml"/>
+            <file name="org-netbeans-modules-mercurial-remote-Annotation.xml" url="resources/hg_annotation.xml"/>
         </folder>
         <folder name="UpToDateStatusProvider">
             <file name="org-netbeans-modules-mercurial-remote-ui-annotate-AnnotationMarkInstaller.instance">

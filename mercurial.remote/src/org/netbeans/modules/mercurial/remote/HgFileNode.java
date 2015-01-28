@@ -48,41 +48,30 @@ import org.openide.filesystems.FileObject;
 
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSFileNode;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
-import org.openide.util.NbBundle;
 
 /**
  * Represents real or virtual (non-local) file.
  *
  * @author Padraig O'Briain
  */
-public final class HgFileNode /*extends VCSFileNode<FileInformation>*/ {
+public final class HgFileNode extends VCSFileNode<FileInformation> {
 
-    private final VCSFileProxy root;
     private final VCSFileProxy file;
     private final VCSFileProxy normalizedFile;
     private FileObject fileObject;
-    private String shortPath;
-    private VCSCommitOptions commitOption;
 
     public HgFileNode(VCSFileProxy root, VCSFileProxy file) {
-        this.root = root;
+        super(root, file);
         this.file = file;
         normalizedFile = file.normalizeFile();
     }
-
-    public String getName() {
-        return file.getName();
-    }
-
+    
+    @Override
     public FileInformation getInformation() {
         return Mercurial.getInstance().getFileStatusCache().getStatus(file); 
-    }
-
-    public VCSFileProxy getFile() {
-        return file;
     }
 
     @Override
@@ -98,6 +87,7 @@ public final class HgFileNode /*extends VCSFileNode<FileInformation>*/ {
         return file.hashCode();
     }
 
+
     public FileObject getFileObject() {
         if (fileObject == null) {
             fileObject = normalizedFile.toFileObject();
@@ -105,6 +95,7 @@ public final class HgFileNode /*extends VCSFileNode<FileInformation>*/ {
         return fileObject;
     }
 
+    @Override
     public Object[] getLookupObjects() {
         List<Object> list = new ArrayList<Object>(2);
         list.add(file);
@@ -115,43 +106,8 @@ public final class HgFileNode /*extends VCSFileNode<FileInformation>*/ {
         return list.toArray(new Object[list.size()]);
     }
 
+    @Override
     public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
         return VCSCommitOptions.COMMIT;
     }
-    
-    public String getStatusText () {
-        return getInformation().getStatusText();
-    }
-    
-    public VCSCommitOptions getCommitOptions() {
-        if(commitOption == null) {
-            commitOption = getDefaultCommitOption(true);
-        }
-        return commitOption;
-    }
-    
-    void setCommitOptions(VCSCommitOptions option) {
-        commitOption = option;
-    }
-        
-    public VCSFileProxy getRoot () {
-        return root;
-    }
-
-    public String getRelativePath() {        
-        if(shortPath == null) {
-            String path = file.getPath();
-            String rootPath = root.getPath();
-            if (path.startsWith(rootPath)) {
-                if (path.length() == rootPath.length()) {
-                    shortPath = "."; //NOI18N
-                } else {
-                    shortPath = path.substring(rootPath.length() + 1);
-                }
-            } else {
-                shortPath = NbBundle.getMessage(VCSFileNode.class, "LBL_Location_NotInRepository"); //NOI18N
-            }
-        }
-        return shortPath;
-    }    
-}
+ }

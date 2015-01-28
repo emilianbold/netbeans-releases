@@ -48,6 +48,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -352,9 +353,17 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             }
 
             @Override
-            public VCSFileProxy[] getRoots () {
-                return master.getRoots();
+            public File[] getRoots(){
+                List<File> files = new ArrayList<File>();
+                for(VCSFileProxy proxy : master.getRoots()) {
+                    File file = proxy.toFile();
+                    if (file != null) {
+                        files.add(file);
+                    }
+                }
+                return files.toArray(new File[files.size()]);
             }
+
 
             @Override
             public Collection<SearchHighlight> getSearchHighlights () {
@@ -508,7 +517,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                             SystemAction.get(DiffAction.class).diff(master.getRoots(),
                                     info2.getHgRevision(),
                                     info1.getHgRevision(),
-                                    ContextAction.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))),
+                                    VCSFileProxySupport.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))),
                                     false, true);
                         }
                     }));

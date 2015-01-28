@@ -48,7 +48,9 @@ import java.util.prefs.PreferenceChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -59,9 +61,11 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
     private static final Object EVENT_SETTINGS_CHANGED = new Object();
     private PropertiesTable propertiesTable;
     private final ListenersSupport listenerSupport = new ListenersSupport(this);
+    private final FileSystem fs;
     
     /** Creates new form PropertiesPanel */
-    public PropertiesPanel() {
+    public PropertiesPanel(FileSystem fs) {
+        this.fs = fs;
         initComponents();
     }
     
@@ -88,7 +92,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
     @Override
     public void addNotify() {
         super.addNotify();
-        HgModuleConfig.getDefault(root).getPreferences().addPreferenceChangeListener(this);        
+        HgModuleConfig.getDefault(VCSFileProxy.createFileProxy(fs.getRoot())).getPreferences().addPreferenceChangeListener(this);        
         propertiesTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         txtAreaValue.selectAll();
@@ -97,7 +101,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
     @Override
     public void removeNotify() {
         propertiesTable.getTableModel().removeTableModelListener(this);
-        HgModuleConfig.getDefault(root).getPreferences().removePreferenceChangeListener(this);
+        HgModuleConfig.getDefault(VCSFileProxy.createFileProxy(fs.getRoot())).getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
     

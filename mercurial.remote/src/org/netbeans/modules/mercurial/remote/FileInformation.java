@@ -49,8 +49,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.ResourceBundle;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSFileInformation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 import org.openide.util.NbBundle;
 
 /**

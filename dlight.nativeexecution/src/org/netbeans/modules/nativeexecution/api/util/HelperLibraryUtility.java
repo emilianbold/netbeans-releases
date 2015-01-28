@@ -111,7 +111,7 @@ public class HelperLibraryUtility {
                             Future<CommonTasksSupport.UploadStatus> uploadTask = CommonTasksSupport.uploadFile(lf, env, remoteFile, 0755, true);
                             CommonTasksSupport.UploadStatus status = uploadTask.get();
                             if (!status.isOK()) {
-                                throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName() + ':' + remoteFile
+                                throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName() + ':' + remoteFile // NOI18N
                                         + " rc=" + status.getExitCode() + ' ' + status.getError()); // NOI18N
                             }
                             result.add(remoteFile);

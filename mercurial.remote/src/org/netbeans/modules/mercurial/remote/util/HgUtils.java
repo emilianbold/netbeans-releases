@@ -1636,7 +1636,7 @@ itor tabs #66700).
         if(foMime.startsWith("text")) { //NOI18N
             return foMime;
         }
-        return org.netbeans.modules.mercurial.remote.versioning.util.Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream"; //NOI18N
+        return VCSFileProxySupport.isFileContentText(file) ? "text/plain" : "application/octet-stream"; //NOI18N
     }
 
     public static void logHgLog(HgLogMessage log, OutputLogger logger) {
@@ -1836,7 +1836,7 @@ itor tabs #66700).
                     childCandidate = fileUnderRoot;
                 }
                 if (!VCSFileProxySupport.isAncestorOrEqual(ancestorCandidate, childCandidate)) {
-                    ancestorCandidate = org.netbeans.modules.mercurial.remote.versioning.util.Utils.getCommonParent(childCandidate, ancestorCandidate);
+                    ancestorCandidate = VCSFileProxySupport.getCommonParent(childCandidate, ancestorCandidate);
                 }
             }
             if (ancestorCandidate == fileUnderRoot) {

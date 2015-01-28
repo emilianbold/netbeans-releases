@@ -93,10 +93,10 @@ import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.remote.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.HgHook;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.HgHookContext;
-import org.netbeans.modules.mercurial.remote.versioning.hooks.VCSHooks;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.hooks.HgHook;
+import org.netbeans.modules.remotefs.versioning.hooks.HgHookContext;
+import org.netbeans.modules.remotefs.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -187,7 +187,7 @@ public class CommitAction extends ContextAction {
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        String contentTitle = getContextDisplayName(context);
+        String contentTitle = VCSFileProxySupport.getContextDisplayName(context);
 
         commit(contentTitle, context);
     }

@@ -109,7 +109,10 @@ public class HgConfigFiles {
      * @return the HgConfiles instance
      */
     public static synchronized HgConfigFiles getSysInstance(VCSFileProxy root) {
-        FileSystem fileSystem = VCSFileProxySupport.getFileSystem(root);
+        FileSystem fileSystem = null;
+        if (root != null) {
+            fileSystem = VCSFileProxySupport.getFileSystem(root);
+        }
         HgConfigFiles res = instance.get(fileSystem);
         if (res == null) {
             res = new HgConfigFiles(fileSystem);

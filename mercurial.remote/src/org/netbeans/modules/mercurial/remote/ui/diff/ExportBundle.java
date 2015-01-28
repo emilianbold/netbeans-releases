@@ -47,8 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import javax.swing.JButton;
-import org.netbeans.modules.versioning.util.ExportDiffSupport;
 import org.openide.DialogDescriptor;
 import java.io.IOException;
 import java.util.HashMap;
@@ -65,6 +65,8 @@ import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -154,7 +156,7 @@ class ExportBundle extends ExportDiffSupport implements ActionListener, Property
 
     @Override
     protected VCSFileProxy createTempFile () throws IOException {
-        return VCSFileProxy.createTempFile("hg-bundle", ".hg"); // NOI18N
+        return VCSFileProxySupport.createTempFile(repository, "hg-bundle", ".hg", false); // NOI18N
     }
 
     @Override
@@ -171,7 +173,7 @@ class ExportBundle extends ExportDiffSupport implements ActionListener, Property
     protected javax.swing.filechooser.FileFilter getFileFilter () {
         return new javax.swing.filechooser.FileFilter() {
             @Override
-            public boolean accept(VCSFileProxy f) {
+            public boolean accept(File f) {
                 return f.getName().endsWith("hg") || f.getName().endsWith("bundle") || f.isDirectory();  // NOI18N
             }
             @Override

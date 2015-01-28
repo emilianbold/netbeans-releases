@@ -92,7 +92,7 @@ public class LogAction extends SearchHistoryAction {
     @Override
     protected void performContextAction(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
-        openHistory(context, NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", getContextDisplayName(context)));
+        openHistory(context, NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", VCSFileProxySupport.getContextDisplayName(context)));
     }
 
     private void openHistory (final VCSContext context, final String title) {
@@ -128,7 +128,7 @@ public class LogAction extends SearchHistoryAction {
         String title = NbBundle.getMessage(
                 LogAction.class, 
                 "MSG_Log_TabTitle", // NOI18N
-                getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))));
+                VCSFileProxySupport.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))));
         openHistory(repositoryRoot, files, title, revision);
     }
     

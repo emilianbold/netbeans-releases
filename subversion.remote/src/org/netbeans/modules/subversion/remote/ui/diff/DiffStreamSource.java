@@ -55,7 +55,6 @@ import org.netbeans.modules.subversion.remote.client.PropertiesClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
@@ -222,7 +221,7 @@ public class DiffStreamSource extends StreamSource {
                 // To correctly get content of the base file, we need to checkout all files that belong to the same
                 // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
                 // if it also finds associate .form file in the same directory
-                Set<VCSFileProxy> allFiles = Utils.getAllDataObjectFiles(baseFile);
+                Set<VCSFileProxy> allFiles = VCSFileProxySupport.getAllDataObjectFiles(baseFile);
                 for (VCSFileProxy file : allFiles) {
                     boolean isBase = file.equals(baseFile);
                     try {
@@ -236,7 +235,7 @@ public class DiffStreamSource extends StreamSource {
                         org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(VCSFileProxySupport.getOutputStream(newRemoteFile), rf.getInputStream(false));
                         if (isBase) {
                             remoteFile = newRemoteFile;
-                            Utils.associateEncoding(file, newRemoteFile);                            
+                            VCSFileProxySupport.associateEncoding(file, newRemoteFile);                            
                         }
                     } catch (Exception e) {
                         if (SvnClientExceptionHandler.isTargetDirectory(e.getMessage())
