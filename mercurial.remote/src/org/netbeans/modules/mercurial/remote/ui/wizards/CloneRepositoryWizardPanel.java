@@ -362,7 +362,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
 
                 HgURL.Scheme uriSch = hgUrl.getScheme();
                 if (uriSch == FILE) {
-                    VCSFileProxy f = HgURL.getFile(hgUrl);
+                    VCSFileProxy f = HgURL.getFile(root, hgUrl);
                     if(!f.exists() || !VCSFileProxySupport.canRead(f)){
                         invalidMsg = getMessage("MSG_Progress_Clone_CannotAccess_Err"); //NOI18N
                         return;

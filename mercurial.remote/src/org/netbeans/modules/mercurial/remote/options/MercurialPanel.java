@@ -51,11 +51,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.mercurial.remote.HgModuleConfig;
-
-import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.Mercurial;
+import static org.netbeans.modules.mercurial.remote.options.Bundle.CTL_UsernameLoading;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle.Messages;
 
@@ -148,6 +149,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         cbAskBeforeCommitAfterMerge = new javax.swing.JCheckBox();
         cbInternalMergeToolEnabled = new javax.swing.JCheckBox();
         lblWarning = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
 
         jLabel1.setLabelFor(userNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel1.text")); // NOI18N
@@ -205,6 +207,8 @@ final class MercurialPanel extends javax.swing.JPanel {
         lblWarning.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
         org.openide.awt.Mnemonics.setLocalizedText(lblWarning, " "); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel10.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -218,7 +222,6 @@ final class MercurialPanel extends javax.swing.JPanel {
                             .addComponent(cbAskBeforeCommitAfterMerge)
                             .addComponent(cbInternalMergeToolEnabled)
                             .addComponent(excludeNewFiles)))
-                    .addComponent(jLabel1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(201, 201, 201)))
@@ -227,21 +230,6 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(exportFilename))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(executablePathTextField)
-                            .addComponent(exportFilenameTextField))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(exportFilenameBrowseButton)
-                            .addComponent(execPathBrowseButton)))
-                    .addComponent(userNameTextField)))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -261,14 +249,36 @@ final class MercurialPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lblWarning)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(exportFilename)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel10))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbBuildHost, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(userNameTextField)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(executablePathTextField)
+                            .addComponent(exportFilenameTextField))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(exportFilenameBrowseButton)
+                            .addComponent(execPathBrowseButton)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(cbBuildHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
                     .addComponent(userNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(executablePathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -325,6 +335,7 @@ final class MercurialPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_excludeNewFilesActionPerformed
     
     private void nameChange() {
+        VCSFileProxy root = controller.getRoot();
         boolean isChanged = (userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText()))
                 || !HgModuleConfig.getDefault(root).getExecutableBinaryPath().equals(executablePathTextField.getText())
                 || !HgModuleConfig.getDefault(root).getExportFilename().equals(exportFilenameTextField.getText())
@@ -345,6 +356,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         // someCheckBox.setSelected(NbPreferences.forModule(MercurialPanel.class).getBoolean("someFlag", false)); // NOI18N
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
+        final VCSFileProxy root = controller.getRoot();
         userNameTextField.setEnabled(false);
         userNameTextField.setText(CTL_UsernameLoading());
         Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
@@ -377,6 +389,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         // NbPreferences.forModule(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
+        final VCSFileProxy root = controller.getRoot();
         if(userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText())) {
             try {
                 HgModuleConfig.getDefault(root).setUserName(userNameTextField.getText());
@@ -398,6 +411,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     final javax.swing.JButton addButton = new javax.swing.JButton();
     final javax.swing.JTextField annotationTextField = new javax.swing.JTextField();
     private javax.swing.JCheckBox cbAskBeforeCommitAfterMerge;
+    final javax.swing.JComboBox cbBuildHost = new javax.swing.JComboBox();
     private javax.swing.JCheckBox cbInternalMergeToolEnabled;
     private javax.swing.JCheckBox cbOpenOutputWindow;
     final javax.swing.JCheckBox excludeNewFiles = new javax.swing.JCheckBox();
@@ -407,6 +421,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     final javax.swing.JButton exportFilenameBrowseButton = new javax.swing.JButton();
     final javax.swing.JTextField exportFilenameTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
