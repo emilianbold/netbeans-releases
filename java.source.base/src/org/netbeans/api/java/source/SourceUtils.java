@@ -399,12 +399,10 @@ public class SourceUtils {
         //not imported/visible so far by any means:
         String topLevelLanguageMIMEType = info.getFileObject().getMIMEType();
         if ("text/x-java".equals(topLevelLanguageMIMEType)){ //NOI18N
-            final boolean[] ok = new boolean[1];
             final Set<Element> elementsToImport = Collections.singleton(toImport);
             if (info instanceof WorkingCopy) {
                 CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).resolveRewriteTarget(cut);
                 ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(nue, elementsToImport));
-                ok[0] = true;
             } else {
                 final ElementHandle handle = ElementHandle.create(toImport);
                 SwingUtilities.invokeLater(new Runnable() {
@@ -422,7 +420,6 @@ public class SourceUtils {
                                         return;
                                     }
                                     copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), Collections.singleton(elementToImport)));
-                                    ok[0] = true;
                                 }
                             }).commit();
                         } catch (Exception e) {
@@ -432,23 +429,19 @@ public class SourceUtils {
                 });
             }
             // only import symbols if import generation succeeded
-            if (ok[0]) {
-                JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
-                if (toImport.getKind() == ElementKind.PACKAGE) {
-                    StarImportScope importScope = new StarImportScope(unit.starImportScope.owner);
-                    importScope.importAll(unit.starImportScope);
-                    importScope.importAll(((PackageSymbol)toImport).members());
-                    unit.starImportScope = importScope;
-                } else {
-                    ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
-                    for (Symbol symbol : unit.namedImportScope.getElements()) {
-                        importScope.enter(symbol);
-                    }
-                    importScope.enterIfAbsent((Symbol) toImport);
-                    unit.namedImportScope = importScope;
-                }
+            JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
+            if (toImport.getKind() == ElementKind.PACKAGE) {
+                StarImportScope importScope = new StarImportScope(unit.starImportScope.owner);
+                importScope.importAll(unit.starImportScope);
+                importScope.importAll(((PackageSymbol)toImport).members());
+                unit.starImportScope = importScope;
             } else {
-                return fqn;
+                ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
+                for (Symbol symbol : unit.namedImportScope.getElements()) {
+                    importScope.enter(symbol);
+                }
+                importScope.enterIfAbsent((Symbol) toImport);
+                unit.namedImportScope = importScope;
             }
         } else { // embedded java, look up the handler for the top level language
             Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
