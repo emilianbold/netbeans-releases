@@ -39,64 +39,42 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.gulp.ui.customizer;
+package org.netbeans.modules.php.phing.ui.customizer;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.gulp.GulpBuildTool;
+import org.netbeans.modules.php.phing.PhingBuildTool;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public final class GulpCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public final class PhingCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
-    public static final String CUSTOMIZER_IDENT = "Gulp"; // NOI18N
+    public static final String CUSTOMIZER_IDENT = "Phing"; // NOI18N
 
 
-    @NbBundle.Messages("GulpCustomizerProvider.name=Gulp")
+    @NbBundle.Messages("PhingCustomizerProvider.name=Phing")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        if (!GulpBuildTool.forProject(context.lookup(Project.class)).getGulpfile().exists()) {
+        if (!PhingBuildTool.forProject(context.lookup(Project.class)).getBuildXml().exists()) {
             return null;
         }
         return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
-                Bundle.GulpCustomizerProvider_name(), null);
+                Bundle.PhingCustomizerProvider_name(), null);
     }
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         Project project = context.lookup(Project.class);
         assert project != null;
-        return new GulpCustomizerPanel(category, project);
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org.netbeans.modules.web.clientproject", // NOI18N
-            position = 366)
-    public static GulpCustomizerProvider forHtml5Project() {
-        return new GulpCustomizerProvider();
+        return new PhingCustomizerPanel(category, project);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-php-project", // NOI18N
-            position = 401)
+            position = 380)
     public static ProjectCustomizer.CompositeCategoryProvider forPhpProject() {
-        return new GulpCustomizerProvider();
+        return new PhingCustomizerProvider();
     }
-
-    // not ready for it yet (requires support for Build etc. actions)
-    /*@ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-web-project", // NOI18N
-            position = 381)
-    public static ProjectCustomizer.CompositeCategoryProvider forWebProject() {
-        return new GulpCustomizerProvider();
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-maven", // NOI18N
-            position = 501)
-    public static ProjectCustomizer.CompositeCategoryProvider forMavenProject() {
-        return new GulpCustomizerProvider();
-    }*/
 
 }

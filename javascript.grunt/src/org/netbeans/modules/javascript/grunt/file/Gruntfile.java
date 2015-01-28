@@ -74,7 +74,7 @@ public final class Gruntfile {
         assert directory != null;
         assert directory.isFolder() : "Must be folder: " + directory;
         this.directory = directory;
-        this.directory.addFileChangeListener(directoryListener);
+        FileUtil.addFileChangeListener(directoryListener, FileUtil.toFile(directory));
     }
 
     public boolean exists() {
