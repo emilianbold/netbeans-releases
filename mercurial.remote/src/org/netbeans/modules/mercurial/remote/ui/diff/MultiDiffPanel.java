@@ -288,6 +288,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         prepareTask = Mercurial.getInstance().getRequestProcessor().post(dpt);
     }
 
+    final VCSFileProxy getRoot() {
+        return root;
+    }
+    
     private void replaceVerticalSplitPane(JComponent replacement) {
         removeAll();
         splitPane = null;

@@ -100,7 +100,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         return new AbstractRenderDataProvider() {
             @Override
             protected String annotateName (DiffNode node, String originalLabel) {
-                if (HgModuleConfig.getDefault(root).isExcludedFromCommit(node.getSetup().getBaseFile().getPath())) {
+                if (HgModuleConfig.getDefault(master.getRoot()).isExcludedFromCommit(node.getSetup().getBaseFile().getPath())) {
                     originalLabel = "<s>" + (originalLabel == null ? node.getName() : originalLabel) + "</s>"; //NOI18N
                 }
                 return originalLabel;

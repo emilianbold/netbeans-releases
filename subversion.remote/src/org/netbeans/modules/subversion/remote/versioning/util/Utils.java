@@ -43,10 +43,8 @@ package org.netbeans.modules.subversion.remote.versioning.util;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,11 +52,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -69,55 +63,6 @@ public class Utils {
     private static Map<VCSFileProxy, Charset> fileToCharset;
 
 
-    /**
-     * Checks if the file is to be considered as textuall.
-     *
-     * @param file file to check
-     * @return true if the file can be edited in NetBeans text editor, false otherwise
-     */
-    public static boolean isFileContentText(VCSFileProxy file) {
-        FileObject fo = file.toFileObject();
-        if (fo == null) {
-            return false;
-        }
-        if (fo.getMIMEType().startsWith("text")) { // NOI18N
-            return true;
-        }
-        try {
-            DataObject dao = DataObject.find(fo);
-            return dao.getLookup().lookupItem(new Lookup.Template<>(EditorCookie.class)) != null;
-        } catch (DataObjectNotFoundException e) {
-            // not found, continue
-        }
-        return false;
-    }
-    
-    /**
-     * Searches for common filesystem parent folder for given files.
-     *
-     * @param a first file
-     * @param b second file
-     * @return File common parent for both input files with the longest
-     * filesystem path or null of these files have not a common parent
-     */
-    public static VCSFileProxy getCommonParent(VCSFileProxy a, VCSFileProxy b) {
-        for (;;) {
-            if (a.equals(b)) {
-                return a;
-            } else if (a.getPath().length() > b.getPath().length()) {
-                a = a.getParentFile();
-                if (a == null) {
-                    return null;
-                }
-            } else {
-                b = b.getParentFile();
-                if (b == null) {
-                    return null;
-                }
-            }
-        }
-    }
-    
     /**
      * Retrieves the Charset for the referenceFile and associates it weakly with
      * the given file. A following getAssociatedEncoding() call for the file
@@ -171,29 +116,6 @@ public class Utils {
         }
     }
 
-    /**
-     * @param file
-     * @return Set<File> all files that belong to the same DataObject as the
-     * argument
-     */
-    public static Set<VCSFileProxy> getAllDataObjectFiles(VCSFileProxy file) {
-        Set<VCSFileProxy> filesToCheckout = new HashSet<>(2);
-        filesToCheckout.add(file);
-        FileObject fo = file.toFileObject();
-        if (fo != null) {
-            try {
-                DataObject dao = DataObject.find(fo);
-                Set<FileObject> fileObjects = dao.files();
-                for (FileObject fileObject : fileObjects) {
-                    filesToCheckout.add(VCSFileProxy.createFileProxy(fileObject));
-                }
-            } catch (DataObjectNotFoundException e) {
-                // no dataobject, never mind
-            }
-        }
-        return filesToCheckout;
-    }
-    
     /**
      * Helper method to get an array of Strings from preferences.
      *

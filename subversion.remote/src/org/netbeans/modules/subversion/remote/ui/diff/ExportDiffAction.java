@@ -316,7 +316,7 @@ public class ExportDiffAction extends ContextAction {
             root = root.getParentFile();
         }
         for (int i = 1; i < files.length; i++) {
-            root = org.netbeans.modules.subversion.remote.versioning.util.Utils.getCommonParent(root, files[i]);
+            root = VCSFileProxySupport.getCommonParent(root, files[i]);
             if (root == null) {
                 return null;
             }

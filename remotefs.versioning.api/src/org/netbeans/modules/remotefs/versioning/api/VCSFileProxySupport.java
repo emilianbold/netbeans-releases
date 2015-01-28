@@ -67,7 +67,7 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.openide.cookies.OpenCookie;
+import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -75,6 +75,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -732,6 +733,79 @@ public final class VCSFileProxySupport {
         }
         return null;
     }
+    
+    /**
+     * @param file
+     * @return Set<File> all files that belong to the same DataObject as the
+     * argument
+     */
+    public static Set<VCSFileProxy> getAllDataObjectFiles(VCSFileProxy file) {
+        Set<VCSFileProxy> filesToCheckout = new HashSet<>(2);
+        filesToCheckout.add(file);
+        FileObject fo = file.toFileObject();
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                Set<FileObject> fileObjects = dao.files();
+                for (FileObject fileObject : fileObjects) {
+                    filesToCheckout.add(VCSFileProxy.createFileProxy(fileObject));
+                }
+            } catch (DataObjectNotFoundException e) {
+                // no dataobject, never mind
+            }
+        }
+        return filesToCheckout;
+    }
+    
+    /**
+     * Searches for common filesystem parent folder for given files.
+     *
+     * @param a first file
+     * @param b second file
+     * @return File common parent for both input files with the longest
+     * filesystem path or null of these files have not a common parent
+     */
+    public static VCSFileProxy getCommonParent(VCSFileProxy a, VCSFileProxy b) {
+        for (;;) {
+            if (a.equals(b)) {
+                return a;
+            } else if (a.getPath().length() > b.getPath().length()) {
+                a = a.getParentFile();
+                if (a == null) {
+                    return null;
+                }
+            } else {
+                b = b.getParentFile();
+                if (b == null) {
+                    return null;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Checks if the file is to be considered as textuall.
+     *
+     * @param file file to check
+     * @return true if the file can be edited in NetBeans text editor, false otherwise
+     */
+    public static boolean isFileContentText(VCSFileProxy file) {
+        FileObject fo = file.toFileObject();
+        if (fo == null) {
+            return false;
+        }
+        if (fo.getMIMEType().startsWith("text")) { // NOI18N
+            return true;
+        }
+        try {
+            DataObject dao = DataObject.find(fo);
+            return dao.getLookup().lookupItem(new Lookup.Template<>(EditorCookie.class)) != null;
+        } catch (DataObjectNotFoundException e) {
+            // not found, continue
+        }
+        return false;
+    }
+    
 
 //</editor-fold>
     
