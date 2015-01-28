@@ -872,8 +872,8 @@ public final class Terminal extends JComponent {
     }
     
     private boolean isPinnable() {
-	Object clientProperty = this.getClientProperty("pinAction");
-	return clientProperty != null && clientProperty.equals("enabled");
+	Object clientProperty = this.getClientProperty("pinAction"); //NOI18N
+	return clientProperty != null && clientProperty.equals("enabled"); //NOI18N
     }
 
     /* 
