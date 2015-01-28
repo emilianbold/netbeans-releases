@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.gulp.file;
+package org.netbeans.modules.php.phing.file;
 
 import java.io.File;
 import java.util.logging.Level;
@@ -51,26 +51,24 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.util.ChangeSupport;
 
-@MIMEResolver.Registration(displayName = "Gulpfile", resource = "../resources/gulpfile-resolver.xml", position = 122)
-public final class Gulpfile {
+public final class BuildXml {
 
-    private static final Logger LOGGER = Logger.getLogger(Gulpfile.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BuildXml.class.getName());
 
-    public static final String FILE_NAME = "gulpfile.js"; // NOI18N
+    public static final String FILE_NAME = "build.xml"; // NOI18N
 
     private final FileObject directory;
     private final FileChangeListener directoryListener = new DirectoryListener();
-    private final FileChangeListener gulpfileListener = new GulpfileListener();
+    private final FileChangeListener buildXmlListener = new BuildXmlListener();
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     // @GuardedBy("this")
-    private File gulpfile;
+    private File buildXml;
 
 
-    public Gulpfile(FileObject directory) {
+    public BuildXml(FileObject directory) {
         assert directory != null;
         assert directory.isFolder() : "Must be folder: " + directory;
         this.directory = directory;
@@ -78,11 +76,11 @@ public final class Gulpfile {
     }
 
     public boolean exists() {
-        return getGulpfile().isFile();
+        return getBuildXml().isFile();
     }
 
     public File getFile() {
-        return getGulpfile();
+        return getBuildXml();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -93,32 +91,32 @@ public final class Gulpfile {
         changeSupport.removeChangeListener(listener);
     }
 
-    private synchronized File getGulpfile() {
-        if (gulpfile == null) {
-            gulpfile = new File(FileUtil.toFile(directory), FILE_NAME);
+    private synchronized File getBuildXml() {
+        if (buildXml == null) {
+            buildXml = new File(FileUtil.toFile(directory), FILE_NAME);
             try {
-                FileUtil.addFileChangeListener(gulpfileListener, gulpfile);
-                LOGGER.log(Level.FINE, "Started listening to {0}", gulpfile);
+                FileUtil.addFileChangeListener(buildXmlListener, buildXml);
+                LOGGER.log(Level.FINE, "Started listening to {0}", buildXml);
             } catch (IllegalArgumentException ex) {
                 // ignore, already listening
-                LOGGER.log(Level.FINE, "Already listening to {0}", gulpfile);
+                LOGGER.log(Level.FINE, "Already listening to {0}", buildXml);
             }
         }
-        return gulpfile;
+        return buildXml;
     }
 
     void reset(boolean newFile) {
         if (newFile) {
             synchronized (this) {
-                if (gulpfile != null) {
+                if (buildXml != null) {
                     try {
-                        FileUtil.removeFileChangeListener(gulpfileListener, gulpfile);
-                        LOGGER.log(Level.FINE, "Stopped listening to {0}", gulpfile);
+                        FileUtil.removeFileChangeListener(buildXmlListener, buildXml);
+                        LOGGER.log(Level.FINE, "Stopped listening to {0}", buildXml);
                     } catch (IllegalArgumentException ex) {
                         // not listeneing yet, ignore
-                        LOGGER.log(Level.FINE, "Not listening yet to {0}", gulpfile);
+                        LOGGER.log(Level.FINE, "Not listening yet to {0}", buildXml);
                     }
-                    gulpfile = null;
+                    buildXml = null;
                 }
             }
         }
@@ -137,7 +135,7 @@ public final class Gulpfile {
 
     }
 
-    private final class GulpfileListener extends FileChangeAdapter {
+    private final class BuildXmlListener extends FileChangeAdapter {
 
         @Override
         public void fileDataCreated(FileEvent fe) {

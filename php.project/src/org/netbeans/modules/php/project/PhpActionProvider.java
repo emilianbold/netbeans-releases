@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.Action;
+import org.netbeans.modules.php.project.ui.actions.BuildToolsCommand;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.actions.CopyCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
@@ -77,10 +78,16 @@ import org.openide.util.Lookup;
  * @author Radek Matous
  */
 public class PhpActionProvider implements ActionProvider {
+
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+
+    private final PhpProject project;
     private final Map<String, Command> commands;
 
     PhpActionProvider(PhpProject project) {
+        assert project != null;
+        this.project = project;
+
         commands = new LinkedHashMap<>();
         Command[] commandArray = new Command[] {
             // project sensitive actions
@@ -97,6 +104,9 @@ public class PhpActionProvider implements ActionProvider {
             new CopyCommand(project),
             new MoveCommand(project),
             new RenameCommand(project),
+            new BuildToolsCommand(project, COMMAND_BUILD),
+            new BuildToolsCommand(project, COMMAND_CLEAN),
+            new BuildToolsCommand(project, COMMAND_REBUILD),
 
             // file sensitive actions
             new DownloadCommand(project),
@@ -124,12 +134,12 @@ public class PhpActionProvider implements ActionProvider {
             LifecycleManager.getDefault().saveAll();
         }
         if (!command.asyncCallRequired()) {
-            command.invokeAction(lookup);
+            runCommand(command, lookup);
         } else {
             submitTask(new Runnable() {
                 @Override
                 public void run() {
-                    command.invokeAction(lookup);
+                    runCommand(command, lookup);
                 }
             });
         }
@@ -138,6 +148,11 @@ public class PhpActionProvider implements ActionProvider {
     public static void submitTask(Runnable runnable) {
         assert runnable != null;
         EXECUTOR.submit(runnable);
+    }
+
+    void runCommand(Command command, Lookup lookup) {
+        tryBuildTools(command.getCommandId());
+        command.invokeAction(lookup);
     }
 
     @Override
@@ -160,4 +175,13 @@ public class PhpActionProvider implements ActionProvider {
         }
         return ProjectSensitiveActions.projectCommandAction(command.getCommandId(), ((Displayable) command).getDisplayName(), null);
     }
+
+    void tryBuildTools(String commandId) {
+        if (getCommand(commandId) instanceof BuildToolsCommand) {
+            return;
+        }
+        new BuildToolsCommand(project, commandId)
+                .tryBuild(false, true);
+    }
+
 }
