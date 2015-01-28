@@ -69,6 +69,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -80,8 +81,8 @@ public final class CompilerLineConvertor implements LineConvertor, ChangeListene
     private final OutputListenerRegistry registry;
     private static final Logger LOG = Logger.getLogger(CompilerLineConvertor.class.getName());
 
-    public CompilerLineConvertor(Project project, CompilerSet set, ExecutionEnvironment execEnv, FileObject relativeTo) {
-        registry = new OutputListenerRegistry(project);
+    public CompilerLineConvertor(Project project, CompilerSet set, ExecutionEnvironment execEnv, FileObject relativeTo, InputOutput io) {
+        registry = new OutputListenerRegistry(project, io);
         List<CompilerFlavor> flavors = getCompilerSet(set, execEnv);
         for(CompilerFlavor flavor : flavors) {
             try {

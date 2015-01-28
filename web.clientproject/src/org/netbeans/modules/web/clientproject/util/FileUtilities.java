@@ -142,11 +142,14 @@ public final class FileUtilities {
         }
         FileObject siteRootFolder = clientSideProject.getSiteRootFolder();
         if (siteRootFolder != null
-                && FileUtil.isParentOf(siteRootFolder, fileObject)) {
+                && FileUtil.isParentOf(siteRootFolder, fileObject)
+                // #250009
+                && !siteRootFolder.equals(sourcesFolder)) {
             return null;
         }
         FileObject testsSeleniumFolder = clientSideProject.getTestsSeleniumFolder(false);
-        if(testsSeleniumFolder != null && FileUtil.isParentOf(testsSeleniumFolder, fileObject)) {
+        if (testsSeleniumFolder != null
+                && FileUtil.isParentOf(testsSeleniumFolder, fileObject)) {
             // Hide Run/Debug File actions from javascript files under Selenium Tests Folder, as
             // more appropriate actions will be registered and handled by selenium support
             return null;

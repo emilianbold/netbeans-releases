@@ -49,6 +49,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -97,12 +98,11 @@ import org.netbeans.modules.mercurial.remote.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.ui.status.SyncFileNode;
+import org.netbeans.modules.remotefs.versioning.api.FileSelector;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.diff.DiffUtils;
-import org.netbeans.modules.versioning.util.FileSelector;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -224,50 +224,6 @@ public class HgUtils {
             out.add(replaceHttpPassword(s));
         } 
         return out;
-    }
-
-    /**
-     * isInUserPath - check if passed in name is on the Users PATH environment setting
-     *
-     * @param name to check
-     * @return boolean true - on PATH, false - not on PATH
-     */
-    public static boolean isInUserPath(String name) {
-        String path = findInUserPath(name);
-        return (path == null || path.equals(""))? false: true;
-    }
-
-        /**
-     * findInUserPath - check if passed in name is on the Users PATH environment setting and return the path
-     *
-     * @param name to check
-     * @return String full path to name
-     */
-    public static String findInUserPath(String... names) {
-        String pathEnv = System.getenv().get("PATH");// NOI18N
-        // Work around issues on Windows fetching PATH
-        if(pathEnv == null) {
-            pathEnv = System.getenv().get("Path");// NOI18N
-        }
-        if(pathEnv == null) {
-            pathEnv = System.getenv().get("path");// NOI18N
-        }
-        String pathSeparator = System.getProperty("path.separator");// NOI18N
-        if (pathEnv == null || pathSeparator == null) {
-            return "";
-        }
-
-        String[] paths = pathEnv.split(pathSeparator);
-        for (String path : paths) {
-            for (String name : names) {
-                VCSFileProxy f = new VCSFileProxy(path, name);
-                // On Windows isFile will fail on hgk.cmd use !isDirectory
-                if (f.exists() && !f.isDirectory()) {
-                    return path;
-                }
-            }
-        }
-        return "";
     }
 
     /**
@@ -1040,7 +996,7 @@ itor tabs #66700).
                     NbBundle.getMessage(HgUtils.class, "LBL_FileSelector_Title"),
                     NbBundle.getMessage(HgUtils.class, "FileSelector.jLabel1.text"),
                     new HelpCtx("org.netbeans.modules.mercurial.FileSelector"),
-                    HgModuleConfig.getDefault(root).getPreferences());
+                    HgModuleConfig.getDefault(repoRoots.iterator().next()).getPreferences());
             if(fs.show(repoRoots.toArray(new VCSFileProxy[repoRoots.size()]))) {
                 VCSFileProxy selection = fs.getSelectedFile();
                 List<VCSFileProxy> l = map.get(selection);
@@ -1265,7 +1221,7 @@ itor tabs #66700).
         List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
         for (int i = 0; i < all.length; i++) {
             VCSFileProxy file = all[i];
-            if (!testCommitExclusions || !HgModuleConfig.getDefault(root).isExcludedFromCommit(file.getPath())) {
+            if (!testCommitExclusions || !HgModuleConfig.getDefault(HgUtils.getRootFile(context)).isExcludedFromCommit(file.getPath())) {
                 files.add(file);
             }
         }
@@ -1405,27 +1361,37 @@ itor tabs #66700).
             VCSFileProxy fileToOpen, HgRevision revisionToOpen, boolean showAnnotations) throws IOException {
         VCSFileProxy file = org.netbeans.modules.mercurial.remote.VersionsCache.getInstance().getFileRevision(fileRevision1, revision1);
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
-            file = VCSFileProxy.createTempFile("tmp", "-" + fileRevision1.getName()); //NOI18N
-            file.deleteOnExit();
+            file = VCSFileProxySupport.createTempFile(fileToOpen, "tmp", "-" + fileRevision1.getName(), true); //NOI18N
         }
         fileRevision1 = file;
         
         file = org.netbeans.modules.mercurial.remote.VersionsCache.getInstance().getFileRevision(fileToOpen, revisionToOpen);
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
-            file = VCSFileProxy.createTempFile("tmp", "-" + fileToOpen.getName()); //NOI18N
-            file.deleteOnExit();
+            file = VCSFileProxySupport.createTempFile(fileToOpen, "tmp", "-" + fileToOpen.getName(), true); //NOI18N
         }
-        int matchingLine = DiffUtils.getMatchingLine(fileRevision1, file, lineNumber);
+        BufferedReader r1 = null;
+        BufferedReader r2 = null;
+        try {
+            r1 = new BufferedReader(new InputStreamReader(fileRevision1.getInputStream(false)));
+            r2 = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+            int matchingLine = DiffUtils.getMatchingLine(r1, r2, lineNumber);
+            openFile(file, fileToOpen, matchingLine, revisionToOpen, showAnnotations);
+        } finally {
+            if (r1 != null) {
+                r1.close();
+            }
+            if (r2 != null) {
+                r2.close();
+            }
+        }
         
-        openFile(file, fileToOpen, matchingLine, revisionToOpen, showAnnotations);
     }
     
     public static void openInRevision (VCSFileProxy originalFile, int lineNumber, HgRevision revision, boolean showAnnotations) throws IOException {
         VCSFileProxy file = org.netbeans.modules.mercurial.remote.VersionsCache.getInstance().getFileRevision(originalFile, revision);
 
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
-            file = VCSFileProxy.createTempFile("tmp", "-" + originalFile.getName()); //NOI18N
-            file.deleteOnExit();
+            file = VCSFileProxySupport.createTempFile(originalFile, "tmp", "-" + originalFile.getName(), true); //NOI18N
         }
         openFile(file, originalFile, lineNumber, revision, showAnnotations);
     }
@@ -1493,8 +1459,11 @@ itor tabs #66700).
     }
 
     public static boolean isRepositoryLocked (VCSFileProxy repository) {
-        String[] locks = getHgFolderForRoot(repository).list();
-        return locks != null && Arrays.asList(locks).contains(WLOCK_FILE);
+        List<String> locks = new ArrayList<String>();
+        for(VCSFileProxy file : getHgFolderForRoot(repository).listFiles()) {
+            locks.add(file.getPath());
+        }
+        return locks.contains(WLOCK_FILE);
     }
 
     public static boolean contains (Collection<VCSFileProxy> roots, VCSFileProxy file) {
@@ -1790,7 +1759,7 @@ itor tabs #66700).
         for (int i = 0; i < nodes.length; i++) {
             HgFileNode node = nodes[i];
             VCSFileProxy file = node.getFile();
-            if (HgModuleConfig.getDefault(root).isExcludedFromCommit(file.getPath())) {
+            if (HgModuleConfig.getDefault(file).isExcludedFromCommit(file.getPath())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
                 switch (node.getInformation().getStatus()) {
@@ -1822,7 +1791,7 @@ itor tabs #66700).
      * Asynchronously tests if hg is available and if positive runs the given runnable in AWT.
      * @param runnable 
      */
-    public static void runIfHgAvailable (final Runnable runnable) {
+    public static void runIfHgAvailable (final VCSFileProxy root, final Runnable runnable) {
         Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
@@ -1970,7 +1939,9 @@ itor tabs #66700).
                         Mercurial.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
                     }
                     indexingFiles.set(new HashSet<VCSFileProxy>(Arrays.asList(files)));
-                    return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
+                    // TODO: see bug #250064
+                    //return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
+                    return null;
                 } finally {
                     indexingFiles.remove();
                 }

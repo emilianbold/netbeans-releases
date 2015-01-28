@@ -50,8 +50,8 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -77,6 +77,6 @@ public class CloneCompleted {
             return;
         }
         // open project selection
-        ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
+        org.netbeans.modules.remotefs.versioning.api.ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
     }
 }

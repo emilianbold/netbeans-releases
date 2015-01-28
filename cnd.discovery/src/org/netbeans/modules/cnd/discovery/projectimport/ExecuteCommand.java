@@ -184,7 +184,7 @@ public class ExecuteCommand {
         }
         traceExecutable(executable, buildDir, args, execEnv.toString(), mm.toMap());
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
-                new CompilerLineConvertor(project, getCompilerSet(), execEnv, RemoteFileUtil.getFileObject(buildDir, execEnv)), syncWorker); // NOI18N
+                new CompilerLineConvertor(project, getCompilerSet(), execEnv, RemoteFileUtil.getFileObject(buildDir, execEnv), inputOutput), syncWorker); // NOI18N
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setExecutable(executable).
