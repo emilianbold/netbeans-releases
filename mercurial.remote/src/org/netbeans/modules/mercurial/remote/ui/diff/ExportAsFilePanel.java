@@ -50,7 +50,7 @@ package org.netbeans.modules.mercurial.remote.ui.diff;
 
 import java.awt.event.ActionListener;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiffPanel;
+import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport.AbstractExportDiffPanel;
 
 /**
  *

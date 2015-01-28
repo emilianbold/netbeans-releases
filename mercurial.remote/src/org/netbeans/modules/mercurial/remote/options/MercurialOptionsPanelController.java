@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import javax.swing.JFileChooser;
 import javax.swing.JButton;
 import java.util.ArrayList;
@@ -58,7 +59,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.MercurialAnnotator;
@@ -67,7 +71,6 @@ import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -75,18 +78,34 @@ import static org.netbeans.modules.mercurial.remote.util.HgCommand.HG_COMMAND;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
+import org.openide.filesystems.FileSystem;
 
 final class MercurialOptionsPanelController extends OptionsPanelController implements ActionListener, VCSOptionsKeywordsProvider {
     
     private MercurialPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
-    
+    private FileSystem fileSystem;
+        
     public MercurialOptionsPanelController() {
+
+        fileSystem = VCSFileProxySupport.getDefaultFileSystem();
+        FileSystem[] fileSystems = VCSFileProxySupport.getFileSystems();
 
         panel = new MercurialPanel(this);
         panel.execPathBrowseButton.addActionListener(this);
         panel.exportFilenameBrowseButton.addActionListener(this);
+        panel.cbBuildHost.addActionListener(this);
+        panel.cbBuildHost.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof FileSystem) {
+                    value = ((FileSystem)value).getDisplayName();
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+        panel.cbBuildHost.setModel(new DefaultComboBoxModel(fileSystems));
 
         String tooltip = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.annotationTextField.toolTipText", MercurialAnnotator.LABELS); // NOI18N
 
@@ -95,6 +114,15 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         panel.manageButton.addActionListener(this);
     }
 
+    VCSFileProxy getRoot() {
+        return VCSFileProxy.createFileProxy(getFS().getRoot());
+    }
+
+    FileSystem getFS() {
+        fileSystem = (FileSystem) panel.cbBuildHost.getSelectedItem();
+        return fileSystem;
+    }
+    
     @Override
     public void update() {
         getPanel().load();
@@ -168,18 +196,18 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
 
     private VCSFileProxy getExportFile() {
         String execPath = panel.exportFilenameTextField.getText();
-        return FileUtil.normalizeFile(new VCSFileProxy(execPath));
+        return VCSFileProxySupport.getResource(getRoot(), execPath).normalizeFile();
     }
 
     private VCSFileProxy getExecutableFile() {
         String execPath = panel.executablePathTextField.getText();
-        return FileUtil.normalizeFile(new VCSFileProxy(execPath));
+        return VCSFileProxySupport.getResource(getRoot(), execPath).normalizeFile();
     }
 
     private boolean validateFields() {
         getPanel().showError(null);
         String username = panel.userNameTextField.getText();
-        if (!HgModuleConfig.getDefault(root).isUserNameValid(username)) {
+        if (!HgModuleConfig.getDefault(getRoot()).isUserNameValid(username)) {
             getPanel().showError(NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_USER_NAME_TEXT")); //NOI18N
             return false;
         }
@@ -191,7 +219,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         if (hgExecutableParent == null) {
             hgExecutableParent = execpath;
         }
-        if (!HgModuleConfig.getDefault(root).isExecPathValid(hgExecutableParent)) {
+        if (!HgModuleConfig.getDefault(getRoot()).isExecPathValid(hgExecutableParent)) {
             getPanel().showError(NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT")); //NOI18N
             return false;
         }
@@ -332,7 +360,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }        
     
     private void onManageClick() {
-        final PropertiesPanel panel = new PropertiesPanel();
+        final PropertiesPanel panel = new PropertiesPanel(getFS());
 
         final PropertiesTable propTable;
 

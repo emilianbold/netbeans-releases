@@ -122,7 +122,10 @@ public class HgModuleConfig {
     private final FileSystem fileSystem;
 
     public static synchronized HgModuleConfig getDefault(VCSFileProxy root) {
-        FileSystem fileSystem = VCSFileProxySupport.getFileSystem(root);
+        FileSystem fileSystem = null;
+        if (root != null) {
+            fileSystem = VCSFileProxySupport.getFileSystem(root);
+        }
         HgModuleConfig res = INSTANCE.get(fileSystem);
         if (res == null) {
             res = new HgModuleConfig(fileSystem);

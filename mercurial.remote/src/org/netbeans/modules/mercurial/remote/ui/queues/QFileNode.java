@@ -45,9 +45,9 @@ package org.netbeans.modules.mercurial.remote.ui.queues;
 import org.netbeans.modules.mercurial.remote.FileInformation;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.Mercurial;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSFileNode;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,13 +75,13 @@ public class QFileNode extends VCSFileNode<FileInformation> {
 
     @Override
     public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
-        if (withExclusions && HgModuleConfig.getDefault(root).isExcludedFromCommit(getFile().getAbsolutePath())) {
+        if (withExclusions && HgModuleConfig.getDefault(getRoot()).isExcludedFromCommit(getFile().getPath())) {
             return EXCLUDE;
         } else {
             if ((getInformation().getStatus() & (FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) != 0) {
                 return VCSCommitOptions.COMMIT_REMOVE;
             } else if ((getInformation().getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
-                return HgModuleConfig.getDefault(root).getExludeNewFiles() ? EXCLUDE : INCLUDE;
+                return HgModuleConfig.getDefault(getRoot()).getExludeNewFiles() ? EXCLUDE : INCLUDE;
             } else {
                 return INCLUDE;
             }

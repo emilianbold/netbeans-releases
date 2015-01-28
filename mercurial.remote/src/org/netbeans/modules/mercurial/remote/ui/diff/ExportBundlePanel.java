@@ -52,9 +52,9 @@ import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
+import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport.AbstractExportDiffPanel;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiffPanel;
 
 /**
  *
@@ -186,7 +186,7 @@ public class ExportBundlePanel extends JPanel {
     }
 
     private void setDefaultOutputFile() {
-        String folderName = HgModuleConfig.getDefault(root).getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault(root).getExportFolder()); // NOI18N
+        String folderName = HgModuleConfig.getDefault(repository).getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault(repository).getExportFolder()); // NOI18N
         String fileName = repository.getName(); //NOI18N
         VCSFileProxy file = VCSFileProxySupport.getResource(repository, folderName + "/" + fileName + ".hg"); //NOI18N
         p.setOutputFileText(file.getPath());

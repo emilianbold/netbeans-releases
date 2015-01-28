@@ -74,7 +74,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
     private void refreshFor(String... paths) {
         List<RemoteFileObjectBase> roots = new ArrayList<RemoteFileObjectBase>();
         for (String path : paths) {
-            RemoteFileObjectBase fo = findExistingParent(path);
+            RemoteFileObjectBase fo = findExistingFileObjectOrParent(path);
             if (fo != null) {
                 roots.add(fo);
             }
@@ -86,7 +86,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
         }
     }
 
-    private RemoteFileObjectBase findExistingParent(String path) {
+    private RemoteFileObjectBase findExistingFileObjectOrParent(String path) {
         while (true) {
             RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).findResource(path);
             if (fo != null) {
@@ -121,8 +121,9 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
 
-            FileObject baseDirFO = getFileObject(baseDir);
-            FileObject dataFileFO = getFileObject(baseDirFO, dataFile);
+            final FileObject baseDirFO = getFileObject(baseDir);
+            assertTrue("FileObject should be readable: " + baseDirFO, baseDirFO.canRead());
+            final FileObject dataFileFO = getFileObject(baseDirFO, dataFile);
             int hashCode = dataFileFO.hashCode();
             assertFalse("FileObject should not be writable: " + dataFileFO.getPath(), dataFileFO.canWrite());
 
@@ -167,9 +168,9 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
 
-            FileObject baseDirFO = getFileObject(baseDir);
-            FileObject dirLinkFO = getFileObject(baseDirFO, dirLink);
-            FileObject dataFileFO = getFileObject(dirLinkFO, dataFile);
+            final FileObject baseDirFO = getFileObject(baseDir);
+            final FileObject dirLinkFO = getFileObject(baseDirFO, dirLink);
+            final FileObject dataFileFO = getFileObject(dirLinkFO, dataFile);
 
             assertTrue("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
             CharSequence readContent = readFile(dataFileFO);
@@ -269,10 +270,8 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
 
-            FileObject realFO, linkFO;
-            
-            realFO = getFileObject(realFile);
-            linkFO = getFileObject(linkFile);
+            final FileObject realFO = getFileObject(realFile);
+            final FileObject linkFO = getFileObject(linkFile);
 
             assertTrue("FileObject should be writable: " + linkFO.getPath(), linkFO.canWrite());
             String content = "a quick brown fox...";

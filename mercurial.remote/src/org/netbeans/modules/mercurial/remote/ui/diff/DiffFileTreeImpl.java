@@ -47,7 +47,7 @@ import java.util.ResourceBundle;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
-import org.netbeans.modules.versioning.util.common.FileTreeView;
+import org.netbeans.modules.remotefs.versioning.util.common.FileTreeView;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -100,7 +100,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         return new AbstractRenderDataProvider() {
             @Override
             protected String annotateName (DiffNode node, String originalLabel) {
-                if (HgModuleConfig.getDefault(root).isExcludedFromCommit(node.getSetup().getBaseFile().getPath())) {
+                if (HgModuleConfig.getDefault(master.getRoot()).isExcludedFromCommit(node.getSetup().getBaseFile().getPath())) {
                     originalLabel = "<s>" + (originalLabel == null ? node.getName() : originalLabel) + "</s>"; //NOI18N
                 }
                 return originalLabel;

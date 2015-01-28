@@ -190,7 +190,7 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             String path = remoteDir+"/"+name;
             FileProxyO file = FileOperationsProvider.toFileProxy(path);
             assertTrue(fileOperations.exists(file));
-            assertEquals(entry.canWrite(execEnv), fileOperations.canWrite(file));
+            assertEquals(entry.canWrite(), fileOperations.canWrite(file));
             assertEquals(remoteDir, fileOperations.getDir(file));
             assertEquals(name, fileOperations.getName(file));
             assertEquals(path, fileOperations.getPath(file));

@@ -181,7 +181,7 @@ public class ShelveChangesAction extends ContextAction {
                 protected void perform () {
                     logger = getLogger();
                     filteredRoots = new HashSet<VCSFileProxy>(Arrays.asList(HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, true)));
-                    shelveChanges(filteredRoots.toArray(new VCSFileProxy[filteredRoots.size()]));
+                    //shelveChanges(filteredRoots.toArray(new VCSFileProxy[filteredRoots.size()]));
                 }
             };
             support.start(rp, root, NbBundle.getMessage(ShelveChangesAction.class, "LBL_ShelveChanges_Progress")); //NOI18N

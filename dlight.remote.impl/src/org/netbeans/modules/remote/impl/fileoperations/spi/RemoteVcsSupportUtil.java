@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -56,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fs.DirEntry;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
@@ -63,7 +62,6 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  * Static methods that are need for RemoteVcsSupportImpl
@@ -94,8 +92,8 @@ public class RemoteVcsSupportUtil {
                 return false;
             }
             try {
-                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.lstat(env, path);
-                return statInfo.isLink();
+                DirEntry entry = RemoteFileSystemTransport.lstat(env, path);
+                return entry.isLink();
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -130,9 +128,9 @@ public class RemoteVcsSupportUtil {
             throw new ConnectException(env.getDisplayName() + " not connected"); // NOI18N
         }
         try {
-            FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.lstat(env, path);
-            if (statInfo.isLink()) {
-                String target = statInfo.getLinkTarget();
+            DirEntry entry = RemoteFileSystemTransport.lstat(env, path);
+            if (entry.isLink()) {
+                String target = entry.getLinkTarget();
                 if (!target.startsWith("/")) { //NOI18N
                     target = PathUtilities.normalizeUnixPath(path + "/" + target); // NOI18N
                 }
@@ -156,8 +154,8 @@ public class RemoteVcsSupportUtil {
     public static boolean canReadImpl(RemoteFileSystem fileSystem, String path) {        
         try {
             ExecutionEnvironment env = fileSystem.getExecutionEnvironment();
-            FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, path);
-            return statInfo.canRead(env);
+            DirEntry entry = RemoteFileSystemTransport.stat(env, path);
+            return entry.canRead();
         } catch (InterruptedException ex) {
             return false; // TODO: is this correct?
         } catch (ExecutionException ex) {
@@ -176,8 +174,8 @@ public class RemoteVcsSupportUtil {
     public static long getSizeImpl(RemoteFileSystem fileSystem, String path) {
         try {
             ExecutionEnvironment env = fileSystem.getExecutionEnvironment();
-            FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, path);
-            return statInfo.getSize();
+            DirEntry entry = RemoteFileSystemTransport.stat(env, path);
+            return entry.getSize();
         } catch (InterruptedException ex) {
             return 0; // TODO: is this correct?
         } catch (ExecutionException ex) {
@@ -220,7 +218,7 @@ public class RemoteVcsSupportUtil {
     }
 
     private static void deleteExternally(ExecutionEnvironment env, String path) {
-        final ExitStatus res = ProcessUtils.execute(env, "rm", "-rf", path);
+        final ExitStatus res = ProcessUtils.execute(env, "rm", "-rf", path); // NOI18N
         if (!res.isOK()) {
             RemoteLogger.info("Error deleting {0}:{1} rc={2} {3}", env, path, res.exitCode, res.error); //NOI18N
         }
@@ -255,7 +253,7 @@ public class RemoteVcsSupportUtil {
         if (fs instanceof RemoteFileSystem) {
             final RemoteFileSystem rfs = (RemoteFileSystem) fs;
             final ExecutionEnvironment env = rfs.getExecutionEnvironment();
-            final ExitStatus res = ProcessUtils.execute(env, "touch", "-r", path, referenceFile);
+            final ExitStatus res = ProcessUtils.execute(env, "touch", "-r", path, referenceFile); // NOI18N
             if (res.isOK()) {
                 try {
                     String base1 = PathUtilities.getDirName(path);

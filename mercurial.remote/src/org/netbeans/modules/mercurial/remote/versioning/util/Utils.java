@@ -52,12 +52,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -176,54 +172,5 @@ public class Utils {
         }
         return set.toArray(new VCSFileProxy[set.size()]);
     }    
-    
-    /**
-     * Checks if the file is to be considered as textuall.
-     *
-     * @param file file to check
-     * @return true if the file can be edited in NetBeans text editor, false otherwise
-     */
-    public static boolean isFileContentText(VCSFileProxy file) {
-        FileObject fo = file.toFileObject();
-        if (fo == null) {
-            return false;
-        }
-        if (fo.getMIMEType().startsWith("text")) { // NOI18N
-            return true;
-        }
-        try {
-            DataObject dao = DataObject.find(fo);
-            return dao.getLookup().lookupItem(new Lookup.Template<EditorCookie>(EditorCookie.class)) != null;
-        } catch (DataObjectNotFoundException e) {
-            // not found, continue
-        }
-        return false;
-    }
-
-    /**
-     * Searches for common filesystem parent folder for given files.
-     *
-     * @param a first file
-     * @param b second file
-     * @return File common parent for both input files with the longest
-     * filesystem path or null of these files have not a common parent
-     */
-    public static VCSFileProxy getCommonParent(VCSFileProxy a, VCSFileProxy b) {
-        for (;;) {
-            if (a.equals(b)) {
-                return a;
-            } else if (a.getPath().length() > b.getPath().length()) {
-                a = a.getParentFile();
-                if (a == null) {
-                    return null;
-                }
-            } else {
-                b = b.getParentFile();
-                if (b == null) {
-                    return null;
-                }
-            }
-        }
-    }
-    
+   
 }

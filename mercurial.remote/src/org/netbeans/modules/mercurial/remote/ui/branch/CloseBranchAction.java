@@ -52,6 +52,7 @@ import org.netbeans.modules.mercurial.remote.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.util.HgCommand;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.DialogDisplayer;
@@ -134,7 +135,7 @@ public class CloseBranchAction extends ContextAction {
                             @Override
                             public void run () {
                                 SystemAction.get(CommitAction.class).closeBranch(branchName, ctx, 
-                                        NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.commit.title", new Object[] { branchName, getContextDisplayName(ctx) })); //NOI18N
+                                        NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.commit.title", new Object[] { branchName, VCSFileProxySupport.getContextDisplayName(ctx) })); //NOI18N
                             }
                         });
                     }
