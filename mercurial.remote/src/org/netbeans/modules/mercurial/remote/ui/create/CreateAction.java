@@ -166,7 +166,7 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
     }
     
     private void performCreate () {
-        HgUtils.runIfHgAvailable(new Runnable() {
+        HgUtils.runIfHgAvailable(rootFiles[0], new Runnable() {
             @Override
             public void run () {
                 final Mercurial hg = Mercurial.getInstance();

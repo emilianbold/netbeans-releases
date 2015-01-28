@@ -80,7 +80,6 @@ import org.netbeans.modules.mercurial.remote.ui.properties.PropertiesAction;
 import org.netbeans.modules.mercurial.remote.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.remote.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.remote.ui.update.UpdateAction;
-import org.netbeans.modules.mercurial.remote.ui.view.ViewAction;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -387,7 +386,6 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(new RemoteMenu(null));
                 actions.add(new RecoverMenu(null));
                 actions.add(null);
-                actions.add(SystemAction.get(ViewAction.class));
                 actions.add(SystemAction.get(PropertiesAction.class));
             }
             Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
