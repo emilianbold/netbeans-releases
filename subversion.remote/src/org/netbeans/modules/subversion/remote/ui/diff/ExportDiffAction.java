@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.remote.ui.diff;
 
+import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

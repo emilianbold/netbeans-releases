@@ -281,7 +281,7 @@ public class DiffStreamSource extends StreamSource {
                                 boolean created = false;
                                 try {
                                     if (encodingHolder.getParentFile().exists()) {
-                                        created = encodingHolder.createNewFile();
+                                        created = VCSFileProxySupport.createNew(encodingHolder);
                                         VCSFileProxySupport.associateEncoding(encodingHolder, newRemoteFile);
                                     }
                                 } catch (IOException ex) {
@@ -314,7 +314,7 @@ public class DiffStreamSource extends StreamSource {
         if (file == null) {
             return null;
         }
-        FileObject fileObj = FileUtil.toFileObject(file);
+        FileObject fileObj = file.toFileObject();
         if (fileObj != null) {
             try {
                 DataObject dao = DataObject.find(fileObj);

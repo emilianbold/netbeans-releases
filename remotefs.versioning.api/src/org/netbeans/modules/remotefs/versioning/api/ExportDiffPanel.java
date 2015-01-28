@@ -46,8 +46,9 @@
  * Created on Mar 6, 2009, 10:43:25 PM
  */
 
-package org.netbeans.modules.subversion.remote.ui.diff;
+package org.netbeans.modules.remotefs.versioning.api;
 
+import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
