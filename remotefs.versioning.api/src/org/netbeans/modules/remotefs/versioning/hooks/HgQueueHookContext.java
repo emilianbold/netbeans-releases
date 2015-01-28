@@ -37,23 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.versioning.hooks;
+package org.netbeans.modules.remotefs.versioning.hooks;
+
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondra Vrabec
  */
-public abstract class HgQueueHookFactory extends VCSHookFactory<HgQueueHook>{
+public final class HgQueueHookContext extends HgHookContext {
 
-    @Override
-    public abstract HgQueueHook createHook();
+    private final String patchId;
 
-    @Override
-    public Class<HgQueueHook> getHookType() {
-        return HgQueueHook.class;
+    public HgQueueHookContext (VCSFileProxy[] files, String msg, String patchId, LogEntry... entries) {
+        super(files, msg, entries);
+        this.patchId = patchId;
     }
 
+    public String getPatchId () {
+        return patchId;
+    }
 }

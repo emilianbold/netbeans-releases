@@ -37,27 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.versioning.hooks;
-
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+package org.netbeans.modules.remotefs.versioning.hooks;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class VCSHookContext {
+public abstract class VCSHookFactory<T extends VCSHook> {
 
-    private final VCSFileProxy[] files;
+    public abstract T createHook();
 
-    public VCSHookContext(VCSFileProxy[] files) {
-        this.files = files;
-    }
-
-    public VCSFileProxy[] getFiles() {
-        return files;
-    }
+    public abstract Class<T> getHookType();
     
 }

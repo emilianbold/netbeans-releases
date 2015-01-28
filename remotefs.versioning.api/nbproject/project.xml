@@ -186,6 +186,7 @@
                 <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <friend>org.netbeans.modules.subversion.remote</friend>
                 <package>org.netbeans.modules.remotefs.versioning.api</package>
+                <package>org.netbeans.modules.remotefs.versioning.hooks</package>
                 <package>org.netbeans.modules.remotefs.versioning.spi</package>
                 <package>org.netbeans.modules.remotefs.versioning.util.common</package>
                 <package>org.netbeans.modules.remotefs.versioning.util.status</package>

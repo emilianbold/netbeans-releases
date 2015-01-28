@@ -40,16 +40,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.versioning.hooks;
+package org.netbeans.modules.remotefs.versioning.hooks;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class VCSHookFactory<T extends VCSHook> {
+public abstract class HgQueueHookFactory extends VCSHookFactory<HgQueueHook>{
 
-    public abstract T createHook();
+    @Override
+    public abstract HgQueueHook createHook();
 
-    public abstract Class<T> getHookType();
-    
+    @Override
+    public Class<HgQueueHook> getHookType() {
+        return HgQueueHook.class;
+    }
+
 }

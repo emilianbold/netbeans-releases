@@ -44,10 +44,10 @@ package org.netbeans.modules.mercurial.remote.ui.queues;
 
 import java.util.List;
 import org.netbeans.modules.mercurial.remote.FileInformation;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSCommitTable;
+import org.netbeans.modules.remotefs.versioning.util.common.VCSCommitTableModel;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanelModifier;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSCommitTable;
-import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.openide.util.NbBundle;
 
 /**
