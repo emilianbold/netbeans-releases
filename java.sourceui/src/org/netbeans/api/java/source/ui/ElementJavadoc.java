@@ -123,6 +123,12 @@ public class ElementJavadoc {
     private volatile URL docURL = null;
     private volatile AbstractAction goToSource = null;
 
+    /** Non-normative notes about the API. Usually used for examples. */
+    private static final String APINOTE_TAG = "@apiNote"; //NOI18N
+    /** Describes required behaviour of conforming implementations. Key is that the description is not inherited. */
+    private static final String IMPLSPEC_TAG = "@implSpec"; //NOI18N
+    /** Non-normative notes about the implementation. Typically used for descriptions of the behaviour. Also not inherited. */
+    private static final String IMPLNOTE_TAG = "@implNote"; //NOI18N
     private static final String PARAM_TAG = "@param"; //NOI18N
     private static final String RETURN_TAG = "@return"; //NOI18N
     private static final String THROWS_TAG = "@throws"; //NOI18N
@@ -1089,10 +1095,19 @@ public class ElementJavadoc {
                 thr.append("<br>"); //NOI18N
             }
         }
+        StringBuilder apiNote = new StringBuilder();
+        StringBuilder implSpec = new StringBuilder();
+        StringBuilder implNote = new StringBuilder();
         StringBuilder see = new StringBuilder();
         StringBuilder since = null;
         for (Tag tag : doc.tags()) {
-            if (SEE_TAG.equals(tag.kind())) {
+            if (APINOTE_TAG.equals(tag.kind())) {
+                apiNote.append(inlineTags(doc, tag.inlineTags(), ctx));
+            } else if (IMPLSPEC_TAG.equals(tag.kind())) {
+                implSpec.append(inlineTags(doc, tag.inlineTags(), ctx));
+            } else if (IMPLNOTE_TAG.equals(tag.kind())) {
+                implNote.append(inlineTags(doc, tag.inlineTags(), ctx));
+            } else if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
                 ClassDoc refClass = stag.referencedClass();
                 PackageDoc refPackage = stag.referencedPackage();
@@ -1129,6 +1144,15 @@ public class ElementJavadoc {
             }
         }
         StringBuilder sb = new StringBuilder();
+        if (apiNote.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-apinote")).append("</b><blockquote>").append(apiNote).append("</blockquote>"); //NOI18N
+        }
+        if (implSpec.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-implspec")).append("</b><blockquote>").append(implSpec).append("</blockquote>"); //NOI18N
+        }
+        if (implNote.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-implnote")).append("</b><blockquote>").append(implNote).append("</blockquote>"); //NOI18N
+        }
         if (par.length() > 0) {
             sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-params")).append("</b><blockquote>").append(par).append("</blockquote>"); //NOI18N
         }
@@ -1156,9 +1180,18 @@ public class ElementJavadoc {
         StringBuilder par = new StringBuilder();
         StringBuilder thr = new StringBuilder();
         StringBuilder ret = new StringBuilder();
+        StringBuilder apiNote = new StringBuilder();
+        StringBuilder implSpec = new StringBuilder();
+        StringBuilder implNote = new StringBuilder();
         StringBuilder since = null;
         for (Tag tag : doc.tags()) {
-            if (PARAM_TAG.equals(tag.kind()) && !doc.isMethod()) {
+            if (APINOTE_TAG.equals(tag.kind())) {
+                apiNote.append(inlineTags(doc, tag.inlineTags(), ctx));
+            } else if (IMPLSPEC_TAG.equals(tag.kind())) {
+                implSpec.append(inlineTags(doc, tag.inlineTags(), ctx));
+            } else if (IMPLNOTE_TAG.equals(tag.kind())) {
+                implNote.append(inlineTags(doc, tag.inlineTags(), ctx));
+            } else if (PARAM_TAG.equals(tag.kind()) && !doc.isMethod()) {
                 par.append("<code>").append(((ParamTag)tag).parameterName()).append("</code>"); //NOI18N
                 Tag[] its = tag.inlineTags();
                 if (its.length > 0) {
@@ -1220,6 +1253,15 @@ public class ElementJavadoc {
             }
         }
         StringBuilder sb = new StringBuilder();
+        if (apiNote.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-apinote")).append("</b><blockquote>").append(apiNote).append("</blockquote>"); //NOI18N
+        }
+        if (implSpec.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-implspec")).append("</b><blockquote>").append(implSpec).append("</blockquote>"); //NOI18N
+        }
+        if (implNote.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-implnote")).append("</b><blockquote>").append(implNote).append("</blockquote>"); //NOI18N
+        }
         if (par.length() > 0) {
             sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-params")).append("</b><blockquote>").append(par).append("</blockquote>"); //NOI18N
         }
