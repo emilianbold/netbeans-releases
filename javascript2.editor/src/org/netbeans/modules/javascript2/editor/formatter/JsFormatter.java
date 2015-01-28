@@ -934,16 +934,22 @@ public class JsFormatter implements Formatter {
                     // handles continuation before object literal (issue #227007)
                     // find token before object, ignoring WS and EOL
                     FormatToken tokenBeforeObject = previous.previous();
-                    while (tokenBeforeObject.getKind() == FormatToken.Kind.WHITESPACE
-                            || tokenBeforeObject.getKind() == FormatToken.Kind.EOL) {
+                    while (tokenBeforeObject != null
+                            && (tokenBeforeObject.getKind() == FormatToken.Kind.WHITESPACE
+                            || tokenBeforeObject.getKind() == FormatToken.Kind.EOL)) {
                         tokenBeforeObject = tokenBeforeObject.previous();
                     }
                     // if we have an object literal as function argument
                     // or it's assigned to a variable, indent it according to the settings
-                    if (tokenBeforeObject.getKind() == FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT
-                            || tokenBeforeObject.getKind() == FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR_WRAP
-                            || tokenBeforeObject.getKind() == FormatToken.Kind.AFTER_WITH_PARENTHESIS) {
-                        return CodeStyle.get(formatContext).toHolder().objectLiteralContinuation;
+                    if (tokenBeforeObject != null) {
+                        switch (tokenBeforeObject.getKind()) {
+                            case BEFORE_FUNCTION_CALL_ARGUMENT:
+                            case AFTER_ASSIGNMENT_OPERATOR:
+                            case AFTER_ASSIGNMENT_OPERATOR_WRAP:
+                            case AFTER_WITH_PARENTHESIS:
+                            case AFTER_TERNARY_OPERATOR:
+                                return CodeStyle.get(formatContext).toHolder().objectLiteralContinuation;
+                        }
                     }
                 }
             } else if (JsTokenId.BRACKET_RIGHT_CURLY == nonVirtualNext.getId()
