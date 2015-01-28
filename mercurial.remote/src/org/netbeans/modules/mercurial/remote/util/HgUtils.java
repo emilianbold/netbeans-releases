@@ -227,50 +227,6 @@ public class HgUtils {
     }
 
     /**
-     * isInUserPath - check if passed in name is on the Users PATH environment setting
-     *
-     * @param name to check
-     * @return boolean true - on PATH, false - not on PATH
-     */
-    public static boolean isInUserPath(String name) {
-        String path = findInUserPath(name);
-        return (path == null || path.equals(""))? false: true;
-    }
-
-        /**
-     * findInUserPath - check if passed in name is on the Users PATH environment setting and return the path
-     *
-     * @param name to check
-     * @return String full path to name
-     */
-    public static String findInUserPath(String... names) {
-        String pathEnv = System.getenv().get("PATH");// NOI18N
-        // Work around issues on Windows fetching PATH
-        if(pathEnv == null) {
-            pathEnv = System.getenv().get("Path");// NOI18N
-        }
-        if(pathEnv == null) {
-            pathEnv = System.getenv().get("path");// NOI18N
-        }
-        String pathSeparator = System.getProperty("path.separator");// NOI18N
-        if (pathEnv == null || pathSeparator == null) {
-            return "";
-        }
-
-        String[] paths = pathEnv.split(pathSeparator);
-        for (String path : paths) {
-            for (String name : names) {
-                VCSFileProxy f = new VCSFileProxy(path, name);
-                // On Windows isFile will fail on hgk.cmd use !isDirectory
-                if (f.exists() && !f.isDirectory()) {
-                    return path;
-                }
-            }
-        }
-        return "";
-    }
-
-    /**
      * confirmDialog - display a confirmation dialog
      *
      * @param bundleLocation location of string resources to display
@@ -1265,7 +1221,7 @@ itor tabs #66700).
         List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
         for (int i = 0; i < all.length; i++) {
             VCSFileProxy file = all[i];
-            if (!testCommitExclusions || !HgModuleConfig.getDefault(root).isExcludedFromCommit(file.getPath())) {
+            if (!testCommitExclusions || !HgModuleConfig.getDefault(HgUtils.getRootFile(context)).isExcludedFromCommit(file.getPath())) {
                 files.add(file);
             }
         }
@@ -1493,8 +1449,11 @@ itor tabs #66700).
     }
 
     public static boolean isRepositoryLocked (VCSFileProxy repository) {
-        String[] locks = getHgFolderForRoot(repository).list();
-        return locks != null && Arrays.asList(locks).contains(WLOCK_FILE);
+        List<String> locks = new ArrayList<String>();
+        for(VCSFileProxy file : getHgFolderForRoot(repository).listFiles()) {
+            locks.add(file.getPath());
+        }
+        return locks.contains(WLOCK_FILE);
     }
 
     public static boolean contains (Collection<VCSFileProxy> roots, VCSFileProxy file) {
@@ -1790,7 +1749,7 @@ itor tabs #66700).
         for (int i = 0; i < nodes.length; i++) {
             HgFileNode node = nodes[i];
             VCSFileProxy file = node.getFile();
-            if (HgModuleConfig.getDefault(root).isExcludedFromCommit(file.getPath())) {
+            if (HgModuleConfig.getDefault(file).isExcludedFromCommit(file.getPath())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
                 switch (node.getInformation().getStatus()) {
@@ -1822,7 +1781,7 @@ itor tabs #66700).
      * Asynchronously tests if hg is available and if positive runs the given runnable in AWT.
      * @param runnable 
      */
-    public static void runIfHgAvailable (final Runnable runnable) {
+    public static void runIfHgAvailable (final VCSFileProxy root, final Runnable runnable) {
         Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
@@ -1970,7 +1929,9 @@ itor tabs #66700).
                         Mercurial.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
                     }
                     indexingFiles.set(new HashSet<VCSFileProxy>(Arrays.asList(files)));
-                    return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
+                    // TODO: see bug #250064
+                    //return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
+                    return null;
                 } finally {
                     indexingFiles.remove();
                 }

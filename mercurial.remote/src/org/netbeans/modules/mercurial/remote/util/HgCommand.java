@@ -96,7 +96,6 @@ import org.netbeans.modules.mercurial.remote.ui.queues.Queue;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.remote.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.mercurial.remote.ui.tag.HgTag;
-import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -253,9 +252,6 @@ public abstract class HgCommand<T> implements Callable<T> {
     private static final String HG_MERGE_ENV = "EDITOR=success || $TEST -s"; // NOI18N
     protected static final String HG_MERGE_SIMPLE_TOOL = "ui.merge=internal:merge"; //NOI18N
 
-    public static final String HG_HGK_PATH_SOLARIS10 = "/usr/demo/mercurial"; // NOI18N
-    private static final String HG_HGK_PATH_SOLARIS10_ENV = "PATH=/usr/bin/:/usr/sbin:/bin:"+ HG_HGK_PATH_SOLARIS10; // NOI18N
-
     private static final String HG_PULL_CMD = "pull"; // NOI18N
     private static final String HG_UPDATE_CMD = "-u"; // NOI18N
     private static final String HG_PUSH_CMD = "push"; // NOI18N
@@ -379,7 +375,6 @@ public abstract class HgCommand<T> implements Callable<T> {
     private static final String HG_LOG_CHANGESET_GENERAL_NAME = "changeset.tmpl"; //NOI18N
     private static final String HG_LOG_STYLE_NAME = "log.style";        //NOI18N
     private static final String HG_ARGUMENT_STYLE = "--style=";         //NOI18N
-    private static final int WINDOWS_MAX_COMMANDLINE_SIZE = 8000;
     private static final int MAC_MAX_COMMANDLINE_SIZE = 64000;
     private static final int UNIX_MAX_COMMANDLINE_SIZE = 128000;
     private static final int MAX_COMMANDLINE_SIZE;
@@ -1013,47 +1008,6 @@ public abstract class HgCommand<T> implements Callable<T> {
         List<String> retval = command.invoke();
 
         return retval;
-    }
-
-    /**
-     * Run the command hg view for the specified repository
-     *
-     * @param VCSFileProxy repository of the mercurial repository's root directory
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> doView(VCSFileProxy repository, OutputLogger logger) throws HgException {
-        if (repository == null) {
-            return null;
-        }
-        List<String> command = new ArrayList<String>();
-        List<String> env = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_VIEW_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getPath());
-
-        List<String> list;
-
-        if(VCSFileProxySupport.isSolaris(repository)){
-            env.add(HG_HGK_PATH_SOLARIS10_ENV);
-            list = execEnv(repository, command, env);
-        }else{
-            list = exec(repository, command);
-        }
-
-        if (!list.isEmpty()) {
-            if (isErrorNoView(list.get(list.size() -1))) {
-                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
-             }
-            else if (isErrorHgkNotFound(list.get(0)) || isErrorNoSuchFile(list.get(0))) {
-                OutputLogger.getLogger(repository).outputInRed(list.toString());
-                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
-            } else if (isErrorAbort(list.get(list.size() -1))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
-            }
-        }
-        return list;
     }
 
     @Override
@@ -4004,14 +3958,14 @@ public abstract class HgCommand<T> implements Callable<T> {
         logCommand(command);
         VCSFileProxy outputStyleFile = null;
         final String hgCommand = getHgCommandName(command); // command name
-        final VCSFileProxy repository = getRepositoryFromCommand(command, hgCommand);
+        final VCSFileProxy repository = getRepositoryFromCommand(command, hgCommand, repo);
         try {
             try {
                 outputStyleFile = createOutputStyleFile(command, repo);
             } catch (IOException ex) {
                 Mercurial.LOG.log(Level.WARNING, "Failed to create temporary file defining Hg output style."); //NOI18N
             }
-            final List<String> commandLine = toCommandList(command, outputStyleFile);
+            final List<String> commandLine = toCommandList(command, outputStyleFile, repo);
             //final ProcessBuilder pb = new ProcessBuilder(commandLine);
             final org.netbeans.api.extexecution.ProcessBuilder pb = VersioningSupport.createProcessBuilder(repo);
             pb.setExecutable(commandLine.get(0));
@@ -4264,7 +4218,7 @@ public abstract class HgCommand<T> implements Callable<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<String> toCommandList(List<? extends Object> cmdLine, VCSFileProxy styleFile) {
+    private static List<String> toCommandList(List<? extends Object> cmdLine, VCSFileProxy styleFile, VCSFileProxy repo) {
         if (cmdLine.isEmpty()) {
             return (List<String>) cmdLine;
         }
@@ -4277,7 +4231,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                 continue;
             }
             if (obj == HG_COMMAND_PLACEHOLDER) {
-                result.addAll(makeHgLauncherCommandLine());
+                result.addAll(makeHgLauncherCommandLine(repo));
             } else if (obj.getClass() == String.class) {
                 String str = (String) obj;
                 if (str.startsWith("--template=") && (styleFile != null)) { //NOI18N
@@ -4366,19 +4320,19 @@ public abstract class HgCommand<T> implements Callable<T> {
         return HG_COMMAND_PLACEHOLDER;
     }
 
-    private static List<String> makeHgLauncherCommandLine() {
-        String defaultPath = HgModuleConfig.getDefault(root).getExecutableBinaryPath();
+    private static List<String> makeHgLauncherCommandLine(VCSFileProxy repo) {
+        String defaultPath = HgModuleConfig.getDefault(repo).getExecutableBinaryPath();
 
         if (defaultPath == null || defaultPath.length() == 0) {
             return Collections.singletonList(HG_COMMAND);
         }
 
-        VCSFileProxy f = new VCSFileProxy(defaultPath);
+        VCSFileProxy f = VCSFileProxySupport.getResource(repo, defaultPath);
         VCSFileProxy launcherFile;
         if(f.isFile()) {
             launcherFile = f;
         } else {
-            launcherFile = new VCSFileProxy(f, HG_COMMAND);
+            launcherFile = VCSFileProxy.createFileProxy(f, HG_COMMAND);
         }
         String launcherPath = launcherFile.getPath();
 
@@ -4717,14 +4671,14 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @param commandList
      * @return
      */
-    private static VCSFileProxy getRepositoryFromCommand (List<? extends Object> commandList, String hgCommand) {
+    private static VCSFileProxy getRepositoryFromCommand (List<? extends Object> commandList, String hgCommand, VCSFileProxy repo) {
         VCSFileProxy repositoryFile = null;
         boolean isRepositoryArgument = false;
         for (ListIterator<? extends Object> it = commandList.listIterator(); it.hasNext(); ) {
             Object argument = it.next();
             if (isRepositoryArgument 
                     || HG_CLONE_CMD.equals(hgCommand) && !it.hasNext()) { // clone command has no --repository argument
-                repositoryFile = new VCSFileProxy(argument.toString());
+                repositoryFile = VCSFileProxySupport.getResource(repo, argument.toString());
                 break;
             } else if (HG_OPT_REPOSITORY.equals(argument)) { // repository path follows --repository option
                 isRepositoryArgument = true;

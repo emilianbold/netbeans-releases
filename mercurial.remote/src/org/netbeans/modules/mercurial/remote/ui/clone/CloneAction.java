@@ -111,15 +111,15 @@ public class CloneAction extends ContextAction {
 
     @Override
     protected void performContextAction (final Node[] nodes) {
-        HgUtils.runIfHgAvailable(new Runnable() {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        final VCSFileProxy roots[] = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) {
+            return;
+        }
+        HgUtils.runIfHgAvailable(roots[0], new Runnable() {
             @Override
             public void run () {
                 Utils.logVCSActionEvent("HG"); //NOI18N
-                VCSContext context = HgUtils.getCurrentContext(nodes);
-                final VCSFileProxy roots[] = HgUtils.getActionRoots(context);
-                if (roots == null || roots.length == 0) {
-                    return;
-                }
                 final VCSFileProxy root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
                 // Get unused Clone Folder name

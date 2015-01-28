@@ -47,11 +47,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.mercurial.remote.ui.wizards.CloneWizardAction;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 
@@ -73,7 +76,13 @@ import org.openide.util.NbBundle.Messages;
 public class CloneExternalAction implements ActionListener, HelpCtx.Provider {
     @Override
     public void actionPerformed(ActionEvent e) {
-        HgUtils.runIfHgAvailable(new Runnable() {
+        FileSystem[] fileSystems = VCSFileProxySupport.getFileSystems();
+        if (fileSystems == null || fileSystems.length == 0) {
+            return;
+        }
+        //TODO: provide way to select FS
+        VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
+        HgUtils.runIfHgAvailable(root, new Runnable() {
             @Override
             public void run () {
                 Utils.logVCSActionEvent("HG"); //NOI18N
