@@ -52,8 +52,6 @@ import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import org.netbeans.modules.versioning.hooks.VCSHook;
-import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,6 +64,8 @@ import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.BorderFactory.createEmptyBorder;
+import org.netbeans.modules.remotefs.versioning.hooks.VCSHook;
+import org.netbeans.modules.remotefs.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.versioning.util.common.SectionButton;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanelModifier;
 

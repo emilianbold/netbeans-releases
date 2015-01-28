@@ -136,8 +136,8 @@ public class QRefreshPatchAction extends CreateRefreshAction {
     }
 
     @Override
-    void persistCanceledCommitMessage (QCreatePatchParameters params, String canceledCommitMessage) {
-        HgModuleConfig.getDefault(root).setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + params.getPatch().getId(), canceledCommitMessage);
+    void persistCanceledCommitMessage (VCSFileProxy root, QCreatePatchParameters parameters, String canceledCommitMessage) {
+        HgModuleConfig.getDefault(root).setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + parameters.getPatch().getId(), canceledCommitMessage);
     }
     
 }

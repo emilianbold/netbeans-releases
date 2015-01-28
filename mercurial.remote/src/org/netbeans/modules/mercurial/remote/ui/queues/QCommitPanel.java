@@ -117,7 +117,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
             final String helpCtxId) {
         final Preferences preferences = HgModuleConfig.getDefault(roots[0]).getPreferences();
         List<String> recentUsers = getRecentUsers(repository);
-        final DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null, recentUsers);
+        final DefaultCommitParameters parameters = new QCreatePatchParameters(roots[0], preferences, commitMessage, null, recentUsers);
         final Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
         
         return Mutex.EVENT.readAccess(new Mutex.Action<QCommitPanel>() {
@@ -136,7 +136,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
             String commitMessage, final QPatch patch, final HgRevision parentRevision, final String helpCtxId) {
         final Preferences preferences = HgModuleConfig.getDefault(roots[0]).getPreferences();
         List<String> recentUsers = getRecentUsers(repository);
-        final DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch, recentUsers);
+        final DefaultCommitParameters parameters = new QCreatePatchParameters(roots[0], preferences, commitMessage, patch, recentUsers);
         final Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
         
         return Mutex.EVENT.readAccess(new Mutex.Action<QCommitPanel>() {
