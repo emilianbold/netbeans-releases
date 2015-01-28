@@ -65,6 +65,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOPosition;
+import org.openide.windows.IOSelect;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -234,8 +235,8 @@ public final class OutputListenerImpl implements OutputListener {
                 OutputListenerImpl impl = (OutputListenerImpl) listener;
                 String aDescription = impl.description;
                 List<Fix> fixes = new ArrayList<Fix>();
-                if (impl.ioPos != null) { // not null if scrolling is supported
-                    fixes.add(new ShowInOutputFix(impl.description, impl.ioPos));
+                if (IOPosition.isSupported(registry.getIO()) && IOSelect.isSupported(registry.getIO())) {
+                    fixes.add(new ShowInOutputFix(impl.description, registry.getIO(), impl.ioPos));
                 }
                 try {
                     if (impl.isError) {

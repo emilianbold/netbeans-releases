@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.execution;
 
+import java.util.EnumSet;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
@@ -58,11 +59,13 @@ public class ShowInOutputFix implements EnhancedFix {
 
     private static final int MAX_LENGTH = 50;
 
-    private final IOPosition.Position position;
     private final String description;
+    private final InputOutput io;
+    private final IOPosition.Position position;
 
-    public ShowInOutputFix(String description, IOPosition.Position position) {
+    public ShowInOutputFix(String description, InputOutput io, IOPosition.Position position) {
         this.description = description;
+        this.io = io;
         this.position = position;
     }
 
@@ -78,6 +81,7 @@ public class ShowInOutputFix implements EnhancedFix {
 
     @Override
     public ChangeInfo implement() throws Exception {
+        IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
         position.scrollTo();
 
         return null;
