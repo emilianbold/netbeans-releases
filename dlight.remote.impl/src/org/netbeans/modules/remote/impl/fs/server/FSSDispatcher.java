@@ -559,14 +559,14 @@ import org.openide.util.RequestProcessor;
             try {
                 HostInfo hi = HostInfoUtils.getHostInfo(env);
                 sb.append('(').append(hi.getOS().getName()).append(' ').append(hi.getCpuFamily()).append(' ');
-                sb.append(" - ").append(hi.getOS().getVersion()).append(')');
+                sb.append(" - ").append(hi.getOS().getVersion()).append(')'); // NOI18N
             } catch (ConnectionManager.CancellationException | IOException ex) {
                 Exceptions.printStackTrace(ex); // never occurs
             }
         }
         NativeProcess process = server.getProcess();
         if (process != null) {
-            sb.append(" rc=").append(process.exitValue()).append(' ');
+            sb.append(" rc=").append(process.exitValue()).append(' '); // NOI18N
         }
         sb.append(' ').append(lastErrorMessage.get());
         return sb.toString();

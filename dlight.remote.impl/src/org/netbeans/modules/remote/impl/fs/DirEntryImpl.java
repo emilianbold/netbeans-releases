@@ -224,13 +224,13 @@ public class DirEntryImpl extends DirEntry {
         String[] parts = externalForm.split(" +"); // NOI18N
         if (parts.length != 7 && parts.length != 8) {
             if (parts[2].length() != 1) {
-                throw new FormatException("Wrong format: " + externalForm, false); //NO18N
+                throw new FormatException("Wrong format: " + externalForm, false); // NOI18N
             }
         }
         String name = unescape(parts[0]);
         String cache = unescape(parts[1]);
         if (parts[2].length() != 1) {
-            throw new FormatException("Wrong file type format: " + externalForm, false); //NO18N
+            throw new FormatException("Wrong file type format: " + externalForm, false); // NOI18N
         }        
         FileInfoProvider.StatInfo.FileType type = FileInfoProvider.StatInfo.FileType.fromChar(parts[2].charAt(0));
         long size = Long.parseLong(parts[3]);
@@ -240,7 +240,7 @@ public class DirEntryImpl extends DirEntry {
                 ((access.charAt(0) != 'r' && access.charAt(0) != '-')) ||
                 ((access.charAt(1) != 'w' && access.charAt(1) != '-')) ||
                 ((access.charAt(2) != 'x' && access.charAt(2) != '-'))) {
-            throw new FormatException("Wrong file access format: " + externalForm, false); //NO18N
+            throw new FormatException("Wrong file access format: " + externalForm, false); // NOI18N
         }
         byte flags = 0;
         if (access.charAt(0) == 'r') {
@@ -284,8 +284,8 @@ public class DirEntryImpl extends DirEntry {
     @Override
     public String toString() {
         return name + ' ' + accessAsString() + ' ' + isDirectory() + ' ' + lastModified + ' ' 
-                + (isLink() ? " -> " + linkTarget : size) + 
-                " (" + getCache() + ')' + 
+                + (isLink() ? " -> " + linkTarget : size) + // NOI18N
+                " (" + getCache() + ')' + // NOI18N
                 (isValid() ? "[valid]" : "[invalid]"); // NOI18N
     }
 

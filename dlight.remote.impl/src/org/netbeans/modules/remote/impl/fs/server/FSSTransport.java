@@ -356,7 +356,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             buf.getChar(); // space
 
             if ((r  != 'r' && r != '-') || (w != 'w' && w != '-') || (x != 'x' && x != '-')) {
-                throw new IllegalStateException("Wrong file access format: " + buf); //NO18N
+                throw new IllegalStateException("Wrong file access format: " + buf); //NO18N // NOI18N
             }
             boolean canRead = r == 'r';
             boolean canWrite = w == 'w';
@@ -373,7 +373,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             return DirEntryImpl.create(name, size, mtime, canRead, canWrite, canExec,
                     type, device, inode, linkTarget);
         } catch (Throwable thr) {
-            throw new IllegalArgumentException("Error processing response " + pkg, thr);
+            throw new IllegalArgumentException("Error processing response " + pkg, thr); // NOI18N
         }
     }
     

@@ -218,7 +218,7 @@ public class RemoteVcsSupportUtil {
     }
 
     private static void deleteExternally(ExecutionEnvironment env, String path) {
-        final ExitStatus res = ProcessUtils.execute(env, "rm", "-rf", path);
+        final ExitStatus res = ProcessUtils.execute(env, "rm", "-rf", path); // NOI18N
         if (!res.isOK()) {
             RemoteLogger.info("Error deleting {0}:{1} rc={2} {3}", env, path, res.exitCode, res.error); //NOI18N
         }
@@ -253,7 +253,7 @@ public class RemoteVcsSupportUtil {
         if (fs instanceof RemoteFileSystem) {
             final RemoteFileSystem rfs = (RemoteFileSystem) fs;
             final ExecutionEnvironment env = rfs.getExecutionEnvironment();
-            final ExitStatus res = ProcessUtils.execute(env, "touch", "-r", path, referenceFile);
+            final ExitStatus res = ProcessUtils.execute(env, "touch", "-r", path, referenceFile); // NOI18N
             if (res.isOK()) {
                 try {
                     String base1 = PathUtilities.getDirName(path);
