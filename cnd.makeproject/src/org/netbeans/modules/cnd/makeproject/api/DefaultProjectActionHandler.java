@@ -291,7 +291,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             converter = new CompilerLineConvertor(
                     pae.getProject(), conf.getCompilerSet().getCompilerSet(),
-                    execEnv, RemoteFileUtil.getFileObject(runDirectory, pae.getProject()));
+                    execEnv, RemoteFileUtil.getFileObject(runDirectory, pae.getProject()), io);
         }
 
         // TODO: this is actual only for sun studio compiler

@@ -54,6 +54,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.EditorCookie;
@@ -63,6 +64,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOPosition;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -74,13 +76,15 @@ public final class OutputListenerImpl implements OutputListener {
     private final int line;
     private final boolean isError;
     private final String description;
+    private final IOPosition.Position ioPos;
 
-    public OutputListenerImpl(OutputListenerRegistry registry, FileObject file, int line, boolean isError, String description) {
+    public OutputListenerImpl(OutputListenerRegistry registry, FileObject file, int line, boolean isError, String description, IOPosition.Position ioPos) {
         this.registry = registry;
         this.file = file;
         this.line = line;
 	this.isError = isError;
         this.description = description;
+        this.ioPos = ioPos;
     }
 
     public int getLine() {
@@ -93,6 +97,10 @@ public final class OutputListenerImpl implements OutputListener {
 
     public FileObject getFile() {
         return file;
+    }
+
+    public IOPosition.Position getIOPos() {
+        return ioPos;
     }
  
     @Override
@@ -225,19 +233,23 @@ public final class OutputListenerImpl implements OutputListener {
             if (listener instanceof OutputListenerImpl) {
                 OutputListenerImpl impl = (OutputListenerImpl) listener;
                 String aDescription = impl.description;
+                List<Fix> fixes = new ArrayList<Fix>();
+                if (impl.ioPos != null) { // not null if scrolling is supported
+                    fixes.add(new ShowInOutputFix(impl.description, impl.ioPos));
+                }
                 try {
                     if (impl.isError) {
                         if (aDescription == null) {
                             aDescription = NbBundle.getMessage(OutputListenerImpl.class, "HINT_CompilerError"); // NOI18N
                         }
-                        errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, aDescription, doc, impl.line + 1));
+                        errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, aDescription, fixes, doc, impl.line + 1));
                     } else {
                         if (aDescription == null) {
                             aDescription = NbBundle.getMessage(OutputListenerImpl.class, "HINT_CompilerWarning"); // NOI18N
                         }
-                        errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, aDescription, doc, impl.line + 1));
+                        errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, aDescription, fixes, doc, impl.line + 1));
                     }
-                } catch( IndexOutOfBoundsException e ) {
+                } catch (IndexOutOfBoundsException e) {
                     //probably the document has been modified or
                     //compiler error parser detect wrong line
                 }

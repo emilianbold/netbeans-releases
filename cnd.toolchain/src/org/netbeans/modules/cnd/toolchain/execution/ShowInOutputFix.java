@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.toolchain.execution;
 
-package org.netbeans.modules.cnd.highlight.hints;
-
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOPosition;
+import org.openide.windows.IOProvider;
+import org.openide.windows.IOSelect;
+import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Alexander Simon
+ * @author igromov
  */
-public class DisableHintFix implements EnhancedFix {
-    private final CodeAuditInfo info;
+public class ShowInOutputFix implements EnhancedFix {
 
-    DisableHintFix(CodeAuditInfo error) {
-        this.info = error;
+    private static final int MAX_LENGTH = 50;
+
+    private final IOPosition.Position position;
+    private final String description;
+
+    public ShowInOutputFix(String description, IOPosition.Position position) {
+        this.description = description;
+        this.position = position;
     }
 
     @Override
     public String getText() {
-        return NbBundle.getMessage(DisableHintFix.class, "DisableHint") // NOI18N
-                .concat(" - ") // NOI18N
-                .concat(info.getAuditID());
+        String info = (description.length() > MAX_LENGTH)
+                ? description.substring(0, MAX_LENGTH).concat("...") // NOI18N
+                : description;
+        return NbBundle.getMessage(ShowInOutputFix.class, "HINT_ShowInLog") //NOI18N
+                .concat(" - ") //NOI18N
+                .concat(info);
     }
 
     @Override
     public ChangeInfo implement() throws Exception {
-        OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile/" + info.getProviderID() + "/" + info.getAuditID()); // NOI18N
+        position.scrollTo();
+
         return null;
     }
 
     @Override
     public CharSequence getSortText() {
-        //Hint opening options dialog should always be the lastest in offered list
-        return "\uFFFF";
-    }
-    
-    public static interface CodeAuditInfo {
-        String getProviderID();
-        String getAuditID();
+        return "\uAAAA";
     }
 }

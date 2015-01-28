@@ -224,7 +224,7 @@ public abstract class CompileRunActionBase extends AbstractExecutorRunAction {
                 }
             }
         };
-        CompilerLineConvertor compilerLineConvertor = new CompilerLineConvertor(project, compilerSet, execEnv, compileDirObject);
+        CompilerLineConvertor compilerLineConvertor = new CompilerLineConvertor(project, compilerSet, execEnv, compileDirObject, inputOutput);
         AbstractExecutorRunAction.ProcessChangeListener processChangeListener = new AbstractExecutorRunAction.ProcessChangeListener(listener, outputListener, compilerLineConvertor, syncWorker);
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
