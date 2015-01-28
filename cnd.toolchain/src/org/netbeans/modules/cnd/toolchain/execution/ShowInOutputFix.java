@@ -95,6 +95,6 @@ public class ShowInOutputFix implements EnhancedFix {
 
     @Override
     public CharSequence getSortText() {
-        return "\uAAAA";
+        return "\uAAAA"; //NOI18N
     }
 }
