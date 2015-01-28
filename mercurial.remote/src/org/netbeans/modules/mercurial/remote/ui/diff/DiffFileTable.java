@@ -549,7 +549,7 @@ class DiffFileTable implements FileViewComponent<DiffNode>, MouseListener, ListS
                        = DiffUtils.getHtmlDisplayName(nodes[modelRow],
                                                       isModified(modelRow),
                                                       isSelected);
-                if (HgModuleConfig.getDefault(root).isExcludedFromCommit(nodes[modelRow].getSetup().getBaseFile().getPath())) {
+                if (HgModuleConfig.getDefault(master.getRoot()).isExcludedFromCommit(nodes[modelRow].getSetup().getBaseFile().getPath())) {
                     htmlDisplayName = "<s>" + (htmlDisplayName == null ? nodes[modelRow].getName() : htmlDisplayName) + "</s>"; //NOI18N
                 }
                 if (htmlDisplayName != null) {

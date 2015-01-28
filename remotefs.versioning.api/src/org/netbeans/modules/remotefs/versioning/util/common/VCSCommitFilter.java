@@ -40,62 +40,30 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.remote.versioning.util;
+package org.netbeans.modules.remotefs.versioning.util.common;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileObject;
+import javax.swing.Icon;
 
 /**
- * Should be implemented by a particular VCS system and returned on a {@link FileObject#getAttribute(java.lang.String)}
- * call with the {@link #PROVIDED_EXTENSIONS_SEARCH_HISTORY} argument.
- * 
+ *
  * @author Tomas Stupka
  */
-public abstract class SearchHistorySupport {
+public abstract class VCSCommitFilter {
+    private boolean selected;
 
-    public static final String PROVIDED_EXTENSIONS_SEARCH_HISTORY = "ProvidedExtensions.SearchHistorySupport"; //NOI18N
-
-    private static final Logger LOG = Logger.getLogger(SearchHistorySupport.class.getName());
-
-    private final VCSFileProxy file;
-
-    protected SearchHistorySupport(VCSFileProxy file) {
-        this.file = file;
+    public VCSCommitFilter(boolean selected) {
+        this.selected = selected;
     }
-
-    public static SearchHistorySupport getInstance(VCSFileProxy file) {
-        FileObject fo = file.toFileObject();
-        if(fo == null) {
-            return null;
-        }
-        SearchHistorySupport support = (SearchHistorySupport) fo.getAttribute(PROVIDED_EXTENSIONS_SEARCH_HISTORY);
-        return support;
+    
+    public abstract Icon getIcon();
+    public abstract String getTooltip();
+    public abstract String getID();
+    
+    public boolean isSelected() {
+        return selected;
     }
-
-    protected VCSFileProxy getFile() {
-        return file;
+    
+    protected void setSelected(boolean selected) {
+        this.selected = selected;        
     }
-
-    /**
-     * @see org.netbeans.modules.bugtracking.spi.VCSAccessor#searchHistory(File, int)
-     */
-    public boolean searchHistory(int line) throws IOException {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in  awt!";
-        if (!file.exists()) {
-            LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getPath());
-            return false;
-        }
-        if (!file.isFile()) {
-            LOG.log(Level.WARNING, "Trying to show history for a folder {0}", file.getPath());
-            return false;
-        }
-        return searchHistoryImpl(line);
-    }
-
-    protected abstract boolean searchHistoryImpl(int line) throws IOException;
-
 }

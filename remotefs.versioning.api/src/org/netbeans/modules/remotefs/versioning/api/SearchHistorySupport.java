@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,74 +34,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote;
+package org.netbeans.modules.remotefs.versioning.api;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
-import java.util.List;
-import java.util.ArrayList;
-import org.netbeans.modules.remotefs.versioning.util.common.VCSFileNode;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-
 /**
- * Represents real or virtual (non-local) file.
- *
- * @author Padraig O'Briain
+ * Should be implemented by a particular VCS system and returned on a {@link FileObject#getAttribute(java.lang.String)}
+ * call with the {@link #PROVIDED_EXTENSIONS_SEARCH_HISTORY} argument.
+ * 
+ * @author Tomas Stupka
  */
-public final class HgFileNode extends VCSFileNode<FileInformation> {
+public abstract class SearchHistorySupport {
+
+    public static final String PROVIDED_EXTENSIONS_SEARCH_HISTORY = "ProvidedExtensions.SearchHistorySupport"; //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(SearchHistorySupport.class.getName());
 
     private final VCSFileProxy file;
-    private final VCSFileProxy normalizedFile;
-    private FileObject fileObject;
 
-    public HgFileNode(VCSFileProxy root, VCSFileProxy file) {
-        super(root, file);
+    protected SearchHistorySupport(VCSFileProxy file) {
         this.file = file;
-        normalizedFile = file.normalizeFile();
-    }
-    
-    @Override
-    public FileInformation getInformation() {
-        return Mercurial.getInstance().getFileStatusCache().getStatus(file); 
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public static SearchHistorySupport getInstance(VCSFileProxy file) {
+        FileObject fo = file.toFileObject();
+        if(fo == null) {
+            return null;
         }
-        return o instanceof HgFileNode && file.equals(((HgFileNode) o).file);
+        SearchHistorySupport support = (SearchHistorySupport) fo.getAttribute(PROVIDED_EXTENSIONS_SEARCH_HISTORY);
+        return support;
     }
 
-    @Override
-    public int hashCode() {
-        return file.hashCode();
+    protected VCSFileProxy getFile() {
+        return file;
     }
 
-
-    public FileObject getFileObject() {
-        if (fileObject == null) {
-            fileObject = normalizedFile.toFileObject();
+    /**
+     * @see org.netbeans.modules.bugtracking.spi.VCSAccessor#searchHistory(File, int)
+     */
+    public boolean searchHistory(int line) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in  awt!";
+        if (!file.exists()) {
+            LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getPath());
+            return false;
         }
-        return fileObject;
-    }
-
-    @Override
-    public Object[] getLookupObjects() {
-        List<Object> list = new ArrayList<Object>(2);
-        list.add(file);
-        FileObject fo = getFileObject();
-        if (fo != null) {
-            list.add(fo);
+        if (!file.isFile()) {
+            LOG.log(Level.WARNING, "Trying to show history for a folder {0}", file.getPath());
+            return false;
         }
-        return list.toArray(new Object[list.size()]);
+        return searchHistoryImpl(line);
     }
 
-    @Override
-    public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
-        return VCSCommitOptions.COMMIT;
-    }
- }
+    protected abstract boolean searchHistoryImpl(int line) throws IOException;
+
+}

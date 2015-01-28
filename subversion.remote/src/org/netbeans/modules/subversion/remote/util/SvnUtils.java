@@ -1456,7 +1456,7 @@ public class SvnUtils {
             if(foMime.startsWith("text/")) { //NOI18N
                 return foMime;
             }
-            return org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream"; //NOI18N
+            return VCSFileProxySupport.isFileContentText(file) ? "text/plain" : "application/octet-stream"; //NOI18N
         } else {
             PropertiesClient client = new PropertiesClient(file);
             try {
@@ -1475,7 +1475,7 @@ public class SvnUtils {
                         }
                     }
                 }
-                return org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(file) ? foMime : "application/octet-stream"; //NOI18N
+                return VCSFileProxySupport.isFileContentText(file) ? foMime : "application/octet-stream"; //NOI18N
             } catch (IOException e) {
                 return foMime;
             }

@@ -50,8 +50,8 @@ import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.log.RepositoryRevision;
 import org.netbeans.modules.mercurial.remote.ui.repository.ChangesetPickerPanel;
+import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport.AbstractExportDiffPanel;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiffPanel;
 
 
 /**
@@ -122,20 +122,20 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
     }
 
     private void setDefaultOutputFile() {
-        String folderName = HgModuleConfig.getDefault(root).getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault(root).getExportFolder()); // NOI18N
+        String folderName = HgModuleConfig.getDefault(repo).getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault(repo).getExportFolder()); // NOI18N
         String fileName;
         if (fileToDiff != null && repoRev != null && repo != null) { //"<filename-ext>_%b_%r_%h"
             fileName = fileToDiff.getName().replace('.', '-') + "_" +  //NOI18N
                     repoRev.getRevisionNumber() + "_" +  //NOI18N
                     repoRev.getCSetShortID(); //NOI18N
         } else if (repoRev != null && repo != null) {
-            fileName = HgModuleConfig.getDefault(root).getExportFilename().replace("%b", repo.getName()); //NOI18N
+            fileName = HgModuleConfig.getDefault(repo).getExportFilename().replace("%b", repo.getName()); //NOI18N
             fileName = fileName.replace("%r", repoRev.getRevisionNumber()); //NOI18N
             fileName = fileName.replace("%h", repoRev.getCSetShortID()); //NOI18N
         }else if (repo != null){
-            fileName = HgModuleConfig.getDefault(root).getExportFilename().replace("%b", repo.getName()); //NOI18N
+            fileName = HgModuleConfig.getDefault(repo).getExportFilename().replace("%b", repo.getName()); //NOI18N
         }else{
-            fileName = HgModuleConfig.getDefault(root).getExportFilename();            
+            fileName = HgModuleConfig.getDefault(repo).getExportFilename();            
         }
         VCSFileProxy file = VCSFileProxy.createFileProxy(repo, folderName + "/" + fileName + ".patch");  //NOI18N
         p.setOutputFileText(file.getPath());

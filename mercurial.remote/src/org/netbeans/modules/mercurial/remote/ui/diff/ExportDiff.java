@@ -49,8 +49,8 @@ import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
+import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
 /**
  *
@@ -67,7 +67,7 @@ public abstract class ExportDiff extends ExportDiffSupport {
     
     /** Creates a new instance of ExportDiff */
     public ExportDiff(VCSFileProxy repository, HgLogMessage repoRev, VCSFileProxy [] roots, VCSFileProxy fileToDiff) {
-        super(roots == null ? new VCSFileProxy[] {fileToDiff} : roots, HgModuleConfig.getDefault(root).getPreferences());
+        super(roots == null ? new VCSFileProxy[] {fileToDiff} : roots, HgModuleConfig.getDefault(repository).getPreferences());
         this.fileToDiff = fileToDiff;
 
         panel = new ExportDiffPanel(repository, repoRev, roots, fileToDiff);

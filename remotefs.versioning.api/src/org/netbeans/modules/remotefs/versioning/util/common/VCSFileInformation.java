@@ -40,43 +40,32 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.util;
+package org.netbeans.modules.remotefs.versioning.util.common;
 
-import java.awt.EventQueue;
-import java.io.IOException;
-import java.util.logging.Level;
-import org.netbeans.modules.mercurial.remote.Mercurial;
-import org.netbeans.modules.mercurial.remote.ui.log.LogAction;
-import org.netbeans.modules.remotefs.versioning.api.SearchHistorySupport;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import java.awt.Color;
+import java.util.Comparator;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class HgSearchHistorySupport extends SearchHistorySupport {
+public abstract class VCSFileInformation {
 
-    public HgSearchHistorySupport(VCSFileProxy file) {
-        super(file);
+    public abstract String getStatusText();
+    public abstract int getComparableStatus();
+    public abstract String annotateNameHtml(String name);    
+
+    public Color getAnnotatedColor () {
+        return null;
     }
 
-    @Override
-    protected boolean searchHistoryImpl(final int line) throws IOException {
-
-        if(!Mercurial.getInstance().isAvailable(getFile(), true, false)) {
-            org.netbeans.modules.mercurial.remote.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
-            return false;
+    /**
+     * Compares two {@link FileInformation} objects by importance of statuses they represent.
+     */
+    static class ByImportanceComparator<T> implements Comparator<VCSFileInformation> {
+        @Override
+        public int compare(VCSFileInformation i1, VCSFileInformation i2) {
+            return i1.getComparableStatus() - i2.getComparableStatus();
         }
-        /**
-         * Open in AWT
-         */
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                LogAction.openSearch(getFile(), line);
-            }
-        });
-        return true;
-    }
-
+    }    
 }

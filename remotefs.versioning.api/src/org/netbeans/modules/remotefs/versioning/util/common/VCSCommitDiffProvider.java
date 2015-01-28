@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,74 +34,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote;
+package org.netbeans.modules.remotefs.versioning.util.common;
 
-import org.openide.filesystems.FileObject;
-
-import java.util.List;
-import java.util.ArrayList;
-import org.netbeans.modules.remotefs.versioning.util.common.VCSFileNode;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Set;
+import javax.swing.JComponent;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 
 /**
- * Represents real or virtual (non-local) file.
  *
- * @author Padraig O'Briain
+ * @author Tomas Stupka
  */
-public final class HgFileNode extends VCSFileNode<FileInformation> {
-
-    private final VCSFileProxy file;
-    private final VCSFileProxy normalizedFile;
-    private FileObject fileObject;
-
-    public HgFileNode(VCSFileProxy root, VCSFileProxy file) {
-        super(root, file);
-        this.file = file;
-        normalizedFile = file.normalizeFile();
-    }
+public abstract class VCSCommitDiffProvider<T extends VCSFileNode> {
     
-    @Override
-    public FileInformation getInformation() {
-        return Mercurial.getInstance().getFileStatusCache().getStatus(file); 
+    private final HashMap<VCSFileProxy, JComponent> displayedDiffs = new HashMap<VCSFileProxy, JComponent>();
+        
+    JComponent getDiffComponent(VCSFileProxy file) {
+        JComponent component = displayedDiffs.get(file);
+        if (component == null) {
+            component = createDiffComponent(file); //new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
+            displayedDiffs.put(file, component);                
+        }   
+        return component;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        return o instanceof HgFileNode && file.equals(((HgFileNode) o).file);
+    protected abstract JComponent createDiffComponent(VCSFileProxy file);
+    
+    protected JComponent getDiffComponent (T[] files) {
+        return null;
     }
 
-    @Override
-    public int hashCode() {
-        return file.hashCode();
+    protected Set<VCSFileProxy> getModifiedFiles() {
+        return Collections.emptySet();
     }
 
-
-    public FileObject getFileObject() {
-        if (fileObject == null) {
-            fileObject = normalizedFile.toFileObject();
-        }
-        return fileObject;
+    protected SaveCookie[] getSaveCookies() {
+        return new SaveCookie[0];
     }
 
-    @Override
-    public Object[] getLookupObjects() {
-        List<Object> list = new ArrayList<Object>(2);
-        list.add(file);
-        FileObject fo = getFileObject();
-        if (fo != null) {
-            list.add(fo);
-        }
-        return list.toArray(new Object[list.size()]);
+    protected EditorCookie[] getEditorCookies() {
+        return new EditorCookie[0];
     }
 
-    @Override
-    public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
-        return VCSCommitOptions.COMMIT;
+    /**
+     * Selects the file in the opened diff view. Makes sense only if the diff
+     * view is capable of showing more files.
+     * @param file file to select
+     */
+    protected void selectFile (VCSFileProxy file) {
+        
     }
- }
+}

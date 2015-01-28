@@ -41,159 +41,18 @@
  */
 package org.netbeans.modules.subversion.remote.versioning.util;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
 public class Utils {
-    private static final Logger LOG = Logger.getLogger(Utils.class.getName());
-    private static Map<VCSFileProxy, Charset> fileToCharset;
-
-
-    /**
-     * Checks if the file is to be considered as textuall.
-     *
-     * @param file file to check
-     * @return true if the file can be edited in NetBeans text editor, false otherwise
-     */
-    public static boolean isFileContentText(VCSFileProxy file) {
-        FileObject fo = file.toFileObject();
-        if (fo == null) {
-            return false;
-        }
-        if (fo.getMIMEType().startsWith("text")) { // NOI18N
-            return true;
-        }
-        try {
-            DataObject dao = DataObject.find(fo);
-            return dao.getLookup().lookupItem(new Lookup.Template<>(EditorCookie.class)) != null;
-        } catch (DataObjectNotFoundException e) {
-            // not found, continue
-        }
-        return false;
-    }
-    
-    /**
-     * Searches for common filesystem parent folder for given files.
-     *
-     * @param a first file
-     * @param b second file
-     * @return File common parent for both input files with the longest
-     * filesystem path or null of these files have not a common parent
-     */
-    public static VCSFileProxy getCommonParent(VCSFileProxy a, VCSFileProxy b) {
-        for (;;) {
-            if (a.equals(b)) {
-                return a;
-            } else if (a.getPath().length() > b.getPath().length()) {
-                a = a.getParentFile();
-                if (a == null) {
-                    return null;
-                }
-            } else {
-                b = b.getParentFile();
-                if (b == null) {
-                    return null;
-                }
-            }
-        }
-    }
-    
-    /**
-     * Retrieves the Charset for the referenceFile and associates it weakly with
-     * the given file. A following getAssociatedEncoding() call for the file
-     * will then return the referenceFile-s Charset.
-     *
-     * @param referenceFile the file which charset has to be used when encoding
-     * file
-     * @param file file to be encoded with the referenceFile-s charset
-     *
-     */
-    public static void associateEncoding(VCSFileProxy referenceFile, VCSFileProxy file) {
-        FileObject fo = referenceFile.toFileObject();
-        if (fo == null || fo.isFolder()) {
-            return;
-        }
-        Charset c = FileEncodingQuery.getEncoding(fo);
-        if (c == null) {
-            return;
-        }
-        if (fileToCharset == null) {
-            fileToCharset = new WeakHashMap<>();
-        }
-        synchronized (fileToCharset) {
-            fileToCharset.put(file, c);
-        }
-    }
-
-    /**
-     * Returns a charset for the given file if it was previously registered via
-     * associateEncoding()
-     *
-     * @param fo file for which the encoding has to be retrieved
-     * @return the charset the given file has to be encoded with
-     */
-    public static Charset getAssociatedEncoding(FileObject fo) {
-        try {
-            if (fileToCharset == null || fileToCharset.isEmpty() || fo == null || fo.isFolder()) {
-                return null;
-            }
-            VCSFileProxy file = VCSFileProxy.createFileProxy(fo);
-            if (file == null) {
-                return null;
-            }
-            synchronized (fileToCharset) {
-                return fileToCharset.get(file);
-            }
-        } catch (Throwable t) {
-            LOG.log(Level.INFO, null, t);
-
-            return null;
-        }
-    }
-
-    /**
-     * @param file
-     * @return Set<File> all files that belong to the same DataObject as the
-     * argument
-     */
-    public static Set<VCSFileProxy> getAllDataObjectFiles(VCSFileProxy file) {
-        Set<VCSFileProxy> filesToCheckout = new HashSet<>(2);
-        filesToCheckout.add(file);
-        FileObject fo = file.toFileObject();
-        if (fo != null) {
-            try {
-                DataObject dao = DataObject.find(fo);
-                Set<FileObject> fileObjects = dao.files();
-                for (FileObject fileObject : fileObjects) {
-                    filesToCheckout.add(VCSFileProxy.createFileProxy(fileObject));
-                }
-            } catch (DataObjectNotFoundException e) {
-                // no dataobject, never mind
-            }
-        }
-        return filesToCheckout;
-    }
-    
     /**
      * Helper method to get an array of Strings from preferences.
      *

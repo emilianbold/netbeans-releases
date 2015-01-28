@@ -187,7 +187,7 @@ public class CommitAction extends ContextAction {
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        String contentTitle = getContextDisplayName(context);
+        String contentTitle = VCSFileProxySupport.getContextDisplayName(context);
 
         commit(contentTitle, context);
     }

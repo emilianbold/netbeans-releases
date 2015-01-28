@@ -42,44 +42,67 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.mercurial.remote;
+package org.netbeans.modules.remotefs.versioning.util.common;
 
-import org.openide.filesystems.FileObject;
-
-import java.util.List;
 import java.util.ArrayList;
-import org.netbeans.modules.remotefs.versioning.util.common.VCSFileNode;
+import java.util.List;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
- * Represents real or virtual (non-local) file.
+ * Represents a versioned file.
  *
- * @author Padraig O'Briain
+ * @author Tomas Stupka
  */
-public final class HgFileNode extends VCSFileNode<FileInformation> {
+public abstract class VCSFileNode<I extends VCSFileInformation> {
 
     private final VCSFileProxy file;
-    private final VCSFileProxy normalizedFile;
-    private FileObject fileObject;
+    private final VCSFileProxy root;
+    private String shortPath;
+    private VCSCommitOptions commitOption;
 
-    public HgFileNode(VCSFileProxy root, VCSFileProxy file) {
-        super(root, file);
+    public VCSFileNode(VCSFileProxy root, VCSFileProxy file) {
+        assert file != null && root != null;
         this.file = file;
-        normalizedFile = file.normalizeFile();
+        this.root = root;        
+    }
+
+    public abstract VCSCommitOptions getDefaultCommitOption (boolean withExclusions);
+    public abstract I getInformation();
+    
+    public String getStatusText () {
+        return getInformation().getStatusText();
     }
     
-    @Override
-    public FileInformation getInformation() {
-        return Mercurial.getInstance().getFileStatusCache().getStatus(file); 
+    public VCSCommitOptions getCommitOptions() {
+        if(commitOption == null) {
+            commitOption = getDefaultCommitOption(true);
+        }
+        return commitOption;
+    }
+    
+    void setCommitOptions(VCSCommitOptions option) {
+        commitOption = option;
+    }
+        
+    public String getName() {
+        return file.getName();
+    }
+
+    public VCSFileProxy getFile() {
+        return file;
+    }
+
+    public VCSFileProxy getRoot () {
+        return root;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        return o instanceof HgFileNode && file.equals(((HgFileNode) o).file);
+        if (this == o) return true;
+        return o instanceof VCSFileNode && file.equals(((VCSFileNode) o).file);
     }
 
     @Override
@@ -87,15 +110,10 @@ public final class HgFileNode extends VCSFileNode<FileInformation> {
         return file.hashCode();
     }
 
-
     public FileObject getFileObject() {
-        if (fileObject == null) {
-            fileObject = normalizedFile.toFileObject();
-        }
-        return fileObject;
+        return file.toFileObject();
     }
 
-    @Override
     public Object[] getLookupObjects() {
         List<Object> list = new ArrayList<Object>(2);
         list.add(file);
@@ -105,9 +123,21 @@ public final class HgFileNode extends VCSFileNode<FileInformation> {
         }
         return list.toArray(new Object[list.size()]);
     }
-
-    @Override
-    public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
-        return VCSCommitOptions.COMMIT;
-    }
- }
+    
+    public String getRelativePath() {        
+        if(shortPath == null) {
+            String path = file.getPath();
+            String rootPath = root.getPath();
+            if (path.startsWith(rootPath)) {
+                if (path.length() == rootPath.length()) {
+                    shortPath = "."; //NOI18N
+                } else {
+                    shortPath = path.substring(rootPath.length() + 1);
+                }
+            } else {
+                shortPath = NbBundle.getMessage(VCSFileNode.class, "LBL_Location_NotInRepository"); //NOI18N
+            }
+        }
+        return shortPath;
+    }    
+}
