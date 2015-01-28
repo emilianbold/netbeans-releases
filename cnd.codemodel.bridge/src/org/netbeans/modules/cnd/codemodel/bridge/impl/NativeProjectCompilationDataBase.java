@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import static org.netbeans.modules.cnd.api.project.NativeFileItem.Language.C;
 import static org.netbeans.modules.cnd.api.project.NativeFileItem.Language.CPP;
@@ -96,6 +97,24 @@ public class NativeProjectCompilationDataBase implements CMCompilationDataBase {
         return entries.get(file);
     }
 
+    @Override
+    public int hashCode() {
+      int hash = 5;
+      hash = 53 * hash + Objects.hashCode(this.nativeProject);
+      return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      final NativeProjectCompilationDataBase other = (NativeProjectCompilationDataBase) obj;
+      return Objects.equals(this.nativeProject, other.nativeProject);
+    }
 
     private class EntryImpl implements CMCompilationDataBase.Entry {
 
