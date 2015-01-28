@@ -643,12 +643,10 @@ public class ElementJavadoc {
                             } else {
                                 List<Tag> tags = new ArrayList<Tag>();
                                 for(Tag tag : returnTags) {
-                                    for(Tag t : tag.inlineTags()) {
-                                        if (INHERIT_DOC_TAG.equals(t.kind()))
-                                            tags.addAll(inheritedReturnTags);
-                                        else
-                                            tags.add(t);
-                                    }
+                                    if (INHERIT_DOC_TAG.equals(tag.kind()))
+                                        tags.addAll(inheritedReturnTags);
+                                    else
+                                        tags.add(tag);
                                 }
                                 returnTags = tags.toArray(new Tag[tags.size()]);
                             }
