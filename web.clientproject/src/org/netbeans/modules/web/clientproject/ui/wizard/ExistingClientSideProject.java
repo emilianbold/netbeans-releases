@@ -431,7 +431,7 @@ public class ExistingClientSideProject extends JPanel {
                 workDir = currDir;
             }
         }
-        FileChooserBuilder builder = new FileChooserBuilder(NewClientSideProject.class.getName() + dirKey)
+        FileChooserBuilder builder = new FileChooserBuilder(ExistingClientSideProject.class.getName() + dirKey)
                 .setTitle(title)
                 .setDirectoriesOnly(true);
         if (workDir != null) {
