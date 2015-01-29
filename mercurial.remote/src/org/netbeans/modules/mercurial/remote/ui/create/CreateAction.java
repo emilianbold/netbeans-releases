@@ -87,10 +87,10 @@ import org.openide.util.RequestProcessor;
  * 
  * @author John Rice
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.create.CreateAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.create.CreateAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_Create", popupText="#CTL_PopupMenuItem_Create", menuText="#CTL_MenuItem_Create")
 @ActionReferences({
-   @ActionReference(path="Versioning/Mercurial/Actions/Unversioned", position=2)
+   @ActionReference(path="Versioning/MercurialRemote/Actions/Unversioned", position=2)
 })
 @Messages({"CTL_MenuItem_Create=I&nitialize Repository...", //NOI18N
     "CTL_PopupMenuItem_Create=Initialize &Mercurial Repository..."}) //NOI18N

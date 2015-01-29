@@ -64,7 +64,7 @@ import org.openide.util.lookup.ServiceProviders;
  * @author ondra
  */
 @ServiceProviders({@ServiceProvider(service=OptionsPanelColorProvider.class), @ServiceProvider(service=AnnotationColorProvider.class)})
-@OptionsPanelController.Keywords(keywords={"mercurial", "#KW_Colors"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_AnnotationColorsPanel.title")
+//@OptionsPanelController.Keywords(keywords={"mercurial", "#KW_Colors"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_AnnotationColorsPanel.title")
 @Messages("CTL_AnnotationColorsPanel.title=Versioning")
 public class AnnotationColorProvider extends OptionsPanelColorProvider {
 

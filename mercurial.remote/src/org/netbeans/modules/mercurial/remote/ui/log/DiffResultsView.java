@@ -88,7 +88,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     protected int                     currentIndex;
     private boolean                 dividerSet;
     protected List<RepositoryRevision> results;
-    private static final RequestProcessor rp = new RequestProcessor("MercurialDiff", 1, true);  // NOI18N
+    private static final RequestProcessor rp = new RequestProcessor("RemoteMercurialDiff", 1, true);  // NOI18N
     private final PropertyChangeListener list;
     private Node[] selectedNodes;
     private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<RepositoryRevision>(2);

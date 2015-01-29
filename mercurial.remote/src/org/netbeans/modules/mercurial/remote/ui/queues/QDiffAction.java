@@ -67,7 +67,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.queues.QDiffAction", category = "Mercurial/Queues")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.queues.QDiffAction", category = "MercurialRemote/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QDiff")
 @Messages({
     "CTL_MenuItem_QDiff=&Diff",
