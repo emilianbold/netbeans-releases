@@ -216,6 +216,8 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case DOCUMENTATION:
                     JsDocumentationCodeCompletion.complete(request, resultList);
                     break;
+                case OBJECT_PROPERTY_NAME:
+                    completeObjectPropertyName(request, added);
                 default:
                     break;
             }
@@ -620,6 +622,85 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             }
         }
         return addedProperties;
+    }
+    
+    private void completeObjectPropertyName(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
+        // is an argument of the function call?
+        TokenHierarchy<?> th = request.result.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return;
+        }
+        TokenSequence<JsTokenId> ts = th.tokenSequence(JsTokenId.javascriptLanguage());
+        if (ts == null) {
+            return;
+        }
+        
+        ts.move(request.anchor);
+        
+        if (!ts.moveNext() && !ts.movePrevious()){
+            return;
+        }
+            
+        int curlyDeep = 0;
+        Token<? extends JsTokenId> token = ts.token();
+        JsTokenId tokenId = token.id();
+        while (ts.movePrevious() && tokenId != JsTokenId.BRACKET_LEFT_PAREN
+                && tokenId != JsTokenId.OPERATOR_SEMICOLON) {
+            if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                curlyDeep++;
+            }
+            token = ts.token();
+            tokenId = token.id();
+        }
+
+        // what is the function?
+        if (curlyDeep == 1 && tokenId == JsTokenId.BRACKET_LEFT_PAREN) {
+            token = LexUtilities.findPreviousNonWsNonComment(ts);
+            if (token != null && token.id() == JsTokenId.IDENTIFIER) {
+                String functionName = token.text().toString();
+                List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), ts.offset() - 1, false);
+                List<TypeUsage> possibleTypes = new ArrayList<TypeUsage>();
+                FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+                JsIndex jsIndex = JsIndex.get(fo);
+                if (expChain.isEmpty()) {
+                    // global space
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(request.result.getModel(), request.anchor);
+                    for (JsObject variable : variables) {
+                        if (variable.getName().equals(functionName) && variable.getJSKind().isFunction()) {
+                            // do we now the tape of the argument?
+                            JsFunction function = (JsFunction)variable;
+                            Collection<? extends JsObject> parameters = function.getParameters();
+                            for (JsObject parameter: parameters) {
+                                if (!parameter.getAssignments().isEmpty()) {
+                                    possibleTypes.addAll(parameter.getAssignments());
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(functionName);
+                    for (IndexedElement globalVar : globalVars) {
+                        if (globalVar.getName().equals(functionName) && globalVar.getJSKind().isFunction()) {
+                            IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)globalVar;
+                            LinkedHashMap<String, Collection<String>> parameters = function.getParameters();
+                            for (Collection<String> assignments: parameters.values()) {
+                                if (!assignments.isEmpty()) {
+                                    for (String type : assignments) {
+                                        possibleTypes.add(new TypeUsageImpl(type));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!possibleTypes.isEmpty()) {
+                    for (TypeUsage type : possibleTypes) {
+                        addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems);
+                    }
+                }
+            }
+        }
+        
     }
     
     private List<String> resolveExpressionChainFromString(CompletionRequest request) {

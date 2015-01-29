@@ -162,7 +162,7 @@ public class CompletionContextFinder {
         return CompletionContext.EXPRESSION;
     }
     
-    private static boolean isPropertyNameContext(TokenSequence<JsTokenId> ts) {
+    protected static boolean isPropertyNameContext(TokenSequence<JsTokenId> ts) {
         
         //find the begining of the object literal
         Token<? extends JsTokenId> token = null;
