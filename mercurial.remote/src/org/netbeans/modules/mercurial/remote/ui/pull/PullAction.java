@@ -110,7 +110,7 @@ import org.openide.util.lookup.Lookups;
     "# {0} - repository folder name",
     "CTL_MenuItem_PullRoot=P&ull All Branches - {0}"
 })
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.pull.PullAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.pull.PullAction", category = "MercurialRemote")
 @ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PullLocal")
 public class PullAction extends ContextAction {
     private static final String CHANGESET_FILES_PREFIX = "files:"; //NOI18N

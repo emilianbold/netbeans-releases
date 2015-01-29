@@ -62,7 +62,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * 
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.tag.CreateTagAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.tag.CreateTagAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_CreateTag")
 @Messages({
     "CTL_MenuItem_CreateTag=Create &Tag...",

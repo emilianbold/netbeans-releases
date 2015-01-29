@@ -78,7 +78,7 @@ import org.openide.util.NbBundle.Messages;
 @Messages({
     "CTL_MenuItem_PullOther=Pu&ll..."
 })
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.pull.PullOtherAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.pull.PullOtherAction", category = "MercurialRemote")
 @ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PullOther")
 public class PullOtherAction extends ContextAction {
     

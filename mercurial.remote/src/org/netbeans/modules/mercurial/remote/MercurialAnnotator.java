@@ -392,7 +392,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = Actions.forID("Mercurial", "org.netbeans.modules.mercurial.remote.ui.create.CreateAction"); //NOI18N
+                Action a = Actions.forID("MercurialRemote", "org.netbeans.modules.mercurial.remote.ui.create.CreateAction"); //NOI18N
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
                 }            

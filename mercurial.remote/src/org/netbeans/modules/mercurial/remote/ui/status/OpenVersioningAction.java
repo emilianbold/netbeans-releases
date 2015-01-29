@@ -62,7 +62,7 @@ import org.openide.awt.ActionRegistration;
  *
  * @author Petr Kuzel
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.status.OpenVersioningAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.status.OpenVersioningAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
 @ActionReferences({
    @ActionReference(path="OptionsDialog/Actions/MercurialRemote")

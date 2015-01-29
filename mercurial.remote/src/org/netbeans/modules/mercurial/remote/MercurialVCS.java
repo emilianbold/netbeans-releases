@@ -65,7 +65,7 @@ import org.netbeans.spi.queries.CollocationQueryImplementation2;
 @VersioningSystem.Registration(
     displayName="#CTL_Mercurial_DisplayName", //NOI18N
     menuLabel="#CTL_Mercurial_MainMenu", //NOI18N
-    actionsCategory="Mercurial", //NOI18N
+    actionsCategory="MercurialRemote", //NOI18N
     metadataFolderNames=".hg") //NOI18N
 public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
     

@@ -56,7 +56,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * 
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.tag.ManageTagsAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.tag.ManageTagsAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_ManageTags")
 @Messages({
     "CTL_MenuItem_ManageTags=Mana&ge Tags...",
