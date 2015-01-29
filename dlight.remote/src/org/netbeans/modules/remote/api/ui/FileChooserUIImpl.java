@@ -3075,7 +3075,10 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                     file = file.getParentFile();
                 }
             }
-            final boolean directoryChanged = file != null && !file.equals(oldValue);
+            if (file == null) {
+                return new ValidationResult(Boolean.FALSE, null, false, null);
+            }
+            final boolean directoryChanged = !file.equals(oldValue);
             final FileNode node = new FileNode(file);
             node.loadChildren(fileChooser, true);
             return new ValidationResult(Boolean.TRUE, node, directoryChanged, file);
