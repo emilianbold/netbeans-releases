@@ -214,7 +214,7 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         selectedNode = null;
         if (documentUpdated) {
             knockoutFound = false;
-            unusedBindingsPanel.setKnockoutUsed(false);
+            unusedBindingsPanel.setKnockoutVersion(null);
         }
         JComponent componentToShow;
         if (knockoutFound) {
@@ -254,10 +254,12 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
 
     /**
      * Invoked when knockout is found in the page.
+     * 
+     * @param koVersion version of Knockout used by the page.
      */
-    void knockoutUsed() {
+    void knockoutUsed(String koVersion) {
         knockoutFound = true;
-        unusedBindingsPanel.setKnockoutUsed(true);
+        unusedBindingsPanel.setKnockoutVersion(koVersion);
         update(false);
     }
 

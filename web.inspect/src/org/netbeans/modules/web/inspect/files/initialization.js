@@ -641,10 +641,10 @@ NetBeans.getKnockout = function() {
     return ko;
 };
 
-// Determines whether the page uses Knockout
-NetBeans.usesKnockout = function() {
+// Returns the version of the Knockout used by the inspected page (or null).
+NetBeans.getKnockoutVersion = function() {
     var ko = this.getKnockout();
-    return !!(ko && ko.observable && ko.applyBindings);
+    return !!(ko && ko.observable && ko.applyBindings) ? ko.version : null;
 };
 
 // Determines whether unused binding information is available
