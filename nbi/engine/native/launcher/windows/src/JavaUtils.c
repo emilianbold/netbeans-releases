@@ -294,7 +294,7 @@ void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaPropert
         
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... java hierarchy there", 1);
         // <location>\bin\java.exe exists
-        
+
         
         appendCommandLineArgument(&command, javaExecutable);
         appendCommandLineArgument(&command, L"-classpath");
@@ -687,7 +687,7 @@ void installBundledJVMs(LauncherProperties * props) {
 void searchJavaInstallationFolder(LauncherProperties * props) {   
     char executablePath [MAX_PATH];
     GetModuleFileName(0, executablePath, MAX_PATH);
-    char *pch = strrchr(executablePath, '\\');    
+    char * pch = strrchr(executablePath, '\\');    
     char installationFolder [MAX_PATH]= "";
     int i = 0;
     int end = (int) (pch - executablePath);
@@ -697,7 +697,33 @@ void searchJavaInstallationFolder(LauncherProperties * props) {
     }
     strcat(installationFolder, "\\bin\\jre");
     
-    trySetCompatibleJava(toWCHAR(installationFolder), props);
+    // check if JRE is in installation folder
+    WCHAR * nestedJreFolder = toWCHAR(installationFolder); 
+    if (!fileExists(nestedJreFolder)) {
+        // if not exists - return
+        return;
+    }
+    
+    // if exists - copy to temp folder to run uninstaller on that jvm
+    // to be able to delete jvm in installation folder
+    WCHAR * tempJreFolder = NULL;
+    tempJreFolder = appendStringW(tempJreFolder, props->testJVMFile->resolved); 
+    tempJreFolder = appendStringW(tempJreFolder, L"\\_jvm\\");    
+    
+    WCHAR * command = NULL;
+    appendCommandLineArgument(&command, L"xcopy");
+    appendCommandLineArgument(&command, nestedJreFolder);
+    appendCommandLineArgument(&command, tempJreFolder);
+    appendCommandLineArgument(&command, L"/e");
+    appendCommandLineArgument(&command, L"/y");
+    
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Copying nested JRE to temp folder", 0);
+    
+    executeCommand(props, command, NULL, JVM_EXTRACTION_TIMEOUT, props->stdoutHandle, props->stderrHandle, NORMAL_PRIORITY_CLASS);
+    
+    if (fileExists(tempJreFolder)) {    
+        trySetCompatibleJava(tempJreFolder, props);
+    }
 }
 void searchJavaSystemLocations(LauncherProperties * props) {
     if ( props->jvms->size > 0 ) {
