@@ -737,6 +737,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         JsObject jsProperty = new JsObjectImpl(object, docProperty.getParamName(), docProperty.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
                         object.addProperty(jsProperty.getName(), jsProperty);
                         types = docProperty.getParamTypes();
+                        jsProperty.setDocumentation(Documentation.create(docProperty.getParamDescription()));
                         assignOffset = docProperty.getParamName().getOffsetRange().getEnd();
                         for (Type type : types) {
                            jsProperty.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
