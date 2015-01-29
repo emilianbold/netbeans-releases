@@ -54,14 +54,15 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.Utilities;
 
@@ -111,14 +112,17 @@ public class LibraryChecker {
             processBuilder.setExecutable(linkerPath);
             processBuilder.setArguments(args.toArray(new String[args.size()]));
 
-            NativeProcess process = processBuilder.call();
-            try {
-                return process.waitFor() == 0;
-            } catch (InterruptedException ex) {
-                throw new IOException(ex);
-            } finally {
-                process.destroy();
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(processBuilder);
+            if (!res.isOK() && CndUtils.isUnitTestMode()) {
+                StringBuilder buf = new StringBuilder("Command\n#");
+                buf.append(linkerPath).append(' ');
+                for(String a : args) {
+                    buf.append(a).append(' ');
+                }
+                buf.append('\n').append(res.toString());
+                System.err.println(buf.toString());
             }
+            return res.isOK();
         } catch (CancellationException ex) {
             return false; // TODO:CancellationException error processing
         } finally {
