@@ -81,6 +81,7 @@ public class PhingExecutable {
 
     static final Logger LOGGER = Logger.getLogger(PhingExecutable.class.getName());
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_ARRAY", justification = "No need to worry, noone will change it") // NOI18N
     public static final String[] PHING_NAMES;
 
     private static final String LOGGER_PARAM = "-logger"; // NOI18N
