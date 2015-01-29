@@ -97,6 +97,7 @@ public final class PackageJson {
     public static final String PROP_OPTIONAL_DEPENDENCIES = "OPTIONAL_DEPENDENCIES"; // NOI18N
     // file content
     public static final String FIELD_NAME = "name"; // NOI18N
+    public static final String FIELD_MAIN = "main"; // NOI18N
     public static final String FIELD_SCRIPTS = "scripts"; // NOI18N
     public static final String FIELD_START = "start"; // NOI18N
     public static final String FIELD_ENGINES = "engines"; // NOI18N
