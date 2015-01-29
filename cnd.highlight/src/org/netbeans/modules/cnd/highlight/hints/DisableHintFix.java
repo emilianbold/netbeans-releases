@@ -74,7 +74,7 @@ public class DisableHintFix implements EnhancedFix {
     @Override
     public CharSequence getSortText() {
         //Hint opening options dialog should always be the lastest in offered list
-        return "\uFFFF";
+        return "\uFFFF"; //NOI18N
     }
     
     public static interface CodeAuditInfo {
