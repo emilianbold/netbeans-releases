@@ -164,10 +164,7 @@ public class CndParser extends Parser {
     public static class FactoryImpl extends ParserFactory {
         @Override
         public Parser createParser(Collection<Snapshot> snapshots) {
-          if (NativeProjectBridge.ENABLED) {
-            return new CndParser(snapshots);
-          }
-          return null;
+          return new CndParser(snapshots);
         }
     }
    
