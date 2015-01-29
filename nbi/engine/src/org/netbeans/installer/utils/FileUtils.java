@@ -1569,6 +1569,7 @@ public final class FileUtils {
             }            
             
             Files.copy(source.toPath(), target.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING, LinkOption.NOFOLLOW_LINKS);
+            list.add(target);
         } else {
             LogManager.log("copying directory: " + source + " to: " + target + (recurse ? " with recursion" : ""));
             progress.setDetail(StringUtils.format(MESSAGE_COPY_DIRECTORY, source, target));
