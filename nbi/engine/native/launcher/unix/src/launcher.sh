@@ -1063,7 +1063,15 @@ searchJavaUserDefined() {
 searchJavaInstallFolder() {
         installFolder="`dirname \"$0\"`"
         installFolder="`( cd \"$installFolder\" && pwd )`"
-        verifyJVM "$installFolder/bin/jre"
+        installFolder="$installFolder/bin/jre"
+        tempJreFolder="$TEST_JVM_CLASSPATH/_jvm"
+
+        if [ -d "$installFolder" ] ; then
+            #copy nested JRE to temp folder
+            cp -r "$installFolder" "$tempJreFolder"
+
+            verifyJVM "$tempJreFolder"
+        fi
 }
 
 searchJava() {
