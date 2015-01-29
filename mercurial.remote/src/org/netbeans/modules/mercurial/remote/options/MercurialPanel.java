@@ -60,8 +60,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle.Messages;
 
-@OptionsPanelController.Keywords(keywords={"hg", "mercurial", "#MercurialPanel.kw1", "#MercurialPanel.kw2", "#MercurialPanel.kw3"}, //NOI18N
-        location="Team", tabTitle="#CTL_OptionsPanel.title") //NOI18N
+//@OptionsPanelController.Keywords(keywords={"hg", "mercurial", "#MercurialPanel.kw1", "#MercurialPanel.kw2", "#MercurialPanel.kw3"}, location="Team", tabTitle="#CTL_OptionsPanel.title") //NOI18N
 @Messages({
     "CTL_OptionsPanel.title=Versioning",
     "MercurialPanel.kw1=status labels",

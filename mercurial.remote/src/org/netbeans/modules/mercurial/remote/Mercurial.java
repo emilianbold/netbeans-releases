@@ -95,8 +95,8 @@ public class Mercurial {
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
     static final String PROP_HEAD_CHANGED = "headChanged"; //NOI18N
 
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
-    public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.mercurial.status"); //NOI18N
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial.remote"); // NOI18N
+    public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.mercurial.remote.status"); //NOI18N
     
     private static final int STATUS_DIFFABLE =
             FileInformation.STATUS_VERSIONED_UPTODATE |
@@ -198,7 +198,7 @@ public class Mercurial {
         getV(root).goodVersion = false;
         RequestProcessor rp = getRequestProcessor();
         if (LOG.isLoggable(Level.FINEST)) {
-            LOG.log(Level.FINEST, "Mercurial subsystem initialized", new Exception()); //NOI18N
+            LOG.log(Level.FINEST, "Remote '"+VCSFileProxySupport.getFileSystem(root)+"' Mercurial subsystem initialized", new Exception()); //NOI18N
         }
         Runnable init = new Runnable() {
             @Override
@@ -473,7 +473,7 @@ public class Mercurial {
 
         RequestProcessor rp = processorsToUrl.get(url);   //'url' can be null
         if (rp == null) {
-            String rpName = "Mercurial - "                              //NOI18N
+            String rpName = "MercurialRemote - "                        //NOI18N
                            + (url != null ? url.toString() : "ANY_KEY");//NOI18N
             rp = new RequestProcessor(rpName, 1, true);
             processorsToUrl.put(url, rp);

@@ -90,7 +90,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Ondrej Vrabec
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.rebase.RebaseAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.rebase.RebaseAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_RebaseAction")
 @Messages({
     "MSG_Rebase_Progress=Rebasing...",
