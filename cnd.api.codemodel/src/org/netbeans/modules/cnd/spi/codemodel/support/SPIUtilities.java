@@ -77,7 +77,7 @@ public final class SPIUtilities {
         System.err.println("No CMIndexProvider factory for " + db);
         return null;
     }
-    
+
     public static CMIndex parse(CMCompilationDataBase db) {
         return parse(db.getEntries());
     }
@@ -95,6 +95,19 @@ public final class SPIUtilities {
         System.err.println("No CMIndexProvider factory for " + entries);
         return null;
     }
+
+    public static CMIndex createIndex(CMCompilationDataBase db, CMVisitQuery.TokenVisitor callback) {
+        Collection<? extends CMIndexProvider> factories = Lookups.forPath(CMIndexProvider.PATH).lookupAll(CMIndexProvider.class);
+        for (CMIndexProvider f : factories) {
+            if (f.canCreate(db)) {
+                CMIndexImplementation idx = f.createAndTokenize(db, callback);
+                assert idx != null;
+                return CMFactory.CoreAPI.createIndex(idx);
+            }
+        }
+        System.err.println("No CMIndexProvider factory for " + db);
+        return null;
+    }    
     
     public static void reindexFile(Collection<CMIndex> indices, CMCompilationDataBase.Entry entry, CMVisitQuery.IndexCallback callback, CMVisitQuery.VisitOptions options) {
         // does not work for now

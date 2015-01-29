@@ -66,4 +66,6 @@ public abstract class CMIndexProvider {
     public abstract CMIndexImplementation create(Collection<CMCompilationDataBase.Entry> entries);
 
     public abstract CMIndexImplementation createAndIndex(CMCompilationDataBase db, CMVisitQuery.IndexCallback callback, CMVisitQuery.VisitOptions options);
+
+    public abstract CMIndexImplementation createAndTokenize(CMCompilationDataBase db, CMVisitQuery.TokenVisitor callback);
 }
