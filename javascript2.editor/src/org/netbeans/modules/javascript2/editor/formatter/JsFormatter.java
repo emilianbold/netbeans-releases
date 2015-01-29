@@ -949,6 +949,11 @@ public class JsFormatter implements Formatter {
                             case AFTER_WITH_PARENTHESIS:
                             case AFTER_TERNARY_OPERATOR:
                                 return CodeStyle.get(formatContext).toHolder().objectLiteralContinuation;
+                            case AFTER_PROPERTY_OPERATOR:
+                                FormatToken operatorToken = tokenBeforeObject.previous();
+                                if (operatorToken != null && operatorToken.getId() == JsTokenId.OPERATOR_COLON) {
+                                    return CodeStyle.get(formatContext).toHolder().objectLiteralContinuation;
+                                }
                         }
                     }
                 }
