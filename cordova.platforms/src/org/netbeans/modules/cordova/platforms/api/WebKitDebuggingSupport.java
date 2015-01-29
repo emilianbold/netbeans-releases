@@ -127,10 +127,8 @@ public final class WebKitDebuggingSupport {
                 //phonegap
                 String id = context.lookup(String.class);
                 transport.setBundleIdentifier(id);
-                if (context != null) {
-                    BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
-                    transport.setBrowserURLMapper(mapper);
-                }
+                BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
+                transport.setBrowserURLMapper(mapper);
             }
             boolean attached = transport.attach();
             if (!attached) {
