@@ -67,7 +67,9 @@ import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.ui.properties.HgPropertiesNode;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -77,15 +79,15 @@ import org.openide.util.RequestProcessor;
 public class HgExtProperties implements ActionListener, DocumentListener {
     
     private PropertiesPanel panel;
-    private VCSFileProxy root;
+    private final FileSystem fileStstem;
     private final PropertiesTable propTable;
     private HgProgressSupport support;
     
     /** Creates a new instance of HgExtProperties */
-    public HgExtProperties(PropertiesPanel panel, PropertiesTable propTable, VCSFileProxy root) {
+    public HgExtProperties(PropertiesPanel panel, PropertiesTable propTable, FileSystem root) {
         this.panel = panel;
         this.propTable = propTable;
-        this.root = root;
+        this.fileStstem = root;
         panel.getTxtAreaValue().getDocument().addDocumentListener(this);
         ((JTextField) panel.getComboName().getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         propTable.getTable().addMouseListener(new TableMouseListener());
@@ -103,14 +105,6 @@ public class HgExtProperties implements ActionListener, DocumentListener {
     
     public void setPropertiesPanel(PropertiesPanel panel) {
         this.panel = panel;
-    }
-    
-    public VCSFileProxy getRoot() {
-        return root;
-    }
-    
-    public void setRoot(VCSFileProxy root) {
-        this.root = root;
     }
     
     @Override
@@ -154,7 +148,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
             support = new HgProgressSupport() {
                 @Override
                 protected void perform() {
-                    Properties props = HgModuleConfig.getDefault(root).getProperties(root, "extensions"); // NOI18N
+                    Properties props = HgModuleConfig.getDefault(VCSFileProxy.createFileProxy(fileStstem.getRoot())).getProperties(null, "extensions"); // NOI18N
                     final HgPropertiesNode[] hgProps = new HgPropertiesNode[props.size()];
                     int i = 0;
 
@@ -214,12 +208,12 @@ public class HgExtProperties implements ActionListener, DocumentListener {
                 @Override
                 protected void perform() {
                     try {
-                        HgModuleConfig.getDefault(root).clearProperties(root, "extensions"); // NOI18N
+                        HgModuleConfig.getDefault(VCSFileProxy.createFileProxy(fileStstem.getRoot())).clearProperties(null, "extensions"); // NOI18N
                         HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
                         for (int i = 0; i < hgPropertiesNodes.length; i++) {
                             String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(i)].getName();
                             String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(i)].getValue();
-                            HgModuleConfig.getDefault(root).setProperty(root, "extensions", hgPropertyName, hgPropertyValue, true); // NOI18N
+                            HgModuleConfig.getDefault(VCSFileProxy.createFileProxy(fileStstem.getRoot())).setProperty(null, "extensions", hgPropertyName, hgPropertyValue, true); // NOI18N
                         }
                     } catch (IOException ex) {
                         HgModuleConfig.notifyParsingError();

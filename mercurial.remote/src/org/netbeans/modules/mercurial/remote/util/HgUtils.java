@@ -101,8 +101,10 @@ import org.netbeans.modules.mercurial.remote.ui.status.SyncFileNode;
 import org.netbeans.modules.remotefs.versioning.api.FileSelector;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1925,7 +1927,7 @@ itor tabs #66700).
     }
 
     static ThreadLocal<Set<VCSFileProxy>> indexingFiles = new ThreadLocal<Set<VCSFileProxy>>();
-    public static <T> T runWithoutIndexing (Callable<T> callable, VCSFileProxy... files) throws HgException {
+    public static <T> T runWithoutIndexing (Callable<T> callable, final VCSFileProxy... files) throws HgException {
         try {
             Set<VCSFileProxy> recursiveRoots = indexingFiles.get();
             if (recursiveRoots != null) {
@@ -1941,8 +1943,14 @@ itor tabs #66700).
                     indexingFiles.set(new HashSet<VCSFileProxy>(Arrays.asList(files)));
                     // TODO: see bug #250064
                     //return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
-                    return null;
+                    return callable.call();
                 } finally {
+                    Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            VersioningSupport.refreshFor(files);
+                        }
+                    }, 100);
                     indexingFiles.remove();
                 }
             }
