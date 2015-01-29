@@ -56,6 +56,7 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.Device;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
@@ -207,7 +208,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                 final Project project = context.lookup(Project.class);
                 if (Browser.CHROME.getName().equals(b.getName()) && project != null) {
                     try {
-                        build.startDebugging(device, project, new ProxyLookup(context, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice16.png"), url)), false);
+                        build.startDebugging(device, project, new ProxyLookup(context, Lookups.fixed(BrowserFamilyId.ANDROID, ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice16.png"), url)), false);
                     } catch (IllegalStateException ex) {
                         LOGGER.log(Level.INFO, ex.getMessage(), ex);
                         SwingUtilities.invokeLater(new Runnable() {

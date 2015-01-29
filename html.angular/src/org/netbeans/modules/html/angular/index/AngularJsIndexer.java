@@ -327,30 +327,32 @@ public class AngularJsIndexer extends EmbeddingIndexer{
                         File file = Utilities.toFile(uri);
                         FileObject fo = FileUtil.toFileObject(file);
 
-                        IndexDocument elementDocument = support.createDocument(fo);
-                        for (String template : map.keySet()) {
-                            AngularJsController.ModuleConfigRegistration controller = map.get(template);
-                            StringBuilder sb = new StringBuilder();
-                            sb.append(template).append(":").append(controller.getControllerName()); //NOI18N
-                            if (controller.getControllerAsName()!= null) {
-                                sb.append(":").append(controller.getControllerAsName()); //NOI18N
-                            }
-                            elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
-                        }
-                        if (controls != null) {
-                            Collection<AngularJsController> cons = controls.get(uri);
-                            if (cons != null) {
-                                for (AngularJsController controller : cons) {
-                                    StringBuilder sb = new StringBuilder();
-                                    sb.append(controller.getName()).append(":");    //NOI18N
-                                    sb.append(controller.getFqn()).append(":");     //NOI18N
-                                    sb.append(controller.getOffset());
-                                    elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
+                        if (fo != null) {
+                            IndexDocument elementDocument = support.createDocument(fo);
+                            for (String template : map.keySet()) {
+                                AngularJsController.ModuleConfigRegistration controller = map.get(template);
+                                StringBuilder sb = new StringBuilder();
+                                sb.append(template).append(":").append(controller.getControllerName()); //NOI18N
+                                if (controller.getControllerAsName() != null) {
+                                    sb.append(":").append(controller.getControllerAsName()); //NOI18N
                                 }
-                                controls.remove(uri);
+                                elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
                             }
+                            if (controls != null) {
+                                Collection<AngularJsController> cons = controls.get(uri);
+                                if (cons != null) {
+                                    for (AngularJsController controller : cons) {
+                                        StringBuilder sb = new StringBuilder();
+                                        sb.append(controller.getName()).append(":");    //NOI18N
+                                        sb.append(controller.getFqn()).append(":");     //NOI18N
+                                        sb.append(controller.getOffset());
+                                        elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
+                                    }
+                                    controls.remove(uri);
+                                }
+                            }
+                            support.addDocument(elementDocument);
                         }
-                        support.addDocument(elementDocument);
                     }
                 }
                 if (controls != null && !controls.isEmpty()) {
@@ -361,15 +363,17 @@ public class AngularJsIndexer extends EmbeddingIndexer{
                         File file = Utilities.toFile(uri);
                         FileObject fo = FileUtil.toFileObject(file);
 
-                        IndexDocument elementDocument = support.createDocument(fo);
-                        for (AngularJsController controller : collection) {
-                            StringBuilder sb = new StringBuilder();
-                            sb.append(controller.getName()).append(":");    //NOI18N
-                            sb.append(controller.getFqn()).append(":");     //NOI18N
-                            sb.append(controller.getOffset());
-                            elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
+                        if (fo != null) {
+                            IndexDocument elementDocument = support.createDocument(fo);
+                            for (AngularJsController controller : collection) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append(controller.getName()).append(":");    //NOI18N
+                                sb.append(controller.getFqn()).append(":");     //NOI18N
+                                sb.append(controller.getOffset());
+                                elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
+                            }
+                            support.addDocument(elementDocument);
                         }
-                        support.addDocument(elementDocument);
                     }
                 }
             }
