@@ -53,15 +53,18 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.codemodel.CMDiagnostic;
 import org.netbeans.modules.cnd.api.codemodel.CMFile;
-import org.netbeans.modules.cnd.api.codemodel.CMIndex;
 import org.netbeans.modules.cnd.api.codemodel.CMSourceLocation;
-import org.netbeans.modules.cnd.api.codemodel.query.CMQuery;
+import org.netbeans.modules.cnd.api.codemodel.CMToken;
 import org.netbeans.modules.cnd.api.codemodel.query.CMUtilities;
 import org.netbeans.modules.cnd.api.codemodel.visit.CMDeclaration;
 import org.netbeans.modules.cnd.api.codemodel.visit.CMEntityReference;
 import org.netbeans.modules.cnd.api.codemodel.visit.CMInclude;
 import org.netbeans.modules.cnd.api.codemodel.visit.CMVisitLocation;
 import org.netbeans.modules.cnd.api.codemodel.visit.CMVisitQuery;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.codemodel.bridge.impl.NativeProjectCompilationDataBase;
+import org.netbeans.modules.cnd.spi.codemodel.providers.CMCompilationDataBase;
+import org.netbeans.modules.cnd.spi.codemodel.support.SPIUtilities;
 import org.netbeans.modules.cnd.spi.codemodel.trace.CMTraceUtils;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
@@ -133,20 +136,20 @@ public class CMTracePreprocessorAction extends NodeAction {
     /** Actually nobody but us call this since we have a presenter. */
     @Override
     public void performAction(final Node[] activatedNodes) {
-        final Collection<CMIndex> indices = getIndices(activatedNodes);
-        if (!indices.isEmpty()) {
+        final Collection<CMCompilationDataBase> dbs = getCompilationDB(activatedNodes);
+        if (!dbs.isEmpty()) {
             RP.post(new Runnable() {
 
                 @Override
                 public void run() {
-                    preprocessImpl(indices);
+                    preprocessImpl(dbs);
                 }
 
             });
         }
     }
 
-    private void preprocessImpl(Collection<CMIndex> indices) {
+    private void preprocessImpl(Collection<CMCompilationDataBase> dbs) {
         String taskName = "Testing Preprocessor"; // NOI18N
         InputOutput io = IOProvider.getDefault().getIO(taskName, false); // NOI18N
         io.select();
@@ -167,7 +170,11 @@ public class CMTracePreprocessorAction extends NodeAction {
         long time = System.currentTimeMillis();
 
         try {
-            for (CMIndex idx : indices) {
+            for (CMCompilationDataBase db : dbs) {
+              SPIUtilities.createIndex(db, new TokenVisitorImpl(out, err, canceled));
+              for (CMCompilationDataBase.Entry entry : db.getEntries()) {
+                CMVisitQuery.tokenizeSourceRange(null, null, null);
+              }
 //                TestIndexCallback visitor = new TestIndexCallback(canceled, out, err);
 //                CMVisitQuery.visitIndex(idx, visitor, CMVisitQuery.VisitOptions.SkipParsedBodiesInSession);
             }
@@ -194,10 +201,10 @@ public class CMTracePreprocessorAction extends NodeAction {
      * @return in the case all nodes correspond to native projects - collection
      * of native projects; otherwise null
      */
-    protected Collection<CMIndex> getIndices(Node[] nodes) {
-        Set<CMIndex> indices = new HashSet<>();
+    private Collection<CMCompilationDataBase> getCompilationDB(Node[] nodes) {
+        Set<CMCompilationDataBase> dbs = new HashSet<>();
         for (Node node : nodes) {
-            CMIndex idx = node.getLookup().lookup(CMIndex.class);
+            CMCompilationDataBase idx = node.getLookup().lookup(CMCompilationDataBase.class);
             if (idx == null) {
                 Project prj = node.getLookup().lookup(Project.class);
                 if (prj == null) {
@@ -207,76 +214,79 @@ public class CMTracePreprocessorAction extends NodeAction {
                     }
                 }
                 if (prj != null) {
-                    indices.addAll(CMQuery.getIndices(prj));
+                    NativeProject np = prj.getLookup().lookup(NativeProject.class);
+                    if (np != null) {
+                      dbs.add(new NativeProjectCompilationDataBase(np));
+                    }
                 }
             } else {
-                indices.add(idx);
+                dbs.add(idx);
             }
         }
-        return indices;
+        return dbs;
     }
     
-    private static final class TestIndexCallback implements CMVisitQuery.IndexCallback {
-        private final OutputWriter out;
-        private final OutputWriter err;
-        private final AtomicBoolean canceled;
-
-        private TestIndexCallback(AtomicBoolean canceled, OutputWriter out, OutputWriter err) {
-            this.out = out;
-            this.err = err;
-            this.canceled = canceled;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return canceled.get();
-        }
-
-        @Override
-        public void onDiagnostics(Iterable<CMDiagnostic> diagnostics) {
-            out.printf("onDiagnostics:\n");
-            int idx = 0;
-            for (CMDiagnostic d : diagnostics) {
-                try {
-                    out.println(++idx + ":" + CMTraceUtils.toString(d), OpenLink.create(d.getLocation()));
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-
-        @Override
-        public void onIndclude(CMInclude include) {
-            try {
-                out.println("onIndclude: " + CMTraceUtils.toString(include), OpenLink.create(include.getHashLocation()));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        @Override
-        public void onTranslationUnit() {
-            out.println("onTranslationUnit");
-        }
-
-        @Override
-        public void onDeclaration(CMDeclaration decl) {
-            try {
-                out.println("onDeclaration: " + CMTraceUtils.toString(decl), OpenLink.create(decl.getLocation()));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        @Override
-        public void onReference(CMEntityReference ref) {
-            try {
-                out.println("onReference: " + CMTraceUtils.toString(ref), OpenLink.create(ref.getLocation()));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }    
+//    private static final class TestIndexCallback implements CMVisitQuery.IndexCallback {
+//        private final OutputWriter out;
+//        private final OutputWriter err;
+//        private final AtomicBoolean canceled;
+//
+//        private TestIndexCallback(AtomicBoolean canceled, OutputWriter out, OutputWriter err) {
+//            this.out = out;
+//            this.err = err;
+//            this.canceled = canceled;
+//        }
+//
+//        @Override
+//        public boolean isCancelled() {
+//            return canceled.get();
+//        }
+//
+//        @Override
+//        public void onDiagnostics(Iterable<CMDiagnostic> diagnostics) {
+//            out.printf("onDiagnostics:\n");
+//            int idx = 0;
+//            for (CMDiagnostic d : diagnostics) {
+//                try {
+//                    out.println(++idx + ":" + CMTraceUtils.toString(d), OpenLink.create(d.getLocation()));
+//                } catch (IOException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onIndclude(CMInclude include) {
+//            try {
+//                out.println("onIndclude: " + CMTraceUtils.toString(include), OpenLink.create(include.getHashLocation()));
+//            } catch (IOException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+//
+//        @Override
+//        public void onTranslationUnit() {
+//            out.println("onTranslationUnit");
+//        }
+//
+//        @Override
+//        public void onDeclaration(CMDeclaration decl) {
+//            try {
+//                out.println("onDeclaration: " + CMTraceUtils.toString(decl), OpenLink.create(decl.getLocation()));
+//            } catch (IOException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+//
+//        @Override
+//        public void onReference(CMEntityReference ref) {
+//            try {
+//                out.println("onReference: " + CMTraceUtils.toString(ref), OpenLink.create(ref.getLocation()));
+//            } catch (IOException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+//    }    
 
     private static class OpenLink implements OutputListener {
         private final CMSourceLocation loc;
@@ -323,4 +333,21 @@ public class CMTracePreprocessorAction extends NodeAction {
         public void outputLineCleared(OutputEvent ev) {
         }
     }
+
+  private static class TokenVisitorImpl implements CMVisitQuery.TokenVisitor {
+    private final OutputWriter out;
+    private final OutputWriter err;
+    private final AtomicBoolean canceled;
+
+    public TokenVisitorImpl(OutputWriter out, OutputWriter err, AtomicBoolean canceled) {
+      this.out = out;
+      this.err = err;
+      this.canceled = canceled;
+    }
+
+    @Override
+    public TokenVisitRequest visit(CMToken token) {
+      throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+  }
 }
