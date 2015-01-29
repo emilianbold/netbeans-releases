@@ -53,6 +53,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
@@ -148,32 +149,56 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
      */
     @NbBundle.Messages({
         "# {0} - Knockout version",
-        "UnusedBindingsPanel.unsupportedVersion=<html><center>Detection of unused bindings<br>is not supported for<br>Knockout version {0}!"
+        "UnusedBindingsPanel.unsupportedVersion=<html><center>Detection of unused bindings<br>is not supported for<br>Knockout version {0}!",
+        "UnusedBindingsPanel.unsupportedBrowser=<html><center>Detection of unused bindings<br>is not supported for this browser!<br>Use Chrome or Chromium instead."
     })
     public void setKnockoutVersion(String knockoutVersion) {
         if (knockoutVersion == null) {
             showComponent(findPanel);
-        } else if (isSupportedKnockoutVersion(knockoutVersion)) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("window.NetBeans && NetBeans.unusedBindingsAvailable()"); // NOI18N
-                    final boolean found = "true".equals(remoteObject.getValueAsString()); // NOI18N
-                    if (found) {
-                        updateData();
-                        EventQueue.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                showComponent(dataPanel);
-                            }
-                        });
-                    }
-                }
-            });
         } else {
-            unsupportedVersionLabel.setText(Bundle.UnusedBindingsPanel_unsupportedVersion(knockoutVersion));
-            showComponent(unsupportedVersionLabel);
+            BrowserFamilyId browser = pageModel.getPageContext().lookup(BrowserFamilyId.class);
+            if (isSupportedBrowser(browser)) {
+                if (isSupportedKnockoutVersion(knockoutVersion)) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("window.NetBeans && NetBeans.unusedBindingsAvailable()"); // NOI18N
+                            final boolean found = "true".equals(remoteObject.getValueAsString()); // NOI18N
+                            if (found) {
+                                updateData();
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showComponent(dataPanel);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    unsupportedVersionLabel.setText(Bundle.UnusedBindingsPanel_unsupportedVersion(knockoutVersion));
+                    showComponent(unsupportedVersionLabel);
+                }
+            } else {
+                unsupportedVersionLabel.setText(Bundle.UnusedBindingsPanel_unsupportedBrowser());
+                showComponent(unsupportedVersionLabel);
+            }
         }
+    }
+
+    /**
+     * Determines whether the specified browser supports the detection
+     * of unused bindings or not.
+     * 
+     * @param browser family ID of the browser.
+     * @return {@code true} when the specified browser supports the detection
+     * on unused bindings, returns {@code false} otherwise.
+     */
+    private boolean isSupportedBrowser(BrowserFamilyId browser) {
+        return (browser != null &&
+                (browser == BrowserFamilyId.CHROME ||
+                browser == BrowserFamilyId.CHROMIUM ||
+                browser == BrowserFamilyId.ANDROID));
     }
 
     /**
