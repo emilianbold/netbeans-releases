@@ -350,7 +350,7 @@ public class ConnectionTest extends AbstractGitTestCase {
 
             @Override
             public String getUsername (String uri, String prompt) {
-                return "gittester";
+                return "gittester2";
             }
 
             @Override
@@ -364,7 +364,7 @@ public class ConnectionTest extends AbstractGitTestCase {
             }
         });
         try {
-            client.listRemoteBranches("ssh://gittester@127.0.0.1/" + workDir.getAbsolutePath(), NULL_PROGRESS_MONITOR);
+            client.listRemoteBranches("ssh://gittester2@127.0.0.1/" + workDir.getAbsolutePath(), NULL_PROGRESS_MONITOR);
         } catch (GitException ex) {
             
         }
