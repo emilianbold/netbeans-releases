@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.branch.CreateBranchAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.branch.CreateBranchAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_CreateBranch")
 @Messages({
     "CTL_MenuItem_CreateBranch=Create &Branch...",

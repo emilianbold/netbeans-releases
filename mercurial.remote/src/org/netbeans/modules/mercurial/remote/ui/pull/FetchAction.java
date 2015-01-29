@@ -92,7 +92,7 @@ import org.openide.util.actions.SystemAction;
     "# {0} - repository folder name",
     "CTL_MenuItem_FetchRoot=&Fetch - {0}"
 })
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.pull.FetchAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.pull.FetchAction", category = "MercurialRemote")
 @ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_FetchLocal")
 public class FetchAction extends ContextAction {
     

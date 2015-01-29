@@ -65,10 +65,10 @@ import org.openide.util.NbBundle.Messages;
  * 
  * @author Padraig O'Briain
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.clone.CloneExternalAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.clone.CloneExternalAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_CloneExternal")
 @ActionReferences({
-   @ActionReference(path="Versioning/Mercurial/Actions/Global", position=301)
+   @ActionReference(path="Versioning/MercurialRemote/Actions/Global", position=301)
 })
 @Messages({
     "CTL_MenuItem_CloneExternal=Clone Othe&r..."

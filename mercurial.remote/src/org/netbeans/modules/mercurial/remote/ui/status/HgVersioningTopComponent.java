@@ -84,7 +84,7 @@ import org.openide.util.lookup.Lookups;
  * @author Maros Sandor
  */
 @TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_ALWAYS, preferredID=HgVersioningTopComponent.PREFERRED_ID)
-@TopComponent.Registration(mode="output", openAtStartup=false, position=3111)
+@TopComponent.Registration(mode="output", openAtStartup=false, position=3108)
 public class HgVersioningTopComponent extends TopComponent implements Externalizable, PropertyChangeListener {
    
     private static final long serialVersionUID = 1L;    

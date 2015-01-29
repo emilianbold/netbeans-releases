@@ -63,7 +63,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.queues.QPushAllPatchesAction", category = "Mercurial/Queues")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.queues.QPushAllPatchesAction", category = "MercurialRemote/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QPushAllPatches")
 @Messages({
     "CTL_MenuItem_QPushAllPatches=Pu&sh All Patches",

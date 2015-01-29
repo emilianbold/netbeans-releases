@@ -383,11 +383,17 @@ public final class MakeActionProvider implements ActionProvider {
             String message;
             if (record.isDeleted()) {
                 message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getDisplayName());
-                int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
-                if (res == JOptionPane.YES_OPTION) {
+                if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
+                    message += "\n Confirm Yes"; //NOI18N
+                    new Exception(message).printStackTrace(System.err);
                     ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
                 } else {
-                    return;
+                    int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
+                    if (res == JOptionPane.YES_OPTION) {
+                        ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
+                    } else {
+                        return;
+                    }
                 }
             }
             // start validation phase
@@ -411,17 +417,20 @@ public final class MakeActionProvider implements ActionProvider {
                     } catch (CancellationException ex) {
                         cancel();
                     } catch (Exception e) {
-                        e.printStackTrace(System.err);
                         final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getDisplayName()); //NOI18N
-                        final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
-                        SwingUtilities.invokeLater(new Runnable() {
+                        if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
+                            new Exception(message).printStackTrace(System.err);
+                        } else {
+                            final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
+                            SwingUtilities.invokeLater(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
-                                        message, title, JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
+                                @Override
+                                public void run() {
+                                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                                            message, title, JOptionPane.ERROR_MESSAGE);
+                                }
+                            });
+                        }
                     }
                     if (record.isOnline()) {
                         actionWorker.run();
@@ -429,10 +438,14 @@ public final class MakeActionProvider implements ActionProvider {
                 }
             };
         }
-        Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
-        String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
-        ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
+        if (SwingUtilities.isEventDispatchThread()) {
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
+            String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
+            ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
+        } else {
+            wrapper.run();
+        }
     }
 
     private void addAction(ArrayList<ProjectActionEvent> actionEvents,

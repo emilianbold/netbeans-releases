@@ -79,7 +79,7 @@ import org.openide.util.NbBundle.Messages;
 @Messages({
     "CTL_MenuItem_PushOther=Pus&h..."
 })
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.push.PushOtherAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.push.PushOtherAction", category = "MercurialRemote")
 @ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PushOther")
 public class PushOtherAction extends ContextAction {
     

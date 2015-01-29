@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mercurial.remote.ui.tag;
+package org.netbeans.modules.javascript.nodejs.ui.wizard;
 
-import org.netbeans.modules.mercurial.remote.Mercurial;
-import org.netbeans.modules.mercurial.remote.util.HgUtils;
-import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle.Messages;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
 
-/**
- * 
- */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.tag.ManageTagsAction", category = "MercurialRemote")
-@ActionRegistration(displayName = "#CTL_MenuItem_ManageTags")
-@Messages({
-    "CTL_MenuItem_ManageTags=Mana&ge Tags...",
-    "CTL_PopupMenuItem_ManageTags=Manage Tags..."
-})
-public class ManageTagsAction extends ContextAction {
-    
-    @Override
-    protected boolean enable(Node[] nodes) {
-        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
+final class ProjectSetup implements PropertyChangeListener {
+
+    final OpenProjects openProjects = OpenProjects.getDefault();
+    private final Project project;
+
+
+    private ProjectSetup(Project project) {
+        assert project != null;
+        this.project = project;
+    }
+
+    public static void setupRun(Project project) {
+        ProjectSetup setupProject = new ProjectSetup(project);
+        setupProject.openProjects.addPropertyChangeListener(setupProject);
     }
 
     @Override
-    protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_ManageTags"; //NOI18N
-    }
-
-    @Override
-    protected void performContextAction(Node[] nodes) {
-        VCSContext ctx = HgUtils.getCurrentContext(nodes);
-        final VCSFileProxy roots[] = HgUtils.getActionRoots(ctx);
-        if (roots == null || roots.length == 0) {
-            return;
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            if (Arrays.asList(openProjects.getOpenProjects()).contains(project)) {
+                openProjects.removePropertyChangeListener(this);
+                NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
+                nodeJsSupport.getPreferences().setRunEnabled(true);
+                nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
+            }
         }
-        final VCSFileProxy repository = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-
-        TagManager manager = new TagManager(repository);
-        manager.showDialog();
     }
+
 }

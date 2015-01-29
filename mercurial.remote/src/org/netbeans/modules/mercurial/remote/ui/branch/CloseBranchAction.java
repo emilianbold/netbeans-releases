@@ -68,7 +68,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.branch.CloseBranchAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.branch.CloseBranchAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_CloseBranch")
 @Messages({
     "CTL_MenuItem_CloseBranch=C&lose Branch...",

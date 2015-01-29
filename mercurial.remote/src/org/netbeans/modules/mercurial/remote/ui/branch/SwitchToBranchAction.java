@@ -75,7 +75,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * 
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.branch.SwitchToBranchAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.branch.SwitchToBranchAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_SwitchBranch")
 @Messages({
     "CTL_MenuItem_SwitchBranch=&Switch Branch...",

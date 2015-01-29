@@ -107,7 +107,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         
         try {
             if(!isClientAvailable(files[0])) {
-                LOG.log(Level.WARNING, "Mercurial client is unavailable");
+                LOG.log(Level.WARNING, "Remote ''{0}'' Mercurial client is unavailable", VCSFileProxySupport.getFileSystem(files[0]));
                 return null;
             }
             Set<VCSFileProxy> repositories = getRepositoryRoots(files);
@@ -211,7 +211,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
             
             if(!isClientAvailable(originalFile)) {
-                LOG.log(Level.WARNING, "Mercurial client is unavailable");
+                LOG.log(Level.WARNING, "Remote ''{0}''  Mercurial client is unavailable", VCSFileProxySupport.getFileSystem(originalFile));
                 return;
             }
 
@@ -327,7 +327,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                 return;
             }
             if(!isClientAvailable(files[0])) {
-                LOG.log(Level.WARNING, "Mercurial client is unavailable"); // NOI18N
+                LOG.log(Level.WARNING, "Remote ''{0}'' Mercurial client is unavailable", VCSFileProxySupport.getFileSystem(files[0])); // NOI18N
                 return;
             }
 

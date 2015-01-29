@@ -66,7 +66,7 @@ import org.openide.util.RequestProcessor;
     "# {0} - repository folder name",
     "CTL_MenuItem_PullBranchRoot=&Pull Current Branch - {0}"
 })
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.pull.PullCurrentBranchAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.pull.PullCurrentBranchAction", category = "MercurialRemote")
 @ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PullBranchLocal")
 public class PullCurrentBranchAction extends ContextAction {
     

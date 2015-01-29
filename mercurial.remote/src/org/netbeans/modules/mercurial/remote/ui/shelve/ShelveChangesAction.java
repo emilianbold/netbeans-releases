@@ -77,7 +77,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Ondra Vrabec
  */
-@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.shelve.ShelveChangesAction", category = "Mercurial")
+@ActionID(id = "org.netbeans.modules.mercurial.remote.ui.shelve.ShelveChangesAction", category = "MercurialRemote")
 @ActionRegistration(displayName = "#CTL_ShelveChanges_Title")
 public class ShelveChangesAction extends ContextAction {
     private static ShelveChangesActionProvider ACTION_PROVIDER;
