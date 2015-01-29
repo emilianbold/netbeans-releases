@@ -3984,6 +3984,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                     envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
                 }
             }
+            pb.setEnvironmentVariables(envOrig);
             try {
                 Callable<List<String>> callable = new Callable<List<String>>() {
                     @Override

@@ -125,6 +125,8 @@ public class HgModuleConfig {
         FileSystem fileSystem = null;
         if (root != null) {
             fileSystem = VCSFileProxySupport.getFileSystem(root);
+        } else {
+            System.err.println("");
         }
         HgModuleConfig res = INSTANCE.get(fileSystem);
         if (res == null) {
@@ -484,7 +486,7 @@ public class HgModuleConfig {
 
     private HgConfigFiles getHgConfigFiles(VCSFileProxy file) {
         if (file == null) {
-            return HgConfigFiles.getSysInstance(null);
+            return HgConfigFiles.getSysInstance(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
         } else {
             return new HgConfigFiles(file); 
         }

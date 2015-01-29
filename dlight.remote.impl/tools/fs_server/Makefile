@@ -84,13 +84,12 @@ CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m32
 CF_FreeBSD-x86    = $(CF_COMMON) -D_GNU_SOURCE -m32
 CF_FreeBSD-x86_64 = $(CF_COMMON) -D_GNU_SOURCE -m64
 
-LF_Windows-x86    = --static-libgcc
-LF_Windows-x86_64 = --static-libgcc
 LF_Linux-x86      = $(LF_COMMON)
 LF_Linux-x86_64   = $(LF_COMMON)
+LF_Linux-arm      = $(LF_COMMON) -static
 
 CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF)) -lpthread
+LDFLAGS=$(LF_$(CONF))
 
 all: $(EXEC)
 	@$(LINE) =
@@ -109,7 +108,7 @@ include $(ROOT_DIR)/make/Makefile.$(MAKEFILE)
 
 $(EXEC): $(DIST_DIR) $(OBJS)
 	@$(LINE) -
-	$(LINK.c) -o $@ $(OBJS) -lpthread
+	$(LINK.c) $(LDFLAGS) -o $@ $(OBJS) -lpthread
 
 $(OBJ_DIRS) $(DIST_DIR):
 	$(MKDIR) $@

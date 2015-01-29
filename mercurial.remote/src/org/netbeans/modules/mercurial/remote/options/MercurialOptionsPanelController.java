@@ -125,12 +125,18 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     
     @Override
     public void update() {
+        if (getFS() == null) {
+            return;
+        }
         getPanel().load();
         changed = false;
     }
     
     @Override
     public void applyChanges() {
+        if (getFS() == null) {
+            return;
+        }
         getPanel().store();
         // {folder} variable setting
         Mercurial.getInstance().getMercurialAnnotator().refresh();
@@ -146,6 +152,9 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     
     @Override
     public boolean isValid() {
+        if (getFS() == null) {
+            return true;
+        }
         return validateFields();
     }
     
@@ -248,6 +257,9 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
 
     private void onExecPathBrowseClick() {
+        if (getFS() == null) {
+            return;
+        }
         VCSFileProxy oldFile = getExportFile();
         JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(MercurialOptionsPanelController.class, "Browse_title"));                                            // NOI18N
@@ -374,7 +386,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
 
         panel.propsPanel.add(component, BorderLayout.CENTER);
 
-        HgExtProperties hgProperties = new HgExtProperties(panel, propTable, null) ;
+        HgExtProperties hgProperties = new HgExtProperties(panel, propTable, getFS()) ;
 
         final JButton okButton =  new JButton(NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_Properties_Action_OK")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_Properties_Action_OK")); // NOI18N

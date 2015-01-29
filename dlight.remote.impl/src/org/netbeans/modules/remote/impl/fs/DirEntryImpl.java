@@ -223,9 +223,7 @@ public class DirEntryImpl extends DirEntry {
     public static DirEntryImpl fromExternalForm(String externalForm) throws FormatException {
         String[] parts = externalForm.split(" +"); // NOI18N
         if (parts.length != 7 && parts.length != 8) {
-            if (parts[2].length() != 1) {
-                throw new FormatException("Wrong format: " + externalForm, false); // NOI18N
-            }
+            throw new FormatException("Wrong format: " + externalForm, false); // NOI18N
         }
         String name = unescape(parts[0]);
         String cache = unescape(parts[1]);
