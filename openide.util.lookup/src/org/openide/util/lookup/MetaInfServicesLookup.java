@@ -412,6 +412,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
             return;
         }
 
+        int foundIndex = -1;
         int index = -1;
         for (Item i : list) {
             if (i.equals(item)) {
@@ -419,20 +420,17 @@ final class MetaInfServicesLookup extends AbstractLookup {
             }
             index++;
 
-            if (i.position == -1) {
-                list.add(index, item);
-
-                return;
-            } else {
-                if (i.position > item.position) {
-                    list.add(index, item);
-
-                    return;
+            if (foundIndex < 0) {
+                if (i.position == -1 || i.position > item.position) {
+                    foundIndex = index;
                 }
             }
         }
-
-        list.add(item);
+        if (foundIndex < 0) {
+            list.add(item);             // add to the end
+        } else {
+            list.add(foundIndex, item); // insert at found index
+        }
     }
 
     static Item createPair(Class<?> clazz) {
