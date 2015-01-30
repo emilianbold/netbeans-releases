@@ -126,8 +126,8 @@ public class Utils {
         return LOG;
     }
 
-    public static String getRealUrl(String defaultUrl) {
-        return defaultUrl.replaceFirst("/s/", "/#projects/"); //NOI18N
+    public static String getWebUrl(String defaultUrl) {
+        return defaultUrl.replaceFirst("/profile/", "/").replaceFirst("/s/", "/#projects/"); // NOI18N
     }
 
     public static Action getOpenBrowserAction(final String url) {
