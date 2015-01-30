@@ -597,8 +597,9 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
     
     private static final class DirCache implements Evictable {
 
-        private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);                
-        
+        private static final RequestProcessor EVICTOR_RP =
+            new RequestProcessor(LuceneIndex.DirCache.class.getName(), 1);
+
         private final File folder;
         private final RecordOwnerLockFactory lockFactory;
         private final CachePolicy cachePolicy;
@@ -1019,19 +1020,22 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         public String toString() {
             return this.folder.getAbsolutePath();
         }
-        
+
         @Override
-        public synchronized void evicted() {
-            if (memDir != null) {
-                if (ref != null) {
-                    ref.clearHRef();
-                }
-            } else {
-                //When running from memory cache no need to close the reader, it does not own file handler.
-                //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
-                RP.post(new Runnable() {
-                    @Override
-                    public void run () {
+        public void evicted() {
+            EVICTOR_RP.execute(new Runnable() {
+                @Override
+                public void run() {
+                    boolean needsClose = true;
+                    synchronized (this) {
+                        if (memDir != null) {
+                            if (ref != null) {
+                                ref.clearHRef();
+                            }
+                            needsClose = false;
+                        }
+                    }
+                    if (needsClose) {
                         try {
                             close(false);
                             LOGGER.log(Level.FINE, "Evicted index: {0}", folder.getAbsolutePath()); //NOI18N
@@ -1039,10 +1043,10 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                             Exceptions.printStackTrace(ex);
                         }
                     }
-                });
-            }
+                }
+            });
         }
-        
+
         private synchronized void hit() {
             if (reader != null) {
                 final URI uri = BaseUtilities.toURI(folder);
