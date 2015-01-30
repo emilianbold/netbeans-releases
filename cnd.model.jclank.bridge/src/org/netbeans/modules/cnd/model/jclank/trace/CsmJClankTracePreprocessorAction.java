@@ -41,10 +41,41 @@
  */
 package org.netbeans.modules.cnd.model.jclank.trace;
 
+import java.io.PrintWriter;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import static org.netbeans.modules.cnd.model.jclank.trace.Bundle.*;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+
 /**
  *
  * @author Vladimir Voskresensky
  */
 public class CsmJClankTracePreprocessorAction {
-    
+    private static void dumpFileTokens(NativeFileItem nfi, PrintWriter printOut) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 102)
+    public final static class JClankDumpFileTokens implements CndDiagnosticProvider {
+
+        @NbBundle.Messages({"JClankDumpFileTokens.displayName=Preproces with JClank"})
+        @Override
+        public String getDisplayName() {
+            return JClankDumpFileTokens_displayName();
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====Dump File Tokens by JClank\n");// NOI18N 
+            Collection<? extends NativeFileItem> allFiles = context.lookupAll(NativeFileItem.class);
+            for (NativeFileItem nfi : allFiles) {
+                printOut.printf("====Dump Tokens for %s %n", nfi.getAbsolutePath());// NOI18N 
+                CsmJClankTracePreprocessorAction.dumpFileTokens(nfi, printOut);
+            }
+        }
+    }    
 }
