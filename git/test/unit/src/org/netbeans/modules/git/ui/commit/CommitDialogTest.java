@@ -46,10 +46,12 @@ import org.netbeans.modules.git.GitFileNode;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
+import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitTestKit;
+import org.netbeans.modules.git.GitVCS;
 
 /**
  *
@@ -64,7 +66,9 @@ public class CommitDialogTest extends AbstractGitTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp();        
+        super.setUp();
+        MockServices.setServices(new Class[] {
+            GitVCS.class});
     }
 
     public void testPrefilledPanel() throws Exception {
