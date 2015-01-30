@@ -1215,7 +1215,19 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue249119.js", "^g2();", true);
     }
     
-   private String getTestName() {
+    public void testIssue250099_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {MyC^ontext.CarDescription} carDescription", true); 
+    }
+    
+    public void testIssue250099_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {MyContext.CarDesc^ription} carDescription", true); 
+    }
+    
+    public void testIssue250099_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {Na^me} name", true); 
+    }
+             
+    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
         if (indexOf != -1) {
