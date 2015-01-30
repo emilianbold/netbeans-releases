@@ -692,6 +692,25 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                             }
                         }
                     }
+                } else {
+                    Collection<TypeUsage> types = ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, false);
+                    for (TypeUsage type : types) {
+                        Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(type.getType(), functionName);
+                        properties.addAll(jsIndex.getPropertiesWithPrefix(type.getType() + "." + ModelUtils.PROTOTYPE, functionName));
+                        for (IndexedElement property : properties) {
+                            if (property.getName().equals(functionName) && property.getJSKind().isFunction()) {
+                                IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)property;
+                                LinkedHashMap<String, Collection<String>> parameters = function.getParameters();
+                                for (Collection<String> assignments: parameters.values()) {
+                                    if (!assignments.isEmpty()) {
+                                        for (String assignment : assignments) {
+                                            possibleTypes.add(new TypeUsageImpl(assignment));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 if (!possibleTypes.isEmpty()) {
                     for (TypeUsage type : possibleTypes) {
