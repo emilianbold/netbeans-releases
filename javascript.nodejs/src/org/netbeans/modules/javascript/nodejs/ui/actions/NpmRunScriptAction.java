@@ -79,7 +79,7 @@ import org.openide.util.actions.Presenter;
     @ActionReference(path = "Editors/text/package+x-json/Popup", position = 907),
     @ActionReference(path = "Loaders/text/package+x-json/Actions", position = 157),
     @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 171),
-    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 651),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 111),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 651),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 751),
 })
