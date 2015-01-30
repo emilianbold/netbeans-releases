@@ -368,7 +368,7 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     public void copyTree_UnversionedTarget_FO () throws Exception {
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
-        VCSFileProxy target = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), "mercurialtest_target_" + getName() + "_" + System.currentTimeMillis());
+        VCSFileProxy target = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), "mercurialtest_target_" + testName + "_" + System.currentTimeMillis());
         VCSFileProxySupport.mkdirs(target);
         try {
             VCSFileProxy copy = VCSFileProxy.createFileProxy(target, folder.getName());
@@ -391,7 +391,7 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     public void copyTree_UnversionedTarget_DO() throws Exception {
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
-        VCSFileProxy target = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), "mercurialtest_target_" + getName() + "_" + System.currentTimeMillis());
+        VCSFileProxy target = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), "mercurialtest_target_" + testName + "_" + System.currentTimeMillis());
         VCSFileProxySupport.mkdirs(target);
         try {
             VCSFileProxy copy = VCSFileProxy.createFileProxy(target, folder.getName());
