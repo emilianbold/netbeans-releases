@@ -558,8 +558,11 @@ public final class VCSFileProxySupport {
     }
 
     public static FileSystem[] getFileSystems() {
-        // TODO: return list of remote file systems
         return RemoteVcsSupport.getFileSystems();
+    }
+
+    public static FileSystem[] getConnectedFileSystems() {
+        return RemoteVcsSupport.getConnectedFileSystems();
     }
 
     public static FileSystem getFileSystem(VCSFileProxy file) {

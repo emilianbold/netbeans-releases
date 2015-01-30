@@ -99,7 +99,49 @@ public class DirectoryStorageTestCase extends RemoteFileTestBase {
             file.delete();
         }        
     }
-    
+
+    private void assertEntriesEqual(DirEntry e1, DirEntry e2) throws Exception {
+        assertEquals("getCache", e1.getCache(), e2.getCache());
+        assertEquals("getName", e1.getName(), e2.getName());
+        assertEquals("getDevice", e1.getDevice(), e2.getDevice());
+        assertEquals("getINode", e1.getINode(), e2.getINode());
+        assertEquals("getFileType", e1.getFileType(), e2.getFileType());
+        assertEquals("getLastModified", e1.getLastModified(), e2.getLastModified());
+        assertEquals("getLinkTarget", e1.getLinkTarget(), e2.getLinkTarget());
+        assertEquals("getSize", e1.getSize(), e2.getSize());
+        assertEquals("isDirectory", e1.isDirectory(), e2.isDirectory());
+        assertEquals("isLink", e1.isLink(), e2.isLink());
+        assertEquals("isPlainFile", e1.isPlainFile(), e2.isPlainFile());
+        assertEquals("isValid", e1.isValid(), e2.isValid());
+        assertEquals("canExecute", e1.canExecute(), e2.canExecute());
+        assertEquals("canRead", e1.canRead(), e2.canRead());
+        assertEquals("canWrite", e1.canWrite(), e2.canWrite());
+    }
+
+    @ForAllEnvironments
+    public void testDirectoryStorageFS() throws Exception {
+        File file = File.createTempFile("directoryStorage", ".dat");
+        try {
+            ConnectionManager.getInstance().connectTo(execEnv);
+            DirEntryList entries = RemoteFileSystemTransport.readDirectory(execEnv, "/");
+            DirectoryStorage ds1 = new DirectoryStorage(file, entries.getEntries());
+            ds1.store();
+            DirectoryStorage ds2 = DirectoryStorage.load(file, execEnv);
+            for (DirEntry e1 : entries.getEntries()) {
+                DirEntry e2 = ds2.getValidEntry(e1.getName());
+                assertNotNull("Null entry for " + e1.getName(), e2);
+                assertEntriesEqual(e1, e2);
+            }
+            for (DirEntry e2 : ds2.listAll()) {
+                DirEntry e1 = ds1.getValidEntry(e2.getName());
+                assertNotNull("Null entry for " + e1.getName(), e2);
+                assertEntriesEqual(e1, e2);
+            }
+        } finally {
+            file.delete();
+        }
+    }
+
     public static Test suite() {
         return RemoteApiTest.createSuite(DirectoryStorageTestCase.class);
     }

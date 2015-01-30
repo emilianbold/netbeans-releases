@@ -146,6 +146,11 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     }
 
     @Override
+    public FileSystem[] getConnectedFileSystems() {
+        return RemoteVcsSupportUtil.getConnectedFileSystems();
+    }
+
+    @Override
     public FileSystem getDefaultFileSystem() {
         // TODO: get default from cnd.remote !!!
         FileSystem[] fsList = getFileSystems();

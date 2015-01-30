@@ -83,7 +83,7 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
     private VCSVisibilityQuery visibilityQuery;
 
     public SubversionVCS() {
-        for(FileSystem fileSystem : VCSFileProxySupport.getFileSystems()) {
+        for(FileSystem fileSystem : VCSFileProxySupport.getConnectedFileSystems()) {
             SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
         }
         Subversion.getInstance().attachListeners(this);

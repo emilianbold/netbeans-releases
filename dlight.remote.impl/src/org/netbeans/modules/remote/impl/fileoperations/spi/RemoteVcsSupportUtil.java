@@ -46,17 +46,20 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.filesystems.FileObject;
@@ -274,5 +277,16 @@ public class RemoteVcsSupportUtil {
                         env, path, env, referenceFile, res.exitCode, res.error);
             }
         }
+    }
+
+    public static FileSystem[] getConnectedFileSystems() {
+        Collection<RemoteFileSystem> all = RemoteFileSystemManager.getInstance().getAllFileSystems();
+        List<FileSystem> connected = new ArrayList<>(all.size());
+        for (RemoteFileSystem fs : all) {
+            if (ConnectionManager.getInstance().isConnectedTo(fs.getExecutionEnvironment())) {
+                connected.add(fs);
+            }
+        }
+        return connected.toArray(new FileSystem[connected.size()]);
     }
 }

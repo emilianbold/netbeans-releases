@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,5 +128,18 @@ public class RemoteFileSystemManager {
                 }
             }
         }
+    }
+
+    public Collection<RemoteFileSystem> getAllFileSystems(){
+        Collection<RemoteFileSystem> res = new ArrayList<>();
+        synchronized(lock) {
+            for (SoftReference<RemoteFileSystem> ref : fileSystems.values()) {
+                RemoteFileSystem fs = ref.get();
+                if (fs != null) {
+                    res.add(fs);
+                }
+            }
+        }
+        return res;
     }
 }

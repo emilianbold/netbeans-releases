@@ -76,8 +76,8 @@ import org.openide.util.NbBundle.Messages;
 public class CloneExternalAction implements ActionListener, HelpCtx.Provider {
     @Override
     public void actionPerformed(ActionEvent e) {
-        FileSystem[] fileSystems = VCSFileProxySupport.getFileSystems();
-        if (fileSystems == null || fileSystems.length == 0) {
+        FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
+        if (fileSystems.length == 0) {
             return;
         }
         //TODO: provide way to select FS

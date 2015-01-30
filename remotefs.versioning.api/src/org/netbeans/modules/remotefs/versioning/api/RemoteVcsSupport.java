@@ -88,6 +88,10 @@ public final class RemoteVcsSupport {
         return getImpl().getFileSystems();
     }
 
+    public static FileSystem[] getConnectedFileSystems() {
+        return getImpl().getConnectedFileSystems();
+    }
+
     public static FileSystem getDefaultFileSystem() {
         return getImpl().getDefaultFileSystem();
     }
