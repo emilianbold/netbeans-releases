@@ -1648,7 +1648,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                         testFOs.add(file);
                     }
                 }
-                return testFOs.toArray(new FileObject[testFOs.size()]);
+                return testFOs.isEmpty() ?
+                    null:
+                    testFOs.toArray(new FileObject[testFOs.size()]);
             }
         }
         if (checkInSrcDir && testSrcPaths.length > 0) {
@@ -1683,10 +1685,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                             }
                         }
                     }
-                    if(testFOs.isEmpty()) { // The selected FOs are files without tests
-                        return null;
-                    }
-                    return testFOs.toArray(new FileObject[testFOs.size()]);
+                    return testFOs.isEmpty() ?
+                        null :
+                        testFOs.toArray(new FileObject[testFOs.size()]);
                 }
             }
         }
