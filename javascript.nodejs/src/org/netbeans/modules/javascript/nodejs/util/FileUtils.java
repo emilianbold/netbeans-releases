@@ -89,7 +89,8 @@ public final class FileUtils {
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
     private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
-    private static final String NODEJS_SOURCES_URL = "http://nodejs.org/dist/v%s/node-v%s.tar.gz"; // NOI18N
+    private static final String NODEJS_SOURCES_URL = "http://nodejs.org/dist/v%1$s/node-v%1$s.tar.gz"; // NOI18N
+    private static final String IOJS_SOURCES_URL = "https://iojs.org/dist/v%1$s/iojs-v%1$s.tar.gz"; // NOI18N
 
 
     private FileUtils() {
@@ -318,18 +319,16 @@ public final class FileUtils {
         }
     }
 
-    @NbBundle.Messages({
-        "# {0} - version",
-        "FileUtils.sources.downloading=Downloading sources for node.js version {0}...",
-    })
-    public static void downloadNodeSources(Version version) throws NetworkException, IOException {
+    public static void downloadNodeSources(Version version, boolean iojs) throws NetworkException, IOException {
         assert !EventQueue.isDispatchThread();
         assert version != null;
         deleteExistingNodeSources(version);
         File nodeSources = NodeJsUtils.getNodeSources();
         String nodeVersion = version.toString();
-        File archive = new File(nodeSources, "nodejs-" + nodeVersion + ".tar.gz"); // NOI18N
-        downloadNodeSources(archive, nodeVersion);
+        File archive = new File(nodeSources, (iojs ? "iojs" : "nodejs") + "-" + nodeVersion + ".tar.gz"); // NOI18N
+        if (!downloadNodeSources(archive, nodeVersion, iojs)) {
+            return;
+        }
         // unpack
         try {
             String foldername = decompressTarGz(archive, nodeSources, false);
@@ -357,13 +356,21 @@ public final class FileUtils {
         }
     }
 
-    private static void downloadNodeSources(File archive, String nodeVersion) throws IOException {
+    @NbBundle.Messages({
+        "# {0} - version",
+        "FileUtils.sources.downloading.nodejs=Downloading sources for node.js version {0}...",
+        "# {0} - version",
+        "FileUtils.sources.downloading.iojs=Downloading sources for io.js version {0}...",
+    })
+    private static boolean downloadNodeSources(File archive, String nodeVersion, boolean iojs) throws IOException {
         assert archive != null;
         assert nodeVersion != null;
-        String url = String.format(NODEJS_SOURCES_URL, nodeVersion, nodeVersion);
+        String url = String.format(iojs ? IOJS_SOURCES_URL : NODEJS_SOURCES_URL, nodeVersion);
         // download
         try {
-            NetworkSupport.downloadWithProgress(url, archive, Bundle.FileUtils_sources_downloading(nodeVersion));
+            String msg = iojs ? Bundle.FileUtils_sources_downloading_iojs(nodeVersion) : Bundle.FileUtils_sources_downloading_nodejs(nodeVersion);
+            NetworkSupport.downloadWithProgress(url, archive, msg);
+            return true;
         } catch (InterruptedException ex) {
             // download cancelled
             LOGGER.log(Level.FINE, "Download cancelled for {0}", url);
@@ -371,6 +378,7 @@ public final class FileUtils {
             LOGGER.log(Level.INFO, url, ex);
             throw ex;
         }
+        return false;
     }
 
     @CheckForNull
