@@ -85,7 +85,7 @@ public class NativeProjectBridge implements PropertyChangeListener {
             //CMVisitQuery.VisitOptions.SkipParsedBodiesInSession
             CMVisitQuery.VisitOptions.None);
 
-    private static final String STORAGE_SCHEME = System.getProperty("cnd.codemodel.db.scheme", "jdbc:h2"); //NOI18N
+    private static final String STORAGE_SCHEME = System.getProperty("cnd.codemodel.db.scheme", "fake"); //NOI18N
 
     private static final NativeProjectBridge INSTANCE = new NativeProjectBridge();
     private static final Set<CMProgressListener> listeners = new WeakSet<>();
@@ -190,7 +190,7 @@ public class NativeProjectBridge implements PropertyChangeListener {
             sw.stop();
             NativeProjectCompilationDataBase cdb = new NativeProjectCompilationDataBase(p);
             CMIndex index;
-            if (!storage.needsIndexing(null)) {
+            if (storage != null && !storage.needsIndexing(null)) {
                 CMUtilities.getLogger().log(Level.INFO, "Project {0} does not need indexing", p); //NOI18N
                 //TODO: the below is a workaround
                 index = SPIUtilities.parse(Collections.<CMCompilationDataBase.Entry>emptyList());
@@ -208,6 +208,20 @@ public class NativeProjectBridge implements PropertyChangeListener {
                 sw = new StopWatch("flushing %s ...", index);
                 storage.flush();
                 sw.stop();
+            } else if (CMTraceUtils.EMPTY_INDEX) {
+                sw = new StopWatch("Create Index for %s", p.getProjectDisplayName());
+                progress.log("ProjectCompilationDataBase for " + p.getProjectDisplayName()); // NOI18N
+                progress.switchToDeteterminate(cdb.getEntries().size());
+                index = SPIUtilities.createIndex(cdb, null);
+                if (index != null) {
+                    SPIUtilities.registerIndex(p, index);
+                }
+                sw.stop();
+                if (storage != null) {
+                    sw = new StopWatch("flushing %s ...", index);
+                    storage.flush();
+                    sw.stop();
+                }
             } else if (CMTraceUtils.INDEX_ON_PARSE) {
                 sw = new StopWatch("Indexing at parse %s", p.getProjectDisplayName());
                 progress.log("Parse & Index ProjectCompilationDataBase for " + p.getProjectDisplayName()); // NOI18N
@@ -217,9 +231,11 @@ public class NativeProjectBridge implements PropertyChangeListener {
                     SPIUtilities.registerIndex(p, index);
                 }
                 sw.stop();
-                sw = new StopWatch("flushing %s ...", index);
-                storage.flush();
-                sw.stop();
+                if (storage != null) {
+                    sw = new StopWatch("flushing %s ...", index);
+                    storage.flush();
+                    sw.stop();
+                }
             } else {
                 sw = new StopWatch("parsing %s", p);
                 progress.log("Start: Parsing ProjectCompilationDataBase for " + p.getProjectDisplayName()); // NOI18N
@@ -235,9 +251,11 @@ public class NativeProjectBridge implements PropertyChangeListener {
                     index(storage, index);
                     progress.log("Done: Indexing " + p.getProjectDisplayName()); // NOI18N
                     sw.stop();
-                    sw = new StopWatch("flushing %s ...", index);
-                    storage.flush();
-                    sw.stop();
+                    if (storage != null) {
+                        sw = new StopWatch("flushing %s ...", index);
+                        storage.flush();
+                        sw.stop();
+                    }
                 }
             }
             List<CMProgressListener> copy;
