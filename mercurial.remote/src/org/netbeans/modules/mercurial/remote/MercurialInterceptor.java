@@ -319,7 +319,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         VCSFileProxy dstRoot = hg.getRepositoryRoot(to);
 
         if (from.isDirectory()) {
-            VCSFileProxySupport.copyDirFiles(root, root, false);
+            VCSFileProxySupport.copyDirFiles(from, to, false);
         } else {
             VCSFileProxySupport.copyFile(from, to);
         }
@@ -613,6 +613,9 @@ public class MercurialInterceptor extends VCSInterceptor {
                 return;
             }
             final VCSFileProxy repository = Mercurial.getInstance().getRepositoryRoot(file);
+            if (repository == null) {
+                return;
+            }
             final VCSFileProxy hgFolder = HgUtils.getHgFolderForRoot(repository);
             if (hgFolder != null) {
                 long time = System.currentTimeMillis();
