@@ -230,7 +230,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
-        boolean result = VCSFileProxySupport.renameTo(srcFile, srcFile);
+        boolean result = VCSFileProxySupport.renameTo(srcFile, dstFile);
         if (!result && equalPathsIgnoreCase(srcFile, dstFile)) {
             Mercurial.LOG.log(Level.FINE, "hgMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { srcFile, dstFile }); //NOI18N
             VCSFileProxy temp = VCSFileProxySupport.generateTemporaryFile(dstFile.getParentFile(), srcFile.getName());
