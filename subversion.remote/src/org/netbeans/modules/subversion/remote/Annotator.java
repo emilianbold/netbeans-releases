@@ -146,7 +146,7 @@ public class Annotator extends VCSAnnotator {
     }
 
     public void refresh() {
-        for(FileSystem fileSystem : VCSFileProxySupport.getFileSystems()) {
+        for(FileSystem fileSystem : VCSFileProxySupport.getConnectedFileSystems()) {
             initFormat(fileSystem);
         }
     }

@@ -51,6 +51,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.JFileChooser;
 import javax.swing.JButton;
 import java.util.ArrayList;
@@ -80,7 +82,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 import org.openide.filesystems.FileSystem;
 
-final class MercurialOptionsPanelController extends OptionsPanelController implements ActionListener, VCSOptionsKeywordsProvider {
+final class MercurialOptionsPanelController extends OptionsPanelController implements ItemListener, ActionListener, VCSOptionsKeywordsProvider {
     
     private MercurialPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -89,13 +91,14 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         
     public MercurialOptionsPanelController() {
 
-        fileSystem = VCSFileProxySupport.getDefaultFileSystem();
-        FileSystem[] fileSystems = VCSFileProxySupport.getFileSystems();
-
+        FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
+        if (fileSystems.length > 0){
+            fileSystem = fileSystems[0];
+        }
         panel = new MercurialPanel(this);
         panel.execPathBrowseButton.addActionListener(this);
         panel.exportFilenameBrowseButton.addActionListener(this);
-        panel.cbBuildHost.addActionListener(this);
+        panel.cbBuildHost.addItemListener(this);
         panel.cbBuildHost.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -106,6 +109,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
             }
         });
         panel.cbBuildHost.setModel(new DefaultComboBoxModel(fileSystems));
+        panel.fileSystemChanged(fileSystem);
 
         String tooltip = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.annotationTextField.toolTipText", MercurialAnnotator.LABELS); // NOI18N
 
@@ -125,7 +129,14 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     
     @Override
     public void update() {
-        if (getFS() == null) {
+        FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
+        if (fileSystems.length > 0) {
+            fileSystem = fileSystems[0];
+        } else {
+            fileSystem = null;
+        }
+        panel.cbBuildHost.setModel(new DefaultComboBoxModel(fileSystems));
+        if (fileSystem == null) {
             return;
         }
         getPanel().load();
@@ -184,7 +195,21 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
     
     @Override
+    public void itemStateChanged(ItemEvent ev) {
+        if (ev.getStateChange() == ItemEvent.SELECTED) {
+            Object item = ev.getItem();
+            if (item instanceof FileSystem) {
+                fileSystem = (FileSystem) item;
+                panel.fileSystemChanged(fileSystem);
+            }
+        }
+    }
+
+    @Override
     public void actionPerformed(ActionEvent evt) {
+        if (getFS() == null) {
+            return;
+        }
         if (evt.getSource() == panel.execPathBrowseButton) {
             onExecPathBrowseClick();
         } else if (evt.getSource() == panel.exportFilenameBrowseButton) {

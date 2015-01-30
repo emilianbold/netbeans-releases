@@ -57,7 +57,7 @@ import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import static org.netbeans.modules.mercurial.remote.options.Bundle.CTL_UsernameLoading;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle.Messages;
 
 //@OptionsPanelController.Keywords(keywords={"hg", "mercurial", "#MercurialPanel.kw1", "#MercurialPanel.kw2", "#MercurialPanel.kw3"}, location="Team", tabTitle="#CTL_OptionsPanel.title") //NOI18N
@@ -333,7 +333,26 @@ final class MercurialPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
 }//GEN-LAST:event_excludeNewFilesActionPerformed
     
+    void fileSystemChanged(FileSystem fileSystem) {
+        boolean enabled = fileSystem != null;
+        addButton.setEnabled(enabled);
+        annotationTextField.setEnabled(enabled);
+        cbAskBeforeCommitAfterMerge.setEnabled(enabled);
+        cbInternalMergeToolEnabled.setEnabled(enabled);
+        cbOpenOutputWindow.setEnabled(enabled);
+        excludeNewFiles.setEnabled(enabled);
+        execPathBrowseButton.setEnabled(enabled);
+        executablePathTextField.setEnabled(enabled);
+        exportFilenameBrowseButton.setEnabled(enabled);
+        exportFilenameTextField.setEnabled(enabled);
+        manageButton.setEnabled(enabled);
+        userNameTextField.setEnabled(enabled);
+    }
+    
     private void nameChange() {
+        if (controller.getFS() == null) {
+            return;
+        }
         VCSFileProxy root = controller.getRoot();
         boolean isChanged = (userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText()))
                 || !HgModuleConfig.getDefault(root).getExecutableBinaryPath().equals(executablePathTextField.getText())
@@ -388,6 +407,9 @@ final class MercurialPanel extends javax.swing.JPanel {
         // NbPreferences.forModule(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
+        if (controller.getFS() == null) {
+            return;
+        }
         final VCSFileProxy root = controller.getRoot();
         if(userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText())) {
             try {
