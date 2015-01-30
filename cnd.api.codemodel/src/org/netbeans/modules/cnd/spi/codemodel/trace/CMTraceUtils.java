@@ -79,8 +79,9 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
  */
 public class CMTraceUtils {
     public static final boolean SKIP_FUNCTION_BODY = getBoolean("cm.skip.body", false); // NOI18N
-    public static final boolean INDEX_SOURCE_FILE = getBoolean("cm.index.sourcefile", true); // NOI18N
-    public static final boolean INDEX_ON_PARSE = getBoolean("cnd.codemodel.indexedparse", true); // NOI18N
+    public static final boolean INDEX_SOURCE_FILE = getBoolean("cm.index.sourcefile", false); // NOI18N
+    public static final boolean INDEX_ON_PARSE = getBoolean("cnd.codemodel.indexedparse", false); // NOI18N
+    public static final boolean EMPTY_INDEX = getBoolean("cnd.codemodel.empty.index", true); // NOI18N
 
     private CMTraceUtils() {
     }
