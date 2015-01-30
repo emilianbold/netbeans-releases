@@ -128,6 +128,10 @@ class DebugManagerHandler implements JPDABreakpointListener {
                 if (inited.compareAndSet(false, true)) {
                     initDebuggerRemoteService(event.getThread());
                 }
+                if (accessorClass == null) {
+                    // No accessor
+                    return ;
+                }
                 //event.getThread();
                 JPDAThreadImpl thread = (JPDAThreadImpl) event.getThread();
                 InvocationExceptionTranslated iextr = null;

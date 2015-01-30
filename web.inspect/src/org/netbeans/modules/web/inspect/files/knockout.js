@@ -49,18 +49,18 @@
     if (NetBeans.knockoutMarkers) {
         return;
     }
-    NetBeans.knockoutMarkers = [];
-    var createMarker = function(node, bindingName) {
-        var marker = {
-            invoked: false,
-            binding: bindingName,
-            node: node
-        };
-        NetBeans.knockoutMarkers.push(marker);
-        return marker;
-    };
-    var delegate = ko.bindingProvider.instance.getBindingAccessors;
+    var delegate = (typeof(ko) === 'object') ? ko.bindingProvider.instance.getBindingAccessors : null;
     if (delegate) {
+        NetBeans.knockoutMarkers = [];
+        var createMarker = function(node, bindingName) {
+            var marker = {
+                invoked: false,
+                binding: bindingName,
+                node: node
+            };
+            NetBeans.knockoutMarkers.push(marker);
+            return marker;
+        };
         ko.bindingProvider.instance.getBindingAccessors = function(node) {
             var accessors = delegate.apply(this, arguments);
             if (accessors) {
@@ -78,5 +78,5 @@
             }
             return accessors;
         };
-    } // else not using Knockout 3+ probably
+    } // else not Knockout 3+ script
 })();

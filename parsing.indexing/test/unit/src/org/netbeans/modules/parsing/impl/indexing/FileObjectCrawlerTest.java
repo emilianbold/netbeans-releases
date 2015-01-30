@@ -277,12 +277,10 @@ public class FileObjectCrawlerTest extends NbTestCase {
         inFolder1.createData("data2.txt");
         folder2.createData("data3.txt");
         inFolder2.createData("data4.txt");
-        final Map<Pair<File,File>,Boolean> linkMap = new HashMap<Pair<File,File>, Boolean>();
+        final Map<Pair<FileObject,FileObject>,Boolean> linkMap = new HashMap<>();
         linkMap.put(
-            Pair.<File,File>of(
-                FileUtil.toFile(folder2),
-                FileUtil.toFile(inFolder2)),
-            Boolean.TRUE);
+            Pair.<FileObject,FileObject>of(folder2,inFolder2), Boolean.TRUE
+        );
         FileObjectCrawler.mockLinkTypes = linkMap;
         final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE), null, CR, SuspendSupport.NOP);
         final Collection<Indexable> indexables = c.getAllResources();
@@ -305,12 +303,10 @@ public class FileObjectCrawlerTest extends NbTestCase {
         inFolder1.createData("data2.txt");
         folder2.createData("data3.txt");
         inFolder2.createData("data4.txt");
-        final Map<Pair<File,File>,Boolean> linkMap = new HashMap<Pair<File,File>, Boolean>();
+        final Map<Pair<FileObject,FileObject>,Boolean> linkMap = new HashMap<>();
         linkMap.put(
-            Pair.<File,File>of(
-                FileUtil.toFile(cycleTarget),
-                FileUtil.toFile(inFolder2)),
-            Boolean.TRUE);
+            Pair.<FileObject,FileObject>of(cycleTarget, inFolder2), Boolean.TRUE
+        );
         FileObjectCrawler.mockLinkTypes = linkMap;
         final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE), null, CR, SuspendSupport.NOP);
         final Collection<Indexable> indexables = c.getAllResources();
