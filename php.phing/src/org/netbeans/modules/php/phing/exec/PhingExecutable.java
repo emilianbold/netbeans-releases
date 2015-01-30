@@ -231,6 +231,7 @@ public class PhingExecutable {
 
     private static final class PhingTargetsLineConvertor implements LineConvertor {
 
+        private static final String MAIN_TARGETS = "Main targets:"; // NOI18N
         private static final String SUBTARGETS = "Subtargets:"; // NOI18N
 
         final List<String> targets = new ArrayList<>();
@@ -240,13 +241,16 @@ public class PhingExecutable {
 
         @Override
         public List<ConvertedLine> convert(String line) {
+            String trimmed = line.trim();
             if (collecting) {
-                String target = line.trim();
-                if (StringUtilities.hasText(target.replace('-', ' '))) { // NOI18N
-                    targets.add(target);
+                if (!SUBTARGETS.equals(trimmed)) {
+                    if (StringUtilities.hasText(trimmed.replace('-', ' '))) { // NOI18N
+                        targets.add(StringUtilities.explode(trimmed, " ").get(0)); // NOI18N
+                    }
                 }
             } else {
-                collecting = SUBTARGETS.equals(line.trim());
+                collecting = MAIN_TARGETS.equals(trimmed)
+                        || SUBTARGETS.equals(trimmed);
             }
             return Collections.emptyList();
         }

@@ -71,6 +71,7 @@ import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -373,11 +374,23 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         @Override
         public Action[] getActions(boolean context) {
             List<Action> actions = new LinkedList<>(Arrays.asList(CommonProjectActions.forType("org-netbeans-modules-php-project"))); // NOI18N
+            addBuildActions(actions);
             // XXX code coverage cannot be added since it already is ContextAwareAction (but the Factory needs to be ContextAwareAction as well)
             addCodeCoverageAction(actions);
             // XXX similarly for frameworks - they are directly in the context menu, not in any submenu
             addFrameworks(actions);
             return actions.toArray(new Action[actions.size()]);
+        }
+
+        private void addBuildActions(List<Action> actions) {
+            if (!BuildTools.getDefault().hasBuildTools(project)) {
+                return;
+            }
+            int index = 1; // right after New... action
+            actions.add(index++, null);
+            actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance", Action.class)); // NOI18N
+            actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance", Action.class)); // NOI18N
+            actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance", Action.class)); // NOI18N
         }
 
         private void addCodeCoverageAction(List<Action> actions) {
