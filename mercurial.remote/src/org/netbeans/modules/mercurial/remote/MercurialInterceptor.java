@@ -613,6 +613,9 @@ public class MercurialInterceptor extends VCSInterceptor {
                 return;
             }
             final VCSFileProxy repository = Mercurial.getInstance().getRepositoryRoot(file);
+            if (repository == null) {
+                return;
+            }
             final VCSFileProxy hgFolder = HgUtils.getHgFolderForRoot(repository);
             if (hgFolder != null) {
                 long time = System.currentTimeMillis();
