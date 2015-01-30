@@ -76,6 +76,7 @@ public class EditInstanceAction extends AbstractAction {
     }
 
     @Override
+    @NbBundle.Messages("CTL_EditTeamServerInstance=Edit Team Server")
     public void actionPerformed(ActionEvent e) {
         final JButton changeButton = new JButton(CHANGE_BUTTON);
         changeButton.getAccessibleContext().setAccessibleDescription(CHANGE_BUTTON);
@@ -121,7 +122,7 @@ public class EditInstanceAction extends AbstractAction {
 
         DialogDescriptor dd = new DialogDescriptor(
                 tsInstanceCustomizer,
-                Bundle.CTL_NewTeamServerInstance(),
+                Bundle.CTL_EditTeamServerInstance(),
                 true,
                 new Object[] {changeButton, CANCEL_BUTTON}, changeButton,
                 DialogDescriptor.DEFAULT_ALIGN,
