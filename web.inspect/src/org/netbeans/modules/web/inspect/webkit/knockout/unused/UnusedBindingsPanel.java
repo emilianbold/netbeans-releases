@@ -166,22 +166,16 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
                             final boolean found = "true".equals(remoteObject.getValueAsString()); // NOI18N
                             if (found) {
                                 updateData();
-                                EventQueue.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        showComponent(dataPanel);
-                                    }
-                                });
                             }
                         }
                     });
                 } else {
-                    unsupportedVersionLabel.setText(Bundle.UnusedBindingsPanel_unsupportedVersion(knockoutVersion));
-                    showComponent(unsupportedVersionLabel);
+                    messageLabel.setText(Bundle.UnusedBindingsPanel_unsupportedVersion(knockoutVersion));
+                    showComponent(messageLabel);
                 }
             } else {
-                unsupportedVersionLabel.setText(Bundle.UnusedBindingsPanel_unsupportedBrowser());
-                showComponent(unsupportedVersionLabel);
+                messageLabel.setText(Bundle.UnusedBindingsPanel_unsupportedBrowser());
+                showComponent(messageLabel);
             }
         }
     }
@@ -219,19 +213,38 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
      * @param component component to show in the panel.
      */
     void showComponent(JComponent component) {
-        removeAll();
-        add(component);
-        revalidate();
-        repaint();
+        if (component.getParent() != this) {
+            removeAll();
+            add(component);
+            revalidate();
+            repaint();
+        }
     }
 
     /**
      * Updates the unused binding information shown in the panel.
      */
+    @NbBundle.Messages({
+        "UnusedBindingsPanel.noUnusedBindings=<No Unused Bindings>"
+    })
     void updateData() {
         RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("NetBeans.unusedBindings()"); // NOI18N
         String json = remoteObject.getValueAsString();
-        manager.setRootContext(new UnusedRootNode(parse(json)));
+        Map<String,Map<Integer,UnusedBinding>> unusedBindings = parse(json);
+        manager.setRootContext(new UnusedRootNode(unusedBindings));
+        final JComponent componentToShow;
+        if (unusedBindings.isEmpty()) {
+            messageLabel.setText(Bundle.UnusedBindingsPanel_noUnusedBindings());
+            componentToShow = messageLabel;
+        } else {
+            componentToShow = dataPanel;
+        }
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                showComponent(componentToShow);
+            }
+        });
     }
 
     /**
@@ -282,7 +295,7 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
         dataPanel = new javax.swing.JPanel();
         refreshPanel = new javax.swing.JPanel();
         refreshButton = new javax.swing.JButton();
-        unsupportedVersionLabel = new javax.swing.JLabel();
+        messageLabel = new javax.swing.JLabel();
 
         findPanel.setBackground(treeView.getViewport().getView().getBackground());
 
@@ -344,10 +357,10 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
 
         dataPanel.add(refreshPanel, java.awt.BorderLayout.PAGE_END);
 
-        unsupportedVersionLabel.setBackground(treeView.getViewport().getView().getBackground());
-        unsupportedVersionLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        unsupportedVersionLabel.setEnabled(false);
-        unsupportedVersionLabel.setOpaque(true);
+        messageLabel.setBackground(treeView.getViewport().getView().getBackground());
+        messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        messageLabel.setEnabled(false);
+        messageLabel.setOpaque(true);
 
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
@@ -371,8 +384,8 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
     private javax.swing.JButton findButton;
     private javax.swing.JLabel findLabel;
     private javax.swing.JPanel findPanel;
+    private javax.swing.JLabel messageLabel;
     private javax.swing.JButton refreshButton;
     private javax.swing.JPanel refreshPanel;
-    private javax.swing.JLabel unsupportedVersionLabel;
     // End of variables declaration//GEN-END:variables
 }
