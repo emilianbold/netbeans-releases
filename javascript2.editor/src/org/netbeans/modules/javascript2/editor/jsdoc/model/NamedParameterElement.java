@@ -147,13 +147,21 @@ public class NamedParameterElement extends ParameterElement implements DocParame
             correctedTypes.addAll(paramTypes);
         } else {
             for (Type paramType : paramTypes) {
+                boolean changed = false;
+                String paramTypeName = paramType.getType();    
+                if (paramTypeName.indexOf('~') > 0) {
+                    paramTypeName = paramTypeName.replace('~', '.');
+                    changed = true;
+                }
                 if (JsDocElementUtils.GoogleCompilerSytax.canBeThisSyntax(paramType.getType())) {
-                    if (JsDocElementUtils.GoogleCompilerSytax.isMarkedAsOptional(paramType.getType())) {
+                    if (JsDocElementUtils.GoogleCompilerSytax.isMarkedAsOptional(paramTypeName)) {
                         optional = true;
-                        correctedTypes.add(JsDocElementUtils.createTypeUsage(JsDocElementUtils.GoogleCompilerSytax.removeSyntax(paramType.getType()), paramType.getOffset()));
-                    } else {
-                        correctedTypes.add(paramType);
-                    }
+                        changed = true;
+                        paramTypeName = JsDocElementUtils.GoogleCompilerSytax.removeSyntax(paramTypeName);
+                    } 
+                } 
+                if (changed) {
+                    correctedTypes.add(JsDocElementUtils.createTypeUsage(paramTypeName, paramType.getOffset()));
                 } else {
                     correctedTypes.add(paramType);
                 }

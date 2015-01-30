@@ -1243,6 +1243,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue250110.js", "* @typedef {Object} MyContext~Add^ress description", true); 
     }
     
+    public void testIssue250121_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyCon^text~Address} addressDescription", true); 
+    }
+    
+    public void testIssue250121_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyContext~Add^ress} addressDescription", true); 
+    }
+    
+    public void testIssue250121_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyContext~Address} add^ressDescription", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
