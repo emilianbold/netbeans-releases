@@ -129,6 +129,10 @@ public class NamedParameterElement extends ParameterElement implements DocParame
             List<Type> paramTypes, String paramDescription) {
         int nameStartOffset = paramName.getOffsetRange().getStart();
         String name = paramName.getName();
+        if (name.indexOf('~') > 0) {
+            // we dont't replace tilda if it's on the first position
+            name = name.replace('~', '.'); // replacing tilda with dot. See issue #25110
+        }
         boolean optional = name.matches("\\[.*\\]"); //NOI18N
         String defaultValue = null;
         List<Type> correctedTypes = new ArrayList<Type>();
