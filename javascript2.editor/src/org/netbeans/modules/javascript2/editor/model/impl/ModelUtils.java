@@ -1386,8 +1386,8 @@ public class ModelUtils {
     
     
     public static void addDocTypesOccurence(JsObject jsObject, JsDocumentationHolder docHolder) {
-        if (docHolder.getOccurencesMap().containsKey(jsObject.getName())) {
-            for (OffsetRange offsetRange : docHolder.getOccurencesMap().get(jsObject.getName())) {
+        if (docHolder.getOccurencesMap().containsKey(jsObject.getFullyQualifiedName())) {
+            for (OffsetRange offsetRange : docHolder.getOccurencesMap().get(jsObject.getFullyQualifiedName())) {
                 ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
             }
         }

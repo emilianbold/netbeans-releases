@@ -1215,7 +1215,47 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue249119.js", "^g2();", true);
     }
     
-   private String getTestName() {
+    public void testIssue250099_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {MyC^ontext.CarDescription} carDescription", true); 
+    }
+    
+    public void testIssue250099_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {MyContext.CarDesc^ription} carDescription", true); 
+    }
+    
+    public void testIssue250099_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {Na^me} name", true); 
+    }
+    
+    public void testIssue250112_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250112.js", "* @typedef {Object} MyCont^ext.Address description", true); 
+    }
+    
+    public void testIssue250112_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250112.js", "* @typedef {Object} MyContext.Add^ress description", true); 
+    }
+     
+    public void testIssue250110_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250110.js", "* @typedef {Object} MyCont^ext~Address description", true); 
+    }
+    
+    public void testIssue250110_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250110.js", "* @typedef {Object} MyContext~Add^ress description", true); 
+    }
+    
+    public void testIssue250121_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyCon^text~Address} addressDescription", true); 
+    }
+    
+    public void testIssue250121_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyContext~Add^ress} addressDescription", true); 
+    }
+    
+    public void testIssue250121_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyContext~Address} add^ressDescription", true); 
+    }
+    
+    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
         if (indexOf != -1) {
