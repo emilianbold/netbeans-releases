@@ -48,10 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -65,7 +63,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -77,7 +74,6 @@ import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -387,30 +383,14 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         }
 
         private void addBuildActions(List<Action> actions) {
-            PhpActionProvider actionProvider = project.getLookup().lookup(PhpActionProvider.class);
-            Set<String> supportedActions = new HashSet<>(Arrays.asList(actionProvider.getSupportedActions()));
-            boolean hasBuildTools = BuildTools.getDefault().hasBuildTools(project);
-            boolean buildSupported = hasBuildTools
-                    || supportedActions.contains(ActionProvider.COMMAND_BUILD);
-            boolean rebuildSupported = hasBuildTools
-                    || supportedActions.contains(ActionProvider.COMMAND_REBUILD);
-            boolean cleanSupported = hasBuildTools
-                    || supportedActions.contains(ActionProvider.COMMAND_CLEAN);
+            if (!BuildTools.getDefault().hasBuildTools(project)) {
+                return;
+            }
             int index = 1; // right after New... action
-            if (buildSupported
-                    || rebuildSupported
-                    || cleanSupported) {
-                actions.add(index++, null);
-            }
-            if (buildSupported) {
-                actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance", Action.class)); // NOI18N
-            }
-            if (rebuildSupported) {
-                actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance", Action.class)); // NOI18N
-            }
-            if (cleanSupported) {
-                actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance", Action.class)); // NOI18N
-            }
+            actions.add(index++, null);
+            actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance", Action.class)); // NOI18N
+            actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance", Action.class)); // NOI18N
+            actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance", Action.class)); // NOI18N
         }
 
         private void addCodeCoverageAction(List<Action> actions) {
