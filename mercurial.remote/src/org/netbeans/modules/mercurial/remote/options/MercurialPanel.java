@@ -135,6 +135,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel10 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         exportFilename = new javax.swing.JLabel();
@@ -148,7 +149,8 @@ final class MercurialPanel extends javax.swing.JPanel {
         cbAskBeforeCommitAfterMerge = new javax.swing.JCheckBox();
         cbInternalMergeToolEnabled = new javax.swing.JCheckBox();
         lblWarning = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel10.text")); // NOI18N
 
         jLabel1.setLabelFor(userNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel1.text")); // NOI18N
@@ -205,8 +207,6 @@ final class MercurialPanel extends javax.swing.JPanel {
 
         lblWarning.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
         org.openide.awt.Mnemonics.setLocalizedText(lblWarning, " "); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel10.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -277,7 +277,7 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
                     .addComponent(userNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(executablePathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
