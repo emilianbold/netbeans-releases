@@ -67,6 +67,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.DialogDisplayer;
@@ -227,6 +228,8 @@ public final class NodeJsPathPanel extends JPanel {
         "# {0} - version",
         "NodeJsPathPanel.sources.exists=Sources for version {0} already exist. Download again?",
         "NodeJsPathPanel.download.success=Node.js sources downloaded successfully.",
+        "# {0} - file URL",
+        "NodeJsPathPanel.download.failure=File {0} cannot be downloaded.",
         "NodeJsPathPanel.download.error=Error occured during download (see IDE log).",
     })
     private void downloadSources() {
@@ -255,10 +258,12 @@ public final class NodeJsPathPanel extends JPanel {
                     FileUtils.downloadNodeSources(version);
                     nodeSources = null;
                     StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsPathPanel_download_success());
+                } catch (NetworkException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    informUser(Bundle.NodeJsPathPanel_download_failure(ex.getFailedRequests().get(0)));
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
-                    NotifyDescriptor descriptor = new NotifyDescriptor.Message(Bundle.NodeJsPathPanel_download_error(), NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notifyLater(descriptor);
+                    informUser(Bundle.NodeJsPathPanel_download_error());
                 }
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -269,6 +274,11 @@ public final class NodeJsPathPanel extends JPanel {
                 });
             }
         });
+    }
+
+    private void informUser(String message) {
+        NotifyDescriptor descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(descriptor);
     }
 
     private void setNodeSourcesDescription() {
