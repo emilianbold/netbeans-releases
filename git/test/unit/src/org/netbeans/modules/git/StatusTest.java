@@ -883,6 +883,57 @@ public class StatusTest extends AbstractGitTestCase {
         GitModuleConfig.getDefault().removeExclusionPaths(Collections.<String>singleton(file.getAbsolutePath()));
     }
     
+    // tests that list files does not return modifications frm subrepositories
+    public void testCacheListFilesSubrepos () throws Exception {
+        File subrepo = new File(repositoryLocation, "subrepository");
+        subrepo.mkdirs();
+        getClient(subrepo).init(GitUtils.NULL_PROGRESS_MONITOR);
+        Git.getInstance().clearAncestorCaches();
+        Git.getInstance().versionedFilesChanged();
+        
+        getClient(repositoryLocation).add(new File[] { subrepo }, GitUtils.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).commit(new File[] { subrepo }, "message", null, null, GitUtils.NULL_PROGRESS_MONITOR);
+        
+        File file = new File(subrepo, "file");
+        file.createNewFile();
+        
+        getCache().refreshAllRoots(subrepo);
+        getCache().refreshAllRoots(repositoryLocation);
+        FileInformation fi = getCache().getStatus(file);
+        assertTrue(fi.containsStatus(FileInformation.Status.NEW_INDEX_WORKING_TREE));
+        
+        File[] listFiles = getCache().listFiles(new File[] { repositoryLocation }, FileInformation.STATUS_LOCAL_CHANGES);
+        assertEquals(0, listFiles.length);
+        
+        listFiles = getCache().listFiles(new File[] { subrepo }, FileInformation.STATUS_LOCAL_CHANGES);
+        assertEquals(1, listFiles.length);
+        assertEquals(file, listFiles[0]);
+    }
+    
+    // tests that contains files does not return modifications frm subrepositories
+    public void testCacheContainsFilesSubrepos () throws Exception {
+        File subrepo = new File(repositoryLocation, "subrepository");
+        subrepo.mkdirs();
+        getClient(subrepo).init(GitUtils.NULL_PROGRESS_MONITOR);
+        Git.getInstance().clearAncestorCaches();
+        Git.getInstance().versionedFilesChanged();
+        
+        getClient(repositoryLocation).add(new File[] { subrepo }, GitUtils.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).commit(new File[] { subrepo }, "message", null, null, GitUtils.NULL_PROGRESS_MONITOR);
+        
+        File file = new File(subrepo, "file");
+        file.createNewFile();
+        
+        getCache().refreshAllRoots(subrepo);
+        getCache().refreshAllRoots(repositoryLocation);
+        FileInformation fi = getCache().getStatus(file);
+        assertTrue(fi.containsStatus(FileInformation.Status.NEW_INDEX_WORKING_TREE));
+        
+        assertFalse(getCache().containsFiles(Collections.<File>singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
+        
+        assertTrue(getCache().containsFiles(Collections.<File>singleton(subrepo), FileInformation.STATUS_LOCAL_CHANGES, true));
+    }
+    
     private void assertSameStatus(Set<File> files, EnumSet<Status> status) {
         for (File f : files) {
             assertEquals(status, getCache().getStatus(f).getStatus());
