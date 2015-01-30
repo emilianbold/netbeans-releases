@@ -100,7 +100,7 @@
         </Container>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="unsupportedVersionLabel">
+    <Component class="javax.swing.JLabel" name="messageLabel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="treeView.getViewport().getView().getBackground()" type="code"/>
