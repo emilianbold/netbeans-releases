@@ -281,6 +281,12 @@ public class RemoteServices {
                     Method newInstance = ClassTypeWrapper.concreteMethodByName(theClass, "newInstance", "()Ljava/lang/Object;");
                     ObjectReference newInstanceOfBasicClass = (ObjectReference) ObjectReferenceWrapper.invokeMethod(basicClass, tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 }
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable th) {
+                Exceptions.printStackTrace(th);
+                // The upload failed, do not attempt to run with a partial backend.
+                basicClass = null;
             } finally {
                 t.accessLock.writeLock().unlock();
             }
