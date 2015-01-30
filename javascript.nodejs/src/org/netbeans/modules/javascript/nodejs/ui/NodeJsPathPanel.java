@@ -236,7 +236,7 @@ public final class NodeJsPathPanel extends JPanel {
         assert EventQueue.isDispatchThread();
         downloadSourcesButton.setEnabled(false);
         String nodePath = getNode();
-        NodeExecutable node = NodeExecutable.forPath(nodePath);
+        final NodeExecutable node = NodeExecutable.forPath(nodePath);
         assert node != null : nodePath;
         final Version version = node.getVersion();
         assert version != null : nodePath;
@@ -255,7 +255,7 @@ public final class NodeJsPathPanel extends JPanel {
             @Override
             public void run() {
                 try {
-                    FileUtils.downloadNodeSources(version);
+                    FileUtils.downloadNodeSources(version, new File(node.getExecutable()).getName().startsWith("io")); // NOI18N
                     nodeSources = null;
                     StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsPathPanel_download_success());
                 } catch (NetworkException ex) {
