@@ -90,7 +90,6 @@ import org.netbeans.modules.versioning.util.common.VCSCommitDiffProvider;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
@@ -326,10 +325,8 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
             }
             List<GitLocalFileNode> nodesList = new ArrayList<>(fileList.size());
             for (File file : fileList) {
-                if (GitUtils.isFromRepository(repository, file)) {
-                    GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
-                    nodesList.add(node);
-                }
+                GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
+                nodesList.add(node);
             }
             final GitLocalFileNode[] nodes = nodesList.toArray(new GitLocalFileNode[nodesList.size()]);
             EventQueue.invokeLater(new Runnable() {
