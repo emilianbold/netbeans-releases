@@ -670,6 +670,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
          */
         @Override
         public void contentChanged() {
+            if (!instance.isConnected()) {
+                return; // HudsonInstance fires content change on terminate (IDE exit), does not makes sense to try to refresh
+            }
             ProjectHandle<ODCSProject> ph = projectHandle.get();
             if (ph != null) {
                 PairOfDifferentLists lists = checkJobList();
