@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -219,7 +220,14 @@ public class DefineInterceptor implements FunctionInterceptor {
             if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
                 return Collections.emptyList();
             }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), modules.getOffset());
+            TokenHierarchy<?> th = null;
+            TokenSequence<? extends JsTokenId> ts = null;
+            if (source != null) {
+                th = source.createSnapshot().getTokenHierarchy();
+                if (th != null) {
+                    ts = LexUtilities.getJsTokenSequence(th, modules.getOffset());
+                }
+            }
             if (ts == null) {
                 return Collections.emptyList();
             }

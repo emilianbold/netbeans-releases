@@ -118,10 +118,28 @@ public abstract class JsDocumentationHolder {
         if (type.getType().trim().isEmpty()) {
             return;
         }
-        if (!occurencesMap.containsKey(type.getType())) {
-            occurencesMap.put(type.getType(), new LinkedList<OffsetRange>());
-        }
-        occurencesMap.get(type.getType()).add(DocumentationUtils.getOffsetRange(type));
+        String[] typeParts = type.getType().split("\\.");
+        if (typeParts.length > 1) {
+            StringBuilder sb = new StringBuilder();
+            int offsetDelta = 0; 
+            int typeOffset = DocumentationUtils.getOffsetRange(type).getStart();
+            for (int i = 0; i < typeParts.length; i++) {
+                sb.append(typeParts[i]);
+                String name = sb.toString();
+                if (!occurencesMap.containsKey(name)) {
+                    occurencesMap.put(name, new LinkedList<OffsetRange>());
+                }
+                occurencesMap.get(name).add(new OffsetRange(typeOffset + offsetDelta, typeOffset + offsetDelta + typeParts[i].length()));
+                offsetDelta += name.length();
+                sb.append('.');
+                offsetDelta++;
+            }
+        } else {
+            if (!occurencesMap.containsKey(type.getType())) {
+                occurencesMap.put(type.getType(), new LinkedList<OffsetRange>());
+            }
+            occurencesMap.get(type.getType()).add(DocumentationUtils.getOffsetRange(type));
+            }
     }
 
     /**

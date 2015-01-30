@@ -73,7 +73,7 @@ import org.openide.util.actions.Presenter;
 
 @ActionID(id = "org.netbeans.modules.php.phing.ui.actions.RunPhingTargetAction", category = "Build")
 @ActionRegistration(displayName = "#RunPhingTargetAction.name", lazy = false)
-@ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 630)
+@ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 120)
 @NbBundle.Messages("RunPhingTargetAction.name=Phing Targets")
 public final class RunPhingTargetAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 

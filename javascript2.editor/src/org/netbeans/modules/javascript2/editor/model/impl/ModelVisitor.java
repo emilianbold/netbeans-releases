@@ -714,38 +714,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        } else if (docHolder != null) {
-            // look for the type defined through comment like @typedef
-            Map<Integer, ? extends JsComment> commentBlocks = docHolder.getCommentBlocks();
-            for(JsComment comment: commentBlocks.values()) {
-                DocParameter definedType = comment.getDefinedType();
-                if (definedType != null) {
-                    JsObject object = new JsObjectImpl(getGlobalObject(), definedType.getParamName(), definedType.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
-                    getGlobalObject().addProperty(object.getName(), object);
-                    int assignOffset = definedType.getParamName().getOffsetRange().getEnd();
-                    List<Type> types = definedType.getParamTypes();
-                    
-                    for (Type type : types) {
-                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
-                    }
-                    List<Type> assignedTypes = comment.getTypes();
-                    for (Type type : assignedTypes) {
-                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
-                    }
-                    List<DocParameter> properties = comment.getProperties();
-                    for (DocParameter docProperty: properties) {
-                        JsObject jsProperty = new JsObjectImpl(object, docProperty.getParamName(), docProperty.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
-                        object.addProperty(jsProperty.getName(), jsProperty);
-                        types = docProperty.getParamTypes();
-                        jsProperty.setDocumentation(Documentation.create(docProperty.getParamDescription()));
-                        assignOffset = docProperty.getParamName().getOffsetRange().getEnd();
-                        for (Type type : types) {
-                           jsProperty.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
-                        }
-                    }
-                }
-            }
-        }
+        } 
 //        else {
             for(FunctionNode cFunction: functionNode.getFunctions()) {
                 if (cFunction.isAnonymous()) {
@@ -792,6 +761,62 @@ public class ModelVisitor extends PathNodeVisitor {
                     ((JsObjectImpl)variable).setDeprecated(docHolder.isDeprecated(varNode));
                 }
 
+            }
+            
+            if (docHolder != null) {
+                // look for the type defined through comment like @typedef
+                Map<Integer, ? extends JsComment> commentBlocks = docHolder.getCommentBlocks();
+                for (JsComment comment : commentBlocks.values()) {
+                    DocParameter definedType = comment.getDefinedType();
+                    if (definedType != null) {
+                    // XXX the param name now can contains names with dot.
+                        // it would be better if the getParamName returns list of identifiers
+                        String typeName = definedType.getParamName().getName();
+                        List<Identifier> fqn = new ArrayList<Identifier>();
+                        JsObject whereOccurrence = getGlobalObject();
+                        if (typeName.indexOf('.') > -1) {
+                            String[] parts = typeName.split("\\.");
+                            int offset = definedType.getParamName().getOffsetRange().getStart();
+                            int delta = 0;
+                            for (int i = 0; i < parts.length; i++) {
+                                fqn.add(new IdentifierImpl(parts[i], offset + delta));
+                                if (whereOccurrence != null) {
+                                    whereOccurrence = whereOccurrence.getProperty(parts[i]);
+                                    if (whereOccurrence != null) {
+                                        whereOccurrence.addOccurrence(new OffsetRange(offset + delta, offset + delta + parts[i].length()));
+                                    }
+                                }
+                                delta = delta + parts[i].length() + 1;
+                            }
+                        } else {
+                            fqn.add(definedType.getParamName());
+                        }
+                        JsObject object = ModelUtils.getJsObject(modelBuilder, fqn, true);
+//                    JsObject object = new JsObjectImpl(getGlobalObject(), definedType.getParamName(), definedType.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                        //getGlobalObject().addProperty(object.getName(), object);
+                        int assignOffset = definedType.getParamName().getOffsetRange().getEnd();
+                        List<Type> types = definedType.getParamTypes();
+
+                        for (Type type : types) {
+                            object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                        }
+                        List<Type> assignedTypes = comment.getTypes();
+                        for (Type type : assignedTypes) {
+                            object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                        }
+                        List<DocParameter> properties = comment.getProperties();
+                        for (DocParameter docProperty : properties) {
+                            JsObject jsProperty = new JsObjectImpl(object, docProperty.getParamName(), docProperty.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                            object.addProperty(jsProperty.getName(), jsProperty);
+                            types = docProperty.getParamTypes();
+                            jsProperty.setDocumentation(Documentation.create(docProperty.getParamDescription()));
+                            assignOffset = docProperty.getParamName().getOffsetRange().getEnd();
+                            for (Type type : types) {
+                                jsProperty.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                            }
+                        }
+                    }
+                }
             }
             
             List<FunctionNode> copy = new ArrayList<FunctionNode>(functions);

@@ -52,6 +52,8 @@ public final class BuildToolsCommand extends Command {
 
     private final String commandId;
 
+    private volatile boolean showCustomizer = true;
+
 
     public BuildToolsCommand(PhpProject project, String commandId) {
         super(project);
@@ -72,9 +74,10 @@ public final class BuildToolsCommand extends Command {
     @NbBundle.Messages("BuildToolsCommand.buildTool.none=No build tool (e.g. Phing) used in project.")
     @Override
     public void invokeActionInternal(Lookup context) {
-        if (!tryBuild(true, false)) {
+        if (!tryBuild(showCustomizer, false)) {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.BuildToolsCommand_buildTool_none()));
         }
+        showCustomizer = false;
     }
 
     public boolean tryBuild(boolean showCustomizer, boolean waitFinished) {

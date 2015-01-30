@@ -194,6 +194,10 @@ public class NodeExecutable {
         return nodePath;
     }
 
+    public String getExecutable() {
+        return getExecutable("dummy").getExecutable(); // NOI18N
+    }
+
     public void resetVersion() {
         VERSIONS.remove(nodePath);
     }
