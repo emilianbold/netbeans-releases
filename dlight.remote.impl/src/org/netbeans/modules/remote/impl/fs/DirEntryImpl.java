@@ -252,7 +252,7 @@ public class DirEntryImpl extends DirEntry {
         }
         long device = Long.parseLong(parts[6]);
         long inode = Long.parseLong(parts[7]);
-        String linkTarget = (parts.length > 8) ? parts[8] : null;
+        String linkTarget = (parts.length > 8) ? unescape(parts[8]) : null;
         return new DirEntryImpl(cache, name, size, lastModified, flags, type.toChar(), device, inode, linkTarget);
     }
 

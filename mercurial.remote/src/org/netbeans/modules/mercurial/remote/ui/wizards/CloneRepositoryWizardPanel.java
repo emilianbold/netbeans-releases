@@ -113,24 +113,25 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     @Override
     public Component getComponent() {
         if (component == null) {
-            FileSystem[] fileSystems = VCSFileProxySupport.getFileSystems();
-            root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
-            
-            repository = new Repository(
-                    FLAG_URL_ENABLED | FLAG_SHOW_HINTS | FLAG_SHOW_PROXY,
-                    getMessage("CTL_Repository_Location"),
-                    false, root);
-            repository.addChangeListener(this);
-
-            support = new RepositoryStepProgressSupport();
-
+            FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
+            if (fileSystems.length > 0) {
+                root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
+            }
             component = new JPanel(new BorderLayout());
-            
-            component.add(repository.getPanel(), BorderLayout.CENTER);
-            component.add(support.getProgressComponent(), BorderLayout.SOUTH);
+            if (root != null) {
+                repository = new Repository(
+                        FLAG_URL_ENABLED | FLAG_SHOW_HINTS | FLAG_SHOW_PROXY,
+                        getMessage("CTL_Repository_Location"),
+                        false, root);
+                repository.addChangeListener(this);
 
+                support = new RepositoryStepProgressSupport();
+
+
+                component.add(repository.getPanel(), BorderLayout.CENTER);
+                component.add(support.getProgressComponent(), BorderLayout.SOUTH);
+            }
             component.setName(getMessage("repositoryPanel.Name"));       //NOI18N
-
             valid();
         }
         return component;
@@ -157,10 +158,14 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     
     @Override
     public void stateChanged(ChangeEvent evt) {
-        if(repository.isValid()) {
-            valid(repository.getMessage());
+        if (root != null) {
+            if(repository.isValid()) {
+                valid(repository.getMessage());
+            } else {
+                invalid(repository.getMessage());
+            }
         } else {
-            invalid(repository.getMessage());
+            invalid(NbBundle.getMessage(CloneRepositoryWizardPanel.class, "NO_CONNECTED_REMOTE_FS"));
         }
     }
 
@@ -234,6 +239,9 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     }
 
     protected void validateBeforeNext() throws WizardValidationException {
+        if (repository == null) {
+            return;
+        }
         try {
             HgURL url;
             try {
@@ -281,7 +289,9 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
             EventQueue.invokeLater(new Runnable () {
                 @Override
                 public void run() {
-                    repository.setEditable(true);
+                    if (repository != null) {
+                        repository.setEditable(true);
+                    }
                 }
             });
             throw ex;

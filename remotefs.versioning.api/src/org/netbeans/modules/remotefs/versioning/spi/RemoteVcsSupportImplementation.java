@@ -67,6 +67,8 @@ public interface RemoteVcsSupportImplementation {
 
     FileSystem[] getFileSystems();
 
+    FileSystem[] getConnectedFileSystems();
+
     FileSystem getDefaultFileSystem();
 
     boolean isSymlink(VCSFileProxy proxy);

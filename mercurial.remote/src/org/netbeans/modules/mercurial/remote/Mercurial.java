@@ -173,7 +173,7 @@ public class Mercurial {
                 return Mercurial.this.getTopmostManagedAncestor(file);
             }
         }, Logger.getLogger("org.netbeans.modules.mercurial.RootsToFile"), statisticsFrequency); //NOI18N
-        for(FileSystem fs : VCSFileProxySupport.getFileSystems()) {
+        for(FileSystem fs : VCSFileProxySupport.getConnectedFileSystems()) {
             asyncInit(VCSFileProxy.createFileProxy(fs.getRoot())); // Does the Hg check but postpones querying user until menu is activated
         }
     }
