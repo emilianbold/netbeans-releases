@@ -104,7 +104,9 @@ public class IndexNode extends BaseNode {
                     new Action<Metadata>() {
                         public void run(Metadata metaData) {
                             Index index = indexHandle.resolve(metaData);
-                            name = index.getName();
+                            if(index.getName() != null) {
+                                name = index.getName();
+                            }
                             updateProperties(index);
                         }
                     }
