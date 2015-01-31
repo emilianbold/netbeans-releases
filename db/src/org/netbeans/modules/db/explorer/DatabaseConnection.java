@@ -1380,7 +1380,6 @@ public final class DatabaseConnection implements DBConnection {
         return drv != null
                 && (drv.startsWith("org.apache.derby") //NOI18N
                 || drv.startsWith("com.mysql") //NOI18N
-                || drv.startsWith("oracle") //NOI18N
                 || drv.startsWith("org.postgresql")); //NOI18N
     }
 
