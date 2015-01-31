@@ -1055,7 +1055,7 @@ public final class DatabaseConnection implements DBConnection {
 
     @Override
     public int hashCode() {
-        return drv.hashCode() + db.hashCode() + usr.hashCode();
+        return Objects.hashCode(drv) + Objects.hashCode(db) + Objects.hashCode(usr);
     }
 
     /** Compares two connections.
