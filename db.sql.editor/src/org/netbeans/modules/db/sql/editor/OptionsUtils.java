@@ -54,7 +54,8 @@ import org.openide.util.WeakListeners;
  * @author Tomas Mysik
  */
 public final class OptionsUtils {
-    private static final String PAIR_CHARACTERS_COMPLETION = "pair-characters-completion";
+    // package visible to allow access from unit tests
+    static final String PAIR_CHARACTERS_COMPLETION = "pair-characters-completion";
     private static final AtomicBoolean INITED = new AtomicBoolean(false);
 
     private static final PreferenceChangeListener PREFERENCES_TRACKER = new PreferenceChangeListener() {
