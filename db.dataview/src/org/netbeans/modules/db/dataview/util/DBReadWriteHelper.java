@@ -223,11 +223,17 @@ public class DBReadWriteHelper {
             case Types.LONGVARBINARY:
             case Types.BLOB: {
                 // Load binary data as stream and hold it internally as a pseudoblob
-                InputStream is = rs.getBinaryStream(index);
-                if (is == null) {
+                try {
+                    InputStream is = rs.getBinaryStream(index);
+                    if (is == null) {
+                        return null;
+                    } else {
+                        return new FileBackedBlob(is);
+                    }
+                } catch (NullPointerException ex) {
+                    // The xerial sqlite-jdbc driver fails to return null and instead throws a NullPointer Exception
+                    // see bug 244313 for details
                     return null;
-                } else {
-                    return new FileBackedBlob(is);
                 }
             }
             case Types.LONGVARCHAR:
