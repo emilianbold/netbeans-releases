@@ -2251,6 +2251,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
          * Is steady change.
          * The steady change is source change written to disk like file save in
          * opposite to transient changes like QS enforced work or tab switch.
+         * The work in non steady for TransientUpdateSupport.setTransientUpdate(true) and
+         * for work started by active editor switch.
          * @return true if the change is steady
          */
         protected final boolean isSteady() {
@@ -3252,7 +3254,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         public Boolean call() throws Exception {
                             final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                             final Set<Crawler.TimeStampAction> checkTimeStamps = EnumSet.noneOf(Crawler.TimeStampAction.class);
-                            final boolean permanentUpdate = !TransientUpdateSupport.isTransientUpdate();
+                            final boolean permanentUpdate = isSteady();
+                            assert !TransientUpdateSupport.isTransientUpdate() || !permanentUpdate;
                             assert permanentUpdate || (forceRefresh && !files.isEmpty());
                             if (!forceRefresh) {
                                 checkTimeStamps.add(Crawler.TimeStampAction.CHECK);
