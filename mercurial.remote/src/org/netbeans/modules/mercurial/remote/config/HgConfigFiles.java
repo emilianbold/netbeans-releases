@@ -112,8 +112,6 @@ public class HgConfigFiles {
         FileSystem fileSystem = null;
         if (root != null) {
             fileSystem = VCSFileProxySupport.getFileSystem(root);
-        } else {
-            System.err.println("");
         }
         HgConfigFiles res = instance.get(fileSystem);
         if (res == null) {
@@ -135,9 +133,6 @@ public class HgConfigFiles {
     }
     
     public HgConfigFiles(VCSFileProxy file) {
-        if (file == null) {
-            System.err.println("");
-        }
         fileSystem = VCSFileProxySupport.getFileSystem(file);
         Config.getGlobal().setEscape(false); // escaping characters disabled
         bIsProjectConfig = true;
