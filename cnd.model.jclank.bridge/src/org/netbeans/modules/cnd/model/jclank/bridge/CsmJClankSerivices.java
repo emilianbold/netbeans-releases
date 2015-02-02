@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.cnd.model.jclank.bridge;
 
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.clang.basic.Diagnostic;
 import org.clang.basic.DiagnosticIDs;
 import org.clang.basic.DiagnosticOptions;
 import org.clang.basic.DiagnosticsEngine;
-import org.clang.basic.DirectoryEntry;
 import org.clang.basic.FileManager;
 import org.clang.basic.FileSystemOptions;
 import org.clang.basic.LangOptions;
@@ -55,13 +55,15 @@ import org.clang.basic.Module;
 import org.clang.basic.PresumedLoc;
 import org.clang.basic.SourceLocation;
 import org.clang.basic.SourceManager;
-import org.clang.basic.SrcMgr;
 import org.clang.basic.target.TargetInfo;
 import org.clang.basic.target.TargetOptions;
 import org.clang.basic.tok;
 import org.clang.frontend.ClangGlobals;
+import org.clang.frontend.CompilerInvocation;
+import org.clang.frontend.FrontendOptions;
+import org.clang.frontend.InputKind;
+import org.clang.frontend.LangStandard;
 import org.clang.frontend.PreprocessorOutputOptions;
-import org.clang.lex.DirectoryLookup;
 import org.clang.lex.HeaderSearch;
 import org.clang.lex.HeaderSearchOptions;
 import org.clang.lex.ModuleIdPath;
@@ -70,6 +72,7 @@ import org.clang.lex.ModuleLoader;
 import org.clang.lex.Preprocessor;
 import org.clang.lex.PreprocessorOptions;
 import org.clang.lex.Token;
+import org.clang.lex.frontend;
 import org.clank.java.std;
 import org.clank.support.Converted;
 import org.clank.support.Destructors;
@@ -78,9 +81,12 @@ import static org.clank.support.NativePointer.*;
 import org.llvm.adt.IntrusiveRefCntPtr;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVectorChar;
+import org.llvm.support.MemoryBuffer;
 import org.llvm.support.llvm;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -107,14 +113,21 @@ public class CsmJClankSerivices {
     public static void dumpPreprocessed(NativeFileItem nfi) {
         PreprocessorOutputOptions Opts = createPPOptions(nfi);
         Preprocessor /*&*/ PP = getPreprocessor(nfi);
-        ClangGlobals.DoPrintPreprocessedInput(PP, llvm.errs(), Opts);
+        
+        String Source = "#include \"" + nfi.getAbsolutePath() + "\"\0";
+        byte[] bytes = Source.getBytes(Charset.forName("UTF-8"));
+        StringRef stringRef = new StringRef(bytes, bytes.length-1);
+        MemoryBuffer /*P*/ buf = MemoryBuffer.getMemBuffer(stringRef);
+        SourceManager SourceMgr = PP.getSourceManager();
+        SourceMgr.setMainFileID(SourceMgr.createFileID(buf));
+        
+        ClangGlobals.DoPrintPreprocessedInput(PP, llvm.outs(), Opts);
     }
 
     private static Preprocessor getPreprocessor(NativeFileItem nfi) {
-        final DefaultPreprocessorInitializer lexerInitializer = new DefaultPreprocessorInitializer();
+        PreprocessorInitializer initializer = new AdvancedPreprocessorInitializer(nfi);
         VoidModuleLoader ModLoader/*J*/ = new VoidModuleLoader();
-        HeaderSearch HeaderInfo/*J*/ = lexerInitializer.createHeaderSearch();
-        Preprocessor PP/*J*/ = lexerInitializer.createPreprocessor(HeaderInfo, ModLoader);
+        Preprocessor PP/*J*/ = initializer.createPreprocessor(ModLoader);
         return PP;
     }
 
@@ -129,11 +142,7 @@ public class CsmJClankSerivices {
     }
 
     private static interface PreprocessorInitializer {
-
-        HeaderSearch createHeaderSearch();
-
-        Preprocessor createPreprocessor(HeaderSearch headerInfo, ModuleLoader modLoader);
-
+        Preprocessor createPreprocessor(ModuleLoader modLoader);
     }
 
     private static class DefaultPreprocessorInitializer implements PreprocessorInitializer {
@@ -150,65 +159,167 @@ public class CsmJClankSerivices {
         public DefaultPreprocessorInitializer() {
             this.FileMgrOpts = new FileSystemOptions();
             this.FileMgr = new FileManager(FileMgrOpts);
-            this.DiagID = new IntrusiveRefCntPtr<DiagnosticIDs>(new DiagnosticIDs());
+            this.DiagID = new IntrusiveRefCntPtr<>(new DiagnosticIDs());
             this.Diags = new DiagnosticsEngine(DiagID, new DiagnosticOptions(), new TestDiagnosticConsumer());
             this.SourceMgr = new SourceManager(Diags, FileMgr);
             this.LangOpts = new LangOptions();
-            this.TargetOpts = new IntrusiveRefCntPtr<TargetOptions>(new TargetOptions());
-            this.Target = new IntrusiveRefCntPtr<TargetInfo>();
+            this.TargetOpts = new IntrusiveRefCntPtr<>(new TargetOptions());
+            this.Target = new IntrusiveRefCntPtr<>();
             //END JInit
-            TargetOpts.$arrow().Triple.$assign("x86_64-apple-darwin11.1.0");
-            Target.$assign(new IntrusiveRefCntPtr<TargetInfo>(TargetInfo.CreateTargetInfo(Diags, /*AddrOf*/ TargetOpts.$star())));
         }
 
         @Override
-        public HeaderSearch createHeaderSearch() {
-            return new HeaderSearch(new IntrusiveRefCntPtr<HeaderSearchOptions>(createHeaderSearchOptions()), SourceMgr, Diags, LangOpts, Target.getPtr());
-        }
-
-        @Override
-        public Preprocessor createPreprocessor(HeaderSearch HeaderInfo, ModuleLoader ModLoader) {
-            return new Preprocessor(new IntrusiveRefCntPtr<PreprocessorOptions>(createPreprocessorOptions()), Diags, LangOpts, Target.getPtr(), SourceMgr, HeaderInfo, ModLoader, null, false, false);
+        public Preprocessor createPreprocessor(ModuleLoader ModLoader) {
+            PreprocessorOptions PPOpts = createPreprocessorOptions();
+            HeaderSearchOptions HSOpts = createHeaderSearchOptions();
+            HeaderSearch HS = new HeaderSearch(new IntrusiveRefCntPtr<>(HSOpts), SourceMgr, Diags, LangOpts, Target.getPtr());
+            ClangGlobals.ApplyHeaderSearchOptions(HS, HSOpts, LangOpts, Target.getPtr().getTriple());
+            Preprocessor PP = new Preprocessor(new IntrusiveRefCntPtr<>(PPOpts), Diags, LangOpts, Target.getPtr(), SourceMgr, HS, ModLoader, null, false, false);
+            ClangGlobals.InitializePreprocessor(PP, PPOpts, HSOpts, new FrontendOptions());
+            return PP;
         }
 
         protected HeaderSearchOptions createHeaderSearchOptions() {
-            return new HeaderSearchOptions();
+            HeaderSearchOptions HSOpts = new HeaderSearchOptions();
+            HSOpts.UseBuiltinIncludes = false;
+            HSOpts.UseLibcxx = false;
+            HSOpts.UseStandardCXXIncludes = false;
+            HSOpts.UseStandardSystemIncludes = false;
+            
+            if (false) {
+                HSOpts.Verbose = true;
+            }
+            return HSOpts;
         }
 
         protected PreprocessorOptions createPreprocessorOptions() {
-            return new PreprocessorOptions();
+            PreprocessorOptions out = new PreprocessorOptions();
+            out.UsePredefines = false;
+            return out;
         }
     }
 
-    private class AdvancedPreprocessorInitializer extends DefaultPreprocessorInitializer {
+    private static class AdvancedPreprocessorInitializer extends DefaultPreprocessorInitializer {
+        private final NativeFileItem startEntry;
 
-        public AdvancedPreprocessorInitializer() {
+        public AdvancedPreprocessorInitializer(NativeFileItem startEntry) {
             super();
+            this.startEntry = startEntry;
+            setLangDefaults(this.LangOpts, startEntry);
+            this.TargetOpts.$arrow().Triple.$assign("x86_64");
+            this.Target.$assign(new IntrusiveRefCntPtr<>(TargetInfo.CreateTargetInfo(Diags, /*AddrOf*/ TargetOpts.$star())));
         }
-
-        @Override
-        public HeaderSearch createHeaderSearch() {
-            HeaderSearch hs = super.createHeaderSearch();
-            addHeaderSearchPath(hs, "/usr/include");
-            return hs;
-        }
-
+        
         @Override
         protected HeaderSearchOptions createHeaderSearchOptions() {
             HeaderSearchOptions options = super.createHeaderSearchOptions();
-            options.AddSystemHeaderPrefix(new StringRef("/usr/include/"), true);
+            // -isystem
+            for (FSPath fSPath : startEntry.getSystemIncludePaths()) {
+                FileObject fileObject = fSPath.getFileObject();
+                if (fileObject != null && fileObject.isFolder()) {
+                    options.AddSystemHeaderPrefix(new StringRef(fSPath.getPath()), true);
+                }                
+            }
+            // -I
+            for (FSPath fSPath : startEntry.getSystemIncludePaths()) {
+                FileObject fileObject = fSPath.getFileObject();
+                if (fileObject != null && fileObject.isFolder()) {
+                    options.AddPath(new StringRef(fSPath.getPath()), frontend.IncludeDirGroup.Angled, false, true);
+                }
+            }
             return options;
         }
 
-        private void addHeaderSearchPath(HeaderSearch HeaderInfo, CharSequence SearchPath) {
-            // Add header's parent path to search path.
-      /*const*/
-            DirectoryEntry /*P*/ DE = FileMgr.getDirectory(new StringRef(SearchPath));
-            DirectoryLookup DL/*J*/ = new DirectoryLookup(DE, SrcMgr.CharacteristicKind.C_System, false);
-            HeaderInfo.AddSearchPath(DL, true);
-        }
+        @Override
+        protected PreprocessorOptions createPreprocessorOptions() {
+            PreprocessorOptions out = super.createPreprocessorOptions();
+            // handle -include
+            for (FSPath fSPath : startEntry.getUserIncludePaths()) {
+                FileObject fileObject = fSPath.getFileObject();
+                if (fileObject != null && fileObject.isData()) {
+                    out.Includes.push_back(fSPath.getPath());
+                }                
+            }
+            for (String macro : startEntry.getSystemMacroDefinitions()) {
+                out.addMacroDef(new StringRef(macro));
+            }
+            for (String macro : startEntry.getUserMacroDefinitions()) {
+                out.addMacroDef(new StringRef(macro));
+            }
+            if (false) {
+                // remap unsaved files as memory buffers
+                out.addRemappedFile(null, (MemoryBuffer) null);
+            }
+            return out;
+        }                
+
     }
 
+    private static void setLangDefaults(LangOptions LangOpts, NativeFileItem startEntry) {
+        LangStandard.Kind lang_std = LangStandard.Kind.lang_unspecified;
+        InputKind lang = InputKind.IK_None;
+        switch (startEntry.getLanguage()) {
+            case C:
+            case C_HEADER:
+                lang = InputKind.IK_C;
+                break;
+            case CPP:
+                lang = InputKind.IK_CXX;
+                break;
+            case FORTRAN:
+            case OTHER:
+            default:
+                throw new AssertionError(startEntry.getLanguage().name());
+        }
+        switch (startEntry.getLanguageFlavor()) {
+            case DEFAULT:
+            case UNKNOWN:
+                break;
+            case C:
+                break;
+            case C89:
+                lang_std = LangStandard.Kind.lang_c89;
+                break;
+            case C99:
+                lang_std = LangStandard.Kind.lang_c99;
+                break;
+            case CPP:
+                lang_std = LangStandard.Kind.lang_cxx03;
+                break;
+            case CPP11:
+                lang_std = LangStandard.Kind.lang_cxx11;
+                break;
+            case C11:
+                lang_std = LangStandard.Kind.lang_c11;
+                break;
+            case CPP14:
+                // FIXME
+                lang_std = LangStandard.Kind.lang_cxx1y;
+                break;
+            case F77:
+            case F90:
+            case F95:
+            default:
+                throw new AssertionError(startEntry.getLanguageFlavor().name());
+        }
+        CompilerInvocation.setLangDefaults(LangOpts, lang, lang_std);
+    }
+    
+    private static Level toLoggerLevel(DiagnosticsEngine.Level DiagLevel) {
+        switch (DiagLevel) {
+            case Ignored:
+            case Note:
+                return Level.INFO;
+            case Warning:
+                return Level.WARNING;
+            case Error:
+            case Fatal:
+                return Level.SEVERE;
+            default:
+                throw new AssertionError(DiagLevel.name());
+        }
+    }
+        
     private static class TestDiagnosticConsumer extends /*public*/ org.clang.basic.DiagnosticConsumer {
 
         @Override
@@ -218,28 +329,15 @@ public class CsmJClankSerivices {
             String Loc = "";
             if (Info.hasSourceManager()) {
                 PresumedLoc presumedLoc = Info.getSourceManager().getPresumedLoc(Info.getLocation());
-                Loc = "In file " + Native.$toString(presumedLoc.getFilename())
-                        + " line " + presumedLoc.getLine()
-                        + ", col " + presumedLoc.getColumn()
-                        + "\n";
+                if (presumedLoc.isValid()) {
+                    Loc = "In file " + Native.$toString(presumedLoc.getFilename())
+                            + " line " + presumedLoc.getLine()
+                            + ", col " + presumedLoc.getColumn()
+                            + "\n";
+                }
             }
             Level level = toLoggerLevel(DiagLevel);
             Logger.getLogger(TestDiagnosticConsumer.class.getName()).log(level, "{2}{0}:{1}\n", new Object[]{DiagLevel, new std.string(out.data()).toJavaString(), Loc});
-        }
-
-        private static Level toLoggerLevel(DiagnosticsEngine.Level DiagLevel) {
-            switch (DiagLevel) {
-                case Ignored:
-                case Note:
-                    return Level.INFO;
-                case Warning:
-                    return Level.WARNING;
-                case Error:
-                case Fatal:
-                    return Level.SEVERE;
-                default:
-                    throw new AssertionError(DiagLevel.name());
-            }
         }
     }
 
