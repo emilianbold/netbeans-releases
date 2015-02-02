@@ -77,7 +77,7 @@ public class UserPasswordPanel extends javax.swing.JPanel {
         lblPassword = new javax.swing.JLabel();
 
         lblUsername.setLabelFor(tbUserName);
-        org.openide.awt.Mnemonics.setLocalizedText(lblUsername, org.openide.util.NbBundle.getMessage(UserPasswordPanel.class, "UserPasswordPanel.lblUsername.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblUsername, org.openide.util.NbBundle.getMessage(UserPasswordPanel.class, "BK0003")); // NOI18N
 
         lblPassword.setLabelFor(tbPassword);
         org.openide.awt.Mnemonics.setLocalizedText(lblPassword, org.openide.util.NbBundle.getMessage(UserPasswordPanel.class, "UserPasswordPanel.lblPassword.text")); // NOI18N
@@ -94,12 +94,12 @@ public class UserPasswordPanel extends javax.swing.JPanel {
                     .addComponent(cbRememberPassword)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblUsername)
-                            .addComponent(lblPassword))
+                            .addComponent(lblUsername, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lblPassword, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-                            .addComponent(tbUserName, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))))
+                            .addComponent(tbUserName, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
+                            .addComponent(tbPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
