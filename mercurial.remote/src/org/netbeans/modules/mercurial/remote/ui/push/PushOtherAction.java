@@ -140,7 +140,7 @@ public class PushOtherAction extends ContextAction {
                                         new HelpCtx(PushOtherAction.class),
                                         new Object[] {pushButton, cancelButton},
                                         true,
-                                        "hg.push.dialog");
+                                        "hg.push.dialog"); //NOI18N
 
         if (option == pushButton) {
             final HgURL pushPath;

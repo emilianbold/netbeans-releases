@@ -194,8 +194,9 @@ public class NodeExecutable {
         return nodePath;
     }
 
-    public String getExecutable() {
-        return getExecutable("dummy").getExecutable(); // NOI18N
+    public boolean isIojs() {
+        File cli = new File(new ExternalExecutable(nodePath).getExecutable());
+        return cli.getName().startsWith("io"); // NOI18N
     }
 
     public void resetVersion() {

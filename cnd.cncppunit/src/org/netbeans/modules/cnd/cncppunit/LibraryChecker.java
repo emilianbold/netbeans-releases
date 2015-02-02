@@ -114,7 +114,7 @@ public class LibraryChecker {
 
             ProcessUtils.ExitStatus res = ProcessUtils.execute(processBuilder);
             if (!res.isOK() && CndUtils.isUnitTestMode()) {
-                StringBuilder buf = new StringBuilder("Command\n#");
+                StringBuilder buf = new StringBuilder("Command\n#"); // NOI18N
                 buf.append(linkerPath).append(' ');
                 for(String a : args) {
                     buf.append(a).append(' ');

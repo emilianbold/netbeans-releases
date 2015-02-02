@@ -319,7 +319,7 @@ public final class FileUtils {
         }
     }
 
-    public static void downloadNodeSources(Version version, boolean iojs) throws NetworkException, IOException {
+    public static boolean downloadNodeSources(Version version, boolean iojs) throws NetworkException, IOException {
         assert !EventQueue.isDispatchThread();
         assert version != null;
         deleteExistingNodeSources(version);
@@ -327,7 +327,7 @@ public final class FileUtils {
         String nodeVersion = version.toString();
         File archive = new File(nodeSources, (iojs ? "iojs" : "nodejs") + "-" + nodeVersion + ".tar.gz"); // NOI18N
         if (!downloadNodeSources(archive, nodeVersion, iojs)) {
-            return;
+            return false;
         }
         // unpack
         try {
@@ -340,6 +340,7 @@ public final class FileUtils {
         if (!archive.delete()) {
             archive.deleteOnExit();
         }
+        return true;
     }
 
     private static void deleteExistingNodeSources(Version version) throws IOException {

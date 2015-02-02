@@ -51,6 +51,7 @@ import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.log.RepositoryRevision;
 import org.netbeans.modules.mercurial.remote.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport.AbstractExportDiffPanel;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 
@@ -137,7 +138,7 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
         }else{
             fileName = HgModuleConfig.getDefault(repo).getExportFilename();            
         }
-        VCSFileProxy file = VCSFileProxy.createFileProxy(repo, folderName + "/" + fileName + ".patch");  //NOI18N
+        VCSFileProxy file = VCSFileProxySupport.getResource(repo, folderName + "/" + fileName + ".patch");  //NOI18N
         p.setOutputFileText(file.getPath());
     }
 }
