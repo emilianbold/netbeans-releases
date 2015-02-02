@@ -925,21 +925,25 @@ public class JsFormatter implements Formatter {
 
         FormatToken nonVirtualNext = FormatTokenStream.getNextNonVirtual(next);
         if (nonVirtualNext != null) {
-            // this may happen when curly bracket is on new line
-            if (JsTokenId.BRACKET_LEFT_CURLY == nonVirtualNext.getId()) {
+            // this may happen when curly bracket or array bracket is on new line
+            if (JsTokenId.BRACKET_LEFT_CURLY == nonVirtualNext.getId()
+                    || JsTokenId.BRACKET_LEFT_BRACKET == nonVirtualNext.getId()) {
                 FormatToken previous = nonVirtualNext.previous();
-                if (previous == null || previous.getKind() != FormatToken.Kind.BEFORE_OBJECT) {
+                if (previous == null
+                        || (previous.getKind() != FormatToken.Kind.BEFORE_OBJECT
+                        && previous.getKind() != FormatToken.Kind.BEFORE_ARRAY)) {
                     return false;
-                } else if (previous.getKind() == FormatToken.Kind.BEFORE_OBJECT) {
-                    // handles continuation before object literal (issue #227007)
-                    // find token before object, ignoring WS and EOL
+                } else if (previous.getKind() == FormatToken.Kind.BEFORE_OBJECT
+                        || previous.getKind() == FormatToken.Kind.BEFORE_ARRAY) {
+                    // handles continuation before object literal / array (issues #227007 and #250150)
+                    // find token before object/array, ignoring WS and EOL
                     FormatToken tokenBeforeObject = previous.previous();
                     while (tokenBeforeObject != null
                             && (tokenBeforeObject.getKind() == FormatToken.Kind.WHITESPACE
                             || tokenBeforeObject.getKind() == FormatToken.Kind.EOL)) {
                         tokenBeforeObject = tokenBeforeObject.previous();
                     }
-                    // if we have an object literal as function argument
+                    // if we have an object literal / array as function argument
                     // or it's assigned to a variable, indent it according to the settings
                     if (tokenBeforeObject != null) {
                         switch (tokenBeforeObject.getKind()) {
