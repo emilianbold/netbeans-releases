@@ -516,6 +516,13 @@ public final class FormatToken {
             }
         },
 
+        BEFORE_ARRAY {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
         // around binary operator
         BEFORE_BINARY_OPERATOR,
         AFTER_BINARY_OPERATOR,

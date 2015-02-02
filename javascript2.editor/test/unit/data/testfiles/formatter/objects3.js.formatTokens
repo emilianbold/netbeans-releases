@@ -112,6 +112,7 @@ FormatToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=104, text=:, id=OPERATOR_COLON}
 FormatToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=105, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=106, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}

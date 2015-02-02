@@ -9,6 +9,7 @@ FormatToken{kind=TEXT, offset=9, text==, id=OPERATOR_ASSIGNMENT}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=10, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=11, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}
@@ -44,6 +45,7 @@ FormatToken{kind=TEXT, offset=36, text==, id=OPERATOR_ASSIGNMENT}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=37, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=38, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}
@@ -82,6 +84,7 @@ FormatToken{kind=TEXT, offset=61, text==, id=OPERATOR_ASSIGNMENT}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=62, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=63, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}
@@ -96,6 +99,7 @@ FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=67, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_ITEM, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=68, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}
@@ -130,6 +134,7 @@ FormatToken{kind=TEXT, offset=84, text==, id=OPERATOR_ASSIGNMENT}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=85, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=86, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}
@@ -170,6 +175,7 @@ FormatToken{kind=TEXT, offset=173, text==, id=OPERATOR_ASSIGNMENT}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=174, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=175, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}
@@ -190,6 +196,7 @@ FormatToken{kind=TEXT, offset=192, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_ITEM, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=193, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=194, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}
