@@ -252,19 +252,19 @@ class SQLType {
                 new Class[0], false),
             new SQLType(Types.CHAR, "CHAR",         //NOI18N
                 new Class[] {java.lang.String.class, Character.class, Character.TYPE}, true),
-            new SQLType(TypesJDBC4.NCHAR, "CHAR",         //NOI18N
+            new SQLType(Types.NCHAR, "NCHAR",         //NOI18N
                 new Class[] {java.lang.String.class, Character.class, Character.TYPE}, true),
             new SQLType(Types.LONGVARCHAR, "LONGVARCHAR",   //NOI18N
                 new Class[] {java.lang.String.class}, true),
-            new SQLType(TypesJDBC4.LONGNVARCHAR, "LONGNVARCHAR",   //NOI18N
+            new SQLType(Types.LONGNVARCHAR, "LONGNVARCHAR",   //NOI18N
                 new Class[] {java.lang.String.class}, true),
             new SQLType(Types.VARCHAR, "VARCHAR",           //NOI18N
                 new Class[] {java.lang.String.class}, true),
-            new SQLType(TypesJDBC4.NVARCHAR, "VARCHAR",           //NOI18N
+            new SQLType(Types.NVARCHAR, "NVARCHAR",           //NOI18N
                 new Class[] {java.lang.String.class}, true),
             new SQLType(Types.CLOB, "CLOB",                 //NOI18N
                 new Class[] {java.lang.String.class}, false),
-            new SQLType(TypesJDBC4.NCLOB, "CLOB",                 //NOI18N
+            new SQLType(Types.NCLOB, "NCLOB",                 //NOI18N
                 new Class[] {java.lang.String.class}, false),
             new SQLType(Types.DATE, "DATE",                 //NOI18N
                 new Class[] {java.sql.Date.class}, false),

@@ -295,24 +295,34 @@ class SQLExecutionHelper {
         }
     }
 
-    RequestProcessor.Task executeInsertRow(final DataViewPageContext pageContext,
+    /**
+     * @param pageContext
+     * @param table
+     * @param insertSQLs
+     * @param insertedRows
+     * @return count of sucessfully inserted rows
+     */
+    int executeInsertRow(final DataViewPageContext pageContext,
             final DBTable table,
-            final String insertSQL,
-            final Object[] insertedRow) {
+            final String[] insertSQLs,
+            final Object[][] insertedRows) {
+
+        assert (!SwingUtilities.isEventDispatchThread());
+
         dataView.setEditable(false);
 
-        String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "", true) {
+        int done = 0;
+        Exception caughtException = null;
 
-            @Override
-            public void execute() throws SQLException, DBException {
-                dataView.setEditable(false);
-                List<DBColumn> columns = table.getColumnList();
-                PreparedStatement pstmt = conn.prepareStatement(insertSQL);
-                try {
+        try {
+            Connection conn = dataView.getDatabaseConnection().getJDBCConnection();
+            List<DBColumn> columns = table.getColumnList();
+
+            for (int j = 0; j < insertSQLs.length; j++) {
+                try (PreparedStatement pstmt = conn.prepareStatement(insertSQLs[j])) {
                     int pos = 1;
-                    for (int i = 0; i < insertedRow.length; i++) {
-                        Object val = insertedRow[i];
+                    for (int i = 0; i < insertedRows[j].length; i++) {
+                        Object val = insertedRows[j][i];
 
                         // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
                         if (DataViewUtils.isSQLConstantString(val, columns.get(i))) {
@@ -324,53 +334,56 @@ class SQLExecutionHelper {
                         DBReadWriteHelper.setAttributeValue(pstmt, pos++, colType, val);
                     }
 
-                    executePreparedStatement(pstmt);
-                    int rows = dataView.getUpdateCount();
+                    int rows = pstmt.executeUpdate();
+
                     if (rows != 1) {
-                        error = true;
-                        errorMsg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_failure_insert_rows");
+                        throw new SQLException("MSG_failure_insert_rows");
                     }
-                } finally {
-                    DataViewUtils.closeResources(pstmt);
+                    done++;
                 }
             }
+        } catch (DBException | SQLException ex) {
+            LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
+            caughtException = ex;
+        } finally {
+            dataView.resetEditable();
+        }
 
-            @Override
-            public void finished() {
-                dataView.resetEditable();
-                commitOrRollback(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_insert_command"));
-            }
+        final int finalDone = done;
+        final Exception finalCaught = caughtException;
 
+        // refresh when required
+        Boolean needRequery = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
             @Override
-            protected void executeOnSucess() {
-                // refresh when required
-                Boolean needRequery = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
-                    @Override
-                    public Boolean run() {
-                        if (pageContext.getTotalRows() < 0) {
-                            pageContext.setTotalRows(0);
-                            pageContext.first();
-                        }
-                        pageContext.incrementRowSize(1);
-                        return pageContext.refreshRequiredOnInsert();
-                    };
-                });
-                if(needRequery) {
-                    SQLExecutionHelper.this.executeQuery();
-                } else {
-                    Mutex.EVENT.readAccess(new Runnable() {
-                        @Override
-                        public void run() {
-                            reinstateToolbar();
-                        }
-                    });
+            public Boolean run() {
+                if (finalCaught != null) {
+                    DialogDisplayer.getDefault().notifyLater(
+                            new NotifyDescriptor.Message(
+                                    finalCaught.getLocalizedMessage()));
                 }
+                if (pageContext.getTotalRows() < 0) {
+                    pageContext.setTotalRows(0);
+                    pageContext.first();
+                }
+                pageContext.incrementRowSize(finalDone);
+                return pageContext.refreshRequiredOnInsert();
             }
-        };
-        RequestProcessor.Task task = rp.create(executor);
-        executor.setTask(task);
-        task.schedule(0);
-        return task;
+        });
+        
+        if (needRequery) {
+            SQLExecutionHelper.this.executeQuery();
+        } else {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (dataView) {
+                        dataView.resetToolbar(false);
+                    }
+                }
+            });
+        }
+
+        return done;
     }
 
     void executeDeleteRow(final DataViewPageContext pageContext, final DBTable table, final DataViewTableUI rsTable) {
