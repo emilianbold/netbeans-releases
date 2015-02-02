@@ -44,8 +44,14 @@ package org.netbeans.modules.cnd.model.jclank.trace;
 import java.io.PrintWriter;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStream;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.netbeans.modules.cnd.model.jclank.bridge.CsmJClankSerivices;
 import static org.netbeans.modules.cnd.model.jclank.trace.Bundle.*;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -56,7 +62,15 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class CsmJClankTracePreprocessorAction {
     private static void dumpFileTokens(NativeFileItem nfi, PrintWriter printOut) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        APTTokenStream ts = CsmJClankSerivices.getAPTTokenStream(nfi);
+        if (ts == null) {
+            printOut.printf("NO TokensStream for %s%n", nfi);// NOI18N 
+            return;
+        }
+        APTToken next;
+        while (((next = ts.nextToken()) != null) && !APTUtils.isEOF(next)) {
+            
+        }
     }
 
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 102)
@@ -71,10 +85,25 @@ public class CsmJClankTracePreprocessorAction {
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
             printOut.printf("====Dump File Tokens by JClank\n");// NOI18N 
-            Collection<? extends NativeFileItem> allFiles = context.lookupAll(NativeFileItem.class);
-            for (NativeFileItem nfi : allFiles) {
-                printOut.printf("====Dump Tokens for %s %n", nfi.getAbsolutePath());// NOI18N 
-                CsmJClankTracePreprocessorAction.dumpFileTokens(nfi, printOut);
+            Collection<? extends DataObject> allFiles = context.lookupAll(DataObject.class);
+            for (DataObject dob : allFiles) {
+                printOut.printf("====Dump Tokens for %s %n", dob);// NOI18N 
+                NativeFileItemSet nfs = dob.getLookup().lookup(NativeFileItemSet.class);
+                if (nfs == null) {
+                    printOut.printf("NO NativeFileItemSet in %s %n", dob);
+                    continue;
+                }
+                if (nfs.isEmpty()) {
+                    printOut.printf("EMPTY NativeFileItemSet in %s %n", dob);
+                    continue;
+                }
+                for (NativeFileItem nfi : nfs.getItems()) {
+                    try {
+                        CsmJClankTracePreprocessorAction.dumpFileTokens(nfi, printOut);
+                    } catch (Throwable e) {
+                        e.printStackTrace(printOut);
+                    }
+                }
             }
         }
     }    
