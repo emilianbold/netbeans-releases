@@ -1747,7 +1747,7 @@ public class ModelVisitor extends PathNodeVisitor {
         Identifier name = fqn.get(0);
         if (!"this".equals(fqn.get(0).getName())) { 
             if (modelBuilder.getCurrentWith() == null) {
-                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
+                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
                 for(JsObject variable : variables) {
                     if (variable.getName().equals(name.getName()) ) {
                         if (variable instanceof ParameterObject || variable.getModifiers().contains(Modifier.PRIVATE)) {
