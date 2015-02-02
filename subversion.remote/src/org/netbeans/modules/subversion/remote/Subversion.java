@@ -459,7 +459,11 @@ public class Subversion {
      * Delegates to SubversionVCS.getTopmostManagedAncestor
      * @param file a file for which the topmost managed ancestor shall be looked up.
      * @return topmost managed ancestor for the given file
-     */    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
+     */
+    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
+        if (file.toFile() != null) {
+            return null;
+        }
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
         }
