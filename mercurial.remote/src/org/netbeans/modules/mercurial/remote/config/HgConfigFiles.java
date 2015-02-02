@@ -112,8 +112,6 @@ public class HgConfigFiles {
         FileSystem fileSystem = null;
         if (root != null) {
             fileSystem = VCSFileProxySupport.getFileSystem(root);
-        } else {
-            System.err.println("");
         }
         HgConfigFiles res = instance.get(fileSystem);
         if (res == null) {
@@ -135,9 +133,6 @@ public class HgConfigFiles {
     }
     
     public HgConfigFiles(VCSFileProxy file) {
-        if (file == null) {
-            System.err.println("");
-        }
         fileSystem = VCSFileProxySupport.getFileSystem(file);
         Config.getGlobal().setEscape(false); // escaping characters disabled
         bIsProjectConfig = true;
@@ -296,7 +291,7 @@ public class HgConfigFiles {
             if (dir != null) {
                 filePath = VCSFileProxy.createFileProxy(dir, HG_REPO_DIR + "/" + iniFile); // NOI18N 
             } else {
-                filePath =  VCSFileProxy.createFileProxy(getUserConfigPath(), "."+iniFile);
+                filePath =  VCSFileProxy.createFileProxy(getUserConfigPath(), "."+iniFile); //NOI18N 
             }
             VCSFileProxy file = filePath.normalizeFile();
             VCSFileProxySupport.mkdirs(file.getParentFile());
@@ -383,7 +378,7 @@ public class HgConfigFiles {
         // config files from userdir
         Ini system = null;
         for (String userConfigFileName : fileNames) {
-            VCSFileProxy filePath = VCSFileProxy.createFileProxy(getUserConfigPath(), "."+userConfigFileName);
+            VCSFileProxy filePath = VCSFileProxy.createFileProxy(getUserConfigPath(), "."+userConfigFileName); //NOI18N
             VCSFileProxy file = filePath.normalizeFile();
             system = createIni(file);
             if (system != null) {

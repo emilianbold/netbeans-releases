@@ -529,6 +529,9 @@ public class Mercurial {
     private final Set<VCSFileProxy> knownRoots = Collections.synchronizedSet(new HashSet<VCSFileProxy>());
     private final Set<VCSFileProxy> unversionedParents = Collections.synchronizedSet(new HashSet<VCSFileProxy>(20));
     VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
+        if (file.toFile() != null) {
+            return null;
+        }
         long t = System.currentTimeMillis();
         if (Mercurial.LOG.isLoggable(Level.FINE)) {
             Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });

@@ -92,6 +92,7 @@ final class MercurialPanel extends javax.swing.JPanel {
             }
         };
         initComponents();
+        lblWarning.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground")); //NOI18N
     }
     
     @Override
@@ -205,7 +206,6 @@ final class MercurialPanel extends javax.swing.JPanel {
             }
         });
 
-        lblWarning.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
         org.openide.awt.Mnemonics.setLocalizedText(lblWarning, " "); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

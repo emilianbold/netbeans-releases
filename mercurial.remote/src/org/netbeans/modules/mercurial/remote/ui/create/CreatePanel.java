@@ -67,6 +67,7 @@ public class CreatePanel extends javax.swing.JPanel {
     public CreatePanel(VCSFileProxy root) {
         this.root = root;
         initComponents();
+        lblMessage.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -92,7 +93,6 @@ public class CreatePanel extends javax.swing.JPanel {
             }
         });
 
-        lblMessage.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
         org.openide.awt.Mnemonics.setLocalizedText(lblMessage, org.openide.util.NbBundle.getMessage(CreatePanel.class, "CreatePanel.lblMessage.text")); // NOI18N
         lblMessage.setMinimumSize(new java.awt.Dimension(0, 15));
 
