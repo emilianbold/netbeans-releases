@@ -773,7 +773,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 25));
         btnRefresh.addActionListener(this);
         jPanel2.add(btnRefresh);
-        btnRefresh.getAccessibleContext().setAccessibleName("Refresh Status");
+        btnRefresh.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "ACNA_Refresh_Status")); // NOI18N
 
         btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/diff.png"))); // NOI18N
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
@@ -781,7 +781,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
         btnDiff.addActionListener(this);
         jPanel2.add(btnDiff);
-        btnDiff.getAccessibleContext().setAccessibleName("Diff All");
+        btnDiff.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "ACNA_Diff_All")); // NOI18N
 
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
@@ -792,7 +792,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
         btnUpdate.addActionListener(this);
         jPanel2.add(btnUpdate);
-        btnUpdate.getAccessibleContext().setAccessibleName("Update");
+        btnUpdate.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "ACNA_Update")); // NOI18N
 
         btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/commit.png"))); // NOI18N
         btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
@@ -800,7 +800,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
         btnCommit.addActionListener(this);
         jPanel2.add(btnCommit);
-        btnCommit.getAccessibleContext().setAccessibleName("Commit");
+        btnCommit.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "ACNA_Commit")); // NOI18N
 
         jPanel5.setOpaque(false);
         jPanel2.add(jPanel5);

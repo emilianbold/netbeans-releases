@@ -394,9 +394,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lblWarning">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="0" green="0" id="nb.errorForeground" palette="3" red="ff" type="palette"/>
-        </Property>
         <Property name="text" type="java.lang.String" value=" " noResource="true"/>
       </Properties>
     </Component>
