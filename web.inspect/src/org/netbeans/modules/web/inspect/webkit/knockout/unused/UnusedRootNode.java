@@ -69,6 +69,12 @@ public class UnusedRootNode extends AbstractNode {
         setDisplayName(Bundle.UnusedRootNode_displayName());
     }
 
+    /**
+     * Update the unused bindings represented by this node.
+     * 
+     * @param unusedBindings information about unused bindings represented
+     * by this node.
+     */
     void update(Map<String,Map<Integer,UnusedBinding>> unusedBindings) {
         ((UnusedRootChildren)getChildren()).update(unusedBindings);
     }
@@ -91,8 +97,22 @@ public class UnusedRootNode extends AbstractNode {
             setKeys(unusedBindings.keySet());
         }
 
+        /**
+         * Update unused bindings represented by this children.
+         * 
+         * @param unusedBindings unused binding information.
+         */
         synchronized void update(java.util.Map<String,java.util.Map<Integer,UnusedBinding>> unusedBindings) {
+            for (Node node : getNodes()) {
+                UnusedGroupNode groupNode = (UnusedGroupNode)node;
+                String name = groupNode.getBindingName();
+                java.util.Map<Integer,UnusedBinding> bindings = unusedBindings.get(name);
+                if (bindings != null) {
+                    groupNode.update(bindings);
+                }
+            }
             this.unusedBindings = unusedBindings;
+            setKeys(unusedBindings.keySet());
         }
 
         @Override
@@ -101,7 +121,7 @@ public class UnusedRootNode extends AbstractNode {
             if (bindings == null) {
                 return new Node[0];
             } else {
-                return new Node[] { new UnusedGroupNode(bindings) };
+                return new Node[] { new UnusedGroupNode(key, bindings) };
             }
         }
         

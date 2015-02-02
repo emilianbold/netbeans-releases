@@ -54,18 +54,41 @@ import org.openide.nodes.Node;
  * @author Jan Stola
  */
 public class UnusedGroupNode extends AbstractNode {
+    /** Name of the binding this node represents. */
+    private String bindingName;
 
     /**
      * Creates a new {@code UnusedGroupNode}.
      * 
+     * @param bindingName name of the binding the node represents.
      * @param unusedBindings information about unused bindings
      * ({@code id -> binding} map).
      */
-    public UnusedGroupNode(Map<Integer,UnusedBinding> unusedBindings) {
+    public UnusedGroupNode(String bindingName, Map<Integer,UnusedBinding> unusedBindings) {
         super(new UnusedGroupChildren(unusedBindings));
+        this.bindingName = bindingName;
         UnusedBinding binding = unusedBindings.values().iterator().next();
         setDisplayName(binding.getName());
         setIconBaseWithExtension("org/netbeans/modules/web/inspect/resources/binding.png"); // NOI18N
+    }
+
+    /**
+     * Returns the name of the binding this node represents.
+     * 
+     * @return name of the binding this node represents.
+     */
+    String getBindingName() {
+        return bindingName;
+    }
+
+    /**
+     * Update the unused bindings represented by this node.
+     * 
+     * @param unusedBindings information about unused bindings represented
+     * by this node.
+     */
+    void update(Map<Integer,UnusedBinding> unusedBindings) {
+        ((UnusedGroupChildren)getChildren()).update(unusedBindings);
     }
 
     @Override
@@ -78,7 +101,7 @@ public class UnusedGroupNode extends AbstractNode {
      */
     static class UnusedGroupChildren extends Children.Keys<Integer> {
         /** Unused binding information ({@code id -> binding} map). */
-        private final java.util.Map<Integer,UnusedBinding> unusedBindings;
+        private java.util.Map<Integer,UnusedBinding> unusedBindings;
 
         /**
          * Creates new {@code UnusedGroupChildren}.
@@ -86,6 +109,16 @@ public class UnusedGroupNode extends AbstractNode {
          * @param unusedBindings unused binding information ({@code id -> binding} map).
          */
         UnusedGroupChildren(java.util.Map<Integer,UnusedBinding> unusedBindings) {
+            this.unusedBindings = unusedBindings;
+            setKeys(unusedBindings.keySet());
+        }
+
+        /**
+         * Update unused bindings represented by this children.
+         * 
+         * @param unusedBindings unused binding information.
+         */
+        synchronized void update(java.util.Map<Integer,UnusedBinding> unusedBindings) {
             this.unusedBindings = unusedBindings;
             setKeys(unusedBindings.keySet());
         }
