@@ -44,6 +44,7 @@ package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DnDConstants;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -77,6 +78,8 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
     private final ExplorerManager manager = new ExplorerManager();
     /** Tree with unused bindings. */
     private BeanTreeView treeView;
+    /** Root node of the tree with unused bindings. */
+    private final UnusedRootNode rootNode = new UnusedRootNode(Collections.EMPTY_MAP);
 
     /**
      * Creates a new {@code UnusedBindingsPanel}.
@@ -85,6 +88,7 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
         initTreeView();
         initComponents();
         add(findPanel);
+        manager.setRootContext(rootNode);
         dataPanel.add(treeView);
     }
 
@@ -231,7 +235,7 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
         RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("NetBeans.unusedBindings()"); // NOI18N
         String json = remoteObject.getValueAsString();
         Map<String,Map<Integer,UnusedBinding>> unusedBindings = parse(json);
-        manager.setRootContext(new UnusedRootNode(unusedBindings));
+        rootNode.update(unusedBindings);
         final JComponent componentToShow;
         if (unusedBindings.isEmpty()) {
             messageLabel.setText(Bundle.UnusedBindingsPanel_noUnusedBindings());
