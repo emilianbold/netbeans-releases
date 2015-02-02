@@ -733,7 +733,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jComboBox1 = new javax.swing.JComboBox();
         jPanel2 = new javax.swing.JToolBar();
         jPanel4 = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
@@ -746,8 +745,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         btnUpdate = new javax.swing.JButton();
         btnCommit = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -770,7 +767,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jPanel2.add(jSeparator2);
 
-        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/refresh.png"))); // NOI18N
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
         btnRefresh.setFocusable(false);
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -778,7 +775,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel2.add(btnRefresh);
         btnRefresh.getAccessibleContext().setAccessibleName("Refresh Status");
 
-        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/diff.png"))); // NOI18N
+        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/diff.png"))); // NOI18N
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
         btnDiff.setFocusable(false);
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -789,7 +786,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
 
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/update.png"))); // NOI18N
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/update.png"))); // NOI18N
         btnUpdate.setToolTipText(bundle.getString("CTL_Synchronize_Action_Update_Tooltip")); // NOI18N
         btnUpdate.setFocusable(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -797,7 +794,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel2.add(btnUpdate);
         btnUpdate.getAccessibleContext().setAccessibleName("Update");
 
-        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/commit.png"))); // NOI18N
+        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/commit.png"))); // NOI18N
         btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
         btnCommit.setFocusable(false);
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -858,7 +855,6 @@ private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton btnDiff;
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnUpdate;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jPanel2;
     private javax.swing.JPanel jPanel3;

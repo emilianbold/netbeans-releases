@@ -431,8 +431,6 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
         Mnemonics.setLocalizedText(hooksSectionButton, getMessage("LBL_Advanced")); // NOI18N
 
-        Mnemonics.setLocalizedText(jLabel2, "jLabel2");
-
         JPanel topPanel = new VerticallyNonResizingPanel();
         topPanel.setLayout(new BoxLayout(topPanel, X_AXIS));
         topPanel.add(jLabel1);

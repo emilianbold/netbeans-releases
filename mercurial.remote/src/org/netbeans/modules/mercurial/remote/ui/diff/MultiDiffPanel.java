@@ -547,8 +547,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         };
         prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/diff-prev.png"))) { // NOI18N
             {
-                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/remote/ui/diff/Bundle").
-                                                   getString("CTL_DiffPanel_Prev_Tooltip"));                
+                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/remote/ui/diff/Bundle").getString("CTL_DiffPanel_Prev_Tooltip")); //NOI18N
             }
             @Override
             public void actionPerformed(ActionEvent e) {
