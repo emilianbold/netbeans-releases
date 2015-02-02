@@ -1169,7 +1169,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     openedInEditor,
                                     true,
                                     sourcesForBinaryRoots.contains(root.first()),
-                                    true,
+                                    false,
                                     suspendSupport.getSuspendStatus(),
                                     LogContext.create(LogContext.EventType.FILE, null).
                                         withRoot(root.first()).
@@ -1477,7 +1477,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     true,
                     false,
                     true,
-                    true,
+                    false,
                     LogContext.create(LogContext.EventType.FILE, null).
                         withRoot(root.first()).
                         addFiles(c));
@@ -2247,6 +2247,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return checkEditor;
         }
 
+        /**
+         * Is steady change.
+         * The steady change is source change written to disk like file save in
+         * opposite to transient changes like QS enforced work or tab switch.
+         * @return true if the change is steady
+         */
         protected final boolean isSteady() {
             return this.steady;
         }
@@ -3769,7 +3775,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             if (d != null) {
                                 long version = DocumentUtilities.getDocumentVersion(d);
                                 d.putProperty(PROP_LAST_INDEXED_VERSION, version);
-                                d.putProperty(PROP_LAST_DIRTY_VERSION, null);
+                                if (isSteady()) {
+                                    d.putProperty(PROP_LAST_DIRTY_VERSION, null);
+                                }
                             }
                         }
                     }
