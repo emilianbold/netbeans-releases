@@ -49,7 +49,39 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.libs.clank</code-name-base>
             <module-dependencies/>
-            <public-packages/>
+            <public-packages>
+                <package>org.clang.arcmigrate</package>
+                <package>org.clang.ast</package>
+                <package>org.clang.basic</package>
+                <package>org.clang.basic.spi</package>
+                <package>org.clang.basic.target</package>
+                <package>org.clang.codegen</package>
+                <package>org.clang.driver</package>
+                <package>org.clang.frontend</package>
+                <package>org.clang.frontendtool</package>
+                <package>org.clang.lex</package>
+                <package>org.clang.parse</package>
+                <package>org.clang.rewrite.frontend</package>
+                <package>org.clang.sema</package>
+                <package>org.clang.serialization</package>
+                <package>org.clang.staticanalyzer.core</package>
+                <package>org.clang.tools.driver</package>
+                <package>org.clank.java</package>
+                <package>org.clank.java.impl</package>
+                <package>org.clank.java.stdimpl</package>
+                <package>org.clank.java.stdimpl.aliases</package>
+                <package>org.clank.support</package>
+                <package>org.clank.support.aliases</package>
+                <package>org.llvm.adt</package>
+                <package>org.llvm.adt.aliases</package>
+                <package>org.llvm.bitcode</package>
+                <package>org.llvm.cl</package>
+                <package>org.llvm.mc</package>
+                <package>org.llvm.mc.mcparser</package>
+                <package>org.llvm.option</package>
+                <package>org.llvm.support</package>
+                <package>org.llvm.support.spi</package>
+            </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-arcmigrate.jar</runtime-relative-path>
                 <binary-origin>external/org-clang-arcmigrate.jar</binary-origin>
