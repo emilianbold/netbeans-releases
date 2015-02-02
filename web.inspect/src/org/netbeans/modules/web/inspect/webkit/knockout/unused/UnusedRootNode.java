@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -94,7 +98,7 @@ public class UnusedRootNode extends AbstractNode {
          */
         UnusedRootChildren(java.util.Map<String,java.util.Map<Integer,UnusedBinding>> unusedBindings) {
             this.unusedBindings = unusedBindings;
-            setKeys(unusedBindings.keySet());
+            setKeys(sortKeys(unusedBindings.keySet()));
         }
 
         /**
@@ -112,7 +116,19 @@ public class UnusedRootNode extends AbstractNode {
                 }
             }
             this.unusedBindings = unusedBindings;
-            setKeys(unusedBindings.keySet());
+            setKeys(sortKeys(unusedBindings.keySet()));
+        }
+
+        /**
+         * Returns a list of the given keys sorted alphabetically.
+         * 
+         * @param keys keys to sort.
+         * @return list of the given keys sorted alphabetically.
+         */
+        private final List<String> sortKeys(Collection<String> keys) {
+            List<String> list = new ArrayList<String>(keys);
+            Collections.sort(list);
+            return list;
         }
 
         @Override
