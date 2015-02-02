@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.mercurial.remote;
 
+import java.beans.PropertyChangeEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -73,6 +74,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
 import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
 import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileLock;
@@ -179,6 +181,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         } catch (HgException hgException) {
         }
         cache = Mercurial.getInstance().getFileStatusCache();
+        VersioningManager.getInstance().propertyChange(new PropertyChangeEvent(this, VersioningManager.EVENT_VERSIONED_ROOTS, null, null));
         
     }
 
