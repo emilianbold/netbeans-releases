@@ -143,7 +143,7 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file1");
         commit(folder);
-        
+        createFile(folder, "file2");        
         deleteFO(file);
         assertFalse(file.exists());
         assertTrue(folder.exists());
@@ -154,7 +154,7 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file1");
         commit(folder);
-        
+        createFile(folder, "file2");        
         deleteDO(file);
         assertFalse(file.exists());
         assertTrue(folder.exists());
