@@ -60,6 +60,7 @@ import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -157,6 +158,9 @@ public class NotificationManager {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            TopComponent tc = DashboardTopComponent.findInstance();
+            tc.open();
+            tc.requestActive();
             dashboardViewer.showTodayCategory();
         }
     }
