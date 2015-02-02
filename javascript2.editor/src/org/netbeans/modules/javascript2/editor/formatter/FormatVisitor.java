@@ -707,8 +707,12 @@ public class FormatVisitor extends NodeVisitor {
         if (value instanceof Node[]) {
             int start = getStart(literalNode);
             int finish = getFinish(literalNode);
-            FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);
+            FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);            
             if (leftBracket != null) {
+                if (leftBracket.previous() != null) {
+                    // mark beginning of the array (see issue #250150)
+                    appendToken(leftBracket.previous(), FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY));
+                }
                 appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_START));
                 appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_BRACKET));
                 appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));

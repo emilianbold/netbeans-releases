@@ -224,6 +224,7 @@ FormatToken{kind=EOL, offset=221, text=
 FormatToken{kind=WHITESPACE, offset=222, text=      , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=228, text=!, id=OPERATOR_NOT}
 FormatToken{kind=AFTER_UNARY_OPERATOR, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ARRAY, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=229, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null, id=null}

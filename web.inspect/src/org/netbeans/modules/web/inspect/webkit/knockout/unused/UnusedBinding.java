@@ -47,6 +47,7 @@ import org.netbeans.modules.web.inspect.webkit.DOMNode;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
+import org.openide.util.NbBundle;
 
 /**
  * An unused binding.
@@ -82,7 +83,7 @@ public class UnusedBinding {
             String nodeClasses, WebKitPageModel page) {
         this.id = id;
         this.name = name;
-        this.nodeTagName = nodeTagName;
+        this.nodeTagName = (nodeTagName == null) ? "" : nodeTagName; // NOI18N
         this.nodeId = nodeId;
         this.nodeClasses = nodeClasses;
         this.page = page;
@@ -120,8 +121,13 @@ public class UnusedBinding {
      * 
      * @return (HTML) display name of the owner of this binding.
      */
+    @NbBundle.Messages({
+        "UnusedBindings.comment=comment",
+    })
     public String getNodeDisplayName() {
-        String selector = DOMNode.selector(nodeId, nodeClasses);
+        String selector = DOMNode.selector(
+                nodeTagName.isEmpty() ? Bundle.UnusedBindings_comment() : nodeId,
+                nodeClasses);
         return DOMNode.htmlDisplayName(nodeTagName, selector);
     }
 
