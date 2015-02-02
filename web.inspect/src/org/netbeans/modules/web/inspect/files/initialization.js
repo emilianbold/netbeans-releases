@@ -661,13 +661,16 @@ NetBeans.unusedBindings = function() {
         for (i=0; i<NetBeans.knockoutMarkers.length; i++) {
             var marker = NetBeans.knockoutMarkers[i];
             if (!marker.invoked) {
-                infos.push({
+                var info = {
                     name: marker.binding,
-                    id: i,
-                    nodeTagName: marker.node.tagName,
-                    nodeId: marker.node.getAttribute('id'),
-                    nodeClasses: marker.node.getAttribute('class')
-                });
+                    id: i                    
+                };
+                if (marker.node.nodeType === 1) { // element
+                    info.nodeTagName = marker.node.tagName;
+                    info.nodeId = marker.node.getAttribute('id');
+                    info.nodeClasses = marker.node.getAttribute('class');
+                }
+                infos.push(info);
             }
         }
     }
@@ -676,7 +679,11 @@ NetBeans.unusedBindings = function() {
 
 // Returns the node that owns the unused binding with the specified ID
 NetBeans.ownerOfUnusedBinding = function(id) {
-    return NetBeans.knockoutMarkers[id].node;
+    var node = NetBeans.knockoutMarkers[id].node;
+    if (node.nodeType === 8) {
+        node = node.parentElement;
+    }
+    return node;
 };
 
 // Insert glass-pane into the inspected page
