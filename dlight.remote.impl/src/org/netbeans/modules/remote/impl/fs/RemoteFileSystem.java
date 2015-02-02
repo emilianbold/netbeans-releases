@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -182,8 +183,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
             @Override
             public void run() {
-                //WindowManager.getDefault().getMainWindow().addWindowFocusListener(focusListener);
-                WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
+                if (!GraphicsEnvironment.isHeadless()) {
+                    //WindowManager.getDefault().getMainWindow().addWindowFocusListener(focusListener);
+                    WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
+                }
             }
         });
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);

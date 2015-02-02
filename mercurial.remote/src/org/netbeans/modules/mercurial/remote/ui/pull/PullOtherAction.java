@@ -139,7 +139,7 @@ public class PullOtherAction extends ContextAction {
                                         new HelpCtx(PullOtherAction.class),
                                         new Object[] {pullButton, cancelButton},
                                         true,
-                                        "hg.pull.dialog");
+                                        "hg.pull.dialog"); //NOI18N
         if (option == pullButton) {
             final HgURL pullSource;
             try {

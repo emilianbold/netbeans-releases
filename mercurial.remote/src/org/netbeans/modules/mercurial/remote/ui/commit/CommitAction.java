@@ -596,8 +596,8 @@ public class CommitAction extends ContextAction {
                     "MSG_COMMIT_TITLE_SEP")); // NOI18N
             logger.output(message); // NOI18N
 
-            new Cmd.AddCmd(addCandidates, logger, null, "hg add {0} into {1}").handle();
-            new Cmd.RemoveCmd(deleteCandidates, logger, null, "hg delete {0} from {1}").handle();
+            new Cmd.AddCmd(addCandidates, logger, null, "hg add {0} into {1}").handle(); //NOI18N
+            new Cmd.RemoveCmd(deleteCandidates, logger, null, "hg delete {0} from {1}").handle(); //NOI18N
             removeDeletedTemporaryFiles(commitCandidates, deleteCandidates);
             if (support.isCanceled()) {
                 return;

@@ -176,8 +176,8 @@ abstract class CreateRefreshAction extends ContextAction {
                         logger.outputInRed(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_TITLE_SEP." + bundleKeyPostfix)); //NOI18N
                         logger.output(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_INFO_SEP." + bundleKeyPostfix, patchName, root.getPath())); //NOI18N
 
-                        new Cmd.AddCmd(root, addCandidates, logger, null, "hg add {0} into {1}").handle();
-                        new Cmd.RemoveCmd(root, deleteCandidates, logger, null, "hg delete {0} from {1}").handle();
+                        new Cmd.AddCmd(root, addCandidates, logger, null, "hg add {0} into {1}").handle(); //NOI18N
+                        new Cmd.RemoveCmd(root, deleteCandidates, logger, null, "hg delete {0} from {1}").handle(); //NOI18N
 
                         VCSFileProxy[] hookFiles = null;
                         if (hooks.size() > 0) {

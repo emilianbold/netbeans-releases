@@ -66,8 +66,6 @@ public class RebasePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblRebaseType, org.openide.util.NbBundle.getMessage(RebasePanel.class, "RebasePanel.lblRebaseType.text")); // NOI18N
         lblRebaseType.setToolTipText(org.openide.util.NbBundle.getMessage(RebasePanel.class, "RebasePanel.lblRebaseType.TTtext")); // NOI18N
 
-        cmbRebaseType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         org.openide.awt.Mnemonics.setLocalizedText(lblDescription, org.openide.util.NbBundle.getMessage(RebasePanel.class, "RebasePanel.lblDescription.text")); // NOI18N
 
         panelKind.setLayout(new java.awt.CardLayout());
