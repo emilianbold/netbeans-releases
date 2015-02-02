@@ -767,7 +767,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jPanel2.add(jSeparator2);
 
-        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/refresh.png"))); // NOI18N
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
         btnRefresh.setFocusable(false);
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -775,7 +775,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel2.add(btnRefresh);
         btnRefresh.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "ACNA_Refresh_Status")); // NOI18N
 
-        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/diff.png"))); // NOI18N
+        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/diff.png"))); // NOI18N
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
         btnDiff.setFocusable(false);
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -786,7 +786,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
 
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/update.png"))); // NOI18N
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/update.png"))); // NOI18N
         btnUpdate.setToolTipText(bundle.getString("CTL_Synchronize_Action_Update_Tooltip")); // NOI18N
         btnUpdate.setFocusable(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -794,7 +794,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel2.add(btnUpdate);
         btnUpdate.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "ACNA_Update")); // NOI18N
 
-        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/commit.png"))); // NOI18N
+        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/remote/resources/icons/commit.png"))); // NOI18N
         btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
         btnCommit.setFocusable(false);
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
