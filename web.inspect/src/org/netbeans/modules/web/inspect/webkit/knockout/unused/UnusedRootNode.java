@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -69,6 +73,12 @@ public class UnusedRootNode extends AbstractNode {
         setDisplayName(Bundle.UnusedRootNode_displayName());
     }
 
+    /**
+     * Update the unused bindings represented by this node.
+     * 
+     * @param unusedBindings information about unused bindings represented
+     * by this node.
+     */
     void update(Map<String,Map<Integer,UnusedBinding>> unusedBindings) {
         ((UnusedRootChildren)getChildren()).update(unusedBindings);
     }
@@ -88,11 +98,37 @@ public class UnusedRootNode extends AbstractNode {
          */
         UnusedRootChildren(java.util.Map<String,java.util.Map<Integer,UnusedBinding>> unusedBindings) {
             this.unusedBindings = unusedBindings;
-            setKeys(unusedBindings.keySet());
+            setKeys(sortKeys(unusedBindings.keySet()));
         }
 
+        /**
+         * Update unused bindings represented by this children.
+         * 
+         * @param unusedBindings unused binding information.
+         */
         synchronized void update(java.util.Map<String,java.util.Map<Integer,UnusedBinding>> unusedBindings) {
+            for (Node node : getNodes()) {
+                UnusedGroupNode groupNode = (UnusedGroupNode)node;
+                String name = groupNode.getBindingName();
+                java.util.Map<Integer,UnusedBinding> bindings = unusedBindings.get(name);
+                if (bindings != null) {
+                    groupNode.update(bindings);
+                }
+            }
             this.unusedBindings = unusedBindings;
+            setKeys(sortKeys(unusedBindings.keySet()));
+        }
+
+        /**
+         * Returns a list of the given keys sorted alphabetically.
+         * 
+         * @param keys keys to sort.
+         * @return list of the given keys sorted alphabetically.
+         */
+        private final List<String> sortKeys(Collection<String> keys) {
+            List<String> list = new ArrayList<String>(keys);
+            Collections.sort(list);
+            return list;
         }
 
         @Override
@@ -101,7 +137,7 @@ public class UnusedRootNode extends AbstractNode {
             if (bindings == null) {
                 return new Node[0];
             } else {
-                return new Node[] { new UnusedGroupNode(bindings) };
+                return new Node[] { new UnusedGroupNode(key, bindings) };
             }
         }
         
