@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
+import java.io.FileFilter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -576,8 +577,16 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         private void addFsListeners() {
             FileObject projectDirectory = project.getProjectDirectory();
-            projectDirectory.addRecursiveListener(
-                    WeakListeners.create(FileChangeListener.class, listener, projectDirectory));
+            FileUtil.addRecursiveListener(listener, FileUtil.toFile(projectDirectory), new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    // #249908
+                    if ("node_modules".equals(pathname.getName())) { // NOI18N
+                        return false;
+                    }
+                    return true;
+                }
+            }, null);
             addTestsListener();
             addTestsSeleniumListener();
         }
