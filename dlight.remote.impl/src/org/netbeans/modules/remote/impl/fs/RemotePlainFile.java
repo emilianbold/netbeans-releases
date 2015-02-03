@@ -71,6 +71,7 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -381,7 +382,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
                 if (!canWriteImpl(orig)) {
-                    throw new IOException("Cannot lock " + this); // NOI18N
+                    RemoteIOException.createAndThrow("EXC_CannotLockReadOnlyFile", this.getDisplayName());
                 }
             }
         }

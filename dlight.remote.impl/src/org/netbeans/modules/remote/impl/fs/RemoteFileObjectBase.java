@@ -889,7 +889,11 @@ public abstract class RemoteFileObjectBase {
         }
         return getExecutionEnvironment().toString() + ":" + getPath() + validity; // NOI18N
     }
-    
+
+    public String getDisplayName() {
+        return getExecutionEnvironment().getDisplayName()+ ':' + getPath();
+    }
+
     public void warmup(FileSystemProvider.WarmupMode mode, Collection<String> extensions) {        
     }
     
