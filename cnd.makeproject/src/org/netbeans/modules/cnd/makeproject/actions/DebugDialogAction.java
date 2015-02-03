@@ -155,7 +155,7 @@ public class DebugDialogAction extends NodeAction {
 
                 @Override
                 public void run(Project project) {
-                    performDebug(project, runDialogPanel.getExecutablePath() + " " + runDialogPanel.getArguments());
+                    performDebug(project, runDialogPanel.getExecutablePath() + " " + runDialogPanel.getArguments()); // NOI18N
                 }
             });
         }
