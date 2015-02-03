@@ -167,7 +167,7 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
                         @Override
                         public void run() {
                             RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("window.NetBeans && NetBeans.unusedBindingsAvailable()"); // NOI18N
-                            final boolean found = "true".equals(remoteObject.getValueAsString()); // NOI18N
+                            final boolean found = (remoteObject != null) && "true".equals(remoteObject.getValueAsString()); // NOI18N
                             if (found) {
                                 updateData();
                             }
