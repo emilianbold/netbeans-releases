@@ -167,4 +167,9 @@ public abstract class JsComment {
      */
     public abstract List<Type> getTypes();
     
+    /**
+     * If there is defined an callback in the comment. Like @callback in JsDoc
+     * @return the type of the callback or null, if there is not defined any callback in the comment.
+     */
+    public abstract Type getCallBack();
 }
