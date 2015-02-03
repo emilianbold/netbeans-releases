@@ -14,8 +14,8 @@ Requester.prototype.|>METHOD:send<| = function(|>UNUSED:cb<|) {
 /**
  * This callback is displayed as part of the Requester class.
  * @callback Requester~requestCallback
- * @param {number} |>UNUSED:responseCode<|
- * @param {string} |>UNUSED:responseMessage<|
+ * @param {number} responseCode
+ * @param {string} responseMessage
  */
 
 

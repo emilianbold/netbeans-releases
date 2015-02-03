@@ -527,7 +527,8 @@ public class JsStructureScanner implements StructureScanner {
         
     }
     
-    private static  ImageIcon priviligedIcon = null;
+    private static ImageIcon priviligedIcon = null;
+    private static ImageIcon callbackIcon = null;
     
     private class JsFunctionStructureItem extends JsStructureItem {
 
@@ -606,6 +607,12 @@ public class JsStructureScanner implements StructureScanner {
                     priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
                 }
                 return priviligedIcon;
+            }
+            if (getFunctionScope().getJSKind() == JsElement.Kind.CALLBACK) {
+                if (callbackIcon == null) {
+                    callbackIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodCallback.png")); //NOI18N
+                }
+                return callbackIcon;
             }
             return super.getCustomIcon();
         }

@@ -86,9 +86,16 @@ ${selection}${cursor}
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="for">
+    <codetemplate abbreviation="fom">
         <code>
 <![CDATA[for (var ${var default="i"} = 0, ${max} = ${limit default="10"}; ${var} < ${max}; ${var}++) {
+    ${selection}${cursor}
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="for">
+        <code>
+<![CDATA[for (var ${var default="i"} = 0; ${var} < ${max}; ${var}++) {
     ${selection}${cursor}
 }]]>
         </code>
