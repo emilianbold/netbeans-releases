@@ -84,6 +84,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -254,10 +255,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         // RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
         String path = getPath() + '/' + name;
         if (name.contains("\\") || name.contains("/")) { //NOI18N
-            throw new IOException("Cannot create file "+path); //NOI18N
+            throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                    "EXC_CannotCreateFile", getDisplayName(path))); //NOI18N
         }
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-            throw new ConnectException("Can not create " + getUrlToReport(path) + ": connection required"); //NOI18N
+            throw RemoteExceptions.createConnectException(NbBundle.getMessage(RemoteDirectory.class,
+                    "EXC_CantCreateNoConnect", getDisplayName(path))); //NOI18N
         }
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
@@ -278,7 +281,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             res = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "sh", "-c", script); // NOI18N
             if (res.isOK() && res.error.length() == 0) {
                 creationFalure(name, directory, orig);
-                throw new IOException("Already exists: " + getUrlToReport(path)); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                        "EXC_AlreadyExists", getDisplayName(path))); // NOI18N
             }
         }
         if (res.isOK()) {
@@ -287,7 +291,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 RemoteFileObject fo = getFileObject(name, new HashSet<String>());
                 if (fo == null) {
                     creationFalure(name, directory, orig);
-                    throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
+                    throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteDirectory.class,
+                            "EXC_CannotCreateFile", getDisplayName(path))); //NOI18N
                 }
                 if (USE_VCS) {
                     try {
@@ -299,7 +304,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             } else {
                                 RemoteFileObject originalFO = orig.getFileObject(name, new HashSet<String>());
                                 if (originalFO == null) {
-                                    throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
+                                    throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteDirectory.class,
+                                            "EXC_CannotCreateFile", getDisplayName(path))); //NOI18N
                                 }
                                 interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(originalFO));
                             }
@@ -311,26 +317,33 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return fo;
             } catch (ConnectException ex) {
                 creationFalure(name, directory, orig);
-                throw new IOException("Can not create " + path + ": not connected", ex); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                        "EXC_CannotCreateFileWithReason", getDisplayName(path), "not connected"), ex); // NOI18N
             } catch (InterruptedIOException ex) {
                 creationFalure(name, directory, orig);
-                throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
+                throw RemoteExceptions.createInterruptedIOException(NbBundle.getMessage(RemoteDirectory.class,
+                        "EXC_CannotCreateFileWithReason", getDisplayName(path), "interrupted"), ex); // NOI18N
             } catch (IOException ex) {
                 creationFalure(name, directory, orig);
                 throw ex;
             } catch (ExecutionException ex) {
                 creationFalure(name, directory, orig);
-                throw new IOException("Can not create " + path + ": exception occurred", ex); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                        "EXC_CannotCreateFileWithReason2", getDisplayName(path), //NOI18N
+                        "exception occurred", ex.getLocalizedMessage()), ex); // NOI18N
             } catch (InterruptedException ex) {
                 creationFalure(name, directory, orig);
-                throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                        "EXC_CannotCreateFileWithReason", getDisplayName(path), "interrupted"), ex); // NOI18N
             } catch (CancellationException ex) {
                 creationFalure(name, directory, orig);
-                throw new IOException("Can not create " + path + ": cancelled", ex); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                        "EXC_CannotCreateFileWithReason", getDisplayName(path), "cancelled"), ex); // NOI18N
             }
         } else {
             creationFalure(name, directory, orig);
-            throw new IOException("Can not create " + getUrlToReport(path) + ": " + res.error); // NOI18N
+            throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                    "EXC_CannotCreateFileWithReason", getDisplayName(path), res.error)); // NOI18N
         }
     }
 
@@ -346,10 +359,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 getFileSystem().setInsideVCS(false);
             }
         }
-    }
-
-    private String getUrlToReport(String path) {
-        return getExecutionEnvironment().getDisplayName() + ':' + path;
     }
 
     @Override
@@ -536,7 +545,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (StackOverflowError soe) { // workaround for #130929
             String text = "StackOverflowError when accessing " + getPath(); //NOI18N
             Exceptions.printStackTrace(new Exception(text, soe));
-            throw new IOException(text, soe);
+            throw new IOException(text, soe); // new IOException sic! this should never happen
         } finally {
             if (trace) {
                 trace("getDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
@@ -745,12 +754,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             DirectoryStorage storage = getExistingDirectoryStorage();
             if (storage.getValidEntry(nameExt2Rename) == null) {
-                throw new IOException(nameExt2Rename + " is not an existing child of " + this); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                        "EXC_NotExistingChild", nameExt2Rename, getDisplayName())); // NOI18N
             }
             if (!getCache().exists()) {
                 getCache().mkdirs();
                 if (!getCache().exists()) {
-                    throw new IOException("Can not create cache directory " + getCache()); // NOI18N
+                    throw new IOException("Can not create cache directory " + getCache()); // NOI18N   new IOException sic - should never happen
                 }
             }
             if (trace) {trace("renaming");} // NOI18N
@@ -773,7 +783,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (!isRenamed) {
                 ProcessUtils.ExitStatus ret = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "mv", nameExt2Rename, newNameExt);// NOI18N
                 if (!ret.isOK()) {
-                    throw new IOException(ret.error);
+                    throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                            "EXC_CanNotRename", ret.error)); //NOI18N
                 }
             }
 
@@ -793,7 +804,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     // connection was broken while we read directory content - add notification
                     getFileSystem().addPendingFile(this);
-                    throw new ConnectException(problem.getMessage());
+                    throw RemoteExceptions.createConnectException(problem.getMessage());
                 } else {
                     boolean fileNotFoundException = RemoteFileSystemUtils.isFileNotFoundException(problem);
                     if (fileNotFoundException) {
@@ -1013,7 +1024,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             //RemoteLogger.getInstance().warning("refreshDirectoryStorage is called while host is not connected");
             //force = false;
-            throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(getExecutionEnvironment()));
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(getExecutionEnvironment()));
         }
 
         DirectoryStorage storage;
@@ -1099,7 +1110,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (!getCache().exists()) {
                 getCache().mkdirs();
                 if (!getCache().exists()) {
-                    throw new IOException("Can not create cache directory " + getCache()); // NOI18N
+                    throw new IOException("Can not create cache directory " + getCache()); // NOI18N // new IOException sic - should never happen
                 }
             }
             if (trace) { trace("synchronizing"); } // NOI18N
@@ -1118,7 +1129,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     // connection was broken while we read directory content - add notification
                     getFileSystem().addPendingFile(this);
-                    throw new ConnectException(problem.getMessage());
+                    throw RemoteExceptions.createConnectException(problem.getMessage());
                 } else {
                     boolean fileNotFoundException = RemoteFileSystemUtils.isFileNotFoundException(problem);
                     if (fileNotFoundException) {
@@ -1519,7 +1530,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (!cacheParentFile.exists()) {
                 cacheParentFile.mkdirs();
                 if (!cacheParentFile.exists()) {
-                    throw new IOException("Unable to create parent firectory " + cacheParentFile.getAbsolutePath()); //NOI18N
+                    throw new IOException("Unable to create parent firectory " + cacheParentFile.getAbsolutePath()); //NOI18N // new IOException sic - should never happen
                 }
             }
             if (ensureChildSyncFromZip(child)) {
@@ -1531,7 +1542,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (rc == 0) {
                 getFileSystem().incrementFileCopyCount();
             } else {
-                throw new IOException("Can't download file " + getUrlToReport(child.getPath()) + ":\n" + errorWriter.toString()); //NOI18N
+                RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                        "EXC_CanNotDownload", getDisplayName(child.getPath()), errorWriter.toString())); //NOI18N
             }
         } catch (InterruptedException ex) {
             child.getCache().delete();
@@ -1548,7 +1560,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             getFileSystem().addPendingFile(fo);
             if (throwConnectException) {
-                throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(getExecutionEnvironment()));
+                throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(getExecutionEnvironment()));
             }
         }
     }
@@ -1560,7 +1572,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public final InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
-        throw new FileNotFoundException(getPath());
+        throw new FileNotFoundException(getPath()); // new IOException sic!- should never be called
     }
 
     public byte[] getMagic(RemoteFileObjectBase file) {
@@ -1593,7 +1605,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     protected final OutputStream getOutputStreamImpl(final FileLock lock, RemoteFileObjectBase orig) throws IOException {
-        throw new IOException(getPath());
+        throw new IOException("Can not write into a directory " + getDisplayName()); // new IOException sic!- should never be called // NOI18N
     }
 
     private RemoteFileObject invalidate(DirEntry oldEntry) {

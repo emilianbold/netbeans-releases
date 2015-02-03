@@ -276,7 +276,7 @@ public class RemoteFileSystemUtils {
             if (candidate instanceof RemoteLinkBase) {
                 RemoteFileObjectBase delegate = ((RemoteLinkBase) candidate).getDelegateImpl();
                 if (delegate == null) {
-                    throw new FileNotFoundException("Null delegate for remote link " + candidate); //NOI18N
+                    throw new FileNotFoundException("Null delegate for remote link " + candidate); //NOI18N // new IOException sic!
                 }
                 if (delegate instanceof RemoteLinkBase) {
                     candidate = delegate;
@@ -287,7 +287,8 @@ public class RemoteFileSystemUtils {
                 return candidate;
             }
         }
-        throw new FileNotFoundException("Remote link "+fileObject+" contains more than "+MAXSYMLINKS+" links in a chain."); //NOI18N
+        throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
+                "EXC_DeepSymLinks", fileObject.getDisplayName(), MAXSYMLINKS)); //NOI18N
     }
 
     public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) throws IOException {
@@ -359,9 +360,8 @@ public class RemoteFileSystemUtils {
 
         if (source.isFolder()) {
             if (FileUtil.isParentOf(source, target)) {
-                IOException ioe = new IOException(NbBundle.getMessage(RemoteFileSystemUtils.class, "EXC_OperateChild", // NOI18N
-                        source.getPath(), target.getPath()));
-                throw RemoteIOException.annotateException(ioe);
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
+                        "EXC_OperateChild", source.getPath(), target.getPath())); // NOI18N
             }
         }
 
@@ -378,7 +378,8 @@ public class RemoteFileSystemUtils {
                     ((RemoteFileObject) target).getImplementor().postDeleteOrCreateChild(null, entries);
                     FileObject fo = target.getFileObject(newNameExt);
                     if (fo == null) {
-                        throw new IOException("Null file object after copy " + env + ':' + newPath); //NOI18N
+                        throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
+                                "EXC_NullFoAfterCopy", RemoteFileObjectBase.getDisplayName(env, newPath))); //NOI18N
                     } else {
                         FileUtil.copyAttributes(source, fo);
                         if (!subdirectoryExceptions.isEmpty()) {
@@ -387,14 +388,15 @@ public class RemoteFileSystemUtils {
                         return fo;
                     }
                 } catch (InterruptedException ex) {
-                    throw new InterruptedIOException(ex.getLocalizedMessage());
+                    throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
                 } catch (CancellationException ex) {
-                    throw new InterruptedIOException(ex.getLocalizedMessage());
+                    throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
                 } catch (ExecutionException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
-                        throw new FileNotFoundException(from + " or " + newPath); //NOI18N
+                        throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
+                                "EXC_CantCopyFromTo", from, newPath, ex.getLocalizedMessage()), ex); //NOI18N
                     } else {
-                        throw new IOException(ex);
+                        throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); //NOI18N
                     }
                 }
             }

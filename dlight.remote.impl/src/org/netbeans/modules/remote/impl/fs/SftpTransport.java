@@ -61,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.openide.util.NbBundle;
 
 /**
  * Note: public access is needed for tests
@@ -193,13 +194,15 @@ public class SftpTransport extends RemoteFileSystemTransport {
         }
         try {
             if (task.get().intValue() != 0) {
-                throw new IOException("Cannot delete " + path); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(SftpTransport.class,
+                        "EXC_CantDelete", RemoteFileObjectBase.getDisplayName(execEnv, path))); // NOI18N
             }
         } catch (InterruptedException ex) {
-            throw new InterruptedIOException();
+            throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
         } catch (ExecutionException ex) {
             final String errorText = writer.getBuffer().toString();
-            throw new IOException("Error removing " + path + ": " + errorText, ex); //NOI18N
+            throw RemoteExceptions.createIOException(NbBundle.getMessage(SftpTransport.class, 
+                    "EXC_CantDeleteWReason", RemoteFileObjectBase.getDisplayName(execEnv, path), errorText), ex); //NOI18N
         }
         return null;
     }
@@ -217,7 +220,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
             return DirEntryImpl.create(uploadStatus.getStatInfo(), execEnv);
         } else {
             RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
-            throw new IOException(uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N            
+            throw RemoteExceptions.createIOException("" + uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N
         }
     }    
 }

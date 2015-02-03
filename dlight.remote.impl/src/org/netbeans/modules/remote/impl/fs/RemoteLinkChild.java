@@ -47,6 +47,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -104,7 +105,8 @@ public class RemoteLinkChild extends RemoteLinkBase {
         if (dlg != null) {
             dlg.renameImpl(lock, name, ext, orig);
         } else {
-            throw new IOException("can not rename " + getPath()); //NOI18N
+            throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteLinkChild.class,
+                    "EXC_CanNotRenameFO", getDisplayName())); //NOI18N
         }
     }
 }
