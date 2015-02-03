@@ -258,7 +258,7 @@ public class JsFormatter implements Formatter {
                         formatLineWrap(tokens, i, formatContext, codeStyle, initialIndent,
                                 continuationIndent, continuations);
                     } else if (token.getKind().isIndentationMarker()) {
-                        updateIndentationLevel(token, formatContext);
+                        updateIndentationLevel(token, formatContext, codeStyle);
                     } else if (token.getKind() == FormatToken.Kind.AFTER_END_BRACE) {
                         if (!openedBraces.isEmpty()
                                 && getBracePlacement(openedBraces.pop(), codeStyle) == CodeStyle.BracePlacement.NEW_LINE_INDENTED) {
@@ -332,7 +332,7 @@ public class JsFormatter implements Formatter {
                                     }
                                 }
                             } else {
-                                updateIndentationLevel(nextToken, formatContext);
+                                updateIndentationLevel(nextToken, formatContext, codeStyle);
                             }
                             processed.add(nextToken);
                         }
@@ -343,7 +343,7 @@ public class JsFormatter implements Formatter {
                                 && (indentationEnd.getKind() != FormatToken.Kind.EOL || templateEdit)) {
                             int indentationSize = initialIndent + formatContext.getIndentationLevel() * indentLevelSize;
                             int continuationLevel = formatContext.getContinuationLevel();
-                            if (isContinuation(formatContext, token, false)) {
+                            if (isContinuation(formatContext, codeStyle, token, false)) {
                                 continuationLevel++;
                                 updateContinuationStart(formatContext, token, continuations, true);
                             } else {
@@ -404,7 +404,7 @@ public class JsFormatter implements Formatter {
                 + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
 
         int continuationLevel = formatContext.getContinuationLevel();
-        if (isContinuation(formatContext, lastWrap.getToken(), true)) {
+        if (isContinuation(formatContext, codeStyle, lastWrap.getToken(), true)) {
             continuationLevel++;
             updateContinuationStart(formatContext, lastWrap.getToken(), continuations, true);
         } else {
@@ -508,7 +508,7 @@ public class JsFormatter implements Formatter {
                 || extendedTokenAfterEol != tokenAfterEol && !isStatementWrap(token))) {
 
             // proceed the skipped tokens moving the main loop
-            moveForward(token, extendedTokenAfterEol, formatContext, true);
+            moveForward(token, extendedTokenAfterEol, formatContext, codeStyle, true);
 
             if (style != CodeStyle.WrapStyle.WRAP_NEVER
                     || bracePlacement == CodeStyle.BracePlacement.NEW_LINE
@@ -540,7 +540,7 @@ public class JsFormatter implements Formatter {
                             + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
 
                     int continuationLevel = formatContext.getContinuationLevel();
-                    if (isContinuation(formatContext, tokenBeforeEol, true)) {
+                    if (isContinuation(formatContext, codeStyle, tokenBeforeEol, true)) {
                         continuationLevel++;
                         updateContinuationStart(formatContext, tokenBeforeEol, continuations, true);
                     } else {
@@ -902,7 +902,7 @@ public class JsFormatter implements Formatter {
     }
 
     private static boolean isContinuation(FormatContext formatContext,
-            FormatToken token, boolean noRealEol) {
+            CodeStyle.Holder codeStyle, FormatToken token, boolean noRealEol) {
 
         assert noRealEol || token.getKind() == FormatToken.Kind.SOURCE_START
                 || token.getKind() == FormatToken.Kind.EOL;
@@ -952,11 +952,11 @@ public class JsFormatter implements Formatter {
                             case AFTER_ASSIGNMENT_OPERATOR_WRAP:
                             case AFTER_WITH_PARENTHESIS:
                             case AFTER_TERNARY_OPERATOR:
-                                return CodeStyle.get(formatContext).toHolder().objectLiteralContinuation;
+                                return codeStyle.objectLiteralContinuation;
                             case AFTER_PROPERTY_OPERATOR:
                                 FormatToken operatorToken = tokenBeforeObject.previous();
                                 if (operatorToken != null && operatorToken.getId() == JsTokenId.OPERATOR_COLON) {
-                                    return CodeStyle.get(formatContext).toHolder().objectLiteralContinuation;
+                                    return codeStyle.objectLiteralContinuation;
                                 }
                         }
                     }
@@ -1058,7 +1058,8 @@ public class JsFormatter implements Formatter {
         return Indentation.FORBIDDEN;
     }
 
-    private static void updateIndentationLevel(FormatToken token, FormatContext formatContext) {
+    private static void updateIndentationLevel(FormatToken token,
+            FormatContext formatContext, CodeStyle.Holder codeStyle) {
         switch (token.getKind()) {
             case ELSE_IF_INDENTATION_INC:
                 if (ELSE_IF_SINGLE_LINE) {
@@ -1081,7 +1082,6 @@ public class JsFormatter implements Formatter {
         // following code handles indentation of the opening brace
         // if indentation is set to "new line indented"
         if (token.getKind().isBraceMarker()) {
-            CodeStyle.Holder codeStyle = CodeStyle.get(formatContext).toHolder();
             if (getBracePlacement(token, codeStyle) == CodeStyle.BracePlacement.NEW_LINE_INDENTED) {
                 FormatToken nextFt = token.next();
                 if (nextFt != null && nextFt.getId() == JsTokenId.BRACKET_LEFT_CURLY) {
@@ -2239,7 +2239,7 @@ public class JsFormatter implements Formatter {
      * @return the new index
      */
     private void moveForward(FormatToken token, FormatToken limit,
-            FormatContext formatContext, boolean allowComment) {
+            FormatContext formatContext, CodeStyle.Holder codeStyle, boolean allowComment) {
 
         for (FormatToken current = token; current != null && current != limit; current = current.next()) {
             assert current.isVirtual()
@@ -2251,7 +2251,7 @@ public class JsFormatter implements Formatter {
                         || current.getKind() == FormatToken.Kind.DOC_COMMENT): current;
 
             processed.add(current);
-            updateIndentationLevel(current, formatContext);
+            updateIndentationLevel(current, formatContext, codeStyle);
             if (current.getKind() == FormatToken.Kind.EOL) {
                 formatContext.setCurrentLineStart(current.getOffset()
                         + 1 + formatContext.getOffsetDiff());

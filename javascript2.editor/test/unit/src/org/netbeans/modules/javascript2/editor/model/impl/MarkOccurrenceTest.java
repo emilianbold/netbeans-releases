@@ -1259,6 +1259,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue249619.js", "console.log(er^r.stack);", true); 
     }
     
+    public void testCallBackDeclaration_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration1.js", "* @param {Requ^ester~requestCallback} cb - The callback that handles the response.", true); 
+    }
+    
+    public void testCallBackDeclaration_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration1.js", "* @param {Requester~reque^stCallback} cb - The callback that handles the response.", true); 
+    }
+    
+    public void testCallBackDeclaration_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration1.js", "* @param {Requester~requestCallback} c^b - The callback that handles the response.", true); 
+    }
+    
+    public void testCallBackDeclaration_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration2.js", " * @param {requ^estCallback} cb - The callback that handles the response.", true); 
+    }
+    
+    public void testCallBackDeclaration_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration2.js", " * @param {requestCallback} c^b - The callback that handles the response.", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
