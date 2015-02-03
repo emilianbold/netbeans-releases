@@ -201,6 +201,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     completeInWith(request, addedProperties);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
+                case CALL_ARGUMENT:
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, added);

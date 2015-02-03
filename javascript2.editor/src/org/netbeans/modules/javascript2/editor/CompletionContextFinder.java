@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -72,7 +73,7 @@ public class CompletionContextFinder {
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT},
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
-        
+       
     @NonNull
     static CompletionContext findCompletionContext(ParserResult info, int offset){
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
@@ -130,6 +131,12 @@ public class CompletionContextFinder {
         
         ts.move(offset); 
         if (ts.moveNext()) {
+            if (isCallArgumentContext(ts)) {
+                return CompletionContext.CALL_ARGUMENT;
+            } else {
+                ts.move(offset);
+                ts.moveNext();
+            }
             if (isPropertyNameContext(ts)) {
                 return CompletionContext.OBJECT_PROPERTY_NAME;
             }
@@ -160,6 +167,43 @@ public class CompletionContextFinder {
         }
         
         return CompletionContext.EXPRESSION;
+    }
+    
+    protected static boolean isCallArgumentContext(TokenSequence<JsTokenId> ts) {
+         if (ts.movePrevious()) {
+            Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+            if (token != null 
+                    && (token.id() == JsTokenId.BRACKET_LEFT_PAREN || token.id() == JsTokenId.OPERATOR_COMMA)) {
+                int balanceParen = token.id() == JsTokenId.BRACKET_LEFT_PAREN ? 0 : 1;
+                int balanceCurly = 0;
+                int balanceBracket = 0;
+                while (balanceParen != 0 && ts.movePrevious()) {
+                    token = ts.token();
+                    if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+                        balanceParen--;
+                    } else if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
+                        balanceParen++;
+                    } else if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                        balanceCurly--;
+                    } else if (token.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                        balanceCurly++;
+                    } else if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
+                        balanceBracket--;
+                    } else if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                        balanceBracket++;
+                    }
+                }
+                if (balanceParen == 0 && balanceCurly == 0 && balanceBracket == 0) {
+                    if (ts.movePrevious() && token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+                        token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token.id() == JsTokenId.IDENTIFIER) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     protected static boolean isPropertyNameContext(TokenSequence<JsTokenId> ts) {
