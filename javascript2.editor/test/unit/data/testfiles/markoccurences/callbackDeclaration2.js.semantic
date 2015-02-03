@@ -14,6 +14,6 @@ Requester.prototype.|>METHOD:send<| = function(|>UNUSED:cb<|) {
 /**
  * This callback is displayed as a global member.
  * @callback requestCallback
- * @param {number} |>UNUSED:responseCode<|
- * @param {string} |>UNUSED:responseMessage<|
+ * @param {number} responseCode
+ * @param {string} responseMessage
  */
