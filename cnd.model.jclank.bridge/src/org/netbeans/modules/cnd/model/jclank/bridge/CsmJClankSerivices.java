@@ -44,10 +44,12 @@ package org.netbeans.modules.cnd.model.jclank.bridge;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static org.clang.basic.ClangGlobals.$out_DiagnosticBuilder_StringRef;
 import org.clang.basic.Diagnostic;
 import org.clang.basic.DiagnosticIDs;
 import org.clang.basic.DiagnosticOptions;
 import org.clang.basic.DiagnosticsEngine;
+import org.clang.basic.FileEntry;
 import org.clang.basic.FileManager;
 import org.clang.basic.FileSystemOptions;
 import org.clang.basic.LangOptions;
@@ -55,6 +57,8 @@ import org.clang.basic.Module;
 import org.clang.basic.PresumedLoc;
 import org.clang.basic.SourceLocation;
 import org.clang.basic.SourceManager;
+import org.clang.basic.SrcMgr;
+import org.clang.basic.diag;
 import org.clang.basic.target.TargetInfo;
 import org.clang.basic.target.TargetOptions;
 import org.clang.basic.tok;
@@ -93,41 +97,60 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Voskresensky
  */
 public class CsmJClankSerivices {
-
+    private static final boolean TRACE = true;
+    
     public static APTTokenStream getAPTTokenStream(NativeFileItem nfi) {
         throw new UnsupportedOperationException();
     }
 
     public static void dumpTokens(NativeFileItem nfi) {
         Preprocessor /*&*/ PP = getPreprocessor(nfi);
-        // Start preprocessing the specified input file.
-        Token Tok/*J*/ = new Token();
-        PP.EnterMainSourceFile();
-        do {
-            PP.Lex(Tok);
-            PP.DumpToken(Tok, true);
-            llvm.errs().$out($("\n"));
-        } while (Tok.isNot(tok.TokenKind.eof));
+        if (PP != null) {
+            // Start preprocessing the specified input file.
+            Token Tok/*J*/ = new Token();
+            PP.EnterMainSourceFile();
+            do {
+                PP.Lex(Tok);
+                PP.DumpToken(Tok, true);
+                llvm.errs().$out($("\n"));
+            } while (Tok.isNot(tok.TokenKind.eof));
+        }
     }
 
     public static void dumpPreprocessed(NativeFileItem nfi) {
-        PreprocessorOutputOptions Opts = createPPOptions(nfi);
         Preprocessor /*&*/ PP = getPreprocessor(nfi);
-        
-        String Source = "#include \"" + nfi.getAbsolutePath() + "\"\0";
-        byte[] bytes = Source.getBytes(Charset.forName("UTF-8"));
-        StringRef stringRef = new StringRef(bytes, bytes.length-1);
-        MemoryBuffer /*P*/ buf = MemoryBuffer.getMemBuffer(stringRef);
-        SourceManager SourceMgr = PP.getSourceManager();
-        SourceMgr.setMainFileID(SourceMgr.createFileID(buf));
-        
-        ClangGlobals.DoPrintPreprocessedInput(PP, llvm.outs(), Opts);
+        if (PP != null) {
+            PreprocessorOutputOptions Opts = createPPOptions(nfi);
+            try {
+                ClangGlobals.DoPrintPreprocessedInput(PP, llvm.outs(), Opts);
+            } finally {
+                llvm.outs().flush();
+            }
+        }
     }
 
     private static Preprocessor getPreprocessor(NativeFileItem nfi) {
         PreprocessorInitializer initializer = new AdvancedPreprocessorInitializer(nfi);
         VoidModuleLoader ModLoader/*J*/ = new VoidModuleLoader();
         Preprocessor PP/*J*/ = initializer.createPreprocessor(ModLoader);
+        
+        StringRef InputFile = new StringRef(nfi.getAbsolutePath());
+        FileManager FileMgr = PP.getFileManager();
+        FileEntry /*P*/ File = FileMgr.getFile(InputFile, true);
+        if (File == null) {
+            $out_DiagnosticBuilder_StringRef(PP.getDiagnostics().Report(diag.err_fe_error_reading), InputFile).$destroy();
+            return null;
+        } else {
+            SourceManager SourceMgr = PP.getSourceManager();
+            SourceMgr.setMainFileID(
+                    SourceMgr.createFileID(
+                            File, 
+                            new SourceLocation(), 
+                            SrcMgr.CharacteristicKind.C_User
+                    )
+            );
+        }   
+        
         return PP;
     }
 
@@ -173,7 +196,7 @@ public class CsmJClankSerivices {
             PreprocessorOptions PPOpts = createPreprocessorOptions();
             HeaderSearchOptions HSOpts = createHeaderSearchOptions();
             HeaderSearch HS = new HeaderSearch(new IntrusiveRefCntPtr<>(HSOpts), SourceMgr, Diags, LangOpts, Target.getPtr());
-            ClangGlobals.ApplyHeaderSearchOptions(HS, HSOpts, LangOpts, Target.getPtr().getTriple());
+//            ClangGlobals.ApplyHeaderSearchOptions(HS, HSOpts, LangOpts, Target.getPtr().getTriple());
             Preprocessor PP = new Preprocessor(new IntrusiveRefCntPtr<>(PPOpts), Diags, LangOpts, Target.getPtr(), SourceMgr, HS, ModLoader, null, false, false);
             ClangGlobals.InitializePreprocessor(PP, PPOpts, HSOpts, new FrontendOptions());
             return PP;
@@ -186,7 +209,7 @@ public class CsmJClankSerivices {
             HSOpts.UseStandardCXXIncludes = false;
             HSOpts.UseStandardSystemIncludes = false;
             
-            if (false) {
+            if (TRACE) {
                 HSOpts.Verbose = true;
             }
             return HSOpts;
@@ -213,19 +236,24 @@ public class CsmJClankSerivices {
         @Override
         protected HeaderSearchOptions createHeaderSearchOptions() {
             HeaderSearchOptions options = super.createHeaderSearchOptions();
+            // -I
+            for (FSPath fSPath : startEntry.getUserIncludePaths()) {
+                FileObject fileObject = fSPath.getFileObject();
+                if (fileObject != null && fileObject.isFolder()) {
+                    if (TRACE) llvm.errs().$out("user include ").$out(fSPath.getPath()).$out($("\n"));
+                    options.AddPath(new StringRef(fSPath.getPath()), frontend.IncludeDirGroup.Angled, false, true);
+                }
+            }
             // -isystem
             for (FSPath fSPath : startEntry.getSystemIncludePaths()) {
                 FileObject fileObject = fSPath.getFileObject();
                 if (fileObject != null && fileObject.isFolder()) {
+                    if (TRACE) llvm.errs().$out("sys include ").$out(fSPath.getPath()).$out($("\n"));
+                    // add search path
+                    options.AddPath(new StringRef(fSPath.getPath()), frontend.IncludeDirGroup.System, false, true);
+                    // and register as system header prefix
                     options.AddSystemHeaderPrefix(new StringRef(fSPath.getPath()), true);
                 }                
-            }
-            // -I
-            for (FSPath fSPath : startEntry.getSystemIncludePaths()) {
-                FileObject fileObject = fSPath.getFileObject();
-                if (fileObject != null && fileObject.isFolder()) {
-                    options.AddPath(new StringRef(fSPath.getPath()), frontend.IncludeDirGroup.Angled, false, true);
-                }
             }
             return options;
         }
@@ -234,16 +262,16 @@ public class CsmJClankSerivices {
         protected PreprocessorOptions createPreprocessorOptions() {
             PreprocessorOptions out = super.createPreprocessorOptions();
             // handle -include
-            for (FSPath fSPath : startEntry.getUserIncludePaths()) {
-                FileObject fileObject = fSPath.getFileObject();
-                if (fileObject != null && fileObject.isData()) {
-                    out.Includes.push_back(fSPath.getPath());
-                }                
+            for (String path : startEntry.getIncludeFiles()) {
+                if (TRACE) llvm.errs().$out("file include ").$out(path).$out($("\n"));
+                out.Includes.push_back(path);
             }
             for (String macro : startEntry.getSystemMacroDefinitions()) {
+                if (TRACE) llvm.errs().$out("sys macro ").$out(macro).$out($("\n"));
                 out.addMacroDef(new StringRef(macro));
             }
             for (String macro : startEntry.getUserMacroDefinitions()) {
+                if (TRACE) llvm.errs().$out("user macro ").$out(macro).$out($("\n"));
                 out.addMacroDef(new StringRef(macro));
             }
             if (false) {
@@ -278,23 +306,23 @@ public class CsmJClankSerivices {
             case C:
                 break;
             case C89:
-                lang_std = LangStandard.Kind.lang_c89;
+                lang_std = LangStandard.Kind.lang_gnu89;
                 break;
             case C99:
-                lang_std = LangStandard.Kind.lang_c99;
+                lang_std = LangStandard.Kind.lang_gnu99;
                 break;
             case CPP:
                 lang_std = LangStandard.Kind.lang_cxx03;
                 break;
             case CPP11:
-                lang_std = LangStandard.Kind.lang_cxx11;
+                lang_std = LangStandard.Kind.lang_gnucxx11;
                 break;
             case C11:
-                lang_std = LangStandard.Kind.lang_c11;
+                lang_std = LangStandard.Kind.lang_gnu11;
                 break;
             case CPP14:
                 // FIXME
-                lang_std = LangStandard.Kind.lang_cxx1y;
+                lang_std = LangStandard.Kind.lang_gnucxx1y;
                 break;
             case F77:
             case F90:
@@ -336,8 +364,12 @@ public class CsmJClankSerivices {
                             + "\n";
                 }
             }
-            Level level = toLoggerLevel(DiagLevel);
-            Logger.getLogger(TestDiagnosticConsumer.class.getName()).log(level, "{2}{0}:{1}\n", new Object[]{DiagLevel, new std.string(out.data()).toJavaString(), Loc});
+            Level level = toLoggerLevel(DiagLevel);            
+            String msg = new std.string(out.data()).toJavaString();
+            if (DiagLevel.getValue() >= DiagnosticsEngine.Level.Error.getValue()) {
+                msg = msg;
+            }
+            Logger.getLogger(TestDiagnosticConsumer.class.getName()).log(level, "{2}{0}:{1}\n", new Object[]{DiagLevel, msg, Loc});
         }
     }
 
