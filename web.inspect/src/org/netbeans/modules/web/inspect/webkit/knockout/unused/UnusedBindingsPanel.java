@@ -241,12 +241,16 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
             messageLabel.setText(Bundle.UnusedBindingsPanel_noUnusedBindings());
             componentToShow = messageLabel;
         } else {
-            componentToShow = dataPanel;
+            componentToShow = treeView;
         }
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                showComponent(componentToShow);
+                dataPanel.remove(componentToShow == messageLabel ? treeView : messageLabel);
+                dataPanel.add(componentToShow);
+                showComponent(dataPanel);
+                dataPanel.revalidate();
+                dataPanel.repaint();
             }
         });
     }
