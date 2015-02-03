@@ -142,7 +142,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final RemoteFileZipper remoteFileZipper;
     private final ThreadLocal<Boolean> isInsideVCS = new ThreadLocal<Boolean>();
 
-    private final RequestProcessor RP = new RequestProcessor("Connection and R/W change", 1); //NOI18N
+    private final RequestProcessor.Task connectionTask;
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -189,6 +189,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
         });
+        connectionTask = new RequestProcessor("Connection and R/W change", 1).create(new ConnectionChangeRunnable()); //NOI18N;
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
         remoteFileZipper = new RemoteFileZipper(execEnv);
     }
@@ -224,20 +225,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     private class ConnectionChangeRunnable implements Runnable {
 
-        private final Collection<RemoteFileObjectBase> cachedFileObjects;
-        private final boolean connect;
-
-        public ConnectionChangeRunnable(boolean connect) {
-            this.connect = connect;
-            this.cachedFileObjects = factory.getCachedFileObjects();
+        public ConnectionChangeRunnable() {
         }
 
         @Override
         public void run() {
-            if (connect) {
+            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 refreshManager.scheduleRefreshOnConnect();
             }
-            for (RemoteFileObjectBase fo : cachedFileObjects) {
+            for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
                 fo.connectionChanged();
             }
         }
@@ -247,7 +243,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public void connected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
-            RP.post(new ConnectionChangeRunnable(true));
+            connectionTask.schedule(0);
         }
     }
 
@@ -255,7 +251,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public void disconnected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
-            RP.post(new ConnectionChangeRunnable(false));
+            connectionTask.schedule(0);
         }
         if (ATTR_STATS) { dumpAttrStat(); }
     }
