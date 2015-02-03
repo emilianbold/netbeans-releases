@@ -75,6 +75,7 @@ import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.JsLanguage;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
@@ -816,6 +817,31 @@ public class ModelVisitor extends PathNodeVisitor {
                             }
                         }
                     }
+                    Type callBack = comment.getCallBack();
+                    if (callBack != null) {
+                        List<Identifier> fqn = fqnFromType(callBack);
+                        markOccurrences(fqn);
+                        List<Identifier> parentFqn = new ArrayList<Identifier>();
+                        for (int i = 0; i < fqn.size() - 1; i++) {
+                            parentFqn.add(fqn.get(i));
+                        }
+                        JsObject parentObject = parentFqn.isEmpty() ? getGlobalObject() : ModelUtils.getJsObject(modelBuilder, parentFqn, true);
+                        JsFunctionImpl callBackFunction = new JsFunctionImpl(
+                                parentObject instanceof DeclarationScope ? (DeclarationScope)parentObject : ModelUtils.getDeclarationScope(parentObject),
+                                parentObject, fqn.get(fqn.size() - 1), Collections.EMPTY_LIST, 
+                                new OffsetRange(callBack.getOffset(), callBack.getOffset() + callBack.getType().length()),
+                                JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                        parentObject.addProperty(callBackFunction.getName(), callBackFunction);
+                        List<DocParameter> docParameters = comment.getParameters();
+                        for (DocParameter docParameter: docParameters) {
+                            ParameterObject parameter = new ParameterObject(callBackFunction, docParameter.getParamName(), JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                            for (Type type : docParameter.getParamTypes()) {
+                                parameter.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), parameter.getOffset());
+                            }
+                            addDocNameOccurence(parameter);
+                            callBackFunction.addParameter(parameter);
+                        }
+                    }
                 }
             }
             
@@ -904,6 +930,35 @@ public class ModelVisitor extends PathNodeVisitor {
         return null;
     }
 
+    private List<Identifier> fqnFromType (final Type type) {
+        List<Identifier> fqn = new ArrayList<Identifier>();
+        String typeName = type.getType();
+        int offset = type.getOffset();
+        if (typeName.indexOf('.') > -1) {
+            String[] parts = typeName.split("\\.");
+            int delta = 0;
+            for (int i = 0; i < parts.length; i++) {
+                fqn.add(new IdentifierImpl(parts[i], offset + delta));
+                delta = delta + parts[i].length() + 1;
+            }
+        } else {
+            fqn.add(new IdentifierImpl(typeName, offset));
+        }
+        return fqn;
+    }
+    
+    private void markOccurrences (List<Identifier> fqn) {
+        JsObject whereOccurrence = getGlobalObject();
+        for (Identifier iden: fqn) {
+            whereOccurrence = whereOccurrence.getProperty(iden.getName());
+            if (whereOccurrence != null) {
+                whereOccurrence.addOccurrence(iden.getOffsetRange());
+            } else {
+                break;
+            }
+        }
+    }
+    
     private JsArray handleArrayCreation(Node initNode, JsObject parent, Identifier name) {
         if (initNode instanceof UnaryNode && parent != null) {
             UnaryNode uNode = (UnaryNode)initNode;

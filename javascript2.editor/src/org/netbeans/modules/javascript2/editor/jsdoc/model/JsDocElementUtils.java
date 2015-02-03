@@ -141,7 +141,12 @@ public class JsDocElementUtils {
         } else if (LOWERCASED_BOOLEAN.equals(type)) {
             return new TypeUsageImpl(Type.BOOLEAN, offset);
         } else {
-            return new TypeUsageImpl(type, offset);
+            String correctedType = type;
+            if (correctedType.indexOf('~') > 0) {
+                // we dont't replace tilda if it's on the first position
+                correctedType = correctedType.replace('~', '.'); // replacing tilda with dot. See issue #25110
+            }
+            return new TypeUsageImpl(correctedType, offset);
         }
     }
 
