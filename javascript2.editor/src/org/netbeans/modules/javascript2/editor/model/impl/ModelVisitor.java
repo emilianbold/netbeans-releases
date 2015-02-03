@@ -832,6 +832,7 @@ public class ModelVisitor extends PathNodeVisitor {
                                 new OffsetRange(callBack.getOffset(), callBack.getOffset() + callBack.getType().length()),
                                 JsTokenId.JAVASCRIPT_MIME_TYPE, null);
                         parentObject.addProperty(callBackFunction.getName(), callBackFunction);
+                        callBackFunction.setDocumentation(Documentation.create(comment.getDocumentation()));
                         List<DocParameter> docParameters = comment.getParameters();
                         for (DocParameter docParameter: docParameters) {
                             ParameterObject parameter = new ParameterObject(callBackFunction, docParameter.getParamName(), JsTokenId.JAVASCRIPT_MIME_TYPE, null);
