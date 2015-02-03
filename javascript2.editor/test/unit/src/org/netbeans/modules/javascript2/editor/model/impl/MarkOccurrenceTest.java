@@ -1255,6 +1255,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyContext~Address} add^ressDescription", true); 
     }
     
+    public void testIssue249619_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249619.js", "console.log(er^r.stack);", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
