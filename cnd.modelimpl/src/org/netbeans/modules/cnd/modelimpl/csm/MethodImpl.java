@@ -45,12 +45,14 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.Objects;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
@@ -58,6 +60,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_INTERNAL_DATA_PREFIX;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -189,7 +193,35 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         return super.isConst();
     }
 
-    
+    @Override
+    protected CharSequence createUIDExtraSuffix(AST ast) {
+        CharSequence funSuffix = super.createUIDExtraSuffix(ast);
+        if (CsmKindUtilities.isMethodDeclaration(this)) {
+            // Check if this is method declaration which is added in class via #include directive:
+            // struct AAA {
+            //  #include "body.inc"
+            // };
+            CsmClass cls = getContainingClass();
+            CsmFile clsFile = cls != null ? cls.getContainingFile() : null;
+            if (cls != null && clsFile != null && !Objects.equals(clsFile, getContainingFile())) {
+                StringBuilder sb = new StringBuilder(UID_INTERNAL_DATA_PREFIX);
+                sb.append(cls.getName());
+                sb.append("_"); // NOI18N
+                if (clsFile instanceof FileImpl) {
+                    sb.append(((FileImpl) clsFile).getFileId());
+                } else {
+                    // Absolute path shouldn't be used here
+                    sb.append(clsFile.getName());
+                }
+                if (funSuffix != null) {
+                    sb.append(funSuffix);
+                }
+                return sb.toString();
+            }
+        }
+        return funSuffix;
+    }
+
     public static class MethodBuilder extends FunctionBuilder implements MemberBuilder {
         
         private final boolean _virtual = false;

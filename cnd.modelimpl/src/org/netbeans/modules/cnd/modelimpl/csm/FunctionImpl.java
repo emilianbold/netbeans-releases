@@ -97,7 +97,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.RawNamable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_SIGNATURE_PREFIX;
+import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_INTERNAL_DATA_PREFIX;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -124,7 +124,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private CsmType returnType;
     private FunctionParameterListImpl parameterList;
     private CharSequence signature;
-    private CharSequence macroSignature;
+    private CharSequence uidExtraSuffix;
 
     // only one of scopeRef/scopeAccessor must be used
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
@@ -194,20 +194,20 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     /**
-     * Method is used to get temporary signature for UID
+     * Method is used to get extra suffix for UID (like signature, scope, etc)
      * @return signature field
      */
-    public CharSequence getSignatureForUID() {
-        return macroSignature;
-    }    
+    public final CharSequence getUIDExtraSuffix() {
+        return uidExtraSuffix;
+    }
     
-    protected static CharSequence createSignatureForUID(AST ast) {
+    protected CharSequence createUIDExtraSuffix(AST ast) {
         // Do it only if needed
         if (AstUtil.hasExpandedTokens(ast)) {
             AST params = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
             if (params != null) {
                 boolean first = true;
-                StringBuilder sb = new StringBuilder(UID_SIGNATURE_PREFIX); 
+                StringBuilder sb = new StringBuilder(UID_INTERNAL_DATA_PREFIX); 
                 sb.append("("); // NOI18N
                 AST param = AstUtil.findChildOfType(params, CPPTokenTypes.CSM_PARAMETER_DECLARATION);
                 do {
@@ -224,14 +224,19 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     first = false;
                 } while ((param = AstUtil.findSiblingOfType(param.getNextSibling(), CPPTokenTypes.CSM_PARAMETER_DECLARATION)) != null);
                 sb.append(")"); // NOI18N
-                return QualifiedNameCache.getManager().getString(sb.toString());
+                return sb.toString();
             }
         }
         return null;
     }
     
     protected static<T> void temporaryRepositoryRegistration(AST ast, boolean global, FunctionImpl<T> fun) {
-        fun.macroSignature = createSignatureForUID(ast);
+        CharSequence uidExtraSuffix = fun.createUIDExtraSuffix(ast);
+        if (uidExtraSuffix != null) {
+            fun.uidExtraSuffix = QualifiedNameCache.getManager().getString(uidExtraSuffix);
+        } else {
+            fun.uidExtraSuffix = null;
+        }
         temporaryRepositoryRegistration(global, fun);
     }
 
@@ -760,7 +765,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( signature == null ) {
             signature = QualifiedNameCache.getManager().getString(createSignature(getName(), getParameters(), getOwnTemplateParameters(), isConst()));
         }
-        assert !signature.toString().startsWith(UID_SIGNATURE_PREFIX) : "Signature requested when object is not fully constructed!"; // NOI18N
+        assert !signature.toString().startsWith(UID_INTERNAL_DATA_PREFIX) : "Signature requested when object is not fully constructed!"; // NOI18N
         return signature;
     }   
 
@@ -1025,7 +1030,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        PersistentUtils.writeUTF(macroSignature, output);
+        PersistentUtils.writeUTF(uidExtraSuffix, output);
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         PersistentUtils.writeParameterList(this.parameterList, output);
@@ -1041,7 +1046,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
-        this.macroSignature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
+        this.uidExtraSuffix = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input, this);
