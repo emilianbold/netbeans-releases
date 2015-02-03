@@ -267,5 +267,10 @@ public class SDocComment extends JsComment {
     public List<Type> getTypes() {
         return Collections.emptyList();
     }
+
+    @Override
+    public Type getCallBack() {
+        return null;
+    }
     
 }
