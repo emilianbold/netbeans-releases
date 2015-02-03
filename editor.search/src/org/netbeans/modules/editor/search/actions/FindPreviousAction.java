@@ -65,11 +65,18 @@ public class FindPreviousAction extends AbstractEditorAction {
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-            if (eui.getComponent().getClientProperty("AsTextField") == null) {
-                //NOI18N
-                EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
+            JTextComponent component = null;
+            if (eui == null) {
+                component = SearchBar.getInstance().getActualTextComponent();
+            } else {
+                component = eui.getComponent();
             }
-            SearchNbEditorKit.openFindIfNecessary(eui, evt);
+            
+            if (component.getClientProperty("AsTextField") == null) {
+                //NOI18N
+                EditorFindSupport.getInstance().setFocusedTextComponent(component);
+            }
+            SearchNbEditorKit.openFindIfNecessary(component, evt);
             EditorFindSupport.getInstance().find(null, true);
             SearchBar searchBarInstance = SearchBar.getInstance();
             if (searchBarInstance.isVisible()) {
