@@ -67,10 +67,15 @@ public class CsmJClankTracePreprocessorAction {
         PrintStream origErr = System.err;
         PrintStream origOut = System.out;
         try {
+            final PrintStream printStreamOut = new PrintStream(new WriterOutputStream(printOut));
 //            System.setErr(new PrintStreamDuplex(new WriterOutputStream(printOut), origErr));
 //            System.setOut(new PrintStreamDuplex(new WriterOutputStream(printOut), origOut));
-            System.setOut(new PrintStream(new WriterOutputStream(printOut)));
-            CsmJClankSerivices.dumpPreprocessed(nfi);
+            System.setOut(printStreamOut);
+            try {
+                CsmJClankSerivices.dumpPreprocessed(nfi);
+            } finally {
+                printStreamOut.flush();
+            }
         } finally {
             System.setErr(origErr);
             System.setOut(origOut);
