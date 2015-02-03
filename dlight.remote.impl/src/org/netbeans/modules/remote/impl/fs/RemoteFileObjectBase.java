@@ -73,6 +73,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.IOHandler;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.*;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -292,7 +293,8 @@ public abstract class RemoteFileObjectBase {
     
     private void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock"); //NOI18N
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(RemoteFileObjectBase.class, "EXC_WrongLock")); //NOI18N
         }
         FilesystemInterceptor interceptor = null;
         if (USE_VCS) {
@@ -655,7 +657,8 @@ public abstract class RemoteFileObjectBase {
 
     protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock"); //NOI18N
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(RemoteFileObjectBase.class, "EXC_WrongLock")); //NOI18N
         }
         RemoteFileObjectBase p = getParent();
         if (p != null) {
@@ -665,35 +668,41 @@ public abstract class RemoteFileObjectBase {
                 return;
             }
             if (!p.isValid()) {
-                throw new IOException("Can not rename in " + p.getPath());//NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameIn", p.getDisplayName())); //NOI18N
             }
             // Can not rename in read only folder
             if (!p.canWrite()) {
-                throw new IOException("Can not rename in read only " + p.getPath());//NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameRO", p.getDisplayName()));//NOI18N
             }
             // check there are no other child with such name
             if (p.getOwnerFileObject().getFileObject(newNameExt) != null) {
-                RemoteIOException.createAndThrow("EXC_CannotRename_AlreadyExists", getNameExt(), newNameExt, // NOI18N
-                        getParent().getPath(), getExecutionEnvironment().getDisplayName());
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CannotRename_AlreadyExists", getNameExt(), newNameExt, // NOI18N
+                        getParent().getPath(), getExecutionEnvironment().getDisplayName()));
             }
             
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-                throw new IOException("No connection: Can not rename in " + p.getPath()); //NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CannotRenameNoConnect", p.getDisplayName())); //NOI18N
             }
             try {
                 Map<String, Object> map = getAttributesMap();
                 p.renameChild(lock, this, newNameExt, orig);
                 setAttributeMap(map, this.getOwnerFileObject());
             } catch (ConnectException ex) {
-                throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameIn", p.getDisplayName()), ex); //NOI18N
             } catch (InterruptedException ex) {
-                InterruptedIOException outEx = new InterruptedIOException("interrupted: Can not rename in " + p.getPath()); //NOI18N
-                outEx.initCause(ex);
-                throw outEx;
+                throw RemoteExceptions.createInterruptedIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameIn", p.getDisplayName()), ex); // NOI18N
             } catch (CancellationException ex) {
-                throw new IOException("cancelled: Can not rename in " + p.getPath(), ex); //NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameInCancelled", p.getDisplayName()), ex); // NOI18N
             } catch (ExecutionException ex) {
-                throw new IOException("Can not rename to " + newNameExt + ": exception occurred", ex); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameExecutionException", newNameExt, ex.getLocalizedMessage()), ex); // NOI18N
             }
         }
     }
@@ -745,7 +754,8 @@ public abstract class RemoteFileObjectBase {
     
     protected FileObject moveImpl(FileLock lock, FileObject target, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock"); //NOI18N
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(RemoteFileObjectBase.class, "EXC_WrongLock")); //NOI18N
         }
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
@@ -808,18 +818,18 @@ public abstract class RemoteFileObjectBase {
                     FileObject movedFO = target.getFileObject(newNameExt);
                     RemoteLogger.assertTrueInConsole(movedFO != null, "null file object after move of \n{0}\n into\n{1}\nwith name {2}", this, target, newNameExt);
                     if (movedFO == null) {
-                        throw new IOException("Null file object after move " + getExecutionEnvironment() + ':' + newPath); //NOI18N
+                        throw new IOException("Null file object after move " + getExecutionEnvironment() + ':' + newPath); //NOI18N // nerw IOException sic!
                     }
                     return movedFO;
-                } catch (InterruptedException ex) {
-                    throw new IOException(ex);
-                } catch (CancellationException ex) {
-                    throw new IOException(ex);
+                } catch (InterruptedException | CancellationException ex) {
+                    throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); //NOI18N
                 } catch (ExecutionException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
-                        throw new FileNotFoundException(from + " or " + newPath); //NOI18N
+                        throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                                "EXC_CantRenameFromTo", getDisplayName(getExecutionEnvironment(), from),  //NOI18N
+                                newPath, ex.getLocalizedMessage()), ex);
                     } else {
-                        throw new IOException(ex);
+                        throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); // NOI18N
                     }
                 }
             } else {
@@ -890,8 +900,16 @@ public abstract class RemoteFileObjectBase {
         return getExecutionEnvironment().toString() + ":" + getPath() + validity; // NOI18N
     }
 
+    public static String getDisplayName(ExecutionEnvironment env, String path) {
+        return env.getDisplayName() + ':' + path; //NOI18N
+    }
+
+    public String getDisplayName(String path) {
+        return getDisplayName(getExecutionEnvironment(), path);
+    }
+
     public String getDisplayName() {
-        return getExecutionEnvironment().getDisplayName()+ ':' + getPath();
+        return getDisplayName(getPath());
     }
 
     public void warmup(FileSystemProvider.WarmupMode mode, Collection<String> extensions) {        

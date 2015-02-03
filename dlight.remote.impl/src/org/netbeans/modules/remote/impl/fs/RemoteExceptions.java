@@ -41,83 +41,83 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.FileNotFoundException;
 import java.util.MissingResourceException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.ConnectException;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  * Inspired by org.netbeans.modules.masterfs.filebasedfs.utils.FSException
  * @author vkvashin
  */
-public final class RemoteIOException extends IOException {
-    /** name of resource to use for localized message */
-    //  private String resource;
-    /**
-     * arguments to pass to the resource
-     */
-    private final Object[] args;
+public final class RemoteExceptions {
 
-    /**
-     * Creates new FSException.
-     */
-    private RemoteIOException(final String resource, final Object... args) {
-        super(resource);
-        this.args = args;
+    private RemoteExceptions() {
     }
 
     /**
-     * Message should be meaning full, but different from localized one.
+     * Creates the localized IOException
+     * @param localizedMessage to take localization string from
      */
-    @Override
-    public String getMessage() {
-        return " " + getLocalizedMessage(); // NOI18N
+    public static IOException createIOException(final String localizedMessage)  {
+        final IOException fsExc = new IOException(localizedMessage);
+        return Exceptions.attachLocalizedMessage(fsExc, localizedMessage);
     }
 
     /**
-     * Localized message.
+     * Creates the localized IOException
+     * @param localizedMessage to take localization string from
      */
-    @Override
-    public String getLocalizedMessage() {
-        final String res = super.getMessage();
-        /*This call to getBundle should ensure that currentClassLoader is not used to load resources from.
-         This should prevent from deadlock, that occured: one waits for FileObject and has resource,
-         second one waits for resource and has FileObject*/
-        String format = null;
-        try{
-            format = NbBundle.getBundle("org.netbeans.modules.remote.impl.fs.Bundle", java.util.Locale.getDefault(), RemoteLogger.class.getClassLoader()).getString(res);
-        } catch (MissingResourceException mex) {
-            if (format == null) {
-                format = NbBundle.getBundle("org.netbeans.modules.remote.impl.resources.Bundle", java.util.Locale.getDefault(), FileSystem.class.getClassLoader()).getString(res);//NOI18N
-            }
-        }
-
-        if (args != null && format != null) {
-            return java.text.MessageFormat.format(format, args);
-        } else if (format != null) {
-            return format;
-        } else {
-            return super.getMessage();
-        }
+    public static IOException createIOException(final String localizedMessage, final Exception cause)  {
+        final IOException fsExc = new IOException(localizedMessage, cause);
+        return Exceptions.attachLocalizedMessage(fsExc, localizedMessage);
     }
 
     /**
-     * Creates the localized exception.
-     *
-     * @param resource to take localization string from
-     * @throws the exception
+     * Creates the localized IOException
+     * @param localizedMessage to take localization string from
      */
-    public static void createAndThrow(final String resource, final Object... args) throws IOException {
-        final RemoteIOException fsExc = new RemoteIOException(resource, args);
-        Exceptions.attachLocalizedMessage(fsExc, fsExc.getLocalizedMessage());
-        throw fsExc;
+    public static InterruptedIOException createInterruptedIOException(final String localizedMessage, final Exception cause)  {
+        final InterruptedIOException fsExc = new InterruptedIOException(localizedMessage);
+        fsExc.initCause(cause);
+        return Exceptions.attachLocalizedMessage(fsExc, localizedMessage);
+    }
+
+    /**
+     * Creates the localized IOException
+     * @param localizedMessage to take localization string from
+     */
+    public static FileNotFoundException createFileNotFoundException(final String localizedMessage)  {
+        final FileNotFoundException fsExc = new FileNotFoundException(localizedMessage);
+        return Exceptions.attachLocalizedMessage(fsExc, localizedMessage);
+    }
+
+    /**
+     * Creates the localized IOException
+     * @param localizedMessage to take localization string from
+     */
+    public static FileNotFoundException createFileNotFoundException(final String localizedMessage, final Exception cause)  {
+        final FileNotFoundException fsExc = new FileNotFoundException(localizedMessage);
+        fsExc.initCause(cause);
+        return Exceptions.attachLocalizedMessage(fsExc, localizedMessage);
+    }
+
+    /**
+     * Creates the localized IOException
+     * @param localizedMessage to take localization string from
+     */
+    public static ConnectException createConnectException(final String localizedMessage)  {
+        final ConnectException fsExc = new ConnectException(localizedMessage);
+        return Exceptions.attachLocalizedMessage(fsExc, localizedMessage);
     }
 
     public static <T extends Throwable> T annotateException(T t) {
-        Exceptions.attachLocalizedMessage(t, t.getLocalizedMessage());
-        return t;
+        return Exceptions.attachLocalizedMessage(t, t.getLocalizedMessage());
     }
 }

@@ -95,6 +95,7 @@ import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbObjectInputStream;
 import org.openide.windows.WindowManager;
+import sun.misc.REException;
 
 /**
  * Remote file system:
@@ -159,7 +160,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
         cache = new File(filePrefix);
         if (!cache.exists() && !cache.mkdirs()) {
-            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath()));
+            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); // new IOException sic! (ctor)
         }
         this.rootDelegate = new RootFileObject(this.root = new RemoteFileObject(this), this, execEnv, cache); // NOI18N
         factory.register(rootDelegate);
@@ -358,11 +359,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             if (tmpDir != null && tmpDir.isFolder() && tmpDir.isValid()) {
                 return tmpDir;
             } else {
-                throw new IOException("Cannot find temporary folder"); // NOI18N
+                throw RemoteExceptions.createIOException(
+                        NbBundle.getMessage(RemoteFileSystem.class, "EXC_CantFindTemp")); //NOI18N
             }
         } catch (CancellationException ex) {
-            throw new IOException("Cannot find temporary folder", ex); // NOI18N
-        }        
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(RemoteFileSystem.class, "EXC_CantFindTemp", ex)); //NOI18N
+        }
     }
     
     @Override
@@ -390,7 +393,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
         }
-        throw new IOException("Cannot create temporary file"); // NOI18N
+        throw RemoteExceptions.createIOException(
+                NbBundle.getMessage(RemoteFileSystem.class, "EXC_CantCantCreateTemp")); // NOI18N
     }
     
     public RemoteFileObjectBase findResourceImpl(String name, @NonNull Set<String> antiloop) {

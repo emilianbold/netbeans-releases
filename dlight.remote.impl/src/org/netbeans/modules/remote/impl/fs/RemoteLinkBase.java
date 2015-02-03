@@ -65,6 +65,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -89,7 +90,8 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     protected abstract RemoteFileObjectBase getDelegateImpl();
  
     protected FileNotFoundException fileNotFoundException(String operation) {
-        return new FileNotFoundException("can not " + operation + ' ' + getPath() + ": can not find link target"); //NOI18N
+        return RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteLinkBase.class,
+                "EXC_CantPerformOpOnDeadLink", operation, getDisplayName())); //NOI18N
     }
     
     @Override

@@ -80,6 +80,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RefreshManager;
+import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.modules.InstalledFileLocator;
@@ -259,8 +260,9 @@ import org.openide.util.RequestProcessor;
                     respCopy = new ArrayList<>(responses.values());
                     responses.clear();
                 }                
-                ExecutionException ex = new ExecutionException(new ConnectException(
-                        RemoteFileSystemUtils.getConnectExceptionMessage(env)));
+                ExecutionException ex = new ExecutionException(
+                        RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env)));
+
                 for (FSSResponse resp : respCopy) {
                     resp.failed(ex);
                 }
@@ -459,7 +461,7 @@ import org.openide.util.RequestProcessor;
             ConnectionManager.CancellationException, InterruptedException, ExecutionException {
 
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
         }
 
         String toolPath;
@@ -510,7 +512,7 @@ import org.openide.util.RequestProcessor;
             }
             if (server == null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                    throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+                    throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
                 }
                 String path = checkServerSetup();
                 server = new FsServer(path);

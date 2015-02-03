@@ -56,6 +56,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileLock;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -108,12 +109,14 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
 
     @Override
     protected RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
-        throw new IOException("Unsupported file can not have children"); // NOI18N
+        throw RemoteExceptions.createIOException(NbBundle.getMessage(SpecialRemoteFileObject.class,
+                "EXC_UnsupportedSpecial", getDisplayName())); // NOI18N
     }
 
     @Override
     protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
-        throw new IOException("Unsupported file can not have children"); // NOI18N
+        throw RemoteExceptions.createIOException(NbBundle.getMessage(SpecialRemoteFileObject.class, 
+                "EXC_UnsupportedSpecial", getDisplayName())); // NOI18N
     }
 
     @Override
@@ -136,7 +139,8 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
     @Override
     protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!isValid()) {
-            throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+            throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(SpecialRemoteFileObject.class, 
+                    "EXC_InvalidFO", getDisplayName())); //NOI18N
         }
         return new DelegateOutputStream();
     }

@@ -359,20 +359,20 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     private FileNotFoundException newFileNotFoundException(Exception cause) {
-        FileNotFoundException ex = new FileNotFoundException(cause.getLocalizedMessage()); //NOI18N
-        ex.initCause(cause);
-        Exceptions.attachLocalizedMessage(ex, cause.getLocalizedMessage());
-        return ex;
+        return RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemotePlainFile.class, 
+                "EXC_DoesNotExistXX", cause.getLocalizedMessage()), cause); //NOI18N
     }
 
     @Override
     public RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
-        throw new IOException("Plain file can not have children"); // NOI18N
+        throw RemoteExceptions.createIOException(NbBundle.getMessage(RemotePlainFile.class, 
+                "EXC_PlainFileChildren", getDisplayName())); // NOI18N
     }
 
     @Override
     public RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
-        throw new IOException("Plain file can not have children"); // NOI18N
+        throw RemoteExceptions.createIOException(NbBundle.getMessage(RemotePlainFile.class, 
+                "EXC_PlainFileChildren", getDisplayName())); // NOI18N
     }
 
     @Override
@@ -382,7 +382,8 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
                 if (!canWriteImpl(orig)) {
-                    RemoteIOException.createAndThrow("EXC_CannotLockReadOnlyFile", this.getDisplayName());
+                    throw RemoteExceptions.createIOException(NbBundle.getMessage(RemotePlainFile.class, 
+                            "EXC_CannotLockReadOnlyFile", this.getDisplayName())); // NOI18N
                 }
             }
         }
@@ -422,7 +423,8 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         try {
             if (!isValid()) {
-                throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+                throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemotePlainFile.class, 
+                        "EXC_InvalidFO", getDisplayName())); //NOI18N
             }
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = null;
             if (USE_VCS) {
@@ -435,8 +437,8 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 throw new FileAlreadyLockedException("Cannot write to locked file: " + this);  //NOI18N
             }
         } catch (InterruptedException ex) {
-            throw new IOException(ex);
-    }
+            throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); // NOI18N
+        }
     }
 
     @Override
@@ -503,7 +505,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 } else {
                     ExecutionEnvironment env = file.getExecutionEnvironment();
                     if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                        throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+                        throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
                     }
                     pathToRename = null;
                     pathToUpload = file.getPath(); //NOI18N
@@ -525,10 +527,11 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                     //Exceptions.printStackTrace(ex); // should never be the case - the task is done
                     if (!ConnectionManager.getInstance().isConnectedTo(file.getExecutionEnvironment())) {
                         file.getFileSystem().addPendingFile(file);
-                        throw new ConnectException(ex.getMessage());
+                        throw RemoteExceptions.createConnectException(ex.getMessage());
                     } else {
                         if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
-                            throw new FileNotFoundException(file.getPath());
+                            throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemotePlainFile.class, 
+                                    "EXC_DoesNotExist", file.getDisplayName())); //NOI18N
                         } else if (ex.getCause() instanceof IOException) {
                             throw (IOException) ex.getCause();
                         } else {
@@ -543,8 +546,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         }
 
         private IOException newIOException(Exception cause) {
-            return new IOException("Error uploading " + file.getPath() + " to " + file.getExecutionEnvironment() + ':' + //NOI18N
-                    cause.getMessage(), cause);
+            return RemoteExceptions.createIOException(NbBundle.getMessage(RemotePlainFile.class,
+                    "EXC_ErrorUploading", file.getCache().getAbsolutePath(), file.getExecutionEnvironment(), // NOI18N
+                    cause.getMessage()), cause);
         }
 
         @Override

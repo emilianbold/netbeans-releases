@@ -57,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
+import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
@@ -65,6 +66,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Static methods that are need for RemoteVcsSupportImpl
@@ -128,7 +130,7 @@ public class RemoteVcsSupportUtil {
         }
         ExecutionEnvironment env = fs.getExecutionEnvironment();
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new ConnectException(env.getDisplayName() + " not connected"); // NOI18N
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
         }
         try {
             DirEntry entry = RemoteFileSystemTransport.lstat(env, path);
