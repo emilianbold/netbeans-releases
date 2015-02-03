@@ -52,13 +52,14 @@ public class DatabasesNodeTest extends JellyTestCase {
     /**
      * constructor required by JUnit
      *
-     * @param testName method name to be used as testcase
+     * @param testName method name to be used as test case
      */
     public DatabasesNodeTest(String testName) {
         super(testName);
     }
 
-    /** method used for explicit testsuite definition
+    /** method used for explicit test suite definition
+     * @return test
      */
     public static Test suite() {
         return createModuleTest(DatabasesNodeTest.class, "testDatabasesPopup");
@@ -70,7 +71,7 @@ public class DatabasesNodeTest extends JellyTestCase {
     }
 
     /** Calls constructor for each DB action class*/
-    public void testDatabasesPopup() {
-        DatabasesNode.invoke().verifyPopup();
+    public void testInvoke() {
+        DatabasesNode.invoke();
     }
 }
