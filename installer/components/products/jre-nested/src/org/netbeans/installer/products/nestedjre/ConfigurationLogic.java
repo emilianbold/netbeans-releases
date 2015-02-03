@@ -45,12 +45,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
-import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.Progress;
@@ -60,9 +59,13 @@ import org.netbeans.installer.wizard.components.WizardComponent;
  *
  * @author Libor Fischmeistr
  */
-public class ConfigurationLogic extends ProductConfigurationLogic {
+public class ConfigurationLogic extends NbClusterConfigurationLogic {
 
-    public ConfigurationLogic() throws InitializationException {
+    private static final String JRE_NESTED = "{jre-nested}"; // NOI18N
+    private static final String ID = "jre-nested"; // NOI18N
+    
+    public ConfigurationLogic() throws InitializationException {                    
+        super(new String[]{JRE_NESTED}, ID);
     }
 
     @Override
@@ -83,12 +86,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } catch (IOException ex) {
             Logger.getLogger(ConfigurationLogic.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        progress.setPercentage(Progress.COMPLETE);
-    }
-
-    @Override
-    public void uninstall(final Progress progress) throws UninstallationException {
 
         progress.setPercentage(Progress.COMPLETE);
     }

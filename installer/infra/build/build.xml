@@ -1015,7 +1015,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
     
     <target name="build-jre-nested">
-	<antcall target="build-runtime-product">
+	<antcall target="build-nb-product">
 	    <param name="component.uid" value="jre-nested"/>
         </antcall>
     </target>
