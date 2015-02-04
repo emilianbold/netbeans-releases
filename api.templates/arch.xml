@@ -181,6 +181,7 @@
         </p>
     </usecase>
     <usecase id="js-wizard" name="Use HTML and JavaScript">
+        <a name="html-and-js"></a>
         <p>
             There is a way to create a portable wizard (e.g. one that can
             be executed inside of NetBeans as well as in a browser). The 
@@ -243,33 +244,33 @@
         <code>step</code>. Here is an HTML page defining three steps:
     </p>
 <pre>
-&lt;section data-bind="step: { 'id' : 'init', text : 'Initial Page'}" &gt;
-    &lt;p&gt;
+&lt;<b>section</b> data-bind="step: { 'id' : 'init', text : 'Initial Page'}" &gt;
+    &lt;<b>p</b>&gt;
         Write your UI in portable HTML and display it in NetBeans 
         or on web! Read more at &lt;a href="http://wiki.netbeans.org/HtmlUIForTemplates"&gt;our wiki&lt;/a&gt;...
-    &lt;/p&gt;
-&lt;/section&gt;
+    &lt;/<b>p</b>&gt;
+&lt;/<b>section</b>&gt;
 
-&lt;section data-bind="step: 'info'" &gt;
-    &lt;p&gt;
+&lt;<b>section</b> data-bind="step: 'info'" &gt;
+    &lt;<b>p</b>&gt;
         Use &lt;a href="http://knockoutjs.com"&gt;knockout.js&lt;/a&gt; bindings 
         to isolate your view model from the actual look of your HTML
         page. Bind your view to model written in Java or JavaScript.
-    &lt;/p&gt;
-    &lt;h3&gt;Is everything OK?&lt;/h3&gt;
-    &lt;input type="checkbox" data-bind="checked: ok"/&gt;
-    &lt;h3&gt;How do you feel?&lt;/h3&gt;
-    &lt;input type='text' data-bind="textInput: msg"/&gt;
-&lt;/section&gt;
+    &lt;/<b>p</b>&gt;
+    &lt;<b>h3</b>&gt;Is everything OK?&lt;/<b>h3</b>&gt;
+    &lt;<b>input</b> type="checkbox" data-bind="checked: ok"/&gt;
+    &lt;<b>h3</b>&gt;How do you feel?&lt;/<b>h3</b>&gt;
+    &lt;<b>input</b> type='text' data-bind="textInput: msg"/&gt;
+&lt;/<b>section</b>&gt;
 
-&lt;section data-bind="step: { 'id' : 'summary' }" &gt;
-    &lt;p&gt;
-        You are feeling &lt;span data-bind="text: msg"&gt;&lt;/span&gt;!
+&lt;<b>section</b> data-bind="step: { 'id' : 'summary' }" &gt;
+    &lt;<b>p</b>&gt;
+        You are feeling &lt;<b>span</b> data-bind="text: msg"&gt;&lt;/<b>span</b>&gt;!
         Let's proceed to create a file which will express your 
-        feeling by using &lt;a href="http://freemarker.org/"&gt;Freemarker&lt;/a&gt;
+        feeling by using &lt;<b>a</b> href="http://freemarker.org/"&gt;Freemarker&lt;/<b>a</b>&gt;
         templating engine and values filled in this wizard.
-    &lt;/p&gt;
-&lt;/section&gt;
+    &lt;/<b>p</b>&gt;
+&lt;/<b>section</b>&gt;
 </pre>
 <p>
     The Next/Finish buttons are controlled by the <code>errorCode</code> property. 
@@ -277,13 +278,13 @@
     Also once can use that inside of the HTML page to display user related errors: 
 </p>
 <pre>
-&lt;div data-bind="visible: errorCode() == 1"&gt;
-    &lt;span style="color: red"&gt;Please check you are OK!&lt;/span&gt;
-&lt;/div&gt;
+&lt;<b>div</b> data-bind="visible: errorCode() == 1"&gt;
+    &lt;<b>span</b> style="color: red"&gt;Please check you are OK!&lt;/<b>span</b>&gt;
+&lt;/<b>div</b>&gt;
  
-&lt;div data-bind="visible: errorCode() == 2"&gt;
-    &lt;span style="color: red"&gt;Tell us how do you feel!&lt;/span&gt;
-&lt;/div&gt;    
+&lt;<b>div</b> data-bind="visible: errorCode() == 2"&gt;
+    &lt;<b>span</b> style="color: red"&gt;Tell us how do you feel!&lt;/<b>span</b>&gt;
+&lt;/<b>div</b>&gt;    
 </pre>
 <p>
 The L10N of the wizard is done on the level of HTML pages. 
@@ -311,11 +312,12 @@ I feel ${wizard.msg}.
     </usecase>
     
     <usecase id="java-html" name="Use HTML and Java">
+        <a name="html-and-java"></a>
         <p>
             Some people would rather use Java instead of Java script while
             getting the portability of the <em>HTML</em>. There is a simple
-            way to rewrite the <em>HTML and JavaScript</em>
-            sample to <b>Java</b>
+            way to rewrite the <a href="#html-and-js">HTML and JavaScript sample</a>
+            to <b>Java</b>
             (and possibly run it in a plugin-less browser via 
             <a onclick="target='_blank'" href="http://bck2brwsr.apidesign.org">bck2brwsr VM</a>). Keep the
             same HTML, <a onclick="target='_blank'" href="http://freemarker.org/">Freemarker</a>, etc.
@@ -358,6 +360,22 @@ I feel ${wizard.msg}.
     in Java. 
 </p>
     </usecase>
+    <usecase id="target-chooser" name="Selecting target location with HTML UI">
+        It is very common that the HTML file creation wizards (either 
+        controled by <a href="#html-and-js">JavaScript</a> or by
+        <a href="#html-and-java">Java</a>) need to allow user to specify 
+        target location of their file. To simplify such common task and
+        to ensure its UI is consistent with the rest of the environment,
+        one can just include following code snippet in the HTML file and
+        leave its actual rendering on the system:
+<pre>
+&lt;<b>section</b> data-bind="step: 'targetChooser'" &gt;
+&lt;/<b>section</b>&gt;
+</pre>        
+        Such section will then be replaced by a panel which provides appropriate
+        UI for choosing target directory as well as name for the newly created
+        file.
+    </usecase>    
  </answer>
  <answer id="arch-what">
   <p>
