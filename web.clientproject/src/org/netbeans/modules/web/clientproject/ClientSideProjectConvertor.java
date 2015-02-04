@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -53,15 +54,27 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.createprojectapi.ClientSideProjectGenerator;
 import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectProperties;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.ProjectConvertor;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
+/**
+ * The {@link ProjectConvertor} implements for web client project.
+ * @author Tomas Mysik
+ * @author Tomas Zezula
+ */
 @ProjectConvertor.Registration(requiredPattern = "(bower|package)\\.json", position = 1000)
 public final class ClientSideProjectConvertor implements ProjectConvertor {
 
@@ -91,9 +104,12 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             // should not happen often
             displayName = projectDirectory.getNameExt();
         }
+        final TransientLookup transientLkp = new TransientLookup(
+            new ConvertorClassPathProvider(),
+            new ConvertorFileEncodingQuery());
         return new Result(
-                Lookup.EMPTY,
-                new Factory(projectDirectory, displayName),
+                transientLkp,
+                new Factory(projectDirectory, displayName, transientLkp),
                 displayName,
                 ImageUtilities.image2Icon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON)));
     }
@@ -128,17 +144,23 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
 
         private final FileObject projectDirectory;
         private final String displayName;
+        private final TransientLookup transientLkp;
 
 
-        Factory(FileObject projectDirectory, String displayName) {
+        Factory(FileObject projectDirectory, String displayName, TransientLookup transientLkp) {
             assert projectDirectory != null;
             assert displayName != null : projectDirectory;
+            assert transientLkp != null: projectDirectory;
             this.projectDirectory = projectDirectory;
             this.displayName = displayName;
+            this.transientLkp = transientLkp;
         }
 
         @Override
         public Project call() throws Exception {
+            transientLkp.hide(
+                ConvertorClassPathProvider.class,
+                ConvertorFileEncodingQuery.class);
             return ClientSideProjectGenerator.createProject(new CreateProjectProperties()
                     .setProjectDir(projectDirectory)
                     .setProjectName(displayName)
@@ -156,6 +178,66 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             return ""; // NOI18N
         }
 
+    }
+
+    private static final class TransientLookup extends ProxyLookup {
+
+        private final Lookup base;
+
+        public TransientLookup(Object... services) {
+            this(Lookups.fixed(services));
+        }
+
+        private TransientLookup(Lookup base) {
+            super(base);
+            this.base = base;
+        }
+
+        void hide(Class<?>... clzs) {
+            setLookups(Lookups.exclude(base, clzs));
+        }
+    }
+
+    private static class ConvertorClassPathProvider implements ClassPathProvider {
+
+        @Override
+        @CheckForNull
+        public ClassPath findClassPath(
+                @NonNull final FileObject file,
+                @NonNull final String type) {
+            if (ClassPathProviderImpl.SOURCE_CP.equals(type)) {
+                final ClientSideProject csp = findClientSideProject(file);
+                if (csp != null) {
+                    return csp.getLookup().lookup(ClassPathProvider.class).findClassPath(file, type);
+                }
+            }
+            return null;
+        }
+    }
+
+    private static class ConvertorFileEncodingQuery extends FileEncodingQueryImplementation {
+
+        @Override
+        @CheckForNull
+        public Charset getEncoding(FileObject file) {
+            final ClientSideProject csp = findClientSideProject(file);
+            return csp != null ?
+                csp.getLookup().lookup(FileEncodingQueryImplementation.class).getEncoding(file) :
+                null;
+        }
+    }
+
+    @CheckForNull
+    @SuppressWarnings("NestedAssignment")
+    private static ClientSideProject findClientSideProject(@NonNull final FileObject file) {
+        for (FileObject parent = file.getParent(); parent != null; parent = parent.getParent()) {
+            ClientSideProject csPrj;
+            final Project prj = FileOwnerQuery.getOwner(parent);
+            if (prj != null && (csPrj = prj.getLookup().lookup(ClientSideProject.class)) != null) {
+                return csPrj;
+            }
+        }
+        return null;
     }
 
 }
