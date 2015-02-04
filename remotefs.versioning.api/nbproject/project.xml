@@ -190,6 +190,7 @@
                 <package>org.netbeans.modules.remotefs.versioning.api</package>
                 <package>org.netbeans.modules.remotefs.versioning.hooks</package>
                 <package>org.netbeans.modules.remotefs.versioning.spi</package>
+                <package>org.netbeans.modules.remotefs.versioning.turbo</package>
                 <package>org.netbeans.modules.remotefs.versioning.util.common</package>
                 <package>org.netbeans.modules.remotefs.versioning.util.status</package>
             </friend-packages>
