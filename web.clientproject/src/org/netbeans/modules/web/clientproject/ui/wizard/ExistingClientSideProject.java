@@ -402,13 +402,7 @@ public class ExistingClientSideProject extends JPanel {
         File projectDirectory = browseFile(".projectDirectory", Bundle.ExistingClientSideProject_projectDirectory_dialog_title(), // NOI18N
                 getProjectDirectory());
         if (projectDirectory != null) {
-            File result = FileUtil.normalizeFile(projectDirectory);
-            File[] children = result.listFiles();
-            if (children != null && children.length > 0) {
-                // non-empty dir is not allowed, preselect directory with project name
-                result = new File(result, getProjectName());
-            }
-            projectDirectoryTextField.setText(result.getAbsolutePath());
+            projectDirectoryTextField.setText(FileUtil.normalizeFile(projectDirectory).getAbsolutePath());
         }
     }//GEN-LAST:event_projectDirectoryBrowseButtonActionPerformed
 
