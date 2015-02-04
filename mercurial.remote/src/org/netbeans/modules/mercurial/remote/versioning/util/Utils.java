@@ -65,34 +65,6 @@ public class Utils {
     private static final Logger LOG = Logger.getLogger(Utils.class.getName());
     
     /**
-     * Returns files from all opened top components
-     * @return set of opened files
-     */
-    public static Set<VCSFileProxy> getOpenFiles() {
-        TopComponent[] comps = TopComponent.getRegistry().getOpened().toArray(new TopComponent[0]);
-        Set<VCSFileProxy> openFiles = new HashSet<VCSFileProxy>(comps.length);
-        for (TopComponent tc : comps) {
-            Node[] nodes = tc.getActivatedNodes();
-            if (nodes == null) {
-                continue;
-            }
-            for (Node node : nodes) {
-                VCSFileProxy file = node.getLookup().lookup(VCSFileProxy.class);
-                if (file == null) {
-                    FileObject fo = node.getLookup().lookup(FileObject.class);
-                    if (fo != null && fo.isData()) {
-                        file = VCSFileProxy.createFileProxy(fo);
-                    }
-                }
-                if (file != null) {
-                    openFiles.add(file);
-                }
-            }
-        }
-        return openFiles;
-    }
-    
-    /**
      * Returns the {@link Project} {@link File} for the given context
      *
      * @param VCSContext

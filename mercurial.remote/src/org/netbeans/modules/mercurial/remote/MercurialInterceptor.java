@@ -852,7 +852,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         private final RequestProcessor.Task refreshOpenFilesTask = rp.create(new Runnable() {
             @Override
             public void run() {
-                Set<VCSFileProxy> openFiles = org.netbeans.modules.mercurial.remote.versioning.util.Utils.getOpenFiles();
+                Set<VCSFileProxy> openFiles = VCSFileProxySupport.getOpenFiles();
                 for (VCSFileProxy file : openFiles) {
                     hg.notifyFileChanged(file);
                 }

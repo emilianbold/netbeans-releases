@@ -358,7 +358,7 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
             return null;
         }
 
-        final Project proj = org.netbeans.modules.mercurial.remote.versioning.util.Utils.getProject(rootFiles);
+        final Project proj = VCSFileProxySupport.getProject(rootFiles);
         final VCSFileProxy projFile = org.netbeans.modules.mercurial.remote.versioning.util.Utils.getProjectFile(proj);
 
         VCSFileProxy root = null;
