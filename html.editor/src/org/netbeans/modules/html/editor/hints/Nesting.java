@@ -126,7 +126,7 @@ public class Nesting extends PatternRule {
             //so we need to try to find out the original case by a little heuristic
             int embeddedStart = context.getSnapshot().getEmbeddedOffset(e.getStartPosition());
             int embeddedEnd = context.getSnapshot().getEmbeddedOffset(e.getEndPosition());
-            if(embeddedEnd != -1 && embeddedEnd != -1) {
+            if(embeddedStart != -1 && embeddedEnd != -1) {
                 CharSequence errorCode = context.getSnapshot().getText().subSequence(embeddedStart, embeddedEnd);
                 //the error contains the whole element including the delimiters and attributes
                 //example: <myDirective myAttr='value'>
