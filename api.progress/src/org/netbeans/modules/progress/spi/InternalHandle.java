@@ -462,6 +462,9 @@ public class InternalHandle {
      * @since 1.45
      */
     public long getLastPingTime() {
+        if (del != null) {
+            return del.getLastPingTime();
+        }
         return timeLastProgress;
     }
 
