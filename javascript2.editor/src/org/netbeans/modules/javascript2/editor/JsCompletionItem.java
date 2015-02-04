@@ -448,11 +448,11 @@ public class JsCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            template.append(" \n /** ");
+            template.append(" \n /** ");    //NOI18N
             for (Iterator<Map.Entry<String, Collection<String>>> it = function.getParameters().entrySet().iterator(); it.hasNext();) {
                 Map.Entry<String, Collection<String>> entry = it.next();
                 Collection<String> types = entry.getValue();
-                template.append("\n * @param {");
+                template.append("\n * @param {");//NOI18N
                 if (!types.isEmpty()) {
                     for (Iterator<String> itTypes = types.iterator(); itTypes.hasNext();) {
                         template.append(itTypes.next());
@@ -461,13 +461,13 @@ public class JsCompletionItem implements CompletionProposal {
                         }
                     }
                 } else {
-                    template.append("Object");
+                    template.append("Object");//NOI18N
                 }
-                template.append("} ");
+                template.append("} ");//NOI18N
                 template.append(entry.getKey());
             }
-            template.append("\n */");
-            template.append("\nfunction (");
+            template.append("\n */");//NOI18N
+            template.append("\nfunction (");//NOI18N
             for (Iterator<Map.Entry<String, Collection<String>>> it = function.getParameters().entrySet().iterator(); it.hasNext();) {
                 Map.Entry<String, Collection<String>> entry = it.next();
                 template.append(entry.getKey());
@@ -475,7 +475,7 @@ public class JsCompletionItem implements CompletionProposal {
                     template.append(", ");  //NOI18N
                 }
             }
-            template.append(") {\n ${cursor}\n}");
+            template.append(") {\n ${cursor}\n}");//NOI18N
             return template.toString();
         }
     }
