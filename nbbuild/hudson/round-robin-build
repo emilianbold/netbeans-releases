@@ -14,7 +14,7 @@ dobuild() {
 
     testmodule openide.awt || exit 5
 
-    if ant check-sigtests-version -Dsigtest.fail.on.error=true; then
+    if ant check-sigtests-version $ANT_PARAM -Dsigtest.fail.on.error=true; then
         echo Sigtest version check OK
     else
         echo ***************************************************
