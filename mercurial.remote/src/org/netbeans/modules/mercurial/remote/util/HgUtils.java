@@ -1115,7 +1115,7 @@ itor tabs #66700).
      */
     public static void forceStatusRefreshProject(VCSContext context) {
         // XXX and what if there is more then one project in the ctx?!
-        Project project = org.netbeans.modules.mercurial.remote.versioning.util.Utils.getProject(context);
+        Project project = VCSFileProxySupport.getProject(context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]));
         if (project == null) {
             return;
         }
@@ -1486,7 +1486,7 @@ itor tabs #66700).
      * @param repository 
      */
     public static Set<VCSFileProxy> getOpenedFiles (VCSFileProxy repository) {
-        Set<VCSFileProxy> openFiles = org.netbeans.modules.mercurial.remote.versioning.util.Utils.getOpenFiles();
+        Set<VCSFileProxy> openFiles = VCSFileProxySupport.getOpenFiles();
         for (Iterator<VCSFileProxy> it = openFiles.iterator(); it.hasNext(); ) {
             VCSFileProxy file = it.next();
             if (!repository.equals(Mercurial.getInstance().getRepositoryRoot(file))) {
