@@ -107,6 +107,21 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
   <changes>
+      <change id="progresshandle.time">
+          <api name="progress_api"/>
+          <summary>
+              Allow tracking of stale handles
+          </summary>
+          <version major="1" minor="45"/>
+          <date day="4" month="2" year="2015"/>
+          <author login="sdedic"/>
+          <compatibility binary="compatible" source="compatible" addition="yes"/>
+          <description>
+              Internal handle allows to inspect the last time the handle was pinged by the
+              running process. This is needed to report stale processes and/or stop them.
+          </description>
+          <class package="org.netbeans.modules.progress.spi" name="InternalHandle"/>
+      </change>
       <change id="taskmodel.sync">
           <api name="progress_api"/>
           <summary>

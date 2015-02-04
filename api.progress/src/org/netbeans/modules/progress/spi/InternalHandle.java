@@ -452,6 +452,18 @@ public class InternalHandle {
         }
         return ((double)currentUnit * 100 / (double)totalUnits); 
     }
+    
+    /**
+     * Returns the last time the progress was updated. he timestamp
+     * is updated on start, stop, every progress report and determinate / indeterminate
+     * switch. Generally every time the ProgressHandle client publishes some information.
+     * 
+     * @return timestamp of last update, in milliseconds.
+     * @since 1.45
+     */
+    public long getLastPingTime() {
+        return timeLastProgress;
+    }
 
     public long getTimeStampStarted() {
         if (del != null) {
@@ -459,7 +471,7 @@ public class InternalHandle {
         }
         return timeStarted;
     }
-
+    
     static final Method compatInit;
     
     private void compatInit() {
