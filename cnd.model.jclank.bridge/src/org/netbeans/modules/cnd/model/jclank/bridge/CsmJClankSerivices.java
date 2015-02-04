@@ -82,6 +82,7 @@ import org.clank.support.Converted;
 import org.clank.support.Destructors;
 import org.clank.support.Native;
 import static org.clank.support.NativePointer.*;
+import org.clank.support.NativeTrace;
 import org.llvm.adt.IntrusiveRefCntPtr;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVectorChar;
@@ -97,7 +98,7 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Voskresensky
  */
 public class CsmJClankSerivices {
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     
     public static APTTokenStream getAPTTokenStream(NativeFileItem nfi) {
         throw new UnsupportedOperationException();
@@ -117,18 +118,42 @@ public class CsmJClankSerivices {
         }
     }
 
-    public static void dumpPreprocessed(NativeFileItem nfi) {
+    public static long dumpPreprocessed(NativeFileItem nfi) {
+        clearStatistics();
+        long time = System.currentTimeMillis();
+        boolean done = false;
         Preprocessor /*&*/ PP = getPreprocessor(nfi);
         if (PP != null) {
             PreprocessorOutputOptions Opts = createPPOptions(nfi);
             try {
-                ClangGlobals.DoPrintPreprocessedInput(PP, llvm.outs(), Opts);
+                ClangGlobals.DoPrintPreprocessedInput(PP, llvm.nulls(), Opts);
+                time = System.currentTimeMillis() - time;
+                done = true;
             } finally {
                 llvm.outs().flush();
+                llvm.errs().flush();
             }
+            PrintStatistics(PP, nfi);
         }
+        return done ? time : 0;
     }
 
+    private static void clearStatistics() {
+        org.clang.frontendtool.ClangGlobals.clearStatistics();
+    }
+    
+    private static void PrintStatistics(Preprocessor PP, NativeFileItem nfi) {
+        if (NativeTrace.STATISTICS) {
+          llvm.errs().$out("\nSTATISTICS FOR '").$out(nfi.getAbsolutePath()).$out("':\n");
+          PP.PrintStats();
+          PP.getIdentifierTable().PrintStats();
+          PP.getHeaderSearchInfo().PrintStats();
+          PP.getSourceManager().PrintStats();
+          llvm.errs().$out("\n");
+          org.clang.frontendtool.ClangGlobals.PrintStats(llvm.errs(), System.err);
+        }          
+    }
+    
     private static Preprocessor getPreprocessor(NativeFileItem nfi) {
         PreprocessorInitializer initializer = new AdvancedPreprocessorInitializer(nfi);
         VoidModuleLoader ModLoader/*J*/ = new VoidModuleLoader();

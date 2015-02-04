@@ -63,16 +63,17 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Voskresensky
  */
 public class CsmJClankTracePreprocessorAction {
-    private static void dumpFileTokens(NativeFileItem nfi, PrintWriter printOut) {
+    private static long dumpFileTokens(NativeFileItem nfi, PrintWriter printOut) {
         PrintStream origErr = System.err;
         PrintStream origOut = System.out;
+        long time = 0;
         try {
             final PrintStream printStreamOut = new PrintStream(new WriterOutputStream(printOut));
 //            System.setErr(new PrintStreamDuplex(new WriterOutputStream(printOut), origErr));
 //            System.setOut(new PrintStreamDuplex(new WriterOutputStream(printOut), origOut));
             System.setOut(printStreamOut);
             try {
-                CsmJClankSerivices.dumpPreprocessed(nfi);
+                time = CsmJClankSerivices.dumpPreprocessed(nfi);
             } finally {
                 printStreamOut.flush();
             }
@@ -80,6 +81,7 @@ public class CsmJClankTracePreprocessorAction {
             System.setErr(origErr);
             System.setOut(origOut);
         }
+        return time;
     }
 
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 102)
@@ -95,6 +97,8 @@ public class CsmJClankTracePreprocessorAction {
         public void dumpInfo(Lookup context, PrintWriter printOut) {
             printOut.printf("====Dump File Tokens by JClank\n");// NOI18N 
             Collection<? extends DataObject> allFiles = context.lookupAll(DataObject.class);
+            long totalTime = 0;
+            int numFiles = 0;
             for (DataObject dob : allFiles) {
                 printOut.printf("====Dump Tokens for %s %n", dob);// NOI18N 
                 NativeFileItemSet nfs = dob.getLookup().lookup(NativeFileItemSet.class);
@@ -108,12 +112,19 @@ public class CsmJClankTracePreprocessorAction {
                 }
                 for (NativeFileItem nfi : nfs.getItems()) {
                     try {
-                        CsmJClankTracePreprocessorAction.dumpFileTokens(nfi, printOut);
+                        printOut.printf("dumpFileTokens %s...%n", nfi.getAbsolutePath());
+                        long time = CsmJClankTracePreprocessorAction.dumpFileTokens(nfi, printOut);
+                        if (time > 0) {
+                            numFiles++;
+                            totalTime += time;
+                        }
+                        printOut.printf("dumpFileTokens %s took %,dms %n", nfi.getAbsolutePath(), time);
                     } catch (Throwable e) {
-                        e.printStackTrace(printOut);
+                        new Exception(nfi.getAbsolutePath(), e).printStackTrace(printOut);
                     }
                 }
             }
+            printOut.printf("====Dump File Tokens by JClank for %d files took %,dms\n", numFiles, totalTime);// NOI18N 
         }
     }   
     
