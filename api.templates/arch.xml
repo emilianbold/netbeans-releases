@@ -360,6 +360,22 @@ I feel ${wizard.msg}.
     in Java. 
 </p>
     </usecase>
+    <usecase id="target-chooser" name="Selecting target location with HTML UI">
+        It is very common that the HTML file creation wizards (either 
+        controled by <a href="#html-and-js">JavaScript</a> or by
+        <a href="#html-and-java">Java</a>) need to allow user to specify 
+        target location of their file. To simplify such common task and
+        to ensure its UI is consistent with the rest of the environment,
+        one can just include following code snippet in the HTML file and
+        leave its actual rendering on the system:
+<pre>
+&lt;<b>section</b> data-bind="step: 'targetChooser'" &gt;
+&lt;/<b>section</b>&gt;
+</pre>        
+        Such section will then be replaced by a panel which provides appropriate
+        UI for choosing target directory as well as name for the newly created
+        file.
+    </usecase>    
  </answer>
  <answer id="arch-what">
   <p>
