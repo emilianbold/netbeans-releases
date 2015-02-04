@@ -466,7 +466,7 @@ public class JsCompletionItem implements CompletionProposal {
                 template.append("} ");
                 template.append(entry.getKey());
             }
-            template.append("\n **/");
+            template.append("\n */");
             template.append("\nfunction (");
             for (Iterator<Map.Entry<String, Collection<String>>> it = function.getParameters().entrySet().iterator(); it.hasNext();) {
                 Map.Entry<String, Collection<String>> entry = it.next();
