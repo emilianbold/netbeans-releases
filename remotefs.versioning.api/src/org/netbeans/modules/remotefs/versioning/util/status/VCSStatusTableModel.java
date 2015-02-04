@@ -68,7 +68,7 @@ public class VCSStatusTableModel<T extends VCSStatusNode> extends NodeTableModel
 
     @Override
     public final void setNodes (Node[] nodes) {
-        throw new IllegalStateException("Do not call this method");
+        throw new IllegalStateException();
     }
 
     public final void setNodes (T[] nodes) {

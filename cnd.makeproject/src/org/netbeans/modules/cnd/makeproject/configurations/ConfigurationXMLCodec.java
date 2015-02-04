@@ -383,7 +383,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                         importantFlags = candidate;
                     }
                 }
-                currentCCCCompilerConfiguration.setImportantFlags(new StringConfiguration(null, importantFlags));
+                currentCCCCompilerConfiguration.getImportantFlags().setValue(importantFlags);
             }
         } else if (element.equals(CCCOMPILERTOOL_ELEMENT2) || element.equals(CCCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null) {
@@ -403,7 +403,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                         importantFlags = candidate;
                     }
                 }
-                currentCCCCompilerConfiguration.setImportantFlags(new StringConfiguration(null, importantFlags));
+                currentCCCCompilerConfiguration.getImportantFlags().setValue(importantFlags);
             }
         } else if (element.equals(FORTRANCOMPILERTOOL_ELEMENT)) {
             if (currentItemConfiguration != null) {
