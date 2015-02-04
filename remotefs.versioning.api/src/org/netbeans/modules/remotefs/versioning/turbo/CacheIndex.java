@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.remote.util;
+package org.netbeans.modules.remotefs.versioning.turbo;
 
 import java.util.ArrayList;
 import java.util.Collection;
