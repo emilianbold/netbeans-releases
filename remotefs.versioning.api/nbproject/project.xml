@@ -182,6 +182,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.libs.git.remote</friend>
+                <friend>org.netbeans.modules.git.remote</friend>
                 <friend>org.netbeans.modules.mercurial.remote</friend>
                 <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <friend>org.netbeans.modules.subversion.remote</friend>
