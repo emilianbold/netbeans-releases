@@ -478,6 +478,12 @@ public class JsCompletionItem implements CompletionProposal {
             template.append(") {\n ${cursor}\n}");//NOI18N
             return template.toString();
         }
+
+        @Override
+        public String getName() {
+            return "function";
+        }
+
     }
     
     static class KeywordItem extends JsCompletionItem {

@@ -191,7 +191,8 @@ public class JsDocElementUtils {
             // get name value (mandatory part)
             if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
                 nameOffset = descStartOffset + elementText.indexOf(parts[process], types.length());
-                if (parts[process].trim().charAt(0) == '[') {
+                String currentPart = parts[process].trim();
+                if (!currentPart.isEmpty() && currentPart.charAt(0) == '[') {
                     // has default value
                     int start = elementText.indexOf('[', types.length());
                     if (start > 0) {
@@ -202,7 +203,7 @@ public class JsDocElementUtils {
                             name.append(elementText.substring(start)).append(']');// close the default value
                         }
                     }
-                    while (process < parts.length && parts[process].trim().charAt(parts[process].length() - 1) != ']') {
+                    while (process < parts.length && currentPart.charAt(parts[process].length() - 1) != ']') {
                         process++;
                     }
                     
