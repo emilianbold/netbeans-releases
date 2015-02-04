@@ -57,7 +57,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.remote.api.RootsToFile;
+import org.netbeans.modules.remotefs.versioning.api.RootsToFile;
 import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;

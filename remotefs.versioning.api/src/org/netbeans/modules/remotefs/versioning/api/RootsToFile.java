@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial.remote.api;
+package org.netbeans.modules.remotefs.versioning.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
