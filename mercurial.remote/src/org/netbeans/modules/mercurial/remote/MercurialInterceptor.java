@@ -910,7 +910,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                             public void run() {
                                 final FileObject fo = hgFolder.toFileObject();
                                 if (fo != null) {
-                                    fo.addFileChangeListener(fList);
+                                    fo.addRecursiveListener(fList);
                                 } else {
                                     //TODO:
                                     //FileUtil.addRecursiveListener(fList, hgFolder);

@@ -68,6 +68,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -79,6 +80,7 @@ import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -978,6 +980,42 @@ public final class VCSFileProxySupport {
             }
             return MessageFormat.format(NbBundle.getMessage(VCSFileProxySupport.class, "MSG_ActionContext_MultipleFiles"), objectCount);  // NOI18N
         }
+    }
+    
+    public static Project getProject (VCSFileProxy[] files) {
+        for (VCSFileProxy file : files) {
+            /* We may be committing a LocallyDeleted file */
+            if (!file.exists()) {
+                file = file.getParentFile();
+            }
+            FileObject fo = file.toFileObject();
+            if(fo == null) {
+                LOG.log(Level.FINE, "Utils.getProjectFile(): No FileObject for {0}", file); // NOI18N
+            } else {
+                Project p = FileOwnerQuery.getOwner(fo);
+                if (p != null) {
+                    return p;
+                } else {
+                    LOG.log(Level.FINE, "Utils.getProjectFile(): No project for {0}", file); // NOI18N
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Returns the {@link Project} {@link File} for the given {@link Project}
+     * 
+     * @param project
+     * @return 
+     */
+    public static VCSFileProxy getProjectFile(Project project){
+        if (project == null) {
+            return null;
+        }
+
+        FileObject fo = project.getProjectDirectory();
+        return  VCSFileProxy.createFileProxy(fo);
     }
 
 //</editor-fold>
