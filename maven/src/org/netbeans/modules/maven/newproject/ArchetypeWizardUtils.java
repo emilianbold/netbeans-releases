@@ -197,7 +197,7 @@ public class ArchetypeWizardUtils {
             return Collections.emptySet();
         }
         FileObject mainFO = mainProjectDir != null ? FileUtil.toFileObject(mainProjectDir) : null;
-        return openProjects(fDir, fDir);
+        return openProjects(fDir, mainFO);
     }
     static Set<FileObject> openProjects(FileObject fDir, FileObject mainFO) throws IOException {
         List<FileObject> resultList = new ArrayList<>();
