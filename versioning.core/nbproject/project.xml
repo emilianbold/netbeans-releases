@@ -259,7 +259,9 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.libs.git.remote</friend>
                 <friend>org.netbeans.modules.ade</friend>
+                <friend>org.netbeans.modules.git.remote</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.mercurial.remote</friend>
                 <friend>org.netbeans.modules.remotefs.versioning</friend>

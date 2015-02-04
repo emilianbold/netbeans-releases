@@ -343,6 +343,7 @@
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.clearcase</friend>
                 <friend>org.netbeans.modules.git</friend>
+                <friend>org.netbeans.modules.git.remote</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.mercurial</friend>
                 <friend>org.netbeans.modules.mercurial.remote</friend>
