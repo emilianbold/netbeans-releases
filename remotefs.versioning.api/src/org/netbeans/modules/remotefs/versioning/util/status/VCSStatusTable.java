@@ -370,12 +370,12 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements FileVie
 
     @Override
     public Object prepareModel (T[] nodes) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setModel (T[] nodes, EditorCookie[] editorCookies, Object modelData) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
     }
 
 // <editor-fold defaultstate="collapsed" desc="popup and selection">
