@@ -202,6 +202,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case CALL_ARGUMENT:
+                    completeCallArguments(request, resultList);
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, added);
@@ -625,6 +626,99 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         return addedProperties;
     }
     
+    private Identifier findNameOfFunctionCall (CompletionRequest request) {
+        // is an argument of a function call?
+        TokenHierarchy<?> th = request.result.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return null;
+        }
+        TokenSequence<JsTokenId> ts = th.tokenSequence(JsTokenId.javascriptLanguage());
+        if (ts == null) {
+            return null;
+        }
+        
+        ts.move(request.anchor);
+        
+        if (!ts.moveNext() && !ts.movePrevious()){
+            return null;
+        }
+            
+        int curlyDeep = 0;
+        Token<? extends JsTokenId> token = ts.token();
+        JsTokenId tokenId = token.id();
+        while (ts.movePrevious() && tokenId != JsTokenId.BRACKET_LEFT_PAREN
+                && tokenId != JsTokenId.OPERATOR_SEMICOLON) {
+            if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                curlyDeep++;
+            }
+            token = ts.token();
+            tokenId = token.id();
+        }
+        
+        
+        if (tokenId == JsTokenId.BRACKET_LEFT_PAREN) {
+            token = LexUtilities.findPreviousNonWsNonComment(ts);
+            if (token != null && token.id() == JsTokenId.IDENTIFIER) {
+                String functionName = token.text().toString();
+                return new IdentifierImpl(functionName, new OffsetRange(ts.offset(), ts.offset() + functionName.length()));
+            }
+        }
+        return null;
+    }
+    
+    private List<IndexedElement.FunctionIndexedElement> findFunctionInIndex(Identifier functionName, CompletionRequest request) {
+        List<IndexedElement.FunctionIndexedElement> result = new ArrayList<IndexedElement.FunctionIndexedElement>();
+        List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), functionName.getOffsetRange().getStart() - 1, false);
+        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        if (fo != null) {
+            JsIndex jsIndex = JsIndex.get(fo);
+            if (expChain.isEmpty()) {
+                // global space
+                Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(functionName.getName());
+                for (IndexedElement globalVar : globalVars) {
+                    if (globalVar.getName().equals(functionName) && globalVar.getJSKind().isFunction()) {
+                        result.add((IndexedElement.FunctionIndexedElement)globalVar);
+                    }
+                }
+            } else {
+                // the expression needs to be resolved
+                Collection<TypeUsage> types = ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, false);
+                for (TypeUsage type : types) {
+                    Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(type.getType(), functionName.getName());
+                    properties.addAll(jsIndex.getPropertiesWithPrefix(type.getType() + "." + ModelUtils.PROTOTYPE, functionName.getName()));
+                    for (IndexedElement property : properties) {
+                        if (property.getName().equals(functionName.getName()) && property.getJSKind().isFunction()) {
+                            IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)property;
+                            result.add(function);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    private List<TypeUsage> findPossibleCallArgTypes(CompletionRequest request) {
+        Identifier functionName = findNameOfFunctionCall(request);
+        if (functionName == null) {
+            // probably not in a call
+            return null;
+        }
+        List<TypeUsage> result = new ArrayList<TypeUsage>();
+        List<IndexedElement.FunctionIndexedElement> functions = findFunctionInIndex(functionName, request);
+        for (IndexedElement.FunctionIndexedElement function : functions) {
+            LinkedHashMap<String, Collection<String>> parameters = function.getParameters();
+            for (Collection<String> assignments: parameters.values()) {
+                if (!assignments.isEmpty()) {
+                    for (String assignment : assignments) {
+                        result.add(new TypeUsageImpl(assignment));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
     private void completeObjectPropertyName(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
         // is an argument of the function call?
         TokenHierarchy<?> th = request.result.getSnapshot().getTokenHierarchy();
@@ -653,7 +747,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             token = ts.token();
             tokenId = token.id();
         }
-
+        
         // what is the function?
         if (curlyDeep == 1 && tokenId == JsTokenId.BRACKET_LEFT_PAREN) {
             token = LexUtilities.findPreviousNonWsNonComment(ts);
@@ -969,6 +1063,24 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 } 
                 
                 addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems);
+            }
+        }
+    }
+    
+    private void completeCallArguments(CompletionRequest request, List<CompletionProposal> resultList) {
+        // find (if exist) the function which is called.
+        List<TypeUsage> types = findPossibleCallArgTypes(request);
+        FileObject fo = request.result.getSnapshot().getSource().getFileObject();
+        if (types != null && fo != null && !types.isEmpty()) {
+            JsIndex jsIndex = JsIndex.get(fo);
+            for (TypeUsage type: types) {
+                Collection<? extends IndexResult> fromIndex = jsIndex.findByFqn(type.getType(), JsIndex.TERMS_BASIC_INFO);
+                for (IndexResult indexResult: fromIndex) {
+                    IndexedElement indexElement = IndexedElement.create(indexResult);
+                    if (indexElement.getJSKind() == JsElement.Kind.CALLBACK) {
+                        resultList.add(new JsCompletionItem.JsCallbackCompletionItem((IndexedElement.FunctionIndexedElement)indexElement, request));
+                    }
+                }
             }
         }
     }

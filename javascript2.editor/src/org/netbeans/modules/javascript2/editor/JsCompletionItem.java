@@ -386,6 +386,100 @@ public class JsCompletionItem implements CompletionProposal {
         }
     }
 
+    public static class JsCallbackCompletionItem extends JsCompletionItem {
+        private static ImageIcon callbackIcon = null;
+        private IndexedElement.FunctionIndexedElement function;
+                
+        public JsCallbackCompletionItem(IndexedElement.FunctionIndexedElement element, CompletionRequest request) {
+            super(element, request);
+            function = element;
+        }
+        
+        @Override
+        public ImageIcon getIcon() {
+            if (callbackIcon == null) {
+                callbackIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodCallback.png")); //NOI18N
+            }
+            return callbackIcon;
+        }
+        
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.setMaxLength(OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).getCodeCompletionItemSignatureWidth());
+            formatter.name(ElementKind.KEYWORD, true);
+            formatter.appendText("function");   //NOI18N
+            formatter.name(ElementKind.KEYWORD, false);
+            formatter.appendText(" (");  //NOI18N
+            appendParamsStr(formatter);
+            formatter.appendText(")");  //NOI18N
+            return formatter.getText();
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return 90;      // display as first items?
+        }
+    
+        
+        private void appendParamsStr(HtmlFormatter formatter){
+            for (Iterator<Map.Entry<String, Collection<String>>> it = function.getParameters().entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, Collection<String>> entry = it.next();
+                formatter.parameters(true);
+                formatter.appendText(entry.getKey());
+                formatter.parameters(false);
+                Collection<String> types = entry.getValue();
+                if (!types.isEmpty()) {
+                    formatter.type(true);
+                    formatter.appendText(": ");  //NOI18N
+                    for (Iterator<String> itTypes = types.iterator(); itTypes.hasNext();) {
+                        formatter.appendText(itTypes.next());
+                        if (itTypes.hasNext()) {
+                            formatter.appendText("|");   //NOI18N
+                        }
+                    }
+                    formatter.type(false);
+                }
+                if (it.hasNext()) {
+                    formatter.appendText(", ");  //NOI18N
+                }    
+            }
+        }
+        
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            template.append(" \n /** ");
+            for (Iterator<Map.Entry<String, Collection<String>>> it = function.getParameters().entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, Collection<String>> entry = it.next();
+                Collection<String> types = entry.getValue();
+                template.append("\n * @param {");
+                if (!types.isEmpty()) {
+                    for (Iterator<String> itTypes = types.iterator(); itTypes.hasNext();) {
+                        template.append(itTypes.next());
+                        if (itTypes.hasNext()) {
+                            template.append("|");   //NOI18N
+                        }
+                    }
+                } else {
+                    template.append("Object");
+                }
+                template.append("} ");
+                template.append(entry.getKey());
+            }
+            template.append("\n **/");
+            template.append("\nfunction (");
+            for (Iterator<Map.Entry<String, Collection<String>>> it = function.getParameters().entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, Collection<String>> entry = it.next();
+                template.append(entry.getKey());
+                if (it.hasNext()) {
+                    template.append(", ");  //NOI18N
+                }
+            }
+            template.append(") {\n ${cursor}\n}");
+            return template.toString();
+        }
+    }
+    
     static class KeywordItem extends JsCompletionItem {
         private static  ImageIcon keywordIcon = null;
         private String keyword = null;
