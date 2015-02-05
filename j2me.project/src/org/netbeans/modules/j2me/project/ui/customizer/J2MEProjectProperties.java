@@ -175,6 +175,7 @@ public final class J2MEProjectProperties {
     public static final String PROP_LIBLET_PREFIX = "liblets."; //NOI18N
     public static final String PROP_LIBLET_DEPENDENCY = ".dependency"; //NOI18N
     public static final String PROP_LIBLET_URL = ".url"; //NOI18N
+    public static final String PROP_LIBLET_EXTRACT = ".extract"; //NOI18N
 
     private static final Integer BOOLEAN_KIND_TF = new Integer(0);
     private static final Integer BOOLEAN_KIND_YN = new Integer(1);
@@ -577,11 +578,13 @@ public final class J2MEProjectProperties {
             if (li.getUrl() != null) {
                 projectProperties.put(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_URL, li.getUrl());
             }
+            projectProperties.put(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_EXTRACT, String.valueOf(li.isExtractClasses()));
         }
         String nextLiblet = null;
         while ((nextLiblet = project.evaluator().getProperty(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_DEPENDENCY)) != null) {
             projectProperties.remove(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_DEPENDENCY);
             projectProperties.remove(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_URL);
+            projectProperties.remove(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_EXTRACT);
             libletIndex++;
         }
 
@@ -1199,7 +1202,8 @@ public final class J2MEProjectProperties {
         int i = 0;
         String dep = null;
         while ((dep = eval.getProperty(PROP_LIBLET_PREFIX + i + PROP_LIBLET_DEPENDENCY)) != null) {
-            String url = eval.getProperty(PROP_LIBLET_PREFIX + i + PROP_LIBLET_URL); //NOI18N
+            String url = eval.getProperty(PROP_LIBLET_PREFIX + i + PROP_LIBLET_URL);
+            boolean extractClasses = Boolean.parseBoolean(eval.getProperty(PROP_LIBLET_PREFIX + i + PROP_LIBLET_EXTRACT));
             String[] splittedDep = dep.split(";"); //NOI18N
             LibletInfo li = new LibletInfo(
                     LibletInfo.LibletType.valueOf(splittedDep[0].trim().toUpperCase()),
@@ -1207,7 +1211,8 @@ public final class J2MEProjectProperties {
                     splittedDep.length > 3 ? splittedDep[3].trim() : "",
                     splittedDep.length > 4 ? splittedDep[4].trim() : "",
                     LibletInfo.Requirement.valueOf(splittedDep[1].trim().toUpperCase()),
-                    url);
+                    url,
+                    extractClasses);
             model.addElement(li);
 
             i++;
