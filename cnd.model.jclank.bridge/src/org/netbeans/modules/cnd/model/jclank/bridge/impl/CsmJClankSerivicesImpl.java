@@ -41,59 +41,40 @@
  */
 package org.netbeans.modules.cnd.model.jclank.bridge.impl;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
-import org.netbeans.modules.cnd.model.jclank.bridge.*;
-import java.nio.charset.Charset;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.clang.basic.ClangGlobals.$out_DiagnosticBuilder_StringRef;
-import org.clang.basic.Diagnostic;
-import org.clang.basic.DiagnosticIDs;
-import org.clang.basic.DiagnosticOptions;
 import org.clang.basic.DiagnosticsEngine;
 import org.clang.basic.FileEntry;
 import org.clang.basic.FileManager;
-import org.clang.basic.FileSystemOptions;
 import org.clang.basic.LangOptions;
 import org.clang.basic.Module;
-import org.clang.basic.PresumedLoc;
 import org.clang.basic.SourceLocation;
 import org.clang.basic.SourceManager;
 import org.clang.basic.SrcMgr;
 import org.clang.basic.diag;
-import org.clang.basic.target.TargetInfo;
-import org.clang.basic.target.TargetOptions;
 import org.clang.basic.tok;
 import org.clang.frontend.ClangGlobals;
 import org.clang.frontend.CompilerInvocation;
-import org.clang.frontend.FrontendOptions;
 import org.clang.frontend.InputKind;
 import org.clang.frontend.LangStandard;
 import org.clang.frontend.PreprocessorOutputOptions;
-import org.clang.lex.HeaderSearch;
-import org.clang.lex.HeaderSearchOptions;
 import org.clang.lex.ModuleIdPath;
 import org.clang.lex.ModuleLoadResult;
 import org.clang.lex.ModuleLoader;
 import org.clang.lex.Preprocessor;
-import org.clang.lex.PreprocessorOptions;
 import org.clang.lex.Token;
-import org.clang.lex.frontend;
-import org.clank.java.std;
 import org.clank.support.Converted;
 import org.clank.support.Destructors;
-import org.clank.support.Native;
 import static org.clank.support.NativePointer.*;
 import org.clank.support.NativeTrace;
-import org.llvm.adt.IntrusiveRefCntPtr;
 import org.llvm.adt.StringRef;
-import org.llvm.adt.aliases.SmallVectorChar;
-import org.llvm.support.MemoryBuffer;
 import org.llvm.support.llvm;
+import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
-import org.netbeans.modules.cnd.utils.FSPath;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.model.jclank.trace.WriterOutputStream;
 
 /**
  *
@@ -120,22 +101,29 @@ public final class CsmJClankSerivicesImpl {
         }
     }
 
-    public static long dumpPreprocessed(NativeFileItem nfi, PrintWriter printOut) {
+    public static long dumpPreprocessed(NativeFileItem nfi, PrintWriter printOut, 
+            boolean printTokens,
+            boolean printStatistics) {
         clearStatistics();
+        raw_ostream llvm_out = new PrintWriter_ostream(printOut);
+        final PrintStream java_out = new PrintStream(new WriterOutputStream(printOut));
         long time = System.currentTimeMillis();
         boolean done = false;
         Preprocessor /*&*/ PP = getPreprocessor(nfi);
         if (PP != null) {
             PreprocessorOutputOptions Opts = createPPOptions(nfi);
             try {
-                ClangGlobals.DoPrintPreprocessedInput(PP, llvm.nulls(), Opts);
+                ClangGlobals.DoPrintPreprocessedInput(PP, printTokens ? llvm_out : llvm.nulls(), Opts);
                 time = System.currentTimeMillis() - time;
                 done = true;
+                if (printStatistics) {
+                    PrintStatistics(PP, nfi, llvm_out, java_out);
+                }
             } finally {
-                llvm.outs().flush();
+                llvm_out.flush();
+                printOut.flush();
                 llvm.errs().flush();
             }
-            PrintStatistics(PP, nfi);
         }
         return done ? time : 0;
     }
@@ -144,7 +132,7 @@ public final class CsmJClankSerivicesImpl {
         org.clang.frontendtool.ClangGlobals.clearStatistics();
     }
     
-    private static void PrintStatistics(Preprocessor PP, NativeFileItem nfi) {
+    private static void PrintStatistics(Preprocessor PP, NativeFileItem nfi, raw_ostream llvm_out, PrintStream javaOut) {
         if (NativeTrace.STATISTICS) {
           llvm.errs().$out("\nSTATISTICS FOR '").$out(nfi.getAbsolutePath()).$out("':\n");
           PP.PrintStats();
@@ -152,8 +140,10 @@ public final class CsmJClankSerivicesImpl {
           PP.getHeaderSearchInfo().PrintStats();
           PP.getSourceManager().PrintStats();
           llvm.errs().$out("\n");
-          org.clang.frontendtool.ClangGlobals.PrintStats(llvm.errs(), System.err);
-        }          
+          org.clang.frontendtool.ClangGlobals.PrintStats(llvm_out, javaOut);
+        } else {
+          javaOut.println("Statistics was not gathered");
+        } 
     }
     
     private static Preprocessor getPreprocessor(NativeFileItem nfi) {
