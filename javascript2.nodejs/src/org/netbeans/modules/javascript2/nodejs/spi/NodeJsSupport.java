@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.nodejs.spi;
 
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -52,6 +53,14 @@ import org.openide.filesystems.FileObject;
 public interface NodeJsSupport {
 
     boolean isSupportEnabled();
+
+    /**
+     * <b>Warning</b>: This method should not be called in the UI thread!
+     * @return version of node.js executable or {@code null} if not known
+     * @since 0.6
+     */
+    @CheckForNull
+    Version getVersion();
 
     @CheckForNull
     FileObject getDocumentationFolder();
