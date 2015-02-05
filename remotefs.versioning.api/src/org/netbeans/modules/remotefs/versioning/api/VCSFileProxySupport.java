@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.remotefs.versioning.api;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -76,6 +78,7 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
+import static org.netbeans.modules.versioning.util.FileUtils.createInputStream;
 import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -1049,4 +1052,31 @@ public final class VCSFileProxySupport {
 
 //</editor-fold>
     
+//<editor-fold defaultstate="collapsed" desc="methods from org.netbeans.modules.versioning.util.FileUtils">
+    
+    /**
+     * Reads the data from the <code>file</code> and returns it as an array of bytes.
+     * @param file file to be read
+     * @return file contents as a byte array
+     * @throws java.io.IOException
+     */
+    public static byte[] getFileContentsAsByteArray(VCSFileProxy file) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024 * 5);
+        BufferedInputStream bis = null;
+        try {
+            bis = new BufferedInputStream(file.getInputStream(false));
+            byte[] buffer = new byte[1024];
+            for (int byteRead = bis.read(buffer); byteRead > 0; byteRead = bis.read(buffer)) {
+                baos.write(buffer, 0, byteRead);
+            }
+        } finally {
+            if (bis != null) {
+                bis.close();
+            }
+        }
+        return baos.toByteArray();
+    }
+    
+//</editor-fold>
+
 }

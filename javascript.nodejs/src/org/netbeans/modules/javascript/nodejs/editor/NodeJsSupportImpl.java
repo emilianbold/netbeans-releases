@@ -41,14 +41,17 @@
  */
 package org.netbeans.modules.javascript.nodejs.editor;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript2.nodejs.spi.NodeJsSupport;
+import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,6 +75,16 @@ public final class NodeJsSupportImpl implements NodeJsSupport {
     @Override
     public boolean isSupportEnabled() {
         return getNodeJsSupport().getPreferences().isEnabled();
+    }
+
+    @Override
+    public Version getVersion() {
+        assert !EventQueue.isDispatchThread() : "Should not be called in the UI thread";
+        NodeExecutable node = NodeExecutable.forProject(project, false);
+        if (node == null) {
+            return null;
+        }
+        return node.getVersion();
     }
 
     @Override
