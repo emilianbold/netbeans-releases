@@ -75,9 +75,9 @@ abstract class JClankDiagnosticAbstractProvider implements CndDiagnosticProvider
                 nfis.add(nfi);
             }
         }
-        dumpNativeFileItems(nfis, printOut);
+        doNativeFileItemDiagnostic(nfis, printOut);
     }
 
-    protected abstract void dumpNativeFileItems(Set<NativeFileItem> nfis, PrintWriter printOut);
+    protected abstract void doNativeFileItemDiagnostic(Set<NativeFileItem> nfis, PrintWriter printOut);
     
 }

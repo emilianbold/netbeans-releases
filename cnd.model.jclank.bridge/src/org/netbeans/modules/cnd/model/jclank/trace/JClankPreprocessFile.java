@@ -119,7 +119,7 @@ public abstract class JClankPreprocessFile extends JClankDiagnosticAbstractProvi
     }
 
     @Override
-    protected void dumpNativeFileItems(Set<NativeFileItem> nfis, PrintWriter printOut) {
+    protected void doNativeFileItemDiagnostic(Set<NativeFileItem> nfis, PrintWriter printOut) {
         printOut.printf("====%s\n", getDisplayName()); // NOI18N
         long totalTime = 0;
         int numFiles = 0;
