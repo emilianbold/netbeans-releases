@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.model.jclank.trace;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
@@ -59,44 +61,14 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Voskresensky
  */
 public class CsmJClankTracePreprocessorAction {
-    private static long dumpFileTokens(NativeFileItem nfi, PrintWriter printOut) {
-        PrintStream origErr = System.err;
-        PrintStream origOut = System.out;
-        long time = 0;
-        try {
-            final PrintStream printStreamOut = new PrintStream(new WriterOutputStream(printOut));
-//            System.setErr(new PrintStreamDuplex(new WriterOutputStream(printOut), origErr));
-//            System.setOut(new PrintStreamDuplex(new WriterOutputStream(printOut), origOut));
-            System.setOut(printStreamOut);
-            try {
-                time = CsmJClankSerivicesImpl.dumpPreprocessed(nfi, printOut);
-            } finally {
-                printStreamOut.flush();
-            }
-        } finally {
-            System.setErr(origErr);
-            System.setOut(origOut);
-        }
-        return time;
-    }
 
-    @ServiceProvider(service = CndDiagnosticProvider.class, position = 102)
-    public final static class JClankDumpFileTokens implements CndDiagnosticProvider {
-
-        @NbBundle.Messages({"JClankDumpFileTokens.displayName=Preproces with JClank"})
-        @Override
-        public String getDisplayName() {
-            return JClankDumpFileTokens_displayName();
-        }
+    public static abstract class JClankAbstractDiagnosticProvider implements CndDiagnosticProvider {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====Dump File Tokens by JClank\n");// NOI18N 
             Collection<? extends DataObject> allFiles = context.lookupAll(DataObject.class);
-            long totalTime = 0;
-            int numFiles = 0;
+            Set<NativeFileItem> nfis = new LinkedHashSet<>();
             for (DataObject dob : allFiles) {
-                printOut.printf("====Dump Tokens for %s %n", dob);// NOI18N 
                 NativeFileItemSet nfs = dob.getLookup().lookup(NativeFileItemSet.class);
                 if (nfs == null) {
                     printOut.printf("NO NativeFileItemSet in %s %n", dob);
@@ -107,17 +79,48 @@ public class CsmJClankTracePreprocessorAction {
                     continue;
                 }
                 for (NativeFileItem nfi : nfs.getItems()) {
-                    try {
-                        printOut.printf("dumpFileTokens %s...%n", nfi.getAbsolutePath());
-                        long time = CsmJClankTracePreprocessorAction.dumpFileTokens(nfi, printOut);
-                        if (time > 0) {
-                            numFiles++;
-                            totalTime += time;
-                        }
-                        printOut.printf("dumpFileTokens %s took %,dms %n", nfi.getAbsolutePath(), time);
-                    } catch (Throwable e) {
-                        new Exception(nfi.getAbsolutePath(), e).printStackTrace(printOut);
+                    nfis.add(nfi);
+                }
+            }
+            dumpNativeFileItems(nfis, printOut);
+        }
+
+        protected abstract void dumpNativeFileItems(Set<NativeFileItem> nfis, PrintWriter printOut);
+    }   
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 102)
+    public static final class JClankDumpFileTokens extends JClankAbstractDiagnosticProvider {
+        private final boolean printTokens;
+        private final boolean printStatistics;
+
+        public JClankDumpFileTokens() {
+            this.printTokens = true;
+            this.printStatistics = true;
+        }
+        
+        @NbBundle.Messages({"JClankDumpFileTokens.displayName=Preproces with JClank"})
+        @Override
+        public String getDisplayName() {
+            return JClankDumpFileTokens_displayName();
+        }
+
+        @Override
+        protected void dumpNativeFileItems(Set<NativeFileItem> nfis, PrintWriter printOut) {
+            printOut.printf("====Dump File Tokens by JClank\n");// NOI18N 
+            long totalTime = 0;
+            int numFiles = 0;
+            for (NativeFileItem nfi : nfis) {
+                printOut.printf("====Dump Tokens for %s %n", nfi);// NOI18N 
+                try {
+                    printOut.printf("dumpFileTokens %s...%n", nfi.getAbsolutePath());
+                    long time = CsmJClankSerivicesImpl.dumpPreprocessed(nfi, printOut, printTokens, printStatistics);
+                    if (time > 0) {
+                        numFiles++;
+                        totalTime += time;
                     }
+                    printOut.printf("dumpFileTokens %s took %,dms %n", nfi.getAbsolutePath(), time);
+                } catch (Throwable e) {
+                    new Exception(nfi.getAbsolutePath(), e).printStackTrace(printOut);
                 }
             }
             printOut.printf("====Dump File Tokens by JClank for %d files took %,dms\n", numFiles, totalTime);// NOI18N 
