@@ -49,6 +49,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -137,6 +139,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
     protected final void addTest(Class<? extends NativeExecutionBaseTestCase> testClass)  {
         
         TestClassData testData = findTestData(testClass);
+        sortTestData(testData);
         if (testData.testMethods.isEmpty()) {
             addWarningTest("Class " + testClass.getName() + " has no runnable test metods");
         }
@@ -386,13 +389,22 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
 
         return result;
     }
+    
+    private static void sortTestData(TestClassData data) {
+        Collections.sort(data.testMethods, new Comparator<TestMethodData>() {
+            @Override
+            public int compare(TestMethodData d1, TestMethodData d2) {
+                return d1.name.compareTo(d2.name);
+            }
+        });
+    }
 
-	protected static Test warning(String testName, final String message) {
-		return new TestCase(testName) {
-			@Override
-			protected void runTest() {
-				fail(message);
-			}
-		};
-	}
+    protected static Test warning(String testName, final String message) {
+            return new TestCase(testName) {
+                    @Override
+                    protected void runTest() {
+                            fail(message);
+                    }
+            };
+    }
 }

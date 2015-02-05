@@ -122,7 +122,9 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
 
         if (cm.isConnectedTo(execEnv)) {
             System.out.println(id + " initially connected! Disconnecting from it to proceed with the test.");
+            char[] passwd = PasswordManager.getInstance().getPassword(execEnv);
             cm.disconnect(execEnv);
+            PasswordManager.getInstance().storePassword(execEnv, passwd, false);
         }
 
         assertFalse(id + " must be disconnected at this point", cm.isConnectedTo(execEnv));
