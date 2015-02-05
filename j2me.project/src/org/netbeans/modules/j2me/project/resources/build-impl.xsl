@@ -871,16 +871,21 @@ is divided into following sections:
                         packaging = "LIBlet";
                     }
                     var libletId = 0;
+                    var libletCount = 0;
                     while (true) {
                         var libletDep = project.getProperty("liblets." + libletId + ".dependency");
                         if (libletDep == null) {
                             break;
                         }
-                        addLibletProp(libletId + 1, packaging + "-Dependency-", libletDep);
+                        var extractLiblet = project.getProperty("liblets." + libletId + ".extract");
+                        if (!isTrue(extractLiblet)) {
+                            addLibletProp(libletCount + 1, packaging + "-Dependency-", libletDep);
 
-                        var libletUrl = project.getProperty("liblets." + libletId + ".url");
-                        if (libletUrl != null && libletUrl.length() > 0) {
-                            addLibletProp(libletId + 1, packaging + "-Dependency-JAD-URL-", libletUrl);
+                            var libletUrl = project.getProperty("liblets." + libletId + ".url");
+                            if (libletUrl != null && libletUrl.length() > 0) {
+                                addLibletProp(libletCount + 1, packaging + "-Dependency-JAD-URL-", libletUrl);
+                            }
+                            libletCount++;
                         }
                         libletId++;
                     }
@@ -896,7 +901,7 @@ is divided into following sections:
                     }
                     var liblet = project.getProperty("manifest.is.liblet");
                     if (isTrue(liblet)) {
-                                                var services = "";
+                        var services = "";
                         var classesDir = project.getProperty("build.classes.dir");
                         var classesDirF = project.resolveFile(classesDir);
                         var servicesDirF = new java.io.File(classesDirF + java.io.File.separator + "META-INF" + java.io.File.separator + "services");
@@ -1010,12 +1015,17 @@ is divided into following sections:
                 }
 
                 var libletId = 0;
+                var libletCount = 0;
                 while (true) {
                     var libletDep = project.getProperty("liblets." + libletId + ".dependency");
                     if (libletDep == null) {
                         break;
                     }
-                    addLiblet(libletId + 1, libletDep);
+                    var extractLiblet = project.getProperty("liblets." + libletId + ".extract");
+                    if (!isTrue(extractLiblet)) {
+                        addLiblet(libletCount + 1, libletDep);
+                        libletCount++;
+                    }
                     libletId++;
                 }
 

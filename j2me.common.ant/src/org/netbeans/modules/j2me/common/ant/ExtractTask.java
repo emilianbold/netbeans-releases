@@ -47,7 +47,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -81,7 +83,7 @@ import org.apache.tools.ant.types.Reference;
  */
 public class ExtractTask extends Task
 {
-    
+
     /** Holds value of property classpath and exclasspath. */
     private Path classPath, exClassPath;
     
@@ -90,7 +92,7 @@ public class ExtractTask extends Task
     
     /** Holds value of property excludeManifest. */
     private boolean excludeManifest = false;
-    
+
     /**
      * Do the work.
      * @throws BuildException if attribute is missing or there is a problem during creating or managing empty-api archives.
@@ -106,11 +108,13 @@ public class ExtractTask extends Task
             throw new BuildException(Bundle.getMessage("ERR_Extract_InvalidDir", dir != null ? dir.getAbsolutePath() : null)); // NO I18N
         final String[] archives = classPath.list();
         final Set excludes = exClassPath == null ? Collections.EMPTY_SET : new HashSet(Arrays.asList(exClassPath.list()));
-        
+        final Map<String, Boolean> libletsInProject = loadLibletsInProject();
+
         if (archives != null) for (int a = 0; a < archives.length; a ++)
         {
             if (excludes.contains(archives[a])) continue;
-            if (isJarLiblet(archives[a])) {
+            Map<Object, Object> manifestAttributes = getJarManifestAttributes(archives[a]);
+            if (isJarLiblet(manifestAttributes) && !libletsInProject.get(getLibletDetails(manifestAttributes))) {
                 //do not extract liblets
                 continue;
             }
@@ -245,15 +249,53 @@ public class ExtractTask extends Task
     {
         this.excludeManifest = excludeManifest;
     }
-    
-    private boolean isJarLiblet(String path) {
+
+    private Map<Object, Object> getJarManifestAttributes(String path) {
+        JarFile jar = null;
         try {
-            JarFile jar = new JarFile(path);
+            jar = new JarFile(path);
             Attributes manifestAttributes = jar.getManifest().getMainAttributes();
-            return manifestAttributes.containsKey(new Attributes.Name("LIBlet-Name")); //NOI18N
+            return manifestAttributes;
         } catch (IOException ex) {
             Logger.getLogger(ExtractTask.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (jar != null) {
+                try {
+                    jar.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(ExtractTask.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
-        return false;
+        return null;
+    }
+
+    private boolean isJarLiblet(Map<Object, Object> manifestAttributes) {
+        return manifestAttributes.containsKey(new Attributes.Name("LIBlet-Name")); //NOI18N            
+    }
+
+    private String getLibletDetails(Map<Object, Object> manifestAttributes) {
+        return (String) manifestAttributes.get(new Attributes.Name("LIBlet-Name")) //NOI18N            
+                + ";"
+                + (String) manifestAttributes.get(new Attributes.Name("LIBlet-Vendor")) //NOI18N            
+                + ";"
+                + (String) manifestAttributes.get(new Attributes.Name("LIBlet-Version")); //NOI18N
+    }
+
+    private Map<String, Boolean> loadLibletsInProject() {
+        final Map<String, Boolean> libletsInProject = new HashMap<String, Boolean>();
+        Project p = getProject();
+        for (int i = 0;; i++) {
+            final String val = p.getProperty("liblets." + i + ".dependency"); //NOI18N
+            if (val == null) {
+                break;
+            }
+            final String[] fields = val.split(";"); //NOI18N
+            if (fields.length >= 5 && fields[0].equalsIgnoreCase("liblet")) { //NOI18N
+                final String extractVal = p.getProperty("liblets." + i + ".extract"); //NOI18N
+                libletsInProject.put(fields[2] + ";" + fields[3] + ";" + fields[4], Boolean.parseBoolean(extractVal)); //NOI18N
+            }
+        }
+        return libletsInProject;
     }
 }
