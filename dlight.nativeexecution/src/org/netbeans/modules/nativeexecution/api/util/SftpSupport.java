@@ -640,7 +640,7 @@ class SftpSupport {
 
         @Override
         public String getTraceName() {
-            return "Getting stat for " + path; //NOI18N
+            return "Getting stat for " + execEnv + ':' + path; //NOI18N
         }
     }
     
@@ -658,7 +658,7 @@ class SftpSupport {
 
         @Override
         protected String getTraceName() {
-            return "moving " + from + " to " + to; //NOI18N
+            return "moving " + execEnv + ':' + from + " to " + execEnv + ':' + to; //NOI18N
         }
 
         @Override
@@ -788,7 +788,7 @@ class SftpSupport {
 
         @Override
         public String getTraceName() {
-            return "listing directory " + path; //NOI18N
+            return "listing directory " + execEnv + ':' + path; //NOI18N
         }
     }
 

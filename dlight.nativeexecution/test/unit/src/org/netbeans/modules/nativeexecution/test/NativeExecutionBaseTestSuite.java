@@ -49,6 +49,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -137,8 +139,9 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
     protected final void addTest(Class<? extends NativeExecutionBaseTestCase> testClass)  {
         
         TestClassData testData = findTestData(testClass);
+        sortTestData(testData);
         if (testData.testMethods.isEmpty()) {
-            addTest(warning("Class " + testClass.getName() + " has no runnable test metods"));
+            addWarningTest("Class " + testClass.getName() + " has no runnable test metods");
         }
 
         for (TestMethodData methodData : testData.testMethods) {
@@ -149,8 +152,8 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                 String[] platforms = NativeExecutionTestSupport.getPlatforms(methodData.envSection, this);
                 for (String platform : platforms) {
                     if (testData.forAllEnvConstructor == null) {
-                        addTest(warning("Class " + testClass.getName() +
-                                " does not have a constructor with 2 parameters: String and ExecutionEnvironment"));
+                        addWarningTest("Class " + testClass.getName() +
+                                " does not have a constructor with 2 parameters: String and ExecutionEnvironment");
                         break;
                     }
                     try {
@@ -158,23 +161,31 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                         if (execEnv != null) {
                             addTest(createTest(testData.forAllEnvConstructor, methodData.name, execEnv));
                         } else {
-                            addTest(warning(methodData.name + " [" + platform + "]",
-                                    "Got null execution environment for " + platform));
+                            addWarningTest(methodData.name + " [" + platform + "]",
+                                    "Got null execution environment for " + platform);
                         }
                     } catch (IOException ioe) {
-                        addTest(warning(methodData.name + " [" + platform + "]",
-                                "Error getting execution environment for " + platform + ": " + NativeExecutionTestSupport.exceptionToString(ioe)));
+                        addWarningTest(methodData.name + " [" + platform + "]",
+                                "Error getting execution environment for " + platform + ": " + NativeExecutionTestSupport.exceptionToString(ioe));
                     }
                 }
             } else {
                 if (testData.ordinaryConstructor == null) {
-                    addTest(warning("Class " + testClass.getName() +
-                            " does not have a constructor with 1 parameter of String type"));
+                    addWarningTest("Class " + testClass.getName() +
+                            " does not have a constructor with 1 parameter of String type");
                     break;
                 }
                 addTest(createTest(testData.ordinaryConstructor, methodData.name));
             }
         }
+    }
+    
+    public void addWarningTest(String testName, String warningText) {
+        addTest(warning(testName, warningText));
+    }
+
+    public void addWarningTest(String warningText) {
+        addTest(warning(warningText));
     }
 
     private Test createTest(Constructor<?> ctor, Object... parameters) {
@@ -268,7 +279,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
             //
             if (methodData.ifSection != null && methodData.ifSection.length() != 0) {
                 if (methodData.ifKey == null || methodData.ifKey.length() == 0) {
-                    addTest(warning(methodData.name + " @If does not specify a key"));
+                    addWarningTest(methodData.name + " @If does not specify a key");
                     return false;
                 }
                 String value = rcFile.get(methodData.ifSection, methodData.ifKey);
@@ -282,7 +293,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
             //
             if (methodData.ifdefSection != null && methodData.ifdefSection.length() != 0) {
                 if (methodData.ifdefKey == null || methodData.ifdefKey.length() == 0) {
-                    addTest(warning(methodData.name + " @Ifdef does not specify a key"));
+                    addWarningTest(methodData.name + " @Ifdef does not specify a key");
                     return false;
                 }
                 if (!rcFile.containsKey(methodData.ifdefSection, methodData.ifdefKey)) {
@@ -294,10 +305,10 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
             // silently: just no file => condition is false, that's it
             return false;
         } catch (IOException ex) {
-            addTest(warning("Error getting condition for " + methodData.name + ": " + ex.getMessage()));
+            addWarningTest("Error getting condition for " + methodData.name + ": " + ex.getMessage());
             return false;
         } catch (RcFile.FormatException ex) {
-            addTest(warning("Error getting condition for " + methodData.name + ": " + ex.getMessage()));
+            addWarningTest("Error getting condition for " + methodData.name + ": " + ex.getMessage());
             return false;
         }
     }
@@ -330,11 +341,11 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                             || method.getAnnotation(org.junit.Test.class) != null
                             || forAllEnvAnnotation != null) {
                         if (!Modifier.isPublic(method.getModifiers())) {
-                            addTest(warning("Method " + testClass.getName() + '.' + method.getName() + " should be public"));
+                            addWarningTest("Method " + testClass.getName() + '.' + method.getName() + " should be public");
                         } else if (! method.getReturnType().equals(Void.TYPE)) {
-                            addTest(warning("Method " + testClass.getName() + '.' + method.getName() + " should be void"));
+                            addWarningTest("Method " + testClass.getName() + '.' + method.getName() + " should be void");
                         } else if (method.getParameterTypes().length > 0) {
-                            addTest(warning("Method " + testClass.getName() + '.' + method.getName() + " should have no parameters"));
+                            addWarningTest("Method " + testClass.getName() + '.' + method.getName() + " should have no parameters");
                         } else {
                             if (method.getAnnotation(org.junit.Ignore.class) == null) {
                                 If ifAnnotation = method.getAnnotation(If.class);
@@ -352,7 +363,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                                     if (envSection != null && envSection.length() > 0) {
                                         result.testMethods.add(new TestMethodData(method.getName(), envSection, condSection, condKey, condDefault, ifdefSection, ifdefKey));
                                     } else {
-                                        addTest(warning("@ForAllEnvironments annotation for method " + testClass.getName() + '.' + method.getName() + " does not specify section"));
+                                        addWarningTest("@ForAllEnvironments annotation for method " + testClass.getName() + '.' + method.getName() + " does not specify section");
                                     }
                                 } else {
                                     result.testMethods.add(new TestMethodData(method.getName(), null, condSection, condKey, condDefault, ifdefSection, ifdefKey));
@@ -378,13 +389,22 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
 
         return result;
     }
+    
+    private static void sortTestData(TestClassData data) {
+        Collections.sort(data.testMethods, new Comparator<TestMethodData>() {
+            @Override
+            public int compare(TestMethodData d1, TestMethodData d2) {
+                return d1.name.compareTo(d2.name);
+            }
+        });
+    }
 
-	protected static Test warning(String testName, final String message) {
-		return new TestCase(testName) {
-			@Override
-			protected void runTest() {
-				fail(message);
-			}
-		};
-	}
+    protected static Test warning(String testName, final String message) {
+            return new TestCase(testName) {
+                    @Override
+                    protected void runTest() {
+                            fail(message);
+                    }
+            };
+    }
 }
