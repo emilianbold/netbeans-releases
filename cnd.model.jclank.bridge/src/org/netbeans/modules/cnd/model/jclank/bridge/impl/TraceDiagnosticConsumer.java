@@ -39,18 +39,40 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.model.jclank.bridge;
+package org.netbeans.modules.cnd.model.jclank.bridge.impl;
 
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.apt.support.APTTokenStream;
-import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.clang.basic.Diagnostic;
+import org.clang.basic.DiagnosticsEngine;
+import org.clang.basic.PresumedLoc;
+import org.clank.java.std;
+import org.clank.support.Native;
+import org.llvm.adt.aliases.SmallVectorChar;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public final class CsmJClankSerivices {
-    public static APTTokenStream getAPTTokenStream(NativeFileItem nfi) {
-        return CsmJClankSerivicesImpl.getAPTTokenStream(nfi);
+public class TraceDiagnosticConsumer extends /*public*/ org.clang.basic.DiagnosticConsumer {
+    
+    @Override
+    public void HandleDiagnostic(DiagnosticsEngine.Level DiagLevel, Diagnostic Info) {
+        SmallVectorChar out = new SmallVectorChar(1024);
+        Info.FormatDiagnostic(out);
+        String Loc = "";
+        if (Info.hasSourceManager()) {
+            PresumedLoc presumedLoc = Info.getSourceManager().getPresumedLoc(Info.getLocation());
+            if (presumedLoc.isValid()) {
+                Loc = "In file " + Native.$toString(presumedLoc.getFilename()) + " line " + presumedLoc.getLine() + ", col " + presumedLoc.getColumn() + "\n";
+            }
+        }
+        Level level = CsmJClankSerivicesImpl.toLoggerLevel(DiagLevel);
+        String msg = new std.string(out.data()).toJavaString();
+        if (DiagLevel.getValue() >= DiagnosticsEngine.Level.Error.getValue()) {
+            msg = msg;
+        }
+        Logger.getLogger(TraceDiagnosticConsumer.class.getName()).log(level, "{2}{0}:{1}\n", new Object[]{DiagLevel, msg, Loc});
     }
+    
 }

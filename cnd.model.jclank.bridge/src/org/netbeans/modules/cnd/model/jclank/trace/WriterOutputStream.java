@@ -39,18 +39,43 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.model.jclank.bridge;
+package org.netbeans.modules.cnd.model.jclank.trace;
 
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.apt.support.APTTokenStream;
-import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public final class CsmJClankSerivices {
-    public static APTTokenStream getAPTTokenStream(NativeFileItem nfi) {
-        return CsmJClankSerivicesImpl.getAPTTokenStream(nfi);
+public class WriterOutputStream extends OutputStream {
+    private final Writer writer;
+
+    public WriterOutputStream(Writer writer) {
+        this.writer = writer;
     }
+
+    @Override
+    public void write(int b) throws IOException {
+        // It's tempting to use writer.write((char) b), but that may get the encoding wrong
+        // This is inefficient, but it works
+        write(new byte[]{(byte) b}, 0, 1);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        writer.write(new String(b, off, len));
+    }
+
+    @Override
+    public void flush() throws IOException {
+        writer.flush();
+    }
+
+    @Override
+    public void close() throws IOException {
+        writer.close();
+    }
+    
 }

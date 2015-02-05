@@ -41,17 +41,13 @@
  */
 package org.netbeans.modules.cnd.model.jclank.trace;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Collection;
-import java.util.Locale;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
-import org.netbeans.modules.cnd.model.jclank.bridge.CsmJClankSerivices;
+import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
 import static org.netbeans.modules.cnd.model.jclank.trace.Bundle.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -73,7 +69,7 @@ public class CsmJClankTracePreprocessorAction {
 //            System.setOut(new PrintStreamDuplex(new WriterOutputStream(printOut), origOut));
             System.setOut(printStreamOut);
             try {
-                time = CsmJClankSerivices.dumpPreprocessed(nfi);
+                time = CsmJClankSerivicesImpl.dumpPreprocessed(nfi, printOut);
             } finally {
                 printStreamOut.flush();
             }
@@ -127,231 +123,4 @@ public class CsmJClankTracePreprocessorAction {
             printOut.printf("====Dump File Tokens by JClank for %d files took %,dms\n", numFiles, totalTime);// NOI18N 
         }
     }   
-    
-    public static class PrintStreamDuplex extends PrintStream {
-        private final PrintStream dup;
-        
-        public PrintStreamDuplex(OutputStream out, PrintStream dup) {
-            super(out);
-            this.dup = dup;
-        }
-
-        @Override
-        public void flush() {
-            super.flush();
-            dup.flush();
-        }
-
-        @Override
-        public void close() {
-            super.close();
-            dup.close();
-        }
-
-        @Override
-        public boolean checkError() {
-            return super.checkError() && dup.checkError();
-        }
-
-        @Override
-        public void write(int b) {
-            super.write(b);
-            dup.write(b);dup.flush();
-        }
-
-        @Override
-        public void write(byte[] buf, int off, int len) {
-            super.write(buf, off, len);
-            dup.write(buf, off, len);dup.flush();
-        }
-
-        @Override
-        public void print(boolean b) {
-            super.print(b);
-            dup.print(b);dup.flush();
-        }
-
-        @Override
-        public void print(char c) {
-            super.print(c);
-            dup.print(c);dup.flush();
-        }
-
-        @Override
-        public void print(int i) {
-            super.print(i);
-            dup.print(i);dup.flush();
-        }
-
-        @Override
-        public void print(long l) {
-            super.print(l);
-            dup.print(l);dup.flush();
-        }
-
-        @Override
-        public void print(float f) {
-            super.print(f);
-            dup.print(f);dup.flush();
-        }
-
-        @Override
-        public void print(double d) {
-            super.print(d);
-            dup.print(d);dup.flush();
-        }
-
-        @Override
-        public void print(char[] s) {
-            super.print(s);
-            dup.print(s);dup.flush();
-        }
-
-        @Override
-        public void print(String s) {
-            super.print(s);
-            dup.print(s);dup.flush();
-        }
-
-        @Override
-        public void print(Object obj) {
-            super.print(obj);
-            dup.print(obj);dup.flush();
-        }
-
-        @Override
-        public void println() {
-            super.println();
-            dup.println();dup.flush();
-        }
-
-        @Override
-        public void println(boolean x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public void println(char x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public void println(int x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public void println(long x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public void println(float x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public void println(double x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public void println(char[] x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public void println(String x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public void println(Object x) {
-            super.println(x);
-            dup.println(x);dup.flush();
-        }
-
-        @Override
-        public PrintStream printf(String format, Object... args) {
-            dup.printf(format, args);dup.flush();
-            return super.printf(format, args);
-        }
-
-        @Override
-        public PrintStream printf(Locale l, String format, Object... args) {
-            dup.printf(l, format, args);dup.flush();
-            return super.printf(l, format, args);
-        }
-
-        @Override
-        public PrintStream format(String format, Object... args) {
-            dup.format(format, args);dup.flush();
-            return super.format(format, args);
-        }
-
-        @Override
-        public PrintStream format(Locale l, String format, Object... args) {
-            dup.format(l, format, args);dup.flush();
-            return super.format(l, format, args);
-        }
-
-        @Override
-        public PrintStream append(CharSequence csq) {
-            dup.append(csq);dup.flush();
-            return super.append(csq);
-        }
-
-        @Override
-        public PrintStream append(CharSequence csq, int start, int end) {
-            dup.append(csq, start, end);dup.flush();
-            return super.append(csq, start, end);
-        }
-
-        @Override
-        public PrintStream append(char c) {
-            dup.append(c);dup.flush();
-            return super.append(c);
-        }
-
-        @Override
-        public void write(byte[] b) throws IOException {
-            super.write(b);
-            dup.write(b);dup.flush();
-        }
-    }
-    
-    public static class WriterOutputStream extends OutputStream {
-
-        private final Writer writer;
-
-        public WriterOutputStream(Writer writer) {
-            this.writer = writer;
-        }
-
-        public void write(int b) throws IOException {
-        // It's tempting to use writer.write((char) b), but that may get the encoding wrong
-            // This is inefficient, but it works
-            write(new byte[]{(byte) b}, 0, 1);
-        }
-
-        public void write(byte b[], int off, int len) throws IOException {
-            writer.write(new String(b, off, len));
-        }
-
-        public void flush() throws IOException {
-            writer.flush();
-        }
-
-        public void close() throws IOException {
-            writer.close();
-        }
-    }    
 }
