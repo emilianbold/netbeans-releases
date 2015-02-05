@@ -113,16 +113,15 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
     @ForAllEnvironments(section = "remote.platforms")
     public void testConnectDisconnect() throws Exception {
         final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        assert (execEnv != null);
         final String id = execEnv.toString();
 
-        assert (execEnv != null);
-
-        System.out.println("getConnectToAction test started for " + id); // NOI18N
+        System.out.println(getName() + " started");
 
         ConnectionManager cm = ConnectionManager.getInstance();
 
         if (cm.isConnectedTo(execEnv)) {
-            System.out.println(id + " initially connected! Disconnect from it to proceed with the test.");
+            System.out.println(id + " initially connected! Disconnecting from it to proceed with the test.");
             cm.disconnect(execEnv);
         }
 
@@ -130,14 +129,16 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
 
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
-        } catch (Throwable ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (Exception ex) {
+            // this catch is just for debugging convenience
+            // let it fail with exactly the same exception that was thrown by ConnectionManager
+            throw ex;
         }
 
         assertTrue(id + " must be connected at this point", cm.isConnectedTo(execEnv));
         cm.disconnect(execEnv);
         assertFalse(id + " must be disconnected at this point", cm.isConnectedTo(execEnv));
-        System.out.println("getConnectToAction test finished for " + id);
+        System.out.println(getName() + " finished");
     }
 
     public void testGetConnectToAction() throws Exception {
