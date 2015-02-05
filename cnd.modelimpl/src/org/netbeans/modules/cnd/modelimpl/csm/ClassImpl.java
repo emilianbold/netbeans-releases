@@ -1012,6 +1012,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (child.getType() == CPPTokenTypes.LITERAL_friend) {
                 child = child.getNextSibling();
             }
+            if (child != null && child.getType() == CPPTokenTypes.LITERAL_typename) {
+                child = child.getNextSibling();
+            }            
             if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
                 child = child.getNextSibling();
             }
