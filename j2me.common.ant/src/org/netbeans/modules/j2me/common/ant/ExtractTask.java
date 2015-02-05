@@ -267,7 +267,7 @@ public class ExtractTask extends Task
                 }
             }
         }
-        return null;
+        return Collections.EMPTY_MAP;
     }
 
     private boolean isJarLiblet(Map<Object, Object> manifestAttributes) {
