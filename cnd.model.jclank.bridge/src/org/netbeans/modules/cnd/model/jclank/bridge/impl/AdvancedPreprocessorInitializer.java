@@ -50,6 +50,7 @@ import org.llvm.adt.IntrusiveRefCntPtr;
 import org.llvm.adt.StringRef;
 import org.llvm.support.MemoryBuffer;
 import org.llvm.support.llvm;
+import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
@@ -61,8 +62,8 @@ import org.openide.filesystems.FileObject;
 class AdvancedPreprocessorInitializer extends DefaultPreprocessorInitializer {
     private final NativeFileItem startEntry;
 
-    public AdvancedPreprocessorInitializer(NativeFileItem startEntry) {
-        super();
+    public AdvancedPreprocessorInitializer(NativeFileItem startEntry, raw_ostream llvm_err) {
+        super(llvm_err);
         this.startEntry = startEntry;
         CsmJClankSerivicesImpl.setLangDefaults(this.LangOpts, startEntry);
         this.TargetOpts.$arrow().Triple.$assign("x86_64");

@@ -46,6 +46,7 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.logging.Level;
 import static org.clang.basic.ClangGlobals.$out_DiagnosticBuilder_StringRef;
+import org.clang.basic.DiagnosticConsumer;
 import org.clang.basic.DiagnosticsEngine;
 import org.clang.basic.FileEntry;
 import org.clang.basic.FileManager;
@@ -97,28 +98,31 @@ public final class CsmJClankSerivicesImpl {
     }
     
     public static void dumpTokens(NativeFileItem nfi) {
-        Preprocessor /*&*/ PP = getPreprocessor(nfi);
+        raw_ostream llvm_err = llvm.errs();
+        Preprocessor /*&*/ PP = getPreprocessor(nfi, llvm_err);
         if (PP != null) {
             // Start preprocessing the specified input file.
             Token Tok/*J*/ = new Token();
             PP.EnterMainSourceFile();
             do {
                 PP.Lex(Tok);
-                PP.DumpToken(Tok, true);
-                llvm.errs().$out($("\n"));
+                PP.DumpToken(Tok, true, llvm_err);
+                llvm_err.$out($("\n"));
             } while (Tok.isNot(tok.TokenKind.eof));
         }
     }
 
-    public static long dumpPreprocessed(NativeFileItem nfi, PrintWriter printOut, 
+    public static long dumpPreprocessed(NativeFileItem nfi, 
+            PrintWriter printOut, OutputWriter err, 
             boolean printTokens,
             boolean printStatistics) {
         clearStatistics();
         raw_ostream llvm_out = new PrintWriter_ostream(printOut);
+        raw_ostream llvm_err = (err != null) ? new PrintWriter_ostream(err) : llvm_out;
         final PrintStream java_out = new PrintStream(new WriterOutputStream(printOut));
         long time = System.currentTimeMillis();
         boolean done = false;
-        Preprocessor /*&*/ PP = getPreprocessor(nfi);
+        Preprocessor /*&*/ PP = getPreprocessor(nfi, llvm_err);
         if (PP != null) {
             PreprocessorOutputOptions Opts = createPPOptions(nfi);
             try {
@@ -128,16 +132,25 @@ public final class CsmJClankSerivicesImpl {
                 if (printStatistics) {
                     PrintStatistics(PP, nfi, llvm_out, java_out);
                 }
-                PP.$destroy();
-                PP.getHeaderSearchInfo().$destroy();
-                PP.getModuleLoader().$destroy();
+                cleanUp(PP);
             } finally {
                 llvm_out.flush();
                 printOut.flush();
                 llvm.errs().flush();
+                llvm_err.flush();
             }
         }
         return done ? time : 0;
+    }
+
+    private static void cleanUp(Preprocessor PP) {
+        DiagnosticConsumer client = PP.getDiagnostics().getClient();
+        if (client != null) {
+            client.EndSourceFile();
+        }
+        PP.$destroy();
+        PP.getHeaderSearchInfo().$destroy();
+        PP.getModuleLoader().$destroy();
     }
 
     private static void clearStatistics() {
@@ -146,20 +159,20 @@ public final class CsmJClankSerivicesImpl {
     
     private static void PrintStatistics(Preprocessor PP, NativeFileItem nfi, raw_ostream llvm_out, PrintStream javaOut) {
         if (NativeTrace.STATISTICS) {
-          llvm.errs().$out("\nSTATISTICS FOR '").$out(nfi.getAbsolutePath()).$out("':\n");
-          PP.PrintStats();
-          PP.getIdentifierTable().PrintStats();
-          PP.getHeaderSearchInfo().PrintStats();
-          PP.getSourceManager().PrintStats();
-          llvm.errs().$out("\n");
+          llvm_out.$out("\nSTATISTICS FOR '").$out(nfi.getAbsolutePath()).$out("':\n");
+          PP.PrintStats(llvm_out);
+          PP.getIdentifierTable().PrintStats(llvm_out);
+          PP.getHeaderSearchInfo().PrintStats(llvm_out);
+          PP.getSourceManager().PrintStats(llvm_out);
+          llvm_out.$out("\n");
           org.clang.frontendtool.ClangGlobals.PrintStats(llvm_out, javaOut);
         } else {
           javaOut.println("Statistics was not gathered");
         } 
     }
     
-    private static Preprocessor getPreprocessor(NativeFileItem nfi) {
-        PreprocessorInitializer initializer = new AdvancedPreprocessorInitializer(nfi);
+    private static Preprocessor getPreprocessor(NativeFileItem nfi, raw_ostream llvm_err) {
+        PreprocessorInitializer initializer = new AdvancedPreprocessorInitializer(nfi, llvm_err);
         VoidModuleLoader ModLoader/*J*/ = new VoidModuleLoader();
         Preprocessor PP/*J*/ = initializer.createPreprocessor(ModLoader);
         

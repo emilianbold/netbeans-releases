@@ -58,6 +58,8 @@ import org.clang.lex.ModuleLoader;
 import org.clang.lex.Preprocessor;
 import org.clang.lex.PreprocessorOptions;
 import org.llvm.adt.IntrusiveRefCntPtr;
+import org.llvm.support.llvm;
+import org.llvm.support.raw_ostream;
 
 /**
  *
@@ -73,18 +75,23 @@ class DefaultPreprocessorInitializer implements CsmJClankSerivicesImpl.Preproces
     protected final LangOptions LangOpts;
     protected final IntrusiveRefCntPtr<TargetOptions> TargetOpts;
     protected final IntrusiveRefCntPtr<TargetInfo> Target;
+    protected final raw_ostream err;
 
-    public DefaultPreprocessorInitializer() {
+    public DefaultPreprocessorInitializer(raw_ostream llvm_err) {
+        this.err = (llvm_err == null) ? llvm.errs() : llvm_err;
         this.FileMgrOpts = new FileSystemOptions();
         this.FileMgr = new FileManager(FileMgrOpts);
         this.DiagID = new IntrusiveRefCntPtr<>(new DiagnosticIDs());
-        this.Diags = new DiagnosticsEngine(DiagID, new DiagnosticOptions(), new TraceDiagnosticConsumer());
+        DiagnosticOptions dOpts = new DiagnosticOptions();
+        this.DiagnosticConsumer = new TraceDiagnosticConsumer(this.err, dOpts);
+        this.Diags = new DiagnosticsEngine(DiagID, dOpts, DiagnosticConsumer);
         this.SourceMgr = new SourceManager(Diags, FileMgr);
         this.LangOpts = new LangOptions();
         this.TargetOpts = new IntrusiveRefCntPtr<>(new TargetOptions());
         this.Target = new IntrusiveRefCntPtr<>();
         //END JInit
     }
+    private final TraceDiagnosticConsumer DiagnosticConsumer;
 
     @Override
     public Preprocessor createPreprocessor(ModuleLoader ModLoader) {
@@ -93,6 +100,7 @@ class DefaultPreprocessorInitializer implements CsmJClankSerivicesImpl.Preproces
         HeaderSearch HS = new HeaderSearch(new IntrusiveRefCntPtr<>(HSOpts), SourceMgr, Diags, LangOpts, Target.getPtr());
 //            ClangGlobals.ApplyHeaderSearchOptions(HS, HSOpts, LangOpts, Target.getPtr().getTriple());
         Preprocessor PP = new Preprocessor(new IntrusiveRefCntPtr<>(PPOpts), Diags, LangOpts, Target.getPtr(), SourceMgr, HS, ModLoader, null, false, false);
+        Diags.getClient().BeginSourceFile(LangOpts, PP);
         ClangGlobals.InitializePreprocessor(PP, PPOpts, HSOpts, new FrontendOptions());
         return PP;
     }

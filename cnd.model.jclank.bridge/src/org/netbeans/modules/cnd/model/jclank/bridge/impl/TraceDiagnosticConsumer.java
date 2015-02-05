@@ -44,20 +44,49 @@ package org.netbeans.modules.cnd.model.jclank.bridge.impl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.clang.basic.Diagnostic;
+import org.clang.basic.DiagnosticOptions;
 import org.clang.basic.DiagnosticsEngine;
+import org.clang.basic.LangOptions;
 import org.clang.basic.PresumedLoc;
+import org.clang.basic.spi.PreprocessorImplementation;
+import org.clang.frontend.TextDiagnosticPrinter;
 import org.clank.java.std;
 import org.clank.support.Native;
 import org.llvm.adt.aliases.SmallVectorChar;
+import org.llvm.support.raw_ostream;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class TraceDiagnosticConsumer extends /*public*/ org.clang.basic.DiagnosticConsumer {
+public class TraceDiagnosticConsumer extends /*public*/ TextDiagnosticPrinter {
+    private boolean insideSourceFile = false;
+    private final raw_ostream out;
+    
+    public TraceDiagnosticConsumer(raw_ostream /*&*/ os, DiagnosticOptions /*P*/ diags) {
+        super(os, diags, false);
+        assert os != null;
+        this.out = os;
+    }
+
+    @Override
+    public /*virtual*/ void BeginSourceFile(/*const*//*const*/LangOptions /*&*/ LangOpts, /*const*/PreprocessorImplementation /*P*/ PP) {
+        super.BeginSourceFile(LangOpts, PP); 
+        insideSourceFile = true;
+    }
+    
+    @Override
+    public void EndSourceFile() {
+        insideSourceFile = false;
+        super.EndSourceFile(); 
+    }
     
     @Override
     public void HandleDiagnostic(DiagnosticsEngine.Level DiagLevel, Diagnostic Info) {
+        if (insideSourceFile) {
+            super.HandleDiagnostic(DiagLevel, Info);
+            return;
+        }
         SmallVectorChar out = new SmallVectorChar(1024);
         Info.FormatDiagnostic(out);
         String Loc = "";
