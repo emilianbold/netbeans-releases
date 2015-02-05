@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.model.jclank.bridge.impl;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.logging.Level;
 import static org.clang.basic.ClangGlobals.$out_DiagnosticBuilder_StringRef;
 import org.clang.basic.DiagnosticsEngine;
@@ -72,9 +73,12 @@ import org.clank.support.NativeTrace;
 import org.llvm.adt.StringRef;
 import org.llvm.support.llvm;
 import org.llvm.support.raw_ostream;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.model.jclank.trace.WriterOutputStream;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -87,6 +91,11 @@ public final class CsmJClankSerivicesImpl {
         throw new UnsupportedOperationException();
     }
 
+    public static void preprocess(Collection<NativeProject> projects, 
+            OutputWriter out, OutputWriter err, ProgressHandle handle) {
+        
+    }
+    
     public static void dumpTokens(NativeFileItem nfi) {
         Preprocessor /*&*/ PP = getPreprocessor(nfi);
         if (PP != null) {

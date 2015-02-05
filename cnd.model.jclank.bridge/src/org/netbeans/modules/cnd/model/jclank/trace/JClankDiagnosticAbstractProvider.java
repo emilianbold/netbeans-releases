@@ -55,31 +55,29 @@ import org.openide.util.Lookup;
  *
  * @author Vladimir Voskresensky
  */
-public class CsmJClankTracePreprocessorAction {
-
-    protected static abstract class JClankAbstractDiagnosticProvider implements CndDiagnosticProvider {
-
-        @Override
-        public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<? extends DataObject> allFiles = context.lookupAll(DataObject.class);
-            Set<NativeFileItem> nfis = new LinkedHashSet<>();
-            for (DataObject dob : allFiles) {
-                NativeFileItemSet nfs = dob.getLookup().lookup(NativeFileItemSet.class);
-                if (nfs == null) {
-                    printOut.printf("NO NativeFileItemSet in %s %n", dob);
-                    continue;
-                }
-                if (nfs.isEmpty()) {
-                    printOut.printf("EMPTY NativeFileItemSet in %s %n", dob);
-                    continue;
-                }
-                for (NativeFileItem nfi : nfs.getItems()) {
-                    nfis.add(nfi);
-                }
+abstract class JClankDiagnosticAbstractProvider implements CndDiagnosticProvider {
+    
+    @Override
+    public void dumpInfo(Lookup context, PrintWriter printOut) {
+        Collection<? extends DataObject> allFiles = context.lookupAll(DataObject.class);
+        Set<NativeFileItem> nfis = new LinkedHashSet<>();
+        for (DataObject dob : allFiles) {
+            NativeFileItemSet nfs = dob.getLookup().lookup(NativeFileItemSet.class);
+            if (nfs == null) {
+                printOut.printf("NO NativeFileItemSet in %s %n", dob);
+                continue;
             }
-            dumpNativeFileItems(nfis, printOut);
+            if (nfs.isEmpty()) {
+                printOut.printf("EMPTY NativeFileItemSet in %s %n", dob);
+                continue;
+            }
+            for (NativeFileItem nfi : nfs.getItems()) {
+                nfis.add(nfi);
+            }
         }
+        dumpNativeFileItems(nfis, printOut);
+    }
 
-        protected abstract void dumpNativeFileItems(Set<NativeFileItem> nfis, PrintWriter printOut);
-    }   
+    protected abstract void dumpNativeFileItems(Set<NativeFileItem> nfis, PrintWriter printOut);
+    
 }

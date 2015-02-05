@@ -54,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Vladimir Voskresensky
  */
-public abstract class JClankPreprocessFile extends CsmJClankTracePreprocessorAction.JClankAbstractDiagnosticProvider {
+public abstract class JClankPreprocessFile extends JClankDiagnosticAbstractProvider {
     
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 108)
     public static final class JClankOnlyExpandTokensWOStatistics extends JClankPreprocessFile {
@@ -110,8 +110,8 @@ public abstract class JClankPreprocessFile extends CsmJClankTracePreprocessorAct
         }        
     }    
     
-    private final boolean printTokens;
-    private final boolean printStatistics;
+    final boolean printTokens;
+    final boolean printStatistics;
 
     public JClankPreprocessFile(boolean printTokens, boolean printStatistics) {
         this.printTokens = printTokens;
