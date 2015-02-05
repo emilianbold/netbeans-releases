@@ -54,6 +54,20 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="javaPackageTargetChooser">
+          <api name="templates"/>
+          <summary>Package like Target Chooser for HTML Wizards</summary>
+          <version major="1" minor="3"/>
+          <date day="5" month="2" year="2015"/>
+          <author login="jtulach"/>
+          <compatibility addition="yes" deletion="no" binary="compatible" 
+                         source="compatible" deprecation="yes"/>
+          <description>
+              One can use <a href="@TOP@/overview-summary.html#javaTargetChooser">targetChooser:java</a>
+              to request Java-like target chooser showing java packages.
+          </description>
+          <issue number="249891"/>
+      </change>
       <change id="htmlui.templates">
           <api name="templates"/>
           <summary>HTML UI for Templates</summary>
