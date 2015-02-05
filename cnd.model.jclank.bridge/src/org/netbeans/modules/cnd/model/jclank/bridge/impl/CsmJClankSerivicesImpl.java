@@ -119,6 +119,9 @@ public final class CsmJClankSerivicesImpl {
                 if (printStatistics) {
                     PrintStatistics(PP, nfi, llvm_out, java_out);
                 }
+                PP.$destroy();
+                PP.getHeaderSearchInfo().$destroy();
+                PP.getModuleLoader().$destroy();
             } finally {
                 llvm_out.flush();
                 printOut.flush();
