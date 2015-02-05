@@ -80,7 +80,7 @@ public final class ClassIndexManager {
     private final Map<URL, ClassIndexImpl> transientInstances = new HashMap<URL, ClassIndexImpl> ();
     private final InternalLock internalLock = new InternalLock();
     private final Map<ClassIndexManagerListener,Void> listeners = Collections.synchronizedMap(new IdentityHashMap<ClassIndexManagerListener, Void>());
-    private boolean invalid;
+    private boolean closed;
 
 
     private ClassIndexManager() {
@@ -104,7 +104,7 @@ public final class ClassIndexManager {
             public void run() {
                 synchronized (internalLock) {
                     assert root != null;
-                    if (invalid) {
+                    if (closed) {
                         return;
                     }
                     Pair<ClassIndexImpl,Boolean> pair = getClassIndex(root, beforeCreateAllowed, false);
@@ -185,7 +185,7 @@ public final class ClassIndexManager {
         Parameters.notNull("root", root);   //NOI18N
         Parameters.notNull("cietx", cietx); //NOI18N
         synchronized (internalLock) {
-            if (invalid) {
+            if (closed) {
                 return null;
             }
             Pair<ClassIndexImpl,Boolean> pair = getClassIndex (root, true, true);
@@ -237,7 +237,7 @@ public final class ClassIndexManager {
 
     public void close () {
         synchronized (internalLock) {
-            invalid = true;
+            closed = true;
             for (ClassIndexImpl ci : instances.values()) {
                 try {
                     ci.close();

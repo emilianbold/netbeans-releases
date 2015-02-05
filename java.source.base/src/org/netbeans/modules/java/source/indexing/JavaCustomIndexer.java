@@ -183,7 +183,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                             sourcePath,
                             Collections.<CompileTuple>emptySet());
                     try {
-                        javaContext.getClassIndexImpl().setDirty(null);
+                        final ClassIndexImpl cii = javaContext.getClassIndexImpl();
+                        if (cii != null) {  //Null when IDE is exiting, indeces are already closed.
+                            cii.setDirty(null);
+                        }
                     } finally {
                         javaContext.finish();
                     }
@@ -193,7 +196,6 @@ public class JavaCustomIndexer extends CustomIndexer {
                         JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                     }
                 }
-                
             } else {
                 final List<Indexable> javaSources = new ArrayList<Indexable>();
                 final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
@@ -215,9 +217,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                     if (context.isAllFilesIndexing()) {
                         cleanUpResources(context, fmTx);
                     }
-                    if (javaContext.getClassIndexImpl() == null)
+                    if (javaContext.getClassIndexImpl() == null) {
                         return; //IDE is exiting, indeces are already closed.
-
+                    }
                     javaContext.getClassIndexImpl().setDirty(null);
                     final SourceFileManager.ModifiedFilesTransaction mftx = txCtx.get(SourceFileManager.ModifiedFilesTransaction.class);
                     for (Indexable i : javaSources) {
