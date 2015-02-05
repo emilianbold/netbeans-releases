@@ -44,9 +44,9 @@ Contributor(s):
             <file name="CMTraceIndexAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.codemodel.bridge.trace.CMTraceIndexAction"/>
             </file>
-            <file name="CMTracePreprocessorAction.instance">
+<!--            <file name="CMTracePreprocessorAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.codemodel.bridge.trace.CMTracePreprocessorAction"/>
-            </file>
+            </file>-->
         </folder>
     </folder>
     <folder name="NativeProjects">
@@ -55,10 +55,10 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/CMTraceIndexAction.instance"/>
                 <attr name="position" intvalue="5300"/>
             </file>            
-            <file name="org.netbeans.modules.cnd.codemodel.bridge.trace.CMTracePreprocessorAction.shadow">
+<!--            <file name="org.netbeans.modules.cnd.codemodel.bridge.trace.CMTracePreprocessorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/CMTracePreprocessorAction.instance"/>
                 <attr name="position" intvalue="31"/>
-            </file>            
+            </file>            -->
         </folder>
     </folder>
 </filesystem>
