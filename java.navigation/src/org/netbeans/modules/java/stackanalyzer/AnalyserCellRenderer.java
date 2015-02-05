@@ -48,12 +48,6 @@ import javax.swing.JList;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-
-import javax.swing.text.AttributeSet;
-import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link;
 
 
@@ -63,12 +57,7 @@ import org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link;
  */
 class AnalyserCellRenderer extends DefaultListCellRenderer {
 
-    private Color               foreground;
-
     public AnalyserCellRenderer () {
-        FontColorSettings fontColorSettings = MimeLookup.getLookup (MimePath.EMPTY).lookup (FontColorSettings.class);
-        AttributeSet attributeSet = fontColorSettings.getFontColors ("hyperlinks");
-        foreground = (Color) attributeSet.getAttribute (StyleConstants.Foreground);
     }
 
     private static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
