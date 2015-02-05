@@ -4640,31 +4640,31 @@ postfix_cv_qualifier
 
 protected
 unnamed_ptr_operator
-	:	(	AMPERSAND 	{is_address = true;}
-                |       AND {is_address = true;} // r-value reference
-		|	literal_cdecl 
-		|	literal_near
-		|	literal_far 
-		|	LITERAL___interrupt 
-		|	literal_pascal 
-		|	literal_stdcall
-                |       literal_clrcall
-		|	STAR 
-		)	
+	:	(   AMPERSAND 	{is_address = true;}
+        |   AND {is_address = true;} // r-value reference
+        |   literal_cdecl 
+        |   literal_near
+        |   literal_far 
+        |   LITERAL___interrupt 
+        |   literal_pascal 
+        |   literal_stdcall
+        |   literal_clrcall
+        |   STAR 
+        )	
    ;
 
 ptr_operator
-	:	(	AMPERSAND 	{is_address = true;}
-                |       AND {is_address = true;} // r-value reference
-		|	literal_cdecl 
-		|	literal_near
-		|	literal_far 
-		|	LITERAL___interrupt 
-		|	literal_pascal 
-		|	literal_stdcall
-                |       literal_clrcall
-		|	ptr_to_member	// e.g. STAR 
-		)	
+	:	(   AMPERSAND 	{is_address = true;}
+        |   AND {is_address = true;} // r-value reference
+        |   literal_cdecl 
+        |   literal_near
+        |   literal_far 
+        |   LITERAL___interrupt 
+        |   literal_pascal 
+        |   literal_stdcall
+        |   literal_clrcall
+        |   ptr_to_member	// e.g. STAR 
+        )	
 		{#ptr_operator=#(#[CSM_PTR_OPERATOR,"CSM_PTR_OPERATOR"], #ptr_operator);}
    ;
 
