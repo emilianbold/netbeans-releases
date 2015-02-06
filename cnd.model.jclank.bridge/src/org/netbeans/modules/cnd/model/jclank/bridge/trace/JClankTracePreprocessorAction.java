@@ -42,9 +42,12 @@
 package org.netbeans.modules.cnd.model.jclank.bridge.trace;
 
 import java.util.Collection;
+import java.util.Collections;
+import org.llvm.support.raw_ostream;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
+import org.netbeans.modules.cnd.model.jclank.bridge.impl.PrintWriter_ostream;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -64,6 +67,15 @@ public class JClankTracePreprocessorAction extends JClankTraceProjectAbstractAct
 
     @Override
     protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, ProgressHandle handle) {
-        CsmJClankSerivicesImpl.preprocess(projects, out, err, handle);
+        raw_ostream llvm_out = new PrintWriter_ostream(out);
+        raw_ostream llvm_err = new PrintWriter_ostream(err);
+        try {
+            for (NativeProject project : projects) {
+                CsmJClankSerivicesImpl.preprocess(Collections.singleton(project), llvm_out, llvm_err, handle);
+            }
+        } finally {
+            llvm_out.flush();
+            llvm_err.flush();
+        }
     }
 }
