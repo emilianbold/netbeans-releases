@@ -140,7 +140,7 @@ public class DebuggerOutput implements PropertyChangeListener {
             this
         );
         debugger = null;
-        ioManager = null;
+        //ioManager = null; - leave it for late writes, it closes with a delay.
     }
 
     /*
