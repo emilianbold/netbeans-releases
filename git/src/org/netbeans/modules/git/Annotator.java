@@ -125,15 +125,19 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
 
     private final FileStatusCache cache;
     public static final String ACTIONS_PATH_PREFIX = "Actions/Git/";                        // NOI18N
-    static final String DEFAULT_ANNOTATION_PROJECT = "[{repository_state} {branch}]"; //NOI18N
+    static final String DEFAULT_ANNOTATION_PROJECT = "[{repository_state} {branch} {tracking_status}]"; //NOI18N
+    
+    private static final String LABEL_VARIABLE_TRACKING = "tracking_status"; //NOI18N
     
     @NbBundle.Messages({
         "Annotator.variable.repositoryState=stands for repository state",
+        "Annotator.variable.trackingStatus=number of incoming and outgoing changes",
         "Annotator.variable.branch=stands for the current branch label"
     })
     private static final LabelVariables PROJECT_ANNOTATION_VARIABLES = new LabelVariables(
             new LabelVariable("repository_state", "{repository_state}", Bundle.Annotator_variable_repositoryState()),
-            new LabelVariable("branch", "{branch}", Bundle.Annotator_variable_branch()));
+            new LabelVariable("branch", "{branch}", Bundle.Annotator_variable_branch()),
+            new LabelVariable(LABEL_VARIABLE_TRACKING, "{tracking_status}", Bundle.Annotator_variable_trackingStatus()));
 
     public Annotator() {
         cache = Git.getInstance().getFileStatusCache();
@@ -350,6 +354,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
 
     @NbBundle.Messages({
         "# {0} - branch name", "MSG_Annotator.tooltip.branch=On branch \"{0}\".",
+        "MSG_Annotator.tooltip.branch.withTracking=On branch \"{0}\": {1}.",
         "MSG_Annotator.tooltip.nobranch=Not on a branch (detached HEAD state)."
     })
     private Image annotateFolderIcon(VCSContext context, Image icon) {
@@ -383,7 +388,12 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 if (branchName == GitBranch.NO_BRANCH) { // do not use equals
                     branchLabel += Bundle.MSG_Annotator_tooltip_nobranch();
                 } else {
-                    branchLabel += Bundle.MSG_Annotator_tooltip_branch(branchName);
+                    RepositoryInfo.TrackingInfo tracking = info.getTracking();
+                    if (tracking.isKnown()) {
+                        branchLabel += Bundle.MSG_Annotator_tooltip_branch_withTracking(branchName, tracking.getDescription());
+                    } else {
+                        branchLabel += Bundle.MSG_Annotator_tooltip_branch(branchName);
+                    }
                 }
             }
         }
@@ -448,13 +458,36 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             }
             GitRepositoryState repositoryState = info.getRepositoryState();
             String format = getAnnotationProjectFormat();
-            if (repositoryState != GitRepositoryState.SAFE) {
-                folderAnnotation = MessageFormat.format(format, repositoryState.toString(), branchLabel);
-            } else {
-                format = format.replace("{0} ", "{0}"); //NOI18N
-                folderAnnotation = MessageFormat.format(format, "", branchLabel); //NOI18N
+            String trackingStatus = ""; //NOI18N
+            if (hasAnnotationFor(LABEL_VARIABLE_TRACKING)) {
+                RepositoryInfo.TrackingInfo tracking = info.getTracking();
+                int in = tracking.getIncomingCommits();
+                int out = tracking.getOutgoingCommits();
+                StringBuilder sb = new StringBuilder();
+                if (out > 0) {
+                    sb.append('\u2191').append(out);
+                }
+                if (in > 0) {
+                    if (sb.length() > 0) {
+                        sb.append(' ');
+                    }
+                    sb.append('\u2193').append(in);
+                }
+                trackingStatus = sb.toString();
             }
-            folderAnnotation = folderAnnotation.replace("  ", " "); //NOI18N
+            String repositoryStateStr = repositoryState == GitRepositoryState.SAFE
+                    ? ""
+                    : repositoryState.toString();
+            if (repositoryStateStr.isEmpty()) {
+                format = format.replaceAll("\\{0\\} | \\{0\\}", "\\{0\\}"); //NOI18N
+            }
+            if (branchLabel.isEmpty()) {
+                format = format.replaceAll("\\{1\\} | \\{1\\}", "\\{1\\}"); //NOI18N
+            }
+            if (trackingStatus.isEmpty()) {
+                format = format.replaceAll("\\{2\\} | \\{2\\}", "\\{2\\}"); //NOI18N
+            }
+            folderAnnotation = MessageFormat.format(format, repositoryStateStr, branchLabel, trackingStatus);
         }
 
         MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
@@ -478,7 +511,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     @Override
     public void propertyChange (final PropertyChangeEvent evt) {
         if (evt.getPropertyName() == RepositoryInfo.PROPERTY_ACTIVE_BRANCH || evt.getPropertyName() == RepositoryInfo.PROPERTY_STATE
-                || evt.getPropertyName() == RepositoryInfo.PROPERTY_HEAD && ((GitBranch) evt.getNewValue()).getName() == GitBranch.NO_BRANCH) {
+                || evt.getPropertyName() == RepositoryInfo.PROPERTY_HEAD && ((GitBranch) evt.getNewValue()).getName() == GitBranch.NO_BRANCH
+                || evt.getPropertyName() == RepositoryInfo.PROPERTY_TRACKING_INFO && hasAnnotationFor(LABEL_VARIABLE_TRACKING)) {
             Utils.post(new Runnable() {
                 @Override
                 public void run() {
@@ -620,6 +654,11 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             }
         }
         return projectFormat;
+    }
+
+    private boolean hasAnnotationFor (String variable) {
+        return DEFAULT_ANNOTATION_PROJECT.equals(getAnnotationProjectFormat())
+                || GitModuleConfig.getDefault().getProjectAnnotationFormat().contains(variable);
     }
     
     @NbBundle.Messages({
