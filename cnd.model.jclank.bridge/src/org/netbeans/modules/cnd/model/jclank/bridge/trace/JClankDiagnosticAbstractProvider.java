@@ -39,43 +39,45 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.model.jclank.trace;
+package org.netbeans.modules.cnd.model.jclank.bridge.trace;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class WriterOutputStream extends OutputStream {
-    private final Writer writer;
-
-    public WriterOutputStream(Writer writer) {
-        this.writer = writer;
-    }
-
+abstract class JClankDiagnosticAbstractProvider implements CndDiagnosticProvider {
+    
     @Override
-    public void write(int b) throws IOException {
-        // It's tempting to use writer.write((char) b), but that may get the encoding wrong
-        // This is inefficient, but it works
-        write(new byte[]{(byte) b}, 0, 1);
+    public void dumpInfo(Lookup context, PrintWriter printOut) {
+        Collection<? extends DataObject> allFiles = context.lookupAll(DataObject.class);
+        Set<NativeFileItem> nfis = new LinkedHashSet<>();
+        for (DataObject dob : allFiles) {
+            NativeFileItemSet nfs = dob.getLookup().lookup(NativeFileItemSet.class);
+            if (nfs == null) {
+                printOut.printf("NO NativeFileItemSet in %s %n", dob);
+                continue;
+            }
+            if (nfs.isEmpty()) {
+                printOut.printf("EMPTY NativeFileItemSet in %s %n", dob);
+                continue;
+            }
+            for (NativeFileItem nfi : nfs.getItems()) {
+                nfis.add(nfi);
+            }
+        }
+        doNativeFileItemDiagnostic(nfis, printOut);
     }
 
-    @Override
-    public void write(byte[] b, int off, int len) throws IOException {
-        writer.write(new String(b, off, len));
-    }
-
-    @Override
-    public void flush() throws IOException {
-        writer.flush();
-    }
-
-    @Override
-    public void close() throws IOException {
-        writer.close();
-    }
+    protected abstract void doNativeFileItemDiagnostic(Set<NativeFileItem> nfis, PrintWriter printOut);
     
 }

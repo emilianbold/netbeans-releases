@@ -39,45 +39,31 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.model.jclank.trace;
+package org.netbeans.modules.cnd.model.jclank.bridge.trace;
 
-import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle;
+import org.openide.windows.OutputWriter;
 
-/**
- *
- * @author Vladimir Voskresensky
- */
-abstract class JClankDiagnosticAbstractProvider implements CndDiagnosticProvider {
+@ActionID(id = "JClankTracePreprocessorAction", category = "NativeProjectCodeAssistance")
+@ActionRegistration(lazy = false, displayName = "#CTL_JClankTracePreprocessorAction")
+@ActionReference(path = "NativeProjects/CodeAssistanceActions", position = 31)
+@NbBundle.Messages("CTL_JClankTracePreprocessorAction=Preprocess with JClank")
+public class JClankTracePreprocessorAction extends JClankTraceProjectAbstractAction {
     
     @Override
-    public void dumpInfo(Lookup context, PrintWriter printOut) {
-        Collection<? extends DataObject> allFiles = context.lookupAll(DataObject.class);
-        Set<NativeFileItem> nfis = new LinkedHashSet<>();
-        for (DataObject dob : allFiles) {
-            NativeFileItemSet nfs = dob.getLookup().lookup(NativeFileItemSet.class);
-            if (nfs == null) {
-                printOut.printf("NO NativeFileItemSet in %s %n", dob);
-                continue;
-            }
-            if (nfs.isEmpty()) {
-                printOut.printf("EMPTY NativeFileItemSet in %s %n", dob);
-                continue;
-            }
-            for (NativeFileItem nfi : nfs.getItems()) {
-                nfis.add(nfi);
-            }
-        }
-        doNativeFileItemDiagnostic(nfis, printOut);
-    }
+    public final String getName() {
+      return NbBundle.getMessage(getClass(), ("CTL_JClankTracePreprocessorAction")); // NOI18N
+    }    
 
-    protected abstract void doNativeFileItemDiagnostic(Set<NativeFileItem> nfis, PrintWriter printOut);
-    
+    @Override
+    protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, ProgressHandle handle) {
+        CsmJClankSerivicesImpl.preprocess(projects, out, err, handle);
+    }
 }

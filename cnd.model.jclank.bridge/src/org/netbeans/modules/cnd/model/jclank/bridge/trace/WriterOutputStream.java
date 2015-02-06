@@ -39,31 +39,43 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.model.jclank.trace;
+package org.netbeans.modules.cnd.model.jclank.bridge.trace;
 
-import java.util.Collection;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle;
-import org.openide.windows.OutputWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
 
-@ActionID(id = "JClankTracePreprocessorAction", category = "NativeProjectCodeAssistance")
-@ActionRegistration(lazy = false, displayName = "#CTL_JClankTracePreprocessorAction")
-@ActionReference(path = "NativeProjects/CodeAssistanceActions", position = 31)
-@NbBundle.Messages("CTL_JClankTracePreprocessorAction=Preprocess with JClank")
-public class JClankTracePreprocessorAction extends JClankTraceProjectAbstractAction {
-    
-    @Override
-    public final String getName() {
-      return NbBundle.getMessage(getClass(), ("CTL_JClankTracePreprocessorAction")); // NOI18N
-    }    
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public class WriterOutputStream extends OutputStream {
+    private final Writer writer;
 
-    @Override
-    protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, ProgressHandle handle) {
-        CsmJClankSerivicesImpl.preprocess(projects, out, err, handle);
+    public WriterOutputStream(Writer writer) {
+        this.writer = writer;
     }
+
+    @Override
+    public void write(int b) throws IOException {
+        // It's tempting to use writer.write((char) b), but that may get the encoding wrong
+        // This is inefficient, but it works
+        write(new byte[]{(byte) b}, 0, 1);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        writer.write(new String(b, off, len));
+    }
+
+    @Override
+    public void flush() throws IOException {
+        writer.flush();
+    }
+
+    @Override
+    public void close() throws IOException {
+        writer.close();
+    }
+    
 }

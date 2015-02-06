@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.model.jclank.trace;
+package org.netbeans.modules.cnd.model.jclank.bridge.trace;
 
 import java.io.IOException;
 import java.io.OutputStream;

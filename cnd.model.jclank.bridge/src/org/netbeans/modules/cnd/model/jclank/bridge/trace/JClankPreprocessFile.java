@@ -39,14 +39,14 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.model.jclank.trace;
+package org.netbeans.modules.cnd.model.jclank.bridge.trace;
 
 import java.io.PrintWriter;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
-import static org.netbeans.modules.cnd.model.jclank.trace.Bundle.*;
+import static org.netbeans.modules.cnd.model.jclank.bridge.trace.Bundle.*;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
