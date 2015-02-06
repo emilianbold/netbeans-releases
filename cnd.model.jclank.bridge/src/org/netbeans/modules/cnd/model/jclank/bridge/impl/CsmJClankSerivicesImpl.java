@@ -44,6 +44,9 @@ package org.netbeans.modules.cnd.model.jclank.bridge.impl;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import static org.clang.basic.ClangGlobals.$out_DiagnosticBuilder_StringRef;
 import org.clang.basic.DiagnosticConsumer;
@@ -93,8 +96,52 @@ public final class CsmJClankSerivicesImpl {
     }
 
     public static void preprocess(Collection<NativeProject> projects, 
-            OutputWriter out, OutputWriter err, ProgressHandle handle) {
-        
+            raw_ostream out, raw_ostream err, ProgressHandle handle) {
+        assert out != null;
+        assert err != null;
+        clearStatistics();
+        for (NativeProject project : projects) {
+            err.$out("START ").$out(project.getProjectDisplayName()).$out("\n");
+            handle.setDisplayName("Preprocess " + project.getProjectDisplayName());
+            handle.switchToIndeterminate();
+            Set<NativeFileItem> srcFiles = new TreeSet<>(new NFIComparator());
+            for (NativeFileItem nfi : project.getAllFiles()) {
+                if (!nfi.isExcluded()) {
+                    switch (nfi.getLanguage()) {
+                        case C:
+                        case CPP:
+                            srcFiles.add(nfi);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            int size = srcFiles.size();
+            handle.switchToDeterminate(size, (int)(0.5/*sec*/ * size));
+            int doneFiles = 0;
+            int totalTime = 0;
+            for (NativeFileItem srcFile : srcFiles) {
+                handle.progress(srcFile.getAbsolutePath() + ("(" + (doneFiles+1) + " of " + size + ")") , doneFiles++);
+                try {
+                    long time = dumpPreprocessed(srcFile, out, err, false, false);
+                    totalTime+=time;
+                    err.$out("done  ").$out(srcFile.getAbsolutePath()).$out(" ").$out(NativeTrace.formatNumber(time)).$out("ms").$out("\n").flush();
+                } catch (Throwable e) {
+                    PrintWriter exErr = tryExtractPrintWriter(err);
+                    Exception exc = new Exception("ERROR " + srcFile.getAbsolutePath(), e);
+                    if (exErr == null) {
+                        exc.printStackTrace(System.err);
+                    } else {
+                        exc.printStackTrace(exErr);
+                    }
+                }
+            }
+            err.$out("DONE  ").$out(project.getProjectDisplayName()).$out(" ").$out(NativeTrace.formatNumber(totalTime)).$out("ms").$out("\n").flush();
+        }
+        if (true) {
+            PrintJClankStatistics(err);
+        }        
     }
     
     public static void dumpTokens(NativeFileItem nfi) {
@@ -113,30 +160,39 @@ public final class CsmJClankSerivicesImpl {
     }
 
     public static long dumpPreprocessed(NativeFileItem nfi, 
-            PrintWriter printOut, OutputWriter err, 
+            PrintWriter out, OutputWriter err, 
             boolean printTokens,
             boolean printStatistics) {
         clearStatistics();
-        raw_ostream llvm_out = new PrintWriter_ostream(printOut);
+        assert out != null;
+        raw_ostream llvm_out = new PrintWriter_ostream(out);
         raw_ostream llvm_err = (err != null) ? new PrintWriter_ostream(err) : llvm_out;
-        final PrintStream java_out = new PrintStream(new WriterOutputStream(printOut));
+        long time = dumpPreprocessed(nfi, llvm_out, llvm_err, printTokens, printStatistics);
+        if (printStatistics) {
+            PrintJClankStatistics(llvm_out);
+        }
+        return time;
+    }
+    
+    public static long dumpPreprocessed(NativeFileItem nfi, 
+            raw_ostream llvm_out, raw_ostream llvm_err, 
+            boolean printTokens, boolean printPPStatistics) {
         long time = System.currentTimeMillis();
         boolean done = false;
-        Preprocessor /*&*/ PP = getPreprocessor(nfi, llvm_err);
+        Preprocessor /*&*/ PP = getPreprocessor(nfi, printTokens ? llvm_err : llvm.nulls());
         if (PP != null) {
             PreprocessorOutputOptions Opts = createPPOptions(nfi);
             try {
                 ClangGlobals.DoPrintPreprocessedInput(PP, printTokens ? llvm_out : llvm.nulls(), Opts);
                 time = System.currentTimeMillis() - time;
                 done = true;
-                if (printStatistics) {
-                    PrintStatistics(PP, nfi, llvm_out, java_out);
+                if (printPPStatistics) {
+                    PrintPPStatistics(PP, nfi, llvm_out);
                 }
                 cleanUp(PP);
             } finally {
-                llvm_out.flush();
-                printOut.flush();
                 llvm.errs().flush();
+                llvm_out.flush();
                 llvm_err.flush();
             }
         }
@@ -157,18 +213,43 @@ public final class CsmJClankSerivicesImpl {
         org.clang.frontendtool.ClangGlobals.clearStatistics();
     }
     
-    private static void PrintStatistics(Preprocessor PP, NativeFileItem nfi, raw_ostream llvm_out, PrintStream javaOut) {
+    private static void PrintPPStatistics(Preprocessor PP, NativeFileItem nfi, raw_ostream OS) {
+        assert PP != null;
+        assert nfi != null;
+        assert OS != null;
+        OS.$out("\nSTATISTICS FOR '").$out(nfi.getAbsolutePath()).$out("':\n");
+        PP.PrintStats(OS);
+        PP.getIdentifierTable().PrintStats(OS);
+        PP.getHeaderSearchInfo().PrintStats(OS);
+        PP.getSourceManager().PrintStats(OS);
+        OS.$out("\n");
+    }
+
+    private static void PrintJClankStatistics(raw_ostream OS) {
         if (NativeTrace.STATISTICS) {
-          llvm_out.$out("\nSTATISTICS FOR '").$out(nfi.getAbsolutePath()).$out("':\n");
-          PP.PrintStats(llvm_out);
-          PP.getIdentifierTable().PrintStats(llvm_out);
-          PP.getHeaderSearchInfo().PrintStats(llvm_out);
-          PP.getSourceManager().PrintStats(llvm_out);
-          llvm_out.$out("\n");
-          org.clang.frontendtool.ClangGlobals.PrintStats(llvm_out, javaOut);
+          PrintStream javaOS = tryExtractPrintStream(OS, System.out);
+          org.clang.frontendtool.ClangGlobals.PrintStats(OS, javaOS);
+          OS.flush();
+          javaOS.flush();
         } else {
-          javaOut.println("Statistics was not gathered");
+          OS.$out("Statistics was not gathered\n");
         } 
+    }
+
+    private static PrintWriter tryExtractPrintWriter(raw_ostream OS) {
+        PrintWriter javaOS = null;
+        if (OS instanceof PrintWriter_ostream) {
+            javaOS = ((PrintWriter_ostream)OS).getJavaDelegate();
+        }
+        return javaOS;
+    }
+
+    private static PrintStream tryExtractPrintStream(raw_ostream OS, PrintStream fallback) {
+        PrintStream javaOS = fallback;
+        if (OS instanceof PrintWriter_ostream) {
+            javaOS = new PrintStream(new WriterOutputStream(((PrintWriter_ostream)OS).getJavaDelegate()));
+        }
+        return javaOS;
     }
     
     private static Preprocessor getPreprocessor(NativeFileItem nfi, raw_ostream llvm_err) {
@@ -318,5 +399,16 @@ public final class CsmJClankSerivicesImpl {
             //END JInit
         }
 
+    }
+
+    static final class NFIComparator implements Comparator<NativeFileItem> {
+
+        public NFIComparator() {
+        }
+
+        @Override
+        public int compare(NativeFileItem o1, NativeFileItem o2) {
+            return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+        }
     }
 }
