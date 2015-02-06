@@ -361,6 +361,7 @@ I feel ${wizard.msg}.
 </p>
     </usecase>
     <usecase id="target-chooser" name="Selecting target location with HTML UI">
+        <p>
         It is very common that the HTML file creation wizards (either 
         controled by <a href="#html-and-js">JavaScript</a> or by
         <a href="#html-and-java">Java</a>) need to allow user to specify 
@@ -368,13 +369,26 @@ I feel ${wizard.msg}.
         to ensure its UI is consistent with the rest of the environment,
         one can just include following code snippet in the HTML file and
         leave its actual rendering on the system:
+        </p>
 <pre>
 &lt;<b>section</b> data-bind="step: 'targetChooser'" &gt;
 &lt;/<b>section</b>&gt;
-</pre>        
+</pre>     
+<p>   
         Such section will then be replaced by a panel which provides appropriate
         UI for choosing target directory as well as name for the newly created
         file.
+</p>
+<a name="javaTargetChooser"></a>
+<p>
+        In case one prefers more Java-like chooser, it is possible to use
+        <code>'targetChooser:java'</code> as name of the step. Then all 
+        Java source groups in target project will be listed and presented
+        in a typical Java package view selection mode. Once can use different
+        suffix than <code>java</code> to list other types of source groups.
+        This feature requires presence of <code>org.netbeans.modules.java.project.ui</code>
+        module, otherwise the target chooser falls back to classical one. 
+</p>
     </usecase>    
  </answer>
  <answer id="arch-what">
@@ -511,7 +525,12 @@ I feel ${wizard.msg}.
  </answer>
  <answer id="exec-reflection">
   <p>
-   No.
+      <api name="JavaPackageChooser" category="friend" type="import" group="java">
+          Uses reflection to access <code>JavaTemplates</code> from module
+          <code>org.netbeans.modules.java.project.ui</code> in order to
+          create Java-like package chooser. If the module is not available,
+          the wizard falls back to classical target chooser.
+      </api>
   </p>
  </answer>
  <answer id="exec-threading">

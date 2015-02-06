@@ -44,9 +44,11 @@ package org.netbeans.modules.templatesui;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -73,7 +75,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -154,9 +155,18 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             cnt = 1;
         }
         for (int i = 0; i < cnt; i++) {
-            if (steps.size() > i && "targetChooser".equals(steps.get(i))) { // NOI18N
-                panels.add(wizard.targetChooser());
-                continue;
+            if (steps.size() > i) {
+                final String panelName = steps.get(i);
+                if ("targetChooser".equals(panelName)) { // NOI18N
+                    panels.add(wizard.targetChooser());
+                    continue;
+                }
+                final String tcPrefix = "targetChooser:"; // NOI18N
+                if (panelName != null && panelName.startsWith(tcPrefix)) {
+                    WizardDescriptor.Panel<WizardDescriptor> panel = aw.getChooser(wizard, panelName.substring(tcPrefix.length()));
+                    panels.add(panel);
+                    continue;
+                }
             }
             final HTMLPanel p = new HTMLPanel(i, aw);
             panels.add(p);
@@ -395,7 +405,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             List<String> names = new ArrayList<>();
             for (Object s : obj) {
                 String id = stringOrId(s, "text", "id"); // NOI18N
-                if ("targetChooser".equals(id)) { // NOI18N
+                if (id != null && id.equals("targetChooser") || id.startsWith("targetChooser:")) { // NOI18N
                     id = Bundle.LBL_TargetPanel_Name();
                 }
                 names.add(id);
@@ -549,4 +559,37 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
     @JavaScriptBody(args = { "raw" }, body = "ko.applyBindings(raw);")
     static native void applyBindings(Object raw);
+
+    Map<String,WizardDescriptor.Panel<WizardDescriptor>> choosers;
+    WizardDescriptor.Panel<WizardDescriptor> getChooser(TemplateWizard wizard, String type) {
+        if (choosers == null) {
+            choosers = new HashMap<>();
+        }
+        WizardDescriptor.Panel<WizardDescriptor> panel = choosers.get(type);
+        
+        if (panel == null) {
+            try {
+                ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+                if (l == null) {
+                    l = Thread.currentThread().getContextClassLoader();
+                }
+                if (l == null) {
+                    l = AbstractWizard.class.getClassLoader();
+                }
+                Class<?> clazz = Class.forName("org.netbeans.spi.java.project.support.ui.templates.JavaTemplates", true, l); // NOI18N
+                Method create = clazz.getDeclaredMethod("createPackageChooser", Object.class, String.class); // NOI18N
+                create.setAccessible(true);
+                panel = (WizardDescriptor.Panel<WizardDescriptor>) create.invoke(
+                    null, wizard.getProperty("project"), type // NOI18N
+                );
+            } catch (Throwable t) {
+                LOG.log(Level.WARNING, "Cannot create targetChooser for type " + type + " using default. "
+                    + "Don't forget to include org.netbeans.modules.java.project.ui module in your application.", t
+                );
+                panel = wizard.targetChooser();
+            }
+            choosers.put(type, panel);
+        }
+        return panel;
+    }
 }
