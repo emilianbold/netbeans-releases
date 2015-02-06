@@ -1015,7 +1015,6 @@ cp_expression_list
     :
     (cp_expression) => cp_expression
     ((ws? COMMA ws? cp_expression)=>ws? COMMA ws? cp_expression)*
-    | {isScssSource()}? LPAREN ws? syncToFollow sass_map_pairs? RPAREN
     ;
 
 //expression:
@@ -1031,11 +1030,12 @@ cp_expression_list
 cp_expression
     :
     {isLessSource()}? (LBRACE ws? syncToFollow declarations? RBRACE)
-    | (cp_expression_atom
+    | (cp_expression_atom) => (cp_expression_atom
     (
         (ws? cp_expression_operator)=>(ws? cp_expression_operator ws?) cp_expression_atom
         | (ws? cp_expression_atom)=>ws? cp_expression_atom
     )*)
+    | {isScssSource()}? LPAREN ws? syncToFollow sass_map_pairs? RPAREN
     ;
 
 cp_expression_operator

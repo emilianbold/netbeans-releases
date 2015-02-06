@@ -1760,4 +1760,20 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testMultiDimensionalMaps() {
+        String source = "$type-scale: (\n"
+                + "    tiny: (\n"
+                + "        font-size: 10.24px,\n"
+                + "        base-lines: 0.5\n"
+                + "    ),\n"
+                + "    small: (\n"
+                + "        font-size: 12.8px,\n"
+                + "        base-lines: 0.75\n"
+                + "    )\n"
+                + ");\n"
+                + "";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }
