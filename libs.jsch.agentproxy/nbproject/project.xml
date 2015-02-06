@@ -66,6 +66,7 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.libs.git</friend>
+                <friend>org.netbeans.libs.git.remote</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <package>com.jcraft.jsch.agentproxy</package>
                 <package>com.jcraft.jsch.agentproxy.connector</package>
