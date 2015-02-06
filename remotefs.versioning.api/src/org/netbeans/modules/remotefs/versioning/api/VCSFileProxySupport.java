@@ -78,12 +78,10 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import static org.netbeans.modules.versioning.util.FileUtils.createInputStream;
 import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -286,6 +284,23 @@ public final class VCSFileProxySupport {
         return RemoteVcsSupport.getSize(file);
     }
     
+    public static byte[] readFully(VCSFileProxy file, int max) throws IOException {
+        InputStream inputStream = file.getInputStream(false);
+        try {
+            ByteArrayOutputStream b = new ByteArrayOutputStream();
+            int i;
+            while((i = inputStream.read()) != -1) {
+                b.write(i);
+                if (--max == 0) {
+                    break;
+                }
+            }
+            return b.toByteArray();
+        } finally {
+            inputStream.close();
+        }
+    }
+
     public static String getCanonicalPath(VCSFileProxy file) throws IOException {
         return RemoteVcsSupport.getCanonicalPath(file);
     }
