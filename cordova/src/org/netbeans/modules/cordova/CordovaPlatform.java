@@ -48,7 +48,6 @@ import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -93,7 +92,7 @@ public class CordovaPlatform {
                     version = new Version(v.trim());
                 }
             } catch (IOException ex) {
-                Version.LOG.log(Level.INFO, ex.getMessage(), ex);
+                Version.LOG.log(Level.INFO, "Could not find cordova on PATH."); //NOI18N
             }
         }
         return version;
@@ -144,7 +143,7 @@ public class CordovaPlatform {
                     isGitReady = true;
                 }
             } catch (IOException ex) {
-                Version.LOG.log(Level.INFO, ex.getMessage(), ex);
+                Version.LOG.log(Level.INFO, "Could not find git on PATH."); //NOI18N
             }
         } 
         return isGitReady;
