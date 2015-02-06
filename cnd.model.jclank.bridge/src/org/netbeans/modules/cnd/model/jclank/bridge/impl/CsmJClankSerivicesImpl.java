@@ -78,7 +78,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
-import org.netbeans.modules.cnd.model.jclank.trace.WriterOutputStream;
+import org.netbeans.modules.cnd.model.jclank.bridge.trace.WriterOutputStream;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -173,7 +173,7 @@ public final class CsmJClankSerivicesImpl {
     
     private static Preprocessor getPreprocessor(NativeFileItem nfi, raw_ostream llvm_err) {
         PreprocessorInitializer initializer = new AdvancedPreprocessorInitializer(nfi, llvm_err);
-        VoidModuleLoader ModLoader/*J*/ = new VoidModuleLoader();
+        ModuleLoader ModLoader/*J*/ = new VoidModuleLoader();
         Preprocessor PP/*J*/ = initializer.createPreprocessor(ModLoader);
         
         StringRef InputFile = new StringRef(nfi.getAbsolutePath());
@@ -200,7 +200,7 @@ public final class CsmJClankSerivicesImpl {
         PreprocessorOutputOptions opts = new PreprocessorOutputOptions();
         opts.ShowCPP = true;
         opts.ShowComments = true;
-        opts.ShowLineMarkers = true;
+        opts.ShowLineMarkers = false;
         opts.ShowMacros = true;
         opts.ShowMacroComments = true;
         return opts;
