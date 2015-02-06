@@ -237,7 +237,9 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_VARS);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 2, testFilePath, LINE_BRKP_VARS-1, -1, 6);
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 2, testFilePath, LINE_BRKP_VARS-1, -1, new long[] { 6, 4});
+        // node.js v0.10.36: column 6
+        // io.js v1.0.4: column 4
         
         V8Debug.TestAccess.doCommand(v8dbg, "cont");
         lastResponse = responseHandler.getLastResponse();
@@ -274,7 +276,9 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_ARRAYS);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 4, testFilePath, LINE_BRKP_ARRAYS-1, -1, 10);
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 4, testFilePath, LINE_BRKP_ARRAYS-1, -1, new long[] {10, 4});
+        // node.js v0.10.36: column 10
+        // io.js v1.0.4: column 4
         
         V8Debug.TestAccess.doCommand(v8dbg, "cont");
         lastResponse = responseHandler.getLastResponse();
@@ -290,7 +294,9 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_OBJECTS);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 5, testFilePath, LINE_BRKP_OBJECTS-1, -1, 6);
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 5, testFilePath, LINE_BRKP_OBJECTS-1, -1, new long[] {6, 4});
+        // node.js v0.10.36: column 6
+        // io.js v1.0.4: column 4
         
         V8Debug.TestAccess.doCommand(v8dbg, "cont");
         lastResponse = responseHandler.getLastResponse();
@@ -337,7 +343,9 @@ public class V8DebugTest extends AbstractTestBase {
         assertEquals(V8Command.Continue, lastResponse.getCommand());
         lastEvent = responseHandler.getLastEvent();
         assertEquals(V8Event.Kind.Break, lastEvent.getKind());
-        checkFrame(7, LINE_CLOSURE_CALL+1-1, "    cl.getValue();");
+        checkFrame(new long[] {7, 6}, LINE_CLOSURE_CALL+1-1, "    cl.getValue();");
+        // node.js v0.10.36: column 7
+        // io.js v1.0.4: column 6
         
         checkEval("1 + 2", 3l);
         checkEval("cl.append(\"a\")", VALUE_UNDEFINED);
@@ -504,7 +512,8 @@ public class V8DebugTest extends AbstractTestBase {
         exception = eeb.getException();
         V8Object err = (V8Object) exception;
         assertEquals(V8Value.Type.Error, err.getType());
-        assertEquals("TypeError: Object 10 has no method 'getOwnPropertyName'", err.getText());
+        //assertEquals("TypeError: Object 10 has no method 'getOwnPropertyName'", err.getText());
+        assertTrue(err.getText(), err.getText().startsWith("TypeError: "));
         
         V8Debug.TestAccess.doCommand(v8dbg, "cont");
         lastResponse = responseHandler.getLastResponse();
@@ -631,6 +640,10 @@ public class V8DebugTest extends AbstractTestBase {
     }
     
     private void checkFrame(long column, long line, String sourceLineText) throws IOException, InterruptedException {
+        checkFrame(new long[] {column}, line, sourceLineText);
+    }
+    
+    private void checkFrame(long[] columns, long line, String sourceLineText) throws IOException, InterruptedException {
         V8Debug.TestAccess.doCommand(v8dbg, "frame");
         V8Response lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Frame, lastResponse.getCommand());
@@ -639,7 +652,18 @@ public class V8DebugTest extends AbstractTestBase {
         V8Body body = lastResponse.getBody();
         Frame.ResponseBody fbody = (Frame.ResponseBody) body;
         V8Frame frame = fbody.getFrame();
-        assertEquals(column, frame.getColumn());
+        if (columns.length == 1) {
+            assertEquals(columns[0], frame.getColumn());
+        } else {
+            long fc = frame.getColumn();
+            boolean match = false;
+            for (long c : columns) {
+                if (c == fc) {
+                    match = true;
+                }
+            }
+            assertTrue("Frame column "+fc+" does not match expected colums: "+Arrays.toString(columns), match);
+        }
         assertEquals(line, frame.getLine());
         assertEquals(sourceLineText, frame.getSourceLineText());
         
@@ -729,18 +753,25 @@ public class V8DebugTest extends AbstractTestBase {
         long globalScopeIndex = -1;
         
         V8Scope[] scopes = f.getScopes();
-        assertEquals(3, scopes.length);
         Set<V8Scope.Type> scopeTypes = new HashSet<>();
-        scopeTypes.add(V8Scope.Type.Local);
-        scopeTypes.add(V8Scope.Type.Closure);
-        scopeTypes.add(V8Scope.Type.Global);
+        if (scopes.length == 3) { // node.js v0.10.36
+            assertEquals(3, scopes.length);
+            scopeTypes.add(V8Scope.Type.Local);
+            scopeTypes.add(V8Scope.Type.Closure);
+            scopeTypes.add(V8Scope.Type.Global);
+        } else {  // io.js v1.0.4
+            assertEquals(4, scopes.length);
+            scopeTypes.add(V8Scope.Type.Local);
+            scopeTypes.add(V8Scope.Type.Closure);
+            scopeTypes.add(V8Scope.Type.Global);
+        }
         for (V8Scope s : scopes) {
             scopeTypes.remove(s.getType());
             if (V8Scope.Type.Global.equals(s.getType())) {
                 globalScopeIndex = s.getIndex();
             }
         }
-        assertTrue(scopeTypes.isEmpty());
+        assertTrue(scopeTypes.toString(), scopeTypes.isEmpty());
         
         long scriptRef = f.getScriptRef();
         
@@ -816,7 +847,13 @@ public class V8DebugTest extends AbstractTestBase {
         Map<String, V8Object.Property> properties = sobj.getProperties();
         assertNotNull(properties);
         V8Object.Property prop = properties.get("v8debug");
-        assertNull(prop.getType());
+        if (prop.getType() == V8Object.Property.Type.Normal) {
+            // io.js v1.0.4
+            assertEquals(V8Object.Property.Type.Normal, prop.getType());
+        } else {
+            // node.js v0.10.36
+            assertNull(String.valueOf(prop.getType()), prop.getType());
+        }
         assertEquals(V8Object.Property.ATTR_DONT_ENUM, prop.getAttributes());
         prop = properties.get("console");
         assertEquals(V8Object.Property.Type.Callbacks, prop.getType());
@@ -871,7 +908,7 @@ public class V8DebugTest extends AbstractTestBase {
                     assertEquals(varName, value, nv.getLongValue());
                 } else {
                     assertEquals(varName, V8Number.Kind.Double, nv.getKind());
-                    assertEquals(varName, value, nv.getDoubleValue());
+                    assertEquals(varName, (double) value, nv.getDoubleValue(), 1e-14);
                 }
                 return ;
             case Object:
@@ -890,6 +927,10 @@ public class V8DebugTest extends AbstractTestBase {
     }
 
     private void checkBRResponse(SetBreakpoint.ResponseBody sbResponseBody, long bpNumber, String scriptName, long line, long column, long actualColumn) {
+        checkBRResponse(sbResponseBody, bpNumber, scriptName, line, column, new long[] { actualColumn });
+    }
+    
+    private void checkBRResponse(SetBreakpoint.ResponseBody sbResponseBody, long bpNumber, String scriptName, long line, long column, long[] actualColumns) {
         assertEquals("Breakpoint number", bpNumber, sbResponseBody.getBreakpoint());
         assertEquals("Breakpoint type", V8Breakpoint.Type.scriptName, sbResponseBody.getType());
         assertEquals(scriptName, sbResponseBody.getScriptName());
@@ -898,7 +939,18 @@ public class V8DebugTest extends AbstractTestBase {
         V8Breakpoint.ActualLocation[] actualLocations = sbResponseBody.getActualLocations();
         assertEquals("Breakpoint locations", 1, actualLocations.length);
         assertEquals(line, actualLocations[0].getLine());
-        assertEquals(actualColumn, actualLocations[0].getColumn());
+        if (actualColumns.length == 1) {
+            assertEquals(actualColumns[0], actualLocations[0].getColumn());
+        } else {
+            long alc = actualLocations[0].getColumn();
+            boolean match = false;
+            for (long ac : actualColumns) {
+                if (ac == alc) {
+                    match = true;
+                }
+            }
+            assertTrue("Actual column "+alc+" does not match expected colums: "+Arrays.toString(actualColumns), match);
+        }
         long scriptId = actualLocations[0].getScriptId();
         assertEquals(scriptName, V8Debug.TestAccess.getScript(v8dbg, scriptId).getName());
     }
@@ -1159,8 +1211,13 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "flags use-strict");
         V8Response lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.V8flags, lastResponse.getCommand());
-        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
-        assertTrue(lastResponse.isSuccess());
+        // v8flags command is not supported in io.js v1.0.4:
+        if (lastResponse.getErrorMessage() != null) {
+            System.err.println(lastResponse.getErrorMessage());
+        } else {
+            assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+            assertTrue(lastResponse.isSuccess());
+        }
     }
 
     private void checkFlags() throws IOException, InterruptedException {
@@ -1250,16 +1307,26 @@ public class V8DebugTest extends AbstractTestBase {
         assertTrue(lastResponse.isSuccess());
         assertFalse(lastResponse.isRunning());
         Scopes.ResponseBody ssrb = (Scopes.ResponseBody) lastResponse.getBody();
-        assertEquals(3, ssrb.getTotalScopes());
         assertEquals(0, ssrb.getFromScope());
-        assertEquals(3, ssrb.getToScope());
         V8Scope[] scopes = ssrb.getScopes();
-        assertEquals(3, scopes.length);
-        assertEquals(V8Scope.Type.Local, scopes[0].getType());
-        assertEquals(V8Scope.Type.Closure, scopes[1].getType());
-        assertEquals(V8Scope.Type.Global, scopes[2].getType());
-        long[] handles = new long[3];
-        for (int i = 0; i < 3; i++) {
+        if (ssrb.getTotalScopes() == 3) { // node.js v0.10.36
+            assertEquals(3, ssrb.getTotalScopes());
+            assertEquals(3, ssrb.getToScope());
+            assertEquals(3, scopes.length);
+            assertEquals(V8Scope.Type.Local, scopes[0].getType());
+            assertEquals(V8Scope.Type.Closure, scopes[1].getType());
+            assertEquals(V8Scope.Type.Global, scopes[2].getType());
+        } else {  // io.js v1.0.4
+            assertEquals(4, ssrb.getTotalScopes());
+            assertEquals(4, ssrb.getToScope());
+            assertEquals(4, scopes.length);
+            assertEquals(V8Scope.Type.Local, scopes[0].getType());
+            assertEquals(V8Scope.Type.Closure, scopes[1].getType());
+            assertEquals(V8Scope.Type.Module, scopes[2].getType());
+            assertEquals(V8Scope.Type.Global, scopes[3].getType());
+        }
+        long[] handles = new long[scopes.length];
+        for (int i = 0; i < scopes.length; i++) {
             assertEquals(i, scopes[i].getIndex());
             assertEquals(0l, scopes[i].getFrameIndex().getValue());
             assertEquals("#<ScopeMirror>", scopes[i].getText());
@@ -1270,8 +1337,8 @@ public class V8DebugTest extends AbstractTestBase {
         checkValue("scope[0]", scopeVal, new ObjectCheck("Object", new String[] { "a", "aa", "b", "c" }, new Object[]{ 1l, 0l, 3l, 3l }, "#<Object>"));
         scopeVal = lastResponse.getReferencedValue(handles[1]);
         checkValue("scope[1]", scopeVal, new ObjectCheck("Object", new String[] { "glob_n" }, new Object[]{ 100l }, "#<Object>"));
-        scopeVal = lastResponse.getReferencedValue(handles[2]);
-        checkValue("scope[2]", scopeVal, new ObjectCheck("Object", new String[] { "global" }, new Object[]{ new ObjectCheck("global", null, null, "#<Object>") }, "#<Object>"));
+        scopeVal = lastResponse.getReferencedValue(handles[scopes.length - 1]);
+        checkValue("scope["+(scopes.length - 1)+"]", scopeVal, new ObjectCheck("Object", new String[] { "global" }, new Object[]{ new ObjectCheck("global", null, null, "#<Object>") }, "#<Object>"));
         
         //V8Debug.TestAccess.doCommand(v8dbg, "step in 2");
         V8Debug.TestAccess.send(v8dbg, Continue.createRequest(123, V8StepAction.in, 2));
@@ -1715,7 +1782,13 @@ public class V8DebugTest extends AbstractTestBase {
         assertFalse(lastResponse.isRunning());
         References.ResponseBody rrb = (References.ResponseBody) lastResponse.getBody();
         V8Value[] references = rrb.getReferences();
-        assertEquals(3, references.length);
+        if (references.length == 3) {
+            // node.js v0.10.36
+            assertEquals(3, references.length);
+        } else {
+            // io.js v1.0.4
+            assertEquals(4, references.length);
+        }
         V8Object objRef = null;
         V8Function refFunc = null;
         V8Function person = null;
@@ -1730,10 +1803,20 @@ public class V8DebugTest extends AbstractTestBase {
             } else {
                 V8Object or1 = (V8Object) oref;
                 assertEquals(V8Value.Type.Object, or1.getType());
-                assertEquals("Object", or1.getClassName());
-                V8Object.Property or1RefProp = or1.getProperties().get("ref");
-                assertEquals(V8Object.Property.Type.Field, or1RefProp.getType());
-                objRef = or1;
+                if ("Array".equals(or1.getClassName())) {
+                    // io.js v1.0.4
+                } else {
+                    assertEquals("Object", or1.getClassName());
+                    V8Object.Property or1RefProp = or1.getProperties().get("ref");
+                    if (or1RefProp.getType() == V8Object.Property.Type.Field) {
+                        // node.js v0.10.36
+                        assertEquals(V8Object.Property.Type.Field, or1RefProp.getType());
+                    } else {
+                        // io.js v1.0.4
+                        assertEquals(V8Object.Property.Type.Normal, or1RefProp.getType());
+                    }
+                    objRef = or1;
+                }
             }
         }
         assertNotNull("ref field", objRef);
