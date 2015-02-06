@@ -255,6 +255,7 @@ public class NpmExecutable {
     private ExecutionDescriptor getDescriptor() {
         assert project != null;
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .showSuspended(true)
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
