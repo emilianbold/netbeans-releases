@@ -82,7 +82,8 @@ public class Abbrev implements /* SettingsChangeListener,*/ PropertyChangeListen
             BaseDocument bdoc = (BaseDocument)doc;
             SyntaxSupport sup = bdoc.getSyntaxSupport();
             if (sup != null) {
-                return sup.isAbbrevDisabled(component.getCaretPosition());
+                Caret caret = component.getCaret();
+                return sup.isAbbrevDisabled(caret != null ? caret.getDot() : 0);
             }
         }
         return false; // abbrev not disabled

@@ -246,6 +246,11 @@ public class ClientSideProject implements Project {
         windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
 
+    @Override
+    public String toString() {
+        return "ClientSideProject{" + "projectDirectory=" + projectHelper.getProjectDirectory() + '}'; // NOI18N
+    }
+
     public void logBrowserUsage() {
         WebBrowser webBrowser = getProjectWebBrowser();
         projectBrowserUsageLogger.log(ClientSideProjectType.TYPE, webBrowser.getId(), webBrowser.getBrowserFamily().name());
