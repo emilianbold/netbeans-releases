@@ -48,11 +48,13 @@ import org.clang.basic.DiagnosticOptions;
 import org.clang.basic.DiagnosticsEngine;
 import org.clang.basic.LangOptions;
 import org.clang.basic.PresumedLoc;
+import org.clang.basic.diag;
 import org.clang.basic.spi.PreprocessorImplementation;
 import org.clang.frontend.TextDiagnosticPrinter;
 import org.clank.java.std;
 import org.clank.support.Native;
 import org.llvm.adt.aliases.SmallVectorChar;
+import org.llvm.support.llvm;
 import org.llvm.support.raw_ostream;
 
 /**
@@ -62,11 +64,13 @@ import org.llvm.support.raw_ostream;
 public class TraceDiagnosticConsumer extends /*public*/ TextDiagnosticPrinter {
     private boolean insideSourceFile = false;
     private final raw_ostream out;
+    private final boolean null_stream;
     
     public TraceDiagnosticConsumer(raw_ostream /*&*/ os, DiagnosticOptions /*P*/ diags) {
         super(os, diags, false);
         assert os != null;
         this.out = os;
+        this.null_stream = (os == llvm.nulls());
     }
 
     @Override
@@ -83,6 +87,9 @@ public class TraceDiagnosticConsumer extends /*public*/ TextDiagnosticPrinter {
     
     @Override
     public void HandleDiagnostic(DiagnosticsEngine.Level DiagLevel, Diagnostic Info) {
+        if (null_stream) {
+            return;
+        }
         if (insideSourceFile) {
             super.HandleDiagnostic(DiagLevel, Info);
             return;
