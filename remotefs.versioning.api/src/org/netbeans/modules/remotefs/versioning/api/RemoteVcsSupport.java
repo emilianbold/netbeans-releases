@@ -99,6 +99,10 @@ public final class RemoteVcsSupport {
     public static boolean isSymlink(VCSFileProxy proxy) {
         return getImpl().isSymlink(proxy);
     }
+    
+    static String readSymbolicLinkPath(VCSFileProxy file)  throws IOException {
+        return getImpl().readSymbolicLinkPath(file);
+    }
 
     public static boolean canRead(VCSFileProxy proxy) {
         return getImpl().canRead(proxy);
