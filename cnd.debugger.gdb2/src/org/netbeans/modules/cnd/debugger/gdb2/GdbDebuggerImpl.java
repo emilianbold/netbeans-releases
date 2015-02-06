@@ -1154,7 +1154,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         @Override
         protected void onDone(MIRecord record) {
             // Logging output for user-typed commands
-            gdb.tap().log(getConsoleStream());
+            gdb.tap().log(getConsoleStream().replaceAll("\\\\n","\r\n")); // NOI18N
         }
         
         @Override
