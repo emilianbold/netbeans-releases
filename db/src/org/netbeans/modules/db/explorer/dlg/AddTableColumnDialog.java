@@ -58,6 +58,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -152,8 +153,11 @@ public class AddTableColumnDialog extends JPanel {
 
         // Column type
 
-        sizelesstypes = (Collection<String>) spe.getProperties().get("SizelessTypes"); // NOI18N
-        charactertypes = (Collection<String>) spe.getProperties().get("CharacterTypes"); // NOI18N
+        Collection<String> sizelesstypesSpec = (Collection<String>) spe.getProperties().get("SizelessTypes"); // NOI18N
+        Collection<String> charactertypesSpec = (Collection<String>) spe.getProperties().get("CharacterTypes"); // NOI18N
+        
+        sizelesstypes = sizelesstypesSpec != null ? sizelesstypesSpec : Collections.<String>emptyList();
+        charactertypes = charactertypesSpec != null ? charactertypesSpec : Collections.<String>emptyList();
 
         Map<String, String> tmap = spe.getTypeMap();
         List<TypeElement> ttab = new ArrayList<TypeElement>(tmap.size());
