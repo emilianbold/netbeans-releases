@@ -49,7 +49,6 @@ import org.clank.support.NativePointer;
 import org.llvm.adt.IntrusiveRefCntPtr;
 import org.llvm.adt.StringRef;
 import org.llvm.support.MemoryBuffer;
-import org.llvm.support.llvm;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -78,7 +77,7 @@ class AdvancedPreprocessorInitializer extends DefaultPreprocessorInitializer {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
                 if (CsmJClankSerivicesImpl.TRACE) {
-                    llvm.errs().$out("user include ").$out(fSPath.getPath()).$out(NativePointer.$("\n"));
+                    err.$out("user include ").$out(fSPath.getPath()).$out(NativePointer.$("\n"));
                 }
                 options.AddPath(new StringRef(fSPath.getPath()), frontend.IncludeDirGroup.Angled, false, true);
             }
@@ -88,7 +87,7 @@ class AdvancedPreprocessorInitializer extends DefaultPreprocessorInitializer {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
                 if (CsmJClankSerivicesImpl.TRACE) {
-                    llvm.errs().$out("sys include ").$out(fSPath.getPath()).$out(NativePointer.$("\n"));
+                    err.$out("sys include ").$out(fSPath.getPath()).$out(NativePointer.$("\n"));
                 }
                 // add search path
                 options.AddPath(new StringRef(fSPath.getPath()), frontend.IncludeDirGroup.System, false, true);
@@ -105,19 +104,19 @@ class AdvancedPreprocessorInitializer extends DefaultPreprocessorInitializer {
         // handle -include
         for (String path : startEntry.getIncludeFiles()) {
             if (CsmJClankSerivicesImpl.TRACE) {
-                llvm.errs().$out("file include ").$out(path).$out(NativePointer.$("\n"));
+                err.$out("file include ").$out(path).$out(NativePointer.$("\n"));
             }
             out.Includes.push_back(path);
         }
         for (String macro : startEntry.getSystemMacroDefinitions()) {
             if (CsmJClankSerivicesImpl.TRACE) {
-                llvm.errs().$out("sys macro ").$out(macro).$out(NativePointer.$("\n"));
+                err.$out("sys macro ").$out(macro).$out(NativePointer.$("\n"));
             }
             out.addMacroDef(new StringRef(macro));
         }
         for (String macro : startEntry.getUserMacroDefinitions()) {
             if (CsmJClankSerivicesImpl.TRACE) {
-                llvm.errs().$out("user macro ").$out(macro).$out(NativePointer.$("\n"));
+                err.$out("user macro ").$out(macro).$out(NativePointer.$("\n"));
             }
             out.addMacroDef(new StringRef(macro));
         }
