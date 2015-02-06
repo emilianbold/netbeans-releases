@@ -40,75 +40,29 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+package org.netbeans.libs.git.remote.jgit.utils;
+
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author ondra
  */
-public class FileModelTest3 extends TraceModelTestBase {
+public final class TestUtils {
+    private TestUtils () {}
 
-    public FileModelTest3(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-//        System.setProperty("cnd.modelimpl.trace.registration", "true");
-//        System.setProperty("cnd.modelimpl.parser.threads", "1");
-        super.setUp();
-    }
-
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_01() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_02() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-    
-    public void testBug242674() throws Exception {
-        performTest("bug242674.cpp"); // NOI18N
-    }    
-    
-    public void testBug242861() throws Exception {
-        performTest("bug242861.cpp");
-    }
-    
-    public void testBug243546() throws Exception {
-        performTest("bug243546.cpp");
-    }
-    
-    public void testBug248661() throws Exception {
-        performTest("bug248661.cpp");
-    }
-    
-    public void testBug249746() throws Exception {
-        performTest("bug249746.cpp");
-    }
-    
-    public void testBug250243() throws Exception {
-        performTest("bug250243.cpp");
-    }
-    
-    public void testBug250270() throws Exception {
-        performTest("bug250270.cpp");
-    }
-
-    @Override
-    protected Class<?> getTestCaseDataClass() {
-        return FileModelTest.class;
+    public static String getRelativePath (VCSFileProxy file, VCSFileProxy repo) {
+        StringBuilder relativePath = new StringBuilder("");
+        if (!file.equals(repo)) {
+            while (file != null && !file.equals(repo)) {
+                relativePath.insert(0, "/").insert(0, file.getName());
+                file  = file.getParentFile();
+            }
+            if (file == null) {
+                throw new IllegalArgumentException(file.getPath() + " is not under " + repo.getPath());
+            }
+            relativePath.deleteCharAt(relativePath.length() - 1);
+        }
+        return relativePath.toString();
     }
 }
