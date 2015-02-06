@@ -681,6 +681,7 @@ declaration
     | {isScssSource()}? sass_debug
     | {isScssSource()}? sass_content
     | {isScssSource()}? sass_function_return
+    | {isScssSource()}? sass_error
     | {isScssSource()}? importItem
     | GEN
     ;
@@ -1248,6 +1249,11 @@ sass_debug
     ( SASS_DEBUG | SASS_WARN ) ws cp_expression
     ;
 
+sass_error
+    :
+    SASS_ERROR ws STRING
+    ;
+
 sass_control
     :
     sass_if | sass_for | sass_each | sass_while
@@ -1752,6 +1758,7 @@ SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
 SASS_EXTEND         : '@EXTEND';
 SASS_DEBUG          : '@DEBUG';
+SASS_ERROR          : '@ERROR';
 SASS_WARN           : '@WARN';
 SASS_IF             : '@IF';
 SASS_ELSE           : '@ELSE';

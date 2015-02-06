@@ -1776,4 +1776,16 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+
+    public void testErrorWithSemi() {
+        String source = "@mixin adjust-location($x, $y) {\n"
+                + "  @if unitless($x) {\n"
+                + "    @error \"$x may not be unitless, was #{$x}.\";\n"
+                + "  }\n"
+                + "  position: relative; left: $x; top: $y;\n"
+                + "}\n"
+                + "";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }
