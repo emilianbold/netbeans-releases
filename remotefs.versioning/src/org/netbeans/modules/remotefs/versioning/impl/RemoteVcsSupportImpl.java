@@ -169,6 +169,17 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     }
 
     @Override
+    public String readSymbolicLinkPath(VCSFileProxy proxy) throws IOException {
+        File file = proxy.toFile();
+        if (file != null) {
+            Path path = file.toPath();
+            return Files.readSymbolicLink(path).toString();
+        } else {
+            return RemoteVcsSupportUtil.readSymbolicLinkPath(getFileSystem(proxy), proxy.getPath());
+        }
+    }
+
+    @Override
     public boolean canRead(VCSFileProxy proxy) {
         File file = proxy.toFile();
         if (file != null) {

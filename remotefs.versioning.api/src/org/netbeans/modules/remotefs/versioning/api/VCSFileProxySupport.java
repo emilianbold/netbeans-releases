@@ -248,8 +248,12 @@ public final class VCSFileProxySupport {
         }
     }
     
-    public static boolean isSymlink(VCSFileProxy file, VCSFileProxy root) {
+    public static boolean isSymlink(VCSFileProxy file) {
         return RemoteVcsSupport.isSymlink(file);
+    }
+    
+    public static String readSymbolicLinkPath(VCSFileProxy file) throws IOException {
+        return RemoteVcsSupport.readSymbolicLinkPath(file);
     }
     
     public static boolean canRead(VCSFileProxy file) {
