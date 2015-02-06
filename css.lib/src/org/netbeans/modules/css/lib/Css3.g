@@ -672,9 +672,9 @@ declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration
     | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
-    | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
+    | (cp_mixin_call)=> {isCssPreprocessorSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws? LBRACE)=>rule
+    | {isLessSource()}? AT_IDENT LPAREN RPAREN
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_extend
@@ -1030,11 +1030,12 @@ cp_expression_list
 //
 cp_expression
     :
-    cp_expression_atom
+    {isLessSource()}? (LBRACE ws? syncToFollow declarations? RBRACE)
+    | (cp_expression_atom
     (
         (ws? cp_expression_operator)=>(ws? cp_expression_operator ws?) cp_expression_atom
         | (ws? cp_expression_atom)=>ws? cp_expression_atom
-    )*
+    )*)
     ;
 
 cp_expression_operator
