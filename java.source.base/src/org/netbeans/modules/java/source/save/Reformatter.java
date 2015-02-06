@@ -739,7 +739,7 @@ public class Reformatter implements ReformatTask {
             }
             CodeStyle.BracePlacement bracePlacement = cs.getClassDeclBracePlacement();
             boolean spaceBeforeLeftBrace = cs.spaceBeforeClassDeclLeftBrace();
-            int old = lastIndent;
+            int old = indent = lastIndent;
             int halfIndent = lastIndent;
             switch(bracePlacement) {
                 case SAME_LINE:
