@@ -272,7 +272,8 @@ public class ShelveChangesAction extends SingleRepositoryAction {
                     // because we use export diff action from the git api 
                     VCSFileProxy[] arr = Arrays.copyOf(modifications, modifications.length + 1);
                     arr[modifications.length] = repository;
-                    shelveChanges(arr);
+                    //TODO: bug #249105
+                    //shelveChanges(arr);
                 }
             };
             support.start(rp, repository, Bundle.LBL_ShelveChanges_Progress());
