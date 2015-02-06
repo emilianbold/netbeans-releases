@@ -55,7 +55,7 @@ import org.llvm.support.raw_ostream;
 public final class PrintWriter_ostream extends raw_ostream implements Destructors.ClassWithDestructor {
     private final PrintWriter delegate;
 
-    PrintWriter_ostream(PrintWriter printOut) {
+    public PrintWriter_ostream(PrintWriter printOut) {
         this.delegate = printOut;
     }
 
@@ -67,7 +67,9 @@ public final class PrintWriter_ostream extends raw_ostream implements Destructor
     @Override
     protected void write_impl( /*const*/ /*char P*/ char$ptr Ptr, int PtrIdx, /*size_t*/ int Size) {
         for (int idx = PtrIdx, Len = 0; Len < Size; Len++, idx++) {
-            delegate.write(Casts.$char(Ptr.$at(idx)));
+            // FIXME: 'S' is printed as 83... 
+            // delegate.write(Casts.$char(Ptr.$at(idx)));
+            delegate.write(new char[] {Casts.$char(Ptr.$at(idx))}, 0, 1);
         }
     }
 
@@ -79,8 +81,16 @@ public final class PrintWriter_ostream extends raw_ostream implements Destructor
     @Override
     protected void write_impl(byte[] buf, int PtrIdx, /*size_t*/ int Size) {
         for (int idx = PtrIdx, Len = 0; Len < Size; Len++, idx++) {
-            delegate.write(Casts.$char(buf[idx]));
+            // FIXME: 'S' is printed as 83... 
+            // delegate.write(Casts.$char(buf[idx]));
+            delegate.write(new char[] {Casts.$char(buf[idx])}, 0, 1);
         }
+    }
+
+    @Override
+    public void flush() {
+        super.flush();
+        delegate.flush();
     }
 
     /// current_pos - Return the current position within the stream, not
@@ -95,6 +105,10 @@ public final class PrintWriter_ostream extends raw_ostream implements Destructor
         return 0;
     }
 
+    public PrintWriter getJavaDelegate() {
+        return delegate;
+    }
+    
     //===----------------------------------------------------------------------===//
     //  java_ostream
     //===----------------------------------------------------------------------===//
