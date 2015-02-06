@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.SimpleDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -162,7 +163,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                                 render(token.getFirstChild(), currentNamespace, container);
                             }
                             break;
-                    case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                        case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
                             try {
                                 CsmDeclaration fddi;
                                 if (APTLanguageSupport.getInstance().isLanguageC(language)) {
@@ -224,7 +225,8 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                             }                            
                             renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                             break;
-                        }
+                        }                
+                        case CPPTokenTypes.CSM_TYPE_ALIAS:
                         case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                         {
                             if (renderForwardClassDeclaration(token, currentNamespace, container, (FileImpl) getContainingFile(), isRenderingLocalContext())) {
