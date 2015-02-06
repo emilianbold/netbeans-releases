@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import static org.clang.basic.ClangGlobals.$out_DiagnosticBuilder_StringRef;
 import org.clang.basic.DiagnosticConsumer;
@@ -96,7 +97,8 @@ public final class CsmJClankSerivicesImpl {
     }
 
     public static void preprocess(Collection<NativeProject> projects, 
-            raw_ostream out, raw_ostream err, ProgressHandle handle) {
+            raw_ostream out, raw_ostream err, 
+            ProgressHandle handle, final AtomicBoolean cancelled) {
         assert out != null;
         assert err != null;
         clearStatistics();
@@ -122,6 +124,9 @@ public final class CsmJClankSerivicesImpl {
             int doneFiles = 0;
             int totalTime = 0;
             for (NativeFileItem srcFile : srcFiles) {
+                if (cancelled.get()) {
+                    break;
+                }
                 handle.progress(srcFile.getAbsolutePath() + ("(" + (doneFiles+1) + " of " + size + ")") , doneFiles++);
                 try {
                     long time = dumpPreprocessed(srcFile, out, err, false, false);
@@ -223,17 +228,18 @@ public final class CsmJClankSerivicesImpl {
         PP.getHeaderSearchInfo().PrintStats(OS);
         PP.getSourceManager().PrintStats(OS);
         OS.$out("\n");
+        OS.flush();
     }
 
     private static void PrintJClankStatistics(raw_ostream OS) {
         if (NativeTrace.STATISTICS) {
           PrintStream javaOS = tryExtractPrintStream(OS, System.out);
           org.clang.frontendtool.ClangGlobals.PrintStats(OS, javaOS);
-          OS.flush();
           javaOS.flush();
         } else {
           OS.$out("Statistics was not gathered\n");
         } 
+        OS.flush();
     }
 
     private static PrintWriter tryExtractPrintWriter(raw_ostream OS) {

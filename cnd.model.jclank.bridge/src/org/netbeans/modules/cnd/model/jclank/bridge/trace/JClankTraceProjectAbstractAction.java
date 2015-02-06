@@ -134,12 +134,12 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
         io.select();
         final OutputWriter out = io.getOut();
         final OutputWriter err = io.getErr();
-        final AtomicBoolean canceled = new AtomicBoolean(false);
+        final AtomicBoolean cancelled = new AtomicBoolean(false);
 
         final ProgressHandle handle = ProgressHandle.createHandle(taskName, new Cancellable() {
             @Override
             public boolean cancel() {
-                canceled.set(true);
+                cancelled.set(true);
                 return true;
             }
         });
@@ -149,12 +149,12 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
         long time = System.currentTimeMillis();
 
         try {
-            traceProjects(projects, out, err, handle);
+            traceProjects(projects, out, err, handle, cancelled);
         } catch (Throwable e) {
             e.printStackTrace(err);
         } finally {
             handle.finish();
-            out.printf("%s\n", canceled.get() ? "Cancelled" : "Done"); //NOI18N
+            out.printf("%s\n", cancelled.get() ? "Cancelled" : "Done"); //NOI18N
             out.printf("%s took %d ms\n", taskName, System.currentTimeMillis() - time); // NOI18N
 
             err.flush();
@@ -244,5 +244,5 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
 //        }
 //    }    
 
-    protected abstract void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, ProgressHandle handle);
+    protected abstract void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, ProgressHandle handle, AtomicBoolean canceled);
 }
