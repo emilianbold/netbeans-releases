@@ -79,6 +79,7 @@ public class SiteTemplateWizard extends JPanel {
 
     static final Logger LOGGER = Logger.getLogger(SiteTemplateWizard.class.getName());
     private static final SiteTemplateImplementation NO_SITE_TEMPLATE = new DummySiteTemplateImplementation(null);
+    private static final RequestProcessor RP = new RequestProcessor(SiteTemplateWizard.class.getName(), 2);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     // @GuardedBy("EDT")
@@ -123,7 +124,7 @@ public class SiteTemplateWizard extends JPanel {
         // data
         onlineTemplateList.setModel(onlineTemplatesListModel);
         onlineTemplatesListModel.addElement(new DummySiteTemplateImplementation(Bundle.SiteTemplateWizard_loading()));
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 Collection<? extends SiteTemplateImplementation> templates = Lookup.getDefault().lookupAll(SiteTemplateImplementation.class);
@@ -459,7 +460,7 @@ public class SiteTemplateWizard extends JPanel {
 
     private void clearCacheLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_clearCacheLabelMousePressed
         updateClearCacheLabel(true);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 Enumeration templates = onlineTemplatesListModel.elements();
