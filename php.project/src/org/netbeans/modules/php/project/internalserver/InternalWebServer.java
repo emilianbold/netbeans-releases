@@ -276,8 +276,7 @@ public final class InternalWebServer implements PropertyChangeListener {
 
     private ExecutionDescriptor getDescriptor() {
         return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
-                // #225093
-                .showProgress(false)
+                .showSuspended(true)
                 .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY) // NOI18N
                 .outConvertorFactory(FileRunner.PHP_LINE_CONVERTOR_FACTORY)
                 .preExecution(new Runnable() {
