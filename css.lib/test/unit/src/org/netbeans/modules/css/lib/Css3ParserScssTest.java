@@ -1760,4 +1760,32 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testMultiDimensionalMaps() {
+        String source = "$type-scale: (\n"
+                + "    tiny: (\n"
+                + "        font-size: 10.24px,\n"
+                + "        base-lines: 0.5\n"
+                + "    ),\n"
+                + "    small: (\n"
+                + "        font-size: 12.8px,\n"
+                + "        base-lines: 0.75\n"
+                + "    )\n"
+                + ");\n"
+                + "";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+
+    public void testErrorWithSemi() {
+        String source = "@mixin adjust-location($x, $y) {\n"
+                + "  @if unitless($x) {\n"
+                + "    @error \"$x may not be unitless, was #{$x}.\";\n"
+                + "  }\n"
+                + "  position: relative; left: $x; top: $y;\n"
+                + "}\n"
+                + "";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }
