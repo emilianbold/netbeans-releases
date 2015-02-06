@@ -138,7 +138,7 @@ public final class CndFileUtils {
             caseSenstive = Utilities.isUnix() && !Utilities.isMac();
         }
         TRUE_CASE_SENSITIVE_SYSTEM = caseSenstive;
-        FileUtil.addFileChangeListener(FSL);
+        CndFileSystemProvider.addFileChangeListener(FSL);
     }
 
     public static boolean isSystemCaseSensitive() {
@@ -732,11 +732,10 @@ public final class CndFileUtils {
         }
 
         @Override
-        public void fileFolderCreated(FileEvent fe) {
-            File file = CndFileUtils.toFile(fe.getFile());
-            String path = file.getAbsolutePath();
-            String absPath = preparePath(path);
-            if (getFilesMap(getLocalFileSystem()).put(absPath, Flags.DIRECTORY) != null) {
+        public void fileFolderCreated(FileEvent fe) {            
+            String path = checkSeparators(fe.getFile());
+            String absPath = changeStringCaseIfNeeded(getFileSystem(fe), path);
+            if (getFilesMap(getFileSystem(fe)).put(absPath, Flags.DIRECTORY) != null) {
                 // If there was something in the map already - invalidate it
                 invalidateFile(path, absPath);
             }
@@ -744,10 +743,9 @@ public final class CndFileUtils {
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            File file = CndFileUtils.toFile(fe.getFile());
-            String path = file.getAbsolutePath();
-            String absPath = preparePath(path);
-            if (getFilesMap(getLocalFileSystem()).put(absPath, Flags.FILE) != null) {
+            String path = checkSeparators(fe.getFile());
+            String absPath = changeStringCaseIfNeeded(getFileSystem(fe), path);
+            if (getFilesMap(getFileSystem(fe)).put(absPath, Flags.FILE) != null) {
                 // If there was something in the map already - invalidate it
                 invalidateFile(path, absPath);
             }
@@ -760,12 +758,12 @@ public final class CndFileUtils {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            final File parent = clearCachesAboutFile(fe);
+            final FSPath parent = clearCachesAboutFile(fe);
             // update info about old file as well
             if (parent != null) {
                 final String ext = fe.getExt();
                 final String oldName = (ext.length() == 0) ? fe.getName() : (fe.getName() + "." + ext); // NOI18N
-                clearCachesAboutFile(new File(parent, oldName), false);
+                clearCachesAboutFile(parent.getChild(oldName), false);
             }
         }
 
@@ -779,30 +777,46 @@ public final class CndFileUtils {
             // no update
         }
 
-        private File clearCachesAboutFile(FileEvent fe) {
-            return clearCachesAboutFile(CndFileUtils.toFile(fe.getFile()), false);
+        private FSPath clearCachesAboutFile(FileEvent fe) {
+            return clearCachesAboutFile(FSPath.toFSPath(fe.getFile()), false);
         }
         
-        private File clearCachesAboutFile(File f, boolean withParent) {
-            cleanCachesImpl(f.getAbsolutePath());
+        private FSPath clearCachesAboutFile(FSPath f, boolean withParent) {
+            cleanCachesImpl(f);
             if (withParent) {
-                File parent = f.getParentFile();
+                FSPath parent = f.getParent();
                 if (parent != null) {
-                    cleanCachesImpl(parent.getAbsolutePath());
+                    cleanCachesImpl(parent);
                 }
                 return parent;
             }
             return null;
         }
         
-        private String preparePath(String path) {
-            String absPath = changeStringCaseIfNeeded(getLocalFileSystem(), path);
-            if (isWindows) {
+        private String checkSeparators(FileObject fo) {
+            return checkSeparators(FSPath.toFSPath(fo));
+        }
+        
+        private String checkSeparators(FSPath path) {
+            String absPath = path.getPath();
+            if (isWindows && isLocalFileSystem(path.getFileSystem())) {
                 absPath = absPath.replace('/', '\\');
             }
             return absPath;
         }
         
+        private FileSystem getFileSystem(FileEvent fe) {
+            return getFileSystem(fe.getFile());
+        }
+        
+        private FileSystem getFileSystem(FileObject fo) {
+            try {
+                return fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+
         private static void invalidateFile(String file, String absPath) {
             for (CndFileExistSensitiveCache cache : getCaches()) {
                 cache.invalidateFile(file);
@@ -810,8 +824,9 @@ public final class CndFileUtils {
             }
         }
 
-        private void cleanCachesImpl(String file) {
-            String absPath = preparePath(file);
+        private void cleanCachesImpl(FSPath fsPath) {
+            String file = checkSeparators(fsPath);
+            String absPath = changeStringCaseIfNeeded(fsPath.getFileSystem(), file);
             Flags removed = getFilesMap(getLocalFileSystem()).remove(absPath);
             if (TRACE_EXTERNAL_CHANGES) {
                 System.err.printf("clean cache for %s->%s\n", absPath, removed);

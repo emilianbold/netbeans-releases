@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.utils;
 
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;  
@@ -89,6 +90,15 @@ public final class FSPath {
         return fileSystem.findResource(path);
     }
     
+    public FSPath getParent() {
+        String parentPath = PathUtilities.getDirName(path);
+        return (parentPath == null) ? null : new FSPath(fileSystem, parentPath);
+    }
+    
+    public FSPath getChild(String childName) {
+        return new FSPath(fileSystem, path + CndFileUtils.getFileSeparatorChar(fileSystem) + childName);
+    }
+
     public CharSequence getURL() {
         return CndFileSystemProvider.toUrl(this);
     }

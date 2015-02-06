@@ -607,7 +607,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ======
 ========================= BSD-jsch =========================
 
-Copyright (c) 2002-2012 Atsuhiko Yamanaka, JCraft,Inc. 
+Copyright (c) 2002-2014 Atsuhiko Yamanaka, JCraft,Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

@@ -88,7 +88,9 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Listens for events coming from a remove VM and notifies registered objects.
@@ -167,7 +169,7 @@ public class Operator {
         final SuspendControllersSupport scs = new SuspendControllersSupport(debugger);
         final SuspendCount suspendCount = new SuspendCount();
         final Object[] params = new Object[] {eventQueue, starter, finalizer};
-        thread = new Thread (new Runnable () {
+        final Runnable operatorLoop = new Runnable () {
         @Override public void run () {
             EventQueue eventQueue = (EventQueue) params [0];
             Executor starter = (Executor) params [1];
@@ -273,7 +275,14 @@ public class Operator {
              eventQueue = null;
              starter = null;
          }
-     }, "Debugger operator thread"); // NOI18N
+     };
+        final Lookup defaultCallerLookup = Lookup.getDefault();
+        Runnable runnableWithLookup = new Runnable () {
+            @Override public void run () {
+                Lookups.executeWith(defaultCallerLookup, operatorLoop);
+            }
+        };
+        thread = new Thread (runnableWithLookup, "Debugger operator thread"); // NOI18N
         loopControl = new LoopControl(thread, starter, scs, suspendCount);
     }
 

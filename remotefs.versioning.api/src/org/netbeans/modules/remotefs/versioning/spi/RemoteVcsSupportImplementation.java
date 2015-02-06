@@ -72,6 +72,8 @@ public interface RemoteVcsSupportImplementation {
     FileSystem getDefaultFileSystem();
 
     boolean isSymlink(VCSFileProxy proxy);
+
+    String readSymbolicLinkPath(VCSFileProxy file) throws IOException;
     
     boolean canRead(VCSFileProxy proxy);
 

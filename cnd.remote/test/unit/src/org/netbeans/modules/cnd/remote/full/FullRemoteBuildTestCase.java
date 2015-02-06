@@ -46,9 +46,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import junit.framework.AssertionFailedError;
 import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import junit.framework.Test;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -66,6 +69,10 @@ import org.openide.filesystems.FileObject;
 public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
 
     private String remoteTmpDir;
+    
+    static {
+        System.setProperty("cnd.use.indexing.api", "false");
+    }
     
     public FullRemoteBuildTestCase(String testName) {
         super(testName);
@@ -113,7 +120,32 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
         assertNotNull("Error opening project " + remoteProjectFO, makeProject);
         return makeProject;
     }
-    
+
+    @ForAllEnvironments
+    public void test_iz_249533() throws Exception {
+        MakeProject makeProject = importProject("simple_make_project_to_import", false);
+        final String origHeaderName = "change_case.h";
+        final FileObject parentFO = makeProject.getProjectDirectory();
+        FileObject headerFO = parentFO.getFileObject(origHeaderName);
+        assertNotNull(headerFO);
+        headerFO.delete();
+        CsmProject csmProject = getCsmProject(makeProject);
+        AtomicReference<AssertionFailedError> exRef = new AtomicReference<>();
+        try {
+            checkCodeModel(makeProject);
+        } catch (AssertionFailedError ex) {
+            exRef.set(ex);
+        }
+        AssertionFailedError ex = exRef.get();
+        assertNotNull(ex);
+        String messageStart = "Unresolved include";
+        assertTrue("Unexpected exception " + ex.getMessage() + ", expected " + messageStart  , ex.getMessage().startsWith(messageStart));
+        headerFO = parentFO.createData(origHeaderName);
+        sleep(1);
+        csmProject.waitParse();
+        checkCodeModel(makeProject);
+    }
+
     @ForAllEnvironments
     public void testFullRemoteBuildSimple() throws Exception {
         MakeProject makeProject = importProject("simple_make_project_to_import", false);

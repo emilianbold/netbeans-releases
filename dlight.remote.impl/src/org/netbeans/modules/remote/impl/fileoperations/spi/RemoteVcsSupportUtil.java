@@ -113,6 +113,17 @@ public class RemoteVcsSupportUtil {
         }
     }
 
+    public static String readSymbolicLinkPath(FileSystem fileSystem, String path) throws IOException {
+        if (fileSystem instanceof RemoteFileSystem) {
+            FileObject fo = fileSystem.findResource(path);
+            if (fo != null) {
+                return fo.readSymbolicLinkPath();
+            }
+        }
+        return null;
+    }
+
+
     /** returns fully resolved canonical path or NULL if this is not a symbolic link */
     public static String getCanonicalPath(FileSystem fileSystem, String path) throws IOException {
         if (fileSystem instanceof RemoteFileSystem) {
