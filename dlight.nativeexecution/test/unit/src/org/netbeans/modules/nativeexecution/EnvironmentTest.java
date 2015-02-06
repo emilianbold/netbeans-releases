@@ -175,7 +175,8 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
             }
 
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-            npb.setExecutable(hostInfo.getShell()).setArguments("-c", cmd);
+            final String shell = hostInfo.getShell();
+            npb.setExecutable(shell).setArguments("-c", cmd);
             npb.setUsePty(inPtyMode);
             npb.unbufferOutput(unbufferOutput);
             if (terminal != null) {
@@ -183,7 +184,11 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
             }
 
             Process p = npb.call();
-            assertTrue(p.waitFor() == 0);
+            final int rc = p.waitFor();
+            if (rc != 0) {
+                List<String> stderr = ProcessUtils.readProcessError(p);
+                fail("Failed to execute " + shell + " -c " + cmd + " rc=" + rc + " stderr=" + stderr);
+            }
 
             List<String> result;
 

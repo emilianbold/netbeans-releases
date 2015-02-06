@@ -223,6 +223,11 @@ import org.openide.util.RequestProcessor;
                 toDTE.putChars(cmda, 0, cmda.length);
                 // toDTE.putChar(char_CR);			// tack on a CR
                 toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
+                if (prompted) {
+                    toDTE.putChars(PROMPT.toCharArray(), 0, PROMPT.length());
+                    toDTE.putChar(KeyProcessing.ESCAPES.CHAR_CR);			// tack on a CR
+                    toDTE.putChar(KeyProcessing.ESCAPES.CHAR_LF);
+                }
                 toDTE.flush();
             }
         });
