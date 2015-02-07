@@ -6,6 +6,11 @@
             <code-name-base>org.netbeans.modules.jira.xmlrpc</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>javax.wsdl</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>com.atlassian.connector.eclipse.jira.core</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
