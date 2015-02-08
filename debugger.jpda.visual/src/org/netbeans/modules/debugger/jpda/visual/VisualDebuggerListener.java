@@ -128,6 +128,12 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     private final Properties properties;
     private volatile Boolean isTrackComponentChanges = null;
     
+    private enum RemoteServiceInit {
+        SUCCESS,
+        FAIL,
+        FAIL_RETRY
+    }
+    
     public VisualDebuggerListener() {
         final RequestProcessor rp = new RequestProcessor(VisualDebuggerListener.class);
         properties = Properties.getDefault().getProperties(PROPERTIES_VISUAL);
@@ -180,7 +186,14 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                         DebuggerManager.getDebuggerManager().removeBreakpoint(mb[0]);
                         DebuggerManager.getDebuggerManager().removeBreakpoint(mb[1]);
                         if (inited.compareAndSet(false, true)) {
-                            initDebuggerRemoteService(event.getThread(), RemoteServices.ServiceType.AWT);
+                            RemoteServiceInit initRet =
+                                    initDebuggerRemoteService(event.getThread(),
+                                                              RemoteServices.ServiceType.AWT);
+                            if (initRet.equals(RemoteServiceInit.FAIL_RETRY)) {
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(mb[0]);
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(mb[1]);
+                                inited.set(false);
+                            }
                         }
                     }
                     event.resume();
@@ -196,7 +209,14 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                         DebuggerManager.getDebuggerManager().removeBreakpoint(mb[0]);
                         DebuggerManager.getDebuggerManager().removeBreakpoint(mb[1]);
                         if (inited.compareAndSet(false, true)) {
-                            initDebuggerRemoteService(event.getThread(), RemoteServices.ServiceType.FX);
+                            RemoteServiceInit initRet =
+                                    initDebuggerRemoteService(event.getThread(),
+                                                              RemoteServices.ServiceType.FX);
+                            if (initRet.equals(RemoteServiceInit.FAIL_RETRY)) {
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(mb[0]);
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(mb[1]);
+                                inited.set(false);
+                            }
                         }
                     }
                     event.resume();
@@ -244,7 +264,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         }
     }
 
-    private void initDebuggerRemoteService(JPDAThread thread, RemoteServices.ServiceType sType) {
+    private RemoteServiceInit initDebuggerRemoteService(JPDAThread thread, RemoteServices.ServiceType sType) {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "initDebuggerRemoteService({0})", thread);
         }
@@ -262,7 +282,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             } catch (ClassNotLoadedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IncompatibleThreadStateException ex) {
-                Exceptions.printStackTrace(ex);
+                return RemoteServiceInit.FAIL_RETRY;
             } catch (InvocationException ex) {
                 Exceptions.printStackTrace(ex);
                 final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, t.getDebugger());
@@ -275,7 +295,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 logger.log(Level.FINE, "Uploaded class = {0}", cor);
             }
             if (cor == null) {
-                return ;
+                return RemoteServiceInit.FAIL;
             }
             ThreadReference tr = t.getThreadReference();
             
@@ -294,7 +314,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                     boolean success = PrimitiveValueWrapper.booleanValue((PrimitiveValue) ret);
                     RemoteServices.setAccessLoopStarted(t.getDebugger(), success);
                     if (!success) {
-                        return ;
+                        return RemoteServiceInit.FAIL;
                     }
                 }
                 boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
@@ -346,6 +366,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 logger.log(Level.FINE, "", ex);
             }
         }
+        return RemoteServiceInit.SUCCESS;
     }
     
     private void initException(InvocationExceptionTranslated iextr, JPDAThreadImpl t) {

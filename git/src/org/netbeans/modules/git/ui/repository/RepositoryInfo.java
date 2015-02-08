@@ -74,10 +74,12 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.git.utils.JGitUtils;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -114,6 +116,10 @@ public class RepositoryInfo {
      * fired when a git stash state changes. Old and new values are instances of {@link List}&lt;GitRevisionInfo&gt;.
      */
     public static final String PROPERTY_STASH = "prop.stashes"; //NOI18N
+    /**
+     * fired when the tracking info for the current branch changes.
+     */
+    public static final String PROPERTY_TRACKING_INFO = "prop.trackingInfo"; //NOI18N
 
     private final Reference<File> rootRef;
     private static final WeakHashMap<File, RepositoryInfo> cache = new WeakHashMap<File, RepositoryInfo>(5);
@@ -134,6 +140,7 @@ public class RepositoryInfo {
     private NBGitConfig nbConfig;
     private static final String NETBEANS_CONFIG_FILE = "nbconfig"; //NOI18N
     private PushMode pushMode = PushMode.ASK;
+    private TrackingInfo trackingInfo;
     
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
@@ -144,6 +151,7 @@ public class RepositoryInfo {
         this.stashes = new ArrayList<>();
         this.activeBranch = GitBranch.NO_BRANCH_INSTANCE;
         this.repositoryState = GitRepositoryState.SAFE;
+        this.trackingInfo = new TrackingInfo(activeBranch);
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -213,6 +221,7 @@ public class RepositoryInfo {
                     // now set new values and fire events when needed
                     setActiveBranch(newBranches);
                     setRepositoryState(newState);
+                    updateTracking(client);
                 } finally {
                     List<PropertyChangeEvent> events = eventsToFire.get();
                     for (PropertyChangeEvent e : events) {
@@ -558,6 +567,10 @@ public class RepositoryInfo {
             propertyChangeSupport.firePropertyChange(event);
         }
     }
+
+    public TrackingInfo getTracking () {
+        return trackingInfo;
+    }
     
     public static enum PushMode {
         UPSTREAM,
@@ -576,6 +589,55 @@ public class RepositoryInfo {
             pushMode = JGitUtils.getPushMode(root);
         }
         return pushMode;
+    }
+
+    private void updateTracking (GitClient client) {
+        TrackingInfo old = getTracking();
+        GitBranch currBranch = getActiveBranch();
+        if (old.needsUpdate(currBranch)) {
+            TrackingInfo newInfo;
+            String id = currBranch.getId();
+            GitBranch trackedBranch = currBranch.getTrackedBranch();
+            if (trackedBranch == null || id.equals(trackedBranch.getId())) {
+                newInfo = new TrackingInfo(currBranch);
+            } else {
+                try {
+                    String trackedId = trackedBranch.getId();
+                    GitRevisionInfo info = client.getCommonAncestor(new String[] { id, trackedId }, GitUtils.NULL_PROGRESS_MONITOR);
+                    if (info == null) {
+                        // no base???
+                        newInfo = new TrackingInfo(currBranch);
+                    } else {
+                        SearchCriteria critIn = new SearchCriteria();
+                        critIn.setRevisionFrom(info.getRevision());
+                        critIn.setRevisionTo(trackedId);
+                        SearchCriteria critOut = new SearchCriteria();
+                        critOut.setRevisionFrom(info.getRevision());
+                        critOut.setRevisionTo(id);
+                        int revsIn, revsOut;
+                        if (info.getRevision().equals(id)) {
+                            // incoming
+                            revsIn = client.log(critIn, false, GitUtils.NULL_PROGRESS_MONITOR).length - 1; // -1 is required because search returns also the from commit
+                            revsOut = 0;
+                        } else if (info.getRevision().equals(trackedId)) {
+                            // outgoing
+                            revsIn = 0;
+                            revsOut = client.log(critOut, false, GitUtils.NULL_PROGRESS_MONITOR).length - 1; // -1 is required because search returns also the from commit
+                        } else {
+                            // merge
+                            revsIn = client.log(critIn, false, GitUtils.NULL_PROGRESS_MONITOR).length - 1;
+                            revsOut = client.log(critOut, false, GitUtils.NULL_PROGRESS_MONITOR).length - 1;
+                        }
+                        newInfo = new TrackingInfo(currBranch, revsIn, revsOut);
+                    }
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                    newInfo = new TrackingInfo(currBranch);
+                }
+            }
+            trackingInfo = newInfo;
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_TRACKING_INFO, old, newInfo));
+        }
     }
 
     private static class RepositoryRefreshTask implements Runnable {
@@ -687,5 +749,90 @@ public class RepositoryInfo {
             }
             
         }
+    }
+    
+    @NbBundle.Messages({
+        "CTL_TrackingInfo.inSync=in sync with upstream branch",
+        "# {0} - number of outgoing commits", "CTL_TrackingInfo.out={0} outgoing commit",
+        "CTL_TrackingInfo.out1=1 outgoing commit",
+        "# {0} - number of incoming commits", "CTL_TrackingInfo.in={0} incoming commit",
+        "CTL_TrackingInfo.in1=1 incoming commit",
+        "# {0} - number of outgoing commits", "# {1} - number of incoming commits",
+        "CTL_TrackingInfo.inout={0} outgoing, {1} incoming commits",
+        "# {0} - number of outgoing commits",
+        "CTL_TrackingInfo.inout1={0} outgoing, 1 incoming commit"
+    })
+    public static class TrackingInfo {
+        
+        private final String currentId;
+        private final String trackedId;
+        private final int commitsIn;
+        private final int commitsOut;
+        
+        private TrackingInfo (GitBranch branch) {
+            currentId = branch.getId();
+            GitBranch tracked = branch.getTrackedBranch();
+            trackedId = tracked == null ? "" : tracked.getId();
+            if (currentId.equals(trackedId)) {
+                commitsIn = 0;
+                commitsOut = 0;
+            } else {
+                commitsIn = -1;
+                commitsOut = -1;
+            }
+        }
+
+        private TrackingInfo (GitBranch branch, int revsIn, int revsOut) {
+            currentId = branch.getId();
+            trackedId = branch.getTrackedBranch().getId();
+            commitsIn = revsIn;
+            commitsOut = revsOut;
+        }
+
+        private boolean needsUpdate (GitBranch branch) {
+            boolean retval = false;
+            GitBranch tracked = branch.getTrackedBranch();
+            if (!currentId.equals(branch.getId())) {
+                retval = true;
+            } else if (!trackedId.equals(tracked == null ? "" : tracked.getId())) {
+                retval = true;
+            }
+            return retval;
+        }
+
+        public int getIncomingCommits () {
+            return commitsIn;
+        }
+
+        public int getOutgoingCommits () {
+            return commitsOut;
+        }
+
+        public boolean isKnown () {
+            return commitsIn >= 0;
+        }
+        
+        public String getDescription () {
+            if (commitsIn == 0 && commitsOut == 0) {
+                return Bundle.CTL_TrackingInfo_inSync();
+            } else if (commitsOut == 0) {
+                if (commitsIn == 1) {
+                    return Bundle.CTL_TrackingInfo_in1();
+                } else {
+                    return Bundle.CTL_TrackingInfo_in(commitsIn);
+                }
+            } else if (commitsIn == 0) {
+                if (commitsOut == 1) {
+                    return Bundle.CTL_TrackingInfo_out1();
+                } else {
+                    return Bundle.CTL_TrackingInfo_out(commitsOut);
+                }
+            } else if (commitsIn == 1) {
+                return Bundle.CTL_TrackingInfo_inout1(commitsOut);
+            } else {
+                return Bundle.CTL_TrackingInfo_inout(commitsOut, commitsIn);
+            }
+        }
+
     }
 }
