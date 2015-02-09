@@ -272,6 +272,9 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
             for (Object o : array) {
                 JSONObject jsonBinding = (JSONObject)o;
                 String name = (String)jsonBinding.get("name"); // NOI18N
+                if (ignoreUnusedBinding(name)) {
+                    continue;
+                }
                 int id = ((Number)jsonBinding.get("id")).intValue();
                 UnusedBinding binding = new UnusedBinding(id, name,
                     (String)jsonBinding.get("nodeTagName"), // NOI18N
@@ -290,6 +293,19 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
             Logger.getLogger(UnusedBindingsPanel.class.getName()).log(Level.INFO, null, pex);
         }
         return map;
+    }
+
+    /**
+     * Determines whether the unused binding with the specified name should
+     * be ignored.
+     * 
+     * @param name name of the unused binding.
+     * @return {@code true} if the unused binding with the specified name
+     * should be ignored, returns {@code false} otherwise.
+     */
+    private boolean ignoreUnusedBinding(String name) {
+        // Ignore Knockout's implementation details like _ko_property_writers
+        return name.startsWith("_ko_"); // NOI18N
     }
 
     /**
