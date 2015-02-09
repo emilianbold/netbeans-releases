@@ -43,18 +43,24 @@
 package org.netbeans.libs.git.remote.jgit;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.nio.channels.Channels;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import static junit.framework.Assert.fail;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Constants;
@@ -257,6 +263,21 @@ public class AbstractGitTestCase extends NbTestCase {
             }
         }
         cache.unlock();
+    }
+    
+    protected long getLinkLastModified(VCSFileProxy link) throws IOException {
+        File javaFile = link.toFile();
+        return Files.readAttributes(Paths.get(javaFile.getAbsolutePath()), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS).lastModifiedTime().toMillis();
+    }
+    
+    protected void assertFile(VCSFileProxy test, String pass) throws IOException {
+        String message = "Difference between " + test + " and golden string";
+        assertFile(message, test, pass);
+    }
+
+    private void assertFile(String message, VCSFileProxy test, String pass) throws IOException {
+        String testString = read(test);
+        assertTrue(message, testString.equals(pass));
     }
 
     protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileListener {

@@ -121,18 +121,18 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected DirEntry stat(String path) 
-            throws InterruptedException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, ExecutionException {
         return stat_or_lstat(path, false);
     }
 
     @Override
     protected DirEntry lstat(String path) 
-            throws InterruptedException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, ExecutionException {
         return stat_or_lstat(path, true);
     }
 
     private DirEntry stat_or_lstat(String path, boolean lstat) 
-            throws InterruptedException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, ExecutionException {
 
         if (path.isEmpty()) {
             path = "/"; // NOI18N
@@ -147,11 +147,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         try {
             RemoteLogger.finest("Sending stat/lstat request #{0} for {1} to fs_server", 
                     request.getId(), path);
-            try {
-                response = dispatcher.dispatch(request);
-            } catch (IOException ioe) {
-                throw new ExecutionException(ioe);
-            }
+            response = dispatcher.dispatch(request);
             FSSResponse.Package pkg = response.getNextPackage();
             if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
                 return createDirEntry(pkg, request.getId(), env);
@@ -181,7 +177,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     @Override
     protected DirEntryList copy(String from, String to, 
             Collection<IOException> subdirectoryExceptions) 
-            throws IOException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_COPY, from, to);
         FSSResponse response = null;
@@ -236,7 +232,8 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     @Override
-    protected MoveInfo move(String from, String to) throws IOException, InterruptedException, CancellationException, ExecutionException {
+    protected MoveInfo move(String from, String to) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(env, from, to);
         f.get();
         String fromParent = PathUtilities.getDirName(from);
@@ -257,7 +254,8 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
     
     @Override
-    protected DirEntryList readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException {
+    protected DirEntryList readDirectory(String path) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
         }
@@ -457,7 +455,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }            
     
     @Override
-    protected DirEntryList delete(String path, boolean directory) throws IOException {
+    protected DirEntryList delete(String path, boolean directory) throws ConnectException, IOException {
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_DELETE, path);
         FSSResponse response = null;
         RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_delete", path); // NOI18N
@@ -493,7 +491,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
-            throws IOException, InterruptedException, ExecutionException, InterruptedException {
+            throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
         
         CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
                 srcFile, env, pathToUpload, null, -1, false, null, false);        

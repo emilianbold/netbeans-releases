@@ -99,7 +99,10 @@ public class RemoteVcsSupportUtil {
             try {
                 DirEntry entry = RemoteFileSystemTransport.lstat(env, path);
                 return entry.isLink();
-            } catch (InterruptedException ex) {
+            } catch (ConnectException ex) {
+                RemoteLogger.finest(ex);
+            } catch (InterruptedException | IOException ex) {
+                RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
@@ -172,11 +175,12 @@ public class RemoteVcsSupportUtil {
             ExecutionEnvironment env = fileSystem.getExecutionEnvironment();
             DirEntry entry = RemoteFileSystemTransport.stat(env, path);
             return entry.canRead();
-        } catch (InterruptedException ex) {
-            return false; // TODO: is this correct?
-        } catch (ExecutionException ex) {
-            return false; // TODO: is this correct?
+        } catch (ConnectException ex) {
+            RemoteLogger.finest(ex);
+        } catch (InterruptedException | IOException | ExecutionException ex) {
+            RemoteLogger.finest(ex);
         }    
+        return false; // TODO: is this correct?
     }
     
     public static boolean canRead(FileSystem fileSystem, String path) {
@@ -192,11 +196,13 @@ public class RemoteVcsSupportUtil {
             ExecutionEnvironment env = fileSystem.getExecutionEnvironment();
             DirEntry entry = RemoteFileSystemTransport.stat(env, path);
             return entry.getSize();
-        } catch (InterruptedException ex) {
+        } catch (ConnectException ex) {
+            RemoteLogger.finest(ex);
             return 0; // TODO: is this correct?
-        } catch (ExecutionException ex) {
+        } catch (InterruptedException | IOException | ExecutionException ex) {
+            RemoteLogger.finest(ex);
             return 0; // TODO: is this correct?
-        }
+        }   
     }
 
     public static long getSize(FileSystem fileSystem, String path) {
