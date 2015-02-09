@@ -125,15 +125,19 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
             @Override
             public void run() {
                 Page page = pageModel.getWebKit().getPage();
-                String scriptToInject = Files.getScript("knockout"); // NOI18N
-                scriptToInject = scriptToInject.replace("\"", "\\\""); // NOI18N
-                scriptToInject = scriptToInject.replace("\n", "\\n"); // NOI18N
+                String prefix = Files.getScript("knockout-pre"); // NOI18N
+                prefix = prefix.replace("\"", "\\\""); // NOI18N
+                prefix = prefix.replace("\n", "\\n"); // NOI18N
+                String suffix = Files.getScript("knockout-post"); // NOI18N
+                suffix = suffix.replace("\"", "\\\""); // NOI18N
+                suffix = suffix.replace("\n", "\\n"); // NOI18N
                 String preprocessor =
                         "(function (script) {\n" + // NOI18N
-                        "  var scriptToInject = \"" + scriptToInject + "\";\n" +  // NOI18N
+                        "  var prefix = \"" + prefix + "\";\n" +  // NOI18N
+                        "  var suffix = \"" + suffix + "\";\n" +  // NOI18N
                         "  var newScript;\n" + // NOI18N
                         "  if (script.indexOf('getBindingAccessors') != -1 && script.indexOf('bindingProvider') != -1) {\n" + // NOI18N
-                        "    newScript = script + scriptToInject;\n" + // NOI18N
+                        "    newScript = prefix + script + suffix;\n" + // NOI18N
                         "  } else {\n" + // NOI18N
                         "    newScript = script;\n" + // NOI18N
                         "  }\n" + // NOI18N
