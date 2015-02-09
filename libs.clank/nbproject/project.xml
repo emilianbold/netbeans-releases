@@ -66,6 +66,7 @@ made subject to such option by the copyright holder.
                 <package>org.clang.serialization</package>
                 <package>org.clang.staticanalyzer.core</package>
                 <package>org.clang.tools.driver</package>
+                <package>org.clang.tools.services</package>
                 <package>org.clank.java</package>
                 <package>org.clank.java.impl</package>
                 <package>org.clank.java.stdimpl</package>
@@ -137,6 +138,10 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-tools-driver.jar</runtime-relative-path>
                 <binary-origin>external/org-clang-tools-driver.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-clang-tools-services.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-tools-services.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clank-java.jar</runtime-relative-path>
