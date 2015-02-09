@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleGenerator;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -167,6 +168,13 @@ public final class PhpProjectConvertor implements ProjectConvertor {
         }
 
         private FileObject detectSourceRoot() {
+            // first check if there is any *.php file right in project dir
+            for (FileObject child : projectDirectory.getChildren()) {
+                if (FileUtils.isPhpFile(child)) {
+                    return projectDirectory;
+                }
+            }
+            // now, check well known sources
             for (String dir : KNOWN_SOURCE_ROOTS) {
                 FileObject srcDir = projectDirectory.getFileObject(dir);
                 if (srcDir != null)  {
