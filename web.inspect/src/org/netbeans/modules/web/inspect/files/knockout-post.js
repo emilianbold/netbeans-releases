@@ -40,43 +40,5 @@
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-; // Intentional "redundant" semi-colon. It ensures that our code is not
-  // misinterpreted when the previous statement is not ended properly.
-(function() {
-    if (typeof(NetBeans) !== 'object') {
-        NetBeans = new Object();
-    }
-    if (NetBeans.knockoutMarkers) {
-        return;
-    }
-    var delegate = (typeof(ko) === 'object') ? ko.bindingProvider.instance.getBindingAccessors : null;
-    if (delegate) {
-        NetBeans.knockoutMarkers = [];
-        var createMarker = function(node, bindingName) {
-            var marker = {
-                invoked: false,
-                binding: bindingName,
-                node: node
-            };
-            NetBeans.knockoutMarkers.push(marker);
-            return marker;
-        };
-        ko.bindingProvider.instance.getBindingAccessors = function(node) {
-            var accessors = delegate.apply(this, arguments);
-            if (accessors) {
-                for (var accessorName in accessors) {
-                    if (accessors.hasOwnProperty(accessorName)) {
-                        var originalAccessor = accessors[accessorName];
-                        accessors[accessorName] = (function(marker, accessor) {
-                            return function() {
-                                marker.invoked = true;
-                                return accessor();
-                            };
-                        })(createMarker(node, accessorName), originalAccessor);
-                    }
-                }
-            }
-            return accessors;
-        };
-    } // else not Knockout 3+ script
-})();
+// Initializes the detection of unused bindings (when window.ko is present)
+NetBeans.detectUnusedBindings();
