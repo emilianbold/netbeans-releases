@@ -203,11 +203,12 @@ public class JsDocElementUtils {
                             name.append(elementText.substring(start)).append(']');// close the default value
                         }
                     }
-                    while (process < parts.length && currentPart.charAt(parts[process].length() - 1) != ']') {
-                        process++;
+                    while (process < parts.length - 1 && currentPart.charAt(currentPart.length() - 1) != ']') {
+                         process++;
+                         currentPart = parts[process].trim();                        
                     }
                     
-                    if (process < parts.length && parts[process].trim().charAt(parts[process].length() - 1) == ']') {
+                    if (process < parts.length && currentPart.charAt(currentPart.length() - 1) == ']') {
                         process++;
                     }
                 } else {
