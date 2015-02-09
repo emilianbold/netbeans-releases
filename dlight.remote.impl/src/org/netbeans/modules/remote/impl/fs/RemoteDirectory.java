@@ -698,7 +698,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return newEntries;
     }
 
-    private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
+    private DirEntry getSpecialDirChildEntry(String absPath, String childName) 
+            throws ConnectException, IOException, InterruptedException, ExecutionException {
         DirEntry entry;
         try {
             entry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), absPath);

@@ -361,6 +361,8 @@ import org.openide.util.RequestProcessor;
             srv = getOrCreateServer();
         } catch (ConnectionManager.CancellationException ex) {
             throw new java.util.concurrent.CancellationException(ex.getMessage());
+        } catch (ConnectException ex) {
+            throw ex; // that's normal, transport still valid, just disconnect occurred
         } catch (IOException ex) {
             setInvalid(false);
             throw ex;
