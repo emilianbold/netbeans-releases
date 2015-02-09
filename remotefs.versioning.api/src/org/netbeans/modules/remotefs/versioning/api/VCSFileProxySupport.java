@@ -55,6 +55,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -162,7 +165,28 @@ public final class VCSFileProxySupport {
             }
         }
     }
-    
+
+    public static boolean setExecutable(VCSFileProxy file, boolean b) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            return javaFile.setExecutable(b);
+        } else {
+            // TODO: 
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public static VCSFileProxy createSymbolicLink(VCSFileProxy link, String relPath) throws IOException {
+        File javaFile = link.toFile();
+        if (javaFile != null) {
+            Path createdSymbolicLink = Files.createSymbolicLink(Paths.get(javaFile.getPath()), Paths.get(relPath));
+            return VCSFileProxy.createFileProxy(createdSymbolicLink.toFile());
+        } else {
+            // TODO: 
+            throw new UnsupportedOperationException();
+        }
+    }
+
     public static VCSFileProxy fromURI(URI uri) {
         if ("file".equals(uri.getScheme())) { // NOI18N
             return VCSFileProxy.createFileProxy(new File(uri));

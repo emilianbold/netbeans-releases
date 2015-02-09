@@ -42,8 +42,8 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+//import java.nio.file.Files;
+//import java.nio.file.Paths;
 import java.util.Map;
 import static junit.framework.Assert.assertFalse;
 import org.eclipse.jgit.dircache.DirCache;
@@ -609,7 +609,7 @@ public class StatusTest extends AbstractGitTestCase {
         }
         VCSFileProxy f = VCSFileProxy.createFileProxy(workDir, "f");
         write(f, "hi, i am executable");
-        //f.setExecutable(true);
+        VCSFileProxySupport.setExecutable(f, true);
         VCSFileProxy[] roots = { f };
         add(roots);
         commit(roots);
@@ -617,7 +617,7 @@ public class StatusTest extends AbstractGitTestCase {
         Map<VCSFileProxy, GitStatus> statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         
-        //f.setExecutable(false);
+        VCSFileProxySupport.setExecutable(f, false);
         statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
         
@@ -694,8 +694,8 @@ public class StatusTest extends AbstractGitTestCase {
         // create a symlink, not added to index
         String relPath = "../some_dir";
         VCSFileProxy link = VCSFileProxy.createFileProxy(folder1, folder2.getName());
-        Files.createSymbolicLink(Paths.get(link.getPath()), Paths.get(relPath));
-        assertTrue(Files.isSymbolicLink(Paths.get(link.getPath())));
+        VCSFileProxySupport.createSymbolicLink(link, relPath);
+        assertTrue(VCSFileProxySupport.isSymlink(link));
         statuses = client.getStatus(new VCSFileProxy[] { link }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         
@@ -710,8 +710,8 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, link, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         
         // symlink is deleted on disk
-        Files.delete(Paths.get(link.getPath()));
-        assertFalse(Files.isSymbolicLink(Paths.get(link.getPath())));
+        VCSFileProxySupport.delete(link);
+        assertFalse(VCSFileProxySupport.isSymlink(link));
         statuses = client.getStatus(new VCSFileProxy[] { link }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, link, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false);
         
@@ -743,8 +743,8 @@ public class StatusTest extends AbstractGitTestCase {
         // create a symlink, not added to index
         String relPath = "../some_dir/some_file";
         VCSFileProxy link = VCSFileProxy.createFileProxy(folder1, file2_1.getName());
-        Files.createSymbolicLink(Paths.get(link.getPath()), Paths.get(relPath));
-        assertTrue(Files.isSymbolicLink(Paths.get(link.getPath())));
+        VCSFileProxySupport.createSymbolicLink(link, relPath);
+        assertTrue(VCSFileProxySupport.isSymlink(link));
         statuses = client.getStatus(new VCSFileProxy[] { link }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         
@@ -776,8 +776,8 @@ public class StatusTest extends AbstractGitTestCase {
         // create a symlink, not added to index
         String relPath = "../some_dir";
         VCSFileProxy link = VCSFileProxy.createFileProxy(folder1, folder2.getName());
-        Files.createSymbolicLink(Paths.get(link.getPath()), Paths.get(relPath));
-        assertTrue(Files.isSymbolicLink(Paths.get(link.getPath())));
+        VCSFileProxySupport.createSymbolicLink(link, relPath);
+        assertTrue(VCSFileProxySupport.isSymlink(link));
         statuses = client.getStatus(new VCSFileProxy[] { link }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         
