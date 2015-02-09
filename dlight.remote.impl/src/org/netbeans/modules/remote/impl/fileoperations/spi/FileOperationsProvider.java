@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fileoperations.spi;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -59,7 +60,9 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
+import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
@@ -140,7 +143,10 @@ abstract public class FileOperationsProvider {
             try {
                 DirEntry entry = RemoteFileSystemTransport.stat(env, file.getPath());
                 return entry.isDirectory(); 
-            } catch (InterruptedException ex) {
+            } catch (ConnectException ex) {
+                RemoteLogger.finest(ex);
+            } catch (InterruptedException | IOException ex) {
+                RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
@@ -163,7 +169,10 @@ abstract public class FileOperationsProvider {
             try {
                 DirEntry entry = RemoteFileSystemTransport.stat(env, file.getPath());
                 return entry.getLastModified().getTime();
-            } catch (InterruptedException ex) {
+            } catch (ConnectException ex) {
+                RemoteLogger.finest(ex);
+            } catch (InterruptedException | IOException ex) {
+                RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return -1;
@@ -186,7 +195,10 @@ abstract public class FileOperationsProvider {
             try {
                 DirEntry entry = RemoteFileSystemTransport.stat(env, file.getPath());
                 return entry.isPlainFile(); 
-            } catch (InterruptedException ex) {
+            } catch (ConnectException ex) {
+                RemoteLogger.finest(ex);
+            } catch (InterruptedException | IOException ex) {
+                RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
@@ -203,7 +215,10 @@ abstract public class FileOperationsProvider {
             try {
                 DirEntry entry = RemoteFileSystemTransport.stat(env, file.getPath());
                 return entry.canWrite();
-            } catch (InterruptedException ex) {
+            } catch (ConnectException ex) {
+                RemoteLogger.finest(ex);
+            } catch (InterruptedException | IOException ex) {
+                RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
@@ -245,7 +260,10 @@ abstract public class FileOperationsProvider {
                 DirEntry entry = RemoteFileSystemTransport.lstat(
                         getExecutionEnvironment(), file.getPath());
                 return entry != null;
-            } catch (InterruptedException ex) {
+            } catch (ConnectException ex) {
+                RemoteLogger.finest(ex);
+            } catch (InterruptedException | IOException ex) {
+                RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
@@ -411,7 +429,11 @@ abstract public class FileOperationsProvider {
         }
 
         @Override
-        public Process createProcess(String executable, String workingDirectory, List<String> arguments, List<String> paths, Map<String, String> environment, boolean redirectErrorStream) throws IOException {
+        public Process createProcess(String executable, String workingDirectory, List<String> arguments, List<String> paths, Map<String, String> environment, boolean redirectErrorStream) 
+                throws ConnectException, IOException {
+            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+            }
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
             pb.setExecutable(executable).setWorkingDirectory(workingDirectory).setArguments(arguments.toArray(new String[arguments.size()]));
             MacroMap mm = MacroMap.forExecEnv(env);

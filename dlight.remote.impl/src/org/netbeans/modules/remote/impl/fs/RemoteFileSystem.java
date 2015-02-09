@@ -95,7 +95,6 @@ import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbObjectInputStream;
 import org.openide.windows.WindowManager;
-import sun.misc.REException;
 
 /**
  * Remote file system:
