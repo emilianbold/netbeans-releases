@@ -152,7 +152,7 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
 
     protected final void save (VCSFileProxy gitIgnore, List<IgnoreRule> ignoreRules) throws IOException {
         BufferedWriter bw = null;
-        VCSFileProxy tmpFile = VCSFileProxySupport.createTempFile(gitIgnore.getParentFile(), Constants.DOT_GIT_IGNORE, "tmp", true);
+        VCSFileProxy tmpFile = VCSFileProxySupport.generateTemporaryFile(gitIgnore.getParentFile(), Constants.DOT_GIT_IGNORE+"tmp");
         try {
             bw = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tmpFile), Constants.CHARSET));
             for (ListIterator<IgnoreRule> it = ignoreRules.listIterator(); it.hasNext(); ) {
