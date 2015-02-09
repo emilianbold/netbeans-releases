@@ -42,8 +42,6 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
-//import java.nio.file.Files;
-//import java.nio.file.Paths;
 import java.util.Map;
 import static junit.framework.Assert.assertFalse;
 import org.eclipse.jgit.dircache.DirCache;
@@ -51,13 +49,13 @@ import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.remote.GitClient;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitStatus;
 import org.netbeans.libs.git.remote.GitStatus.Status;
 import org.netbeans.libs.git.remote.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor.DefaultProgressMonitor;
 import org.netbeans.libs.git.remote.progress.StatusListener;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
@@ -68,14 +66,8 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author ondra
  */
 public class StatusTest extends AbstractGitTestCase {
-
     private VCSFileProxy workDir;
-    private Repository repository;
-    private static final StatusListener NULL_STATUS_LISTENER = new StatusListener() {
-        @Override
-        public void notifyStatus(GitStatus status) {
-        }
-    };
+    private JGitRepository repository;
 
     public StatusTest(String testName) throws IOException {
         super(testName);
@@ -85,7 +77,7 @@ public class StatusTest extends AbstractGitTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         workDir = getWorkingDirectory();
-        repository = getRepository(getLocalGitRepository());
+        repository = getLocalGitRepository();
     }
 
     public void testMiscStatus () throws Exception {
@@ -557,7 +549,7 @@ public class StatusTest extends AbstractGitTestCase {
         Map<VCSFileProxy, GitStatus> conflicts = client.getConflicts(roots, NULL_PROGRESS_MONITOR);
         assertEquals(0, conflicts.size());
 
-        DirCache cache = repository.lockDirCache();
+        DirCache cache = repository.getRepository().lockDirCache();
         try {
             DirCacheEntry e = cache.getEntry("f");
             DirCacheBuilder builder = cache.builder();
@@ -603,10 +595,6 @@ public class StatusTest extends AbstractGitTestCase {
     }
     
     public void testIgnoreExecutable () throws Exception {
-        if (isWindows()) {
-            // no reason to test on win
-            return;
-        }
         VCSFileProxy f = VCSFileProxy.createFileProxy(workDir, "f");
         write(f, "hi, i am executable");
         VCSFileProxySupport.setExecutable(f, true);
@@ -621,7 +609,7 @@ public class StatusTest extends AbstractGitTestCase {
         statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
         
-        StoredConfig config = repository.getConfig();
+        StoredConfig config = repository.getRepository().getConfig();
         config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
         config.save();
         statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
