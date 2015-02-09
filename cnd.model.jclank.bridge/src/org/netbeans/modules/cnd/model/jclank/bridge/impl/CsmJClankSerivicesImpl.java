@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.model.jclank.bridge.trace.WriterOutputStream;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -129,7 +130,7 @@ public final class CsmJClankSerivicesImpl {
                 }
                 handle.progress(srcFile.getAbsolutePath() + ("(" + (doneFiles+1) + " of " + size + ")") , doneFiles++);
                 try {
-                    long time = dumpPreprocessed(srcFile, out, err, false, false);
+                    long time = dumpPreprocessed(srcFile, out, err, CndUtils.isDebugMode(), false, false);
                     totalTime+=time;
                     err.$out("done  ").$out(srcFile.getAbsolutePath()).$out(" ").$out(NativeTrace.formatNumber(time)).$out("ms").$out("\n").flush();
                 } catch (Throwable e) {
@@ -172,7 +173,7 @@ public final class CsmJClankSerivicesImpl {
         assert out != null;
         raw_ostream llvm_out = new PrintWriter_ostream(out);
         raw_ostream llvm_err = (err != null) ? new PrintWriter_ostream(err) : llvm_out;
-        long time = dumpPreprocessed(nfi, llvm_out, llvm_err, printTokens, printStatistics);
+        long time = dumpPreprocessed(nfi, llvm_out, llvm_err, printTokens, printTokens, printStatistics);
         if (printStatistics) {
             PrintJClankStatistics(llvm_out);
         }
@@ -181,10 +182,11 @@ public final class CsmJClankSerivicesImpl {
     
     public static long dumpPreprocessed(NativeFileItem nfi, 
             raw_ostream llvm_out, raw_ostream llvm_err, 
+            boolean printDiags,
             boolean printTokens, boolean printPPStatistics) {
         long time = System.currentTimeMillis();
         boolean done = false;
-        Preprocessor /*&*/ PP = getPreprocessor(nfi, printTokens ? llvm_err : llvm.nulls());
+        Preprocessor /*&*/ PP = getPreprocessor(nfi, printDiags ? llvm_err : llvm.nulls());
         if (PP != null) {
             PreprocessorOutputOptions Opts = createPPOptions(nfi);
             try {
