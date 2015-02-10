@@ -253,6 +253,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         if (resolved == null) {
             return;
         }
+        TypeMirror exprType = info.getTrees().getTypeMirror(resolved);
+        if (!Utilities.isValidType(exprType)) {
+            // do not attempt to introduce ill-typed variables, constant or parameters.
+            return;
+        }
         TreePathHandle h = TreePathHandle.create(resolved, info);
         TreePath method   = TreeUtils.findMethod(resolved);
         boolean variableRewrite = resolved.getLeaf().getKind() == Kind.VARIABLE;
