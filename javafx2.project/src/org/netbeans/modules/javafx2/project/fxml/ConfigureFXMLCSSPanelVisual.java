@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -130,7 +131,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
         ignoreRootCombo = true;
         createdLocationComboBox.setSelectedItem(preselectedGroup);
         ignoreRootCombo = false;
-        if(isMaven) {
+        if(isMaven && support.getType().equals(JavaProjectConstants.SOURCES_TYPE_RESOURCES)) {
             createdPackageComboBox.getEditor().setItem(FXMLTemplateWizardIterator.defaultMavenCSSPackage);
         } else {
             createdPackageComboBox.getEditor().setItem(support.getParent().getCurrentPackageName());
