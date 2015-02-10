@@ -102,10 +102,13 @@ public class UpdateRefCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return new StringBuilder("git update-ref ").append(refName).append(" ").append(revision).toString(); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("update-ref"); //NOI18N
+        addArgument(refName);
+        addArgument(revision);
     }
 
     public GitRefUpdateResult getResult () {

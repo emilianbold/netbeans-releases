@@ -54,6 +54,7 @@ import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.netbeans.libs.git.remote.GitClient;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -143,16 +144,14 @@ public class RemoveCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git rm"); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("rm"); //NOI18N
         if (cached) {
-            sb.append(" --cached"); //NOI18N
+            addArgument("--cached"); //NOI18N
         }
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root); //NOI18N
-        }
-        return sb.toString();
+        addFiles(roots);
     }
 }

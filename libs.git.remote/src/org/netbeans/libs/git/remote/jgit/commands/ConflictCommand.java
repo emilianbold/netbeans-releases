@@ -67,7 +67,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  *
  * @author ondra
  */
-public class ConflictCommand extends StatusCommand {
+public class ConflictCommand extends StatusCommandBase {
 
     private final ProgressMonitor monitor;
     private final StatusListener listener;
@@ -79,14 +79,13 @@ public class ConflictCommand extends StatusCommand {
         this.listener = listener;
         this.roots = roots;
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git show conflicts"); //NOI18N
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root.getPath()); //NOI18N
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("show"); //NOI18N
+        addArgument("conflicts"); //NOI18N
+        addFiles(roots);
     }
 
     @Override

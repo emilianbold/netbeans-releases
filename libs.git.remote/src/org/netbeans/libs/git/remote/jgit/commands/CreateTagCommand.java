@@ -102,24 +102,25 @@ public class CreateTagCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git tag");
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("tag"); //NOI18N
         if (signed) {
-            sb.append(" -s");
+            addArgument("-s"); //NOI18N
         }
         if (forceUpdate) {
-            sb.append(" -f");
+            addArgument("-f"); //NOI18N
         }
         if (message != null && !message.isEmpty()) {
-            sb.append(" -m ").append(message.replace("\n", "\\n"));
+            addArgument("-m"); //NOI18N
+            addArgument(message.replace("\n", "\\n")); //NOI18N
         }
-        sb.append(' ').append(tagName);
+        addArgument(tagName);
         if (taggedObject != null) {
-            sb.append(' ').append(taggedObject);
+            addArgument(taggedObject);
         }
-        return sb.toString();
     }
 
     public GitTag getTag () {

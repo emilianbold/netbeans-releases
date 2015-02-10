@@ -96,14 +96,14 @@ public class GetCommonAncestorCommand extends GitCommand {
             }
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git merge-base "); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("merge-base"); //NOI18N
         for (String s : revisions) {
-            sb.append(s).append(' ');
+            addArgument(s);
         }
-        return sb.toString();
     }
     
     public GitRevisionInfo getRevision () {

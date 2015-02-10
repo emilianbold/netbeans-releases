@@ -151,16 +151,17 @@ public class PushCommand extends TransportCommand {
             }
         }
     }
-
-    @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git push ").append(remote); //NOI18N
-        for (String refSpec : pushRefSpecs) {
-            sb.append(' ').append(refSpec);
-        }
-        return sb.toString();
-    }
     
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("push"); //NOI18N
+        addArgument(remote);
+        for (String refSpec : pushRefSpecs) {
+            addArgument(refSpec);
+        }
+    }
+
     public GitPushResult getResult () {
         return result;
     }

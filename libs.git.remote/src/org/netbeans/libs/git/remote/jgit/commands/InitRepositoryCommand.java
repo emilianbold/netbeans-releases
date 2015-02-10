@@ -77,6 +77,8 @@ public class InitRepositoryCommand extends GitCommand {
                     getRepository().getLocation(), getRepository().getMetadataLocation());
             monitor.preparationsFailed(message);
             throw new GitException(message);
+        } else {
+            prepare();
         }
         return true;
     }
@@ -99,9 +101,11 @@ public class InitRepositoryCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return new StringBuilder("git init ").append(workDir.getPath()).toString(); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("init"); //NOI18N
+        addArgument(workDir.getPath());
     }
 }

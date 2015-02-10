@@ -109,10 +109,11 @@ public class ListBranchCommand extends GitCommand {
         }
         return branches;
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return "git branch"; //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("branch"); //NOI18N
     }
 
     public Map<String, GitBranch> getBranches () {

@@ -44,12 +44,10 @@ package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -77,8 +75,7 @@ import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
-import org.netbeans.libs.git.remote.GitConflictDescriptor;
-import org.netbeans.libs.git.remote.GitConflictDescriptor.Type;
+import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitStatus;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
@@ -86,53 +83,175 @@ import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.libs.git.remote.progress.StatusListener;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
-public class StatusCommand extends GitCommand {
-    private final LinkedHashMap<VCSFileProxy, GitStatus> statuses;
+public class StatusCommand extends StatusCommandBase {
     private final VCSFileProxy[] roots;
     private final ProgressMonitor monitor;
-    private final StatusListener listener;
     private final String revision;
     private static final Logger LOG = Logger.getLogger(StatusCommand.class.getName());
     private static final Set<VCSFileProxy> logged = new HashSet<>();
 
     public StatusCommand (JGitRepository repository, String revision, VCSFileProxy[] roots, GitClassFactory gitFactory,
             ProgressMonitor monitor, StatusListener listener) {
-        super(repository, gitFactory, monitor);
+        super(repository, revision, roots, gitFactory, monitor, listener);
         this.roots = roots;
         this.monitor = monitor;
-        this.listener = listener;
         this.revision = revision;
-        statuses = new LinkedHashMap<VCSFileProxy, GitStatus>();
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git "); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
         if (Constants.HEAD.equals(revision)) {
-             sb.append("status"); //NOI18N
+             addArgument("status"); //NOI18N
+             addArgument("--short"); //NOI18N
         } else {
-             sb.append("diff --raw"); //NOI18N
+             addArgument("diff"); //NOI18N
+             addArgument("--raw"); //NOI18N
         }
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root.getPath());
-        }
-        return sb.toString();
+        addFiles(roots);
     }
 
     @Override
     protected boolean prepareCommand () throws GitException {
-        return getRepository().getMetadataLocation().exists();
+        final boolean exists = getRepository().getMetadataLocation().exists();
+        if (exists) {
+            prepare();
+        }
+        return exists;
     }
 
     @Override
     protected void run () throws GitException {
+        if (true) {
+            runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+    private void runCLI () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        String cmd = getCommandLine();
+        try {
+            ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+            String executable = getExecutable();
+            String[] args = getCliArguments();
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+            if (exitStatus.output!= null && !exitStatus.output.isEmpty()) {
+                for(String line : exitStatus.output.split("\n")) { //NOI18N
+                    if (line.length() > 3) {
+                        char first = line.charAt(0);
+                        char second = line.charAt(1);
+                        String file;
+                        String renamed = null;
+                        int i = line.indexOf("->");
+                        if (i > 0) {
+                            file = line.substring(2, i).trim();
+                            renamed = line.substring(i+1).trim();
+                        } else {
+                            file = line.substring(2).trim();
+                        }
+                        boolean tracked = !(first == '?' || first == '!');
+                        GitStatus.Status statusHeadIndex = GitStatus.Status.STATUS_IGNORED;
+                        switch (first) {
+                            case 'A':
+                                statusHeadIndex = GitStatus.Status.STATUS_ADDED;
+                                break;
+                            case 'C':
+                                statusHeadIndex = GitStatus.Status.STATUS_ADDED;
+                                break;
+                            case 'R':
+                            case 'D':
+                                statusHeadIndex = GitStatus.Status.STATUS_REMOVED;
+                                break;
+                            case 'M':
+                            case 'U':
+                                statusHeadIndex = GitStatus.Status.STATUS_MODIFIED;
+                                break;
+                            case ' ':
+                                statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
+                                break;
+                            case '?':
+                            case '!':
+                                statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
+                                break;
+                        }
+                        GitStatus.Status statusIndexWC = GitStatus.Status.STATUS_IGNORED;
+                        switch (second) {
+                            case 'A':
+                                statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                                break;
+                            case 'D':
+                                statusIndexWC = GitStatus.Status.STATUS_REMOVED;
+                                break;
+                            case 'M':
+                            case 'U':
+                                statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
+                                break;
+                            case ' ':
+                                statusIndexWC = GitStatus.Status.STATUS_NORMAL;
+                                break;
+                            case '?':
+                            case '!':
+                                statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                                break;
+                        }
+                        GitStatus.Status statusHeadWC;
+                        if (!tracked) {
+                            statusHeadWC = GitStatus.Status.STATUS_ADDED;
+                        } else {
+                            if (statusHeadIndex == GitStatus.Status.STATUS_NORMAL) {
+                                statusHeadWC = statusIndexWC;
+                            } else if (statusIndexWC == GitStatus.Status.STATUS_NORMAL) {
+                                statusHeadWC = statusHeadIndex;
+                            } else if (statusHeadIndex == GitStatus.Status.STATUS_ADDED && statusIndexWC == GitStatus.Status.STATUS_REMOVED) {
+                                statusHeadWC = GitStatus.Status.STATUS_NORMAL;
+                            } else {
+                                statusHeadWC = statusHeadIndex;
+                            }
+                        }
+                        VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
+                        boolean isFolder = vcsFile.isDirectory();
+                        long indexTimestamp = vcsFile.lastModified();
+                        GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath()+"/"+file, vcsFile,
+                            statusHeadIndex, statusIndexWC, statusHeadWC,
+                            null, isFolder, null/*renamed*/, indexTimestamp);
+                        addStatus(vcsFile, status);
+                    }
+                    //command.outputText(line);
+                }
+            }
+            if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                for(String line : exitStatus.error.split("\n")) { //NOI18N
+                    if (!line.isEmpty()) {
+                        //command.errorText(line);
+                    }
+                }
+            }
+            if(canceled.canceled()) {
+                return;
+            }
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if(canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }        
+    }
+
+    private void runKit () throws GitException {
         Repository repository = getRepository().getRepository();
         try {
             DirCache cache = repository.readDirCache();
@@ -293,10 +412,6 @@ public class StatusCommand extends GitCommand {
         }
     }
 
-    public Map<VCSFileProxy, GitStatus> getStatuses() {
-        return statuses;
-    }
-
     private Map<String, DiffEntry> detectRenames (Repository repository, DirCache cache, ObjectId commitId) {
         List<DiffEntry> entries;
         TreeWalk treeWalk = new TreeWalk(repository);
@@ -327,48 +442,6 @@ public class StatusCommand extends GitCommand {
             }
         }
         return renames;
-    }
-
-    protected final void handleConflict (GitStatus[] conflicts, String workTreePath) {
-        if (conflicts[0] != null || conflicts[1] != null || conflicts[2] != null) {
-            GitStatus status;
-            Type type;
-            if (conflicts[1] == null && conflicts[2] == null) {
-                type = Type.BOTH_DELETED;
-                status = conflicts[0];
-            } else if (conflicts[1] == null && conflicts[2] != null) {
-                type = Type.DELETED_BY_US;
-                status = conflicts[2];
-            } else if (conflicts[1] != null && conflicts[2] == null) {
-                type = Type.DELETED_BY_THEM;
-                status = conflicts[1];
-            } else if (conflicts[0] == null) {
-                type = Type.BOTH_ADDED;
-                status = conflicts[1];
-            } else {
-                type = Type.BOTH_MODIFIED;
-                status = conflicts[1];
-            }
-            // how do we get other types??
-            GitConflictDescriptor desc = getClassFactory().createConflictDescriptor(type);
-            status = getClassFactory().createStatus(true, status.getRelativePath(), workTreePath, status.getFile(), GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL,
-                    GitStatus.Status.STATUS_NORMAL, desc, status.isFolder(), null, status.getIndexEntryModificationDate());
-            addStatus(status.getFile(), status);
-        }
-        // clear conflicts cache
-        Arrays.fill(conflicts, null);
-    }
-
-    protected final void addStatus (VCSFileProxy file, GitStatus status) {
-        GitStatus presentStatus = statuses.get(file);
-        if (presentStatus != null && presentStatus.isRenamed()) {
-            // HACK for renames: AAA->aaa
-            // do not overwrite more interesting status on Windows and MAC
-            // right, using java.io.File was a bad decision
-        } else {
-            statuses.put(file, status);
-        }
-        listener.notifyStatus(status);
     }
 
     /**

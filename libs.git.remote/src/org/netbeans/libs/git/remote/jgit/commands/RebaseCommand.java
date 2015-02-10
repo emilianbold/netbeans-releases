@@ -118,17 +118,16 @@ public class RebaseCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder();
-        sb.append("git rebase "); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("rebase"); //NOI18N
         if (operation == GitClient.RebaseOperationType.BEGIN) {
-            sb.append(revision);
+            addArgument(revision);
         } else {
-            sb.append(operation.toString());
+            addArgument(operation.toString());
         }
-        return sb.toString();
     }
 
     public GitRebaseResult getResult () {

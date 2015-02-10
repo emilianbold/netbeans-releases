@@ -76,15 +76,17 @@ public class StashDropCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("stash"); //NOI18N
         if (all) {
-            return "git stash clear"; //NOI18N
+            addArgument("clear"); //NOI18N
         } else {
-            return new StringBuilder("git stash drop stash@{").append(stashIndex).append("}").toString(); //NOI18N
+            addArgument("drop"); //NOI18N
+            addArgument("stash@{"+stashIndex+"}");
         }
     }
-    
 }
 

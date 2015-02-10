@@ -81,16 +81,18 @@ public class StashSaveCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
-    @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git stash save "); //NOI18N
-        if (includeUntracked) {
-            sb.append("--include-untracked "); //NOI18N
-        }
-        return sb.append(message).toString();
-    }
     
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("stash"); //NOI18N
+        addArgument("save"); //NOI18N
+        if (includeUntracked) {
+            addArgument("--include-untracked"); //NOI18N
+        }
+        addArgument(message);
+    }
+
     public GitRevisionInfo getStashedCommit () {
         return stash;
     }

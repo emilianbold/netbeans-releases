@@ -359,11 +359,14 @@ public class AstRenderer {
                     default:
                         renderNSP(token, currentNamespace, container, file);
                 }
-            }  catch (AstRendererException e) {
+            } catch (AstRendererException e) {
                 if (!SKIP_AST_RENDERER_EXCEPTIONS) {
                     // In MySQL related tests we see endless "empty function name" exceptions
                     DiagnosticExceptoins.register(e);
                 }
+            } catch (Throwable thr) {
+              CharSequence fileName = (file != null) ? file.getAbsolutePath() : "<unknown>"; // NOI18N
+              throw new RuntimeException("Exception in file " + fileName + ": " + thr.getMessage(), thr); // NOI18N
             }
         }
     }

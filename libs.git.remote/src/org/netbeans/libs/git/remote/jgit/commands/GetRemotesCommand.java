@@ -86,10 +86,12 @@ public class GetRemotesCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return "git remote -v"; //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("remote"); //NOI18N
+        addArgument("-v"); //NOI18N
     }
 
     public Map<String, GitRemoteConfig> getRemotes () {
