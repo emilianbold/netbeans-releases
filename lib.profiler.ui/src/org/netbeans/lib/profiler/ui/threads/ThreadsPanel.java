@@ -124,6 +124,7 @@ public class ThreadsPanel extends JPanel {
     
     public ThreadsPanel(ThreadsDataManager dataManager, Action saveView) {
         this.dataManager = dataManager;
+        lastTimestamp = dataManager.getEndTime();
         viewManager = new ViewManager(1, dataManager) {
             public void columnWidthChanged(int column, int oldW, int newW) {
                 if (column == 1 && isFit()) threadsTable.updateColumnPreferredWidth(1);
