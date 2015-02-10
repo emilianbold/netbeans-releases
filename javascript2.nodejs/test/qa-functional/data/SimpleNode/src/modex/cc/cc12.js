@@ -1,4 +1,4 @@
-var net = require("http");var rfnc = require("../app/ref/rrfunc");var ar = require("../folder/arrRef");var rnewe = new rfnc();var litr12 = require('../folder/literalRef'); var instRef = require("../folder/instanceRef");
+var net = require("http");var rfnc = require("../app/ref/rrfunc");var ar = require("../folder/arrRef");var rnewe = new rfnc();var litr12 = require('../../folder/literalRef'); var instRef = require("../folder/instanceRef");
 exports.attempt1 = {
     aaaaaa : function(){
 //cc;1;litr12.;0;pokus2,obj2,neco2,defineProperty,hasOwnProperty;pokus2;litr12.pokus2;jejda,pokus,neco2,getDate,E

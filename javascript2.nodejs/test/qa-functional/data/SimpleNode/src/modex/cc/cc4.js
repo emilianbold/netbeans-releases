@@ -1,5 +1,5 @@
 var net = require("http");var rfnc = require("../app/ref/rrfunc");var ar = require("../folder/arrRef");var rnewe = new rfnc();
-var litr = require('../folder/literalRef'); var instRef = require("../folder/instanceRef");
+var litr = require('../../folder/literalRef'); var instRef = require("../folder/instanceRef");
 module.exports = function(){
 //cc;1;litr.;0;pokus2,obj2,neco2,defineProperty,hasOwnProperty;pokus2;litr.pokus2;jejda,pokus,neco2,getDate,E
 

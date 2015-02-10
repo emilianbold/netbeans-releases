@@ -1,4 +1,4 @@
-var net = require("http");var rfnc = require("../app/ref/rrfunc");var ar = require("../folder/arrRef");var rnewe = new rfnc();var litr13 = require('../folder/literalRef'); var instRef = require("../folder/instanceRef");
+var net = require("http");var rfnc = require("../app/ref/rrfunc");var ar = require("../folder/arrRef");var rnewe = new rfnc();var litr13 = require('../../folder/literalRef'); var instRef = require("../folder/instanceRef");
 exports.registerRoute = function (app) {
     app.get("/api/:id", function (req, res) {
 //cc;1;litr13.;0;pokus2,obj2,neco2,defineProperty,hasOwnProperty;pokus2;litr13.pokus2;jejda,pokus,neco2,getDate,E
