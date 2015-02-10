@@ -52,30 +52,30 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  *
  * @author vriha
  */
-public class AnonymousModuleTest extends GeneralNodeJs {
+public class MEAnonymousModuleTest extends GeneralNodeJs {
 
-    public AnonymousModuleTest(String args) {
+    public MEAnonymousModuleTest(String args) {
         super(args);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(AnonymousModuleTest.class).addTest(
+                NbModuleSuite.createConfiguration(MEAnonymousModuleTest.class).addTest(
                         "openProject",
-                        "testAnonymous1",
-                        "testAnonymous2",
-                        "testAnonymous3",
-                        "testAnonymous4",
-                        "testAnonymous5",
-                        "testAnonymous6",
-                        "testAnonymous7",
-                        "testAnonymous8",
-                        "testAnonymous9",
-                        "testAnonymous10",
-                        "testAnonymous11",
-                        "testAnonymous12",
-                        "testAnonymous13"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+                        "testAnonymousME1",
+                        "testAnonymousME5",
+                        "testAnonymousME6",
+                        "testAnonymousME11",
+                        "testAnonymousME12",
+                        "testAnonymousME13",
+                        "testAnonymousME21",
+                        "testAnonymousME25",
+                        "testAnonymousME26",
+                        "testAnonymousME211",
+                        "testAnonymousME212",
+                        "testAnonymousME213"
+                ).enableModules(".*").clusters(".*").honorAutoloadEager(true)
+        );
     }
 
     public void openProject() throws Exception {
@@ -83,86 +83,86 @@ public class AnonymousModuleTest extends GeneralNodeJs {
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleNode");
         evt.waitNoEvent(2000);
-        openFile("cc|cc3.js", "SimpleNode");
-        AnonymousModuleTest.currentFile = "cc3.js";
+        MEAnonymousModuleTest.currentFile = "cc3.js";
+        openFile("modex|cc|cc3.js", "SimpleNode");
         endTest();
     }
 
-    public void testAnonymous1() throws Exception {
+    public void testAnonymousME1() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 77);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 77);
         endTest();
     }
 
-    public void testAnonymous2() throws Exception {
+    public void testAnonymousME5() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 79);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 85);
         endTest();
     }
 
-    public void testAnonymous3() throws Exception {
+    public void testAnonymousME6() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 81);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 87);
         endTest();
     }
 
-    public void testAnonymous4() throws Exception {
+  
+
+    public void testAnonymousME11() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 83);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 97);
         endTest();
     }
 
-    public void testAnonymous5() throws Exception {
+    public void testAnonymousME12() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 85);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 99);
         endTest();
     }
 
-    public void testAnonymous6() throws Exception {
+    public void testAnonymousME13() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 87);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 101);
         endTest();
     }
 
-    public void testAnonymous7() throws Exception {
+    public void testAnonymousME25() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 89);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 85);
         endTest();
     }
 
-    public void testAnonymous8() throws Exception {
+    public void testAnonymousME26() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 91);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 87);
         endTest();
     }
 
-    public void testAnonymous9() throws Exception {
+
+
+    public void testAnonymousME211() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 93);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 97);
         endTest();
     }
 
-    public void testAnonymous10() throws Exception {
+    public void testAnonymousME212() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 95);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 99);
         endTest();
     }
 
-    public void testAnonymous11() throws Exception {
+    public void testAnonymousME213() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 97);
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 101);
         endTest();
     }
 
-    public void testAnonymous12() throws Exception {
+    public void testAnonymousME21() throws Exception {
         startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 99);
-        endTest();
-    }
-
-    public void testAnonymous13() throws Exception {
-        startTest();
-        testCompletion(new EditorOperator(AnonymousModuleTest.currentFile), 101);
+        openFile("modex|cc|cc14.js", "SimpleNode");
+        MEAnonymousModuleTest.currentFile = "cc14.js";
+        testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 77);
         endTest();
     }
 
@@ -171,7 +171,7 @@ public class AnonymousModuleTest extends GeneralNodeJs {
         if (GeneralNodeJs.currentLine < 1) {
             return;
         }
-        EditorOperator eo = new EditorOperator(AnonymousModuleTest.currentFile);
+        EditorOperator eo = new EditorOperator(MEAnonymousModuleTest.currentFile);
         eo.setCaretPositionToEndOfLine(GeneralNodeJs.currentLine);
         String l = eo.getText(eo.getLineNumber());
         for (int i = 0; i < l.length() - 1; i++) {

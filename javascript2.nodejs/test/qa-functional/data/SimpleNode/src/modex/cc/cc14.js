@@ -1,6 +1,6 @@
-
-var modul = require("../complexModule");
-
+var modul = require("../../complexModule");
+var oo = new modul.constr();
+exports.foobar = function(){
 //cc;1;modul.literal.;0;prop1,den,ob,defineProperty,foo2,hasOwnProperty;prop1;modul.literal.prop|1;pokus2,obj2,lhello,getDate,E
 
 //cc;1;modul.literal.prop1.;0;iprop,iprop2,defineProperty,hasOwnProperty;iprop;modul.literal.prop|1.iprop;pokus2,obj2,fprop,getDate,E,pokus
@@ -66,7 +66,7 @@ var modul = require("../complexModule");
 
 //cc;1;modul.instRef.fakeAncestor.;0;numberOfHeads,fishInfo,defineProperty,hasOwnProperty;fishInfo;modul.instRef.fakeAncestor.|fishInfo();firstName,ancestor,props,getDate,E,obj
 
-var oo = new modul.constr();
+
 //cc;1;oo.;0;ale,ale2,bar,getSomething,attempt,hasOwnProperty;ale;oo.al|e;prop1,lnick,lRef,getDate
 
 
@@ -74,29 +74,30 @@ var oo = new modul.constr();
 
 
 
-//cc;1;require("../complexModule").literal.;0;prop1,den,ob,defineProperty,foo2,hasOwnProperty;prop1;require("../complexModule").literal.prop|1;pokus2,obj2,lhello,getDate,E
+//cc;1;require("../../complexModule").literal.;0;prop1,den,ob,defineProperty,foo2,hasOwnProperty;prop1;require("../../complexModule").literal.prop|1;pokus2,obj2,lhello,getDate,E
 
-//cc;1;require("../complexModule").literal.prop1.;0;iprop,iprop2,defineProperty,hasOwnProperty;iprop;require("../complexModule").literal.prop|1.iprop;pokus2,obj2,fprop,getDate,E,pokus
+//cc;1;require("../../complexModule").literal.prop1.;0;iprop,iprop2,defineProperty,hasOwnProperty;iprop;require("../../complexModule").literal.prop|1.iprop;pokus2,obj2,fprop,getDate,E,pokus
 
-//cc;1;require("../complexModule").literalRef.;0;propX,denX,obX,defineProperty,fooX,hasOwnProperty;propX;require("../complexModule").literalRef.prop|X;prop1,obj2,lhello,getDate,E
+//cc;1;require("../../complexModule").literalRef.;0;propX,denX,obX,defineProperty,fooX,hasOwnProperty;propX;require("../../complexModule").literalRef.prop|X;prop1,obj2,lhello,getDate,E
 
-//cc;1;require("../complexModule").literalRef.propX.;0;iprop,iprop2,defineProperty,hasOwnProperty;iprop;require("../complexModule").literalRef.prop|X.iprop;pokus2,obj2,fprop,getDate,E,pokus
+//cc;1;require("../../complexModule").literalRef.propX.;0;iprop,iprop2,defineProperty,hasOwnProperty;iprop;require("../../complexModule").literalRef.prop|X.iprop;pokus2,obj2,fprop,getDate,E,pokus
 
-//cc;1;require("../complexModule").inst.;0;firstName,dob,ancestor,instProps,dateOfSpell,tomorrow,nickname,getNickName,getSomeAge,fakeAncestor,configInst,hasOwnProperty;fakeAncestor;require("../complexModule").inst.fakeAnces|tor;prop1,lnick,lRef,getDate
+//cc;1;require("../../complexModule").inst.;0;firstName,dob,ancestor,instProps,dateOfSpell,tomorrow,nickname,getNickName,getSomeAge,fakeAncestor,configInst,hasOwnProperty;fakeAncestor;require("../../complexModule").inst.fakeAnces|tor;prop1,lnick,lRef,getDate
 
-//cc;1;require("../complexModule").inst.tomorrow().;0;getDate,getDay,defineProperty,hasOwnProperty,getHours;getDay;require("../complexModule").inst.tomorrow().|getDay();fakeAncestor,prop1,push,E,obj
+//cc;1;require("../../complexModule").inst.tomorrow().;0;getDate,getDay,defineProperty,hasOwnProperty,getHours;getDay;require("../../complexModule").inst.tomorrow().|getDay();fakeAncestor,prop1,push,E,obj
 
-//cc;1;require("../complexModule").instRef.;0;firstName,dob,ancestor,instProps,dateOfSpell,tomorrow,nickname,getNickName,getSomeAge,fakeAncestor,configInst,hasOwnProperty;fakeAncestor;require("../complexModule").instRef.fakeAnces|tor;prop1,lnick,lRef,getDate
+//cc;1;require("../../complexModule").instRef.;0;firstName,dob,ancestor,instProps,dateOfSpell,tomorrow,nickname,getNickName,getSomeAge,fakeAncestor,configInst,hasOwnProperty;fakeAncestor;require("../../complexModule").instRef.fakeAnces|tor;prop1,lnick,lRef,getDate
 
-//cc;1;require("../complexModule").instRef.tomorrow().;0;getDate,getDay,defineProperty,hasOwnProperty,getHours;getDay;require("../complexModule").instRef.tomorrow().|getDay();fakeAncestor,prop1,push,E,obj
+//cc;1;require("../../complexModule").instRef.tomorrow().;0;getDate,getDay,defineProperty,hasOwnProperty,getHours;getDay;require("../../complexModule").instRef.tomorrow().|getDay();fakeAncestor,prop1,push,E,obj
 
-//cc;1;new require("../complexModule").constr().;0;ale,ale2,bar,getSomething,attempt,hasOwnProperty;ale;new require("../complexModule").constr().al|e;prop1,lnick,lRef,getDate
+//cc;1;new require("../../complexModule").constr().;0;ale,ale2,bar,getSomething,attempt,hasOwnProperty;ale;new require("../../complexModule").constr().al|e;prop1,lnick,lRef,getDate
 
-//cc;1;require("../complexModule").constr.;0;nest,today,num,something,hasOwnProperty;num;require("../complexModule").constr.num;getDate,fakeOrigin
+//cc;1;require("../../complexModule").constr.;0;nest,today,num,something,hasOwnProperty;num;require("../../complexModule").constr.num;getDate,fakeOrigin
 
-//cc;1;require("../complexModule").justCall().;0;getDate,getDay,getHours,hasOwnProperty;getDate;require("../complexModule").justCall().getDate();fakeOrigin
+//cc;1;require("../../complexModule").justCall().;0;getDate,getDay,getHours,hasOwnProperty;getDate;require("../../complexModule").justCall().getDate();fakeOrigin
 
-//cc;1;require("../complexModule").justCallObj().;0;attempt,getSomething,ale,ale2,hasOwnProperty;getSomething;require("../complexModule").justCallObj().getSomething();fakeOrigin,getDate
+//cc;1;require("../../complexModule").justCallObj().;0;attempt,getSomething,ale,ale2,hasOwnProperty;getSomething;require("../../complexModule").justCallObj().getSomething();fakeOrigin,getDate
 
-//cc;1;require("../complexModule").justCallLit().;0;oo,oo1,hasOwnProperty;oo1;require("../complexModule").justCallLit().oo1;fakeOrigin,getDate
+//cc;1;require("../../complexModule").justCallLit().;0;oo,oo2,hasOwnProperty;oo2;require("../../complexModule").justCallLit().oo2;fakeOrigin,getDate
 
+};
