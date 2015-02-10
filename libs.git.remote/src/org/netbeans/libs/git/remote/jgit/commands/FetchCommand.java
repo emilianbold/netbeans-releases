@@ -126,14 +126,15 @@ public class FetchCommand extends TransportCommand {
             }
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git fetch ").append(remote); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("fetch"); //NOI18N
+        addArgument(remote);
         for (String refSpec : refSpecs) {
-            sb.append(' ').append(refSpec);
+            addArgument(refSpec);
         }
-        return sb.toString();
     }
 
     public Map<String, GitTransportUpdate> getUpdates () {

@@ -115,11 +115,14 @@ public class SetUpstreamBranchCommand extends GitCommand {
         Map<String, GitBranch> branches = branchCmd.getBranches();
         branch = branches.get(localBranchName);
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return new StringBuilder("git branch --set-upstream-to ").append(trackedBranchName) //NOI18N
-                .append(' ').append(localBranchName).toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("branch"); //NOI18N
+        addArgument("--set-upstream-to"); //NOI18N
+        addArgument(trackedBranchName);
+        addArgument(localBranchName);
     }
     
     public GitBranch getTrackingBranch () {

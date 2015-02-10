@@ -92,15 +92,15 @@ public class RevertCommand extends GitCommand {
         this.message = message;
         this.commit = commit;
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git revert ");
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("revert"); //NOI18N
         if (!commit) {
-            sb.append("-n ");
+            addArgument("-n"); //NOI18N
         }
-        sb.append(revisionStr);
-        return sb.toString();
+        addArgument(revisionStr);
     }
 
     @Override

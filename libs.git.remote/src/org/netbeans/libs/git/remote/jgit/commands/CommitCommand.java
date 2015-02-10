@@ -257,14 +257,14 @@ public class CommitCommand extends GitCommand {
     }
     
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git commit -m ").append(message); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("commit"); //NOI18N
+        addArgument("-m"); //NOI18N
+        addArgument(message);
         if (amend) {
-            sb.append(" --amend"); //NOI18N
+            addArgument("--amend"); //NOI18N
         }
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root); //NOI18N
-        }
-        return sb.toString();
+        addFiles(roots);
     }
 }

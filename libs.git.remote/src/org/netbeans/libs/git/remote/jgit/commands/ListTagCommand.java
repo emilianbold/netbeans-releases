@@ -97,10 +97,12 @@ public class ListTagCommand extends GitCommand {
             walk.release();
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return "git tag -l"; //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("tag"); //NOI18N
+        addArgument("-l"); //NOI18N
     }
 
     public Map<String, GitTag> getTags () {

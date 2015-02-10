@@ -46,6 +46,7 @@ import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitSubmoduleStatus;
@@ -88,14 +89,13 @@ public class SubmoduleInitializeCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git submodule initialize"); //NOI18N
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root.getPath());
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("submodule"); //NOI18N
+        addArgument("initialize"); //NOI18N
+        addFiles(roots);
     }
 
     public Map<VCSFileProxy, GitSubmoduleStatus> getStatuses () {

@@ -108,14 +108,13 @@ public class SubmoduleUpdateCommand extends TransportCommand {
         }
         statusCmd.run();
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git submodule update"); //NOI18N
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root.getPath());
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("submodule"); //NOI18N
+        addArgument("update"); //NOI18N
+        addFiles(roots);
     }
 
     public Map<VCSFileProxy, GitSubmoduleStatus> getStatuses () {

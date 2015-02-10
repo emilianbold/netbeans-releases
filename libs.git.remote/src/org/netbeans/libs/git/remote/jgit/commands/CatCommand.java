@@ -206,10 +206,13 @@ public class CatCommand extends GitCommand {
             }
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return new StringBuilder("git show ").append(revision).append(" ").append(file).toString(); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("show"); //NOI18N
+        String relPath = Utils.getRelativePath(getRepository().getLocation(), file);
+        addArgument(revision+":"+relPath); //NOI18N
     }
 
     public boolean foundInRevision () {

@@ -221,11 +221,12 @@ public class CheckoutRevisionCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git checkout ").append(revision); //NOI18N
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("checkout"); //NOI18N
+        addArgument(revision);
     }
 
     private void notify (VCSFileProxy workDir, Collection<String> paths) {

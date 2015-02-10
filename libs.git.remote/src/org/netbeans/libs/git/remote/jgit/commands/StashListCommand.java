@@ -88,10 +88,12 @@ public class StashListCommand extends GitCommand {
             fullWalk.release();
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return "git stash list"; //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("stash"); //NOI18N
+        addArgument("list"); //NOI18N
     }
 
     public GitRevisionInfo[] getRevisions () {

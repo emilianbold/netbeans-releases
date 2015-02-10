@@ -53,6 +53,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.netbeans.libs.git.remote.GitClient;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -79,12 +80,11 @@ public class CleanCommand extends GitCommand {
     }
 
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git clean -d"); //NOI18N
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root); //NOI18N
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("clean"); //NOI18N
+        addArgument("-d"); //NOI18N
+        addFiles(roots);
     }
 
     @Override

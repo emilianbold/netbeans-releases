@@ -42,8 +42,10 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
+import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -53,15 +55,21 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author ondra
  */
 public class CopyCommand extends MoveTreeCommand {
-    private final String description;
+    private final VCSFileProxy source;
+    private final VCSFileProxy target;
 
     public CopyCommand (JGitRepository repository, GitClassFactory gitFactory, VCSFileProxy source, VCSFileProxy target, ProgressMonitor monitor, FileListener listener) {
         super(repository, gitFactory, source, target, true, true, monitor, listener);
-        this.description = new StringBuilder("git copy ").append("--after ").append(source).append(" ").append(target).toString(); //NOI18N
+        this.source = source;
+        this.target = target;
     }
-
+    
     @Override
-    protected String getCommandDescription() {
-        return description;
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("copy"); //NOI18N
+        addArgument("--after"); //NOI18N
+        addArgument(Utils.getRelativePath(getRepository().getLocation(), source));
+        addArgument(Utils.getRelativePath(getRepository().getLocation(), target));
     }
 }

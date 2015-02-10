@@ -44,6 +44,7 @@ package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
@@ -66,10 +67,13 @@ public class ListRemoteTagsCommand extends ListRemoteObjectsCommand {
         remoteTags = new LinkedHashMap<String, String>();
         remoteTags.putAll(Utils.refsToTags(getRefs()));
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return "git ls-remote --heads " + remoteUrl.toString(); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("ls-remote"); //NOI18N
+        addArgument("--heads"); //NOI18N
+        addArgument(remoteUrl.toString());
     }
 
     public Map<String, String> getTags () {

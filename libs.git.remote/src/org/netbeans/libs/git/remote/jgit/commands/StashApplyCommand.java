@@ -71,12 +71,14 @@ public class StashApplyCommand extends GitCommand {
         } catch (GitAPIException ex) {
             throw new GitException(ex);
         }
-    }
-
-    @Override
-    protected String getCommandDescription () {
-        return new StringBuilder("git stash apply ").append(stashRef).toString(); //NOI18N
-    }
+    }    
     
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("stash"); //NOI18N
+        addArgument("apply"); //NOI18N
+        addArgument(stashRef);
+    }
 }
 

@@ -230,23 +230,28 @@ public class LogCommand extends GitCommand {
         }
         walk.carry(branchFlags.keySet());
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git log --name-status "); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("log"); //NOI18N
+        addArgument("--name-status"); //NOI18N
         if (criteria != null && criteria.isFollow() && criteria.getFiles() != null && criteria.getFiles().length == 1) {
-            sb.append("--follow "); //NOI18N
+            addArgument("--follow"); //NOI18N
         }
         if (revision != null) {
-            sb.append("--no-walk ").append(revision);
+            addArgument("--no-walk"); //NOI18N
+            addArgument(revision);
         } else if (criteria.getRevisionTo() != null && criteria.getRevisionFrom() != null) {
-            sb.append(criteria.getRevisionFrom()).append("..").append(criteria.getRevisionTo()); //NOI18N
+            addArgument(criteria.getRevisionFrom());
+            addArgument(".."); //NOI18N
+            addArgument(criteria.getRevisionTo());
         } else if (criteria.getRevisionTo() != null) {
-            sb.append(criteria.getRevisionTo());
+            addArgument(criteria.getRevisionTo());
         } else if (criteria.getRevisionFrom() != null) {
-            sb.append(criteria.getRevisionFrom()).append(".."); //NOI18N
+            addArgument(criteria.getRevisionFrom());
+            addArgument(".."); //NOI18N
         }
-        return sb.toString();
     }
 
     public GitRevisionInfo[] getRevisions () {

@@ -109,15 +109,16 @@ public class GetPreviousCommitCommand extends GitCommand {
             }
         }
     }
-
-    @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git log "); //NOI18N
-        sb.append(revision).append(' ');
-        sb.append("-- ").append(file.getPath());
-        return sb.toString();
-    }
     
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("log"); //NOI18N
+        addArgument(revision);
+        addArgument("--"); //NOI18N
+        addArgument(Utils.getRelativePath(getRepository().getLocation(), file));
+    }
+
     public GitRevisionInfo getRevision () {
         return previousRevision;
     }

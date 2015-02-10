@@ -88,9 +88,12 @@ public class RenameCommand extends MoveTreeCommand {
         }
         return retval;
     }
-
+    
     @Override
-    protected String getCommandDescription() {
-        return new StringBuilder("git mv ").append(source).append(" ").append(target).toString(); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("mv"); //NOI18N
+        addArgument(Utils.getRelativePath(getRepository().getLocation(), source));
+        addArgument(Utils.getRelativePath(getRepository().getLocation(), target));
     }
 }

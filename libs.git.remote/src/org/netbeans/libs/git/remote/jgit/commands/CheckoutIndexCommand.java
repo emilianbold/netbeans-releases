@@ -97,11 +97,10 @@ public class CheckoutIndexCommand extends GitCommand {
     }
 
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git checkout -- "); //NOI18N
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root); //NOI18N
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("checkout"); //NOI18N
+        addArgument("--"); //NOI18N
+        addFiles(roots);
     }
 }

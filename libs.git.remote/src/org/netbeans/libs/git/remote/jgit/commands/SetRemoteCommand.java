@@ -114,9 +114,11 @@ public class SetRemoteCommand extends GitCommand {
             }
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return new StringBuilder("setting up remote: ").append(remote.getRemoteName()).toString(); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("setting up remote"); //NOI18N
+        addArgument(remote.getRemoteName());
     }
 }

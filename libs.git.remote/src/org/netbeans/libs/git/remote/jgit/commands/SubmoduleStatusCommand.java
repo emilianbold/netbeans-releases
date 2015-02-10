@@ -92,14 +92,13 @@ public class SubmoduleStatusCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git submodule status"); //NOI18N
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root.getPath());
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("submodule"); //NOI18N
+        addArgument("status"); //NOI18N
+        addFiles(roots);
     }
 
     public Map<VCSFileProxy, GitSubmoduleStatus> getStatuses () {
