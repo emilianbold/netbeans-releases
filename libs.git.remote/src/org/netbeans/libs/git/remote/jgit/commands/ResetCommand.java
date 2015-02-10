@@ -112,19 +112,18 @@ public class ResetCommand extends GitCommand {
         recursively = true;
         moveHead = true;
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git reset "); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("reset"); //NOI18N
         if (moveHead) {
-            sb.append(resetType.toString()).append(" ").append(revisionStr); //NOI18N
+            addArgument(resetType.toString());
+            addArgument(revisionStr);
         } else {
-            sb.append(revisionStr);
-            for (VCSFileProxy root : roots) {
-                sb.append(" ").append(root.getPath()); //NOI18N
-            }
+            addArgument(revisionStr);
+            addFiles(roots);
         }
-        return sb.toString();
     }
 
     @Override

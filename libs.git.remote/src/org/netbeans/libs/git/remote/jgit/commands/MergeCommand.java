@@ -109,16 +109,17 @@ public class MergeCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git merge "); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("merge"); //NOI18N
         if (ffOption != null) {
-            sb.append(ffOption).append(" "); //NOI18N
+            addArgument(ffOption.toString());
         }
-        return sb.append(revision).toString();
+        addArgument(revision);
     }
-
+    
     public GitMergeResult getResult () {
         return result;
     }

@@ -127,14 +127,12 @@ public class ListModifiedIndexEntriesCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git status"); //NOI18N
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root.getPath());
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("status");
+        addFiles(roots);
     }
 
     public VCSFileProxy[] getFiles () {

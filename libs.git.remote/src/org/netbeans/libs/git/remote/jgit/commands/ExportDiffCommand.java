@@ -166,14 +166,12 @@ public class ExportDiffCommand extends GitCommand {
                 return p;
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git diff"); //NOI18N
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root); //NOI18N
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("diff"); //NOI18N
+        addFiles(roots);
     }
 
     private AbstractTreeIterator getHeadIterator (ObjectReader or) throws IOException {

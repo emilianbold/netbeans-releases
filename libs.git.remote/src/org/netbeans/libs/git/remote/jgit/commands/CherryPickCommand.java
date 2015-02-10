@@ -67,7 +67,6 @@ import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.merge.ResolveMerger;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.util.IO;
 import org.eclipse.jgit.util.io.SafeBufferedOutputStream;
 import org.netbeans.libs.git.remote.GitCherryPickResult;
 import org.netbeans.libs.git.remote.GitClient;
@@ -181,19 +180,18 @@ public class CherryPickCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder();
-        sb.append("git cherry-pick "); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("cherry-pick"); //NOI18N
         if (operation == GitClient.CherryPickOperation.BEGIN) {
             for (String rev : revisions) {
-                sb.append(rev).append(" "); //NOI18N
+                addArgument(rev);
             }
         } else {
-            sb.append(operation.toString());
+            addArgument(operation.toString());
         }
-        return sb.toString();
     }
 
     public GitCherryPickResult getResult () {

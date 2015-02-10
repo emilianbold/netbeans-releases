@@ -98,13 +98,15 @@ public class BlameCommand extends GitCommand {
     }
 
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git blame -l -f "); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("blame"); //NOI18N
+        addArgument("-l"); //NOI18N
+        addArgument("-f"); //NOI18N
         if (revision != null) {
-            sb.append(revision).append(" "); //NOI18N
+            addArgument(revision);
         }
-        sb.append(file);
-        return sb.toString();
+        addFiles(new VCSFileProxy[]{file});
     }
 
     public GitBlameResult getResult () {

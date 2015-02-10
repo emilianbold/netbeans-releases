@@ -82,9 +82,12 @@ public class RemoveRemoteCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        return new StringBuilder("git remote rm ").append(remote).toString(); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("remote"); //NOI18N
+        addArgument("rm"); //NOI18N
+        addArgument("remote"); //NOI18N
     }
 }

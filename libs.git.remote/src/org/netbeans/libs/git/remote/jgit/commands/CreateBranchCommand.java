@@ -113,12 +113,16 @@ public class CreateBranchCommand extends GitCommand {
                     new Object[] { branchName, createdBranchName, branches.keySet() });
         }
     }
-
-    @Override
-    protected String getCommandDescription () {
-        return new StringBuilder("git branch --track ").append(branchName).append(' ').append(revision).toString(); //NOI18N
-    }
     
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("branch"); //NOI18N
+        addArgument("--track"); //NOI18N
+        addArgument(branchName);
+        addArgument(revision);
+    }
+
     public GitBranch getBranch () {
         return branch;
     }

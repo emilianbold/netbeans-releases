@@ -79,20 +79,24 @@ public class CompareCommand extends GitCommand {
         this.revisionSecond = revisionSecond;
         statuses = new LinkedHashMap<VCSFileProxy, GitRevisionInfo.GitFileInfo>();
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git diff --raw"); //NOI18N
-        sb.append(revisionFirst).append(' ').append(revisionSecond);                
-        for (VCSFileProxy root : roots) {
-            sb.append(" ").append(root.getPath());
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("diff"); //NOI18N
+        addArgument("--raw"); //NOI18N
+        addArgument(revisionFirst);
+        addArgument(revisionSecond);
+        addFiles(roots);
     }
 
     @Override
     protected boolean prepareCommand () throws GitException {
-        return getRepository().getMetadataLocation().exists();
+        final boolean exists = getRepository().getMetadataLocation().exists();
+        if (exists) {
+            prepare();
+        }
+        return exists;
     }
 
     @Override

@@ -90,14 +90,15 @@ public class PullCommand extends TransportCommand {
         merge.run();
         this.mergeResult = merge.getResult();
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git pull ").append(remote); //NOI18N
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("pull"); //NOI18N
+        addArgument(remote);
         for (String refSpec : refSpecs) {
-            sb.append(' ').append(refSpec);
+            addArgument(refSpec);
         }
-        return sb.toString();
     }
 
     public GitPullResult getResult () {

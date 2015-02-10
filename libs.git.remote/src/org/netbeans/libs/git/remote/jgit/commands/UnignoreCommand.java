@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ListIterator;
 import org.eclipse.jgit.ignore.IgnoreNode.MatchResult;
+import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.IgnoreRule;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -62,14 +63,12 @@ public class UnignoreCommand extends IgnoreUnignoreCommand {
     public UnignoreCommand(JGitRepository repository, GitClassFactory gitFactory, VCSFileProxy[] files, ProgressMonitor monitor, FileListener listener) {
         super(repository, gitFactory, files, monitor, listener);
     }
-
+    
     @Override
-    protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("unignoring "); //NOI18N
-        for (VCSFileProxy file : files) {
-            sb.append(file).append(' ');
-        }
-        return sb.toString();
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument("unignoring"); //NOI18N
+        addFiles(files);
     }
 
     @Override
