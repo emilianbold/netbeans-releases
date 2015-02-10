@@ -305,6 +305,16 @@ public final class ClassPath {
                 URL url = entry.getURL();
                 if ("jar".equals(url.getProtocol())) { //NOI18N
                     url = FileUtil.getArchiveFile(url);
+                    if (url == null) {
+                        LOG.log(
+                            Level.WARNING,
+                            "Invalid classpath root: {0} provided by: {1}", //NOI18N
+                            new Object[]{
+                                entry.getURL(),
+                                impl
+                            });
+                        continue;
+                    }
                 }
                 if (!"file".equals(url.getProtocol())) { // NOI18N
                     // Try to convert nbinst to file
