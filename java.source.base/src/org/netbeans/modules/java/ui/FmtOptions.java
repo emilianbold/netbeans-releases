@@ -89,6 +89,10 @@ public class FmtOptions {
     public static final String keepGettersAndSettersTogether = "keepGettersAndSettersTogether"; //NOI18N
     public static final String sortMembersInGroups = "sortMembersInGroups"; //NOI18N
     public static final String classMemberInsertionPoint = "classMemberInsertionPoint"; //NOI18N
+    /**
+     * @since 2.3
+     */
+    public static final String sortUsesDependencies = "sortUsesDependencies"; // NO18N
     
     public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
     public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
@@ -375,6 +379,7 @@ public class FmtOptions {
             { visibilityOrder, "PUBLIC;PRIVATE;PROTECTED;DEFAULT"}, //NOI18N
             { keepGettersAndSettersTogether, FALSE}, //NOI18N
             { sortMembersInGroups, FALSE}, //NOI18N
+            { sortUsesDependencies, TRUE}, //NOI18N
             { classMemberInsertionPoint, IP_CARET},
 
             { classDeclBracePlacement, BP_SAME_LINE}, //NOI18N
