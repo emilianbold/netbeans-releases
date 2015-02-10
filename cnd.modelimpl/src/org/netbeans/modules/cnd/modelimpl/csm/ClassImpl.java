@@ -1101,6 +1101,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                   idAST.getType() != CPPTokenTypes.IDENT)) {
                 return null;
             }
+            if (!EnumMemberForwardDeclaration.isCorrectOpaqueEnumDeclaration(token)) {
+                return null;
+            }
             return EnumMemberForwardDeclaration.create(getContainingFile(), ClassImpl.this, token, curentVisibility, !isRenderingLocalContext());
         }
 
