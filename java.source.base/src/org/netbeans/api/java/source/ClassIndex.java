@@ -90,6 +90,7 @@ import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -1035,7 +1036,7 @@ public final class ClassIndex {
         if (Utilities.isTaskProcessorThread()) {
             action.run();
         } else {
-            Utilities.scheduleSpecialTask(action, 0);
+            Utilities.scheduleSpecialTask(action, Lookup.getDefault(), 0);
         }
     }
 
