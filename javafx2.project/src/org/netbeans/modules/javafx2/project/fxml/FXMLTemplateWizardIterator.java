@@ -153,6 +153,14 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
                         new String[]{defaultMavenFXMLPackage, defaultMavenImagesPackage, defaultMavenCSSPackage});
                 supportCSS.addSourceGroupProxy(project, NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_ProjectResources"), // NOI18N
                         new String[]{defaultMavenFXMLPackage, defaultMavenImagesPackage, defaultMavenCSSPackage});
+                FileObject dirFXML = supportFXML.getCurrentPackageFolder(true);
+                if (dirFXML == null) {
+                    // default Maven resources are overriden in the project's pom.xml (#250097)
+                    supportFXML = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    supportFXML.addSourceGroups(sourceGroupsJava); //must exist
+                    supportCSS = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    supportCSS.addSourceGroups(sourceGroupsJava); //must exist
+                }
             }
         } else {
             supportFXML = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_JAVA);
