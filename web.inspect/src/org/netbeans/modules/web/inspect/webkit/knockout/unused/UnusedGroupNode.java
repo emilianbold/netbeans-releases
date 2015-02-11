@@ -119,6 +119,14 @@ public class UnusedGroupNode extends AbstractNode {
          * @param unusedBindings unused binding information.
          */
         synchronized void update(java.util.Map<Integer,UnusedBinding> unusedBindings) {
+            for (Node node : getNodes()) {
+                UnusedBindingNode unusedBindingNode = (UnusedBindingNode)node;
+                UnusedBinding oldInfo = unusedBindingNode.getUnusedBinding();
+                UnusedBinding newInfo = unusedBindings.get(oldInfo.getId());
+                if (newInfo != null) {
+                    unusedBindingNode.setUnusedBinding(newInfo);
+                }
+            }
             this.unusedBindings = unusedBindings;
             setKeys(unusedBindings.keySet());
         }

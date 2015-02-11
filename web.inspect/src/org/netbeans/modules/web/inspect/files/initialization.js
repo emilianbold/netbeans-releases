@@ -669,12 +669,21 @@ NetBeans.unusedBindings = function() {
                     info.nodeTagName = marker.node.tagName;
                     info.nodeId = marker.node.getAttribute('id');
                     info.nodeClasses = marker.node.getAttribute('class');
+                    info.nodeRemoved = !this.isInDocument(marker.node);
                 }
                 infos.push(info);
             }
         }
     }
     return JSON.stringify(infos);
+};
+
+// Checks if the specified node is in the document (or if it was removed)
+NetBeans.isInDocument = function(node) {
+    while (node !== null && node !== document.documentElement) {
+        node = node.parentElement;
+    }
+    return node !== null;
 };
 
 // Returns the node that owns the unused binding with the specified ID
