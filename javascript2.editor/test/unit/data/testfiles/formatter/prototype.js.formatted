@@ -12,8 +12,7 @@ var Prototype = {
         XPath: !!document.evaluate
     },
     ScriptFragment: '(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)',
-    emptyFunction: function () {
-    },
+    emptyFunction: function () {},
     K: function (x) {
         return x
     }
@@ -769,8 +768,7 @@ Ajax.Responders.register({
     }
 });
 
-Ajax.Base = function () {
-};
+Ajax.Base = function () {};
 Ajax.Base.prototype = {
     setOptions: function (options) {
         this.options = {
@@ -2029,8 +2027,7 @@ Form.Element.Serializers = {
 
 /*--------------------------------------------------------------------------*/
 
-Abstract.TimedObserver = function () {
-}
+Abstract.TimedObserver = function () {}
 Abstract.TimedObserver.prototype = {
     initialize: function (element, frequency, callback) {
         this.frequency = frequency;
@@ -2070,8 +2067,7 @@ Form.Observer.prototype = Object.extend(new Abstract.TimedObserver(), {
 
 /*--------------------------------------------------------------------------*/
 
-Abstract.EventObserver = function () {
-}
+Abstract.EventObserver = function () {}
 Abstract.EventObserver.prototype = {
     initialize: function (element, callback) {
         this.element = $(element);

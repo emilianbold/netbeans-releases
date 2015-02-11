@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,27 +53,28 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class EPLiteralTest2 extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExports1",
+        "testExports2",
+        "testExports3",
+        "testExports4",
+        "testExports5",
+        "testExports6",
+        "testExports7",
+        "testExports8",
+        "testExports9",
+        "testExports10",
+        "testExports11",
+        "testExports12"
+    };
+
     public EPLiteralTest2(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(EPLiteralTest2.class).addTest(
-                        "openProject",
-                        "testExports1",
-                        "testExports2",
-                        "testExports3",
-                        "testExports4",
-                        "testExports5",
-                        "testExports6",
-                        "testExports7",
-                        "testExports8",
-                        "testExports9",
-                        "testExports10",
-                        "testExports11",
-                        "testExports12"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(EPLiteralTest2.class, tests);
     }
 
     public void openProject() throws Exception {

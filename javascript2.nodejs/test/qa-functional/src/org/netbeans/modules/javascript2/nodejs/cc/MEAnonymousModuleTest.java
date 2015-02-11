@@ -54,28 +54,28 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class MEAnonymousModuleTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testAnonymousME1",
+        "testAnonymousME5",
+        "testAnonymousME6",
+        "testAnonymousME11",
+        "testAnonymousME12",
+        "testAnonymousME13",
+        "testAnonymousME21",
+        "testAnonymousME25",
+        "testAnonymousME26",
+        "testAnonymousME211",
+        "testAnonymousME212",
+        "testAnonymousME213"
+    };
+
     public MEAnonymousModuleTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MEAnonymousModuleTest.class).addTest(
-                        "openProject",
-                        "testAnonymousME1",
-                        "testAnonymousME5",
-                        "testAnonymousME6",
-                        "testAnonymousME11",
-                        "testAnonymousME12",
-                        "testAnonymousME13",
-                        "testAnonymousME21",
-                        "testAnonymousME25",
-                        "testAnonymousME26",
-                        "testAnonymousME211",
-                        "testAnonymousME212",
-                        "testAnonymousME213"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true)
-        );
+        return createModuleTest(MEAnonymousModuleTest.class, tests);
     }
 
     public void openProject() throws Exception {
@@ -106,8 +106,6 @@ public class MEAnonymousModuleTest extends GeneralNodeJs {
         endTest();
     }
 
-  
-
     public void testAnonymousME11() throws Exception {
         startTest();
         testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 97);
@@ -137,8 +135,6 @@ public class MEAnonymousModuleTest extends GeneralNodeJs {
         testCompletion(new EditorOperator(MEAnonymousModuleTest.currentFile), 87);
         endTest();
     }
-
-
 
     public void testAnonymousME211() throws Exception {
         startTest();

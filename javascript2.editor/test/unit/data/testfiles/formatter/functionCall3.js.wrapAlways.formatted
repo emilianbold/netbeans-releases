@@ -1,5 +1,4 @@
-function test() {
-}
+function test() {}
 
 function compute1(arg) {
 

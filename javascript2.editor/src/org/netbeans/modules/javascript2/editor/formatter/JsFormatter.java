@@ -1132,6 +1132,9 @@ public class JsFormatter implements Formatter {
                 return codeStyle.wrapStatement;
             case AFTER_BLOCK_START:
                 // XXX option
+                if (isEmptyFunctionBlock(token)) {
+                    return CodeStyle.WrapStyle.WRAP_NEVER;
+                }
                 return CodeStyle.WrapStyle.WRAP_ALWAYS;
             case AFTER_CASE:
                 // XXX option
@@ -1430,6 +1433,25 @@ public class JsFormatter implements Formatter {
                 current = current.previous();
             }
             return false;
+        }
+        return false;
+    }
+
+    private static boolean isEmptyFunctionBlock(FormatToken token) {
+        if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
+            // now look back to find out what kind of block we are in
+            FormatToken prev = token.previous();
+            while (prev != null && (!prev.isVirtual() || prev.getKind().isIndentationMarker())) {
+                prev = prev.previous();
+            }
+            if (prev != null && prev.getKind() == FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_BRACE) {
+                // continue only in case of function
+                FormatToken current = token.next();
+                while (current != null && (current.isVirtual() || current.getKind() == FormatToken.Kind.WHITESPACE)) {
+                    current = current.next();
+                }
+                return current != null && current.getId() == JsTokenId.BRACKET_RIGHT_CURLY;
+            }
         }
         return false;
     }

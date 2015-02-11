@@ -212,36 +212,40 @@ public class GeneralNodeJs extends JellyTestCase {
         Component findComponent = optionsOper.findSubComponent(new JTabbedPaneOperator.JTabbedPaneFinder());
         JTabbedPaneOperator tabbedPane = new JTabbedPaneOperator((JTabbedPane) findComponent);
         tabbedPane.selectPage("Node.js");
-        JButtonOperator downloadBtn = new JButtonOperator(tabbedPane, "Download");
-        downloadBtn.press();
-        evt.waitNoEvent(1000);
-        long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout");
 
-        try {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", 30000);
-            downloadBtn = new JButtonOperator(tabbedPane, "Download");
-            Waiter waiter = new Waiter(new Waitable() {
-                public Object actionProduced(Object obj) {
-                    if (((JButtonOperator) obj).isEnabled()) {
-                        return (obj);
-                    } else {
-                        return (null);
+        if (!new JTextFieldOperator(tabbedPane, 1).getText().startsWith("Downloaded")) {
+            JButtonOperator downloadBtn = new JButtonOperator(tabbedPane, "Download");
+            downloadBtn.push();
+            evt.waitNoEvent(1000);
+            long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout");
+
+            try {
+                JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", 240000);
+                downloadBtn = new JButtonOperator(tabbedPane, "Download");
+                Waiter waiter = new Waiter(new Waitable() {
+                    public Object actionProduced(Object obj) {
+                        if (((JButtonOperator) obj).isEnabled()) {
+                            return (obj);
+                        } else {
+                            return (null);
+                        }
                     }
-                }
 
-                public String getDescription() {
-                    return "Component enabled: ";
-                }
-            });
-            waiter.setOutput(downloadBtn.getOutput());
-            waiter.setTimeoutsToCloneOf(downloadBtn.getTimeouts(), "ComponentOperator.WaitComponentEnabledTimeout");
-            waiter.waitAction(downloadBtn);
+                    public String getDescription() {
+                        return "Component enabled: ";
+                    }
+                });
+                waiter.setOutput(downloadBtn.getOutput());
+                waiter.setTimeoutsToCloneOf(downloadBtn.getTimeouts(), "ComponentOperator.WaitComponentEnabledTimeout");
+                waiter.waitAction(downloadBtn);
 
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", defaultTimeout);
-        } catch (InterruptedException ex) {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", defaultTimeout);
-            Exceptions.printStackTrace(ex);
+                JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", defaultTimeout);
+            } catch (InterruptedException ex) {
+                JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", defaultTimeout);
+                Exceptions.printStackTrace(ex);
+            }
         }
+
         optionsOper.ok();
         evt.waitNoEvent(5000);
         waitCompletionScanning();

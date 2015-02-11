@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,28 +53,29 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class AnonymousModuleTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testAnonymous1",
+        "testAnonymous2",
+        "testAnonymous3",
+        "testAnonymous4",
+        "testAnonymous5",
+        "testAnonymous6",
+        "testAnonymous7",
+        "testAnonymous8",
+        "testAnonymous9",
+        "testAnonymous10",
+        "testAnonymous11",
+        "testAnonymous12",
+        "testAnonymous13"
+    };
+
     public AnonymousModuleTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(AnonymousModuleTest.class).addTest(
-                        "openProject",
-                        "testAnonymous1",
-                        "testAnonymous2",
-                        "testAnonymous3",
-                        "testAnonymous4",
-                        "testAnonymous5",
-                        "testAnonymous6",
-                        "testAnonymous7",
-                        "testAnonymous8",
-                        "testAnonymous9",
-                        "testAnonymous10",
-                        "testAnonymous11",
-                        "testAnonymous12",
-                        "testAnonymous13"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+       return createModuleTest(AnonymousModuleTest.class, tests);
     }
 
     public void openProject() throws Exception {
