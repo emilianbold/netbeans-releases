@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,86 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.nodejs.cc;
 
-import java.awt.event.KeyEvent;
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
  *
  * @author vriha
  */
-public class RequireTest extends GeneralNodeJs {
-
-    static final String[] tests = new String[]{
-        "openProject",
-        "testCoreModules",
-        "testCurrentFolder",
-        "testParentFolder",
-        "testSiblingFolder"
-    };
-
-    public RequireTest(String args) {
-        super(args);
-    }
+public class CodeCompletionSuite {
 
     public static Test suite() {
-        return createModuleTest(RequireTest.class, tests);
+        return JellyTestCase.emptyConfiguration().
+                addTest(CoreModulesTest.class, CoreModulesTest.tests).
+                addTest(EPLiteralTest.class, EPLiteralTest.tests).
+                addTest(EPLiteralTest2.class, EPLiteralTest2.tests).
+                addTest(ExportedClassTest.class, ExportedClassTest.tests).
+                addTest(ExportsModuleRefTest.class, ExportsModuleRefTest.tests).
+                addTest(ExportsModuleTest.class, ExportsModuleTest.tests).
+                addTest(FunctionTest.class, FunctionTest.tests).
+                addTest(MEAnonymousModuleTest.class, MEAnonymousModuleTest.tests).
+                addTest(MEAnonymousModuleTest2.class, MEAnonymousModuleTest2.tests).
+                addTest(MECoreTest.class, MECoreTest.tests).
+                addTest(MELiteralRefTest.class, MELiteralRefTest.tests).
+                addTest(MELiteralTest.class, MELiteralTest.tests).
+                addTest(MEPropertyTest.class, MEPropertyTest.tests).
+                addTest(ModuleContructorTest.class, ModuleContructorTest.tests).
+                addTest(ModuleFunctionTest.class, ModuleFunctionTest.tests).
+                addTest(ModuleInstanceTest.class, ModuleInstanceTest.tests).
+                addTest(ModuleLiteralTest.class, ModuleLiteralTest.tests).
+                addTest(RequireTest.class, RequireTest.tests).
+                addTest(AnonymousModuleTest.class, AnonymousModuleTest.tests).
+                suite();
     }
 
-    public void openProject() throws Exception {
-        startTest();
-        JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
-        openDataProjects("SimpleNode");
-        evt.waitNoEvent(2000);
-        downloadGlobalNodeJS();
-        evt.waitNoEvent(8000);
-        openFile("cc|cc1.js", "SimpleNode");
-        endTest();
-    }
-
-    public void testCoreModules() throws Exception {
-        startTest();
-        testCompletion(new EditorOperator("cc1.js"), 76);
-        endTest();
-    }
-
-    public void testCurrentFolder() throws Exception {
-        startTest();
-        testCompletion(new EditorOperator("cc1.js"), 78);
-        endTest();
-    }
-
-    public void testParentFolder() throws Exception {
-        startTest();
-        testCompletion(new EditorOperator("cc1.js"), 80);
-        endTest();
-    }
-
-    public void testSiblingFolder() throws Exception {
-        startTest();
-        testCompletion(new EditorOperator("cc1.js"), 82);
-        endTest();
-    }
-
-    @Override
-    public void tearDown() {
-        if (GeneralNodeJs.currentLine < 1) {
-            return;
-        }
-        EditorOperator eo = new EditorOperator("cc1.js");
-        eo.setCaretPositionToEndOfLine(GeneralNodeJs.currentLine);
-        String l = eo.getText(eo.getLineNumber());
-        for (int i = 0; i < l.length() - 1; i++) {
-            eo.pressKey(KeyEvent.VK_BACK_SPACE);
-        }
-
-        evt.waitNoEvent(1000);
-
-    }
 }

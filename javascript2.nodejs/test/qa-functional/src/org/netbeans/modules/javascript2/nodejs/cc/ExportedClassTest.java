@@ -44,25 +44,25 @@ package org.netbeans.modules.javascript2.nodejs.cc;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
  *
  * @author vriha
  */
-public class ExportedClassTest extends GeneralNodeJs{
+public class ExportedClassTest extends GeneralNodeJs {
+
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExportedClass"
+    };
 
     public ExportedClassTest(String args) {
         super(args);
     }
-    
-      public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ExportedClassTest.class).addTest(
-                        "openProject",
-                        "testExportedClass"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+
+    public static Test suite() {
+       return createModuleTest(ExportedClassTest.class, tests);
     }
 
     public void openProject() throws Exception {
