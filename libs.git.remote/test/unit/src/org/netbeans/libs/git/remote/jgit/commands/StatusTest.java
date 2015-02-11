@@ -145,41 +145,40 @@ public class StatusTest extends AbstractGitTestCase {
         Map<VCSFileProxy, GitStatus> statuses = client.getStatus(new VCSFileProxy[] { workDir }, NULL_PROGRESS_MONITOR);
         assertFalse(statuses.isEmpty());
 
-        //?? .gitignore
-        //              Head.vs.Index-Index.vs.WC-Head.vs.WC
-        //?? untracked         NORMAL-ADDED-ADDED        
-        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false, listener);               
-        //A  added-uptodate    ADDED-NORMAL-ADDED
-        assertStatus(statuses, workDir, added_uptodate, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false, listener);           
-        //AM added-modified    ADDED-NORMAL-ADDED
-        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false, listener);         
-        //AD added-deleted     ADDED-REMOVED-NORMAL
-        assertStatus(statuses, workDir, added_deleted, true, Status.STATUS_ADDED, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
-        //                     NORMAL-NORMAL-NORMAL
-        assertStatus(statuses, workDir, uptodate_uptodate, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
-        // M uptodate-modified NORMAL-MODIFIED-MODIFIED
-        assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
-        // D uptodate-deleted  NORMAL-MODIFIED-MODIFIED
-        assertStatus(statuses, workDir, uptodate_deleted, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
-        //M  modified-uptodate MODIFIED-NORMAL-MODIFIED
-        assertStatus(statuses, workDir, modified_uptodate, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false, listener);
-        //MM modified-modified MODIFIED-NORMAL-MODIFIED
-        assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
-        //MM modified-reset    MODIFIED-MODIFIED-NORMAL
-        assertStatus(statuses, workDir, modified_reset, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false, listener);
-        //MD modified-deleted  MODIFIED-REMOVED-REMOVED
-        assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
-        //D  deleted-uptodate  MODIFIED-NORMAL-MODIFIED
-        assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false, listener);
-        //D  deleted-untracked MODIFIED-NORMAL-MODIFIED
+        //                                                       Head.vs.Index          Index.vs.WC            Head.vs.WC
+        //?? untracked
+        assertStatus(statuses, workDir, untracked,         false,Status.STATUS_NORMAL,  Status.STATUS_ADDED,   Status.STATUS_ADDED,   false, listener);               
+        //A  added-uptodate
+        assertStatus(statuses, workDir, added_uptodate,    true, Status.STATUS_ADDED,   Status.STATUS_NORMAL,  Status.STATUS_ADDED,   false, listener);           
+        //AM added-modified
+        assertStatus(statuses, workDir, added_modified,    true, Status.STATUS_ADDED,   Status.STATUS_MODIFIED,Status.STATUS_ADDED,   false, listener);         
+        //AD added-deleted
+        assertStatus(statuses, workDir, added_deleted,     true, Status.STATUS_ADDED,   Status.STATUS_REMOVED, Status.STATUS_NORMAL,  false, listener);
+        //
+        assertStatus(statuses, workDir, uptodate_uptodate, true, Status.STATUS_NORMAL,  Status.STATUS_NORMAL,  Status.STATUS_NORMAL,  false, listener);
+        // M uptodate-modified
+        assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL,  Status.STATUS_MODIFIED,Status.STATUS_MODIFIED,false, listener);
+        // D uptodate-deleted
+        assertStatus(statuses, workDir, uptodate_deleted,  true, Status.STATUS_NORMAL,  Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
+        //M  modified-uptodate
+        assertStatus(statuses, workDir, modified_uptodate, true, Status.STATUS_MODIFIED,Status.STATUS_NORMAL,  Status.STATUS_MODIFIED,false, listener);
+        //MM modified-modified
+        assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED,Status.STATUS_MODIFIED,Status.STATUS_MODIFIED,false, listener);
+        //MM modified-reset
+        assertStatus(statuses, workDir, modified_reset,    true, Status.STATUS_MODIFIED,Status.STATUS_MODIFIED,Status.STATUS_NORMAL,  false, listener);
+        //MD modified-deleted
+        assertStatus(statuses, workDir, modified_deleted,  true, Status.STATUS_MODIFIED,Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
+        //D  deleted-uptodate
+        assertStatus(statuses, workDir, deleted_uptodate,  true, Status.STATUS_REMOVED, Status.STATUS_NORMAL,  Status.STATUS_REMOVED, false, listener);
+        //D  deleted-untracked
         //?? deleted-untracked
-        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
-        //D  deleted-modified  REMOVED-ADDED-MODIFIED
+        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED,   Status.STATUS_NORMAL,  false, listener);
+        //D  deleted-modified
         //?? deleted-modified
-        assertStatus(statuses, workDir, deleted_modified, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, deleted_modified,  true, Status.STATUS_REMOVED, Status.STATUS_ADDED,   Status.STATUS_MODIFIED,false, listener);
         // what about isIgnored() here?
-        //                     NORMAL-IGNORED-ADDED
-        assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false, listener);
+        //!! .gitignore
+        assertStatus(statuses, workDir, ignored,           false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED,   false, listener);
     }
     
     // diff WT against a commit other than HEAD
@@ -285,6 +284,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, deleted_modified, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
         assertStatus(statuses, workDir, someFile, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
         // what about isIgnored() here?
+        //!! ignored
         assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false, listener);
         
         listener = new TestStatusListener();
