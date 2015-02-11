@@ -303,8 +303,9 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
                     (String)jsonBinding.get("nodeTagName"), // NOI18N
                     (String)jsonBinding.get("nodeId"), // NOI18N
                     (String)jsonBinding.get("nodeClasses"), // NOI18N
+                    (Boolean)jsonBinding.get("nodeRemoved"), // NOI18N
                     pageModel
-                ); 
+                );
                 Map<Integer,UnusedBinding> innerMap = map.get(name);
                 if (innerMap == null) {
                     innerMap = new HashMap<Integer,UnusedBinding>();
