@@ -39,78 +39,89 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.nodejs.cc;
 
-package org.netbeans.modules.web.inspect.webkit.knockout.unused;
-
-import java.awt.EventQueue;
-import java.util.Collections;
-import org.netbeans.modules.web.inspect.ui.DomTC;
-import org.netbeans.modules.web.inspect.webkit.DOMNode;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import java.awt.event.KeyEvent;
+import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
- * Shows the owner of an unused binding in DOM Tree view.
  *
- * @author Jan Stola
+ * @author vriha
  */
-public class ShowInDOMAction extends NodeAction {
+public class PEParameterTest extends GeneralNodeJs {
+
+    static final String[] tests = new String[]{
+        "openProject",
+        "testParam1",
+        "testParam2",
+        "testParam3",
+        "testParam4",
+        "testParam5"
+    };
+
+    public PEParameterTest(String args) {
+        super(args);
+    }
+
+    public static Test suite() {
+        return createModuleTest(PEParameterTest.class, tests);
+    }
+
+    public void openProject() throws Exception {
+        startTest();
+        JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
+        openDataProjects("SimpleNode");
+        evt.waitNoEvent(2000);
+        openFile("doc|pe.js", "SimpleNode");
+        endTest();
+    }
+
+    public void testParam1() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 5);
+        endTest();
+    }
+
+    public void testParam2() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 8);
+        endTest();
+    }
+
+    public void testParam3() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 11);
+        endTest();
+    }
+
+    public void testParam4() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 13);
+        endTest();
+    }
+
+    public void testParam5() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 35);
+        endTest();
+    }
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        Node selection = activatedNodes[0];
-        UnusedBinding unusedBinding = selection.getLookup().lookup(UnusedBinding.class);
-        DOMNode node = unusedBinding.getNode();
-        if (node != null) {
-            unusedBinding.getPage().setSelectedNodes(Collections.singletonList(node));
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    activateDOMView();
-                }
-            });
+    public void tearDown() {
+        if (GeneralNodeJs.currentLine < 1) {
+            return;
         }
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 1) {
-            Node selection = activatedNodes[0];
-            UnusedBinding unusedBinding = selection.getLookup().lookup(UnusedBinding.class);
-            return (unusedBinding != null) && !unusedBinding.isRemoved();
+        EditorOperator eo = new EditorOperator("pe.js");
+        eo.setCaretPositionToEndOfLine(GeneralNodeJs.currentLine);
+        String l = eo.getText(eo.getLineNumber());
+        for (int i = 0; i < l.length() - 1; i++) {
+            eo.pressKey(KeyEvent.VK_BACK_SPACE);
         }
-        return false;
-    }
 
-    /**
-     * Activates the DOM Tree view.
-     */
-    void activateDOMView() {
-        TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
-        tc.open();
-        tc.requestActive();
-    }
+        evt.waitNoEvent(1000);
 
-    @Override
-    @NbBundle.Messages({
-        "ShowInDOMAction.name=Show in Browser DOM"
-    })
-    public String getName() {
-        return Bundle.ShowInDOMAction_name();
     }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return true;
-    }
-
 }

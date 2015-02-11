@@ -127,7 +127,7 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
                 Page page = pageModel.getWebKit().getPage();
                 String prefix = Files.getScript("knockout-pre"); // NOI18N
                 prefix = prefix.replace("\"", "\\\""); // NOI18N
-                prefix = prefix.replace("\n", "\\n"); // NOI18N
+                prefix = toOneLiner(prefix);
                 String suffix = Files.getScript("knockout-post"); // NOI18N
                 suffix = suffix.replace("\"", "\\\""); // NOI18N
                 suffix = suffix.replace("\n", "\\n"); // NOI18N
@@ -146,6 +146,29 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
                 page.reload(false, null, preprocessor);
             }
         });
+    }
+
+    /**
+     * Removes all new-line characters (and line comments) from
+     * the given JavaScript source code. In other words, puts all the JavaScript
+     * source code on one line.
+     * 
+     * @param jsCode JavaScript source code.
+     * @return one-liner equivalent to the specified JavaScript code. 
+     */
+    private String toOneLiner(String jsCode) {
+        StringBuilder result = new StringBuilder(jsCode.length());
+        for (String line : jsCode.split("\n")) { // NOI18N
+            int index = line.indexOf("//"); // NOI18N
+            String lineWithoutComment;
+            if (index == -1) {
+                lineWithoutComment = line;
+            } else {
+                lineWithoutComment = line.substring(0,index);
+            }
+            result.append(lineWithoutComment);
+        }
+        return result.toString();
     }
 
     /**
@@ -280,8 +303,9 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
                     (String)jsonBinding.get("nodeTagName"), // NOI18N
                     (String)jsonBinding.get("nodeId"), // NOI18N
                     (String)jsonBinding.get("nodeClasses"), // NOI18N
+                    (Boolean)jsonBinding.get("nodeRemoved"), // NOI18N
                     pageModel
-                ); 
+                );
                 Map<Integer,UnusedBinding> innerMap = map.get(name);
                 if (innerMap == null) {
                     innerMap = new HashMap<Integer,UnusedBinding>();

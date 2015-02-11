@@ -71,6 +71,8 @@ public class CodeCompletionSuite {
                 addTest(ModuleLiteralTest.class, ModuleLiteralTest.tests).
                 addTest(RequireTest.class, RequireTest.tests).
                 addTest(AnonymousModuleTest.class, AnonymousModuleTest.tests).
+                addTest(MEParameterTest.class, MEParameterTest.tests).
+                addTest(PEParameterTest.class, PEParameterTest.tests).
                 suite();
     }
 

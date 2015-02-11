@@ -40,7 +40,9 @@
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-// PENDING make it one liner with no newline at the end (to not modify lines for debugger)
+// This code will be placed on one line (to ensure that line breakpoints
+// will work). Any occurrence of // is interpreted as the beginning
+// of a line comment (that will be removed during this process).
 
 (function() {
 
