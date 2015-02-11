@@ -3221,7 +3221,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         try {
             command.add(VCSFileProxySupport.getCanonicalPath(f));
         } catch (IOException ioe) {
-            Mercurial.LOG.log(Level.WARNING, null, ioe); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, ioe.getMessage(), ioe); // NOI18N
             command.add(f.getPath()); // don't give up
         }
 
