@@ -41,39 +41,87 @@
  */
 package org.netbeans.modules.javascript2.nodejs.cc;
 
+import java.awt.event.KeyEvent;
 import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
  *
  * @author vriha
  */
-public class CodeCompletionSuite {
+public class PEParameterTest extends GeneralNodeJs {
 
-    public static Test suite() {
-        return JellyTestCase.emptyConfiguration().
-                addTest(CoreModulesTest.class, CoreModulesTest.tests).
-                addTest(EPLiteralTest.class, EPLiteralTest.tests).
-                addTest(EPLiteralTest2.class, EPLiteralTest2.tests).
-                addTest(ExportedClassTest.class, ExportedClassTest.tests).
-                addTest(ExportsModuleRefTest.class, ExportsModuleRefTest.tests).
-                addTest(ExportsModuleTest.class, ExportsModuleTest.tests).
-                addTest(FunctionTest.class, FunctionTest.tests).
-                addTest(MEAnonymousModuleTest.class, MEAnonymousModuleTest.tests).
-                addTest(MEAnonymousModuleTest2.class, MEAnonymousModuleTest2.tests).
-                addTest(MECoreTest.class, MECoreTest.tests).
-                addTest(MELiteralRefTest.class, MELiteralRefTest.tests).
-                addTest(MELiteralTest.class, MELiteralTest.tests).
-                addTest(MEPropertyTest.class, MEPropertyTest.tests).
-                addTest(ModuleContructorTest.class, ModuleContructorTest.tests).
-                addTest(ModuleFunctionTest.class, ModuleFunctionTest.tests).
-                addTest(ModuleInstanceTest.class, ModuleInstanceTest.tests).
-                addTest(ModuleLiteralTest.class, ModuleLiteralTest.tests).
-                addTest(RequireTest.class, RequireTest.tests).
-                addTest(AnonymousModuleTest.class, AnonymousModuleTest.tests).
-                addTest(MEParameterTest.class, MEParameterTest.tests).
-                addTest(PEParameterTest.class, PEParameterTest.tests).
-                suite();
+    static final String[] tests = new String[]{
+        "openProject",
+        "testParam1",
+        "testParam2",
+        "testParam3",
+        "testParam4",
+        "testParam5"
+    };
+
+    public PEParameterTest(String args) {
+        super(args);
     }
 
+    public static Test suite() {
+        return createModuleTest(PEParameterTest.class, tests);
+    }
+
+    public void openProject() throws Exception {
+        startTest();
+        JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
+        openDataProjects("SimpleNode");
+        evt.waitNoEvent(2000);
+        openFile("doc|pe.js", "SimpleNode");
+        endTest();
+    }
+
+    public void testParam1() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 5);
+        endTest();
+    }
+
+    public void testParam2() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 8);
+        endTest();
+    }
+
+    public void testParam3() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 11);
+        endTest();
+    }
+
+    public void testParam4() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 13);
+        endTest();
+    }
+
+    public void testParam5() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 35);
+        endTest();
+    }
+
+    @Override
+    public void tearDown() {
+        if (GeneralNodeJs.currentLine < 1) {
+            return;
+        }
+        EditorOperator eo = new EditorOperator("pe.js");
+        eo.setCaretPositionToEndOfLine(GeneralNodeJs.currentLine);
+        String l = eo.getText(eo.getLineNumber());
+        for (int i = 0; i < l.length() - 1; i++) {
+            eo.pressKey(KeyEvent.VK_BACK_SPACE);
+        }
+
+        evt.waitNoEvent(1000);
+
+    }
 }
