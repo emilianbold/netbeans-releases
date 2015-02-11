@@ -125,7 +125,7 @@ public class UnusedRootNode extends AbstractNode {
          * @param keys keys to sort.
          * @return list of the given keys sorted alphabetically.
          */
-        private final List<String> sortKeys(Collection<String> keys) {
+        private List<String> sortKeys(Collection<String> keys) {
             List<String> list = new ArrayList<String>(keys);
             Collections.sort(list);
             return list;
