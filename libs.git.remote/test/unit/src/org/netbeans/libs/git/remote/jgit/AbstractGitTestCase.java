@@ -404,7 +404,8 @@ public class AbstractGitTestCase extends NbTestCase {
         return output;
     }
     
-    protected void assertStatus(Map<VCSFileProxy, GitStatus> statuses, VCSFileProxy repository, VCSFileProxy file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {
+    protected void assertStatus(Map<VCSFileProxy, GitStatus> statuses, VCSFileProxy repository, VCSFileProxy file, boolean tracked,
+            Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {
         assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
         assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
     }

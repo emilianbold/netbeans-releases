@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +114,7 @@ public class StatusCommand extends StatusCommandBase {
         if (Constants.HEAD.equals(revision)) {
              addArgument("status"); //NOI18N
              addArgument("--short"); //NOI18N
+             addArgument("--ignored"); //NOI18N
         } else {
              addArgument("diff"); //NOI18N
              addArgument("--raw"); //NOI18N
@@ -131,13 +133,52 @@ public class StatusCommand extends StatusCommandBase {
 
     @Override
     protected void run () throws GitException {
-        if (true) {
+        if (false) {
             runKit();
         } else {
             runCLI();
         }
     }
 
+    private static final class Status {
+        char first;
+        char second;
+        char untracked1;
+        char untracked2;
+        String to;
+    }
+    
+    private LinkedHashMap<String, Status> parseOutput(String output) {
+        LinkedHashMap<String, Status> list = new LinkedHashMap<>();
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.length() > 3) {
+                char first = line.charAt(0);
+                char second = line.charAt(1);
+                String file;
+                String renamed = null;
+                int i = line.indexOf("->");
+                if (i > 0) {
+                    file = line.substring(2, i).trim();
+                    renamed = line.substring(i + 1).trim();
+                } else {
+                    file = line.substring(2).trim();
+                }
+                Status status = list.get(file);
+                if (status == null) {
+                    status = new Status();
+                    status.first = first;
+                    status.second = second;
+                    status.to = renamed;
+                    list.put(file, status);
+                } else {
+                    status.untracked1 = first;
+                    status.untracked2 = second;
+                }
+            }
+        }
+        return list;
+    }
+    
     private void runCLI () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         String cmd = getCommandLine();
@@ -146,87 +187,92 @@ public class StatusCommand extends StatusCommandBase {
             String executable = getExecutable();
             String[] args = getCliArguments();
             ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
-            if (exitStatus.output!= null && !exitStatus.output.isEmpty()) {
-                for(String line : exitStatus.output.split("\n")) { //NOI18N
-                    if (line.length() > 3) {
-                        char first = line.charAt(0);
-                        char second = line.charAt(1);
-                        String file;
-                        String renamed = null;
-                        int i = line.indexOf("->");
-                        if (i > 0) {
-                            file = line.substring(2, i).trim();
-                            renamed = line.substring(i+1).trim();
-                        } else {
-                            file = line.substring(2).trim();
-                        }
-                        boolean tracked = !(first == '?' || first == '!');
-                        GitStatus.Status statusHeadIndex = GitStatus.Status.STATUS_IGNORED;
-                        switch (first) {
-                            case 'A':
-                                statusHeadIndex = GitStatus.Status.STATUS_ADDED;
-                                break;
-                            case 'C':
-                                statusHeadIndex = GitStatus.Status.STATUS_ADDED;
-                                break;
-                            case 'R':
-                            case 'D':
-                                statusHeadIndex = GitStatus.Status.STATUS_REMOVED;
-                                break;
-                            case 'M':
-                            case 'U':
-                                statusHeadIndex = GitStatus.Status.STATUS_MODIFIED;
-                                break;
-                            case ' ':
-                                statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
-                                break;
-                            case '?':
-                            case '!':
-                                statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
-                                break;
-                        }
-                        GitStatus.Status statusIndexWC = GitStatus.Status.STATUS_IGNORED;
-                        switch (second) {
-                            case 'A':
-                                statusIndexWC = GitStatus.Status.STATUS_ADDED;
-                                break;
-                            case 'D':
-                                statusIndexWC = GitStatus.Status.STATUS_REMOVED;
-                                break;
-                            case 'M':
-                            case 'U':
-                                statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
-                                break;
-                            case ' ':
-                                statusIndexWC = GitStatus.Status.STATUS_NORMAL;
-                                break;
-                            case '?':
-                            case '!':
-                                statusIndexWC = GitStatus.Status.STATUS_ADDED;
-                                break;
-                        }
-                        GitStatus.Status statusHeadWC;
-                        if (!tracked) {
-                            statusHeadWC = GitStatus.Status.STATUS_ADDED;
-                        } else {
-                            if (statusHeadIndex == GitStatus.Status.STATUS_NORMAL) {
-                                statusHeadWC = statusIndexWC;
-                            } else if (statusIndexWC == GitStatus.Status.STATUS_NORMAL) {
-                                statusHeadWC = statusHeadIndex;
-                            } else if (statusHeadIndex == GitStatus.Status.STATUS_ADDED && statusIndexWC == GitStatus.Status.STATUS_REMOVED) {
-                                statusHeadWC = GitStatus.Status.STATUS_NORMAL;
-                            } else {
-                                statusHeadWC = statusHeadIndex;
-                            }
-                        }
-                        VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
-                        boolean isFolder = vcsFile.isDirectory();
-                        long indexTimestamp = vcsFile.lastModified();
-                        GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath()+"/"+file, vcsFile,
-                            statusHeadIndex, statusIndexWC, statusHeadWC,
-                            null, isFolder, null/*renamed*/, indexTimestamp);
-                        addStatus(vcsFile, status);
+            if (exitStatus.output!= null) {
+                LinkedHashMap<String, Status> parseOutput = parseOutput(exitStatus.output);
+                for(Map.Entry<String, Status> entry : parseOutput.entrySet()) {
+                    String file = entry.getKey();
+                    Status v = entry.getValue();
+                    char first = v.first;
+                    char second = v.second;
+                    char untracked = v.untracked1;
+                    String renamed = v.to;
+                    
+                    boolean tracked = !(first == '?' || untracked == '?');
+                    GitStatus.Status statusHeadIndex = GitStatus.Status.STATUS_IGNORED;
+                    switch (first) {
+                        case 'A':
+                            statusHeadIndex = GitStatus.Status.STATUS_ADDED;
+                            break;
+                        case 'C':
+                            statusHeadIndex = GitStatus.Status.STATUS_ADDED;
+                            break;
+                        case 'R':
+                        case 'D':
+                            statusHeadIndex = GitStatus.Status.STATUS_REMOVED;
+                            break;
+                        case 'M':
+                        case 'U':
+                            statusHeadIndex = GitStatus.Status.STATUS_MODIFIED;
+                            break;
+                        case ' ':
+                            statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
+                            break;
+                        case '?':
+                        case '!':
+                            statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
+                            break;
                     }
+                    GitStatus.Status statusIndexWC = GitStatus.Status.STATUS_IGNORED;
+                    switch (second) {
+                        case 'A':
+                            statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                            break;
+                        case 'D':
+                            statusIndexWC = GitStatus.Status.STATUS_REMOVED;
+                            break;
+                        case 'M':
+                        case 'U':
+                            statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
+                            break;
+                        case ' ':
+                            if (untracked == '?') {
+                                statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                            } else {
+                                statusIndexWC = GitStatus.Status.STATUS_NORMAL;
+                            }
+                            break;
+                        case '?':
+                            statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                            break;
+                        case '!':
+                            statusIndexWC = GitStatus.Status.STATUS_IGNORED;
+                            break;
+                    }
+                    GitStatus.Status statusHeadWC;
+                    if (!tracked) {
+                        statusHeadWC = GitStatus.Status.STATUS_ADDED;
+                    } else {
+                        if (statusHeadIndex == GitStatus.Status.STATUS_NORMAL) {
+                            statusHeadWC = statusIndexWC;
+                        } else if (statusIndexWC == GitStatus.Status.STATUS_NORMAL) {
+                            statusHeadWC = statusHeadIndex;
+                        } else if (statusIndexWC == GitStatus.Status.STATUS_IGNORED) {
+                            statusHeadWC = GitStatus.Status.STATUS_ADDED;
+                        } else if (statusHeadIndex == GitStatus.Status.STATUS_ADDED && statusIndexWC == GitStatus.Status.STATUS_REMOVED) {
+                            statusHeadWC = GitStatus.Status.STATUS_NORMAL;
+                        } else if (statusHeadIndex == GitStatus.Status.STATUS_MODIFIED && statusIndexWC == GitStatus.Status.STATUS_REMOVED) {
+                            statusHeadWC = GitStatus.Status.STATUS_REMOVED;
+                        } else {
+                            statusHeadWC = statusHeadIndex;
+                        }
+                    }
+                    VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
+                    boolean isFolder = vcsFile.isDirectory();
+                    long indexTimestamp = vcsFile.lastModified();
+                    GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath()+"/"+file, vcsFile,
+                        statusHeadIndex, statusIndexWC, statusHeadWC,
+                        null, isFolder, null/*renamed*/, indexTimestamp);
+                    addStatus(vcsFile, status);
                     //command.outputText(line);
                 }
             }
