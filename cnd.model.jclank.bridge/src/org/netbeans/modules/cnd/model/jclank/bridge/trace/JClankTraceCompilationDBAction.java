@@ -56,15 +56,15 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
-@ActionID(id = "JClankTracePreprocessorAction", category = "NativeProjectCodeAssistance")
-@ActionRegistration(lazy = false, displayName = "#CTL_JClankTracePreprocessorAction")
-@ActionReference(path = "NativeProjects/CodeAssistanceActions", position = 31)
-@NbBundle.Messages("CTL_JClankTracePreprocessorAction=Preprocess with JClank")
-public class JClankTracePreprocessorAction extends JClankTraceProjectAbstractAction {
+@ActionID(id = "JClankTraceCompilationDBAction", category = "NativeProjectCodeAssistance")
+@ActionRegistration(lazy = false, displayName = "#CTL_JClankTraceCompilationDBAction")
+@ActionReference(path = "NativeProjects/CodeAssistanceActions", position = 35)
+@NbBundle.Messages("CTL_JClankTraceCompilationDBAction=Trace Compilation DB for JClank")
+public class JClankTraceCompilationDBAction extends JClankTraceProjectAbstractAction {
     
     @Override
     public final String getName() {
-      return NbBundle.getMessage(getClass(), ("CTL_JClankTracePreprocessorAction")); // NOI18N
+      return NbBundle.getMessage(getClass(), ("CTL_JClankTraceCompilationDBAction")); // NOI18N
     }    
 
     @Override
@@ -75,7 +75,7 @@ public class JClankTracePreprocessorAction extends JClankTraceProjectAbstractAct
         ClankProgressHandler handle = new JClankProgressHandler(progress);
         try {
             for (NativeProject project : projects) {
-                CsmJClankSerivicesImpl.preprocess(Collections.singleton(project), 
+                CsmJClankSerivicesImpl.traceCompilationDB(Collections.singleton(project), 
                         llvm_out, llvm_err, handle, cancelled);
             }
         } finally {

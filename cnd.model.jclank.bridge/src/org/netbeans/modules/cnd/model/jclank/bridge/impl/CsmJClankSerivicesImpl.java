@@ -46,43 +46,22 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import static org.clang.basic.ClangGlobals.$out_DiagnosticBuilder_StringRef;
 import org.clang.basic.DiagnosticConsumer;
-import org.clang.basic.DiagnosticsEngine;
-import org.clang.basic.FileEntry;
-import org.clang.basic.FileManager;
-import org.clang.basic.LangOptions;
-import org.clang.basic.Module;
-import org.clang.basic.SourceLocation;
-import org.clang.basic.SourceManager;
-import org.clang.basic.SrcMgr;
-import org.clang.basic.diag;
 import org.clang.basic.tok;
 import org.clang.frontend.ClangGlobals;
-import org.clang.frontend.CompilerInvocation;
-import org.clang.frontend.InputKind;
-import org.clang.frontend.LangStandard;
 import org.clang.frontend.PreprocessorOutputOptions;
-import org.clang.lex.ModuleIdPath;
-import org.clang.lex.ModuleLoadResult;
-import org.clang.lex.ModuleLoader;
 import org.clang.lex.Preprocessor;
 import org.clang.lex.Token;
-import org.clank.support.Converted;
-import org.clank.support.Destructors;
+import org.clang.tools.services.*;
+import org.clang.tools.services.support.*;
 import static org.clank.support.NativePointer.*;
 import org.clank.support.NativeTrace;
-import org.llvm.adt.StringRef;
 import org.llvm.support.llvm;
 import org.llvm.support.raw_ostream;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
-import org.netbeans.modules.cnd.model.jclank.bridge.trace.WriterOutputStream;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.windows.OutputWriter;
 
@@ -97,29 +76,53 @@ public final class CsmJClankSerivicesImpl {
         throw new UnsupportedOperationException();
     }
 
-    public static void preprocess(Collection<NativeProject> projects, 
+    public static void traceCompilationDB(Set<NativeProject> projects, 
             raw_ostream out, raw_ostream err, 
-            ProgressHandle handle, final AtomicBoolean cancelled) {
+            ClankProgressHandler handle, AtomicBoolean cancelled) {
         assert out != null;
         assert err != null;
         clearStatistics();
         for (NativeProject project : projects) {
-            err.$out("START ").$out(project.getProjectDisplayName()).$out("\n");
-            handle.setDisplayName("Preprocess " + project.getProjectDisplayName());
+            err.$out("START ").$out(project.getProjectDisplayName()).$out("\n").flush();
+            handle.setDisplayName("Compilation DataBase for " + project.getProjectDisplayName());
             handle.switchToIndeterminate();
-            Set<NativeFileItem> srcFiles = new TreeSet<>(new NFIComparator());
-            for (NativeFileItem nfi : project.getAllFiles()) {
-                if (!nfi.isExcluded()) {
-                    switch (nfi.getLanguage()) {
-                        case C:
-                        case CPP:
-                            srcFiles.add(nfi);
-                            break;
-                        default:
-                            break;
+            Set<NativeFileItem> srcFiles = JClankCompilationDB.getSources(project);
+            int size = srcFiles.size();
+            handle.switchToDeterminate(size, (int)(0.5/*sec*/ * size));
+            int doneFiles = 0;
+            int totalTime = 0;
+            for (NativeFileItem srcFile : srcFiles) {
+                if (cancelled.get()) {
+                    break;
+                }
+                handle.progress(srcFile.getAbsolutePath() + ("(" + (doneFiles+1) + " of " + size + ")") , doneFiles++);
+                try {
+                    traceEntry(srcFile, out);
+                } catch (Throwable e) {
+                    PrintWriter exErr = tryExtractPrintWriter(err);
+                    Exception exc = new Exception("ERROR " + srcFile.getAbsolutePath(), e);
+                    if (exErr == null) {
+                        exc.printStackTrace(System.err);
+                    } else {
+                        exc.printStackTrace(exErr);
                     }
                 }
             }
+            err.$out("DONE  ").$out(project.getProjectDisplayName()).$out(" ").$out(NativeTrace.formatNumber(totalTime)).$out("ms").$out("\n").flush();
+        }               
+    }
+    
+    public static void preprocess(Collection<NativeProject> projects, 
+            raw_ostream out, raw_ostream err, 
+            ClankProgressHandler handle, final AtomicBoolean cancelled) {
+        assert out != null;
+        assert err != null;
+        clearStatistics();
+        for (NativeProject project : projects) {
+            err.$out("START ").$out(project.getProjectDisplayName()).$out("\n").flush();
+            handle.setDisplayName("Preprocess " + project.getProjectDisplayName());
+            handle.switchToIndeterminate();
+            Set<NativeFileItem> srcFiles = JClankCompilationDB.getSources(project);
             int size = srcFiles.size();
             handle.switchToDeterminate(size, (int)(0.5/*sec*/ * size));
             int doneFiles = 0;
@@ -152,7 +155,7 @@ public final class CsmJClankSerivicesImpl {
     
     public static void dumpTokens(NativeFileItem nfi) {
         raw_ostream llvm_err = llvm.errs();
-        Preprocessor /*&*/ PP = getPreprocessor(nfi, llvm_err);
+        Preprocessor /*&*/ PP = ClankPreprocessorServices.getPreprocessor(JClankCompilationDB.createEntry(nfi), llvm_err);
         if (PP != null) {
             // Start preprocessing the specified input file.
             Token Tok/*J*/ = new Token();
@@ -186,7 +189,7 @@ public final class CsmJClankSerivicesImpl {
             boolean printTokens, boolean printPPStatistics) {
         long time = System.currentTimeMillis();
         boolean done = false;
-        Preprocessor /*&*/ PP = getPreprocessor(nfi, printDiags ? llvm_err : llvm.nulls());
+        Preprocessor /*&*/ PP = ClankPreprocessorServices.getPreprocessor(JClankCompilationDB.createEntry(nfi), printDiags ? llvm_err : llvm.nulls());
         if (PP != null) {
             PreprocessorOutputOptions Opts = createPPOptions(nfi);
             try {
@@ -235,7 +238,7 @@ public final class CsmJClankSerivicesImpl {
 
     private static void PrintJClankStatistics(raw_ostream OS) {
         if (NativeTrace.STATISTICS) {
-          PrintStream javaOS = tryExtractPrintStream(OS, System.out);
+          PrintWriter javaOS = tryExtractPrintWriter(OS, System.out);
           org.clang.frontendtool.ClangGlobals.PrintStats(OS, javaOS);
           javaOS.flush();
         } else {
@@ -252,39 +255,14 @@ public final class CsmJClankSerivicesImpl {
         return javaOS;
     }
 
-    private static PrintStream tryExtractPrintStream(raw_ostream OS, PrintStream fallback) {
-        PrintStream javaOS = fallback;
-        if (OS instanceof PrintWriter_ostream) {
-            javaOS = new PrintStream(new WriterOutputStream(((PrintWriter_ostream)OS).getJavaDelegate()));
+    private static PrintWriter tryExtractPrintWriter(raw_ostream OS, PrintStream fallback) {
+        PrintWriter javaOS = tryExtractPrintWriter(OS);
+        if (javaOS == null) {
+            javaOS = new PrintWriter(fallback);
         }
         return javaOS;
     }
     
-    private static Preprocessor getPreprocessor(NativeFileItem nfi, raw_ostream llvm_err) {
-        PreprocessorInitializer initializer = new AdvancedPreprocessorInitializer(nfi, llvm_err);
-        ModuleLoader ModLoader/*J*/ = new VoidModuleLoader();
-        Preprocessor PP/*J*/ = initializer.createPreprocessor(ModLoader);
-        
-        StringRef InputFile = new StringRef(nfi.getAbsolutePath());
-        FileManager FileMgr = PP.getFileManager();
-        FileEntry /*P*/ File = FileMgr.getFile(InputFile, true);
-        if (File == null) {
-            $out_DiagnosticBuilder_StringRef(PP.getDiagnostics().Report(diag.err_fe_error_reading), InputFile).$destroy();
-            return null;
-        } else {
-            SourceManager SourceMgr = PP.getSourceManager();
-            SourceMgr.setMainFileID(
-                    SourceMgr.createFileID(
-                            File, 
-                            new SourceLocation(), 
-                            SrcMgr.CharacteristicKind.C_User
-                    )
-            );
-        }   
-        
-        return PP;
-    }
-
     private static PreprocessorOutputOptions createPPOptions(NativeFileItem nfi) {
         PreprocessorOutputOptions opts = new PreprocessorOutputOptions();
         opts.ShowCPP = true;
@@ -295,118 +273,9 @@ public final class CsmJClankSerivicesImpl {
         return opts;
     }
 
-    public static interface PreprocessorInitializer {
-        Preprocessor createPreprocessor(ModuleLoader modLoader);
-    }
-
-    public static void setLangDefaults(LangOptions LangOpts, NativeFileItem startEntry) {
-        LangStandard.Kind lang_std = LangStandard.Kind.lang_unspecified;
-        InputKind lang = InputKind.IK_None;
-        switch (startEntry.getLanguage()) {
-            case C:
-            case C_HEADER:
-                lang = InputKind.IK_C;
-                break;
-            case CPP:
-                lang = InputKind.IK_CXX;
-                break;
-            case FORTRAN:
-            case OTHER:
-            default:
-                throw new AssertionError(startEntry.getLanguage().name());
-        }
-        switch (startEntry.getLanguageFlavor()) {
-            case DEFAULT:
-            case UNKNOWN:
-                break;
-            case C:
-                break;
-            case C89:
-                lang_std = LangStandard.Kind.lang_gnu89;
-                break;
-            case C99:
-                lang_std = LangStandard.Kind.lang_gnu99;
-                break;
-            case CPP:
-                lang_std = LangStandard.Kind.lang_cxx03;
-                break;
-            case CPP11:
-                lang_std = LangStandard.Kind.lang_gnucxx11;
-                break;
-            case C11:
-                lang_std = LangStandard.Kind.lang_gnu11;
-                break;
-            case CPP14:
-                // FIXME
-                lang_std = LangStandard.Kind.lang_gnucxx1y;
-                break;
-            case F77:
-            case F90:
-            case F95:
-            default:
-                throw new AssertionError(startEntry.getLanguageFlavor().name());
-        }
-        CompilerInvocation.setLangDefaults(LangOpts, lang, lang_std);
-    }
-    
-    public static Level toLoggerLevel(DiagnosticsEngine.Level DiagLevel) {
-        switch (DiagLevel) {
-            case Ignored:
-            case Note:
-                return Level.INFO;
-            case Warning:
-                return Level.WARNING;
-            case Error:
-            case Fatal:
-                return Level.SEVERE;
-            default:
-                throw new AssertionError(DiagLevel.name());
-        }
-    }
-    
-    //<editor-fold defaultstate="collapsed" desc="<anonymous namespace>::VoidModuleLoader">
-    @Converted(kind = Converted.Kind.AUTO, source = "${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp", line = 31,
-            cmd = "jclank.sh ${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp -filter=<anonymous namespace>::VoidModuleLoader")
-//</editor-fold>
-    public static class VoidModuleLoader extends /*public*/ ModuleLoader implements Destructors.ClassWithDestructor {
-
-        //<editor-fold defaultstate="collapsed" desc="<anonymous namespace>::VoidModuleLoader::loadModule">
-        @Converted(kind = Converted.Kind.AUTO, source = "${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp", line = 32,
-                cmd = "jclank.sh ${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp -filter=<anonymous namespace>::VoidModuleLoader::loadModule")
-        //</editor-fold>
-        @Override
-        public/*private*/ /*virtual*/ ModuleLoadResult loadModule(SourceLocation ImportLoc, ModuleIdPath Path, Module.NameVisibilityKind Visibility, boolean IsInclusionDirective) {
-            return new ModuleLoadResult();
-        }
-
-        //<editor-fold defaultstate="collapsed" desc="<anonymous namespace>::VoidModuleLoader::makeModuleVisible">
-        @Converted(kind = Converted.Kind.AUTO, source = "${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp", line = 39,
-                cmd = "jclank.sh ${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp -filter=<anonymous namespace>::VoidModuleLoader::makeModuleVisible")
-        //</editor-fold>
-        @Override
-        public/*private*/ /*virtual*/ void makeModuleVisible(Module /*P*/ Mod, Module.NameVisibilityKind Visibility, SourceLocation ImportLoc, boolean Complain) {
-        }
-
-        //<editor-fold defaultstate="collapsed" desc="<anonymous namespace>::VoidModuleLoader::~VoidModuleLoader">
-        @Converted(kind = Converted.Kind.AUTO, source = "${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp", line = 31,
-                cmd = "jclank.sh ${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp -filter=<anonymous namespace>::VoidModuleLoader::~VoidModuleLoader")
-        //</editor-fold>
-        @Override
-        public /*inline*/ void $destroy() {
-            super.$destroy();
-        }
-
-        //<editor-fold defaultstate="collapsed" desc="<anonymous namespace>::VoidModuleLoader::VoidModuleLoader">
-        @Converted(kind = Converted.Kind.AUTO, source = "${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp", line = 31,
-                cmd = "jclank.sh ${LLVM_SRC}/llvm/tools/clang/unittests/Lex/LexerTest.cpp -filter=<anonymous namespace>::VoidModuleLoader::VoidModuleLoader")
-        //</editor-fold>
-        public /*inline*/ VoidModuleLoader() {
-            /* : ModuleLoader()*/
-            //START JInit
-            super();
-            //END JInit
-        }
-
+    private static ClankCompilationDataBase.Entry traceEntry(NativeFileItem srcFile, raw_ostream out) {
+        ClankCompilationDataBase.Entry entry = JClankCompilationDB.createEntry(srcFile);
+        return entry;
     }
 
     static final class NFIComparator implements Comparator<NativeFileItem> {

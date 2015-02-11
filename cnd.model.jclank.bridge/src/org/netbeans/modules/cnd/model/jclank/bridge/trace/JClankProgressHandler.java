@@ -41,41 +41,44 @@
  */
 package org.netbeans.modules.cnd.model.jclank.bridge.trace;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
+import org.clang.tools.services.ClankProgressHandler;
+import org.netbeans.api.progress.ProgressHandle;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class WriterOutputStream extends OutputStream {
-    private final Writer writer;
+public class JClankProgressHandler implements ClankProgressHandler {
+    private final ProgressHandle delegate;
 
-    public WriterOutputStream(Writer writer) {
-        this.writer = writer;
+    public JClankProgressHandler(ProgressHandle handle) {
+        this.delegate = handle;
+    }
+
+    
+    @Override
+    public void setDisplayName(String newDisplayName) {
+        delegate.setDisplayName(newDisplayName);
     }
 
     @Override
-    public void write(int b) throws IOException {
-        // It's tempting to use writer.write((char) b), but that may get the encoding wrong
-        // This is inefficient, but it works
-        write(new byte[]{(byte) b}, 0, 1);
+    public void start(int workunits, long estimate) {
+        delegate.start(workunits, estimate);
     }
 
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
-        writer.write(new String(b, off, len));
+    public void switchToIndeterminate() {
+        delegate.switchToIndeterminate();
     }
 
     @Override
-    public void flush() throws IOException {
-        writer.flush();
+    public void switchToDeterminate(int workunits, long estimate) {
+        delegate.switchToDeterminate(workunits, estimate);
     }
 
     @Override
-    public void close() throws IOException {
-        writer.close();
+    public void progress(String message, int workunit) {
+        delegate.progress(message, workunit);
     }
     
 }
