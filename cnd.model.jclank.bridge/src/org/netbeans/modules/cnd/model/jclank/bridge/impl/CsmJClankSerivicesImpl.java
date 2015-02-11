@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.model.jclank.bridge.impl;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
@@ -55,6 +56,7 @@ import org.clang.lex.Preprocessor;
 import org.clang.lex.Token;
 import org.clang.tools.services.*;
 import org.clang.tools.services.support.*;
+import org.clank.support.NativePointer;
 import static org.clank.support.NativePointer.*;
 import org.clank.support.NativeTrace;
 import org.llvm.support.llvm;
@@ -86,7 +88,7 @@ public final class CsmJClankSerivicesImpl {
             err.$out("START ").$out(project.getProjectDisplayName()).$out("\n").flush();
             handle.setDisplayName("Compilation DataBase for " + project.getProjectDisplayName());
             handle.switchToIndeterminate();
-            Set<NativeFileItem> srcFiles = JClankCompilationDB.getSources(project);
+            Set<NativeFileItem> srcFiles = CsmJClankCompilationDB.getSources(project);
             int size = srcFiles.size();
             handle.switchToDeterminate(size, (int)(0.5/*sec*/ * size));
             int doneFiles = 0;
@@ -95,7 +97,7 @@ public final class CsmJClankSerivicesImpl {
                 if (cancelled.get()) {
                     break;
                 }
-                handle.progress(srcFile.getAbsolutePath() + ("(" + (doneFiles+1) + " of " + size + ")") , doneFiles++);
+                handle.progress(srcFile.getAbsolutePath() + (" (" + (doneFiles+1) + " of " + size + ")") , doneFiles++);
                 try {
                     traceEntry(srcFile, out);
                 } catch (Throwable e) {
@@ -122,7 +124,7 @@ public final class CsmJClankSerivicesImpl {
             err.$out("START ").$out(project.getProjectDisplayName()).$out("\n").flush();
             handle.setDisplayName("Preprocess " + project.getProjectDisplayName());
             handle.switchToIndeterminate();
-            Set<NativeFileItem> srcFiles = JClankCompilationDB.getSources(project);
+            Set<NativeFileItem> srcFiles = CsmJClankCompilationDB.getSources(project);
             int size = srcFiles.size();
             handle.switchToDeterminate(size, (int)(0.5/*sec*/ * size));
             int doneFiles = 0;
@@ -131,7 +133,7 @@ public final class CsmJClankSerivicesImpl {
                 if (cancelled.get()) {
                     break;
                 }
-                handle.progress(srcFile.getAbsolutePath() + ("(" + (doneFiles+1) + " of " + size + ")") , doneFiles++);
+                handle.progress(srcFile.getAbsolutePath() + (" (" + (doneFiles+1) + " of " + size + ")") , doneFiles++);
                 try {
                     long time = dumpPreprocessed(srcFile, out, err, CndUtils.isDebugMode(), false, false);
                     totalTime+=time;
@@ -155,7 +157,7 @@ public final class CsmJClankSerivicesImpl {
     
     public static void dumpTokens(NativeFileItem nfi) {
         raw_ostream llvm_err = llvm.errs();
-        Preprocessor /*&*/ PP = ClankPreprocessorServices.getPreprocessor(JClankCompilationDB.createEntry(nfi), llvm_err);
+        Preprocessor /*&*/ PP = ClankPreprocessorServices.getPreprocessor(CsmJClankCompilationDB.createEntry(nfi), llvm_err);
         if (PP != null) {
             // Start preprocessing the specified input file.
             Token Tok/*J*/ = new Token();
@@ -189,7 +191,7 @@ public final class CsmJClankSerivicesImpl {
             boolean printTokens, boolean printPPStatistics) {
         long time = System.currentTimeMillis();
         boolean done = false;
-        Preprocessor /*&*/ PP = ClankPreprocessorServices.getPreprocessor(JClankCompilationDB.createEntry(nfi), printDiags ? llvm_err : llvm.nulls());
+        Preprocessor /*&*/ PP = ClankPreprocessorServices.getPreprocessor(CsmJClankCompilationDB.createEntry(nfi), printDiags ? llvm_err : llvm.nulls());
         if (PP != null) {
             PreprocessorOutputOptions Opts = createPPOptions(nfi);
             try {
@@ -273,19 +275,8 @@ public final class CsmJClankSerivicesImpl {
         return opts;
     }
 
-    private static ClankCompilationDataBase.Entry traceEntry(NativeFileItem srcFile, raw_ostream out) {
-        ClankCompilationDataBase.Entry entry = JClankCompilationDB.createEntry(srcFile);
-        return entry;
-    }
-
-    static final class NFIComparator implements Comparator<NativeFileItem> {
-
-        public NFIComparator() {
-        }
-
-        @Override
-        public int compare(NativeFileItem o1, NativeFileItem o2) {
-            return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
-        }
+    private static void traceEntry(NativeFileItem srcFile, raw_ostream out) {
+        ClankCompilationDataBase.Entry compileEntry = CsmJClankCompilationDB.createEntry(srcFile);
+        ClangUtilities.DumpEntry(compileEntry, out);
     }
 }

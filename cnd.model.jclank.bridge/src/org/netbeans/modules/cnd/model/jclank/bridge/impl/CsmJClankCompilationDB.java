@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.model.jclank.bridge.impl;
 
+import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import org.clang.frontend.InputKind;
@@ -56,10 +57,10 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vladimir Voskresensky
  */
-public final class JClankCompilationDB {
+public final class CsmJClankCompilationDB {
 
     public static Set<NativeFileItem> getSources(NativeProject project) {
-        Set<NativeFileItem> srcFiles = new TreeSet<>(new CsmJClankSerivicesImpl.NFIComparator());
+        Set<NativeFileItem> srcFiles = new TreeSet<>(new NFIComparator());
         for (NativeFileItem nfi : project.getAllFiles()) {
             if (!nfi.isExcluded()) {
                 switch (nfi.getLanguage()) {
@@ -164,5 +165,15 @@ public final class JClankCompilationDB {
         }
         return lang;
     }
-        
+
+    private static final class NFIComparator implements Comparator<NativeFileItem> {
+
+        public NFIComparator() {
+        }
+
+        @Override
+        public int compare(NativeFileItem o1, NativeFileItem o2) {
+            return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+        }
+    }    
 }
