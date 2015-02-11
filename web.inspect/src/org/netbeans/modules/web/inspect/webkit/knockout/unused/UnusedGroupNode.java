@@ -55,7 +55,7 @@ import org.openide.nodes.Node;
  */
 public class UnusedGroupNode extends AbstractNode {
     /** Name of the binding this node represents. */
-    private String bindingName;
+    private final String bindingName;
 
     /**
      * Creates a new {@code UnusedGroupNode}.
