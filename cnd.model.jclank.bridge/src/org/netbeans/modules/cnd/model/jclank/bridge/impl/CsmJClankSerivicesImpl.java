@@ -85,14 +85,12 @@ public final class CsmJClankSerivicesImpl {
         assert err != null;
         clearStatistics();
         for (NativeProject project : projects) {
-            err.$out("START ").$out(project.getProjectDisplayName()).$out("\n").flush();
             handle.setDisplayName("Compilation DataBase for " + project.getProjectDisplayName());
             handle.switchToIndeterminate();
             Set<NativeFileItem> srcFiles = CsmJClankCompilationDB.getSources(project);
             int size = srcFiles.size();
-            handle.switchToDeterminate(size, (int)(0.5/*sec*/ * size));
+            handle.switchToDeterminate(size, -1);
             int doneFiles = 0;
-            int totalTime = 0;
             for (NativeFileItem srcFile : srcFiles) {
                 if (cancelled.get()) {
                     break;
@@ -110,7 +108,6 @@ public final class CsmJClankSerivicesImpl {
                     }
                 }
             }
-            err.$out("DONE  ").$out(project.getProjectDisplayName()).$out(" ").$out(NativeTrace.formatNumber(totalTime)).$out("ms").$out("\n").flush();
         }               
     }
     
