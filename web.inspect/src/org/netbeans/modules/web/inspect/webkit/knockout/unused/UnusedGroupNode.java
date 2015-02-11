@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
@@ -110,7 +114,7 @@ public class UnusedGroupNode extends AbstractNode {
          */
         UnusedGroupChildren(java.util.Map<Integer,UnusedBinding> unusedBindings) {
             this.unusedBindings = unusedBindings;
-            setKeys(unusedBindings.keySet());
+            setKeys(sortKeys(unusedBindings.keySet()));
         }
 
         /**
@@ -128,7 +132,19 @@ public class UnusedGroupNode extends AbstractNode {
                 }
             }
             this.unusedBindings = unusedBindings;
-            setKeys(unusedBindings.keySet());
+            setKeys(sortKeys(unusedBindings.keySet()));
+        }
+
+        /**
+         * Returns a list of the given keys sorted (by unused binding ID).
+         * 
+         * @param keys keys to sort.
+         * @return list of the given keys sorted (by unused binding ID).
+         */
+        private List<Integer> sortKeys(Collection<Integer> keys) {
+            List<Integer> list = new ArrayList<Integer>(keys);
+            Collections.sort(list);
+            return list;
         }
 
         @Override
