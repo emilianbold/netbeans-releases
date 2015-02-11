@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,23 +53,24 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class FunctionTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testInFunction1",
+        "testInFunction2",
+        "testInFunction4",
+        "testInFunction5",
+        "testInFunction7",
+        "testInFunction8",
+        "testInFunction9",
+        "testInFunction10"
+    };
+
     public FunctionTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(FunctionTest.class).addTest(
-                        "openProject",
-                        "testInFunction1",
-                        "testInFunction2",
-                        "testInFunction4",
-                        "testInFunction5",
-                        "testInFunction7",
-                        "testInFunction8",
-                        "testInFunction9",
-                        "testInFunction10"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(FunctionTest.class, tests);
     }
 
     public void openProject() throws Exception {

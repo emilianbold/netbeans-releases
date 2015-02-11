@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.nodejs.navigate;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -53,26 +52,27 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class FuncNavTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testDirectProperty",
+        "testDirectProperty2",
+        "testDirectProperty3",
+        "testDirectProperty4",
+        "testDirectProperty5",
+        "testInstanceProperty",
+        "testInstanceProperty2",
+        "testAnonymProperty",
+        "testModule",
+        "testPrototypeProperty",
+        "testPrototypeProperty2"
+    };
+
     public FuncNavTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(FuncNavTest.class).addTest(
-                        "openProject",
-                        "testDirectProperty",
-                        "testDirectProperty2",
-                        "testDirectProperty3",
-                        "testDirectProperty4",
-                        "testDirectProperty5",
-                        "testInstanceProperty",
-                        "testInstanceProperty2",
-                        "testAnonymProperty",
-                        "testModule",
-                        "testPrototypeProperty",
-                        "testPrototypeProperty2"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(FuncNavTest.class, tests);
     }
 
     public void openProject() throws Exception {

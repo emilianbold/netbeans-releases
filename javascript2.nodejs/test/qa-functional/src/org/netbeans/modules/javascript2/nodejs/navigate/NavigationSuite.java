@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,74 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.nodejs.navigate;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
  *
  * @author vriha
  */
-public class ObjLitExpNavTest extends GeneralNodeJs {
-
-    static final String[] tests = new String[]{
-        "openProject",
-        "testProperty",
-        "testProperty2",
-        "testProperty3",
-        "testRefProperty",
-        "testRefProperty2"
-    };
-
-    public ObjLitExpNavTest(String args) {
-        super(args);
-    }
+public class NavigationSuite {
 
     public static Test suite() {
-        return createModuleTest(ObjLitExpNavTest.class, tests);
+        return JellyTestCase.emptyConfiguration().
+                addTest(ExportedClassNavTest.class, ExportedClassNavTest.tests).
+                addTest(FuncExpNavTest.class, FuncExpNavTest.tests).
+                addTest(FuncNavTest.class, FuncNavTest.tests).
+                addTest(InstanceExpNavTest.class, InstanceExpNavTest.tests).
+                addTest(InstanceNavTest.class, InstanceNavTest.tests).
+                addTest(ObjLitExpNavTest.class, ObjLitExpNavTest.tests).
+                addTest(ObjLiteralNavTest.class, ObjLiteralNavTest.tests).
+                addTest(ReferencesNavTest.class, ReferencesNavTest.tests).
+                suite();
     }
 
-    public void openProject() throws Exception {
-        startTest();
-        JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
-        openDataProjects("SimpleNode");
-        evt.waitNoEvent(2000);
-        openFile("app|maingt.js", "SimpleNode");
-        endTest();
-    }
-
-    public void testProperty() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("maingt.js"), 49);
-        endTest();
-    }
-
-    public void testProperty2() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("maingt.js"), 50);
-        endTest();
-    }
-
-    public void testProperty3() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("maingt.js"), 51);
-        endTest();
-    }
-
-    public void testRefProperty() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("maingt.js"), 54);
-        endTest();
-    }
-
-    public void testRefProperty2() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("maingt.js"), 55);
-        endTest();
-    }
 }
