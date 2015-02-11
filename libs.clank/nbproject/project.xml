@@ -67,6 +67,7 @@ made subject to such option by the copyright holder.
                 <package>org.clang.staticanalyzer.core</package>
                 <package>org.clang.tools.driver</package>
                 <package>org.clang.tools.services</package>
+                <package>org.clang.tools.services.support</package>
                 <package>org.clank.java</package>
                 <package>org.clank.java.impl</package>
                 <package>org.clank.java.stdimpl</package>
