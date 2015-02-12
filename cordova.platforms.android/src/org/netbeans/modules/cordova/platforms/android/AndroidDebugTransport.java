@@ -66,7 +66,10 @@ import org.netbeans.modules.netserver.api.WebSocketClient;
 import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -126,7 +129,11 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     }
 
     public WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException {
-        return new WebSocketClient(getURI(), ProtocolDraft.getRFC(), handler);
+        final URI uri = getURI();
+        if (uri != null) {
+            return new WebSocketClient(uri, ProtocolDraft.getRFC(), handler);
+        }
+        return null;
     }
 
     @Override
@@ -141,16 +148,18 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         try {
             webSocket = createWebSocket(this);
+            if (webSocket != null) {
             webSocket.start();
             return true;
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
             return false;
         }
-    }
 
     private String getRedirectString() {
         String appName = getBundleIdentifier();
@@ -169,6 +178,14 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         return "1.0"; //NOI18N
     }
 
+    @NbBundle.Messages({
+        "LBL_UriTitle=Could not connect to device or emulator",
+        "ERR_CouldNotConnect=Please connect Android device (or run Android emulator) and make sure that:\n"
+        + "\u2022 No more than one device or emulator is connected at the same time\n"
+        + "\u2022 Device or emulator is listed in the output when invoking command \"adb devices\"\n"
+        + "\u2022 USB Debugging is enabled on your device (if applicable)\n"
+        + "\u2022 Your computer and Android device are connected to the same WiFi network (if applicable)"
+    })
     private URI getURI() {
         JSONArray array = null;
         for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime() && !flush;) {
@@ -226,10 +243,20 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                 }
             }
         }
-        if (array!=null) {
+        if (array != null) {
             LOGGER.info(array.toJSONString());
-        } 
-        throw new IllegalStateException("Cannot get websocket address"); // NOI18N
+        }
+
+        NotifyDescriptor not = new NotifyDescriptor(
+                Bundle.ERR_CouldNotConnect(),
+                Bundle.LBL_UriTitle(),
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{NotifyDescriptor.OK_OPTION},
+                null);
+        DialogDisplayer.getDefault().notify(not);
+        LOGGER.info("Cannot get websocket address.");
+        return null;
     }
 
     @Override
