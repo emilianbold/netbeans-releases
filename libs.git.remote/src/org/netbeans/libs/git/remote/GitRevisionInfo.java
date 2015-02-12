@@ -53,7 +53,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
@@ -72,13 +71,19 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author Jan Becicka
  */
 public final class GitRevisionInfo {
-
-    private final RevCommit revCommit;
-    private final JGitRepository repository;
+    private static final Logger LOG = Logger.getLogger(GitRevisionInfo.class.getName());
+    private RevCommit revCommit;
+    private JGitRepository repository;
     private final Map<String, GitBranch> branches;
     private GitFileInfo[] modifiedFiles;
-    private static final Logger LOG = Logger.getLogger(GitRevisionInfo.class.getName());
     private String shortMessage;
+    //CLI:
+    private String branch = null;
+    private String revisionCode = null;
+    private String message = null;
+    private String autorAndMail = null;
+    private Map<String, String> commitedFiles;
+    private final boolean isKIT;
 
     GitRevisionInfo (RevCommit commit, JGitRepository repository) {
         this(commit, Collections.<String, GitBranch>emptyMap(), repository);
@@ -88,57 +93,91 @@ public final class GitRevisionInfo {
         this.revCommit = commit;
         this.repository = repository;
         this.branches = Collections.unmodifiableMap(affectedBranches);
+        isKIT = true;
     }
+
+    GitRevisionInfo (String branch, String revisionCode, String message, String autorAndMail,
+            Map<String, String> commitedFiles, JGitRepository repository) {
+        this.branch = branch;
+        this.branches = Collections.<String, GitBranch>emptyMap();
+        this.revisionCode = revisionCode;
+        this.message = message;
+        this.autorAndMail = autorAndMail;
+        this.commitedFiles = commitedFiles;
+        for (Map.Entry<String, String> entry : commitedFiles.entrySet()) {
+            VCSFileProxy file = VCSFileProxy.createFileProxy(repository.getLocation(), entry.getKey());
+            GitFileInfo info = new GitFileInfo(file, entry.getKey(), GitFileInfo.Status.ADDED, null, null);
+        }
+        this.repository = repository;
+        isKIT = false;
+    }
+
 
     /**
      * @return id of the commit
      */
     public String getRevision () {
-        return ObjectId.toString(revCommit.getId());
+        if (isKIT) {
+            return ObjectId.toString(revCommit.getId());
+        } else {
+            return revisionCode;
+        }
     }
 
     /**
      * @return the first line of the commit message.
      */
     public String getShortMessage () {
-        if (shortMessage == null) {
-            String msg = revCommit.getFullMessage();
-            StringBuilder sb = new StringBuilder();
-            boolean empty = true;
-            for (int pos = 0; pos < msg.length(); ++pos) {
-                char c = msg.charAt(pos);
-                if (c == '\r' || c == '\n') {
-                    if (!empty) {
-                        break;
+        if (isKIT) {
+            if (shortMessage == null) {
+                String msg = revCommit.getFullMessage();
+                StringBuilder sb = new StringBuilder();
+                boolean empty = true;
+                for (int pos = 0; pos < msg.length(); ++pos) {
+                    char c = msg.charAt(pos);
+                    if (c == '\r' || c == '\n') {
+                        if (!empty) {
+                            break;
+                        }
+                    } else {
+                        sb.append(c);
+                        empty = false;
                     }
-                } else {
-                    sb.append(c);
-                    empty = false;
                 }
+                shortMessage = sb.toString();
             }
-            shortMessage = sb.toString();
+            return shortMessage;
+        } else {
+            return message;
         }
-        return shortMessage;
     }
 
     /**
      * @return full commit message
      */
     public String getFullMessage () {
-        return revCommit.getFullMessage();
+        if (isKIT) {
+            return revCommit.getFullMessage();
+        } else {
+            return message;
+        }
     }
 
     /**
      * @return time this commit was created in milliseconds.
      */
     public long getCommitTime () {
-        // must be indeed author, that complies with CLI
-        // committer time is different after rebase
-        PersonIdent author = revCommit.getAuthorIdent();
-        if (author == null) {
-            return (long) revCommit.getCommitTime() * 1000;
+        if (isKIT) {
+            // must be indeed author, that complies with CLI
+            // committer time is different after rebase
+            PersonIdent author = revCommit.getAuthorIdent();
+            if (author == null) {
+                return (long) revCommit.getCommitTime() * 1000;
+            } else {
+                return author.getWhen().getTime();
+            }
         } else {
-            return author.getWhen().getTime();
+            return -1;
         }
     }
 
@@ -146,14 +185,24 @@ public final class GitRevisionInfo {
      * @return author of the commit
      */
     public GitUser getAuthor () {
-        return GitClassFactoryImpl.getInstance().createUser(revCommit.getAuthorIdent());
+        if (isKIT) {
+            return GitClassFactoryImpl.getInstance().createUser(revCommit.getAuthorIdent());
+        } else {
+            int i = autorAndMail.indexOf("<");
+            return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i));
+        }
     }
 
     /**
      * @return person who actually committed the changes, may or may not be the same as a return value of the <code>getAuthor</code> method.
      */
     public GitUser getCommitter () {
-        return GitClassFactoryImpl.getInstance().createUser(revCommit.getCommitterIdent());
+        if (isKIT) {
+            return GitClassFactoryImpl.getInstance().createUser(revCommit.getCommitterIdent());
+        } else {
+            int i = autorAndMail.indexOf("<");
+            return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i));
+        }
     }
     
     /**

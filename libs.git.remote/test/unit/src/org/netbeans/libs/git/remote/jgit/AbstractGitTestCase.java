@@ -79,6 +79,7 @@ import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.libs.git.remote.progress.StatusListener;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.Cancellable;
 
 /**
  *
@@ -351,6 +352,15 @@ public class AbstractGitTestCase extends NbTestCase {
         }
 
         @Override
+        public void setCancelDelegate(Cancellable c) {
+        }
+
+        @Override
+        public boolean cancel() {
+            return false;
+        }
+
+        @Override
         public void started (String command) {
         }
 
@@ -369,7 +379,6 @@ public class AbstractGitTestCase extends NbTestCase {
         @Override
         public void notifyWarning (String message) {
         }
-
     }
     
     protected final List<String> runExternally (VCSFileProxy workdir, List<String> command) throws Exception {

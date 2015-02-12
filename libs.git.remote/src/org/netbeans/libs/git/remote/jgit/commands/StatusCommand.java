@@ -178,28 +178,15 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
 
-    private static final class Status {
-        char first = ' ';
-        char second = ' ';
-        char third = ' ';
-        char untracked = ' ';
-        String to;
-
-        public Status() {
-        }
-
-        @Override
-        public String toString() {
-            return ""+first+second+third+untracked;
-        }
-    }
-    
     private void runCLI () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
         String cmd = getCommandLine();
         try {
             if (isRevision) {
-                LinkedHashMap<String, Status> list = new LinkedHashMap<>();
+                LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();
                 {
                     ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
                     String executable = getExecutable();
@@ -276,9 +263,9 @@ public class StatusCommand extends StatusCommandBase {
                         }
                     }
                 }
-                processOutput(list);
+                processOutput(list, canceled);
             } else {
-                LinkedHashMap<String, Status> list = new LinkedHashMap<>();
+                LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();
                 {
                     ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
                     String executable = getExecutable();
@@ -306,15 +293,27 @@ public class StatusCommand extends StatusCommandBase {
                     if(canceled.canceled()) {
                         return;
                     }
-                    if (exitStatus.output!= null) {
+                    if (exitStatus.output!= null && exitStatus.isOK()) {
                         parseDiffOutput(exitStatus.output, 3, list);
                     }
-                    if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
-                        for(String line : exitStatus.error.split("\n")) { //NOI18N
-                            if (!line.isEmpty()) {
-                                //command.errorText(line);
+                    if (!exitStatus.isOK()) {
+                        if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                            for(String line : exitStatus.error.split("\n")) { //NOI18N
+                                if (!line.isEmpty()) {
+                                    //fatal: bad revision 'HEAD'
+                                    //command.errorText(line);
+                                }
+                            }
+                            if (exitStatus.error.contains("fatal: bad revision 'HEAD'")) {
+                                for (Map.Entry<String, StatusLine> e : list.entrySet()) {
+                                    final char first = e.getValue().first;
+                                    if (first != '?' && first != '!') {
+                                        e.getValue().third = first;
+                                    }
+                                }
                             }
                         }
+                        
                     }
                 }
                 {
@@ -336,7 +335,7 @@ public class StatusCommand extends StatusCommandBase {
                         }
                     }
                 }
-                processOutput(list);
+                processOutput(list, canceled);
             }
             //command.commandCompleted(exitStatus.exitCode);
         } catch (Throwable t) {
@@ -349,7 +348,7 @@ public class StatusCommand extends StatusCommandBase {
         }        
     }
 
-    private void parseStatusOutput(String output, Map<String, Status> list, boolean onlyIndexWC) {
+    private void parseStatusOutput(String output, Map<String, StatusLine> list, boolean onlyIndexWC) {
         for (String line : output.split("\n")) { //NOI18N
             if (line.length() > 3) {
                 char first = line.charAt(0);
@@ -363,9 +362,9 @@ public class StatusCommand extends StatusCommandBase {
                 } else {
                     file = line.substring(2).trim();
                 }
-                Status status = list.get(file);
+                StatusLine status = list.get(file);
                 if (status == null) {
-                    status = new Status();
+                    status = new StatusLine();
                     if (onlyIndexWC) {
                         if (first == '?' || first == '!') {
                             status.first = first;
@@ -394,14 +393,14 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
 
-    private void parseDiffOutput(String output, int n, Map<String, Status> list) {
+    private void parseDiffOutput(String output, int n, Map<String, StatusLine> list) {
         for (String line : output.split("\n")) { //NOI18N
             if (line.length() > 2) {
                 char c = line.charAt(0);
                 String file = line.substring(2).trim();
-                Status status = list.get(file);
+                StatusLine status = list.get(file);
                 if (status == null) {
-                    status = new Status();
+                    status = new StatusLine();
                     if (n == 1) {
                         status.first = c;
                     }
@@ -427,23 +426,23 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
 
-    private void parseLsOutput(String output, Map<String, Status> list) {
+    private void parseLsOutput(String output, Map<String, StatusLine> list) {
         for (String line : output.split("\n")) { //NOI18N
             if (line.length() > 0) {
                 String file = line.trim();
-                Status status = list.get(file);
+                StatusLine status = list.get(file);
                 if (status == null) {
-                    status = new Status();
+                    status = new StatusLine();
                     list.put(file, status);
                 }
             }
         }
     }
     
-    private void processOutput(LinkedHashMap<String, Status> parseOutput) {
-        for(Map.Entry<String, Status> entry : parseOutput.entrySet()) {
+    private void processOutput(LinkedHashMap<String, StatusLine> parseOutput, ProcessUtils.Canceler canceled) {
+        for(Map.Entry<String, StatusLine> entry : parseOutput.entrySet()) {
             String file = entry.getKey();
-            Status v = entry.getValue();
+            StatusLine v = entry.getValue();
             char first = v.first;
             char second = v.second;
             char third = v.third;
@@ -853,5 +852,21 @@ public class StatusCommand extends StatusCommandBase {
             }
         }
         return GitStatus.Status.STATUS_NORMAL;
+    }
+
+    private static final class StatusLine {
+        char first = ' ';
+        char second = ' ';
+        char third = ' ';
+        char untracked = ' ';
+        String to;
+
+        public StatusLine() {
+        }
+
+        @Override
+        public String toString() {
+            return ""+first+second+third+untracked;
+        }
     }
 }

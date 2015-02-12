@@ -42,6 +42,8 @@
 
 package org.netbeans.libs.git.remote.progress;
 
+import org.openide.util.Cancellable;
+
 /**
  * Used to follow progress and control flow of git commands.
  * An instance of <code>GitClient</code> provides methods to start proper git 
@@ -66,7 +68,11 @@ public abstract class ProgressMonitor {
      * progress immediately when the method returns <code>true</code>
      */
     public abstract boolean isCanceled ();
+    
+    public abstract void setCancelDelegate(Cancellable c);
 
+    public abstract boolean cancel();
+    
     /**
      * Called when a git command is started.
      * Implement this method to catch the event.
@@ -158,21 +164,31 @@ public abstract class ProgressMonitor {
      */
     public static class DefaultProgressMonitor extends ProgressMonitor {
         private boolean canceled;
+        private Cancellable cancellable;
 
         /**
          * Cancels a currently running command.
          * @return <code>false</code> if the command has already been canceled
          * before. Otherwise returns <code>true</code>
          */
+        @Override
         public final synchronized boolean cancel () {
             boolean alreadyCanceled = canceled;
             canceled = true;
+            if (cancellable != null) {
+                cancellable.cancel();
+            }
             return !alreadyCanceled;
         }
 
         @Override
         public final synchronized boolean isCanceled () {
             return canceled;
+        }
+
+        @Override
+        public final synchronized void setCancelDelegate(Cancellable c) {
+            cancellable = c;
         }
 
         @Override

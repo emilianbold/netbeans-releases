@@ -42,6 +42,7 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -67,6 +68,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.GitUser;
@@ -74,7 +76,9 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -137,9 +141,17 @@ public class CommitCommand extends GitCommand {
         }
         return retval;
     }
-
+    
     @Override
-    protected void run() throws GitException {
+    protected void run () throws GitException {
+        if (false) {
+            runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+    private void runKit() throws GitException {
         Repository repository = getRepository().getRepository();
         try {
             DirCache backup = repository.readDirCache();
@@ -256,14 +268,109 @@ public class CommitCommand extends GitCommand {
         }
     }
     
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+            String executable = getExecutable();
+            String[] args = getCliArguments(0);
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+            if (canceled.canceled()) {
+                return;
+            }
+            String branch = null;
+            String revisionCode = null;
+            String message = null;
+            String autorAndMail = null;
+            LinkedHashMap<String, String> commitedFiles = new LinkedHashMap<String, String>();
+            if (exitStatus.output != null) {
+                //[master (root-commit) 68fbfb0] initial commit
+                // 1 file changed, 1 insertion(+)
+                // create mode 100644 testnotadd.txt
+                //=========================
+                //[master (root-commit) ae05df4] initial commit
+                // Committer: Alexander Simon <alsimon@beta.(none)>
+                //Your name and email address were configured automatically based
+                //on your username and hostname. Please check that they are accurate.
+                //You can suppress this message by setting them explicitly:
+                //
+                //    git config --global user.name "Your Name"
+                //    git config --global user.email you@example.com
+                //
+                //After doing this, you may fix the identity used for this commit with:
+                //
+                //    git commit --amend --reset-author
+                //
+                // 1 file changed, 1 insertion(+)
+                // create mode 100644 testnotadd.txt
+                System.err.println(exitStatus.output);
+                for (String line : exitStatus.output.split("\n")) { //NOI18N
+                    line = line.trim();
+                    if (line.startsWith("[")) {
+                        int i = line.indexOf(' ');
+                        if (i > 0) {
+                            branch = line.substring(1, i);
+                        }
+                        int j = line.indexOf(']');
+                        if (j > 0) {
+                            String[] s = line.substring(i,j).split(" ");
+                            revisionCode = s[s.length-1];
+                        }
+                        message = line.substring(j+1).trim();
+                        continue;
+                    }
+                    if (line.startsWith("Committer:")) {
+                        autorAndMail = line.substring(10).trim();
+                        continue;
+                    }
+                    if (line.startsWith("create mode")) {
+                        String[] s = line.substring(11).trim().split(" ");
+                        if (s.length == 2) {
+                            commitedFiles.put(s[0], s[1]);
+                        }
+                    }
+                }
+            }
+            if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                for (String line : exitStatus.error.split("\n")) { //NOI18N
+                    if (!line.isEmpty()) {
+                        //command.errorText(line);
+                    }
+                }
+            }
+            
+            revision = getClassFactory().createRevisionInfo(null, getRepository());
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+
     @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "commit"); //NOI18N
+        addArgument(0, "--status"); //NOI18N
         addArgument(0, "-m"); //NOI18N
         addArgument(0, message);
         if (amend) {
             addArgument(0, "--amend"); //NOI18N
+        }
+        if(author != null){
+            addArgument(0, "--author="+author.toString());
+        }
+        if (commiter != null) {
+            addArgument(0, "--author="+author.toString());
         }
         addFiles(0, roots);
     }
