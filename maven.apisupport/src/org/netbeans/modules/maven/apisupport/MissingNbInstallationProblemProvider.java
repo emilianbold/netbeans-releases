@@ -119,8 +119,8 @@ public class MissingNbInstallationProblemProvider implements ProjectProblemsProv
     @Override
     @NbBundle.Messages({
         "TIT_Missing_platform=No NetBeans platform/IDE associated with the project",
-        "DESC_Missing_platform=For some features to work the IDE needs to associate each Maven Netbeans module project with a NetBeans Platform/IDE that the module will be part of at runtime. "
-                + "Such features include running/debugging the project, context information in various nodes or wizards etc. To fix the problem, either open the Netbeans platform application project that this project is part of (maven packaging nbm-application) or"
+        "DESC_Missing_platform=For some features to work the IDE needs to associate each Maven NetBeans module project with a NetBeans Platform/IDE that the module will be part of at runtime. "
+                + "Such features include running/debugging the project, context information in various nodes or wizards etc. To fix the problem, either open the NetBeans platform application project that this project is part of (maven packaging nbm-application) or "
                 + "define a property named netbeans.installation in either the pom.xml file or ~/.m2/settings.xml file pointing to a binary distribution of NetBeans."
     })
     public Collection<? extends ProjectProblem> getProblems() {
