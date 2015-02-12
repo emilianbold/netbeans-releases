@@ -82,7 +82,6 @@ public final class GitRevisionInfo {
     private String revisionCode = null;
     private String message = null;
     private String autorAndMail = null;
-    private Map<String, String> commitedFiles;
     private final boolean isKIT;
 
     GitRevisionInfo (RevCommit commit, JGitRepository repository) {
@@ -97,16 +96,18 @@ public final class GitRevisionInfo {
     }
 
     GitRevisionInfo (String branch, String revisionCode, String message, String autorAndMail,
-            Map<String, String> commitedFiles, JGitRepository repository) {
+            Map<String, GitRevisionInfo.GitFileInfo.Status> commitedFiles, JGitRepository repository) {
         this.branch = branch;
         this.branches = Collections.<String, GitBranch>emptyMap();
         this.revisionCode = revisionCode;
         this.message = message;
         this.autorAndMail = autorAndMail;
-        this.commitedFiles = commitedFiles;
-        for (Map.Entry<String, String> entry : commitedFiles.entrySet()) {
+        modifiedFiles = new GitFileInfo[commitedFiles.size()];
+        int i = 0;
+        for (Map.Entry<String, GitRevisionInfo.GitFileInfo.Status> entry : commitedFiles.entrySet()) {
             VCSFileProxy file = VCSFileProxy.createFileProxy(repository.getLocation(), entry.getKey());
-            GitFileInfo info = new GitFileInfo(file, entry.getKey(), GitFileInfo.Status.ADDED, null, null);
+            GitFileInfo info = new GitFileInfo(file, entry.getKey(), entry.getValue(), null, null);
+            modifiedFiles[i++] = info;
         }
         this.repository = repository;
         isKIT = false;
@@ -230,11 +231,15 @@ public final class GitRevisionInfo {
      * @return commit ids of this commit's parents
      */
     public String[] getParents () {
-        String[] parents = new String[revCommit.getParentCount()];
-        for (int i = 0; i < revCommit.getParentCount(); ++i) {
-            parents[i] = ObjectId.toString(revCommit.getParent(i).getId());
+        if (isKIT) {
+            String[] parents = new String[revCommit.getParentCount()];
+            for (int i = 0; i < revCommit.getParentCount(); ++i) {
+                parents[i] = ObjectId.toString(revCommit.getParent(i).getId());
+            }
+            return parents;
+        } else {
+            return new String[]{};
         }
-        return parents;
     }
     
     /**

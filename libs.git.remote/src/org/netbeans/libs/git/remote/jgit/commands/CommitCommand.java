@@ -286,7 +286,7 @@ public class CommitCommand extends GitCommand {
             String revisionCode = null;
             String message = null;
             String autorAndMail = null;
-            LinkedHashMap<String, String> commitedFiles = new LinkedHashMap<String, String>();
+            LinkedHashMap<String, GitRevisionInfo.GitFileInfo.Status> commitedFiles = new LinkedHashMap<String, GitRevisionInfo.GitFileInfo.Status>();
             if (exitStatus.output != null) {
                 //[master (root-commit) 68fbfb0] initial commit
                 // 1 file changed, 1 insertion(+)
@@ -307,7 +307,7 @@ public class CommitCommand extends GitCommand {
                 //
                 // 1 file changed, 1 insertion(+)
                 // create mode 100644 testnotadd.txt
-                System.err.println(exitStatus.output);
+                //System.err.println(exitStatus.output);
                 for (String line : exitStatus.output.split("\n")) { //NOI18N
                     line = line.trim();
                     if (line.startsWith("[")) {
@@ -330,8 +330,16 @@ public class CommitCommand extends GitCommand {
                     if (line.startsWith("create mode")) {
                         String[] s = line.substring(11).trim().split(" ");
                         if (s.length == 2) {
-                            commitedFiles.put(s[0], s[1]);
+                            commitedFiles.put(s[1], GitRevisionInfo.GitFileInfo.Status.ADDED);
                         }
+                        continue;
+                    }
+                    if (line.startsWith("delete mode")) {
+                        String[] s = line.substring(11).trim().split(" ");
+                        if (s.length == 2) {
+                            commitedFiles.put(s[1], GitRevisionInfo.GitFileInfo.Status.REMOVED);
+                        }
+                        continue;
                     }
                 }
             }
@@ -343,7 +351,8 @@ public class CommitCommand extends GitCommand {
                 }
             }
             
-            revision = getClassFactory().createRevisionInfo(null, getRepository());
+            revision = getClassFactory().createRevisionInfo(branch, revisionCode, message,
+                        autorAndMail, commitedFiles, getRepository());
             
             //command.commandCompleted(exitStatus.exitCode);
         } catch (Throwable t) {
