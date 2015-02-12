@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ProcessBuilder;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 
 /**
@@ -84,16 +85,18 @@ public class ProcessUtils  {
         return execute(builder, binaryOutput, canceler);
     }
 
-    public static final class Canceler {
+    public static final class Canceler implements Cancellable {
         private final List<Process> listeners = new ArrayList<>();
         private final AtomicBoolean canceled = new AtomicBoolean(false);
         public Canceler(){
         }
-        public void cancel() {
+        @Override
+        public boolean cancel() {
             canceled.set(true);
             for(Process listener : listeners) {
                 listener.destroy();
             }
+            return true;
         }
         public boolean canceled() {
             return canceled.get();
