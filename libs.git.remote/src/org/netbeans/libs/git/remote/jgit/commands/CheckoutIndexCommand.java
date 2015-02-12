@@ -99,8 +99,8 @@ public class CheckoutIndexCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("checkout"); //NOI18N
-        addArgument("--"); //NOI18N
-        addFiles(roots);
+        addArgument(0, "checkout"); //NOI18N
+        addArgument(0, "--"); //NOI18N
+        addFiles(0, roots);
     }
 }

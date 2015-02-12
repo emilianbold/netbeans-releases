@@ -91,6 +91,7 @@ public class AbstractGitTestCase extends NbTestCase {
     private final VCSFileProxy repositoryLocation;
     private JGitRepository localRepository;
     protected static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor ();
+    protected static final boolean KIT = false;
     
     public AbstractGitTestCase (String testName) throws IOException {
         super(testName);
@@ -163,8 +164,21 @@ public class AbstractGitTestCase extends NbTestCase {
         return sb.toString();
     }
 
-    protected static void assertStatus (Map<VCSFileProxy, GitStatus> statuses, VCSFileProxy workDir, VCSFileProxy file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict) {
+    protected static void assertStatus (Map<VCSFileProxy, GitStatus> statuses, VCSFileProxy workDir, VCSFileProxy file, boolean tracked,
+            Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict) {
         GitStatus status = statuses.get(file);
+//if(KIT) {}
+//else    {while (status == null) {
+//            if (file.equals(workDir)) {
+//                break;
+//            }
+//            file = file.getParentFile();
+//            status = statuses.get(file);
+//        }
+//        if (headVsIndex == Status.STATUS_NORMAL && indexVsWorking == Status.STATUS_NORMAL && headVsWorking == Status.STATUS_NORMAL && status == null) {
+//            // Status does not print up-to-date files
+//            return;
+//        }}
         assertNotNull(file.getPath() + " not in " + statuses.keySet(), status);
         assertEquals(TestUtils.getRelativePath(file, workDir), status.getRelativePath());
         assertEquals(tracked, status.isTracked());

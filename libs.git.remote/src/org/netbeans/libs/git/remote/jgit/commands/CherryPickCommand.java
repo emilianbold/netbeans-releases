@@ -184,13 +184,13 @@ public class CherryPickCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("cherry-pick"); //NOI18N
+        addArgument(0, "cherry-pick"); //NOI18N
         if (operation == GitClient.CherryPickOperation.BEGIN) {
             for (String rev : revisions) {
-                addArgument(rev);
+                addArgument(0, rev);
             }
         } else {
-            addArgument(operation.toString());
+            addArgument(0, operation.toString());
         }
     }
 

@@ -95,8 +95,8 @@ public class DeleteTagCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("tag"); //NOI18N
-        addArgument("-d"); //NOI18N
-        addArgument(tagName);
+        addArgument(0, "tag"); //NOI18N
+        addArgument(0, "-d"); //NOI18N
+        addArgument(0, tagName);
     }
 }

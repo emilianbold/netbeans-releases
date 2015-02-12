@@ -85,12 +85,12 @@ public class StashSaveCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("stash"); //NOI18N
-        addArgument("save"); //NOI18N
+        addArgument(0, "stash"); //NOI18N
+        addArgument(0, "save"); //NOI18N
         if (includeUntracked) {
-            addArgument("--include-untracked"); //NOI18N
+            addArgument(0, "--include-untracked"); //NOI18N
         }
-        addArgument(message);
+        addArgument(0, message);
     }
 
     public GitRevisionInfo getStashedCommit () {

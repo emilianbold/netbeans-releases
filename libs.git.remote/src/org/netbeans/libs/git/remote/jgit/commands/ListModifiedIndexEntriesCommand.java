@@ -131,8 +131,8 @@ public class ListModifiedIndexEntriesCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("status");
-        addFiles(roots);
+        addArgument(0, "status");
+        addFiles(0, roots);
     }
 
     public VCSFileProxy[] getFiles () {

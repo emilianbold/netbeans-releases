@@ -259,12 +259,12 @@ public class CommitCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("commit"); //NOI18N
-        addArgument("-m"); //NOI18N
-        addArgument(message);
+        addArgument(0, "commit"); //NOI18N
+        addArgument(0, "-m"); //NOI18N
+        addArgument(0, message);
         if (amend) {
-            addArgument("--amend"); //NOI18N
+            addArgument(0, "--amend"); //NOI18N
         }
-        addFiles(roots);
+        addFiles(0, roots);
     }
 }

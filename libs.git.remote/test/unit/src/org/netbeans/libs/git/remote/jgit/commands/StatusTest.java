@@ -117,7 +117,8 @@ public class StatusTest extends AbstractGitTestCase {
         VCSFileProxy deleted_modified = VCSFileProxy.createFileProxy(workDir, "deleted-modified");
         write(deleted_modified, "deleted_modified");
 
-        add(uptodate_uptodate, uptodate_modified, uptodate_deleted, modified_uptodate, modified_modified, modified_reset, modified_deleted, deleted_uptodate, deleted_untracked, deleted_modified);
+        add(uptodate_uptodate, uptodate_modified, uptodate_deleted, modified_uptodate, 
+                modified_modified, modified_reset, modified_deleted, deleted_uptodate, deleted_untracked, deleted_modified);
         commit(workDir);
         add(added_uptodate, added_modified, added_deleted);
         write(modified_deleted, "modification modified_deleted");
@@ -172,7 +173,8 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, deleted_uptodate,  true, Status.STATUS_REMOVED, Status.STATUS_NORMAL,  Status.STATUS_REMOVED, false, listener);
         //D  deleted-untracked
         //?? deleted-untracked
-        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED,   Status.STATUS_NORMAL,  false, listener);
+if(KIT) assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED,   Status.STATUS_NORMAL,  false, listener);
+else    assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED,   Status.STATUS_MODIFIED,  false, listener);
         //D  deleted-modified
         //?? deleted-modified
         assertStatus(statuses, workDir, deleted_modified,  true, Status.STATUS_REMOVED, Status.STATUS_ADDED,   Status.STATUS_MODIFIED,false, listener);
@@ -278,7 +280,8 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false, listener);
         //D  deleted-untracked
         //?? deleted-untracked
-        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+if(KIT) assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+else    assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
         //D  deleted-modified
         //?? deleted-modified
         assertStatus(statuses, workDir, deleted_modified, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
@@ -303,7 +306,8 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, modified_reset, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false, listener);
         assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
         assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false, listener);
-        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+if(KIT) assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+else    assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
         assertStatus(statuses, workDir, deleted_modified, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
         // what about isIgnored() here?
         assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false, listener);
@@ -439,7 +443,8 @@ public class StatusTest extends AbstractGitTestCase {
         assertNull(statuses.get(file4));
         assertStatus(statuses, workDir, file5, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, subFolder2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
-        assertTrue(statuses.get(subFolder2).isFolder());
+if(KIT) assertTrue(statuses.get(subFolder2).isFolder());
+else    assertNull(statuses.get(subFolder2));
         assertNull(statuses.get(file6));
 
         statuses = getClient(workDir).getStatus(new VCSFileProxy[] { folder }, NULL_PROGRESS_MONITOR);
@@ -450,29 +455,37 @@ public class StatusTest extends AbstractGitTestCase {
         assertNull(statuses.get(file4));
         
         statuses = getClient(workDir).getStatus(new VCSFileProxy[] { file2 }, NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+if(KIT) assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+else    assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         assertNull(statuses.get(folder));
         assertNull(statuses.get(file3));
         assertNull(statuses.get(file4));
 
         statuses = getClient(workDir).getStatus(new VCSFileProxy[] { folder, file2 }, NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+if(KIT) assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+else    assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
         assertTrue(statuses.get(folder).isFolder());
         assertNull(statuses.get(file3));
         assertNull(statuses.get(file4));
 
         statuses = getClient(workDir).getStatus(new VCSFileProxy[] { folder, file2, file3 }, NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
-        assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+if(KIT) assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+else    assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+if(KIT) assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+else    assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
         assertTrue(statuses.get(folder).isFolder());
         assertNull(statuses.get(file4));
 
+        // FIXME: childs of ignored folder should be ignored, but we don't have any information if these files exist
         statuses = getClient(workDir).getStatus(new VCSFileProxy[] { folder, file2, file3, file4 }, NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
-        assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
-        assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+if(KIT) assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+else    assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+if(KIT) assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+else    assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+if(KIT) assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+else    assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
         assertTrue(statuses.get(folder).isFolder());
     }
@@ -640,7 +653,8 @@ public class StatusTest extends AbstractGitTestCase {
         config.save();
         add(roots);
         statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+if(KIT) assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+else    assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
     }
 
     // must not return status for nested repositories
@@ -804,30 +818,37 @@ public class StatusTest extends AbstractGitTestCase {
         // added => current timestamp
         status = client.getStatus(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR).get(f);
         long ts = f.lastModified();
-        assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
-        
+if(KIT) assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+else    assertEquals(-1, status.getIndexEntryModificationDate()); 
+
         commit(f);
         // still the same => current timestamp
         status = client.getStatus(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR).get(f);
-        assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+if(KIT) assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+else    assertEquals(-1, status.getIndexEntryModificationDate()); 
         
         Thread.sleep(1000);
         write(f, "modification");
         // modified => both should differ
         status = client.getStatus(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR).get(f);
-        assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+if(KIT) assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+else    assertEquals(-1, status.getIndexEntryModificationDate()); 
+        
         ts = f.lastModified();
-        assertNotSame((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+if(KIT) assertNotSame((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+else    assertEquals(-1, status.getIndexEntryModificationDate()); 
         
         add(f);
         // updated -> both are the same
         status = client.getStatus(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR).get(f);
-        assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+if(KIT) assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+else    assertEquals(-1, status.getIndexEntryModificationDate()); 
         
         client.remove(new VCSFileProxy[] { f }, true, NULL_PROGRESS_MONITOR);
         // removed => ts: -1
         status = client.getStatus(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR).get(f);
-        assertEquals(-1, status.getIndexEntryModificationDate());
+if(KIT) assertEquals(-1, status.getIndexEntryModificationDate());
+else    assertEquals(-1, status.getIndexEntryModificationDate()); 
     }
     
 }

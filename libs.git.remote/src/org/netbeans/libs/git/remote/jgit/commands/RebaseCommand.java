@@ -122,11 +122,11 @@ public class RebaseCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("rebase"); //NOI18N
+        addArgument(0, "rebase"); //NOI18N
         if (operation == GitClient.RebaseOperationType.BEGIN) {
-            addArgument(revision);
+            addArgument(0, revision);
         } else {
-            addArgument(operation.toString());
+            addArgument(0, operation.toString());
         }
     }
 

@@ -83,9 +83,9 @@ public class ConflictCommand extends StatusCommandBase {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("show"); //NOI18N
-        addArgument("conflicts"); //NOI18N
-        addFiles(roots);
+        addArgument(0, "show"); //NOI18N
+        addArgument(0, "conflicts"); //NOI18N
+        addFiles(0, roots);
     }
 
     @Override

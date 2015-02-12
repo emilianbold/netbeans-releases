@@ -83,11 +83,11 @@ public class CompareCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("diff"); //NOI18N
-        addArgument("--raw"); //NOI18N
-        addArgument(revisionFirst);
-        addArgument(revisionSecond);
-        addFiles(roots);
+        addArgument(0, "diff"); //NOI18N
+        addArgument(0, "--raw"); //NOI18N
+        addArgument(0, revisionFirst);
+        addArgument(0, revisionSecond);
+        addFiles(0, roots);
     }
 
     @Override

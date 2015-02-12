@@ -92,8 +92,8 @@ public class StashListCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("stash"); //NOI18N
-        addArgument("list"); //NOI18N
+        addArgument(0, "stash"); //NOI18N
+        addArgument(0, "list"); //NOI18N
     }
 
     public GitRevisionInfo[] getRevisions () {
