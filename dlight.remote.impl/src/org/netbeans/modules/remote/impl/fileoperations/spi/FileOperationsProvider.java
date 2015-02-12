@@ -130,13 +130,18 @@ abstract public class FileOperationsProvider {
             return path;
         }
 
-        protected RemoteFileObject getFileObject(FileProxyO file) {
+        private RemoteFileObject getFileObject(FileProxyO file) {
             String path = PathUtilities.normalizeUnixPath(file.getPath());
             RemoteFileObjectBase cached = fileSystem.getFactory().getCachedFileObject(path);
-            RemoteFileObject fo = (cached != null) ? cached.getOwnerFileObject() : fileSystem.findResource(path);
+            RemoteFileObject fo;
+            if (cached != null /*&& cached.isValid()*/) {
+                fo = cached.getOwnerFileObject();
+            } else {
+                fo = fileSystem.findResource(path);
+            }
             return fo;
         }
-        
+
         protected boolean isDirectory(FileProxyO file) {
             if (RemoteVcsSupportUtil.USE_FS) {
                 RemoteFileObject fo = getFileObject(file);
