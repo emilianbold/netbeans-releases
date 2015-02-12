@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript.gulp.ui.customizer;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.gulp.GulpBuildTool;
+import org.netbeans.modules.javascript.gulp.preferences.GulpPreferences;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -67,8 +69,11 @@ public final class GulpCustomizerProvider implements ProjectCustomizer.Composite
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         Project project = context.lookup(Project.class);
         assert project != null;
-        return new GulpCustomizerPanel(category, project);
+        return BuildTools.getDefault().createCustomizerComponent(
+                new CustomizerSupportImpl(category, GulpBuildTool.forProject(project).getGulpPreferences()));
     }
+
+    //~ Factories
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org.netbeans.modules.web.clientproject", // NOI18N
@@ -98,5 +103,45 @@ public final class GulpCustomizerProvider implements ProjectCustomizer.Composite
     public static ProjectCustomizer.CompositeCategoryProvider forMavenProject() {
         return new GulpCustomizerProvider();
     }*/
+
+    //~ Inner classes
+
+    private static final class CustomizerSupportImpl implements BuildTools.CustomizerSupport {
+
+        private final ProjectCustomizer.Category category;
+        private final GulpPreferences preferences;
+
+
+        public CustomizerSupportImpl(ProjectCustomizer.Category category, GulpPreferences preferences) {
+            assert category != null;
+            assert preferences != null;
+            this.category = category;
+            this.preferences = preferences;
+        }
+
+        @Override
+        public ProjectCustomizer.Category getCategory() {
+            return category;
+        }
+
+        @NbBundle.Messages("CustomizerSupportImpl.header=Assign IDE actions to Gulp tasks.")
+        @Override
+        public String getHeader() {
+            return Bundle.CustomizerSupportImpl_header();
+        }
+
+        @Override
+        public String getTask(String commandId) {
+            assert commandId != null;
+            return preferences.getTask(commandId);
+        }
+
+        @Override
+        public void setTask(String commandId, String task) {
+            assert commandId != null;
+            preferences.setTask(commandId, task);
+        }
+
+    }
 
 }

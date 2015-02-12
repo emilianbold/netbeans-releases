@@ -44,9 +44,14 @@ package org.netbeans.modules.web.clientproject.api.build;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.build.ui.CustomizerPanel;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Parameters;
 
 /**
@@ -98,6 +103,17 @@ public final class BuildTools {
         return !getEnabledBuildTools(project).isEmpty();
     }
 
+    /**
+     * Helper method for creating standard UI component for build tool customizer.
+     * @param customizerSupport support for the UI component
+     * @return standard UI component for build tool customizer
+     * @since 1.87
+     */
+    public JComponent createCustomizerComponent(@NonNull CustomizerSupport customizerSupport) {
+        Parameters.notNull("customizerSupport", customizerSupport); // NOI18N
+        return new CustomizerPanel(customizerSupport);
+    }
+
     private Collection<BuildToolImplementation> getEnabledBuildTools(Project project) {
         assert project != null;
         Collection<? extends BuildToolImplementation> allBuildTools = project.getLookup()
@@ -109,6 +125,51 @@ public final class BuildTools {
             }
         }
         return enabledBuildTools;
+    }
+
+    //~ Inner classes
+
+    /**
+     * Support for standard UI component for build tool customizer.
+     * @since 1.87
+     */
+    public interface CustomizerSupport {
+
+        /**
+         * Get customizer category.
+         * @return customizer category
+         */
+        @NonNull
+        ProjectCustomizer.Category getCategory();
+
+        /**
+         * Get header which will be shown in the top of UI component.
+         * @return header which will be shown in the top of UI component
+         */
+        @NonNull
+        String getHeader();
+
+        /**
+         * Get task for the given command identifier. Can return {@code null}
+         * if none assigned.
+         * <p>
+         * Note: This method is called in the UI thread.
+         * @param commandId command identifier
+         * @return task for the given command identifier, can be {@code null} if none assigned
+         */
+        @CheckForNull
+        String getTask(@NonNull String commandId);
+
+        /**
+         * Set the given task for the given command identifier. Task can
+         * be {@code null} if none assigned.
+         * <p>
+         * Note: This method is called in a background thread.
+         * @param commandId command identifier
+         * @param task task for the given command identifier, can be {@code null} if none assigned
+         */
+        void setTask(@NonNull String commandId, @NullAllowed String task);
+
     }
 
 }
