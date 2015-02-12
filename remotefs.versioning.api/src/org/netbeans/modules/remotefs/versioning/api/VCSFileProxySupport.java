@@ -650,7 +650,7 @@ public final class VCSFileProxySupport {
                 StringBuilder sb = new StringBuilder("Error refreshing "); //NOI18N
                 for (VCSFileProxy f : files) {
                     if (sb.length() > 0) {
-                        sb.append(", ");
+                        sb.append(", "); // NOI18N
                     }
                     sb.append(f);
                 }
