@@ -16,12 +16,11 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="cleanCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="rebuildCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="buildCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="assignLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="runProjectCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="debugProjectCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="testProjectCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -29,18 +28,22 @@
                   <Component id="debugFileCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="testFileCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="buildTextField" max="32767" attributes="0"/>
-                  <Component id="rebuildTextField" pref="0" max="32767" attributes="0"/>
-                  <Component id="cleanTextField" pref="0" max="32767" attributes="0"/>
-                  <Component id="debugProjectTextField" max="32767" attributes="0"/>
-                  <Component id="testProjectTextField" max="32767" attributes="0"/>
-                  <Component id="runFileTextField" max="32767" attributes="0"/>
-                  <Component id="testFileTextField" max="32767" attributes="0"/>
-                  <Component id="debugFileTextField" max="32767" attributes="0"/>
+                  <Component id="runFileTextField" alignment="1" max="32767" attributes="0"/>
+                  <Component id="rebuildTextField" alignment="1" max="32767" attributes="0"/>
+                  <Component id="cleanTextField" alignment="1" max="32767" attributes="0"/>
+                  <Component id="buildTextField" alignment="1" max="32767" attributes="0"/>
                   <Component id="runProjectTextField" alignment="1" max="32767" attributes="0"/>
+                  <Component id="debugProjectTextField" alignment="1" max="32767" attributes="0"/>
+                  <Component id="testProjectTextField" max="32767" attributes="0"/>
+                  <Component id="debugFileTextField" alignment="1" max="32767" attributes="0"/>
+                  <Component id="testFileTextField" alignment="1" max="32767" attributes="0"/>
               </Group>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="assignLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
