@@ -699,7 +699,7 @@ public class FoldingParserImpl {
     private boolean matchError = false;
     private Exception matchException = defaultException;
 
-    public static final Exception defaultException = new Exception("Exceptions turned off, so you are unable to see error description here");
+    public static final Exception defaultException = new Exception("Exceptions turned off, so you are unable to see error description here"); //NOI18N
 
     // Options
     // Throw recognitionExceptions if needed (original behaviour)
