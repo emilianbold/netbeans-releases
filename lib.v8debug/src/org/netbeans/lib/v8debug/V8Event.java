@@ -55,7 +55,8 @@ public final class V8Event extends V8Packet {
         Break,
         Exception,
         AfterCompile,
-        ScriptCollected;
+        ScriptCollected,
+        CompileError;
 
         @Override
         public String toString() {

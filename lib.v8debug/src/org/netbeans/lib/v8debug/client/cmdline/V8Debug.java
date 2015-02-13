@@ -90,6 +90,7 @@ import org.netbeans.lib.v8debug.commands.V8Flags;
 import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
+import org.netbeans.lib.v8debug.events.CompileErrorEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
@@ -832,6 +833,13 @@ public class V8Debug {
             case AfterCompile:
                 AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
                 V8Script script = aceb.getScript();
+                synchronized (scriptsById) {
+                    scriptsById.put(script.getId(), script);
+                }
+                return false;
+            case CompileError:
+                CompileErrorEventBody ceeb = (CompileErrorEventBody) event.getBody();
+                script = ceeb.getScript();
                 synchronized (scriptsById) {
                     scriptsById.put(script.getId(), script);
                 }
