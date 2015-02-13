@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.cnd.model.jclank.bridge.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -57,9 +60,31 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vladimir Voskresensky
  */
-public final class CsmJClankCompilationDB {
+public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
+    private final Collection<ClankCompilationDataBase.Entry> compilations;
+    private final String name;
+
+    private CsmJClankCompilationDB(Collection<ClankCompilationDataBase.Entry> compilations) {
+        this("JClankDB with [" + compilations.size() + "] entries", compilations);
+    }
+
+    private CsmJClankCompilationDB(String dbName, Collection<Entry> compilations) {
+        this.name = dbName;
+        this.compilations = Collections.unmodifiableCollection(compilations);
+    }
+
+    @Override
+    public Collection<ClankCompilationDataBase.Entry> getCompilations() {
+        return compilations;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
 
     public static Set<NativeFileItem> getSources(NativeProject project) {
+        // sorted 
         Set<NativeFileItem> srcFiles = new TreeSet<>(new NFIComparator());
         for (NativeFileItem nfi : project.getAllFiles()) {
             if (!nfi.isExcluded()) {
@@ -76,6 +101,28 @@ public final class CsmJClankCompilationDB {
         return srcFiles;
     }    
     
+    public static ClankCompilationDataBase convertNativeFileItems(Collection<NativeFileItem> nfis, String dbName) {
+        Collection<ClankCompilationDataBase.Entry> compilations = new ArrayList<>();
+        for (NativeFileItem nfi : nfis) {
+            Entry entry = createEntry(nfi);
+            assert entry != null;
+            compilations.add(entry);
+        }
+        return new CsmJClankCompilationDB(dbName, compilations);
+    }
+    
+    public static ClankCompilationDataBase convertProject(NativeProject prj) {
+        return convertNativeFileItems(getSources(prj), prj.getProjectDisplayName());
+    }
+    
+    public static Collection<ClankCompilationDataBase> convertProjects(Collection<NativeProject> prjs) {
+        Collection<ClankCompilationDataBase> out = new ArrayList<>();
+        for (NativeProject prj : prjs) {
+            out.add(convertProject(prj));
+        }
+        return out;
+    }
+
     public static ClankCompilationDataBase.Entry createEntry(NativeFileItem nfi) {
         DataBaseEntryBuilder builder = new DataBaseEntryBuilder(nfi.getFileObject().toURI(), null);
 
@@ -112,7 +159,7 @@ public final class CsmJClankCompilationDB {
         return builder.createDataBaseEntry();
     }    
     
-    protected static LangStandard.Kind getLangStd(NativeFileItem startEntry) throws AssertionError {
+    private static LangStandard.Kind getLangStd(NativeFileItem startEntry) throws AssertionError {
         LangStandard.Kind lang_std = LangStandard.Kind.lang_unspecified;
         switch (startEntry.getLanguageFlavor()) {
             case DEFAULT:
@@ -148,7 +195,7 @@ public final class CsmJClankCompilationDB {
         return lang_std;
     }
 
-    protected static InputKind getLang(NativeFileItem startEntry) throws AssertionError {
+    private static InputKind getLang(NativeFileItem startEntry) throws AssertionError {
         InputKind lang = InputKind.IK_None;
         switch (startEntry.getLanguage()) {
             case C:

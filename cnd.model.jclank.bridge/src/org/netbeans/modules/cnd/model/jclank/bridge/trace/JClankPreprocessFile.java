@@ -126,11 +126,11 @@ public abstract class JClankPreprocessFile extends JClankDiagnosticAbstractProvi
         for (NativeFileItem nfi : nfis) {
             try {
                 printOut.printf("dumpFileTokens %s...%n", nfi.getAbsolutePath());
-                long time = CsmJClankSerivicesImpl.dumpPreprocessed(nfi, printOut, null, printTokens, printStatistics);
-                if (time > 0) {
-                    numFiles++;
-                    totalTime += time;
-                }
+                long time = System.currentTimeMillis();
+                CsmJClankSerivicesImpl.dumpPreprocessed(nfi, printOut, null, printTokens, printStatistics);
+                numFiles++;
+                time = System.currentTimeMillis() - time;
+                totalTime += time;
                 printOut.printf("dumpFileTokens %s took %,dms %n", nfi.getAbsolutePath(), time);
             } catch (Throwable e) {
                 new Exception(nfi.getAbsolutePath(), e).printStackTrace(printOut);
