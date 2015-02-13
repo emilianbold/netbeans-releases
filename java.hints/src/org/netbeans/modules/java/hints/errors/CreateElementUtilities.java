@@ -340,7 +340,7 @@ public final class CreateElementUtilities {
             Document doc = info.getDocument();
             
             if (doc != null) {//XXX
-                int bodyStart = Utilities.findBodyStart(parent.getLeaf(), info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc);
+                int bodyStart = Utilities.findBodyStart(info, parent.getLeaf(), info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc);
                 int bodyEnd   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), parent.getLeaf());
 
                 types.add(ElementKind.PARAMETER);
