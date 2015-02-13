@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,32 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.editor.parser.impl;
 
-package org.netbeans.modules.cnd.folding;
-
-import java.io.Reader;
-import java.util.List;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
-import org.netbeans.modules.cnd.editor.parser.FoldingParser;
-import org.openide.filesystems.FileObject;
+import java.util.List;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
- * provider for Code Folding Parser
- * - for input document's stream construct list of CppFildRecords
  *
- * @author Vladimir Voskresensky
+ * @author igromov
  */
-//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.parser.FoldingParser.class, position = 1)
-public class APTFoldingProvider implements FoldingParser {
-    
-    /** we need public constructor for lookup */
-    public APTFoldingProvider() {
-    }
+public interface TokenFilter {
 
-    @Override
-    public List<CppFoldRecord> parse(FileObject fo, char[] buf) {
-        List<CppFoldRecord> res = APTFoldingParser.parse(fo, buf);
-        return res;
-    }
+    /**
+     * Visits the token if this filter handles tokens of specified type. Creates
+     * folders if needed.
+     *
+     * @param token token to visit.
+     */
+    void visit(Token<CppTokenId> token);
+    
+    /**
+     * Visits dummy EOF token.
+     */
+    void visitEof();
+
+    /**
+     * Checks if a token of this type will be consumed by filter
+     *
+     * @param id token id
+     * @return true if consumed, false otherwise
+     */
+    boolean consumes(CppTokenId id);
+
+    /**
+     * Get accumulated folders.
+     *
+     * @return list of folders.
+     */
+    List<CppFoldRecord> getFolders();
+
+//    /**
+//     * Resets this filter state to initial condition and removes accumulated
+//     * folders.
+//     */
+//    void reset();
 }

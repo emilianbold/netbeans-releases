@@ -41,31 +41,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.editor.parser.impl;
 
-package org.netbeans.modules.cnd.folding;
-
+import java.io.File;
 import java.io.Reader;
+import java.io.StringReader;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import org.netbeans.editor.Analyzer;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
-import org.netbeans.modules.cnd.editor.parser.FoldingParser;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * provider for Code Folding Parser
- * - for input document's stream construct list of CppFildRecords
  *
  * @author Vladimir Voskresensky
  */
-//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.parser.FoldingParser.class, position = 1)
-public class APTFoldingProvider implements FoldingParser {
-    
-    /** we need public constructor for lookup */
-    public APTFoldingProvider() {
+public class FoldingParserImplTestCase extends CndBaseTestCase {
+
+    private static final boolean TRACE = false;
+
+    /**
+     * Creates a new instance of ModelImplBaseTestCase
+     */
+    public FoldingParserImplTestCase(String testName) {
+        super(testName);
     }
 
-    @Override
-    public List<CppFoldRecord> parse(FileObject fo, char[] buf) {
-        List<CppFoldRecord> res = APTFoldingParser.parse(fo, buf);
-        return res;
+    public void testIfdefFolding() throws Exception {
+        performTest("ifdef.cc");
     }
+
+    public void testSimpleFolding() throws Exception {
+        performTest("simpleFolding.cc");
+    }
+
+    public void testErrorDirective() throws Exception {
+        performTest("error_directive.cc");
+    }
+
+    public void testLastIncludes() throws Exception {
+        performTest("lastIncludes.cc");
+    }
+
+    public void testMixedPrepocDirectives() throws Exception {
+        performTest("mixedPreprocDirectives.cc");
+    }
+
+    private void performTest(String source) throws Exception {
+        if (TRACE) {
+            System.out.println(getWorkDir());
+        }
+        File testSourceFile = getDataFile(source);
+        FileObject fo = FileUtil.toFileObject(testSourceFile);
+        char[] text = Analyzer.loadFile(testSourceFile.getAbsolutePath());
+        FoldingParserService foldingParserService = new FoldingParserService();
+        List<CppFoldRecord> folds = foldingParserService.parse(fo, text);
+        Collections.sort(folds, FOLD_COMPARATOR);
+        for (CppFoldRecord fold : folds) {
+            ref(fold.toString());
+        }
+        compareReferenceFiles();
+    }
+    private static final Comparator<CppFoldRecord> FOLD_COMPARATOR = new Comparator<CppFoldRecord>() {
+
+        @Override
+        public int compare(CppFoldRecord o1, CppFoldRecord o2) {
+            return o1.getStartOffset() - o2.getStartOffset();
+        }
+    };
 }

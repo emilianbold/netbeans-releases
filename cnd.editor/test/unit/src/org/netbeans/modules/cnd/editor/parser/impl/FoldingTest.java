@@ -42,30 +42,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.folding;
+package org.netbeans.modules.cnd.editor.parser.impl;
 
-import java.io.Reader;
-import java.util.List;
-import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
-import org.netbeans.modules.cnd.editor.parser.FoldingParser;
-import org.openide.filesystems.FileObject;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
- * provider for Code Folding Parser
- * - for input document's stream construct list of CppFildRecords
  *
  * @author Vladimir Voskresensky
  */
-//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.parser.FoldingParser.class, position = 1)
-public class APTFoldingProvider implements FoldingParser {
+public class FoldingTest extends CndBaseTestSuite {
     
-    /** we need public constructor for lookup */
-    public APTFoldingProvider() {
+    public FoldingTest() {
+        super("C/C++ Folding Provider");
+        
+        this.addTestSuite(FoldingParserImplTestCase.class);
     }
 
-    @Override
-    public List<CppFoldRecord> parse(FileObject fo, char[] buf) {
-        List<CppFoldRecord> res = APTFoldingParser.parse(fo, buf);
-        return res;
+    public static Test suite() {
+        TestSuite suite = new FoldingTest();
+        return suite;
     }
+    
 }
