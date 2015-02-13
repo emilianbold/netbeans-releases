@@ -43,6 +43,7 @@
 package org.netbeans.libs.git.remote.jgit;
 
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.openide.util.Cancellable;
 
 /**
  *
@@ -50,14 +51,28 @@ import org.netbeans.libs.git.remote.progress.ProgressMonitor;
  */
 public final class DelegatingGitProgressMonitor extends ProgressMonitor {
     private final ProgressMonitor monitor;
+    private Cancellable cancellable;
 
     public DelegatingGitProgressMonitor (ProgressMonitor monitor) {
         this.monitor = monitor;
     }
 
     @Override
-    public boolean isCanceled () {
+    public synchronized final boolean isCanceled () {
         return monitor.isCanceled();
+    }
+    
+    @Override
+    public synchronized final void setCancelDelegate(Cancellable c) {
+        cancellable = c;
+    }
+
+    @Override
+    public synchronized final boolean cancel() {
+        if (cancellable != null) {
+            cancellable.cancel();
+        }
+        return monitor.cancel();
     }
 
     @Override
@@ -94,5 +109,4 @@ public final class DelegatingGitProgressMonitor extends ProgressMonitor {
     public void updateTaskState (int completed) {
         monitor.updateTaskState(completed);
     }
-
 }

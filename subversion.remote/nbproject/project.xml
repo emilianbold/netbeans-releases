@@ -194,7 +194,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0.29</specification-version>
+                        <specification-version>1.0.32</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

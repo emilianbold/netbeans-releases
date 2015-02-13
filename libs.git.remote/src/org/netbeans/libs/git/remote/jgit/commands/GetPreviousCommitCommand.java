@@ -113,10 +113,10 @@ public class GetPreviousCommitCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("log"); //NOI18N
-        addArgument(revision);
-        addArgument("--"); //NOI18N
-        addArgument(Utils.getRelativePath(getRepository().getLocation(), file));
+        addArgument(0, "log"); //NOI18N
+        addArgument(0, revision);
+        addArgument(0, "--"); //NOI18N
+        addArgument(0, Utils.getRelativePath(getRepository().getLocation(), file));
     }
 
     public GitRevisionInfo getRevision () {

@@ -73,9 +73,9 @@ public class ListRemoteBranchesCommand extends ListRemoteObjectsCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("ls-remote"); //NOI18N
-        addArgument("--heads"); //NOI18N
-        addArgument(remoteUrl.toString());
+        addArgument(0, "ls-remote"); //NOI18N
+        addArgument(0, "--heads"); //NOI18N
+        addArgument(0, remoteUrl.toString());
     }
 
     public Map<String, GitBranch> getBranches () {

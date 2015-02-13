@@ -136,6 +136,12 @@ final class GitClassFactoryImpl extends GitClassFactory {
     }
 
     @Override
+    public GitRevisionInfo createRevisionInfo(String branch, String revisionCode, String message, String autorAndMail,
+            Map<String, GitRevisionInfo.GitFileInfo.Status> commitedFiles, JGitRepository repository) {
+        return new GitRevisionInfo(branch, revisionCode, message, autorAndMail, commitedFiles, repository);
+    }
+
+    @Override
     public GitStatus createStatus (boolean tracked, String path, String workTreePath, VCSFileProxy file, 
                 GitStatus.Status statusHeadIndex, GitStatus.Status statusIndexWC, GitStatus.Status statusHeadWC, 
                 GitConflictDescriptor conflictDescriptor, boolean folder, DiffEntry diffEntry,

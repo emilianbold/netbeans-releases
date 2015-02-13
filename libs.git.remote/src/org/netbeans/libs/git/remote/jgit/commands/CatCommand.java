@@ -210,9 +210,9 @@ public class CatCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("show"); //NOI18N
+        addArgument(0, "show"); //NOI18N
         String relPath = Utils.getRelativePath(getRepository().getLocation(), file);
-        addArgument(revision+":"+relPath); //NOI18N
+        addArgument(0, revision+":"+relPath); //NOI18N
     }
 
     public boolean foundInRevision () {

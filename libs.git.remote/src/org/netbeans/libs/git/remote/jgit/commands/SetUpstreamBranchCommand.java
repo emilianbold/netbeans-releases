@@ -119,10 +119,10 @@ public class SetUpstreamBranchCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("branch"); //NOI18N
-        addArgument("--set-upstream-to"); //NOI18N
-        addArgument(trackedBranchName);
-        addArgument(localBranchName);
+        addArgument(0, "branch"); //NOI18N
+        addArgument(0, "--set-upstream-to"); //NOI18N
+        addArgument(0, trackedBranchName);
+        addArgument(0, localBranchName);
     }
     
     public GitBranch getTrackingBranch () {

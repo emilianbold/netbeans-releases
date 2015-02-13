@@ -128,7 +128,7 @@ public abstract class RemoteFileObjectBase {
     public abstract RemoteFileObject[] getChildren();
     public abstract FileType getType();
 
-    protected RemoteFileObject getOwnerFileObject() {
+    public RemoteFileObject getOwnerFileObject() {
         return fileObject;
     }
 

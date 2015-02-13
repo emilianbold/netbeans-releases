@@ -99,6 +99,7 @@ public class StatusCommand extends StatusCommandBase {
     private final String revision;
     private static final Logger LOG = Logger.getLogger(StatusCommand.class.getName());
     private static final Set<VCSFileProxy> logged = new HashSet<>();
+    private final boolean isRevision;
 
     public StatusCommand (JGitRepository repository, String revision, VCSFileProxy[] roots, GitClassFactory gitFactory,
             ProgressMonitor monitor, StatusListener listener) {
@@ -106,20 +107,57 @@ public class StatusCommand extends StatusCommandBase {
         this.roots = roots;
         this.monitor = monitor;
         this.revision = revision;
+        isRevision = !Constants.HEAD.equals(revision);
     }
     
     @Override
     protected void prepare() throws GitException {
-        super.prepare();
-        if (Constants.HEAD.equals(revision)) {
-             addArgument("status"); //NOI18N
-             addArgument("--short"); //NOI18N
-             addArgument("--ignored"); //NOI18N
+        if (isRevision) {
+            setCommandsNumber(4);
         } else {
-             addArgument("diff"); //NOI18N
-             addArgument("--raw"); //NOI18N
+            setCommandsNumber(3);
         }
-        addFiles(roots);
+        super.prepare();
+        if (isRevision) {
+            addArgument(0, "diff"); //NOI18N
+            addArgument(0, "--cached"); //NOI18N
+            addArgument(0, "--raw"); //NOI18N
+            addArgument(0, "--name-status"); //NOI18N
+            addArgument(0, revision);
+            addArgument(0, "--"); //NOI18N
+            addFiles(0, roots);
+            addArgument(1, "diff"); //NOI18N
+            addArgument(1, "--raw"); //NOI18N
+            addArgument(1, "--name-status"); //NOI18N
+            addArgument(1, revision);
+            addArgument(1, "--"); //NOI18N
+            addFiles(1, roots);
+            addArgument(2, "status"); //NOI18N
+            addArgument(2, "--short"); //NOI18N
+            addArgument(2, "--ignored"); //NOI18N
+            addArgument(2, "--untracked-files=normal"); //NOI18N
+            addArgument(2, "--"); //NOI18N
+            addFiles(2, roots);
+            addArgument(3, "ls-files"); //NOI18N
+            addArgument(3, "--"); //NOI18N
+            addFiles(3, roots);
+        } else {
+            addArgument(0, "status"); //NOI18N
+            addArgument(0, "--short"); //NOI18N
+            addArgument(0, "--ignored"); //NOI18N
+            addArgument(0, "--untracked-files=normal"); //NOI18N
+            addArgument(0, "--"); //NOI18N
+            addFiles(0, roots);
+            addArgument(1, "diff"); //NOI18N
+            addArgument(1, "--raw"); //NOI18N
+            addArgument(1, "--name-status"); //NOI18N
+            addArgument(1, "HEAD");
+            addArgument(1, "--"); //NOI18N
+            addFiles(1, roots);
+            addArgument(2, "ls-files"); //NOI18N
+            addArgument(2, "--"); //NOI18N
+            addFiles(2, roots);
+        }
     }
 
     @Override
@@ -140,16 +178,177 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
 
-    private static final class Status {
-        char first;
-        char second;
-        char untracked1;
-        char untracked2;
-        String to;
+    private void runCLI () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            if (isRevision) {
+                LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();
+                {
+                    ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+                    String executable = getExecutable();
+                    String[] args = getCliArguments(0);
+                    ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+                    if(canceled.canceled()) {
+                        return;
+                    }
+                    if (exitStatus.output!= null) {
+                        parseDiffOutput(exitStatus.output, 1, list);
+                    }
+                    if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                        for(String line : exitStatus.error.split("\n")) { //NOI18N
+                            if (!line.isEmpty()) {
+                                //command.errorText(line);
+                            }
+                        }
+                    }
+                }
+                {
+                    ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+                    String executable = getExecutable();
+                    String[] args = getCliArguments(1);
+                    ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+                    if(canceled.canceled()) {
+                        return;
+                    }
+                    if (exitStatus.output!= null) {
+                        parseDiffOutput(exitStatus.output, 3, list);
+                    }
+                    if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                        for(String line : exitStatus.error.split("\n")) { //NOI18N
+                            if (!line.isEmpty()) {
+                                //command.errorText(line);
+                            }
+                        }
+                    }
+                }
+                {
+                    ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+                    String executable = getExecutable();
+                    String[] args = getCliArguments(2);
+                    ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+                    if (canceled.canceled()) {
+                        return;
+                    }
+                    if (exitStatus.output != null) {
+                        parseStatusOutput(exitStatus.output, list, true);
+                    }
+                    if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                        for (String line : exitStatus.error.split("\n")) { //NOI18N
+                            if (!line.isEmpty()) {
+                                //command.errorText(line);
+                            }
+                        }
+                    }
+                }
+                {
+                    ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+                    String executable = getExecutable();
+                    String[] args = getCliArguments(3);
+                    ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+                    if(canceled.canceled()) {
+                        return;
+                    }
+                    if (exitStatus.output!= null) {
+                        parseLsOutput(exitStatus.output, list);
+                    }
+                    if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                        for(String line : exitStatus.error.split("\n")) { //NOI18N
+                            if (!line.isEmpty()) {
+                                //command.errorText(line);
+                            }
+                        }
+                    }
+                }
+                processOutput(list, canceled);
+            } else {
+                LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();
+                {
+                    ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+                    String executable = getExecutable();
+                    String[] args = getCliArguments(0);
+                    ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+                    if(canceled.canceled()) {
+                        return;
+                    }
+                    if (exitStatus.output!= null) {
+                        parseStatusOutput(exitStatus.output, list, false);
+                    }
+                    if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                        for(String line : exitStatus.error.split("\n")) { //NOI18N
+                            if (!line.isEmpty()) {
+                                //command.errorText(line);
+                            }
+                        }
+                    }
+                }
+                {
+                    ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+                    String executable = getExecutable();
+                    String[] args = getCliArguments(1);
+                    ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+                    if(canceled.canceled()) {
+                        return;
+                    }
+                    if (exitStatus.output!= null && exitStatus.isOK()) {
+                        parseDiffOutput(exitStatus.output, 3, list);
+                    }
+                    if (!exitStatus.isOK()) {
+                        if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                            for(String line : exitStatus.error.split("\n")) { //NOI18N
+                                if (!line.isEmpty()) {
+                                    //fatal: bad revision 'HEAD'
+                                    //command.errorText(line);
+                                }
+                            }
+                            if (exitStatus.error.contains("fatal: bad revision 'HEAD'")) {
+                                for (Map.Entry<String, StatusLine> e : list.entrySet()) {
+                                    final char first = e.getValue().first;
+                                    if (first != '?' && first != '!') {
+                                        e.getValue().third = first;
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+                {
+                    ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+                    String executable = getExecutable();
+                    String[] args = getCliArguments(2);
+                    ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+                    if(canceled.canceled()) {
+                        return;
+                    }
+                    if (exitStatus.output!= null) {
+                        parseLsOutput(exitStatus.output, list);
+                    }
+                    if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                        for(String line : exitStatus.error.split("\n")) { //NOI18N
+                            if (!line.isEmpty()) {
+                                //command.errorText(line);
+                            }
+                        }
+                    }
+                }
+                processOutput(list, canceled);
+            }
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if(canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }        
     }
-    
-    private LinkedHashMap<String, Status> parseOutput(String output) {
-        LinkedHashMap<String, Status> list = new LinkedHashMap<>();
+
+    private void parseStatusOutput(String output, Map<String, StatusLine> list, boolean onlyIndexWC) {
         for (String line : output.split("\n")) { //NOI18N
             if (line.length() > 3) {
                 char first = line.charAt(0);
@@ -163,138 +362,194 @@ public class StatusCommand extends StatusCommandBase {
                 } else {
                     file = line.substring(2).trim();
                 }
-                Status status = list.get(file);
+                StatusLine status = list.get(file);
                 if (status == null) {
-                    status = new Status();
-                    status.first = first;
-                    status.second = second;
-                    status.to = renamed;
+                    status = new StatusLine();
+                    if (onlyIndexWC) {
+                        if (first == '?' || first == '!') {
+                            status.first = first;
+                            status.second = second;
+                        } else {
+                            status.second = second;
+                        }
+                    } else {
+                        status.first = first;
+                        status.second = second;
+                        status.to = renamed;
+                    }
                     list.put(file, status);
                 } else {
-                    status.untracked1 = first;
-                    status.untracked2 = second;
+                    if (onlyIndexWC) {
+                        if (first == '?' || first == '!') {
+                            status.untracked = first;
+                        } else {
+                            status.second = second;
+                        }
+                    } else {
+                        status.untracked = first;
+                    }
                 }
             }
         }
-        return list;
+    }
+
+    private void parseDiffOutput(String output, int n, Map<String, StatusLine> list) {
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.length() > 2) {
+                char c = line.charAt(0);
+                String file = line.substring(2).trim();
+                StatusLine status = list.get(file);
+                if (status == null) {
+                    status = new StatusLine();
+                    if (n == 1) {
+                        status.first = c;
+                    }
+                    if (n == 2) {
+                        status.second = c;
+                    }
+                    if (n == 3) {
+                        status.third = c;
+                    }
+                    list.put(file, status);
+                } else {
+                    if (n == 1) {
+                        status.first = c;
+                    }
+                    if (n == 2) {
+                        status.second = c;
+                    }
+                    if (n == 3) {
+                        status.third = c;
+                    }
+                }
+            }
+        }
+    }
+
+    private void parseLsOutput(String output, Map<String, StatusLine> list) {
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.length() > 0) {
+                String file = line.trim();
+                StatusLine status = list.get(file);
+                if (status == null) {
+                    status = new StatusLine();
+                    list.put(file, status);
+                }
+            }
+        }
     }
     
-    private void runCLI () throws GitException {
-        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
-        String cmd = getCommandLine();
-        try {
-            ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-            String executable = getExecutable();
-            String[] args = getCliArguments();
-            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
-            if (exitStatus.output!= null) {
-                LinkedHashMap<String, Status> parseOutput = parseOutput(exitStatus.output);
-                for(Map.Entry<String, Status> entry : parseOutput.entrySet()) {
-                    String file = entry.getKey();
-                    Status v = entry.getValue();
-                    char first = v.first;
-                    char second = v.second;
-                    char untracked = v.untracked1;
-                    String renamed = v.to;
-                    
-                    boolean tracked = !(first == '?' || untracked == '?');
-                    GitStatus.Status statusHeadIndex = GitStatus.Status.STATUS_IGNORED;
-                    switch (first) {
-                        case 'A':
-                            statusHeadIndex = GitStatus.Status.STATUS_ADDED;
-                            break;
-                        case 'C':
-                            statusHeadIndex = GitStatus.Status.STATUS_ADDED;
-                            break;
-                        case 'R':
-                        case 'D':
-                            statusHeadIndex = GitStatus.Status.STATUS_REMOVED;
-                            break;
-                        case 'M':
-                        case 'U':
-                            statusHeadIndex = GitStatus.Status.STATUS_MODIFIED;
-                            break;
-                        case ' ':
-                            statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
-                            break;
-                        case '?':
-                        case '!':
-                            statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
-                            break;
+    private void processOutput(LinkedHashMap<String, StatusLine> parseOutput, ProcessUtils.Canceler canceled) {
+        for(Map.Entry<String, StatusLine> entry : parseOutput.entrySet()) {
+            String file = entry.getKey();
+            StatusLine v = entry.getValue();
+            char first = v.first;
+            char second = v.second;
+            char third = v.third;
+            char untracked = v.untracked;
+            String renamed = v.to;
+            
+            boolean tracked = !(first == '?' || first == '!' );
+            GitStatus.Status statusHeadIndex = GitStatus.Status.STATUS_IGNORED;
+            switch (first) {
+                case 'A':
+                    statusHeadIndex = GitStatus.Status.STATUS_ADDED;
+                    break;
+                case 'C':
+                    statusHeadIndex = GitStatus.Status.STATUS_ADDED;
+                    break;
+                case 'R':
+                case 'D':
+                    statusHeadIndex = GitStatus.Status.STATUS_REMOVED;
+                    break;
+                case 'M':
+                case 'U':
+                    statusHeadIndex = GitStatus.Status.STATUS_MODIFIED;
+                    break;
+                case ' ':
+                    statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
+                    break;
+                case '?':
+                case '!':
+                    statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
+                    break;
+            }
+            GitStatus.Status statusIndexWC = GitStatus.Status.STATUS_IGNORED;
+            switch (second) {
+                case 'A':
+                    statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                    break;
+                case 'D':
+                    statusIndexWC = GitStatus.Status.STATUS_REMOVED;
+                    break;
+                case 'M':
+                case 'U':
+                    statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
+                    break;
+                case ' ':
+                    if (untracked == '?') {
+                        statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                    } else {
+                        statusIndexWC = GitStatus.Status.STATUS_NORMAL;
                     }
-                    GitStatus.Status statusIndexWC = GitStatus.Status.STATUS_IGNORED;
-                    switch (second) {
-                        case 'A':
-                            statusIndexWC = GitStatus.Status.STATUS_ADDED;
-                            break;
-                        case 'D':
-                            statusIndexWC = GitStatus.Status.STATUS_REMOVED;
-                            break;
-                        case 'M':
-                        case 'U':
-                            statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
-                            break;
-                        case ' ':
-                            if (untracked == '?') {
-                                statusIndexWC = GitStatus.Status.STATUS_ADDED;
-                            } else {
-                                statusIndexWC = GitStatus.Status.STATUS_NORMAL;
-                            }
-                            break;
-                        case '?':
-                            statusIndexWC = GitStatus.Status.STATUS_ADDED;
-                            break;
-                        case '!':
-                            statusIndexWC = GitStatus.Status.STATUS_IGNORED;
-                            break;
+                    break;
+                case '?':
+                    statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                    break;
+                case '!':
+                    statusIndexWC = GitStatus.Status.STATUS_IGNORED;
+                    break;
+            }
+            GitStatus.Status statusHeadWC = GitStatus.Status.STATUS_IGNORED;
+            switch (third) {
+                case 'A':
+                    statusHeadWC = GitStatus.Status.STATUS_ADDED;
+                    break;
+                case 'D':
+                    if (untracked == '?') {
+                        statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
+                    } else {
+                        statusHeadWC = GitStatus.Status.STATUS_REMOVED;
                     }
-                    GitStatus.Status statusHeadWC;
-                    if (!tracked) {
+                    break;
+                case 'M':
+                case 'U':
+                    statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
+                    break;
+                case ' ':
+                    if (first == '?' || first == '!') {
                         statusHeadWC = GitStatus.Status.STATUS_ADDED;
                     } else {
-                        if (statusHeadIndex == GitStatus.Status.STATUS_NORMAL) {
-                            statusHeadWC = statusIndexWC;
-                        } else if (statusIndexWC == GitStatus.Status.STATUS_NORMAL) {
-                            statusHeadWC = statusHeadIndex;
-                        } else if (statusIndexWC == GitStatus.Status.STATUS_IGNORED) {
-                            statusHeadWC = GitStatus.Status.STATUS_ADDED;
-                        } else if (statusHeadIndex == GitStatus.Status.STATUS_ADDED && statusIndexWC == GitStatus.Status.STATUS_REMOVED) {
-                            statusHeadWC = GitStatus.Status.STATUS_NORMAL;
-                        } else if (statusHeadIndex == GitStatus.Status.STATUS_MODIFIED && statusIndexWC == GitStatus.Status.STATUS_REMOVED) {
-                            statusHeadWC = GitStatus.Status.STATUS_REMOVED;
-                        } else {
-                            statusHeadWC = statusHeadIndex;
-                        }
+                        statusHeadWC = GitStatus.Status.STATUS_NORMAL;
                     }
-                    VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
-                    boolean isFolder = vcsFile.isDirectory();
-                    long indexTimestamp = vcsFile.lastModified();
-                    GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath()+"/"+file, vcsFile,
-                        statusHeadIndex, statusIndexWC, statusHeadWC,
-                        null, isFolder, null/*renamed*/, indexTimestamp);
-                    addStatus(vcsFile, status);
-                    //command.outputText(line);
+                    break;
+                case '?':
+                    statusHeadWC = GitStatus.Status.STATUS_ADDED;
+                    break;
+                case '!':
+                    statusHeadWC = GitStatus.Status.STATUS_IGNORED;
+                    break;
+            }
+            boolean isFolder = false;
+            if (file.endsWith("/")) {
+                file = file.substring(0, file.length()-1);
+                isFolder = true;
+            }
+            if (!tracked) {
+                if (statusIndexWC == GitStatus.Status.STATUS_IGNORED && isFolder) {
+                    statusHeadWC = statusIndexWC;
+                } else {
+                    statusHeadWC = GitStatus.Status.STATUS_ADDED;
                 }
             }
-            if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
-                for(String line : exitStatus.error.split("\n")) { //NOI18N
-                    if (!line.isEmpty()) {
-                        //command.errorText(line);
-                    }
-                }
-            }
-            if(canceled.canceled()) {
-                return;
-            }
-            //command.commandCompleted(exitStatus.exitCode);
-        } catch (Throwable t) {
-            if(canceled.canceled()) {
-            } else {
-                throw new GitException(t);
-            }
-        } finally {
-            //command.commandFinished();
-        }        
+            VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
+            long indexTimestamp = -1;
+            GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath()+"/"+file, vcsFile,
+                    statusHeadIndex, statusIndexWC, statusHeadWC,
+                    null, isFolder, null/*renamed*/, indexTimestamp);
+            addStatus(vcsFile, status);
+            //command.outputText(line);
+        }
     }
 
     private void runKit () throws GitException {
@@ -597,5 +852,21 @@ public class StatusCommand extends StatusCommandBase {
             }
         }
         return GitStatus.Status.STATUS_NORMAL;
+    }
+
+    private static final class StatusLine {
+        char first = ' ';
+        char second = ' ';
+        char third = ' ';
+        char untracked = ' ';
+        String to;
+
+        public StatusLine() {
+        }
+
+        @Override
+        public String toString() {
+            return ""+first+second+third+untracked;
+        }
     }
 }

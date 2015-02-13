@@ -225,8 +225,8 @@ public class CheckoutRevisionCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("checkout"); //NOI18N
-        addArgument(revision);
+        addArgument(0, "checkout"); //NOI18N
+        addArgument(0, revision);
     }
 
     private void notify (VCSFileProxy workDir, Collection<String> paths) {
