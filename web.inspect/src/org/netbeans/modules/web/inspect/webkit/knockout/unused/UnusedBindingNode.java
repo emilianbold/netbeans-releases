@@ -47,6 +47,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Node representing an unused binding.
@@ -55,7 +56,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class UnusedBindingNode extends AbstractNode {
     /** Unused binding represented by this node. */
-    private final UnusedBinding unusedBinding;
+    private UnusedBinding unusedBinding;
 
     /**
      * Creates a new {@code UnusedBindingNode}.
@@ -63,14 +64,34 @@ public class UnusedBindingNode extends AbstractNode {
      * @param unusedBinding unused binding to represent by the node.
      */
     public UnusedBindingNode(UnusedBinding unusedBinding) {
-        super(Children.LEAF, Lookups.fixed(unusedBinding));
+        super(Children.LEAF, new UnusedBindingLookup(unusedBinding));
         this.unusedBinding = unusedBinding;
         setIconBaseWithExtension("org/netbeans/modules/web/inspect/resources/domElement.png"); // NOI18N
     }
 
     @Override
-    public String getHtmlDisplayName() {
+    public synchronized String getHtmlDisplayName() {
         return unusedBinding.getNodeDisplayName();
+    }
+
+    /**
+     * Returns the unused binding represented by this node.
+     * 
+     * @return unused binding represented by this node.
+     */
+    synchronized UnusedBinding getUnusedBinding() {
+        return unusedBinding;
+    }
+
+    /**
+     * Sets the unused binding represented by this node.
+     * 
+     * @param unusedBinding unused binding represented by this node.
+     */
+    synchronized void setUnusedBinding(UnusedBinding unusedBinding) {
+        this.unusedBinding = unusedBinding;
+        ((UnusedBindingLookup)getLookup()).update(unusedBinding);
+        fireDisplayNameChange(null, null);
     }
 
     @Override
@@ -84,6 +105,32 @@ public class UnusedBindingNode extends AbstractNode {
     @Override
     public Action getPreferredAction() {
         return SystemAction.get(GoToBindingSourceAction.class);
+    }
+
+    /**
+     * Lookup that provides the latest unused binding represented by
+     * the owning node.
+     */
+    private static class UnusedBindingLookup extends ProxyLookup {
+
+        /**
+         * Creates a new {@code UnusedBindingLookup}.
+         * 
+         * @param unusedBinding unused binding to put into the lookup.
+         */
+        UnusedBindingLookup(UnusedBinding unusedBinding) {
+            super(Lookups.fixed(unusedBinding));
+        }
+
+        /**
+         * Updates the content of the lookup.
+         * 
+         * @param unusedBinding unused binding to put into the lookup.
+         */
+        void update(UnusedBinding unusedBinding) {
+            setLookups(Lookups.fixed(unusedBinding));
+        }
+
     }
 
 }

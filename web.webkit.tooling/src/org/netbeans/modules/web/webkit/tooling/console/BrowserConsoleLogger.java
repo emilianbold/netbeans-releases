@@ -207,6 +207,9 @@ public class BrowserConsoleLogger implements Console.Listener {
     }
     
     private boolean shouldLogMessage(ConsoleMessage msg) {
+        if (msg == null) {
+            return false; // Issue 250389
+        }
         String level = msg.getLevel();
         String source = msg.getSource();
         // Ignore CSS warnings

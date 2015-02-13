@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.nodejs.cc;
 
@@ -51,22 +51,23 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  *
  * @author vriha
  */
-public class RequireTest extends GeneralNodeJs {
+public class PEParameterTest extends GeneralNodeJs {
 
     static final String[] tests = new String[]{
         "openProject",
-        "testCoreModules",
-        "testCurrentFolder",
-        "testParentFolder",
-        "testSiblingFolder"
+        "testParam1",
+        "testParam2",
+        "testParam3",
+        "testParam4",
+        "testParam5"
     };
 
-    public RequireTest(String args) {
+    public PEParameterTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return createModuleTest(RequireTest.class, tests);
+        return createModuleTest(PEParameterTest.class, tests);
     }
 
     public void openProject() throws Exception {
@@ -74,33 +75,37 @@ public class RequireTest extends GeneralNodeJs {
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleNode");
         evt.waitNoEvent(2000);
-        downloadGlobalNodeJS();
-        evt.waitNoEvent(8000);
-        openFile("cc|cc1.js", "SimpleNode");
+        openFile("doc|pe.js", "SimpleNode");
         endTest();
     }
 
-    public void testCoreModules() throws Exception {
+    public void testParam1() throws Exception {
         startTest();
-        testCompletion(new EditorOperator("cc1.js"), 76);
+        testCompletion(new EditorOperator("pe.js"), 5);
         endTest();
     }
 
-    public void testCurrentFolder() throws Exception {
+    public void testParam2() throws Exception {
         startTest();
-        testCompletion(new EditorOperator("cc1.js"), 78);
+        testCompletion(new EditorOperator("pe.js"), 8);
         endTest();
     }
 
-    public void testParentFolder() throws Exception {
+    public void testParam3() throws Exception {
         startTest();
-        testCompletion(new EditorOperator("cc1.js"), 80);
+        testCompletion(new EditorOperator("pe.js"), 11);
         endTest();
     }
 
-    public void testSiblingFolder() throws Exception {
+    public void testParam4() throws Exception {
         startTest();
-        testCompletion(new EditorOperator("cc1.js"), 82);
+        testCompletion(new EditorOperator("pe.js"), 13);
+        endTest();
+    }
+
+    public void testParam5() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("pe.js"), 35);
         endTest();
     }
 
@@ -109,7 +114,7 @@ public class RequireTest extends GeneralNodeJs {
         if (GeneralNodeJs.currentLine < 1) {
             return;
         }
-        EditorOperator eo = new EditorOperator("cc1.js");
+        EditorOperator eo = new EditorOperator("pe.js");
         eo.setCaretPositionToEndOfLine(GeneralNodeJs.currentLine);
         String l = eo.getText(eo.getLineNumber());
         for (int i = 0; i < l.length() - 1; i++) {

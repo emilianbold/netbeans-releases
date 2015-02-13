@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,23 +53,24 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class MEPropertyTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testInFunction1",
+        "testInFunction2",
+        "testInFunction4",
+        "testInFunction5",
+        "testInFunction7",
+        "testInFunction8",
+        "testInFunction9",
+        "testInFunction10"
+    };
+
     public MEPropertyTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MEPropertyTest.class).addTest(
-                        "openProject",
-                        "testInFunction1",
-                        "testInFunction2",
-                        "testInFunction4",
-                        "testInFunction5",
-                        "testInFunction7",
-                        "testInFunction8",
-                        "testInFunction9",
-                        "testInFunction10"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(MEPropertyTest.class, tests);
     }
 
     public void openProject() throws Exception {
@@ -94,9 +94,6 @@ public class MEPropertyTest extends GeneralNodeJs {
         endTest();
     }
 
-    
-    
-
     public void testInFunction4() throws Exception {
         startTest();
         testCompletion(new EditorOperator("meprop.js"), 17);
@@ -108,8 +105,6 @@ public class MEPropertyTest extends GeneralNodeJs {
         testCompletion(new EditorOperator("meprop.js"), 19);
         endTest();
     }
-
-    
 
     public void testInFunction7() throws Exception {
         startTest();
@@ -134,8 +129,6 @@ public class MEPropertyTest extends GeneralNodeJs {
         testCompletion(new EditorOperator("meprop.js"), 31);
         endTest();
     }
-
-    
 
     @Override
     public void tearDown() {

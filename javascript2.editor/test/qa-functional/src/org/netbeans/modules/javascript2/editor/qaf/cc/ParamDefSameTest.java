@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,86 +37,140 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.nodejs.cc;
+package org.netbeans.modules.javascript2.editor.qaf.cc;
 
 import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
+import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
  *
  * @author vriha
  */
-public class RequireTest extends GeneralNodeJs {
+public class ParamDefSameTest extends GeneralJavaScript {
 
     static final String[] tests = new String[]{
         "openProject",
-        "testCoreModules",
-        "testCurrentFolder",
-        "testParentFolder",
-        "testSiblingFolder"
+        "testSimpleTop",
+        "testSimpleMethod",
+        "testSimpleNested",
+        "testDotTop",
+        "testDotMethod",
+        "testDotNested",
+        "testTildaTop",
+        "testTildaMethod",
+        "testTildaNested",
+        "testPropTop",
+        "testPropTop2",
+        "testPropNested"
     };
 
-    public RequireTest(String args) {
-        super(args);
+    public ParamDefSameTest(String arg0) {
+        super(arg0);
     }
 
     public static Test suite() {
-        return createModuleTest(RequireTest.class, tests);
+        return createModuleTest(ParamDefSameTest.class, tests);
     }
 
     public void openProject() throws Exception {
         startTest();
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
-        openDataProjects("SimpleNode");
+        openDataProjects("completionTest");
         evt.waitNoEvent(2000);
-        downloadGlobalNodeJS();
-        evt.waitNoEvent(8000);
-        openFile("cc|cc1.js", "SimpleNode");
+        openFile("same.js", "completionTest");
         endTest();
     }
 
-    public void testCoreModules() throws Exception {
+    public void testSimpleTop() throws Exception {
         startTest();
-        testCompletion(new EditorOperator("cc1.js"), 76);
+        testCompletion(new EditorOperator("same.js"), 192);
         endTest();
     }
 
-    public void testCurrentFolder() throws Exception {
+    public void testSimpleMethod() throws Exception {
         startTest();
-        testCompletion(new EditorOperator("cc1.js"), 78);
+        testCompletion(new EditorOperator("same.js"), 276);
         endTest();
     }
 
-    public void testParentFolder() throws Exception {
+    public void testSimpleNested() throws Exception {
         startTest();
-        testCompletion(new EditorOperator("cc1.js"), 80);
+        testCompletion(new EditorOperator("same.js"), 289);
         endTest();
     }
 
-    public void testSiblingFolder() throws Exception {
+    public void testDotTop() throws Exception {
         startTest();
-        testCompletion(new EditorOperator("cc1.js"), 82);
+        testCompletion(new EditorOperator("same.js"), 204);
+        endTest();
+    }
+
+    public void testDotMethod() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("same.js"), 278);
+        endTest();
+    }
+
+    public void testDotNested() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("same.js"), 291);
+        endTest();
+    }
+
+    public void testTildaTop() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("same.js"), 216);
+        endTest();
+    }
+
+    public void testTildaMethod() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("same.js"), 280);
+        endTest();
+    }
+
+    public void testTildaNested() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("same.js"), 293);
+        endTest();
+    }
+
+    public void testPropTop() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("same.js"), 226);
+        endTest();
+    }
+
+    public void testPropTop2() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("same.js"), 237);
+        endTest();
+    }
+
+    public void testPropNested() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("same.js"), 295);
         endTest();
     }
 
     @Override
     public void tearDown() {
-        if (GeneralNodeJs.currentLine < 1) {
+        if (GeneralJavaScript.currentLine < 1) {
             return;
         }
-        EditorOperator eo = new EditorOperator("cc1.js");
-        eo.setCaretPositionToEndOfLine(GeneralNodeJs.currentLine);
+        EditorOperator eo = new EditorOperator("same.js");
+        eo.setCaretPositionToEndOfLine(GeneralJavaScript.currentLine);
         String l = eo.getText(eo.getLineNumber());
         for (int i = 0; i < l.length() - 1; i++) {
             eo.pressKey(KeyEvent.VK_BACK_SPACE);
         }
 
-        evt.waitNoEvent(1000);
+        evt.waitNoEvent(500);
 
     }
 }

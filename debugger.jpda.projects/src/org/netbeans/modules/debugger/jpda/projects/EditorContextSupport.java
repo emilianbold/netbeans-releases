@@ -701,7 +701,12 @@ public final class EditorContextSupport {
                         return;
                     }
                     LineMap lineMap = ci.getCompilationUnit().getLineMap();
-                    int offset = (int) lineMap.getStartPosition(lineNumber);
+                    int offset;
+                    try {
+                        offset = (int) lineMap.getStartPosition(lineNumber);
+                    } catch (IndexOutOfBoundsException ioobex) {
+                        return ;
+                    }
                     TreePath p = ci.getTreeUtilities().pathFor(offset);
                     while  (p != null && !TreeUtilities.CLASS_TREE_KINDS.contains(p.getLeaf().getKind())) {
                         p = p.getParentPath();
@@ -725,9 +730,6 @@ public final class EditorContextSupport {
         } catch (ParseException pex) {
             Exceptions.printStackTrace(pex);
             return "";
-        } catch (IndexOutOfBoundsException ioobex) {
-            //XXX: log the exception?
-            return null;
         }
         /*
         SourceCookie.Editor sc = (SourceCookie.Editor) dataObject.getCookie

@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,16 +53,17 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class ModuleContructorTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testInstance1"
+    };
+
     public ModuleContructorTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ModuleContructorTest.class).addTest(
-                        "openProject",
-                        "testInstance1"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+       return createModuleTest(ModuleContructorTest.class, tests);
     }
 
     public void openProject() throws Exception {

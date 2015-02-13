@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phing.ui.customizer;
+package org.netbeans.modules.web.clientproject.api.build.ui;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -58,40 +58,44 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.phing.PhingBuildTool;
-import org.netbeans.modules.php.phing.preferences.PhingPreferences;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools.CustomizerSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
-public class PhingCustomizerPanel extends JPanel {
+public final class CustomizerPanel extends JPanel {
 
     private final ProjectCustomizer.Category category;
-    private final PhingPreferences preferences;
-    private final List<PhingTarget> phingTargets = new CopyOnWriteArrayList<>();
+    private final CustomizerSupport customizerSupport;
+    private final List<BuildTask> buildTasks = new CopyOnWriteArrayList<>();
 
 
-    PhingCustomizerPanel(ProjectCustomizer.Category category, Project project) {
+    public CustomizerPanel(CustomizerSupport customizerSupport) {
         assert EventQueue.isDispatchThread();
-        assert category != null;
-        assert project != null;
+        assert customizerSupport != null;
 
-        this.category = category;
-        preferences = PhingBuildTool.forProject(project).getPhingPreferences();
+        this.customizerSupport = customizerSupport;
+        category = customizerSupport.getCategory();
 
         initComponents();
         init();
     }
 
     private void init() {
-        phingTargets.add(new PhingTarget(ActionProvider.COMMAND_BUILD, "build", buildCheckBox, buildTextField)); // NOI18N
-        phingTargets.add(new PhingTarget(ActionProvider.COMMAND_CLEAN, "clean", cleanCheckBox, cleanTextField)); // NOI18N
-        phingTargets.add(new PhingTarget(ActionProvider.COMMAND_REBUILD, "clean build", rebuildCheckBox, rebuildTextField)); // NOI18N
+        assignLabel.setText(customizerSupport.getHeader());
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_BUILD, "build", buildCheckBox, buildTextField)); // NOI18N
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_CLEAN, "clean", cleanCheckBox, cleanTextField)); // NOI18N
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_REBUILD, "clean build", rebuildCheckBox, rebuildTextField)); // NOI18N
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_RUN, "run", runProjectCheckBox, runProjectTextField)); // NOI18N
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_DEBUG, "debug", debugProjectCheckBox, debugProjectTextField)); // NOI18N
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_TEST, "test", testProjectCheckBox, testProjectTextField)); // NOI18N
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_RUN_SINGLE, "runfile", runFileCheckBox, runFileTextField)); // NOI18N
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_DEBUG_SINGLE, "debugfile", debugFileCheckBox, debugFileTextField)); // NOI18N
+        buildTasks.add(new BuildTask(ActionProvider.COMMAND_TEST_SINGLE, "testfile", testFileCheckBox, testFileTextField)); // NOI18N
         // default values
-        for (PhingTarget phingTarget : phingTargets) {
-            phingTarget.setText(preferences.getTarget(phingTarget.getCommandId()));
+        for (BuildTask buildTask : buildTasks) {
+            buildTask.setText(customizerSupport.getTask(buildTask.getCommandId()));
         }
         // listeners
         category.setStoreListener(new ActionListener() {
@@ -102,14 +106,14 @@ public class PhingCustomizerPanel extends JPanel {
         });
     }
 
-    @NbBundle.Messages("PhingCustomizerPanel.error.target.empty=Phing target cannot be empty")
+    @NbBundle.Messages("CustomizerPanel.error.field.empty=Field cannot be empty")
     void validateData() {
         assert EventQueue.isDispatchThread();
-        for (PhingTarget phingTarget : phingTargets) {
-            String text = phingTarget.getText();
+        for (BuildTask buildTask : buildTasks) {
+            String text = buildTask.getText();
             if (text != null
                     && text.isEmpty()) {
-                category.setErrorMessage(Bundle.PhingCustomizerPanel_error_target_empty());
+                category.setErrorMessage(Bundle.CustomizerPanel_error_field_empty());
                 category.setValid(false);
                 return;
             }
@@ -120,8 +124,8 @@ public class PhingCustomizerPanel extends JPanel {
 
     void saveData() {
         assert !EventQueue.isDispatchThread();
-        for (PhingTarget phingTarget : phingTargets) {
-            preferences.setTarget(phingTarget.getCommandId(), phingTarget.getText());
+        for (BuildTask buildTask : buildTasks) {
+            customizerSupport.setTask(buildTask.getCommandId(), buildTask.getText());
         }
     }
 
@@ -135,34 +139,90 @@ public class PhingCustomizerPanel extends JPanel {
 
         assignLabel = new JLabel();
         buildCheckBox = new JCheckBox();
+        buildTextField = new JTextField();
         cleanCheckBox = new JCheckBox();
         cleanTextField = new JTextField();
         rebuildCheckBox = new JCheckBox();
         rebuildTextField = new JTextField();
-        buildTextField = new JTextField();
+        runProjectCheckBox = new JCheckBox();
+        runProjectTextField = new JTextField();
+        debugProjectCheckBox = new JCheckBox();
+        debugProjectTextField = new JTextField();
+        testProjectCheckBox = new JCheckBox();
+        testProjectTextField = new JTextField();
+        runFileCheckBox = new JCheckBox();
+        runFileTextField = new JTextField();
+        debugFileCheckBox = new JCheckBox();
+        debugFileTextField = new JTextField();
+        testFileCheckBox = new JCheckBox();
+        testFileTextField = new JTextField();
 
-        Mnemonics.setLocalizedText(assignLabel, NbBundle.getMessage(PhingCustomizerPanel.class, "PhingCustomizerPanel.assignLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(assignLabel, "TITLE"); // NOI18N
 
-        Mnemonics.setLocalizedText(buildCheckBox, NbBundle.getMessage(PhingCustomizerPanel.class, "PhingCustomizerPanel.buildCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(buildCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.buildCheckBox.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(cleanCheckBox, NbBundle.getMessage(PhingCustomizerPanel.class, "PhingCustomizerPanel.cleanCheckBox.text")); // NOI18N
+        buildTextField.setColumns(20);
 
-        Mnemonics.setLocalizedText(rebuildCheckBox, NbBundle.getMessage(PhingCustomizerPanel.class, "PhingCustomizerPanel.rebuildCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(cleanCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.cleanCheckBox.text")); // NOI18N
+
+        cleanTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(rebuildCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.rebuildCheckBox.text")); // NOI18N
+
+        rebuildTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(runProjectCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.runProjectCheckBox.text")); // NOI18N
+
+        runProjectTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(debugProjectCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.debugProjectCheckBox.text")); // NOI18N
+
+        debugProjectTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(testProjectCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.testProjectCheckBox.text")); // NOI18N
+
+        testProjectTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(runFileCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.runFileCheckBox.text")); // NOI18N
+
+        runFileTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(debugFileCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.debugFileCheckBox.text")); // NOI18N
+
+        debugFileTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(testFileCheckBox, NbBundle.getMessage(CustomizerPanel.class, "CustomizerPanel.testFileCheckBox.text")); // NOI18N
+
+        testFileTextField.setColumns(20);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(assignLabel)
-            .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(cleanCheckBox)
                     .addComponent(rebuildCheckBox)
-                    .addComponent(buildCheckBox))
+                    .addComponent(buildCheckBox)
+                    .addComponent(runProjectCheckBox)
+                    .addComponent(debugProjectCheckBox)
+                    .addComponent(testProjectCheckBox)
+                    .addComponent(runFileCheckBox)
+                    .addComponent(debugFileCheckBox)
+                    .addComponent(testFileCheckBox))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(buildTextField)
-                    .addComponent(rebuildTextField)
-                    .addComponent(cleanTextField)))
+                    .addComponent(runFileTextField, GroupLayout.Alignment.TRAILING)
+                    .addComponent(rebuildTextField, GroupLayout.Alignment.TRAILING)
+                    .addComponent(cleanTextField, GroupLayout.Alignment.TRAILING)
+                    .addComponent(buildTextField, GroupLayout.Alignment.TRAILING)
+                    .addComponent(runProjectTextField, GroupLayout.Alignment.TRAILING)
+                    .addComponent(debugProjectTextField, GroupLayout.Alignment.TRAILING)
+                    .addComponent(testProjectTextField)
+                    .addComponent(debugFileTextField, GroupLayout.Alignment.TRAILING)
+                    .addComponent(testFileTextField, GroupLayout.Alignment.TRAILING)))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(assignLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -179,6 +239,30 @@ public class PhingCustomizerPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(rebuildCheckBox)
                     .addComponent(rebuildTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(runProjectCheckBox)
+                    .addComponent(runProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(debugProjectCheckBox)
+                    .addComponent(debugProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(testProjectCheckBox)
+                    .addComponent(testProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(runFileCheckBox)
+                    .addComponent(runFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(debugFileCheckBox)
+                    .addComponent(debugFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(testFileCheckBox)
+                    .addComponent(testFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -190,13 +274,25 @@ public class PhingCustomizerPanel extends JPanel {
     private JTextField buildTextField;
     private JCheckBox cleanCheckBox;
     private JTextField cleanTextField;
+    private JCheckBox debugFileCheckBox;
+    private JTextField debugFileTextField;
+    private JCheckBox debugProjectCheckBox;
+    private JTextField debugProjectTextField;
     private JCheckBox rebuildCheckBox;
     private JTextField rebuildTextField;
+    private JCheckBox runFileCheckBox;
+    private JTextField runFileTextField;
+    private JCheckBox runProjectCheckBox;
+    private JTextField runProjectTextField;
+    private JCheckBox testFileCheckBox;
+    private JTextField testFileTextField;
+    private JCheckBox testProjectCheckBox;
+    private JTextField testProjectTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
 
-    private final class PhingTarget {
+    private final class BuildTask {
 
         private final String commandId;
         private final String defaultValue;
@@ -204,7 +300,7 @@ public class PhingCustomizerPanel extends JPanel {
         private final JTextField textField;
 
 
-        PhingTarget(String commandId, String defaultValue, JCheckBox checkBox, JTextField textField) {
+        BuildTask(String commandId, String defaultValue, JCheckBox checkBox, JTextField textField) {
             assert commandId != null;
             assert defaultValue != null;
             assert checkBox != null;
