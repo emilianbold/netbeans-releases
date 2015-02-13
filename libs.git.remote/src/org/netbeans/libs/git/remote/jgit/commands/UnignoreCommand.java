@@ -67,8 +67,8 @@ public class UnignoreCommand extends IgnoreUnignoreCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("unignoring"); //NOI18N
-        addFiles(files);
+        addArgument(0, "unignoring"); //NOI18N
+        addFiles(0, files);
     }
 
     @Override

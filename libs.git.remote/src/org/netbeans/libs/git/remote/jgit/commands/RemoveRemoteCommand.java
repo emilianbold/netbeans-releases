@@ -86,8 +86,8 @@ public class RemoveRemoteCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("remote"); //NOI18N
-        addArgument("rm"); //NOI18N
-        addArgument("remote"); //NOI18N
+        addArgument(0, "remote"); //NOI18N
+        addArgument(0, "rm"); //NOI18N
+        addArgument(0, "remote"); //NOI18N
     }
 }

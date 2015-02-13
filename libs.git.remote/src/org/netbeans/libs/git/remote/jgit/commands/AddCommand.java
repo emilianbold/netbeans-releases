@@ -93,8 +93,8 @@ public class AddCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("add"); //NOI18N
-        addFiles(roots);
+        addArgument(0, "add"); //NOI18N
+        addFiles(0, roots);
     }
 
     @Override

@@ -155,10 +155,10 @@ public class PushCommand extends TransportCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("push"); //NOI18N
-        addArgument(remote);
+        addArgument(0, "push"); //NOI18N
+        addArgument(0, remote);
         for (String refSpec : pushRefSpecs) {
-            addArgument(refSpec);
+            addArgument(0, refSpec);
         }
     }
 

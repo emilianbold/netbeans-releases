@@ -96,11 +96,11 @@ public class RevertCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("revert"); //NOI18N
+        addArgument(0, "revert"); //NOI18N
         if (!commit) {
-            addArgument("-n"); //NOI18N
+            addArgument(0, "-n"); //NOI18N
         }
-        addArgument(revisionStr);
+        addArgument(0, revisionStr);
     }
 
     @Override

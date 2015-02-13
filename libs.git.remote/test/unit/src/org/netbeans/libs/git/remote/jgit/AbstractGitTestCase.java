@@ -79,6 +79,7 @@ import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.libs.git.remote.progress.StatusListener;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.Cancellable;
 
 /**
  *
@@ -163,8 +164,21 @@ public class AbstractGitTestCase extends NbTestCase {
         return sb.toString();
     }
 
-    protected static void assertStatus (Map<VCSFileProxy, GitStatus> statuses, VCSFileProxy workDir, VCSFileProxy file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict) {
+    protected static void assertStatus (Map<VCSFileProxy, GitStatus> statuses, VCSFileProxy workDir, VCSFileProxy file, boolean tracked,
+            Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict) {
         GitStatus status = statuses.get(file);
+//if(KIT) {}
+//else    {while (status == null) {
+//            if (file.equals(workDir)) {
+//                break;
+//            }
+//            file = file.getParentFile();
+//            status = statuses.get(file);
+//        }
+//        if (headVsIndex == Status.STATUS_NORMAL && indexVsWorking == Status.STATUS_NORMAL && headVsWorking == Status.STATUS_NORMAL && status == null) {
+//            // Status does not print up-to-date files
+//            return;
+//        }}
         assertNotNull(file.getPath() + " not in " + statuses.keySet(), status);
         assertEquals(TestUtils.getRelativePath(file, workDir), status.getRelativePath());
         assertEquals(tracked, status.isTracked());
@@ -337,6 +351,15 @@ public class AbstractGitTestCase extends NbTestCase {
         }
 
         @Override
+        public void setCancelDelegate(Cancellable c) {
+        }
+
+        @Override
+        public boolean cancel() {
+            return false;
+        }
+
+        @Override
         public void started (String command) {
         }
 
@@ -355,7 +378,6 @@ public class AbstractGitTestCase extends NbTestCase {
         @Override
         public void notifyWarning (String message) {
         }
-
     }
     
     protected final List<String> runExternally (VCSFileProxy workdir, List<String> command) throws Exception {

@@ -109,6 +109,8 @@ public abstract class Executor {
 
     public abstract String readlink(long pid);
     
+    public abstract String readlsof(long pid);
+    
     public abstract String readDirLink(long pid);
 
     public abstract boolean is_64(String p);

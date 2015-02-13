@@ -96,9 +96,9 @@ public class SubmoduleStatusCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("submodule"); //NOI18N
-        addArgument("status"); //NOI18N
-        addFiles(roots);
+        addArgument(0, "submodule"); //NOI18N
+        addArgument(0, "status"); //NOI18N
+        addFiles(0, roots);
     }
 
     public Map<VCSFileProxy, GitSubmoduleStatus> getStatuses () {
