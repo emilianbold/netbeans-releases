@@ -235,7 +235,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         index.query(
                 names,
                 DocumentUtil.binaryNameConvertor(),
-                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.declaredTypesFieldSelector(false),
                 null,
                 QueryUtil.createUsagesQuery("java.util.List", EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
         names.retainAll(
@@ -351,7 +351,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         index.query(
                 result,
                 DocumentUtil.binaryNameConvertor(),
-                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.declaredTypesFieldSelector(false),
                 null,
                 QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
         assertTrue(result.containsAll(Arrays.asList(in)));
@@ -394,7 +394,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         index.query(
                 result,
                 DocumentUtil.binaryNameConvertor(),
-                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.declaredTypesFieldSelector(false),
                 null,
                 Queries.createQuery(
                 DocumentUtil.FIELD_SIMPLE_NAME,
