@@ -131,10 +131,10 @@ public class ExportCommitCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("format-patch"); //NOI18N
-        addArgument("--no-stat"); //NOI18N
-        addArgument("-1"); //NOI18N
-        addArgument(revisionStr);
+        addArgument(0, "format-patch"); //NOI18N
+        addArgument(0, "--no-stat"); //NOI18N
+        addArgument(0, "-1"); //NOI18N
+        addArgument(0, revisionStr);
     }
 
     private String formatCommitInfo (RevCommit commit) {

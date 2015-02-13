@@ -80,12 +80,12 @@ public class StashDropCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("stash"); //NOI18N
+        addArgument(0, "stash"); //NOI18N
         if (all) {
-            addArgument("clear"); //NOI18N
+            addArgument(0, "clear"); //NOI18N
         } else {
-            addArgument("drop"); //NOI18N
-            addArgument("stash@{"+stashIndex+"}");
+            addArgument(0, "drop"); //NOI18N
+            addArgument(0, "stash@{"+stashIndex+"}");
         }
     }
 }

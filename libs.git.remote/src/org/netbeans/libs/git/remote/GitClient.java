@@ -325,11 +325,13 @@ public final class GitClient {
     
     private final JGitRepository gitRepository;
     private final Set<NotificationListener> listeners;
+    private final Set<ProgressMonitor> pmListeners;
     private JGitCredentialsProvider credentialsProvider;
 
     GitClient (JGitRepository gitRepository) throws GitException {
         this.gitRepository = gitRepository;
         listeners = new HashSet<NotificationListener>();
+        pmListeners = new HashSet<ProgressMonitor>();
         delegateListener = new DelegateListener();
         gitRepository.increaseClientUsage();
     }
@@ -353,6 +355,9 @@ public final class GitClient {
     public void addNotificationListener (NotificationListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
+            if (listener instanceof ProgressMonitor) {
+                pmListeners.add((ProgressMonitor) listener);
+            }
         }
     }
 
@@ -1084,6 +1089,7 @@ public final class GitClient {
     public void removeNotificationListener (NotificationListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
+            pmListeners.remove(listener);
         }
     }
     
@@ -1349,6 +1355,9 @@ public final class GitClient {
     
     // <editor-fold defaultstate="collapsed" desc="listener methods">
     private void notifyFile (VCSFileProxy file, String relativePathToRoot) {
+        if (isCancelled()) {
+            return;
+        }        
         List<NotificationListener> lists;
         synchronized (listeners) {
             lists = new LinkedList<NotificationListener>(listeners);
@@ -1361,6 +1370,9 @@ public final class GitClient {
     }
 
     private void notifyStatus (GitStatus status) {
+        if (isCancelled()) {
+            return;
+        }
         List<NotificationListener> lists;
         synchronized (listeners) {
             lists = new LinkedList<NotificationListener>(listeners);
@@ -1372,7 +1384,21 @@ public final class GitClient {
         }
     }
 
+    public boolean isCancelled() {
+        synchronized (listeners) {
+            for (ProgressMonitor pmListener : pmListeners) {
+                if (pmListener.isCanceled()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void notifyRevisionInfo (GitRevisionInfo info) {
+        if (isCancelled()) {
+            return;
+        }        
         List<NotificationListener> lists;
         synchronized (listeners) {
             lists = new LinkedList<NotificationListener>(listeners);

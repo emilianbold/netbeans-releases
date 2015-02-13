@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -59,6 +60,7 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
 import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
+import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
@@ -77,11 +79,14 @@ public class RemoteVcsSupportUtil {
     private RemoteVcsSupportUtil() {        
     }
     
+    /** deprecated: use USE_FS instead */
     private static final boolean USE_CACHE;
     static {
         String text = System.getProperty("rfs.vcs.cache");
         USE_CACHE = (text == null) ? true : Boolean.parseBoolean(text);
     }
+    
+    public static final boolean USE_FS = RemoteFileSystemUtils.getBoolean("rfs.vcs.use.fs", true);
     
     public static boolean isSymbolicLink(FileSystem fileSystem, String path) {
         if (fileSystem instanceof RemoteFileSystem) {
@@ -214,27 +219,45 @@ public class RemoteVcsSupportUtil {
     }
 
     public static OutputStream getOutputStream(FileSystem fileSystem, String path) throws IOException {            
-        FileObject fo = getFileObject(fileSystem, path);
+        FileObject fo = getOrCreateFileObject(fileSystem, path);
         return fo.getOutputStream();
     }
 
+    private static FileObject getOrCreateFileObject(FileSystem fileSystem, String path) throws IOException {
+        FileObject fo = getFileObject(fileSystem, path);
+        if (fo == null) {
+            fo = FileUtil.createData(fileSystem.getRoot(), path);
+        }
+        return fo;
+    }
+    
     private static FileObject getFileObject(FileSystem fileSystem, String path) throws IOException {
+        return getFileObject(fileSystem, path, null);
+    }
+
+    private static FileObject getFileObject(FileSystem fileSystem, String path, AtomicBoolean refreshed) throws IOException {
+        if (fileSystem instanceof RemoteFileSystem) {
+            RemoteFileObjectBase cachedFileObject = ((RemoteFileSystem) fileSystem).getFactory().getCachedFileObject(path);
+            if (cachedFileObject != null) {
+                return cachedFileObject.getOwnerFileObject();
+            }
+        }
         FileObject fo = fileSystem.findResource(path);
         if (fo == null)  {
             String parentPath = PathUtilities.getDirName(path);
-            FileObject parentFO = fileSystem.findResource(parentPath);
+            FileObject parentFO = (parentPath == null) ? fileSystem.getRoot() : fileSystem.findResource(parentPath);
             while (parentFO == null) {
                 parentPath = PathUtilities.getDirName(parentPath);
-                parentFO = fileSystem.findResource(parentPath);
+                parentFO = (parentPath == null) ? fileSystem.getRoot() : fileSystem.findResource(parentPath);
             }
             if (parentFO == null) {
-                throw new IOException(new NullPointerException());
+                throw new IOException("Null root file object? " + fileSystem + ':' + path); //NOI18N
             }
             parentFO.refresh();
-        }
-        fo = fileSystem.findResource(path);
-        if (fo == null) {
-            fo = FileUtil.createData(fileSystem.getRoot(), path);
+            if (refreshed != null) {
+                refreshed.set(true);
+            }
+            fo = fileSystem.findResource(path);
         }
         return fo;
     }
@@ -307,5 +330,24 @@ public class RemoteVcsSupportUtil {
             }
         }
         return connected.toArray(new FileSystem[connected.size()]);
+    }
+
+    public static void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException {
+        // TODO: remove children if there if the list contains parents
+        AtomicBoolean refreshed = new AtomicBoolean(false);
+        for (String p : paths) {            
+            FileObject fo = getFileObject(fs, p, refreshed);
+            if (fo != null && !refreshed.get()) {
+                FileObject parent = fo.getParent();
+                if (parent != null) {
+                    parent.refresh();
+                } else {
+                    fo.refresh();
+                }
+            }
+            if (fo == null) {
+
+            }
+        }
     }
 }

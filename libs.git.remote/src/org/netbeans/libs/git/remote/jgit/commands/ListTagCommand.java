@@ -101,8 +101,8 @@ public class ListTagCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("tag"); //NOI18N
-        addArgument("-l"); //NOI18N
+        addArgument(0, "tag"); //NOI18N
+        addArgument(0, "-l"); //NOI18N
     }
 
     public Map<String, GitTag> getTags () {

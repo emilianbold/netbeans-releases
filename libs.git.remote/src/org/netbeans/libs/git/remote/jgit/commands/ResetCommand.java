@@ -116,13 +116,13 @@ public class ResetCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("reset"); //NOI18N
+        addArgument(0, "reset"); //NOI18N
         if (moveHead) {
-            addArgument(resetType.toString());
-            addArgument(revisionStr);
+            addArgument(0, resetType.toString());
+            addArgument(0, revisionStr);
         } else {
-            addArgument(revisionStr);
-            addFiles(roots);
+            addArgument(0, revisionStr);
+            addFiles(0, roots);
         }
     }
 

@@ -106,20 +106,20 @@ public class CreateTagCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("tag"); //NOI18N
+        addArgument(0, "tag"); //NOI18N
         if (signed) {
-            addArgument("-s"); //NOI18N
+            addArgument(0, "-s"); //NOI18N
         }
         if (forceUpdate) {
-            addArgument("-f"); //NOI18N
+            addArgument(0, "-f"); //NOI18N
         }
         if (message != null && !message.isEmpty()) {
-            addArgument("-m"); //NOI18N
-            addArgument(message.replace("\n", "\\n")); //NOI18N
+            addArgument(0, "-m"); //NOI18N
+            addArgument(0, message.replace("\n", "\\n")); //NOI18N
         }
-        addArgument(tagName);
+        addArgument(0, tagName);
         if (taggedObject != null) {
-            addArgument(taggedObject);
+            addArgument(0, taggedObject);
         }
     }
 

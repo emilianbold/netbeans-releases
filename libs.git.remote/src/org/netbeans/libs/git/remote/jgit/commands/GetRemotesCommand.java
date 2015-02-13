@@ -90,8 +90,8 @@ public class GetRemotesCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("remote"); //NOI18N
-        addArgument("-v"); //NOI18N
+        addArgument(0, "remote"); //NOI18N
+        addArgument(0, "-v"); //NOI18N
     }
 
     public Map<String, GitRemoteConfig> getRemotes () {

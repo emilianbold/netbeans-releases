@@ -67,8 +67,8 @@ public class IgnoreCommand extends IgnoreUnignoreCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("ignoring"); //NOI18N
-        addFiles(files);
+        addArgument(0, "ignoring"); //NOI18N
+        addFiles(0, files);
     }
 
     @Override

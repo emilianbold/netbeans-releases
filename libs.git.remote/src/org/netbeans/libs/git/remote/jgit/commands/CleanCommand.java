@@ -82,9 +82,9 @@ public class CleanCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("clean"); //NOI18N
-        addArgument("-d"); //NOI18N
-        addFiles(roots);
+        addArgument(0, "clean"); //NOI18N
+        addArgument(0, "-d"); //NOI18N
+        addFiles(0, roots);
     }
 
     @Override

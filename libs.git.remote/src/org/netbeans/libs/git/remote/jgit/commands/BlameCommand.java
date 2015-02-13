@@ -100,13 +100,13 @@ public class BlameCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("blame"); //NOI18N
-        addArgument("-l"); //NOI18N
-        addArgument("-f"); //NOI18N
+        addArgument(0, "blame"); //NOI18N
+        addArgument(0, "-l"); //NOI18N
+        addArgument(0, "-f"); //NOI18N
         if (revision != null) {
-            addArgument(revision);
+            addArgument(0, revision);
         }
-        addFiles(new VCSFileProxy[]{file});
+        addFiles(0, new VCSFileProxy[]{file});
     }
 
     public GitBlameResult getResult () {

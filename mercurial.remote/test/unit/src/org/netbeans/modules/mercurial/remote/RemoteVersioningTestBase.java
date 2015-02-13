@@ -473,7 +473,8 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         boolean versionChecked = false;
         @Override
         public void publish(LogRecord record) {
-            if(record.getMessage().indexOf("version: ") > -1) {
+            final String message = record.getMessage();
+            if(message != null && message.indexOf("version: ") > -1) {
                 versionChecked = true;                    
             }
         }
