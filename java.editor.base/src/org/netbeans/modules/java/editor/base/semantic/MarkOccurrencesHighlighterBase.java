@@ -226,7 +226,7 @@ public abstract class MarkOccurrencesHighlighterBase extends JavaParserResultTas
             //detect caret inside the extends/implements clause:
             if (typePath != null && TreeUtilities.CLASS_TREE_KINDS.contains(typePath.getParentPath().getLeaf().getKind())) {
                 ClassTree ctree = (ClassTree) typePath.getParentPath().getLeaf();
-                int bodyStart = Utilities.findBodyStart(ctree, cu, info.getTrees().getSourcePositions(), doc);
+                int bodyStart = Utilities.findBodyStart(info, ctree, cu, info.getTrees().getSourcePositions(), doc);
 
                 boolean isExtends = ctree.getExtendsClause() == typePath.getLeaf();
                 boolean isImplements = false;
@@ -254,7 +254,7 @@ public abstract class MarkOccurrencesHighlighterBase extends JavaParserResultTas
             TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
             if (ts != null && TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
-                int bodyStart = Utilities.findBodyStart(tp.getLeaf(), cu, info.getTrees().getSourcePositions(), doc);
+                int bodyStart = Utilities.findBodyStart(info, tp.getLeaf(), cu, info.getTrees().getSourcePositions(), doc);
 
                 if (caretPosition < bodyStart) {
                     ts.move(caretPosition);
