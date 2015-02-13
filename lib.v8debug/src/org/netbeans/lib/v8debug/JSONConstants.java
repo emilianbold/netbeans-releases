@@ -149,6 +149,7 @@ class JSONConstants {
     public static final String STATUS = "status";
     public static final String STATUS_EXPLANATION = "status_explanation";
     public static final String POSITIONS = "positions";
+    public static final String OLD_POSITIONS = "old_positions";
     public static final String NEW_POSITIONS = "new_positions";
     public static final String START_POSITION = "start_position";
     public static final String END_POSITION = "end_position";
@@ -157,6 +158,11 @@ class JSONConstants {
     public static final String CHANGE_LOG = "change_log";
     public static final String BREAK_POINTS_UPDATE = "break_points_update";
     public static final String LINKED_TO_OLD_SCRIPT = "linked_to_old_script";
+    public static final String DROPPED_FROM_STACK = "dropped_from_stack";
+    public static final String FUNCTION_PATCHED = "function_patched";
+    public static final String FUNCTION_INFO_NOT_FOUND = "function_info_not_found";
+    public static final String POSITION_PATCHED = "position_patched";
+    public static final String INFO_NOT_FOUND = "info_not_found";
     
     public static final String INCLUDE_SOURCE = "includeSource";
     public static final String FILTER = "filter";
@@ -184,6 +190,8 @@ class JSONConstants {
     public static final String BREAK_CONDITION = "condition";
     public static final String BREAK_IGNORE_COUNT = "ignoreCount";
     public static final String BREAK_ACTUAL_LOCATIONS = "actual_locations";
+    
+    public static final String NEW_ID = "new_id";
     
     public static final String SCOPES = "scopes";
     public static final String SCOPE = "scope";
