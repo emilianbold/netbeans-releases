@@ -139,5 +139,15 @@ public class StatusCommandTest extends AbstractHgTestCase {
         StatusCommand cmd = StatusCommand.create(root, Collections.<File>singletonList(root), false);
         Map<File, FileInformation> statuses = cmd.call();
         assertEquals(FileInformation.STATUS_VERSIONED_CONFLICT, statuses.get(f).getStatus());
+        
+        cmd = StatusCommand.create(root, Collections.<File>singletonList(root), false)
+                .setDetectConflicts(true);
+        statuses = cmd.call();
+        assertEquals(FileInformation.STATUS_VERSIONED_CONFLICT, statuses.get(f).getStatus());
+        
+        cmd = StatusCommand.create(root, Collections.<File>singletonList(root), false)
+                .setDetectConflicts(false);
+        statuses = cmd.call();
+        assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, statuses.get(f).getStatus());
     }
 }

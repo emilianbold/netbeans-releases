@@ -90,6 +90,7 @@ public final class StatusCommand extends HgCommand<Map<File, FileInformation>> {
     private static final char HG_STATUS_CODE_CONFLICT = 'U' + ' ';    // NOI18N // STATUS_VERSIONED_CONFLICT - TODO when Hg status supports conflict markers
     private static final char HG_STATUS_CODE_ABORT = 'a' + 'b';    // NOI18N
     private boolean detectCopies;
+    private boolean detectConflicts;
     
     public StatusCommand (File repository, List<File> files) {
         Parameters.notNull("repository", repository);
@@ -97,6 +98,7 @@ public final class StatusCommand extends HgCommand<Map<File, FileInformation>> {
         this.repository = repository;
         this.files = files;
         this.statusFlags = HG_STATUS_FLAG_INTERESTING_CMD;
+        this.detectConflicts = true;
     }
     
     /**
@@ -125,6 +127,19 @@ public final class StatusCommand extends HgCommand<Map<File, FileInformation>> {
     
     public StatusCommand setDetectCopies (boolean detectCopies) {
         this.detectCopies = detectCopies;
+        return this;
+    }
+    
+    /**
+     * Instruct the status command to also detect conflicts. The default
+     * value is <code>false</code> so you need to call this method only if
+     * you actually want not to detect conflicts and make the command a bit
+     * faster.
+     * 
+     * @param detectConflicts detect conflicts or not
+     */
+    public StatusCommand setDetectConflicts (boolean detectConflicts) {
+        this.detectConflicts = detectConflicts;
         return this;
     }
     
@@ -193,7 +208,7 @@ public final class StatusCommand extends HgCommand<Map<File, FileInformation>> {
                 } finally {
                     logger.closeLog();
                 }
-            } else if (workDirStatus && HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+            } else if (detectConflicts && workDirStatus && HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
                 try {
                     List<String> unresolved = HgCommand.getUnresolvedFiles(repository, attributes);
                     list.addAll(unresolved);
