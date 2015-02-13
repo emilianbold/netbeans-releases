@@ -236,6 +236,16 @@ public class BreakpointsHandler implements V8Debugger.Listener {
     public void removeActiveBreakpointListener(ActiveBreakpointListener abl) {
         abListeners.remove(abl);
     }
+
+    public void positionChanged(long bpId, long line, long column) {
+        SubmittedBreakpoint sb;
+        synchronized (submittedBreakpoints) {
+            sb = breakpointsById.get(bpId);
+        }
+        if (sb != null) {
+            sb.updatePosition(line, column);
+        }
+    }
     
     public static interface ActiveBreakpointListener {
         
