@@ -78,10 +78,14 @@ public final class GitRevisionInfo {
     private GitFileInfo[] modifiedFiles;
     private String shortMessage;
     //CLI:
-    private String branch = null;
-    private String revisionCode = null;
-    private String message = null;
-    private String autorAndMail = null;
+    private String branch;
+    private String revisionCode;
+    private String message;
+    private String autorAndMail;
+    private String commiterAndMail;
+    private String autorTime;
+    private String commiterTime;
+    private String[] parents;
     private final boolean isKIT;
 
     GitRevisionInfo (RevCommit commit, JGitRepository repository) {
@@ -95,20 +99,22 @@ public final class GitRevisionInfo {
         isKIT = true;
     }
 
-    GitRevisionInfo (String branch, String revisionCode, String message, String autorAndMail,
-            Map<String, GitRevisionInfo.GitFileInfo.Status> commitedFiles, JGitRepository repository) {
-        this.branch = branch;
+    GitRevisionInfo(GitRevCommit status, JGitRepository repository) {
+        this.branch = status.branch;
         this.branches = Collections.<String, GitBranch>emptyMap();
-        this.revisionCode = revisionCode;
-        this.message = message;
-        this.autorAndMail = autorAndMail;
-        modifiedFiles = new GitFileInfo[commitedFiles.size()];
+        this.revisionCode = status.revisionCode;
+        this.message = status.message;
+        this.autorAndMail = status.autorAndMail;
+        autorTime = status.autorTime;
+        modifiedFiles = new GitFileInfo[status.commitedFiles.size()];
         int i = 0;
-        for (Map.Entry<String, GitRevisionInfo.GitFileInfo.Status> entry : commitedFiles.entrySet()) {
+        for (Map.Entry<String, GitRevisionInfo.GitFileInfo.Status> entry : status.commitedFiles.entrySet()) {
             VCSFileProxy file = VCSFileProxy.createFileProxy(repository.getLocation(), entry.getKey());
             GitFileInfo info = new GitFileInfo(file, entry.getKey(), entry.getValue(), null, null);
             modifiedFiles[i++] = info;
         }
+        parents = status.parents.toArray(new String[status.parents.size()]);
+        commiterTime = status.commiterTime;
         this.repository = repository;
         isKIT = false;
     }
@@ -178,8 +184,23 @@ public final class GitRevisionInfo {
                 return author.getWhen().getTime();
             }
         } else {
-            return -1;
+            if (autorTime != null) {
+                //1423691643 -0800
+                String[] s = autorTime.split(" ");
+                long res = Long.parseLong(s[0])*1000;
+                //int zone = Integer.parseInt(s[1]);
+                //res += (zone/100)*3600*1000;
+                return res;
+            }
+            if (commiterTime != null) {
+                String[] s = commiterTime.split(" ");
+                long res = Long.parseLong(s[0])*1000;
+                //int zone = Integer.parseInt(s[1]);
+                //res += (zone/100)*3600*1000;
+                return res;
+            }
         }
+        return -1;
     }
 
     /**
@@ -189,9 +210,12 @@ public final class GitRevisionInfo {
         if (isKIT) {
             return GitClassFactoryImpl.getInstance().createUser(revCommit.getAuthorIdent());
         } else {
-            int i = autorAndMail.indexOf("<");
-            return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i));
+            if (autorAndMail != null) {
+                int i = autorAndMail.indexOf("<");
+                return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i));
+            }
         }
+        return null;
     }
 
     /**
@@ -201,9 +225,12 @@ public final class GitRevisionInfo {
         if (isKIT) {
             return GitClassFactoryImpl.getInstance().createUser(revCommit.getCommitterIdent());
         } else {
-            int i = autorAndMail.indexOf("<");
-            return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i));
+            if (commiterAndMail != null) {
+                int i = commiterAndMail.indexOf("<");
+                return new GitUser(commiterAndMail.substring(0,i).trim(), commiterAndMail.substring(i));
+            }
         }
+        return null;
     }
     
     /**
@@ -238,7 +265,7 @@ public final class GitRevisionInfo {
             }
             return parents;
         } else {
-            return new String[]{};
+            return parents;
         }
     }
     
@@ -368,5 +395,22 @@ public final class GitRevisionInfo {
             return originalFile;
         }
     }
+    
+    public static final class GitRevCommit {
+        public String branch;
+        public String revisionCode;
+        public String treeCode;
+        public String message;
+        public String autorAndMail;
+        public String autorTime;
+        public String commiterAndMail;
+        public String commiterTime;
+        public LinkedHashMap<String, GitRevisionInfo.GitFileInfo.Status> commitedFiles = new LinkedHashMap<String, GitRevisionInfo.GitFileInfo.Status>();
+        public ArrayList<String> parents = new ArrayList<String>();
+
+        public GitRevCommit() {
+        }
+    }
+
     
 }

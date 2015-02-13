@@ -115,8 +115,8 @@ public abstract class GitClassFactory {
     }
     
     public abstract GitRevisionInfo createRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, JGitRepository repository);
-    public abstract GitRevisionInfo createRevisionInfo (String branch, String revisionCode, String message, String autorAndMail,
-                     Map<String, GitRevisionInfo.GitFileInfo.Status> commitedFiles, JGitRepository repository);
+    
+    public abstract GitRevisionInfo createRevisionInfo(GitRevisionInfo.GitRevCommit status, JGitRepository repository);
 
     public abstract GitStatus createStatus (boolean tracked, String path, String workTreePath, VCSFileProxy file, 
                 Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, 

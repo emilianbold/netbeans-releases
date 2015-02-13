@@ -68,6 +68,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 public class StatusTest extends AbstractGitTestCase {
     private VCSFileProxy workDir;
     private JGitRepository repository;
+    protected static final boolean KIT = StatusCommand.KIT;
 
     public StatusTest(String testName) throws IOException {
         super(testName);
