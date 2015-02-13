@@ -67,7 +67,7 @@ public final class CppFoldRecord {
 
     public CppFoldRecord(int type, int startLnum, int startOffset, int endLnum, int endOffset)
     {
-	this.type = type;
+        this.type = type;
 	this.startOffset = startOffset;
 	this.endOffset = endOffset;
     }

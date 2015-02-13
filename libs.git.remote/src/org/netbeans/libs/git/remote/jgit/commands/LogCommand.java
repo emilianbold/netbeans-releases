@@ -234,23 +234,23 @@ public class LogCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("log"); //NOI18N
-        addArgument("--name-status"); //NOI18N
+        addArgument(0, "log"); //NOI18N
+        addArgument(0, "--name-status"); //NOI18N
         if (criteria != null && criteria.isFollow() && criteria.getFiles() != null && criteria.getFiles().length == 1) {
-            addArgument("--follow"); //NOI18N
+            addArgument(0, "--follow"); //NOI18N
         }
         if (revision != null) {
-            addArgument("--no-walk"); //NOI18N
-            addArgument(revision);
+            addArgument(0, "--no-walk"); //NOI18N
+            addArgument(0, revision);
         } else if (criteria.getRevisionTo() != null && criteria.getRevisionFrom() != null) {
-            addArgument(criteria.getRevisionFrom());
-            addArgument(".."); //NOI18N
-            addArgument(criteria.getRevisionTo());
+            addArgument(0, criteria.getRevisionFrom());
+            addArgument(0, ".."); //NOI18N
+            addArgument(0, criteria.getRevisionTo());
         } else if (criteria.getRevisionTo() != null) {
-            addArgument(criteria.getRevisionTo());
+            addArgument(0, criteria.getRevisionTo());
         } else if (criteria.getRevisionFrom() != null) {
-            addArgument(criteria.getRevisionFrom());
-            addArgument(".."); //NOI18N
+            addArgument(0, criteria.getRevisionFrom());
+            addArgument(0, ".."); //NOI18N
         }
     }
 

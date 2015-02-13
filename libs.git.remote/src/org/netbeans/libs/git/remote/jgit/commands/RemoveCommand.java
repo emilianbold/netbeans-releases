@@ -148,10 +148,10 @@ public class RemoveCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("rm"); //NOI18N
+        addArgument(0, "rm"); //NOI18N
         if (cached) {
-            addArgument("--cached"); //NOI18N
+            addArgument(0, "--cached"); //NOI18N
         }
-        addFiles(roots);
+        addFiles(0, roots);
     }
 }

@@ -93,6 +93,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.actions.SystemAction;
@@ -487,9 +488,23 @@ public class PushAction extends SingleRepositoryAction {
                     final GitProgressSupport supp = this;
                     try {
                         GitRevisionInfo[] revisions = client.log(crit, false, new ProgressMonitor() {
+                            private Cancellable cancellable;
                             @Override
-                            public boolean isCanceled () {
+                            public synchronized final boolean isCanceled () {
                                 return supp.isCanceled();
+                            }
+
+                            @Override
+                            public synchronized final void setCancelDelegate(Cancellable c) {
+                                cancellable = c;
+                            }
+
+                            @Override
+                            public synchronized final boolean cancel() {
+                                if (cancellable != null) {
+                                    cancellable.cancel();
+                                }
+                                return supp.cancel();
                             }
 
                             @Override

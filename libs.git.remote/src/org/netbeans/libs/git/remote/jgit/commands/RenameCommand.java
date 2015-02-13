@@ -92,8 +92,8 @@ public class RenameCommand extends MoveTreeCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("mv"); //NOI18N
-        addArgument(Utils.getRelativePath(getRepository().getLocation(), source));
-        addArgument(Utils.getRelativePath(getRepository().getLocation(), target));
+        addArgument(0, "mv"); //NOI18N
+        addArgument(0, Utils.getRelativePath(getRepository().getLocation(), source));
+        addArgument(0, Utils.getRelativePath(getRepository().getLocation(), target));
     }
 }

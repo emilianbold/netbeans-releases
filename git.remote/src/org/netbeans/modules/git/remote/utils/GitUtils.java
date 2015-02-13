@@ -117,6 +117,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
+import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -1288,6 +1289,15 @@ public final class GitUtils {
         }
 
         @Override
+        public void setCancelDelegate(Cancellable c) {
+        }
+
+        @Override
+        public boolean cancel() {
+            return false;
+        }
+
+        @Override
         public void started (String command) {
         }
 
@@ -1306,7 +1316,6 @@ public final class GitUtils {
         @Override
         public void notifyWarning (String message) {
         }
-
     }
     
     private GitUtils() {

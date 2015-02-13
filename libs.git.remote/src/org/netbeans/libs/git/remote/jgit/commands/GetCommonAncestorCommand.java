@@ -100,9 +100,9 @@ public class GetCommonAncestorCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("merge-base"); //NOI18N
+        addArgument(0, "merge-base"); //NOI18N
         for (String s : revisions) {
-            addArgument(s);
+            addArgument(0, s);
         }
     }
     

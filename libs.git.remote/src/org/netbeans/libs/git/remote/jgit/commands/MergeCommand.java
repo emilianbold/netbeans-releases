@@ -113,11 +113,11 @@ public class MergeCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("merge"); //NOI18N
+        addArgument(0, "merge"); //NOI18N
         if (ffOption != null) {
-            addArgument(ffOption.toString());
+            addArgument(0, ffOption.toString());
         }
-        addArgument(revision);
+        addArgument(0, revision);
     }
     
     public GitMergeResult getResult () {
