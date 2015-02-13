@@ -295,7 +295,7 @@ abstract public class FileOperationsProvider {
             FileObject fo = root.getFileObject(path.getPath());
             if (fo == null && existsSafe(path)) {
                 String parent = path.getPath();
-                LinkedList<String> stack = new LinkedList<String>();
+                LinkedList<String> stack = new LinkedList<>();
                 while(true) {
                     parent = PathUtilities.getDirName(parent);
                     if (parent == null) {
@@ -357,7 +357,7 @@ abstract public class FileOperationsProvider {
         }
         
         protected void refreshFor(FileProxyO ... files) {
-            List<RemoteFileObjectBase> roots = new ArrayList<RemoteFileObjectBase>();
+            List<RemoteFileObjectBase> roots = new ArrayList<>();
             for(FileProxyO f : files) {
                 RemoteFileObjectBase fo = findExistingParent(f.getPath());
                 if (fo != null) {
@@ -401,6 +401,7 @@ abstract public class FileOperationsProvider {
         }
 
         @Override
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;
@@ -495,6 +496,7 @@ abstract public class FileOperationsProvider {
         }
 
         @Override
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;
