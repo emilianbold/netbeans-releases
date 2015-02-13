@@ -313,6 +313,15 @@ public class JSONReader {
         return (String) obj.get(propertyName);
     }
     
+    private static String[] getStringValuesFromArray(JSONArray array, String propertyName) {
+        int l = array.size();
+        String[] strings = new String[l];
+        for (int i = 0; i < l; i++) {
+            strings[i] = getString((JSONObject) array.get(i), propertyName);
+        }
+        return strings;
+    }
+    
     /**
      * @return the long property value, or <code>-1</code> when not defined.
      */
@@ -805,8 +814,11 @@ public class JSONReader {
         if (n == 0) {
             return null;
         }
-        long[] breakpointsUpdate = null;
+        ChangeLive.ChangeLog.BreakpointUpdate[] breakpointsUpdate = null;
         String[] namesLinkedToOldScript = null;
+        String[] droppedFrames = null;
+        ChangeLive.ChangeLog.FunctionPatched functionPatched = null;
+        ChangeLive.ChangeLog.PositionPatched[] patchedPositions = null;
         for (Object aelem : array) {
             if (!(aelem instanceof JSONObject)) {
                 continue;
@@ -814,18 +826,76 @@ public class JSONReader {
             JSONObject obj = (JSONObject) aelem;
             JSONArray breakpointsUpdateArr = (JSONArray) obj.get(BREAK_POINTS_UPDATE);
             if (breakpointsUpdateArr != null) {
-                breakpointsUpdate = getLongArray(breakpointsUpdateArr);
+                breakpointsUpdate = getChangeLogBreakpointsUpdate(breakpointsUpdateArr);
             }
             JSONArray linkedToOldScriptArr = (JSONArray) obj.get(LINKED_TO_OLD_SCRIPT);
             if (linkedToOldScriptArr != null) {
-                int l = linkedToOldScriptArr.size();
-                namesLinkedToOldScript = new String[l];
-                for (int i = 0; i < l; i++) {
-                    namesLinkedToOldScript[i] = getString((JSONObject) linkedToOldScriptArr.get(i), NAME);
-                }
+                namesLinkedToOldScript = getStringValuesFromArray(linkedToOldScriptArr, NAME);
+            }
+            JSONArray droppedFromStack = (JSONArray) obj.get(DROPPED_FROM_STACK);
+            if (droppedFromStack != null) {
+                droppedFrames = getStringValuesFromArray(droppedFromStack, NAME);
+            }
+            String fp = (String) obj.get(FUNCTION_PATCHED);
+            if (fp != null) {
+                Boolean finf = getBooleanOrNull(obj, FUNCTION_INFO_NOT_FOUND);
+                functionPatched = new ChangeLive.ChangeLog.FunctionPatched(fp, new PropertyBoolean(finf));
+            }
+            JSONArray positionPatchedArr = (JSONArray) obj.get(POSITION_PATCHED);
+            if (positionPatchedArr != null) {
+                patchedPositions = getPatchedPositions(positionPatchedArr);
             }
         }
-        return new ChangeLive.ChangeLog(breakpointsUpdate, namesLinkedToOldScript);
+        return new ChangeLive.ChangeLog(breakpointsUpdate, namesLinkedToOldScript,
+                                        droppedFrames, functionPatched, patchedPositions);
+    }
+    
+    private static ChangeLive.ChangeLog.BreakpointUpdate[] getChangeLogBreakpointsUpdate(JSONArray array) {
+        int l = array.size();
+        ChangeLive.ChangeLog.BreakpointUpdate[] bpus = new ChangeLive.ChangeLog.BreakpointUpdate[l];
+        for (int i = 0; i < l; i++) {
+            JSONObject bpu = (JSONObject) array.get(i);
+            String typeRaw = getString(bpu, TYPE);
+            ChangeLive.ChangeLog.BreakpointUpdate.Type type =
+                    ChangeLive.ChangeLog.BreakpointUpdate.Type.fromString(typeRaw);
+            long id = getLong(bpu, ID);
+            PropertyLong newId = getLongProperty(bpu, NEW_ID);
+            ChangeLive.ChangeLog.BreakpointUpdate.Position oldPositions = null;
+            ChangeLive.ChangeLog.BreakpointUpdate.Position newPositions = null;
+            JSONObject positionsObj = (JSONObject) bpu.get(OLD_POSITIONS);
+            if (positionsObj != null) {
+                oldPositions = getPositions(positionsObj);
+            }
+            positionsObj = (JSONObject) bpu.get(POSITIONS);
+            if (positionsObj == null) {
+                positionsObj = (JSONObject) bpu.get(NEW_POSITIONS);
+            }
+            if (positionsObj != null) {
+                newPositions = getPositions(positionsObj);
+            }
+            bpus[i] = new ChangeLive.ChangeLog.BreakpointUpdate(type, id, newId,
+                                                                oldPositions, newPositions);
+        }
+        return bpus;
+    }
+    
+    private static ChangeLive.ChangeLog.BreakpointUpdate.Position getPositions(JSONObject positionObj) {
+        long position = getLong(positionObj, POSITION);
+        long line = getLong(positionObj, LINE);
+        long column = getLong(positionObj, COLUMN);
+        return new ChangeLive.ChangeLog.BreakpointUpdate.Position(position, line, column);
+    }
+    
+    private static ChangeLive.ChangeLog.PositionPatched[] getPatchedPositions(JSONArray array) {
+        int l = array.size();
+        ChangeLive.ChangeLog.PositionPatched[] pps = new ChangeLive.ChangeLog.PositionPatched[l];
+        for (int i = 0; i < l; i++) {
+            JSONObject pp = (JSONObject) array.get(i);
+            String name = getString(pp, NAME);
+            Boolean infoNF = getBooleanOrNull(pp, INFO_NOT_FOUND);
+            pps[i] = new ChangeLive.ChangeLog.PositionPatched(name, new PropertyBoolean(infoNF));
+        }
+        return pps;
     }
 
 }

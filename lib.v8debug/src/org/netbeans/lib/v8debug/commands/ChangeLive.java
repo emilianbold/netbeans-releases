@@ -43,6 +43,7 @@
 package org.netbeans.lib.v8debug.commands;
 
 import org.netbeans.lib.v8debug.PropertyBoolean;
+import org.netbeans.lib.v8debug.PropertyLong;
 import org.netbeans.lib.v8debug.V8Arguments;
 import org.netbeans.lib.v8debug.V8Body;
 import org.netbeans.lib.v8debug.V8Command;
@@ -177,6 +178,12 @@ public final class ChangeLive {
                 
                 public static FunctionStatus fromString(String statusName) {
                     statusName = Character.toUpperCase(statusName.charAt(0)) + statusName.substring(1);
+                    int i;
+                    while ((i = statusName.indexOf(' ')) > 0) {
+                        statusName = statusName.substring(0, i) +
+                                     Character.toUpperCase(statusName.charAt(i+1)) +
+                                     statusName.substring(i+2);
+                    }
                     return FunctionStatus.valueOf(statusName);
                 }
             }
@@ -223,10 +230,10 @@ public final class ChangeLive {
             }
             
             public static final class Positions {
-                
+
                 private final long startPosition;
                 private final long endPosition;
-                
+
                 public Positions(long startPosition, long endPosition) {
                     this.startPosition = startPosition;
                     this.endPosition = endPosition;
@@ -240,7 +247,7 @@ public final class ChangeLive {
                     return endPosition;
                 }
             }
-            
+
         }
         
         public static final class TextualDiff {
@@ -271,22 +278,166 @@ public final class ChangeLive {
     
     public static final class ChangeLog {
         
-        private final long[] breakpointsUpdate;
+        private final BreakpointUpdate[] breakpointsUpdate;
         private final String[] namesLinkedToOldScript;
-        // TODO: function_patched, function_info_not_found
-        // TODO: position_patched
+        private final String[] droppedFrames;
+        private final FunctionPatched functionPatched;
+        private final PositionPatched[] patchedPositions;
         
-        public ChangeLog(long[] breakpointsUpdate, String[] namesLinkedToOldScript) {
+        public ChangeLog(BreakpointUpdate[] breakpointsUpdate,
+                         String[] namesLinkedToOldScript,
+                         String[] droppedFrames,
+                         FunctionPatched functionPatched,
+                         PositionPatched[] patchedPositions) {
             this.breakpointsUpdate = breakpointsUpdate;
             this.namesLinkedToOldScript = namesLinkedToOldScript;
+            this.droppedFrames = droppedFrames;
+            this.functionPatched = functionPatched;
+            this.patchedPositions = patchedPositions;
         }
 
-        public long[] getBreakpointsUpdate() {
+        public BreakpointUpdate[] getBreakpointsUpdate() {
             return breakpointsUpdate;
         }
 
         public String[] getNamesLinkedToOldScript() {
             return namesLinkedToOldScript;
+        }
+
+        public String[] getDroppedFrames() {
+            return droppedFrames;
+        }
+
+        public FunctionPatched getFunctionPatched() {
+            return functionPatched;
+        }
+
+        public PositionPatched[] getPatchedPositions() {
+            return patchedPositions;
+        }
+        
+        public static final class BreakpointUpdate {
+            
+            public static enum Type {
+                CopiedToOld,
+                PositionChanged;
+                
+                public static Type fromString(String typeName) {
+                    int i = 0, i2;
+                    StringBuilder typeEnumStr = new StringBuilder();
+                    while (i < typeName.length()) {
+                        typeEnumStr.append(Character.toUpperCase(typeName.charAt(i)));
+                        i2 = typeName.indexOf('_', i);
+                        if (i2 < 0) {
+                            i2 = typeName.length();
+                        }
+                        typeEnumStr.append(typeName.substring(i+1, i2));
+                        i = i2 + 1;
+                    }
+                    return Type.valueOf(typeEnumStr.toString());
+                }
+            }
+            
+            private final Type type;
+            private final long id;
+            private final PropertyLong newId;
+            private final Position oldPositions;
+            private final Position newPositions;
+            
+            public BreakpointUpdate(Type type, long id, PropertyLong newId,
+                                    Position oldPositions,
+                                    Position newPositions) {
+                this.type = type;
+                this.id = id;
+                this.newId = newId;
+                this.oldPositions = oldPositions;
+                this.newPositions = newPositions;
+            }
+
+            public Type getType() {
+                return type;
+            }
+
+            public long getId() {
+                return id;
+            }
+
+            public PropertyLong getNewId() {
+                return newId;
+            }
+
+            public Position getOldPositions() {
+                return oldPositions;
+            }
+
+            public Position getNewPositions() {
+                return newPositions;
+            }
+            
+            public static final class Position {
+                
+                private final long position;
+                private final long line;
+                private final long column;
+                
+                public Position(long position, long line, long column) {
+                    this.position = position;
+                    this.line = line;
+                    this.column = column;
+                }
+
+                public long getPosition() {
+                    return position;
+                }
+
+                public long getLine() {
+                    return line;
+                }
+
+                public long getColumn() {
+                    return column;
+                }
+            }
+        }
+        
+        public static final class FunctionPatched {
+            
+            private final String function;
+            private final PropertyBoolean functionInfoNotFound;
+
+            public FunctionPatched(String function, PropertyBoolean functionInfoNotFound) {
+                this.function = function;
+                this.functionInfoNotFound = functionInfoNotFound;
+            }
+
+            public String getFunction() {
+                return function;
+            }
+
+            public PropertyBoolean getFunctionInfoNotFound() {
+                return functionInfoNotFound;
+            }
+            
+        }
+
+        public static final class PositionPatched {
+            
+            private final String name;
+            private final PropertyBoolean infoNotFound;
+
+            public PositionPatched(String name, PropertyBoolean infoNotFound) {
+                this.name = name;
+                this.infoNotFound = infoNotFound;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public PropertyBoolean getInfoNotFound() {
+                return infoNotFound;
+            }
+            
         }
     }
     
