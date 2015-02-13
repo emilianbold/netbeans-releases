@@ -61,6 +61,7 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.jgit.Utils;
 
 /**
  *
@@ -467,4 +468,36 @@ public class MergeTest extends AbstractGitTestCase {
         // merge commits allowed => OK
         assertEquals(MergeStatus.MERGED, result.getMergeStatus());
     }
+    
+    public void testMergeCommitFails250370 () throws Exception {
+        File f1 = new File(workDir, "file1");
+        File f2 = new File(workDir, "file2");
+        write(f1, "init");
+        write(f2, "init");
+        add(f1, f2);
+        commit(f1, f2);
+        
+        new File(workDir, ".git/rebase-apply").mkdirs();
+        
+        GitClient client = getClient(workDir);
+        client.createBranch(BRANCH_NAME, Constants.MASTER, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+        write(f1, BRANCH_NAME);
+        add(f1);
+        client.commit(new File[] { f1 }, "change on branch", null, null, NULL_PROGRESS_MONITOR);
+        
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        write(f2, "master");
+        add(f2);
+        client.commit(new File[] { f2 }, "change on master", null, null, NULL_PROGRESS_MONITOR);
+        
+        try {
+            client.merge(BRANCH_NAME, NULL_PROGRESS_MONITOR);
+            fail();
+        } catch (GitException ex) {
+            // merge should return a meaningful message with a description
+            assertEquals(Utils.getBundle(MergeCommand.class).getString("MSG_MergeCommand.commitErr.wrongRepoState"), ex.getLocalizedMessage());
+        }
+    }
+    
 }
