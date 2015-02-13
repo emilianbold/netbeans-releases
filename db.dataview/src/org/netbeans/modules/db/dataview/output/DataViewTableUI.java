@@ -475,8 +475,8 @@ final class DataViewTableUI extends ResultSetJXTable {
         });
         tablePopupMenu.add(miDeleteSQLScript);
 
-        final JMenuItem miCommitSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_update_sql"));
-        miCommitSQLScript.addActionListener(new ActionListener() {
+        final JMenuItem miUpdateScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_update_sql"));
+        miUpdateScript.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -500,7 +500,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                 }
             }
         });
-        tablePopupMenu.add(miCommitSQLScript);
+        tablePopupMenu.add(miUpdateScript);
 
         tablePopupMenu.addSeparator();
 
@@ -578,6 +578,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     selectedRow = rowAtPoint(e.getPoint());
                     selectedColumn = columnAtPoint(e.getPoint());
                     boolean inSelection = false;
+
                     int[] rows = getSelectedRows();
                     for (int a = 0; a < rows.length; a++) {
                         if (rows[a] == selectedRow) {
@@ -598,32 +599,28 @@ final class DataViewTableUI extends ResultSetJXTable {
                     if (!inSelection) {
                         changeSelection(selectedRow, selectedColumn, false, false);
                     }
-                    if (! getModel().isEditable()) {
-                        miInsertAction.setEnabled(false);
-                        miDeleteAction.setEnabled(false);
-                        miTruncateRecord.setEnabled(false);
-                        miInsertSQLScript.setEnabled(false);
-                        miCreateSQLScript.setEnabled(false);
-                        miDeleteSQLScript.setEnabled(false);
-                    }
 
-                    if (!dataviewUI.isCommitEnabled()) {
-                        miCommitAction.setEnabled(false);
-                        miCancelEdits.setEnabled(false);
-                        miCommitSQLScript.setEnabled(false);
-                    } else {
-                        miCommitAction.setEnabled(true);
-                        miCancelEdits.setEnabled(true);
-                        miCommitSQLScript.setEnabled(true);
-                    }
-                    if(getSelectedRows().length > 0) {
-                        miCopyRowValues.setEnabled(true);
-                        miCopyRowValuesH.setEnabled(true);
-                        miInsertSQLScript.setEnabled(true);
-                        miDeleteSQLScript.setEnabled(true);
-                        miDeleteAction.setEnabled(true);
-                        boolean enableSetToNull = false;
-                        boolean enableSetToDefault = false;
+                    boolean commitEnabled = dataviewUI.isCommitEnabled();
+                    boolean modelEditable = getModel().isEditable();
+                    boolean rowsSelected = getSelectedRows().length > 0;
+                    boolean cellUnderCursor = selectedColumn >= 0 && selectedRow >= 0;
+                    
+                    miCommitAction.setEnabled(commitEnabled);
+                    miCancelEdits.setEnabled(commitEnabled);
+                    miUpdateScript.setEnabled(commitEnabled);
+
+                    miInsertAction.setEnabled(modelEditable);
+                    miTruncateRecord.setEnabled(modelEditable);
+                    miCreateSQLScript.setEnabled(modelEditable);
+
+                    miInsertSQLScript.setEnabled(modelEditable && rowsSelected);
+                    miDeleteSQLScript.setEnabled(modelEditable && rowsSelected);
+                    miDeleteAction.setEnabled(modelEditable && rowsSelected);
+                    
+                    boolean enableSetToNull = false;
+                    boolean enableSetToDefault = false;
+                    
+                    if(modelEditable && rowsSelected) {
                         for(int col: getSelectedColumns()) {
                             int modelColumn = convertColumnIndexToModel(col);
                             DBColumn dbcol = getModel().getColumn(modelColumn);
@@ -636,22 +633,17 @@ final class DataViewTableUI extends ResultSetJXTable {
                                 }
                             }
                         }
-                        miSetDefault.setEnabled(enableSetToDefault);
-                        miSetNull.setEnabled(enableSetToNull);
-                    } else {
-                        miCopyRowValues.setEnabled(false);
-                        miCopyRowValuesH.setEnabled(false);
-                        miInsertSQLScript.setEnabled(false);
-                        miDeleteSQLScript.setEnabled(false);
-                        miDeleteAction.setEnabled(false);
-                        miSetDefault.setEnabled(false);
-                        miSetNull.setEnabled(false);
                     }
-                    if(selectedColumn >= 0 && selectedRow >= 0) {
-                        miCopyValue.setEnabled(true);
-                    } else {
-                        miCopyValue.setEnabled(false);
-                    }
+                    
+                    miSetDefault.setEnabled(enableSetToDefault);
+                    miSetNull.setEnabled(enableSetToNull);
+                
+                    // Enable copy if one or more rows are selected
+                    miCopyRowValues.setEnabled(rowsSelected);
+                    miCopyRowValuesH.setEnabled(rowsSelected);
+
+                    miCopyValue.setEnabled(cellUnderCursor);
+     
                     tablePopupMenu.show(DataViewTableUI.this, e.getX(), e.getY());
                 }
             }
