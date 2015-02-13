@@ -292,7 +292,7 @@ abstract public class FileOperationsProvider {
 
         protected FileObject toFileObject(FileProxyO path) {
             FileObject root = getRoot();
-            fo = root.getFileObject(path.getPath());
+            FileObject fo = root.getFileObject(path.getPath());
             if (fo == null && existsSafe(path)) {
                 String parent = path.getPath();
                 LinkedList<String> stack = new LinkedList<String>();
@@ -320,7 +320,6 @@ abstract public class FileOperationsProvider {
             }
             return fo;
         }
-        private FileObject fo;
 
         protected InputStream getInputStream(FileObject fo, boolean checkLock) throws FileNotFoundException {
             if (fo instanceof RemoteFileObject) {
