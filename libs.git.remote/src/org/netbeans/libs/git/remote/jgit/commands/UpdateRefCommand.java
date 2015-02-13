@@ -106,9 +106,9 @@ public class UpdateRefCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("update-ref"); //NOI18N
-        addArgument(refName);
-        addArgument(revision);
+        addArgument(0, "update-ref"); //NOI18N
+        addArgument(0, refName);
+        addArgument(0, revision);
     }
 
     public GitRefUpdateResult getResult () {

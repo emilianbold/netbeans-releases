@@ -50,6 +50,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -100,6 +101,7 @@ import org.openide.windows.TopComponent;
  * @author Alexander Simon
  */
 public final class VCSFileProxySupport {
+    
     private VCSFileProxySupport(){
     }
 
@@ -139,11 +141,10 @@ public final class VCSFileProxySupport {
             ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
                     "mkdir", file.getPath()); //NOI18N
             if (!status.isOK()) {
-                ProcessUtils.LOG.log(Level.INFO, status.toString());
+                LOG.log(Level.INFO, "mkdir {0} failed: {1}", new Object[]{file.getPath(), status.toString()}); //NOI18N
                 return false;
             } else {
-                // TODO: make sure that file.exists() returns true
-                return true;
+                return refreshImpl(file);
             }
         }
     }
@@ -157,15 +158,14 @@ public final class VCSFileProxySupport {
             ExitStatus status = ProcessUtils.executeInDir(null, null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
                     "mkdir", "-p", file.getPath()); //NOI18N
             if (!status.isOK()) {
-                ProcessUtils.LOG.log(Level.INFO, status.toString());
+                LOG.log(Level.INFO, "mkdir -p {0} failed: {1}", new Object[]{file, status}); //NOI18N
                 return false;
             } else {
-                // TODO: make sure that file.exists() returns true
-                return true;
+                return refreshImpl(file);
             }
         }
     }
-
+    
     public static boolean setExecutable(VCSFileProxy file, boolean b) {
         File javaFile = file.toFile();
         if (javaFile != null) {
@@ -294,10 +294,10 @@ public final class VCSFileProxySupport {
          ExitStatus status = ProcessUtils.executeInDir(parentFile.getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
                  "touch", file.getName()); //NOI18N
         if (!status.isOK()) {
-            ProcessUtils.LOG.log(Level.INFO, status.toString());
+            LOG.log(Level.INFO, "touch {0} failed: {1}", new Object[]{file, status}); //NOI18N
             throw new IOException(status.toString());
         }
-        return true;
+        return refreshImpl(file);
     }
     
     public static OutputStream getOutputStream(VCSFileProxy file) throws IOException {
@@ -380,14 +380,14 @@ public final class VCSFileProxySupport {
                     VersioningSupport.createProcessBuilder(from),
                     "mv", "-f", from.getName(), to.getPath()); //NOI18N
             if (!status.isOK()) {
-                ProcessUtils.LOG.log(Level.INFO, status.toString());
+                LOG.log(Level.INFO, "mv -f {0} {1} failed: {2}", new Object[]{from, to, status});   //NOI18N                        
                 return false;
             } else {
-                return true;
+                return refreshPairImpl(from.getParentFile(), to.getParentFile());
             }
         }
     }
-    
+
     public static void copyDirFiles(VCSFileProxy sourceDir, VCSFileProxy targetDir, boolean preserveTimestamp) {
         VCSFileProxy[] files = sourceDir.listFiles();
 
@@ -416,6 +416,7 @@ public final class VCSFileProxySupport {
                 Logger.getLogger(VCSFileProxySupport.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
             }
         }
+        refreshPairImpl(sourceDir, targetDir);
     }
 
     public static boolean copyFile(VCSFileProxy from, VCSFileProxy to) throws IOException {
@@ -436,6 +437,7 @@ public final class VCSFileProxySupport {
                 }
             }
         }
+        refreshPairImpl(from, to);
         return true;
     }
     
@@ -503,6 +505,7 @@ public final class VCSFileProxySupport {
                     // ignore
                 }
             }
+            refreshImpl(targetFile);
         }
     }
     
@@ -624,6 +627,38 @@ public final class VCSFileProxySupport {
 
     public static void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
         RemoteVcsSupport.writeFileSystem(os, fs);
+    }
+
+    private static boolean refreshPairImpl(VCSFileProxy fromParent, VCSFileProxy toParent) {
+        if (fromParent != null && toParent != null) { // paranoidal check
+            if (fromParent == null) {
+                return refreshImpl(toParent);
+            } else if (toParent == null || toParent.equals(fromParent)) {
+                return refreshImpl(fromParent);
+            } else {
+                return refreshImpl(fromParent, toParent);
+            }
+        }
+        return true;
+    }
+    
+    private static boolean refreshImpl(VCSFileProxy... files) {
+        try {
+            RemoteVcsSupport.refreshFor(files);
+        } catch (IOException ex) {
+            if (LOG.isLoggable(Level.FINE)) {
+                StringBuilder sb = new StringBuilder("Error refreshing "); //NOI18N
+                for (VCSFileProxy f : files) {
+                    if (sb.length() > 0) {
+                        sb.append(", "); // NOI18N
+                    }
+                    sb.append(f);
+                }
+                LOG.log(Level.FINE, sb.toString(), ex);
+            }
+            return false;
+        }
+        return true;
     }
 
 //<editor-fold defaultstate="collapsed" desc="methods from org.netbeans.modules.versioning.util.Utils">
@@ -870,7 +905,7 @@ public final class VCSFileProxySupport {
     }
     
     private static Map<VCSFileProxy, Charset> fileToCharset;
-    private static final Logger LOG = Logger.getLogger(VCSFileProxySupport.class.getName());
+    private static final Logger LOG = Logger.getLogger("remote.vcs.logger"); //NOI18N
     private static final Object ENCODING_LOCK = new Object();
 
     /**

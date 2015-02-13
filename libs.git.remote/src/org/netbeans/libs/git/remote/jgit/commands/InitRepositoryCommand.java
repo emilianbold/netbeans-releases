@@ -105,7 +105,7 @@ public class InitRepositoryCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("init"); //NOI18N
-        addArgument(workDir.getPath());
+        addArgument(0, "init"); //NOI18N
+        addArgument(0, workDir.getPath());
     }
 }

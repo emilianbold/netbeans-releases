@@ -64,12 +64,13 @@ public abstract class GitCommand {
     private final ProgressMonitor monitor;
     protected static final String EMPTY_ROOTS = Utils.getBundle(GitCommand.class).getString("MSG_Error_NoFiles"); //NOI18N
     private final GitClassFactory gitFactory;
-    private final List<String> args = new ArrayList<>(5);
+    private final List<List<String>> args = new ArrayList<>(2);
 
     protected GitCommand (JGitRepository repository, GitClassFactory gitFactory, ProgressMonitor monitor) {
         this.repository = repository;
         this.gitFactory = gitFactory;
         this.monitor = monitor;
+        args.add(new ArrayList<String>(5));
     }
 
     public final void execute () throws GitException {
@@ -101,8 +102,16 @@ public abstract class GitCommand {
 
     protected abstract void run () throws GitException;
 
+    protected final void setCommandsNumber(int commandNumber) {
+        for (int i = 1; i < commandNumber; i++) {
+            args.add(new ArrayList<String>(5));
+        }
+    }
+    
     protected void prepare () throws GitException {
-        args.add("--no-pager");
+        for (List<String> arg : args) {
+            arg.add("--no-pager");
+        }
     }
 
     protected boolean prepareCommand () throws GitException {
@@ -124,13 +133,13 @@ public abstract class GitCommand {
         return gitFactory;
     }
 
-    public void addArgument(String argument) {
-        args.add(argument);
+    public void addArgument(int command, String argument) {
+        args.get(command).add(argument);
     }
 
-    public void addFiles(VCSFileProxy ... files) {
+    public void addFiles(int command, VCSFileProxy... files) {
          for(String s : Utils.getRelativePaths(getRepository().getLocation(), files)) {
-            addArgument(s);
+            addArgument(command, s);
          }
     }
 
@@ -138,13 +147,13 @@ public abstract class GitCommand {
         return "git"; //NOI18N
     }
     
-    public String[] getCliArguments() {
-        return args.toArray(new String[args.size()]);
+    public String[] getCliArguments(int command) {
+        return args.get(command).toArray(new String[args.get(command).size()]);
     }
     
     protected String getCommandLine() {
         StringBuilder sb = new StringBuilder(getExecutable()); //NOI18N
-        for(String s : args) {
+        for(String s : args.get(0)) {
             sb.append(" ").append(s); //NOI18N
         }
         return sb.toString();

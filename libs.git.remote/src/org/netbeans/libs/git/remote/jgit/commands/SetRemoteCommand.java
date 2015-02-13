@@ -118,7 +118,7 @@ public class SetRemoteCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("setting up remote"); //NOI18N
-        addArgument(remote.getRemoteName());
+        addArgument(0, "setting up remote"); //NOI18N
+        addArgument(0, remote.getRemoteName());
     }
 }

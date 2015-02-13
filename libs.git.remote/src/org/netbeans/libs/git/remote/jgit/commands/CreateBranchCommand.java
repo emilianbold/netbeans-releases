@@ -117,10 +117,10 @@ public class CreateBranchCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("branch"); //NOI18N
-        addArgument("--track"); //NOI18N
-        addArgument(branchName);
-        addArgument(revision);
+        addArgument(0, "branch"); //NOI18N
+        addArgument(0, "--track"); //NOI18N
+        addArgument(0, branchName);
+        addArgument(0, revision);
     }
 
     public GitBranch getBranch () {

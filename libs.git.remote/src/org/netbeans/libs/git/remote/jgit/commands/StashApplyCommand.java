@@ -76,9 +76,9 @@ public class StashApplyCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("stash"); //NOI18N
-        addArgument("apply"); //NOI18N
-        addArgument(stashRef);
+        addArgument(0, "stash"); //NOI18N
+        addArgument(0, "apply"); //NOI18N
+        addArgument(0, stashRef);
     }
 }
 

@@ -96,11 +96,13 @@ import org.netbeans.modules.mercurial.remote.ui.queues.Queue;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.remote.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.mercurial.remote.ui.tag.HgTag;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NetworkSettings;
@@ -3221,7 +3223,7 @@ public abstract class HgCommand<T> implements Callable<T> {
         try {
             command.add(VCSFileProxySupport.getCanonicalPath(f));
         } catch (IOException ioe) {
-            Mercurial.LOG.log(Level.WARNING, null, ioe); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, ioe.getMessage(), ioe); // NOI18N
             command.add(f.getPath()); // don't give up
         }
 
@@ -3947,7 +3949,7 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @param command to execute
      * @return List of the command's output or an exception if one occured
      */
-    private static List<String> execEnv(final List<? extends Object> command, List<String> env, boolean logUsage, VCSFileProxy repo) throws HgException {
+    private static List<String> execEnv(final List<? extends Object> command, List<String> env, boolean logUsage, final VCSFileProxy repo) throws HgException {
         if( EventQueue.isDispatchThread()){
             Mercurial.LOG.log(Level.FINE, "WARNING execEnv():  calling Hg command in AWT Thread - could stall UI"); // NOI18N
         }
@@ -4013,6 +4015,11 @@ public abstract class HgCommand<T> implements Callable<T> {
         } finally{
             if (outputStyleFile != null) {
                 VCSFileProxySupport.delete(outputStyleFile);
+            }
+            try {
+                RemoteVcsSupport.refreshFor(repo);
+            } catch (IOException ex) {
+                Mercurial.LOG.log(Level.INFO, "error when refreshing: {0}", ex.getLocalizedMessage());
             }
         }
     }

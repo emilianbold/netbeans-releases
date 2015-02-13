@@ -87,12 +87,12 @@ public class DeleteBranchCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("branch"); //NOI18N
+        addArgument(0, "branch"); //NOI18N
         if (forceDeleteUnmerged) {
-            addArgument("-D"); //NOI18N
+            addArgument(0, "-D"); //NOI18N
         } else {
-            addArgument("-d"); //NOI18N
+            addArgument(0, "-d"); //NOI18N
         }
-        addArgument(branchName);
+        addArgument(0, branchName);
     }
 }

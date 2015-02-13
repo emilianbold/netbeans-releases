@@ -170,8 +170,8 @@ public class ExportDiffCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("diff"); //NOI18N
-        addFiles(roots);
+        addArgument(0, "diff"); //NOI18N
+        addFiles(0, roots);
     }
 
     private AbstractTreeIterator getHeadIterator (ObjectReader or) throws IOException {

@@ -112,9 +112,9 @@ public class SubmoduleUpdateCommand extends TransportCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("submodule"); //NOI18N
-        addArgument("update"); //NOI18N
-        addFiles(roots);
+        addArgument(0, "submodule"); //NOI18N
+        addArgument(0, "update"); //NOI18N
+        addFiles(0, roots);
     }
 
     public Map<VCSFileProxy, GitSubmoduleStatus> getStatuses () {

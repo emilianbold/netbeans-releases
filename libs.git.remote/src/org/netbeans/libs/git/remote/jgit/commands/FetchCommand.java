@@ -130,10 +130,10 @@ public class FetchCommand extends TransportCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("fetch"); //NOI18N
-        addArgument(remote);
+        addArgument(0, "fetch"); //NOI18N
+        addArgument(0, remote);
         for (String refSpec : refSpecs) {
-            addArgument(refSpec);
+            addArgument(0, refSpec);
         }
     }
 

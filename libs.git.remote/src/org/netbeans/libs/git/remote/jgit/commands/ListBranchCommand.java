@@ -113,7 +113,7 @@ public class ListBranchCommand extends GitCommand {
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument("branch"); //NOI18N
+        addArgument(0, "branch"); //NOI18N
     }
 
     public Map<String, GitBranch> getBranches () {

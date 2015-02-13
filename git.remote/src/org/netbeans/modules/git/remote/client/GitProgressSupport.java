@@ -296,10 +296,24 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         private int currentTaskTotalUnits;
         private String currentTaskTitle;
         private int currentTaskWorked;
+        private Cancellable cancellable;
 
         @Override
-        public boolean isCanceled () {
+        public synchronized final boolean isCanceled () {
             return GitProgressSupport.this.isCanceled();
+        }
+
+        @Override
+        public synchronized final void setCancelDelegate(Cancellable c) {
+            cancellable = c;
+        }
+
+        @Override
+        public synchronized final boolean cancel() {
+            if (cancellable != null) {
+                cancellable.cancel();
+            }
+            return GitProgressSupport.this.cancel();
         }
         
         @Override
@@ -368,7 +382,6 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
             }
             setProgress(message);
         }
-        
     }
 
     public class DefaultFileListener implements FileListener {
