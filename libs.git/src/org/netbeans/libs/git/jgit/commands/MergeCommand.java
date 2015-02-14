@@ -97,6 +97,8 @@ public class MergeCommand extends GitCommand {
         }
         try {
             result = getClassFactory().createMergeResult(command.call(), repository.getWorkTree());
+        } catch (org.eclipse.jgit.api.errors.NoMessageException | org.eclipse.jgit.api.errors.WrongRepositoryStateException ex) {
+            throw new GitException(Utils.getBundle(MergeCommand.class).getString("MSG_MergeCommand.commitErr.wrongRepoState"), ex); //NOI18N
         } catch (org.eclipse.jgit.api.errors.CheckoutConflictException ex) {
             parseConflicts(ex);
         } catch (JGitInternalException ex) {

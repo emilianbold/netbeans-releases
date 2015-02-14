@@ -76,6 +76,7 @@ class DiskMapTurboProvider implements TurboProvider {
     private final CacheIndex index = createCacheIndex();
     private final CacheIndex conflictedIndex = createCacheIndex();
     private final CacheIndex ignoresIndex = createCacheIndex();
+    private final boolean logModifiedFiles = Boolean.getBoolean("versioning.subversion.turbo.logModifiedFiles"); //NOI18N
 
     DiskMapTurboProvider() {
         initCacheStore();
@@ -590,6 +591,7 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private void addModifiedFile (Map<String, Integer> modifiedFolders, File file) {
+        if (logModifiedFiles) {
         File topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
         if (topmost != null) {
             String path = topmost.getAbsolutePath();
@@ -599,6 +601,7 @@ class DiskMapTurboProvider implements TurboProvider {
             } else {
                 modifiedFolders.put(path, val + 1);
             }
+        }
         }
     }
 
@@ -631,6 +634,10 @@ class DiskMapTurboProvider implements TurboProvider {
             + "That many uncommitted files may cause performance problems when accessing the working copy. "
             + "You should consider committing or reverting these changes. "
             + "Checkouts: {1}",
+        "# {0} - number of changes",
+        "MSG_FileStatusCache.cacheTooBig.text.unknownFiles=Subversion cache contains {0} locally modified files. "
+            + "That many uncommitted files may cause performance problems when accessing the working copy. "
+            + "Run the IDE with -J-Dversioning.subversion.turbo.logModifiedFiles=true to know the exact checkout causing the problem.",
         "# {0} - checkout folder", "# {1} - number of contained modified files",
         "MSG_FileStatusCache.cacheTooBig.checkoutWithModifications={0}: {1} modifications"
     })
@@ -645,7 +652,11 @@ class DiskMapTurboProvider implements TurboProvider {
                 }
             }
         }
-        LOG.log(Level.WARNING, Bundle.MSG_FileStatusCache_cacheTooBig_text(modifiedFiles, biggestFolders));
+        if (logModifiedFiles) {
+            LOG.log(Level.WARNING, Bundle.MSG_FileStatusCache_cacheTooBig_text(modifiedFiles, biggestFolders));
+        } else {
+            LOG.log(Level.WARNING, Bundle.MSG_FileStatusCache_cacheTooBig_text_unknownFiles(modifiedFiles));
+        }
     }
     
     private static Map<Integer, List<String>> sortFolders (Map<String, Integer> unsortedFolders) {
