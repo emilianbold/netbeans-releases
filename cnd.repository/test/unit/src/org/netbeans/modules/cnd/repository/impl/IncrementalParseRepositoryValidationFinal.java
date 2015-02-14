@@ -46,6 +46,7 @@ import org.netbeans.junit.RandomlyFails;
  */
 @RandomlyFails
 public class IncrementalParseRepositoryValidationFinal extends RepositoryValidationBase {
+    private String goldenDirectory;
 
     public IncrementalParseRepositoryValidationFinal(String testName) {
         super(testName);
@@ -54,13 +55,28 @@ public class IncrementalParseRepositoryValidationFinal extends RepositoryValidat
     protected @Override void setUp() throws Exception {
         System.setProperty("cnd.repository.hardrefs", Boolean.FALSE.toString()); //NOI18N
         System.setProperty("org.netbeans.modules.cnd.apt.level", "OFF"); // NOI18N
-        assertNotNull("This test can only be run from suite", RepositoryValidationGoldens.getGoldenDirectory()); //NOI18N
+        goldenDirectory = RepositoryValidationGoldens.getGoldenDirectory();
+        //assertNotNull("This test can only be run from suite", goldenDirectory); //NOI18N
+        if (goldenDirectory == null) {
+            return;
+        }
         System.setProperty(PROPERTY_GOLDEN_PATH, RepositoryValidationGoldens.getGoldenDirectory());
         cleanCache = false;
         super.setUp();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (goldenDirectory == null) {
+            return;
+        }
+        super.tearDown();
+    }
     
     public void testIncParse() throws Exception {
+        if (goldenDirectory == null) {
+            return;
+        }
         List<String> args = find();
         assert args.size() > 0;
         //args.add("-fq"); //NOI18N
