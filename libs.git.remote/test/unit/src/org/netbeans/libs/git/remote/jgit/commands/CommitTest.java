@@ -82,6 +82,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 public class CommitTest extends AbstractGitTestCase {
     private JGitRepository repository;
     private VCSFileProxy workDir;
+    protected static final boolean KIT = CommitCommand.KIT;
 
     public CommitTest (String testName) throws IOException {
         super(testName);
@@ -111,7 +112,8 @@ public class CommitTest extends AbstractGitTestCase {
         LogCommand log = git.log();
         RevCommit com = log.call().iterator().next();
         assertEquals("initial commit", info.getFullMessage());
-        assertEquals("initial commit", com.getFullMessage());
+if(KIT) assertEquals("initial commit", com.getFullMessage());
+else    assertEquals("initial commit\n", com.getFullMessage());
         assertEquals(ObjectId.toString(com.getId()), info.getRevision());
         Map<VCSFileProxy, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertTrue(modifiedFiles.get(toCommit).getStatus().equals(Status.ADDED));
@@ -143,7 +145,8 @@ public class CommitTest extends AbstractGitTestCase {
         LogCommand log = git.log();
         RevCommit com = log.call().iterator().next();
         assertEquals("initial commit", info.getFullMessage());
-        assertEquals("initial commit", com.getFullMessage());
+if(KIT) assertEquals("initial commit", com.getFullMessage());
+else    assertEquals("initial commit\n", com.getFullMessage());
         assertEquals( "john@git.com", info.getAuthor().getEmailAddress());
         assertEquals( "john@git.com", com.getAuthorIdent().getEmailAddress());
         assertEquals(ObjectId.toString(com.getId()), info.getRevision());
@@ -179,7 +182,8 @@ public class CommitTest extends AbstractGitTestCase {
         Git git = new Git(repository.getRepository());
         LogCommand log = git.log();
         RevCommit com = log.call().iterator().next();
-        assertEquals("initial commit", com.getFullMessage());
+if(KIT) assertEquals("initial commit", com.getFullMessage());
+else    assertEquals("initial commit\n", com.getFullMessage());
         assertEquals( "john@git.com", com.getAuthorIdent().getEmailAddress());
 
         write(newOne, "!modification!");
@@ -199,7 +203,8 @@ public class CommitTest extends AbstractGitTestCase {
 
         log = git.log();
         com = log.call().iterator().next();
-        assertEquals("second commit", com.getFullMessage());
+if(KIT) assertEquals("second commit", com.getFullMessage());
+else    assertEquals("second commit\n", com.getFullMessage());
         assertEquals( "john@git.com", com.getAuthorIdent().getEmailAddress());
     }
 
@@ -330,7 +335,8 @@ public class CommitTest extends AbstractGitTestCase {
         Git git = new Git(repository.getRepository());
         LogCommand log = git.log();
         RevCommit com = log.call().iterator().next();
-        assertEquals("initial commit", com.getFullMessage());
+if(KIT) assertEquals("initial commit", com.getFullMessage());
+else    assertEquals("initial commit\n", com.getFullMessage());
     }
 
     public void testMultipleTreesCommit () throws Exception {
@@ -368,7 +374,8 @@ public class CommitTest extends AbstractGitTestCase {
         Git git = new Git(repository.getRepository());
         LogCommand log = git.log();
         RevCommit com = log.call().iterator().next();
-        assertEquals("initial commit", com.getFullMessage());
+if(KIT) assertEquals("initial commit", com.getFullMessage());
+else    assertEquals("initial commit\n", com.getFullMessage());
 
         write(file11, "!modification!");
         write(file12, "another modification!");
@@ -390,7 +397,8 @@ public class CommitTest extends AbstractGitTestCase {
 
         log = git.log();
         com = log.call().iterator().next();
-        assertEquals("second commit", com.getFullMessage());
+if(KIT) assertEquals("second commit", com.getFullMessage());
+else    assertEquals("second commit\n", com.getFullMessage());
     }
 
     public void testCommitOnlySomeOfAllFilesFromMultipleTrees () throws Exception {
@@ -430,8 +438,8 @@ public class CommitTest extends AbstractGitTestCase {
         Git git = new Git(repository.getRepository());
         LogCommand log = git.log();
         RevCommit com = log.call().iterator().next();
-        assertEquals("initial commit", com.getFullMessage());
-
+if(KIT) assertEquals("initial commit", com.getFullMessage());
+else    assertEquals("initial commit\n", com.getFullMessage());
         // COMMIT ALL
         info = client.commit(trees, "commit all", null, null, NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
@@ -464,7 +472,8 @@ public class CommitTest extends AbstractGitTestCase {
 
         log = git.log();
         com = log.call().iterator().next();
-        assertEquals("second commit", com.getFullMessage());
+if(KIT) assertEquals("second commit", com.getFullMessage());
+else    assertEquals("second commit\n", com.getFullMessage());
 
         // COMMIT ALL
         client.commit(trees, "commit all", null, null, NULL_PROGRESS_MONITOR);

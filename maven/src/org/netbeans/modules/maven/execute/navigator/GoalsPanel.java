@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -572,7 +573,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         
     }
     
-     @Messages("ACT_Execute_mod=Execute Goal With Modifiers...")
+    @Messages({"ACT_Execute_mod=Execute Goal With Modifiers...", "ACT_Execute_help=Show Documentation..."})
      private static class MojoNode extends AbstractNode {
         
  
@@ -594,12 +595,34 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                     mapp.addProperty(p.property, "");
                 }
             }
+            
+            //
+            // Execute with modifiers 
+            //
             mapp.setGoals(Collections.singletonList(mojo.a.getGroupId() + ":" + mojo.a.getArtifactId() + ":" + mojo.a.getVersion() + ":" + mojo.goal));
-            Action a = ActionProviderImpl.createCustomMavenAction(mojo.prefix + ":" + mojo.goal, mapp, true, Lookup.EMPTY, project);
-            a.putValue(Action.NAME, ACT_Execute_mod());
+            Action runGoalWithModsAction = ActionProviderImpl.createCustomMavenAction(mojo.prefix + ":" + mojo.goal, mapp, true, Lookup.EMPTY, project);
+            runGoalWithModsAction.putValue(Action.NAME, ACT_Execute_mod());
+            
+            //
+            // Show Documentation
+            //
+            // f.e.: help:describe -Dcmd=org.codehaus.mojo:gwt-maven-plugin:1.2:debug -Ddetail
+            NetbeansActionMapping mappForHelpDesc = new NetbeansActionMapping();
+
+            mappForHelpDesc.setGoals(Collections.singletonList("help:describe"));
+            
+            HashMap<String, String> m = new HashMap<>();
+            m.put("cmd", String.format("%s:%s:%s:%s", mojo.a.getGroupId(), mojo.a.getArtifactId(), mojo.a.getVersion(), mojo.goal));
+            m.put("detail", "true");
+            mappForHelpDesc.setProperties(m);
+            Action runHelpDescAction = ActionProviderImpl.createCustomMavenAction(String.format("help:describe for %s:%s", mojo.prefix, mojo.goal), mappForHelpDesc, false, Lookup.EMPTY, project);
+            runHelpDescAction.putValue(Action.NAME, ACT_Execute_help());
+            
             return new Action[] {
                 new RunGoalAction(mojo, project),
-                a
+                runGoalWithModsAction,
+                null,
+                runHelpDescAction
             };
         }
 
