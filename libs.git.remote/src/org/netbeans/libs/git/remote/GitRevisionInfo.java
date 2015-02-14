@@ -212,7 +212,7 @@ public final class GitRevisionInfo {
         } else {
             if (autorAndMail != null) {
                 int i = autorAndMail.indexOf("<");
-                return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i));
+                return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i+1,autorAndMail.length()-1));
             }
         }
         return null;
@@ -227,7 +227,7 @@ public final class GitRevisionInfo {
         } else {
             if (commiterAndMail != null) {
                 int i = commiterAndMail.indexOf("<");
-                return new GitUser(commiterAndMail.substring(0,i).trim(), commiterAndMail.substring(i));
+                return new GitUser(commiterAndMail.substring(0,i).trim(), commiterAndMail.substring(i+1,commiterAndMail.length()-1));
             }
         }
         return null;
