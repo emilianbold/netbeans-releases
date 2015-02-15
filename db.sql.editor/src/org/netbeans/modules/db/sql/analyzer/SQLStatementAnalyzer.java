@@ -45,13 +45,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
@@ -309,7 +309,7 @@ public class SQLStatementAnalyzer {
 
     /** Returns TablesClause instance which ease work with aliased tables. */
     protected TablesClause createTablesClause(List<TableIdent> tables) {
-        Set<QualIdent> unaliasedTableNames = new HashSet<QualIdent>();
+        Set<QualIdent> unaliasedTableNames = new TreeSet<QualIdent>();
         Map<String, QualIdent> aliasedTableNames = new HashMap<String, QualIdent>();
         for (TableIdent table : tables) {
             if (table.getAlias() == null) {
