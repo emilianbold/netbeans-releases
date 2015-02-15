@@ -65,98 +65,37 @@ public class JadeLexerTest extends CslTestBase {
         LexerTestUtilities.setTesting(true);
     }
     
-//    public void testComment01() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/comment01.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//
-//    public void testComment02() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/comment02.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testComment03() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/comment03.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testComment04() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/comment04.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testCode01() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/code01.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testCode02() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/code02.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testPlainText01() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/plainText01.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    public void testConditional01() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/conditional01.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testConditional02() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/conditional02.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testDoctype01() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/doctype01.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testExtends01() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/extends01.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testExtends02() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/extends02.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testFilters01() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/filters01.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testInclude01() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/include01.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testInclude02() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/include02.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-//    public void testInclude03() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/include02.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
+    public void testPlainText01() throws Exception {
+        checkLexer("testfiles/lexer/plainText01.jade");
+    }
 
-//    
-//    public void testAttribute03() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/attribute03.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
-//    
-
-
-//    
-//    public void testAttribute07() throws Exception {
-//        LexerTestUtilities.checkTokenDump(this, "testfiles/lexer/attribute07.jade",
-//                JadeTokenId.jadeLanguage());
-//    }
+    public void testDoctype01() throws Exception {
+       checkLexer("testfiles/lexer/doctype01.jade");
+    }
+        
+    public void testExtends01() throws Exception {
+        checkLexer("testfiles/lexer/extends01.jade");
+    }
+     
+    public void testExtends02() throws Exception {
+        checkLexer("testfiles/lexer/extends02.jade");
+    }
+    
+    public void testFilters01() throws Exception {
+        checkLexer("testfiles/lexer/filters01.jade");
+    }
+    
+    public void testInclude01() throws Exception {
+        checkLexer("testfiles/lexer/include01.jade");
+    }
+    
+    public void testInclude02() throws Exception {
+        checkLexer("testfiles/lexer/include02.jade");
+    }
+    
+    public void testInclude03() throws Exception {
+        checkLexer("testfiles/lexer/include03.jade");
+    }
     
     public void testTag01() throws Exception {
         checkLexer("testfiles/lexer/tag01.jade");
@@ -243,8 +182,36 @@ public class JadeLexerTest extends CslTestBase {
         checkLexer("testfiles/lexer/code01.jade");
     }
     
+    public void testComment01() throws Exception {
+        checkLexer("testfiles/lexer/comment01.jade");
+    }
+    
+    public void testComment02() throws Exception {
+        checkLexer("testfiles/lexer/comment02.jade");
+    }
+    
+    public void testComment03() throws Exception {
+        checkLexer("testfiles/lexer/comment03.jade");
+    }
+    
+    public void testComment04() throws Exception {
+        checkLexer("testfiles/lexer/comment04.jade");
+    }
+    
     public void testExpression01() throws Exception {
         checkLexer("testfiles/lexer/expression01.jade");
+    }
+    
+    public void testConditional01() throws Exception {
+        checkLexer("testfiles/lexer/conditional01.jade");
+    }
+    
+    public void testConditional02() throws Exception {
+        checkLexer("testfiles/lexer/conditional02.jade");
+    }
+    
+    public void testConditional03() throws Exception {
+        checkLexer("testfiles/lexer/conditional03.jade");
     }
     
     private void checkLexer(final String filePath) throws Exception {
