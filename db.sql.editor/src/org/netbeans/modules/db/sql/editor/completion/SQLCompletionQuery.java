@@ -49,7 +49,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -503,7 +502,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (tablesClause != null && !(tablesClause.getUnaliasedTableNames().isEmpty() && tablesClause.getAliasedTableNames().isEmpty())) {
             completeSimpleIdentBasedOnFromClause(typedPrefix, quoted);
         } else {
-            Schema defaultSchema = metadata.getDefaultSchema();            if (defaultSchema != null) {
+            Schema defaultSchema = metadata.getDefaultSchema();
+            if (defaultSchema != null) {
                 // All columns in default schema, but only if a prefix has been typed, otherwise there
                 // would be too many columns.
                 if (typedPrefix != null) {
@@ -668,7 +668,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         // Tuples from default schema, restricted to non-aliased tuple names in the FROM clause.
         Schema defaultSchema = metadata.getDefaultSchema();
         if (defaultSchema != null) {
-            Set<String> simpleTupleNames = new HashSet<String>();
+            Set<String> simpleTupleNames = new TreeSet<String>();
             for (Tuple tuple : tuples) {
                 if (tuple.getParent().isDefault()) {
                     simpleTupleNames.add(tuple.getName());
@@ -681,8 +681,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
         // Schemas from default catalog other than the default schema, based on non-aliased tuple names in the FROM clause.
         // Catalogs based on non-aliased tuples names in the FROM clause.
-        Set<String> schemaNames = new HashSet<String>();
-        Set<String> catalogNames = new HashSet<String>();
+        Set<String> schemaNames = new TreeSet<String>();
+        Set<String> catalogNames = new TreeSet<String>();
         for (Tuple tuple : tuples) {
             Schema schema = tuple.getParent();
             Catalog catalog = schema.getParent();
@@ -721,7 +721,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         // Now assume fullyTypedIdent is the name of a schema in the default catalog.
         Schema schema = resolveSchema(fullyTypedIdent);
         if (schema != null) {
-            Set<String> tupleNames = new HashSet<String>();
+            Set<String> tupleNames = new TreeSet<String>();
             for (Tuple tuple : tuples) {
                 if (tuple.getParent().equals(schema)) {
                     tupleNames.add(tuple.getName());
@@ -735,8 +735,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         // Now assume fullyTypedIdent is the name of a catalog.
         Catalog catalog = resolveCatalog(fullyTypedIdent);
         if (catalog != null) {
-            Set<String> syntheticSchemaTupleNames = new HashSet<String>();
-            Set<String> schemaNames = new HashSet<String>();
+            Set<String> syntheticSchemaTupleNames = new TreeSet<String>();
+            Set<String> schemaNames = new TreeSet<String>();
             for (Tuple tuple : tuples) {
                 schema = tuple.getParent();
                 if (schema.getParent().equals(catalog)) {
