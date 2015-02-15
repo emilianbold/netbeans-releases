@@ -129,7 +129,7 @@ import org.openide.util.NbBundle.Messages;
  * @see <a href="http://java.sun.com/javase/6/docs/technotes/tools/solaris/javadoc.html#javadoctags">Javadoc Tags</a>
  * @see <a href="http://java.sun.com/javase/6/docs/technotes/tools/solaris/javadoc.html#wheretags">Where Tags Can Be Used</a>
  * @see <a href="http://java.sun.com/javase/6/docs/technotes/guides/javadoc/deprecation/index.html">Deprecation of APIs</a>
- * 
+ *
  * @author Jan Pokorsky
  * @author Ralph Benjamin Ruijs
  */
@@ -142,7 +142,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     private final TreePath currentPath;
     private final SourceVersion sourceVersion;
     private final Access access;
-    
+
     private Deque<StartElementTree> tagStack = new LinkedList<>();
     private Set<Element> foundParams = new HashSet<>();
     private Set<TypeMirror> foundThrows = new HashSet<>();
@@ -170,7 +170,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 !access.isAccessible(javac, currentPath, false)) {
             return errors;
         }
-        
+
         currentElement = javac.getTrees().getElement(currentPath);
         if (currentElement == null) {
             Logger.getLogger(Analyzer.class.getName()).log(
@@ -207,7 +207,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                                 inheritedTypeParams.add(paramTag.parameterName());
                             }
                         }
-                        
+
                     } while((overridden = elUtils.getOverriddenMethod(overridden)) != null);
                     if(ctx.isCanceled()) { break; }
                     TypeElement typeElement = elUtils.enclosingTypeElement(currentElement);
@@ -257,7 +257,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         if(ctx.isCanceled()) { return Collections.<ErrorDescription>emptyList(); }
         return errors;
     }
-    
+
     @Override
     public Void visitAttribute(AttributeTree node, List<ErrorDescription> errors) {
         return super.visitAttribute(node, errors);
@@ -289,7 +289,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         DocTreePath currentDocPath = getCurrentPath();
         Void value = super.visitDocComment(node, errors);
         DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
-        
+
         while (!tagStack.isEmpty()) {
             StartElementTree startTree = tagStack.pop();
             Name tagName = startTree.getName();
@@ -321,7 +321,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
         int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
         int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
-        
+
         final Name treeName = node.getName();
         final HtmlTag t = HtmlTag.get(treeName);
         if (t == null) {
@@ -442,7 +442,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         foundInheritDoc = oldInheritDoc;
         return null;
     }
-    
+
     @NbBundle.Messages({"# {0} - @param name", "UNKNOWN_TYPEPARAM_DESC=Unknown @param: {0}",
                         "# {0} - @param name", "DUPLICATE_PARAM_DESC=Duplicate @param name: {0}"})
     private void checkParamDeclared(ParamTree tree, List<? extends Element> list,
@@ -481,7 +481,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             }
         }
     }
-    
+
     @NbBundle.Messages({"# {0} - [@throws|@exception]", "# {1} - @throws name",
                         "DUPLICATE_THROWS_DESC=Duplicate @{0} tag: {1}",
                         "# {0} - [@throws|@exception]", "# {1} - @throws name",
@@ -520,7 +520,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, UNKNOWN_THROWABLE_DESC(tree.getTagName(), fqn), new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()));
         }
     }
-    
+
     private void checkThrowsDocumented(List<? extends TypeMirror> list, List<? extends ExpressionTree> trees, DocTreePath docTreePath, Set<String> inheritedThrows, List<ErrorDescription> errors) {
         if(foundInheritDoc) return;
         for (int i = 0; i < list.size(); i++) {
@@ -547,7 +547,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             }
         }
     }
-    
+
     void warnIfEmpty(DocTree tree, List<? extends DocTree> list) {
 //        for (DocTree d: list) {
 //            switch (d.getKind()) {
@@ -652,8 +652,8 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
         int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
         int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
-        
-        
+
+
         final Name treeName = node.getName();
         final HtmlTag t = HtmlTag.get(treeName);
         if (t == null) {
@@ -679,9 +679,16 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         Element ex = javac.getDocTrees().getElement(refPath);
         Types types = javac.getTypes();
         Elements elements = javac.getElements();
-        TypeMirror throwable = elements.getTypeElement("java.lang.Throwable").asType();
-        TypeMirror error = elements.getTypeElement("java.lang.Error").asType();
-        TypeMirror runtime = elements.getTypeElement("java.lang.RuntimeException").asType();
+        final TypeElement throwableEl = elements.getTypeElement("java.lang.Throwable");
+        final TypeElement errorEl = elements.getTypeElement("java.lang.Error");
+        final TypeElement runtimeEl = elements.getTypeElement("java.lang.RuntimeException");
+        if(throwableEl == null || errorEl == null || runtimeEl == null) {
+            LOG.warning("Broken java-platform, cannot resolve " + throwableEl == null? "java.lang.Throwable" : errorEl == null? "java.lang.Error" : "java.lang.RuntimeException"); //NOI18N
+            return null;
+        }
+        TypeMirror throwable = throwableEl.asType();
+        TypeMirror error = errorEl.asType();
+        TypeMirror runtime = runtimeEl.asType();
         DocTreePath currentDocPath = getCurrentPath();
         DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
         if(dtph == null) {
@@ -720,6 +727,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         foundInheritDoc = oldInheritDoc;
         return null;
     }
+    private static final Logger LOG = Logger.getLogger(Analyzer.class.getName());
 
     @Override
     public Void visitUnknownBlockTag(UnknownBlockTagTree node, List<ErrorDescription> errors) {
@@ -760,7 +768,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     private void findInheritedParams(ExecutableElement method, TypeElement typeElement, Set<String> inheritedParams, Set<String> inheritedTypeParams, Set<String> inheritedThrows) {
         if(typeElement == null) return;
-        
+
         for (TypeMirror typeMirror : typeElement.getInterfaces()) {
             for (Element el : javac.getElementUtilities().getMembers(typeMirror, new ElementUtilities.ElementAcceptor() {
 
