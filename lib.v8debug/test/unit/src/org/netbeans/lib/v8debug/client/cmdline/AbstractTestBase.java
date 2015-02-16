@@ -49,9 +49,33 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.netbeans.lib.v8debug.V8Body;
+import org.netbeans.lib.v8debug.V8Breakpoint;
+import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Event;
+import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.V8Response;
+import org.netbeans.lib.v8debug.commands.Evaluate;
+import org.netbeans.lib.v8debug.commands.Frame;
+import org.netbeans.lib.v8debug.commands.Lookup;
+import org.netbeans.lib.v8debug.commands.SetBreakpoint;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
+import org.netbeans.lib.v8debug.vars.V8Boolean;
+import org.netbeans.lib.v8debug.vars.V8Function;
+import org.netbeans.lib.v8debug.vars.V8Number;
+import org.netbeans.lib.v8debug.vars.V8Object;
+import org.netbeans.lib.v8debug.vars.V8String;
+import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
@@ -62,19 +86,25 @@ abstract class AbstractTestBase {
     private static final String NODE_EXE = "node";          // NOI18N
     private static final String NODE_EXE_PROP = "nodeBinary";   // NOI18N
     
+    protected static final Object VALUE_UNDEFINED = new String("<undefined>");
+    
     protected String testFilePath;
     protected V8Debug v8dbg;
     protected ResponseHandler responseHandler;
     protected Process nodeProcess;
     
     protected final void startUp(InputStream testSource, String testFileName, String debugArgs) throws IOException {
+        startUp(testSource, testFileName, new String[] { debugArgs });
+    }
+    
+    protected final void startUp(InputStream testSource, String testFileName, String[] debugArgs) throws IOException {
         int port = startNodeDebug(testSource, testFileName, debugArgs);
         assertTrue("Invalid port: "+port, port > 0);
         responseHandler = new ResponseHandler();
         v8dbg = V8Debug.TestAccess.createV8Debug("localhost", port, responseHandler);
     }
     
-    protected final int startNodeDebug(InputStream testSource, String testFileName, String debugArgs) throws IOException {
+    private final int startNodeDebug(InputStream testSource, String testFileName, String[] debugArgs) throws IOException {
         File testFile = File.createTempFile(testFileName.substring(0, testFileName.indexOf('.')), ".js");
         testFile.deleteOnExit();
         Files.copy(testSource, testFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -87,7 +117,11 @@ abstract class AbstractTestBase {
             nodeBinary = NODE_EXE;
         }
         this.testFilePath = testFile.getAbsolutePath();
-        pb.command(nodeBinary, debugArgs, testFile.getAbsolutePath());
+        List<String> args = new ArrayList<>();
+        args.add(nodeBinary);
+        args.addAll(Arrays.asList(debugArgs));
+        args.add(testFile.getAbsolutePath());
+        pb.command(args);
         pb.redirectErrorStream(true);
         Process node = pb.start();
         nodeProcess = node;
@@ -122,6 +156,253 @@ abstract class AbstractTestBase {
                 }
             }
         }.start();
+    }
+    
+    protected void checkBRResponse(SetBreakpoint.ResponseBody sbResponseBody, long bpNumber, String scriptName, long line, long column, long actualColumn) {
+        checkBRResponse(sbResponseBody, bpNumber, scriptName, line, column, new long[] { actualColumn });
+    }
+    
+    protected void checkBRResponse(SetBreakpoint.ResponseBody sbResponseBody, long bpNumber, String scriptName, long line, long column, long[] actualColumns) {
+        assertEquals("Breakpoint number", bpNumber, sbResponseBody.getBreakpoint());
+        assertEquals("Breakpoint type", V8Breakpoint.Type.scriptName, sbResponseBody.getType());
+        assertEquals(scriptName, sbResponseBody.getScriptName());
+        assertEquals(line, sbResponseBody.getLine().getValue());
+        assertEquals(column, sbResponseBody.getColumn().getValue());
+        V8Breakpoint.ActualLocation[] actualLocations = sbResponseBody.getActualLocations();
+        assertEquals("Breakpoint locations", 1, actualLocations.length);
+        assertEquals(line, actualLocations[0].getLine());
+        if (actualColumns.length == 1) {
+            assertEquals(actualColumns[0], actualLocations[0].getColumn());
+        } else {
+            long alc = actualLocations[0].getColumn();
+            boolean match = false;
+            for (long ac : actualColumns) {
+                if (ac == alc) {
+                    match = true;
+                }
+            }
+            assertTrue("Actual column "+alc+" does not match expected colums: "+Arrays.toString(actualColumns), match);
+        }
+        long scriptId = actualLocations[0].getScriptId();
+        assertEquals(scriptName, V8Debug.TestAccess.getScript(v8dbg, scriptId).getName());
+    }
+
+    protected void checkLocalVar(String varName, Object value, boolean isArgument) throws IOException, InterruptedException {
+        V8Debug.TestAccess.doCommand(v8dbg, "frame");
+        V8Response lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Frame, lastResponse.getCommand());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        V8Body body = lastResponse.getBody();
+        Frame.ResponseBody fbody = (Frame.ResponseBody) body;
+        V8Frame frame = fbody.getFrame();
+        Map<String, ReferencedValue> refs;
+        if (isArgument) {
+            refs = frame.getArgumentRefs();
+        } else {
+            refs = frame.getLocalRefs();
+        }
+        ReferencedValue referenceAndVal = refs.get(varName);
+        assertNotNull("Variable "+varName+" is not present.", referenceAndVal);
+        
+        V8Value vv = referenceAndVal.getValue();
+        if (!referenceAndVal.hasValue()) {
+            V8Debug.TestAccess.send(v8dbg, Lookup.createRequest(333, new long[]{ referenceAndVal.getReference() }, false));
+            lastResponse = responseHandler.getLastResponse();
+            assertEquals(V8Command.Lookup, lastResponse.getCommand());
+            Lookup.ResponseBody lrb = (Lookup.ResponseBody) lastResponse.getBody();
+            vv = lrb.getValuesByHandle().get(referenceAndVal.getReference());
+        }
+        checkValue(varName, vv, value);
+    }
+    
+    protected void checkValue(String varName, V8Value vv, Object value) throws IOException, InterruptedException {
+        switch (vv.getType()) {
+            case Boolean:
+                assertEquals(varName, value, Boolean.valueOf(((V8Boolean) vv).getValue()));
+                return ;
+            case Function:
+                V8Function fv = (V8Function) vv;
+                ((AbstractTestBase.FunctionCheck) value).check(fv);
+                return ;
+            case Null:
+                assertNull(varName, value);
+                return ;
+            case Number:
+                V8Number nv = (V8Number) vv;
+                if (value instanceof Long || value instanceof Integer) {
+                    assertEquals(varName, V8Number.Kind.Long, nv.getKind());
+                    assertEquals(varName, value, nv.getLongValue());
+                } else {
+                    assertEquals(varName, V8Number.Kind.Double, nv.getKind());
+                    assertEquals(varName, (double) value, nv.getDoubleValue(), 1e-14);
+                }
+                return ;
+            case Object:
+                V8Object ov = (V8Object) vv;
+                ((AbstractTestBase.ObjectCheck) value).check(ov);
+                return ;
+            case String:
+                assertEquals(varName, value, ((V8String) vv).getValue());
+                return ;
+            case Undefined:
+                assertEquals(varName, value, VALUE_UNDEFINED);
+                return ;
+            case Set:
+            case Map:
+            case Symbol:
+            case Promise:
+                ((AbstractTestBase.ES6TypesCheck) value).check(vv);
+                return ;
+            default:
+                fail("Unhandled variable type: "+vv.getType()+" of "+varName);
+        }
+    }
+
+    protected void checkEval(String evalStr, Object value) throws IOException, InterruptedException {
+        V8Debug.TestAccess.doCommand(v8dbg, "eval "+evalStr);
+        V8Response lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Evaluate, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        Evaluate.ResponseBody erb = (Evaluate.ResponseBody) lastResponse.getBody();
+        checkValue(evalStr, erb.getValue(), value);
+    }
+
+    protected final class FunctionCheck {
+        
+        private final String name;
+        private final String inferredName;
+        private final String source;
+        private final String scriptName;
+        private final long scriptId;
+        private final long position;
+        private final long line;
+        private final long column;
+        private final ObjectCheck objCheck;
+        
+        public FunctionCheck(String name, String inferredName,
+                             String source, String scriptName, long scriptId,
+                             long position, long line, long column,
+                             String[] propNames, Object[] propValues) {
+            this.name = name;
+            this.inferredName = inferredName;
+            this.source = source;
+            this.scriptName = scriptName;
+            this.scriptId = scriptId;
+            this.position = position;
+            this.line = line;
+            this.column = column;
+            this.objCheck = new ObjectCheck("Function", propNames, propValues, source);
+        }
+        
+        public void check(V8Function f) throws IOException, InterruptedException {
+            assertEquals(name, f.getName());
+            assertEquals(inferredName, f.getInferredName());
+            assertEquals(source, f.getSource());
+            assertEquals(scriptName, V8Debug.TestAccess.getScript(v8dbg, f.getScriptId()).getName());
+            //assertEquals(scriptId, f.getScriptId());
+            assertEquals(position, f.getPosition().getValue());
+            assertEquals(line, f.getLine().getValue());
+            assertEquals(column, f.getColumn().getValue());
+            objCheck.check(f);
+        }
+    }
+    
+    protected final class ObjectCheck {
+        
+        private final String className;
+        //private final Map<String, Long> properties;
+        private final String[] propNames;
+        private final Object[] propValues;
+        private final String text;
+        
+        public ObjectCheck(String className, String[] propNames, Object[] propValues,
+                           String text) {
+            this.className = className;
+            //this.properties = properties;
+            this.propNames = propNames;
+            this.propValues = propValues;
+            this.text = text;
+        }
+        
+        public void check(V8Object o) throws IOException, InterruptedException {
+            assertEquals(className, o.getClassName());
+            assertEquals(text, o.getText());
+            if (propNames == null) {
+                if (propValues != null) {
+                    // An array
+                    V8Object.Array array = o.getArray();
+                    assertNotNull(array);
+                    assertEquals(propValues.length, array.getLength());
+                    StringBuilder referencesToLookup = new StringBuilder();
+                    for (int i = 0; i < array.getLength(); i++) {
+                        referencesToLookup.append(" "+array.getReferenceAt(i));
+                    }
+                    String refsStr = referencesToLookup.toString().trim();
+                    if (!refsStr.isEmpty()) {
+                        V8Debug.TestAccess.doCommand(v8dbg, "lookup "+refsStr);
+                        V8Response lastResponse = responseHandler.getLastResponse();
+                        assertEquals(V8Command.Lookup, lastResponse.getCommand());
+                        assertTrue(lastResponse.isSuccess());
+                        assertFalse(lastResponse.isRunning());
+                        Lookup.ResponseBody lrb = (Lookup.ResponseBody) lastResponse.getBody();
+                        for (int i = 0; i < array.getLength(); i++) {
+                            V8Value value = lrb.getValuesByHandle().get(array.getReferenceAt(i));
+                            checkValue(o.getText()+"["+i+"]", value, propValues[i]);
+                        }
+                    }
+                }
+                return ;
+            }
+            Map<String, V8Object.Property> oprops = o.getProperties();
+            StringBuilder referencesToLookup = new StringBuilder();
+            for (int i = 0; i < propNames.length; i++) {
+                V8Object.Property prop = oprops.get(propNames[i]);
+                assertNotNull("Object "+o.getText()+" does not contain property "+propNames[i], prop);
+                long ref = prop.getReference();
+                //if (ref > 0) {
+                    referencesToLookup.append(" ");
+                    referencesToLookup.append(ref);
+                /*} else {
+                    fail("Object "+o.getText()+" does not contain reference in property "+propNames[i]);
+                }*/
+            }
+            String refsStr = referencesToLookup.toString().trim();
+            if (!refsStr.isEmpty()) {
+                V8Debug.TestAccess.doCommand(v8dbg, "lookup "+refsStr);
+                V8Response lastResponse = responseHandler.getLastResponse();
+                assertEquals(V8Command.Lookup, lastResponse.getCommand());
+                assertTrue(lastResponse.isSuccess());
+                assertFalse(lastResponse.isRunning());
+                Lookup.ResponseBody lrb = (Lookup.ResponseBody) lastResponse.getBody();
+
+                for (int i = 0; i < propNames.length; i++) {
+                    V8Object.Property prop = oprops.get(propNames[i]);
+                    assertNotNull("Object "+o.getText()+" does not contain property "+propNames[i], prop);
+                    long ref = prop.getReference();
+                    V8Value value = lrb.getValuesByHandle().get(ref);
+                    checkValue(o.getText()+"."+propNames[i], value, propValues[i]);
+                }
+            }
+        }
+    }
+    
+    protected final class ES6TypesCheck {
+        
+        private final String type;
+        private final String text;
+
+        public ES6TypesCheck(String type, String text) {
+            this.type = type;
+            this.text = text;
+        }
+        
+        public void check(V8Value value) {
+            assertEquals(type, value.getType().toString());
+            assertEquals(text, value.getText());
+        }
     }
     
     protected final class ResponseHandler implements V8Debug.Testeable {

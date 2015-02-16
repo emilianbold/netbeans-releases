@@ -72,6 +72,7 @@ import org.netbeans.lib.v8debug.commands.Threads;
 import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
+import org.netbeans.lib.v8debug.events.CompileErrorEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.lib.v8debug.events.ScriptCollectedEventBody;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
@@ -137,6 +138,10 @@ public class JSONReader {
                 case AfterCompile:
                     V8Script script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
                     body = new AfterCompileEventBody(script);
+                    break;
+                case CompileError:
+                    script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
+                    body = new CompileErrorEventBody(script);
                     break;
                 case ScriptCollected:
                     long scriptId = getLong((JSONObject) bodyObj.get(EVT_SCRIPT), ID);
