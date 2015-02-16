@@ -301,7 +301,7 @@ UnbufferedComment = "//-"
                                         dotAfterTag = true;
                                         hasCssId = false;
                                         return JadeTokenId.TAG ;}
-    {LineTerminator}                {   indent = 0; System.out.println("Indent reset");
+    {LineTerminator}                {   indent = 0; 
                                         return JadeTokenId.EOL; }
     
     {UnbufferedComment}             {   yybegin(IN_UNBUFFERED_COMMENT);
@@ -374,7 +374,7 @@ UnbufferedComment = "//-"
                                         indent = 0;
                                         return JadeTokenId.EOL;
                                     }
-    .                               {   System.out.println("Chyba v after colon in tag");
+    .                               {   
                                         return JadeTokenId.UNKNOWN; }
 }
 
@@ -414,7 +414,7 @@ UnbufferedComment = "//-"
 <HTML_ATTRIBUTE_VALUE> {
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
     {LineTerminator}                {   return JadeTokenId.EOL; }
-    {AnyChar}                       {   System.out.println("Switch into javascript value " + tokenLength);
+    {AnyChar}                       {   
                                         parenBalance = 1;
                                         lastReaded = bracketBalance = braceBalance = 0;
                                         yypushback(1);
@@ -443,33 +443,31 @@ UnbufferedComment = "//-"
                                         yypushback(tokenLength);
                                         yybegin(AFTER_EOL);
                                     }
-    {AnyChar}                       {   lastReaded = tokenLength; System.out.println("ctu char: " + (char)zzInput);}
+    {AnyChar}                       {   lastReaded = tokenLength; }
 }
 
 <JAVASCRIPT_VALUE> {
     \'                              {   yybegin(JS_SSTRING); }
     \"                              {   yybegin(JS_STRING); }
-    [\+\-\.&\*/%|]"="?              {   continueJS = true; lastReaded = tokenLength; System.out.println("consumuju +-*/% '" + (char)zzInput + "' : " +zzInput );}
+    [\+\-\.&\*/%|]"="?              {   continueJS = true; lastReaded = tokenLength; }
     "["                             {   braceBalance++; lastReaded = tokenLength; }
     "]"                             {   braceBalance--; lastReaded = tokenLength; }
     "{"                             {   bracketBalance++; lastReaded = tokenLength; }
     "}"                             {   bracketBalance--; lastReaded = tokenLength; }
     "("                             {   parenBalance++; lastReaded = tokenLength;}
     ")"                             {   parenBalance--; 
-                                        System.out.println("zaviraci zavorka");
+                                        
                                         if (checkEndJS(tokenLength, (char)zzInput)) {
                                             return JadeTokenId.JAVASCRIPT; 
                                         }
                                    }
-    {WS}+                           {   System.out.println("consumuju WS");} 
-    ","                             {   System.out.println("consumuju ,");                
+    {WS}+                           {   } 
+    ","                             {                   
                                         if (checkEndJS(tokenLength, (char)zzInput)) {
-                                            System.out.println("vracim js po ws s carkou");
                                             return JadeTokenId.JAVASCRIPT; 
                                         }
                                     }
     {HtmlIdentifier}                {
-                                        System.out.println("consumuju idetifikator");
                                         if (zzInput == ')') parenBalance--;
                                         if (checkEndJS(tokenLength, (char)zzInput)) {
                                             return JadeTokenId.JAVASCRIPT; 
@@ -477,13 +475,12 @@ UnbufferedComment = "//-"
                                         if (zzInput == ')') parenBalance++;  // ned to return back 
     }
     
-    {AnyChar}                         { lastReaded = tokenLength; continueJS = false; System.out.println("precten: " + (char)zzInput);}
+    {AnyChar}                         { lastReaded = tokenLength; continueJS = false;}
     
 }
 
 <JS_STRING> {
     \"                              {
-                                        System.out.println("consumed string \"");  
                                         continueJS = false;
                                         lastReaded = tokenLength;
                                         yybegin(JAVASCRIPT_VALUE);
@@ -499,12 +496,11 @@ UnbufferedComment = "//-"
                                          return JadeTokenId.UNKNOWN;
                                      }
                                  }
-   {AnyChar}                    { System.out.println("String char: " + (char)zzInput); }
+   {AnyChar}                    { }
 }
 
 <JS_SSTRING> {
     \'                              {
-                                        System.out.println("consumed string '");  
                                         continueJS = false;
                                         lastReaded = tokenLength;
                                         yybegin(JAVASCRIPT_VALUE);
@@ -520,7 +516,7 @@ UnbufferedComment = "//-"
                                          return JadeTokenId.UNKNOWN;
                                      }
                                  }
-   {AnyChar}                    { System.out.println("String char: " + (char)zzInput); }
+   {AnyChar}                    { }
 }
 <AFTER_INCLUDE> {
     ":"{Input}                      {   return JadeTokenId.FILTER; }
