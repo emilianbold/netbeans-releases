@@ -51,97 +51,132 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vladimir Kvashin
  */
-public class RefreshTestCase extends RemoteFileTestBase {
+public class FastRefreshTestCase extends RemoteFileTestBase {
 
-    public RefreshTestCase(String testName, ExecutionEnvironment execEnv) {
+    public FastRefreshTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
-
     @ForAllEnvironments
-    public void testDirectoryExplicitRefresh() throws Exception {
+    public void testFastRefresh() throws Exception {
+        getFileObject("/usr").getChildren();
+        getFileObject("/usr/include").getChildren();
+//        getFileObject("/usr/bin").getChildren();
+//        getFileObject("/tmp").getChildren();
+        long slow = doTestFastRefresh(false);
+        long fast = doTestFastRefresh(true);
+        System.out.println("");
+    }
+
+    private long doTestFastRefresh(boolean fast) throws Exception {
+        //RemoteLogger.getInstance().setLevel(Level.ALL);
         String dir = null;
         try {
             dir = mkTempAndRefreshParent(true);
             String file1 = "file1.dat";
             runScript("echo xxx > " + dir + '/' + file1);
-            FileObject dirFO = getFileObject(dir);
-            getFileObject(dirFO, file1);
-
+            RemoteDirectory dirFO = (RemoteDirectory) getFileObject(dir).getImplementor();            
+            getFileObject(dirFO.getOwnerFileObject(), file1);
             int prevSyncCount = fs.getDirSyncCount();
-
             String file2 = "file2.dat";
             runScript("echo xxx > " + dir + '/' + file2);
-            FileObject fo2 = dirFO.getFileObject(file2);
+            FileObject fo2 = dirFO.getOwnerFileObject().getFileObject(file2);
             assertNull("should be null now?!", fo2);
-
-            StopWatch sw;
-            
-            sw = new StopWatch("Refreshing " + dirFO, true);
-            dirFO.refresh();
-            sw.stop(true);
-
-            fo2 = dirFO.getFileObject(file2);
-            assertNotNull("Should not be null after refresh", fo2);
+            StopWatch sw1 = new StopWatch(dirFO.getOwnerFileObject(), fast).start();
+            if (fast) {
+                RemoteFileSystemTransport.refreshFast(dirFO, false);
+            } else {
+                dirFO.refresh();
+            }
+            sw1.stop(true);
+            fo2 = dirFO.getOwnerFileObject().getFileObject(file2);
+            assertNotNull("Should not be null b refresh", fo2);
             assertEquals("Dir. sync count differs", prevSyncCount+1, fs.getDirSyncCount());
-
             // the same, just check that the directory is not synchronized once more
-            fo2 = dirFO.getFileObject(file2);
+            fo2 = dirFO.getOwnerFileObject().getFileObject(file2);
             assertNotNull("Should not be null after refresh", fo2);
             assertEquals("Dir. sync count differs", prevSyncCount+1, fs.getDirSyncCount());
-
             String file3 = "file3.dat";
             runScript("echo xxx > " + dir + '/' + file3);
-            FileObject fo3 = dirFO.getFileObject(file3);
+            FileObject fo3 = dirFO.getOwnerFileObject().getFileObject(file3);
             assertNull("should be null now?!", fo3);
-            int totalFileObjectsCount = rootFO.getFileSystem().getCachedFileObjectsCount();
-            sw = new StopWatch("Refreshing " + rootFO + " (" + totalFileObjectsCount + " file objects in FS)", true);
-            rootFO.refresh();
-            sw.stop(true);
-            //sleep(2000);
-            fo3 = dirFO.getFileObject(file3);
+            StopWatch sw2 = new StopWatch(rootFO, fast).start();
+            if (fast) {
+                RemoteFileSystemTransport.refreshFast((RemoteDirectory) rootFO.getImplementor(), false);
+            } else {
+                rootFO.refresh();
+            }
+            sw2.stop(true);
+            fo3 = dirFO.getOwnerFileObject().getFileObject(file3);
             assertNotNull("Should not be null after root refresh", fo3);
-//            assertEquals("Dir. sync count differs", prevSyncCount+2, fs.getDirSyncCount());
+            final long res = sw2.getTime();
+            
+            for (int i = 0; i < 3; i++) {
+                StopWatch sw3 = new StopWatch(rootFO, fast).start();
+                if (fast) {
+                    RemoteFileSystemTransport.refreshFast((RemoteDirectory) rootFO.getImplementor(), false);
+                } else {
+                    rootFO.refresh();
+                }
+                sw3.stop(true);
+            }
+            
+            return res;
         } finally {
             removeRemoteDirIfNotNull(dir);
         }
     }
 
     public static Test suite() {
-        return RemoteApiTest.createSuite(RefreshTestCase.class);
+        return RemoteApiTest.createSuite(FastRefreshTestCase.class);
     }
     
     /**
      * NB: thread unsafe!
      */
-    private static class StopWatch {
+    private class StopWatch {
 
         private long time;
+        private int dirSyncCount;
+        private int foCount;
+        
         private long lastStart;
-        private final String text;
+        private int lastDirSyncCount;
+        private int lastFoCount;
 
-        public StopWatch(String text) {
-            this(text, false);
-        }
+        private boolean started;
+        
+        private final RemoteFileObject fo;
+        private final boolean fast;
 
-        public StopWatch(String text, boolean start) {
+        public StopWatch(RemoteFileObject fo, boolean fast) {
             time = 0;
-            this.text = text;
-            if (start) {
-                start();
-            }
+            this.fo = fo;
+            this.fast = fast;
+            this.started = false;
         }
 
-        public final void start() {
-            lastStart = System.currentTimeMillis();
+        public final StopWatch start() {
+            lastStart = System.currentTimeMillis();            
+            lastDirSyncCount = fs.getDirSyncCount();
+            lastFoCount = rootFO.getFileSystem().getCachedFileObjectsCount();
+            started = true;
+            return this;
         }
 
         public long stop() {
+            if (started) {
+                started = false;
+            } else {
+                throw new IllegalStateException("Trying to stop a stopwatch that was not started");
+            }
             return stop(false);
         }
 
         public long stop(boolean report) {
             time += System.currentTimeMillis() - lastStart;
+            dirSyncCount += fs.getDirSyncCount() - lastDirSyncCount;
+            foCount += rootFO.getFileSystem().getCachedFileObjectsCount() - lastFoCount;
             if (report) {
                 report();
             }
@@ -149,6 +184,12 @@ public class RefreshTestCase extends RemoteFileTestBase {
         }
 
         public long report() {
+            String text = (fast ? "[Fast] " : "[Slow] ") + "refresh for " + 
+                    fo.getExecutionEnvironment().getDisplayName() + ':' +  
+                    (fo.getPath().isEmpty() ? "/" : fo.getPath()) + 
+                    " [FOs: " + rootFO.getFileSystem().getCachedFileObjectsCount() +
+                    " SYNCs: " + dirSyncCount + 
+                    " New FOs: " + foCount + "]";
             System.err.println(' ' + text + ' ' + time + " ms");
             return time;
         }
@@ -156,5 +197,5 @@ public class RefreshTestCase extends RemoteFileTestBase {
         public long getTime() {
             return time;
         }
-    }    
+    }        
 }

@@ -537,7 +537,7 @@ public abstract class RemoteFileObjectBase {
         DEFAULT
     }
 
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
     }
 
     /*package*/ void nonRecursiveRefresh() {
@@ -901,7 +901,7 @@ public abstract class RemoteFileObjectBase {
     }
 
     public static String getDisplayName(ExecutionEnvironment env, String path) {
-        return env.getDisplayName() + ':' + path; //NOI18N
+        return env.getDisplayName() + ':' + (path.isEmpty() ? "/" : path); //NOI18N
     }
 
     public String getDisplayName(String path) {

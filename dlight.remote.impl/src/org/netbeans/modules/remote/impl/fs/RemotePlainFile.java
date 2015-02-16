@@ -442,7 +442,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop, 
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, 
     boolean expected, RefreshMode refreshMode)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (refreshMode != RefreshMode.FROM_PARENT && Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N

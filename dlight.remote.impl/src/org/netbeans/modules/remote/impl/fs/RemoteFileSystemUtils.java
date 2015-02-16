@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,13 +53,16 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import static org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase.composeName;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -351,6 +353,20 @@ public class RemoteFileSystemUtils {
     
     public static boolean isUnitTestMode() {
         return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
+    }
+    
+    public static Boolean isLinux(ExecutionEnvironment env) {
+        if (HostInfoUtils.isHostInfoAvailable(env)) {
+            try {
+                HostInfo hi = HostInfoUtils.getHostInfo(env);
+                return hi.getOSFamily() == HostInfo.OSFamily.LINUX;
+            } catch (IOException | ConnectionManager.CancellationException ex) {
+                Exceptions.printStackTrace(ex); // should never be the case if isHostInfoAvailable retured true
+            }
+            // should never be the case if isHostInfoAvailable retured true
+            
+        }
+        return null;
     }
 
     // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil" defaultstate="collapsed">
