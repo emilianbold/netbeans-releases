@@ -41,28 +41,45 @@
  */
 package org.netbeans.modules.javascript.bower.file;
 
-import java.util.Collections;
-import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.web.clientproject.api.json.JsonFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.util.Pair;
 
 @MIMEResolver.Registration(displayName = "bowerrc", resource = "../resources/bowerrc-resolver.xml", position = 129)
-public final class BowerrcJson extends JsonFile {
+public final class BowerrcJson {
 
     public static final String FILE_NAME = ".bowerrc"; // NOI18N
     public static final String PROP_DIRECTORY = "DIRECTORY"; // NOI18N
     // file content
     public static final String FIELD_DIRECTORY = "directory"; // NOI18N
 
+    private final JsonFile bowerrcJson;
+
 
     public BowerrcJson(FileObject directory) {
-        super(FILE_NAME, directory);
+        assert directory != null;
+        bowerrcJson = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.create()
+                .add(PROP_DIRECTORY, FIELD_DIRECTORY));
     }
 
-    @Override
-    List<Pair<String, String[]>> watchedFields() {
-        return Collections.singletonList(Pair.of(PROP_DIRECTORY, new String[] {FIELD_DIRECTORY}));
+    public File getFile() {
+        return bowerrcJson.getFile();
+    }
+
+    @CheckForNull
+    public <T> T getContentValue(Class<T> valueType, String... fieldHierarchy) {
+        return bowerrcJson.getContentValue(valueType, fieldHierarchy);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        bowerrcJson.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        bowerrcJson.removePropertyChangeListener(listener);
     }
 
 }
