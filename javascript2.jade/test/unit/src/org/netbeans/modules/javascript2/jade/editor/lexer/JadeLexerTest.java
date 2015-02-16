@@ -214,6 +214,55 @@ public class JadeLexerTest extends CslTestBase {
         checkLexer("testfiles/lexer/conditional03.jade");
     }
     
+    public void testInterpolation01() throws Exception {
+        checkLexer("testfiles/lexer/interpolation01.jade");
+    }
+    
+    public void testInterpolation02() throws Exception {
+        checkLexer("testfiles/lexer/interpolation02.jade");
+    }
+    
+    public void testInterpolation03() throws Exception {
+        checkLexer("testfiles/lexer/interpolation03.jade");
+    }
+    
+    public void testIteration01() throws Exception {
+        checkLexer("testfiles/lexer/iteration01.jade");
+    }
+    
+    public void testIteration02() throws Exception {
+        checkLexer("testfiles/lexer/iteration02.jade");
+    }
+    
+    public void testIteration03() throws Exception {
+        checkLexer("testfiles/lexer/iteration03.jade");
+    }
+    
+    public void testIteration04() throws Exception {
+        checkLexer("testfiles/lexer/iteration04.jade");
+    }
+    
+    public void testIteration05() throws Exception {
+        checkLexer("testfiles/lexer/iteration04.jade");
+    }
+    
+    public void testMixin01() throws Exception {
+        checkLexer("testfiles/lexer/mixin01.jade");
+    }
+    
+    public void testMixin02() throws Exception {
+        checkLexer("testfiles/lexer/mixin02.jade");
+    }
+    
+    public void testMixin03() throws Exception {
+        checkLexer("testfiles/lexer/mixin03.jade");
+    }
+    
+    public void testMixin04() throws Exception {
+        checkLexer("testfiles/lexer/mixin04.jade");
+    }
+    
+    
     private void checkLexer(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         Snapshot snapshot = testSource.createSnapshot();
