@@ -54,6 +54,78 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
     
+    public void testMoveComments() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public void doStuff() {\n"
+                        + "        // do stuff dude!\n"
+                        + "        //more stuff\n"
+                        + "        int i = 2 + 2;\n"
+                        + "        assert i == 4;\n"
+                        + "        // more stuff\n"
+                        + "        // do stuff dude!\n"
+                        + "        //more stuff\n"
+                        + "        i = 2 + 2;\n"
+                        + "        assert i == 4;\n"
+                        + "        // more stuff\n"
+                        + "        // do stuff dude!\n"
+                        + "        //more stuff\n"
+                        + "        i = 2 + 2;\n"
+                        + "        assert i == 4;\n"
+                        + "        // more stuff\n"
+                        + "        // do stuff dude!\n"
+                        + "        //more stuff\n"
+                        + "        i = 2 + 2;\n"
+                        + "        assert i == 4;\n"
+                        + "        // more stuff\n"
+                        + "        // do stuff dude!\n"
+                        + "        //more stuff\n"
+                        + "        i = 2 + 2;\n"
+                        + "        assert i == 4;\n"
+                        + "        // more stuff\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void doStuff() {\n"
+                + "        // do stuff dude!\n"
+                + "        //more stuff\n"
+                + "        int i = 2 + 2;\n"
+                + "        assert i == 4;\n"
+                + "        // more stuff\n"
+                + "        // do stuff dude!\n"
+                + "        //more stuff\n"
+                + "        i = 2 + 2;\n"
+                + "        assert i == 4;\n"
+                + "        // more stuff\n"
+                + "        // do stuff dude!\n"
+                + "        //more stuff\n"
+                + "        i = 2 + 2;\n"
+                + "        assert i == 4;\n"
+                + "        // more stuff\n"
+                + "        // do stuff dude!\n"
+                + "        //more stuff\n"
+                + "        i = 2 + 2;\n"
+                + "        assert i == 4;\n"
+                + "        // more stuff\n"
+                + "        // do stuff dude!\n"
+                + "        //more stuff\n"
+                + "        i = 2 + 2;\n"
+                + "        assert i == 4;\n"
+                + "        // more stuff\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void testMoveGenericReturn() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
