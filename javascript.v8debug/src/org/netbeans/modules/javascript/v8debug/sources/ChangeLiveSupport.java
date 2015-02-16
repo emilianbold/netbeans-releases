@@ -147,7 +147,7 @@ public final class ChangeLiveSupport extends LazyActionsManagerListener {
             }
             V8Script script = null;
             for (V8Script s : scripts) {
-                if (s.getName().equals(serverPath)) {
+                if (serverPath.equals(s.getName())) {
                     script = s;
                     break;
                 }
