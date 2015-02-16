@@ -94,7 +94,6 @@ public class GeneralNodeJs extends JellyTestCase {
     public static String originalContent = "";
     public final String TEST_BASE_NAME = "nodejs_";
     public static int NAME_ITERATOR = 0;
-    public static boolean sourcesDownloaded = false;
     public static int currentLine = -1;
 
     public GeneralNodeJs(String args) {
@@ -201,9 +200,6 @@ public class GeneralNodeJs extends JellyTestCase {
     }
 
     protected void downloadGlobalNodeJS() {
-        if (GeneralNodeJs.sourcesDownloaded) {
-            return;
-        }
         setProxy();
         OptionsOperator optionsOper = OptionsOperator.invoke();
         evt.waitNoEvent(300);  // prevent clicking on category button when panel not initialized
@@ -249,7 +245,6 @@ public class GeneralNodeJs extends JellyTestCase {
         optionsOper.ok();
         evt.waitNoEvent(5000);
         waitCompletionScanning();
-        GeneralNodeJs.sourcesDownloaded = true;
     }
 
     protected void checkResult(EditorOperator eo, String sCheck) {

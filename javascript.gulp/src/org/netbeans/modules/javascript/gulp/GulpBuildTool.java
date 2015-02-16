@@ -78,7 +78,7 @@ public final class GulpBuildTool implements BuildToolImplementation {
     private GulpBuildTool(Project project) {
         assert project != null;
         this.project = project;
-        gulpfile = new Gulpfile(project.getProjectDirectory());
+        gulpfile = Gulpfile.create(project.getProjectDirectory());
         gulpTasks = GulpTasks.create(project, gulpfile);
         gulpPreferences = new GulpPreferences(project);
     }
