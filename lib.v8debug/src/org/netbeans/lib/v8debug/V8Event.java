@@ -56,7 +56,7 @@ public final class V8Event extends V8Packet {
         Exception,
         AfterCompile,
         ScriptCollected,
-        CompileError;
+        CompileError;       // ES6
 
         @Override
         public String toString() {
