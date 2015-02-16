@@ -257,6 +257,13 @@ public class V8Debug {
                 return true;
             case "step":
             case "s":
+                int count = -1;
+                try {
+                    count = Integer.parseInt(args);
+                } catch (NumberFormatException nfex) {}
+                if (count >= 0) {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.in, count));
+                } else
                 switch (args) {
                     case "up":
                     case "out":
@@ -277,10 +284,26 @@ public class V8Debug {
                 return true;
             case "next":
             case "n":
-                cc.send(Continue.createRequest(requestSequence++, V8StepAction.next));
+                count = -1;
+                try {
+                    count = Integer.parseInt(args);
+                } catch (NumberFormatException nfex) {}
+                if (count >= 0) {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.next, count));
+                } else {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.next));
+                }
                 return true;
             case "out":
-                cc.send(Continue.createRequest(requestSequence++, V8StepAction.out));
+                count = -1;
+                try {
+                    count = Integer.parseInt(args);
+                } catch (NumberFormatException nfex) {}
+                if (count >= 0) {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.out, count));
+                } else {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.out));
+                }
                 return true;
             case "cont":
             case "c":
