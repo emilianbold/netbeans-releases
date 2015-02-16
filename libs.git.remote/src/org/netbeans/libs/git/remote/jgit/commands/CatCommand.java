@@ -58,17 +58,21 @@ import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.util.io.AutoCRLFOutputStream;
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class CatCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final String revision;
     private final VCSFileProxy file;
     private final OutputStream os;
@@ -111,16 +115,25 @@ public class CatCommand extends GitCommand {
         }
         return retval;
     }
-
+    
     @Override
     protected void run () throws GitException {
+        if (KIT) {
+            runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="KIT">
+    protected void runKit () throws GitException {
         if (fromRevision) {
             catFromRevision();
         } else {
             catIndexEntry();
         }
     }
-
+    
     private void catFromRevision () throws GitException.MissingObjectException, GitException {
         Repository repository = getRepository().getRepository();
         OutputStream out = null;
@@ -161,7 +174,7 @@ public class CatCommand extends GitCommand {
             }
         }
     }
-
+    
     private void catIndexEntry () throws GitException {
         Repository repository = getRepository().getRepository();
         OutputStream out = null;
@@ -182,7 +195,7 @@ public class CatCommand extends GitCommand {
                 found = true;
                 WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
                 ObjectLoader loader = repository.getObjectDatabase().open(entry.getObjectId());
-		if (opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
+                if (opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
                     out = new AutoCRLFOutputStream(os);
                 } else {
                     out = os;
@@ -206,17 +219,102 @@ public class CatCommand extends GitCommand {
             }
         }
     }
-    
-    @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "show"); //NOI18N
-        String relPath = Utils.getRelativePath(getRepository().getLocation(), file);
-        addArgument(0, revision+":"+relPath); //NOI18N
-    }
 
     public boolean foundInRevision () {
         return found;
     }
 
+//</editor-fold>
+    
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        if (fromRevision) {
+            addArgument(0, "show"); //NOI18N
+            String relPath = Utils.getRelativePath(getRepository().getLocation(), file);
+            addArgument(0, revision+":"+relPath); //NOI18N
+        } else {
+            addArgument(0, "show"); //NOI18N
+            String relPath = Utils.getRelativePath(getRepository().getLocation(), file);
+            if (stage == 0) {
+                addArgument(0, ":"+relPath); //NOI18N
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        }
+    }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        found = false;
+        String cmd = getCommandLine();
+        try {
+            runner(canceled, 0, new Parser() {
+
+                @Override
+                public void outputParser(String output) throws IOException {
+                    found = true;
+                    for(int i = 0; i < output.length(); i++)  {
+                        os.write(output.charAt(i));
+                    }
+                }
+
+                @Override
+                public void errorParser(String error) throws GitException.MissingObjectException {
+//fatal: Invalid object name 'HEAD'.
+//fatal: Path 'removed' exists on disk, but not in 'HEAD'.
+                    for (String msg : error.split("\n")) { //NOI18N
+                        if (msg.startsWith("fatal: Invalid object")) {
+                            throw new GitException.MissingObjectException("HEAD" ,GitObjectType.COMMIT);
+                        }
+                    }
+                }
+            });
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {
+                }
+            }
+            //command.commandFinished();
+        }
+    }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) throws IOException, GitException.MissingObjectException {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {            
+            parser.errorParser(exitStatus.error);
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output);
+        }
+    }
+
+    private abstract class Parser {
+        public abstract void outputParser(String output) throws IOException;
+        public void errorParser(String error) throws GitException.MissingObjectException {
+        }
+    }
 }

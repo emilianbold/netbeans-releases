@@ -43,6 +43,7 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,12 +64,15 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class CreateBranchCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final String revision;
     private final String branchName;
     private GitBranch branch;
@@ -81,9 +85,18 @@ public class CreateBranchCommand extends GitCommand {
         this.revision = revision;
         this.monitor = monitor;
     }
-
+    
     @Override
     protected void run () throws GitException {
+        if (KIT) {
+            runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="KIT">
+    protected void runKit () throws GitException {
         Repository repository = getRepository().getRepository();
         org.eclipse.jgit.api.CreateBranchCommand cmd = new Git(repository).branchCreate();
         cmd.setName(branchName);
@@ -113,19 +126,6 @@ public class CreateBranchCommand extends GitCommand {
                     new Object[] { branchName, createdBranchName, branches.keySet() });
         }
     }
-    
-    @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "branch"); //NOI18N
-        addArgument(0, "--track"); //NOI18N
-        addArgument(0, branchName);
-        addArgument(0, revision);
-    }
-
-    public GitBranch getBranch () {
-        return branch;
-    }
 
     private boolean createBranchInEmptyRepository (Repository repository) throws GitException {
         // is this an empty repository after a fresh clone of an empty repository?
@@ -151,4 +151,78 @@ public class CreateBranchCommand extends GitCommand {
         }
         return false;
     }
+
+    public GitBranch getBranch () {
+        return branch;
+    }
+//</editor-fold>
+    
+    @Override
+    protected void prepare() throws GitException {
+        setCommandsNumber(3);
+        super.prepare();
+        addArgument(0, "branch"); //NOI18N
+        addArgument(0, "--track"); //NOI18N
+        addArgument(0, branchName);
+        addArgument(0, revision);
+        addArgument(1, "branch"); //NOI18N
+        addArgument(1, "--track"); //NOI18N
+        addArgument(1, branchName);
+        addArgument(2, "branch"); //NOI18N
+        addArgument(2, "-vv"); //NOI18N
+        addArgument(2, "--all"); //NOI18N
+    }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
+            boolean runner = runner(canceled, 0, branches);
+            if (!runner) {
+                runner(canceled, 1, branches);
+            }
+            runner(canceled, 2, branches);
+            branch = branches.get(branchName);
+            if (branch == null) {
+                LOG.log(Level.WARNING, "Branch {0}/{1} probably created but not in the branch list: {2}",
+                        new Object[] { branchName, branchName, branches.keySet() });
+            }
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+    
+    private boolean runner(ProcessUtils.Canceler canceled, int command, Map<String, GitBranch> branches) {
+        if(canceled.canceled()) {
+            return true;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return true;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            ListBranchCommand.parseBranches(exitStatus.output, getClassFactory(), branches);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            if (exitStatus.error.contains("fatal: Cannot setup tracking information; starting point is not a branch.")) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
 }

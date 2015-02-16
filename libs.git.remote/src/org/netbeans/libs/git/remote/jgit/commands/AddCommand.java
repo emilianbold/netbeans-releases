@@ -92,6 +92,7 @@ public class AddCommand extends GitCommand {
         this.monitor = monitor;
         this.listener = listener;
     }
+
     @Override
     protected void run () throws GitException {
         if (KIT) {
@@ -290,6 +291,7 @@ public class AddCommand extends GitCommand {
             }
         }
     }
+    
     private void parseAddError(String error) {
         //The following paths are ignored by one of your .gitignore files:
         //folder2
@@ -297,6 +299,7 @@ public class AddCommand extends GitCommand {
         //fatal: no files added
         processMessages(error);
     }
+    
     private abstract class Parser {
         public abstract void outputParser(String output);
         public void errorParser(String error){

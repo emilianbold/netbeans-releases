@@ -88,6 +88,8 @@ public abstract class GitClassFactory {
     public abstract GitBlameResult createBlameResult (BlameResult result, JGitRepository repository);
     
     public abstract GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id);
+    
+    public abstract GitBranch createBranch (String name, boolean remote, boolean active, String id);
 
     public abstract GitCherryPickResult createCherryPickResult (
             GitCherryPickResult.CherryPickStatus status, List<VCSFileProxy> conflicts,

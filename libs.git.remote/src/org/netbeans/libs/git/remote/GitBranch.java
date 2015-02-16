@@ -64,14 +64,25 @@ public final class GitBranch {
     private final String name;
     private final boolean remote;
     private final boolean active;
-    private final ObjectId id;
+    private ObjectId id;
     private GitBranch trackedBranch;
+    private final boolean isKIT;
+    private String branchCode;
 
     GitBranch (String name, boolean remote, boolean active, ObjectId id) {
         this.name = name;
         this.remote = remote;
         this.active = active;
         this.id = id;
+        isKIT = true;
+    }
+
+    GitBranch (String name, boolean remote, boolean active, String id) {
+        this.name = name;
+        this.remote = remote;
+        this.active = active;
+        this.branchCode = id;
+        isKIT = false;
     }
 
     /**
@@ -99,7 +110,11 @@ public final class GitBranch {
      * @return commit id of the HEAD commit in the branch.
      */
     public String getId () {
-        return ObjectId.toString(id);
+        if (isKIT) {
+            return ObjectId.toString(id);
+        } else {
+            return branchCode;
+        }
     }
     
     /**
