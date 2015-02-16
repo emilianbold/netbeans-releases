@@ -45,8 +45,14 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -172,7 +178,19 @@ public enum JadeTokenId implements TokenId {
                     return JadeLexer.create(info);
                 }
 
-                
+                @Override
+                protected LanguageEmbedding<?> embedding(Token<JadeTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+                    JadeTokenId id = token.id();
+                    
+                    if (id == JAVASCRIPT) {
+                        return LanguageEmbedding.create(JsTokenId.javascriptLanguage(), 0, 0, true);
+                    }
+                    if (id == PLAIN_TEXT) {
+                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
+                    }
+                    return null; // No embedding
+                }
+
             }.language();
     
     public static Language<JadeTokenId> jadeLanguage() {
