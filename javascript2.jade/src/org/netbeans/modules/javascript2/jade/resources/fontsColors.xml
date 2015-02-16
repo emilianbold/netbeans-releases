@@ -24,4 +24,5 @@
     <fontcolor name="file-path"  foreColor="6b6b00"/>
     <fontcolor name="filter"  foreColor="006b6b"/>
     <fontcolor name="filter-text"  default="default"/>
+    <fontcolor name="mixin-name"  foreColor="999922"/>
 </fontscolors>

@@ -45,8 +45,14 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -75,6 +81,11 @@ public enum JadeTokenId implements TokenId {
     KEYWORD_CASE("case", "keyword"), // NOI18N
     KEYWORD_WHEN("when", "keyword"), // NOI18N
     KEYWORD_DEFAULT("default", "keyword"), // NOI18N
+    KEYWORD_EACH("each", "keyword"), // NOI18N
+    KEYWORD_IN("in", "keyword"), // NOI18N
+    KEYWORD_FOR("for", "keyword"), // NOI18N
+    KEYWORD_WHILE("while", "keyword"), // NOI18N
+    KEYWORD_MIXIN("mixin", "keyword"), // NOI18N
     
     KEYWORD_TRUE("true", "keyword"), // NOI18N
     KEYWORD_FALSE("false", "keyword"), // NOI18N
@@ -83,11 +94,16 @@ public enum JadeTokenId implements TokenId {
     KEYWORD_EXTENDS("extends", "keyword"), // NOI18N
     KEYWORD_INCLUDE("include", "keyword"), // NOI18N
     
+    MIXIN_NAME(null, "mixin-name"), //NOI18N
+    IDENTIFIER(null, "identifier"),     //NOI18N
+    
     OPERATOR_COLON(":", "separator"), // NOI18N
     OPERATOR_DIVISION("/", "operator"), // NOI18N
     OPERATOR_ASSIGNMENT("=", "operator"), // NOI18N
     OPERATOR_NOT_EQUALS("!=", "operator"), // NOI18N
     OPERATOR_COMMA(",", "separator"), // NOI18N
+    OPERATOR_REST_ARGUMENTS("...", "operator"), //NOI18N
+    OPERATOR_PLUS("+", "operator"), // NOI18N
     
     COMMENT_DELIMITER(null, "comment"), // NOI18N
     UNBUFFERED_COMMENT_DELIMITER(null, "unbuffered-commnet"), //NOI18N
@@ -162,7 +178,19 @@ public enum JadeTokenId implements TokenId {
                     return JadeLexer.create(info);
                 }
 
-                
+                @Override
+                protected LanguageEmbedding<?> embedding(Token<JadeTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+                    JadeTokenId id = token.id();
+                    
+                    if (id == JAVASCRIPT) {
+                        return LanguageEmbedding.create(JsTokenId.javascriptLanguage(), 0, 0, true);
+                    }
+                    if (id == PLAIN_TEXT) {
+                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
+                    }
+                    return null; // No embedding
+                }
+
             }.language();
     
     public static Language<JadeTokenId> jadeLanguage() {
