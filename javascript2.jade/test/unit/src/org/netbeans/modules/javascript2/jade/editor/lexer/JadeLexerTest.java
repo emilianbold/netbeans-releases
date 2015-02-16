@@ -226,6 +226,26 @@ public class JadeLexerTest extends CslTestBase {
         checkLexer("testfiles/lexer/interpolation03.jade");
     }
     
+    public void testIteration01() throws Exception {
+        checkLexer("testfiles/lexer/iteration01.jade");
+    }
+    
+    public void testIteration02() throws Exception {
+        checkLexer("testfiles/lexer/iteration02.jade");
+    }
+    
+    public void testIteration03() throws Exception {
+        checkLexer("testfiles/lexer/iteration03.jade");
+    }
+    
+    public void testIteration04() throws Exception {
+        checkLexer("testfiles/lexer/iteration04.jade");
+    }
+    
+    public void testIteration05() throws Exception {
+        checkLexer("testfiles/lexer/iteration04.jade");
+    }
+    
     private void checkLexer(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         Snapshot snapshot = testSource.createSnapshot();

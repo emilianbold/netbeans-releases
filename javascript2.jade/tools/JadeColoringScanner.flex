@@ -213,6 +213,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state IN_FILTER_BLOCK_AFTER_EOL
 %state AFTER_INCLUDE
 %state AFTER_COLON_IN_TAG
+%state AFTER_EACH
+%state JAVASCRIPT_AFTER_EACH
 
 /* base structural elements */
 AnyChar = (.|[\n])
@@ -231,6 +233,12 @@ UnbufferedComment = "//-"
 
 %%
 
+/*
+    TODO:
+        - TagInterPolation http://jade-lang.com/reference/interpolation/
+        - check interpolation in the text block
+    
+*/
 <YYINITIAL> {
     {AnyChar}   {
             yypushback(1);
@@ -250,7 +258,16 @@ UnbufferedComment = "//-"
     "else"                          {   return JadeTokenId.KEYWORD_ELSE;}
     "unless"                        {   yybegin(AFTER_CODE_DELIMITER);
                                         return JadeTokenId.KEYWORD_UNLESS;}
-                                    
+
+    "each"                          {   yybegin(AFTER_EACH);
+                                        return JadeTokenId.KEYWORD_EACH;}
+    "in"                            {   yybegin(AFTER_CODE_DELIMITER);
+                                        return JadeTokenId.KEYWORD_IN;}
+    "for"                           {   yybegin(AFTER_EACH);
+                                        return JadeTokenId.KEYWORD_FOR;}
+    "while"                           {   yybegin(AFTER_CODE_DELIMITER);
+                                        return JadeTokenId.KEYWORD_WHILE;}                                        
+                                
     "case"                          {   yybegin(AFTER_CODE_DELIMITER);
                                         return JadeTokenId.KEYWORD_CASE;}
     "when"                          {   yybegin(AFTER_CODE_DELIMITER_WITH_BLOCK_EXPANSION);
@@ -395,6 +412,28 @@ UnbufferedComment = "//-"
 }
 
 
+<AFTER_EACH>    {
+    {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
+    {LineTerminator}                {   yybegin(AFTER_EOL);
+                                        return JadeTokenId.EOL; }
+    {AnyChar}                       {   yypushback(1);
+                                        yybegin(JAVASCRIPT_AFTER_EACH); }
+}
+
+<JAVASCRIPT_AFTER_EACH> {
+    {LineTerminator}                {   yybegin(AFTER_EOL);
+                                        return JadeTokenId.EOL; }
+    {WS}*"in"({LineTerminator}|{WS}+)   {  int delta = tokenLength - lastReaded;
+                                        if (delta > 0) {
+                                            yypushback(delta);
+                                            yybegin(AFTER_EOL);
+                                            return JadeTokenId.JAVASCRIPT;
+                                        }
+                                        yypushback(tokenLength);
+                                        yybegin(AFTER_EOL);
+                                    }
+    {AnyChar}                       {   lastReaded = tokenLength; System.out.println("ctu char: " + (char)zzInput);}
+}
 
 <JAVASCRIPT_VALUE> {
     \'                              {   yybegin(JS_SSTRING); }

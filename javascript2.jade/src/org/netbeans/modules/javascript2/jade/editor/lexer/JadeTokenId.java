@@ -75,6 +75,10 @@ public enum JadeTokenId implements TokenId {
     KEYWORD_CASE("case", "keyword"), // NOI18N
     KEYWORD_WHEN("when", "keyword"), // NOI18N
     KEYWORD_DEFAULT("default", "keyword"), // NOI18N
+    KEYWORD_EACH("each", "keyword"), // NOI18N
+    KEYWORD_IN("in", "keyword"), // NOI18N
+    KEYWORD_FOR("for", "keyword"), // NOI18N
+    KEYWORD_WHILE("while", "keyword"), // NOI18N
     
     KEYWORD_TRUE("true", "keyword"), // NOI18N
     KEYWORD_FALSE("false", "keyword"), // NOI18N
