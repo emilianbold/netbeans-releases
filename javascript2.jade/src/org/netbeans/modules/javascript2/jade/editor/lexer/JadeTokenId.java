@@ -79,6 +79,7 @@ public enum JadeTokenId implements TokenId {
     KEYWORD_IN("in", "keyword"), // NOI18N
     KEYWORD_FOR("for", "keyword"), // NOI18N
     KEYWORD_WHILE("while", "keyword"), // NOI18N
+    KEYWORD_MIXIN("mixin", "keyword"), // NOI18N
     
     KEYWORD_TRUE("true", "keyword"), // NOI18N
     KEYWORD_FALSE("false", "keyword"), // NOI18N
@@ -87,11 +88,16 @@ public enum JadeTokenId implements TokenId {
     KEYWORD_EXTENDS("extends", "keyword"), // NOI18N
     KEYWORD_INCLUDE("include", "keyword"), // NOI18N
     
+    MIXIN_NAME(null, "mixin-name"), //NOI18N
+    IDENTIFIER(null, "identifier"),     //NOI18N
+    
     OPERATOR_COLON(":", "separator"), // NOI18N
     OPERATOR_DIVISION("/", "operator"), // NOI18N
     OPERATOR_ASSIGNMENT("=", "operator"), // NOI18N
     OPERATOR_NOT_EQUALS("!=", "operator"), // NOI18N
     OPERATOR_COMMA(",", "separator"), // NOI18N
+    OPERATOR_REST_ARGUMENTS("...", "operator"), //NOI18N
+    OPERATOR_PLUS("+", "operator"), // NOI18N
     
     COMMENT_DELIMITER(null, "comment"), // NOI18N
     UNBUFFERED_COMMENT_DELIMITER(null, "unbuffered-commnet"), //NOI18N

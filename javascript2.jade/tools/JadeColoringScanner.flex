@@ -215,6 +215,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state AFTER_COLON_IN_TAG
 %state AFTER_EACH
 %state JAVASCRIPT_AFTER_EACH
+%state AFTER_MIXIN
+%state MIXIN_ARGUMENTS
+%state AFTER_PLUS_MIXIN
+%state MIXIN_CALL_ARGUMENT
 
 /* base structural elements */
 AnyChar = (.|[\n])
@@ -227,6 +231,8 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 WS = [ \t\f\u00A0\u000B]
 WhiteSpace = [ \t\f\u00A0\u000B]+
 Input = [^\r\n \t\f\u00A0\u000B]+
+IdentifierPart = [:jletterdigit:]
+Identifier = [:jletter:]{IdentifierPart}*
 
 Comment = "//"
 UnbufferedComment = "//-"
@@ -237,6 +243,8 @@ UnbufferedComment = "//-"
     TODO:
         - TagInterPolation http://jade-lang.com/reference/interpolation/
         - check interpolation in the text block
+        - mixin default atributes
+        - default attributes at all
     
 */
 <YYINITIAL> {
@@ -281,7 +289,10 @@ UnbufferedComment = "//-"
                                         return JadeTokenId.KEYWORD_EXTENDS;}
     "include"                       {   yybegin(AFTER_INCLUDE);
                                         return JadeTokenId.KEYWORD_INCLUDE;}
-
+    "mixin"                         {   yybegin(AFTER_MIXIN);
+                                        return JadeTokenId.KEYWORD_MIXIN; }
+    "+"                             {   yybegin(AFTER_PLUS_MIXIN);
+                                        return JadeTokenId.OPERATOR_PLUS; }
     "-"|"="|"!="                    {   yybegin(AFTER_CODE_DELIMITER);
                                         return JadeTokenId.CODE_DELIMITER; }
     {WhiteSpace}                    {   indent = tokenLength;
@@ -598,7 +609,9 @@ UnbufferedComment = "//-"
     .*                              { }
     {LineTerminator}                {   yypushback(1);
                                         yybegin(AFTER_EOL);
-                                        return JadeTokenId.PLAIN_TEXT;
+                                        if (tokenLength - 1 > 0 ) {
+                                            return JadeTokenId.PLAIN_TEXT;
+                                        }
                                     }
 }
 
@@ -675,6 +688,65 @@ UnbufferedComment = "//-"
                                             return JadeTokenId.FILTER_TEXT;
                                         }
                                     }
+}
+
+<AFTER_MIXIN> { 
+    {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
+    {LineTerminator}                {   yybegin(AFTER_EOL);
+                                        return JadeTokenId.EOL; }
+    {Identifier}                    {   return JadeTokenId.MIXIN_NAME; }
+    "("                             {   yybegin(MIXIN_ARGUMENTS); 
+                                        return JadeTokenId.BRACKET_LEFT_PAREN;}
+}
+
+<MIXIN_ARGUMENTS> {
+    {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
+    {Identifier}                    {   return JadeTokenId.IDENTIFIER; }
+    ","                             {   return JadeTokenId.OPERATOR_COMMA; }
+    "..."                           {   return JadeTokenId.OPERATOR_REST_ARGUMENTS; }
+    ")"                             {   return JadeTokenId.BRACKET_RIGHT_PAREN;}
+    {LineTerminator}                {   yybegin(AFTER_EOL);
+                                        return JadeTokenId.EOL; }
+    {AnyChar}                       {   // expect declaration of parameters
+                                        return JadeTokenId.UNKNOWN; }
+}
+
+<AFTER_PLUS_MIXIN> {    
+    {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
+    {Identifier}                    {   return JadeTokenId.MIXIN_NAME; }
+    "("                             {   yybegin(MIXIN_CALL_ARGUMENT);
+                                        return JadeTokenId.BRACKET_LEFT_PAREN;}
+    ","                             {   yybegin(MIXIN_CALL_ARGUMENT);
+                                        return JadeTokenId.OPERATOR_COMMA; }
+    ")"                             {   yybegin(IN_PLAIN_TEXT_LINE);
+                                        return JadeTokenId.BRACKET_LEFT_PAREN;}
+    {LineTerminator}                {   yybegin(AFTER_EOL);
+                                        return JadeTokenId.EOL; }
+}
+
+<MIXIN_CALL_ARGUMENT> {
+    [(){},]                       {  
+        switch (zzInput) {
+            case '(': parenBalance++; break;
+            case '{': braceBalance++; break;
+            case '}': braceBalance--; break; 
+            case ')':
+                parenBalance--;
+                break;    
+            case ',':
+                if (parenBalance == 1 && braceBalance == 0) {
+                    parenBalance = 0;
+                }
+                break;
+        }
+        if (parenBalance == 0 && braceBalance == 0) {
+            yypushback(1);
+            yybegin(AFTER_PLUS_MIXIN);
+            parenBalance = 1;
+            return JadeTokenId.JAVASCRIPT;
+        }
+                                    }
+    {AnyChar}                       {}
 }
 
 /* This is help rule. Read all until end of line and remember the number of read chars. */

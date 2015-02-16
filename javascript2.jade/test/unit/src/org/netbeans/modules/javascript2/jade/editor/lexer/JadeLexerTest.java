@@ -246,6 +246,23 @@ public class JadeLexerTest extends CslTestBase {
         checkLexer("testfiles/lexer/iteration04.jade");
     }
     
+    public void testMixin01() throws Exception {
+        checkLexer("testfiles/lexer/mixin01.jade");
+    }
+    
+    public void testMixin02() throws Exception {
+        checkLexer("testfiles/lexer/mixin02.jade");
+    }
+    
+    public void testMixin03() throws Exception {
+        checkLexer("testfiles/lexer/mixin03.jade");
+    }
+    
+    public void testMixin04() throws Exception {
+        checkLexer("testfiles/lexer/mixin04.jade");
+    }
+    
+    
     private void checkLexer(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         Snapshot snapshot = testSource.createSnapshot();
