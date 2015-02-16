@@ -322,6 +322,7 @@ NetBeans.paintGlassPane = function() {
         ctx.globalAlpha = 0.5;
         NetBeans.paintSelectedElements(ctx, NetBeans.ruleSelection, '#00FF00');
         NetBeans.paintSelectedElements(ctx, NetBeans.selection, '#0000FF');
+        NetBeans.paintGrid(ctx, NetBeans.highlight);
         ctx.globalAlpha = 0.25;
         NetBeans.paintHighlightedElements(ctx, NetBeans.highlight);
     }
@@ -359,7 +360,7 @@ NetBeans.paintSelectedElements = function(ctx, elements, color) {
             dashedLine(rect.left,rect.top+dash,0,dash,rect.height-dash);
             dashedLine(rect.left+rect.width,rect.top+dash,0,dash,rect.height-dash);
             ctx.stroke();
-            
+
             ctx.beginPath();
         }
     }
@@ -392,6 +393,10 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
     ctx.lineWidth = 1;
     for (var i=0; i<elements.length; i++) {
         var highlightedElement = elements[i];
+        
+        // Grid rows have a special highlighting
+        if (highlightedElement.classList.contains('oj-row')) continue;
+
         var rects = NetBeans.getClientRects(highlightedElement);
         var style = window.getComputedStyle(highlightedElement);
 
@@ -693,6 +698,79 @@ NetBeans.ownerOfUnusedBinding = function(id) {
         node = node.parentElement;
     }
     return node;
+};
+
+// Paints a feedback specific for 12-column grid
+NetBeans.paintGrid = function(ctx, elements) {
+    // Grids found
+    var grids = [];
+    // Information about columns occupied by specified elements (we don't
+    // paint there because the elements have their own visual feedback).
+    // Note that we use 24 instead of 12 columns to handle centered
+    // elements with an odd width.
+    var occupied = [];
+    var i;
+    for (var elementIndex=0; elementIndex<elements.length; elementIndex++) {
+        var element = elements[elementIndex];
+        var grid = null;
+        var start;
+        var width;
+        var top;
+        var bottom;
+        if (element.classList.contains('oj-col')) {
+            var parentElement = element.parentElement;
+            if (parentElement.classList.contains('oj-row')) {
+                var parentRect = parentElement.getBoundingClientRect();
+                var elementRect = element.getBoundingClientRect();
+                width = Math.round(24*elementRect.width/parentRect.width);
+                start = Math.round(24*(elementRect.left-parentRect.left)/parentRect.width);
+                top = elementRect.top;
+                bottom = elementRect.top+elementRect.height;
+                grid = parentElement;
+            }
+        } else if (element.classList.contains('oj-row')) {
+            grid = element;
+            start = 0;
+            width = 0;
+        }
+        // Make sure that we don't paint some grid several times
+        if (grid) {
+            var index = grids.indexOf(grid);
+            var data = [];
+            if (index === -1) {
+                index = grids.length;
+                grids.push(grid);
+                data = [];
+                for (var i=0; i<24; i++) {
+                    data.push([]);
+                }
+                occupied.push(data);
+            } else {
+                data = occupied[index];
+            }
+            for (var i=start; i<start+width; i++) {
+                data[i].push(top);
+                data[i].push(bottom);
+            }
+        }
+    }
+    for (i=0; i<grids.length; i++) {
+        var grid = grids[i];
+        var occupiedData = occupied[i];
+        var rect = grid.getBoundingClientRect();
+        for (var column=0; column<24; column++) {
+            var data = occupiedData[column];
+            data.push(rect.top);
+            data.push(rect.top+rect.height);
+            data.sort(function(a,b) { return a-b; });
+            ctx.fillStyle = (column%4 < 2) ? '#0000FF' : '#000088';
+            for (var j=0; j<data.length; j+=2) {
+                var from = Math.round(rect.left+column*rect.width/24);
+                var to = Math.round(rect.left+(column+1)*rect.width/24);
+                ctx.fillRect(from, data[j], to-from, data[j+1]-data[j]);
+            }            
+        }
+    }
 };
 
 // Insert glass-pane into the inspected page
