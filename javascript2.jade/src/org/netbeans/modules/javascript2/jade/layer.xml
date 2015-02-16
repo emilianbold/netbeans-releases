@@ -47,6 +47,9 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
         <folder name="text">
             <folder name="jade">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.jade.Bundle"/>
+                <file name="org-netbeans-modules-javascript2-jade-editor-JadeEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
                 <!-- colors -->
                 <folder name="FontsColors">
                     <folder name="NetBeans">
