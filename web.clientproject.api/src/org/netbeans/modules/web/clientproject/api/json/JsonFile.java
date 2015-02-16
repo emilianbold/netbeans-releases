@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.bower.file;
+package org.netbeans.modules.web.clientproject.api.json;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
@@ -56,6 +56,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -66,6 +67,7 @@ import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.cookies.EditorCookie;
@@ -78,11 +80,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Pair;
+import org.openide.util.Parameters;
 
-// XXX could be api class
-abstract class JsonFile {
+/**
+ * Class representing any JSON file on a disk.
+ * @since 1.88
+ */
+public final class JsonFile {
 
-    private static final Logger LOGGER = Logger.getLogger(BowerJson.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JsonFile.class.getName());
 
     private static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory() {
 
@@ -100,66 +106,99 @@ abstract class JsonFile {
 
     private final String fileName;
     private final FileObject directory;
+    private final List<Pair<String, String[]>> watchedFields;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final FileChangeListener directoryListener = new DirectoryListener();
-    private final FileChangeListener jsonListener = new JsonListener();
+    private final FileChangeListener jsonFileListener = new JsonFileListener();
 
     // @GuardedBy("this")
-    private File json;
+    private File jsonFile;
     // @GuardedBy("this")
     private Map<String, Object> content;
     private volatile boolean contentInited = false;
 
 
-    JsonFile(String fileName, FileObject directory) {
+    /**
+     * Creates new JSON file. JSON file does not need to exist on the disk in the moment.
+     * @param fileName name of the JSON file, e.g. "config.json"
+     * @param directory directory where the JSON file is
+     * @param watchedFields content fields that are watched for changes
+     */
+    public JsonFile(String fileName, FileObject directory, WatchedFields watchedFields) {
         assert fileName != null;
         assert directory != null;
         assert directory.isFolder() : "Must be folder: " + directory;
+        assert watchedFields != null;
         this.fileName = fileName;
         this.directory = directory;
+        this.watchedFields = watchedFields.getData();
         this.directory.addFileChangeListener(directoryListener);
     }
 
-    abstract List<Pair<String, String[]>> watchedFields();
-
+    /**
+     * Cleans up, it means to clear cached content, to remove file listener etc.
+     */
     public void cleanup() {
         contentInited = false;
         clear(true, false);
     }
 
+    /**
+     * Adds listener to content changes.
+     * @param listener listener to be added
+     * @see WatchedFields
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         initContent();
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Removes listener to content changes.
+     * @param listener listener to be removed
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Checks if the JSON file exists on disk.
+     * @return {@code true} if the JSON file exists on disk, {@code false} otherwise
+     */
     public boolean exists() {
-        return getJson().isFile();
+        return getJsonFile().isFile();
     }
 
+    /**
+     * Gets JSON file.
+     * @return JSON file
+     */
     public File getFile() {
-        return getJson();
+        return getJsonFile();
     }
 
+    /**
+     * Gets full path of the JSON file.
+     * @return full path of the JSON file
+     */
     public String getPath() {
-        return getJson().getAbsolutePath();
+        return getJsonFile().getAbsolutePath();
     }
 
     /**
      * Refreshes the file (when it was modified externally).
      */
     public void refresh() {
-        FileUtil.toFileObject(getJson()).refresh();
+        clear(false, false);
+        FileUtil.toFileObject(getJsonFile()).refresh();
     }
 
     /**
      * Returns <b>shallow</b> copy of the content.
      * <p>
-     * <b>WARNING:</b> Do not modify the content directly!
+     * <b>WARNING:</b> Do not modify the content directly! Use {@link #setContent(List, Object)} instead!
      * @return <b>shallow</b> copy of the data
+     * @see #setContent(List, Object)
      */
     @CheckForNull
     public synchronized Map<String, Object> getContent() {
@@ -167,12 +206,12 @@ abstract class JsonFile {
         if (content != null) {
             return new LinkedHashMap<>(content);
         }
-        File file = getJson();
+        File file = getJsonFile();
         if (!file.isFile()) {
             return null;
         }
         JSONParser parser = new JSONParser();
-        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(json), StandardCharsets.UTF_8))) {
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(jsonFile), StandardCharsets.UTF_8))) {
             content = (Map<String, Object>) parser.parse(reader, CONTAINER_FACTORY);
         } catch (ParseException ex) {
             LOGGER.log(Level.INFO, file.getAbsolutePath(), ex);
@@ -185,6 +224,13 @@ abstract class JsonFile {
         return new LinkedHashMap<>(content);
     }
 
+    /**
+     * Gets specific content value, for the given field hierarchy.
+     * @param <T> the type of the returned content value, e.g. String or Integer
+     * @param valueType the type of the returned content value, e.g. {@code String.class} or {@code Integer.class}
+     * @param fieldHierarchy hierarchy of fields, e.g. {@code meta, author} for <tt>content['meta']['author']</tt>
+     * @return specific content value, for the given field hierarchy
+     */
     @CheckForNull
     public <T> T getContentValue(Class<T> valueType, String... fieldHierarchy) {
         return getContentValue(getContent(), valueType, fieldHierarchy);
@@ -218,8 +264,8 @@ abstract class JsonFile {
     /**
      * Set new value of the given field.
      * @param fieldHierarchy field (together with its hierarchy) to be changed
-     * @param value new value of any type, e.g. new project name
-     * @throws IOException if any error occurs
+     * @param value new value of all type, e.g. new project name
+     * @throws IOException if all error occurs
      */
     public synchronized void setContent(final List<String> fieldHierarchy, final Object value) throws IOException {
         assert fieldHierarchy != null;
@@ -228,7 +274,7 @@ abstract class JsonFile {
         assert !EventQueue.isDispatchThread();
         assert exists();
         initContent();
-        DataObject dataObject = DataObject.find(FileUtil.toFileObject(getJson()));
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(getJsonFile()));
         EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
         assert editorCookie != null : "No EditorCookie for " + dataObject;
         boolean modified = editorCookie.isModified();
@@ -450,18 +496,18 @@ abstract class JsonFile {
         getContent();
     }
 
-    private synchronized File getJson() {
-        if (json == null) {
-            json = new File(FileUtil.toFile(directory), fileName);
+    private synchronized File getJsonFile() {
+        if (jsonFile == null) {
+            jsonFile = new File(FileUtil.toFile(directory), fileName);
             try {
-                FileUtil.addFileChangeListener(jsonListener, json);
-                LOGGER.log(Level.FINE, "Started listening to {0}", json);
+                FileUtil.addFileChangeListener(jsonFileListener, jsonFile);
+                LOGGER.log(Level.FINE, "Started listening to {0}", jsonFile);
             } catch (IllegalArgumentException ex) {
                 // ignore, already listening
-                LOGGER.log(Level.FINE, "Already listening to {0}", json);
+                LOGGER.log(Level.FINE, "Already listening to {0}", jsonFile);
             }
         }
-        return json;
+        return jsonFile;
     }
 
     void clear(boolean newFile) {
@@ -474,21 +520,21 @@ abstract class JsonFile {
         synchronized (this) {
             oldContent = content;
             if (content != null) {
-                LOGGER.log(Level.FINE, "Clearing cached content of {0}", json);
+                LOGGER.log(Level.FINE, "Clearing cached content of {0}", jsonFile);
                 content = null;
             }
             if (newFile) {
-                if (json != null) {
+                if (jsonFile != null) {
                     try {
-                        FileUtil.removeFileChangeListener(jsonListener, json);
-                        LOGGER.log(Level.FINE, "Stopped listenening to {0}", json);
+                        FileUtil.removeFileChangeListener(jsonFileListener, jsonFile);
+                        LOGGER.log(Level.FINE, "Stopped listenening to {0}", jsonFile);
                     } catch (IllegalArgumentException ex) {
                         // not listeneing yet, ignore
-                        LOGGER.log(Level.FINE, "Not listenening yet to {0}", json);
+                        LOGGER.log(Level.FINE, "Not listenening yet to {0}", jsonFile);
                     }
-                    LOGGER.log(Level.FINE, "Clearing cached json path {0}", json);
+                    LOGGER.log(Level.FINE, "Clearing cached json path {0}", jsonFile);
                 }
-                json = null;
+                jsonFile = null;
             }
             if (fireChanges) {
                 newContent = getContent();
@@ -500,7 +546,11 @@ abstract class JsonFile {
     }
 
     private void fireChanges(@NullAllowed Map<String, Object> oldContent, @NullAllowed Map<String, Object> newContent) {
-        for (Pair<String, String[]> watchedField : watchedFields()) {
+        if (watchedFields == null) {
+            propertyChangeSupport.firePropertyChange(null, null, null);
+            return;
+        }
+        for (Pair<String, String[]> watchedField : watchedFields) {
             String propertyName = watchedField.first();
             String[] field = watchedField.second();
             Object oldValue = getContentValue(oldContent, Object.class, field);
@@ -513,6 +563,67 @@ abstract class JsonFile {
 
     //~ Inner classes
 
+    /**
+     * Information about watched fields of the JSON file.
+     */
+    public static final class WatchedFields {
+
+        private final List<Pair<String, String[]>> data;
+
+
+        private WatchedFields(List<Pair<String, String[]>> data) {
+            this.data = data;
+        }
+
+        /**
+         * Creates new instance which can listen just on some specific content changes.
+         * @return new instance which can listen just on some specific content changes
+         * @see #add(String, String...)
+         */
+        public static WatchedFields create() {
+            return new WatchedFields(new ArrayList<Pair<String, String[]>>());
+        }
+
+        /**
+         * Creates new instance which listens on all content changes, not just specific ones.
+         * @return new instance which listens on all content changes, not just specific ones
+         */
+        public static WatchedFields all() {
+            return new WatchedFields(null);
+        }
+
+        /**
+         * Adds new field to be watched.
+         * @param propertyName property name to be fired, e.g. {@code PROP_AUTHOR}
+         * @param fieldHierarchy hierarchy of fields, e.g. {@code meta, author} for <tt>content['meta']['author']</tt>
+         * @return self
+         */
+        public WatchedFields add(@NonNull String propertyName, @NonNull String... fieldHierarchy) {
+            if (data == null) {
+                throw new IllegalStateException("Listening to all changes already");
+            }
+            Parameters.notWhitespace("propertyName", propertyName); // NOI18N
+            Parameters.notNull("fieldHierarchy", fieldHierarchy); // NOI18N
+            int length = fieldHierarchy.length;
+            if (length == 0) {
+                throw new IllegalArgumentException("No field given");
+            }
+            String[] field = new String[length];
+            System.arraycopy(fieldHierarchy, 0, field, 0, length);
+            data.add(Pair.of(propertyName, field));
+            return this;
+        }
+
+        @CheckForNull
+        List<Pair<String, String[]>> getData() {
+            if (data == null) {
+                return null;
+            }
+            return new CopyOnWriteArrayList<>(data);
+        }
+
+    }
+
     private final class DirectoryListener extends FileChangeAdapter {
 
         @Override
@@ -522,7 +633,7 @@ abstract class JsonFile {
 
     }
 
-    private final class JsonListener extends FileChangeAdapter {
+    private final class JsonFileListener extends FileChangeAdapter {
 
         @Override
         public void fileDataCreated(FileEvent fe) {
