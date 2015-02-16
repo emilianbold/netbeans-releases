@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="builddir" value="${basedir}/build"/>
     <property name="appdir" value="${builddir}/app/${appname}.app"/>
-    <property name="scriptsdir" value="${builddir}/scripts"/>
+    <property name="scriptsdir" value="${builddir}/scripts"/>  
 
     <target name="clean">
         <delete dir="${builddir}"/>
@@ -46,16 +46,7 @@ DEFAULT_JDK_HOME="${default.jdk.home}"
 NB_ID="${nb.id}"
 GLASSFISH_ID="${glassfish.id}"
 TOMCAT_ID="${tomcat.id}"
-]]></echo>
-
-        <!--copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
-            <filterset>
-                <filter token="APPVERSION" value="${baseide.version}"/> 
-                <filter token="INSTALLDIR" value="${install.dir}"/>
-                <filter token="BASEVERSION" value="${baseide.version}"/>
-                <filter token="NB_ID" value="${nb.id}"/>
-            </filterset>
-        </copy-->        
+]]></echo>  
 
         <copy todir="${scriptsdir}" verbose="yes">
             <fileset dir="${basedir}/pkg/scripts"/>
@@ -69,17 +60,11 @@ TOMCAT_ID="${tomcat.id}"
         
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
-        <!--copy file="${basedir}/pkg/scripts/set_jre_home.sh" todir="${basedir}/../build/postinstallscripts" verbose="yes" />
-        <chmod file="${basedir}/../build/postinstallscripts/set_jre_home.sh" perm="ugo+x"/-->
-        
-        <!--get src="${binary.cache.host}/bundledjvm/macos/jre1.7.0_71.zip"-->
-        <get src="http://smetiste.cz.oracle.com/builds/netbeans/nbi_cache/bundledjvm/macos/jre1.7.0_71.zip"
-	     dest="${builddir}/jre1.7.0_71.zip"
-	     usetimestamp="true"/>
+        <get src="${binary_cache_host}/bundledjvm/macos/jre1.7.0_71.zip" dest="${builddir}/jre.zip" usetimestamp="true"/>
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -o -d ${builddir}/jre/ ${builddir}/jre1.7.0_71.zip"/>
+            <arg value="unzip -o -d ${builddir}/jre/ ${builddir}/jre.zip"/>
         </exec>
         
         <condition property="sign.option" value="--sign '${signing_identity}'" else="">

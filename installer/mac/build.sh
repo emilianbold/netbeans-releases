@@ -124,7 +124,7 @@ ant -f $progdir/build.xml -Ddmgname=_$dmgname-javaee-macosx.dmg -Dnb.dir=$progdi
 
 # all others
 
-for pkg in javase ruby cpp php ; do
+for pkg in javase ruby cpp php html; do
     dmg_postfix=$pkg
     license_file=pkg/license.txt
     if [ $pkg = cpp ]
