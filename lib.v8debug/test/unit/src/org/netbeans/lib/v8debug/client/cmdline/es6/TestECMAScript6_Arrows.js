@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
 
-import org.netbeans.lib.v8debug.vars.ReferencedValue;
-import org.netbeans.lib.v8debug.vars.V8Object;
+var arrow = f => f + 1;
+var array = ['a', 'b', 'c'];
+var cat = "";
+array.forEach(elem => {
+    cat += elem;
+});
 
-/**
- *
- * @author Martin Entlicher
- */
-public final class V8Scope {
-    
-    public enum Type {
-        Global,
-        Local,
-        With,
-        Closure,
-        Catch,
-        Block,
-        Module;     // ES6
-        
-        public static Type valueOf(int i) {
-            for (Type t : values()) {
-                if (t.ordinal() == i) {
-                    return t;
-                }
-            }
-            return null;
-        }
-    }
-    
-    private final long index;
-    private final PropertyLong frameIndex;
-    private final Type type;
-    private final ReferencedValue<V8Object> object;
-    private final String text;
-    
-    public V8Scope(long index, PropertyLong frameIndex, Type type, ReferencedValue<V8Object> object, String text) {
-        this.index = index;
-        this.frameIndex = frameIndex;
-        this.type = type;
-        this.object = object;
-        this.text = text;
-    }
+cat.toLocaleString();
 
-    public long getIndex() {
-        return index;
-    }
+array.forEach(elem => {
+    cat = cat.replace(elem, '');
+});
 
-    public PropertyLong getFrameIndex() {
-        return frameIndex;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public ReferencedValue<V8Object> getObject() {
-        return object;
-    }
-
-    public String getText() {
-        return text;
-    }
-}
+cat.toLocaleString();
