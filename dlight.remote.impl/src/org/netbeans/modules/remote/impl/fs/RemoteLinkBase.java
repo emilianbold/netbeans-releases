@@ -248,7 +248,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }    
     
     @Override
-    protected final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
             antiLoop = new HashSet<String>();
         }

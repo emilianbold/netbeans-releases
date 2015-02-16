@@ -230,6 +230,15 @@ public class RefreshManager {
         }
     }
     
+    public void removeFromRefresh(String path) {
+        synchronized (queueLock) {
+            if (set.contains(path)) {
+                set.remove(path);
+                queue.remove(path);
+            }
+        }
+    }
+
     private void addExistingChildren(RemoteFileObjectBase fo, Collection<RemoteFileObjectBase> bag) {
         if (isDirectory(fo)) {
             bag.add(fo);

@@ -43,6 +43,7 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.jgit.lib.Config;
@@ -56,22 +57,36 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class ListBranchCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final boolean all;
+    private final ProgressMonitor monitor;
     private Map<String, GitBranch> branches;
 
     public ListBranchCommand (JGitRepository repository, GitClassFactory gitFactory, boolean all, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.all = all;
+        this.monitor = monitor;
     }
 
     @Override
     protected void run () throws GitException {
+        if (KIT) {
+            runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="KIT">
+    protected void runKit () throws GitException {
         Repository repository = getRepository().getRepository();
         Map<String, Ref> refs;
         try {
@@ -97,7 +112,7 @@ public class ListBranchCommand extends GitCommand {
             branches.putAll(allBranches);
         }
     }
-
+    
     private Map<String, GitBranch> getRefs (Collection<Ref> allRefs, String prefix, boolean isRemote, String activeBranch, Config config) {
         Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
         for (final Ref ref : RefComparator.sort(allRefs)) {
@@ -110,20 +125,130 @@ public class ListBranchCommand extends GitCommand {
         return branches;
     }
     
-    @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "branch"); //NOI18N
-    }
-
     public Map<String, GitBranch> getBranches () {
         return branches;
     }
-
+    
     private void setupTracking (Map<String, GitBranch> branches, Map<String, GitBranch> allBranches, Config cfg) {
         for (GitBranch b : branches.values()) {
             getClassFactory().setBranchTracking(b, Utils.getTrackedBranch(cfg, b.getName(), allBranches));
         }
     }
+//</editor-fold>
+    
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument(0, "branch"); //NOI18N
+        addArgument(0, "-vv"); //NOI18N
+        if (all) {
+            addArgument(0, "--all"); //NOI18N
+        }
+    }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        branches = new LinkedHashMap<String, GitBranch>();
+        try {
+            runner(canceled, 0, new Parser() {
 
+                @Override
+                public void outputParser(String output) {
+                    parseBranches(output, getClassFactory(), branches);
+                }
+            });
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+
+    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            parser.errorParser(exitStatus.error);
+        }
+    }
+    
+    static void parseBranches(String output, GitClassFactory factory, Map<String, GitBranch> branches) {
+        //#git branch -a -v
+        //* master                18d0fec Post 2.3 cycle (batch #1)
+        //  remotes/origin/HEAD   -> origin/master
+        //  remotes/origin/maint  9874fca Git 2.3
+        //  remotes/origin/master 18d0fec Post 2.3 cycle (batch #1)
+        //  remotes/origin/next   021ec32 Merge branch 'mg/push-repo-option-doc' into next
+        //  remotes/origin/pu     f5d0ad1 Merge branch 'nd/slim-index-pack-memory-usage' into pu
+        //  remotes/origin/todo   5914a77 Meta/Announce: adjust to possible change to the top-level RelNotes
+        //#git branch -vv --all
+        //* master                8408c76 [origin/master] init commit
+        //  remotes/origin/master 8408c76 init commit        
+        //#git branch -vv --all
+        //* master                79c5362 [origin/master] init commit
+        //  nova1                 79c5362 [master] init commit
+        //  remotes/origin/master 79c5362 init commit
+        HashMap<String, String> links = new HashMap<String,String>();
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("* ") || line.startsWith("  ")) {
+                boolean def = '*' == line.charAt(0);
+                String[] s = line.substring(2).split("\\s");
+                if (s.length > 1 && "->".equals(s[1])) {
+                    continue;
+                }
+                String branchName = s[0];
+                boolean remote = branchName.startsWith("remotes/");
+                if (remote) {
+                    branchName = branchName.substring(8);
+                }
+                GitBranch createBranch;
+                if (s.length > 1) {
+                    int i = line.indexOf('[');
+                    int j = line.indexOf(']');
+                    if (i > 0 && j > 0 && i < j) {
+                        links.put(branchName, line.substring(i+1, j));
+                    }
+                    createBranch = factory.createBranch(branchName, remote, def, s[1]);
+                } else {
+                    createBranch = factory.createBranch(branchName, remote, def, "HEAD");
+                }
+                branches.put(branchName, createBranch);
+                //public abstract GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id);
+                continue;
+            }
+        }
+        for (Map.Entry<String, String> entry : links.entrySet()) {
+            GitBranch orig = branches.get(entry.getKey());
+            GitBranch link = branches.get(entry.getValue());
+            if (orig != null && link != null && link.isRemote()) {
+                factory.setBranchTracking(orig, link);
+            }
+        }
+    }
+
+    private abstract class Parser {
+        public abstract void outputParser(String output);
+        public void errorParser(String error){
+        }
+    }
 }

@@ -88,6 +88,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
     public GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id) {
         return new GitBranch(name, remote, active, id);
     }
+    
+    @Override
+    public GitBranch createBranch (String name, boolean remote, boolean active, String id) {
+        return new GitBranch(name, remote, active, id);
+    }
 
     @Override
     public GitConflictDescriptor createConflictDescriptor (Type type) {

@@ -173,6 +173,16 @@ public class SftpTransport extends RemoteFileSystemTransport {
     protected boolean needsClientSidePollingRefresh() {
         return true;        
     }
+
+    @Override
+    protected boolean canRefreshFast() {
+        return false;
+    }
+
+    @Override
+    protected void refreshFast(String path, boolean expected) {
+        throw new UnsupportedOperationException("fast refresh not supported for sftp transport"); //NOI18N
+    }
     
     @Override
     protected void registerDirectoryImpl(RemoteDirectory directory) {

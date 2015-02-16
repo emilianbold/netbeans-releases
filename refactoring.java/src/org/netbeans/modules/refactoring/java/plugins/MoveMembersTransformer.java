@@ -533,7 +533,8 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 Tree member = resolvedPath.getLeaf();
                 Tree newMember = null;
                 Element resolvedElement = workingCopy.getTrees().getElement(resolvedPath);
-
+                final GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                genUtils.importComments(member, resolvedPath.getCompilationUnit());
                 // Make a new Method tree
                 if (member.getKind() == Tree.Kind.METHOD) {
 
@@ -688,7 +689,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     }
 
                     // Addimports
-                    body = GeneratorUtilities.get(workingCopy).importFQNs(body);
+                    body = genUtils.importFQNs(body);
                     List<TypeParameterTree> typeParameters = new LinkedList<TypeParameterTree>(methodTree.getTypeParameters());
                     if(method.getReturnType().getKind() == TypeKind.TYPEVAR) {
                         Element element = workingCopy.getTypes().asElement(method.getReturnType());
@@ -710,7 +711,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         final TreePath returnPath = new TreePath(resolvedPath, returnType);
                         Element returnTypeEl = trees.getElement(returnPath);
                         if(returnTypeEl != null && returnTypeEl.getKind() != ElementKind.TYPE_PARAMETER && isElementBeingMoved(returnTypeEl) == null) {
-                            returnType = GeneratorUtilities.get(workingCopy).importFQNs(returnType);
+                            returnType = genUtils.importFQNs(returnType);
                         }
                     }
                     newMember = make.Method(modifiers, methodTree.getName(), returnType, typeParameters, newParameters, methodTree.getThrows(), body, (ExpressionTree) methodTree.getDefaultValue());
@@ -723,15 +724,14 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     // Scan the initializer and fix references
                     ExpressionTree initializer = field.getInitializer();
                     initializer = fixReferences(initializer, target, resolvedPath);
-                    VariableTree importFQNs = GeneratorUtilities.get(workingCopy).importFQNs(field);
+                    VariableTree importFQNs = genUtils.importFQNs(field);
                     newMember = make.Variable(modifiers, field.getName(), importFQNs.getType(), initializer);
                 }
 
                 // Insert the member and copy its comments
                 if (newMember != null) {
-                    GeneratorUtilities.get(workingCopy).importComments(member, resolvedPath.getCompilationUnit());
-                    GeneratorUtilities.get(workingCopy).copyComments(member, newMember, true);
-                    GeneratorUtilities.get(workingCopy).copyComments(member, newMember, false);
+                    genUtils.copyComments(member, newMember, true);
+                    genUtils.copyComments(member, newMember, false);
                     if(newMember.getKind() == Tree.Kind.METHOD) {
                         if(updateJavadoc) {
                             MethodTree method = (MethodTree) newMember;
@@ -750,7 +750,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                             make.addComment(newMember, comment, true);
                         }
                     }
-                    newClassTree = GeneratorUtilities.get(workingCopy).insertClassMember(newClassTree, newMember);
+                    newClassTree = genUtils.insertClassMember(newClassTree, newMember);
                 }
             }
             rewrite(node, newClassTree);

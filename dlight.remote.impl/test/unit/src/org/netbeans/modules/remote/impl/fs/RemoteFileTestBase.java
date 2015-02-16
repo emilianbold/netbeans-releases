@@ -79,6 +79,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("remote.user.password.keep_in_memory", "true");        
         System.setProperty("remote.fs_server.verbose", "0");
         System.setProperty("remote.fs_server.log", "true");        
+        System.setProperty("remote.fs_server.suppress.stderr", "false");
         TestLogHandler.attach(RemoteLogger.getInstance());
     }
     
@@ -285,5 +286,5 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     protected String getFileName(ExecutionEnvironment execEnv, String absPath) {
         return execEnv.toString() + ':' + absPath;
-    }
+    }    
 }

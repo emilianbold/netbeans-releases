@@ -263,6 +263,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public RemoteFileObjectFactory getFactory() {
         return factory;
     }
+    
+    public int getCachedFileObjectsCount() {
+        return factory.getCachedFileObjectsCount();
+    }
 
     public RefreshManager getRefreshManager() {
         return refreshManager;

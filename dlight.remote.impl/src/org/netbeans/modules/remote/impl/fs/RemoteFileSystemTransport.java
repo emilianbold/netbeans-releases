@@ -48,7 +48,9 @@ import java.net.ConnectException;
 import java.util.Collection;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 
 /**
@@ -71,6 +73,38 @@ public abstract class RemoteFileSystemTransport {
         return getInstance(execEnv).needsClientSidePollingRefresh();
     }
     
+    public static boolean canRefreshFast(ExecutionEnvironment execEnv) {
+        return getInstance(execEnv).canRefreshFast();
+    }
+
+    public static void refreshFast(RemoteDirectory directory, boolean expected) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        String path = directory.getPath();
+        if (path.isEmpty()) {
+            path = "/"; // NOI18N
+        }
+        long time = 0;
+        int foCount = 0, syncCount = 0;
+        if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
+            final RemoteFileSystem fs = directory.getFileSystem();
+            time = System.currentTimeMillis();
+            foCount = fs.getCachedFileObjectsCount();
+            syncCount = fs.getDirSyncCount();
+        }
+
+        getInstance(directory.getExecutionEnvironment()).refreshFast(path,expected);
+
+        if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
+            final RemoteFileSystem fs = directory.getFileSystem();
+            time = System.currentTimeMillis() - time;
+            foCount = fs.getCachedFileObjectsCount() - foCount;
+            syncCount = fs.getDirSyncCount() - syncCount;            
+            RemoteLogger.fine("Fast refresh {0} [{1} fo, {2} syncs, {3} new fo] took {4} ms",  //NOI18N
+                    directory.getDisplayName(), fs.getCachedFileObjectsCount(),
+                    syncCount, foCount, time);
+        }
+    }
+
     public static void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
         getInstance(env).scheduleRefresh(paths);
     }
@@ -222,6 +256,11 @@ public abstract class RemoteFileSystemTransport {
     protected abstract boolean isValid();
     
     protected abstract boolean needsClientSidePollingRefresh();
+
+    protected abstract boolean canRefreshFast();
+    
+    protected abstract void refreshFast(String path, boolean expected)
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
     
     protected abstract void registerDirectoryImpl(RemoteDirectory directory);
 
