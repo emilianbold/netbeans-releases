@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.grunt.file;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
+import org.netbeans.modules.web.clientproject.api.json.JsonFile;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.ChangeSupport;
+import org.openide.util.WeakListeners;
 
 @MIMEResolver.Registration(displayName = "Gruntfile", resource = "../resources/gruntfile-resolver.xml", position = 123)
-public final class Gruntfile {
-
-    private static final Logger LOGGER = Logger.getLogger(Gruntfile.class.getName());
+public final class Gruntfile implements PropertyChangeListener {
 
     public static final String FILE_NAME = "Gruntfile.js"; // NOI18N
 
-    private final FileObject directory;
-    private final FileChangeListener directoryListener = new DirectoryListener();
-    private final FileChangeListener gruntfileListener = new GruntfileListener();
+    final JsonFile gruntfile;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    // @GuardedBy("this")
-    private File gruntfile;
 
-
-    public Gruntfile(FileObject directory) {
+    private Gruntfile(FileObject directory) {
         assert directory != null;
-        assert directory.isFolder() : "Must be folder: " + directory;
-        this.directory = directory;
-        FileUtil.addFileChangeListener(directoryListener, FileUtil.toFile(directory));
+        gruntfile = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.all());
+    }
+
+    public static Gruntfile create(FileObject directory) {
+        Gruntfile gruntfile = new Gruntfile(directory);
+        gruntfile.gruntfile.addPropertyChangeListener(WeakListeners.propertyChange(gruntfile, gruntfile.gruntfile));
+        return gruntfile;
     }
 
     public boolean exists() {
-        return getGruntfile().isFile();
+        return gruntfile.exists();
     }
 
     public File getFile() {
-        return getGruntfile();
+        return gruntfile.getFile();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -93,72 +87,9 @@ public final class Gruntfile {
         changeSupport.removeChangeListener(listener);
     }
 
-    private synchronized File getGruntfile() {
-        if (gruntfile == null) {
-            gruntfile = new File(FileUtil.toFile(directory), FILE_NAME);
-            try {
-                FileUtil.addFileChangeListener(gruntfileListener, gruntfile);
-                LOGGER.log(Level.FINE, "Started listening to {0}", gruntfile);
-            } catch (IllegalArgumentException ex) {
-                // ignore, already listening
-                LOGGER.log(Level.FINE, "Already listening to {0}", gruntfile);
-            }
-        }
-        return gruntfile;
-    }
-
-    void reset(boolean newFile) {
-        if (newFile) {
-            synchronized (this) {
-                if (gruntfile != null) {
-                    try {
-                        FileUtil.removeFileChangeListener(gruntfileListener, gruntfile);
-                        LOGGER.log(Level.FINE, "Stopped listening to {0}", gruntfile);
-                    } catch (IllegalArgumentException ex) {
-                        // not listeneing yet, ignore
-                        LOGGER.log(Level.FINE, "Not listening yet to {0}", gruntfile);
-                    }
-                    gruntfile = null;
-                }
-            }
-        }
-        // fire change
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
         changeSupport.fireChange();
-    }
-
-    //~ Inner classes
-
-    private final class DirectoryListener extends FileChangeAdapter {
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            reset(true);
-        }
-
-    }
-
-    private final class GruntfileListener extends FileChangeAdapter {
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            reset(true);
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            reset(false);
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            reset(true);
-        }
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            reset(true);
-        }
-
     }
 
 }
