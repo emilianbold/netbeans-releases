@@ -285,14 +285,7 @@ UnbufferedComment = "//-"
     [#\.]                            {   hasCssId = false;
                                         yypushback(1);
                                         yybegin(AFTER_TAG); }
-    /*"#"{Input}                    {   return JadeTokenId.CSS_ID; }
-    "\."{Input}                     {   dotAfterTag = true;
-                                        hasCssId = false;
-                                        yybegin(AFTER_TAG);
-                                    }
-                                        return JadeTokenId.CSS_CLASS; }*/
-      
-    
+        
     "|"                             {   yybegin(IN_PLAIN_TEXT_LINE);
                                         return JadeTokenId.PLAIN_TEXT_DELIMITER; }
     ":"{Input}                      {   yybegin (IN_FILTER_BLOCK);
@@ -359,7 +352,7 @@ UnbufferedComment = "//-"
 
 <TEXT_LINE>                         {
     
-    "#{"                            {   yypushback(2);
+    [#!]"{"                         {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
                                         return JadeTokenId.TEXT;
                                     }
@@ -512,7 +505,7 @@ UnbufferedComment = "//-"
 }
 
 <JAVASCRIPT_EXPRESSION> {
-    "#{"                            {   braceBalance = 1; return JadeTokenId.EXPRESSION_DELIMITER_OPEN; }
+    [#!]"{"                            {   braceBalance = 1; return JadeTokenId.EXPRESSION_DELIMITER_OPEN; }
     "{"                             {   braceBalance++; }
     "}"                             {   braceBalance--;
                                         if (braceBalance == 0) {

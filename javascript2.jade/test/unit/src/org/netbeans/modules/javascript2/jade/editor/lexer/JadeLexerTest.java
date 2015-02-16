@@ -214,6 +214,18 @@ public class JadeLexerTest extends CslTestBase {
         checkLexer("testfiles/lexer/conditional03.jade");
     }
     
+    public void testInterpolation01() throws Exception {
+        checkLexer("testfiles/lexer/interpolation01.jade");
+    }
+    
+    public void testInterpolation02() throws Exception {
+        checkLexer("testfiles/lexer/interpolation02.jade");
+    }
+    
+    public void testInterpolation03() throws Exception {
+        checkLexer("testfiles/lexer/interpolation03.jade");
+    }
+    
     private void checkLexer(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         Snapshot snapshot = testSource.createSnapshot();
