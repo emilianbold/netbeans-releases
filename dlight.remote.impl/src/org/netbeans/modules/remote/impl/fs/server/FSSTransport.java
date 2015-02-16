@@ -49,7 +49,6 @@ import java.io.PrintStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +70,9 @@ import org.netbeans.modules.remote.impl.fs.DirEntry;
 import org.netbeans.modules.remote.impl.fs.DirEntryImpl;
 import org.netbeans.modules.remote.impl.fs.DirEntryList;
 import org.netbeans.modules.remote.impl.fs.RemoteDirectory;
+import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.util.RequestProcessor;
@@ -408,7 +410,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     protected boolean needsClientSidePollingRefresh() {
         return false;
     }
-    
+
     @Override
     protected void registerDirectoryImpl(RemoteDirectory directory) {
         if (ConnectionManager.getInstance().isConnectedTo(env)) {
@@ -445,8 +447,73 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             // file system root has empty path
             dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path); // NOI18N
         }
-    }    
-    
+    }
+
+    @Override
+    protected boolean canRefreshFast() {
+        return true;
+    }
+
+    @Override
+    protected void refreshFast(String path, boolean expected) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+
+        long time = System.currentTimeMillis();
+        RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_fast_refresh", path); // NOI18N
+        FSSResponse response = null;
+        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, false);        
+        try {
+            RemoteLogger.finest("Sending request #{0} for directory {1} to fs_server", request.getId(), path);
+            response = dispatcher.dispatch(request);
+            FSSResponse.Package pkg = response.getNextPackage();
+            assert pkg.getKind() == FSSResponseKind.FS_RSP_REFRESH;
+            Buffer buf = pkg.getBuffer();
+            buf.getChar();
+            int respId = buf.getInt();
+            assert respId == request.getId();
+            String serverPath = buf.getString();
+            if (!serverPath.equals(path)) {
+                DLightLibsCommonLogger.assertTrue(false, "Unexpected path in response: \"" + //NOI18N
+                        serverPath + "\" expected \"" + path + "\""); //NOI18N
+            }
+            IOException ex = null;
+            for (pkg = response.getNextPackage();
+                    pkg.getKind() != FSSResponseKind.FS_RSP_END;
+                    pkg = response.getNextPackage()) {
+                if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
+                    ex = createIOException(pkg);
+                }
+                if (pkg.getKind() != FSSResponseKind.FS_RSP_CHANGE) {
+                    new IllegalArgumentException("Wrong response kind: " + response).printStackTrace(System.err); // NOI18N
+                    continue;
+                }
+                buf = pkg.getBuffer(); // e.g. "c 5 19 /tmp/tmp.BTFx185bJs"
+                buf.getChar();
+                buf.getInt();
+                String changedPath = buf.getString();
+                if (!changedPath.startsWith(path)) {
+                    new IllegalArgumentException("Unexpected changed path: " + response).printStackTrace(System.err); // NOI18N
+                    continue;
+                }
+                final RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+                fs.getRefreshManager().removeFromRefresh(changedPath);
+                RemoteFileObjectBase fo = fs.getFactory().getCachedFileObject(changedPath);
+                fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
+                // TODO: should we proceed with other directories in the case of exception?
+            }
+            if (ex != null) {
+                throw ex;
+            }
+        } finally {
+            if (response != null) {
+                response.dispose();
+            }
+            RemoteStatistics.stopChannelActivity(activityID, 0);
+            RemoteLogger.finest("Fast refresh #{0} of {1} took {2} ms",
+                    request.getId(), path, System.currentTimeMillis() - time);
+        }        
+    }
+
     @Override
     protected Warmup createWarmup(String path) {
         WarmupImpl warmup = new WarmupImpl(path);

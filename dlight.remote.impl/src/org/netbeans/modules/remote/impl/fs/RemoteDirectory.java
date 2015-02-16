@@ -68,10 +68,11 @@ import java.util.zip.ZipFile;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
@@ -581,7 +582,23 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private boolean isProhibited() {
-        return getPath().equals("/proc") || getPath().equals("/dev");//NOI18N
+        final String path = getPath();
+        if (path.equals("/proc") || getPath().equals("/dev")) { //NOI18N
+            return true;
+        }
+        if (path.equals("/run")) { //NOI18N
+        if (HostInfoUtils.isHostInfoAvailable(getExecutionEnvironment())) {
+                try {
+                    HostInfo hi = HostInfoUtils.getHostInfo(getExecutionEnvironment());
+                    if (hi.getOSFamily() == HostInfo.OSFamily.LINUX) {
+                        return true;
+                    }
+                } catch (IOException | ConnectionManager.CancellationException ex) {
+                    Exceptions.printStackTrace(ex); // should never be the case if isHostInfoAvailable retured true
+                }
+            }
+        }
+        return false;
     }
 
     private void warmupDirs() {
@@ -1626,7 +1643,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop != null) {
             if (antiLoop.contains(getPath())) {
                 return;

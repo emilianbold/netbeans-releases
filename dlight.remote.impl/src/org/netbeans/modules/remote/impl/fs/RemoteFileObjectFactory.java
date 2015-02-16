@@ -85,6 +85,10 @@ public class RemoteFileObjectFactory {
     /*package*/ Collection<RemoteFileObjectBase> getCachedFileObjects() {
         return fileObjectsCache.values(); // WeakCache returns a copy => no need to copy here
     }
+    
+    /*package*/ int getCachedFileObjectsCount() {
+        return fileObjectsCache.size();
+    }
 
     /**
      * Path <code>path</path> will be normalized as we will keep in cache only normalized paths as a key
