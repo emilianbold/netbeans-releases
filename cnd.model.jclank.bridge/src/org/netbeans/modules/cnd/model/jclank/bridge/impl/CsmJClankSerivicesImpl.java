@@ -67,7 +67,7 @@ public final class CsmJClankSerivicesImpl {
 
     public static void traceCompilationDB(Set<NativeProject> projects, 
             raw_ostream out, raw_ostream err, 
-            ClankProgressHandler handle, AtomicBoolean cancelled) {
+            ClankProgressHandler handle, final AtomicBoolean cancelled) {
         assert out != null;
         assert err != null;
         Collection<ClankCompilationDataBase> dbs = CsmJClankCompilationDB.convertProjects(projects);
@@ -75,7 +75,12 @@ public final class CsmJClankSerivicesImpl {
         settings.out = out;
         settings.err = err;
         settings.progress = handle;
-        settings.cancelled = cancelled;
+        settings.cancelled = new Interrupter() {
+            @Override
+            public boolean cancelled() {
+                return cancelled.get();
+            }
+        };
         ClankPreprocessorServices.dumpCompilations(dbs, settings);
     }
     
@@ -90,6 +95,12 @@ public final class CsmJClankSerivicesImpl {
         settings.err = err;
         settings.TraceClankStatistics = true;
         settings.TraceStatisticsOS = out;
+        settings.cancelled = new Interrupter() {
+            @Override
+            public boolean cancelled() {
+                return cancelled.get();
+            }
+        };
         ClankPreprocessorServices.preprocess(dbs, settings);
     }
     
