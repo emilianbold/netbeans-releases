@@ -2050,7 +2050,7 @@ public class Reformatter implements ReformatTask {
             StatementTree elseStat = node.getElseStatement();
             CodeStyle.BracesGenerationStyle redundantIfBraces = cs.redundantIfBraces();
             if ((elseStat != null && redundantIfBraces == CodeStyle.BracesGenerationStyle.ELIMINATE && danglingElseChecker.hasDanglingElse(node.getThenStatement())) ||
-                    (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node))))
+                    (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node) || node.getCondition().getKind() == Tree.Kind.ERRONEOUS)))
                 redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
             lastIndent = indent;
             boolean prevblock = wrapStatement(cs.wrapIfStatement(), redundantIfBraces, cs.spaceBeforeIfLeftBrace() ? 1 : 0, node.getThenStatement());
@@ -2093,7 +2093,7 @@ public class Reformatter implements ReformatTask {
             boolean old = continuationIndent;
             try {
                 CodeStyle.BracesGenerationStyle redundantDoWhileBraces = cs.redundantDoWhileBraces();
-                if (redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                if (redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node) || node.getCondition().getKind() == Tree.Kind.ERRONEOUS))
                     redundantDoWhileBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
                 boolean isBlock = node.getStatement().getKind() == Tree.Kind.BLOCK || redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE;
                 if (isBlock && redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.ELIMINATE) {
@@ -2135,7 +2135,7 @@ public class Reformatter implements ReformatTask {
             }
             lastIndent = indent;
             CodeStyle.BracesGenerationStyle redundantWhileBraces = cs.redundantWhileBraces();
-            if (redundantWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+            if (redundantWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node) || node.getCondition().getKind() == Tree.Kind.ERRONEOUS))
                 redundantWhileBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
             wrapStatement(cs.wrapWhileStatement(), redundantWhileBraces, cs.spaceBeforeWhileLeftBrace() ? 1 : 0, node.getStatement());
             return true;
