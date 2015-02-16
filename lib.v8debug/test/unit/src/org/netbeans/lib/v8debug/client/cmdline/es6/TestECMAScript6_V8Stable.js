@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
 
-import org.netbeans.lib.v8debug.vars.ReferencedValue;
-import org.netbeans.lib.v8debug.vars.V8Object;
+// New Types:
+var obj = {};
+var set = new Set();
+set.add("one").add("two");
+var weakSet = new WeakSet();
+//weakSet.add("one").add("two");
+var map = new Map();
+map.set("oneKey", "oneValue");
+map.set("twoKey", "twoValue");
+var weakMap = new WeakMap();
+//weakMap.set("oneKey", "oneValue");
+//weakMap.set("twoKey", "twoValue");
+var symbol = Symbol("symbolKey");
+var promise = new Promise(function(resolve, reject) { resolve(true); });
+var iter = ['a', 'b', 'c'].entries();   //console.log('set = '+set);
+var gen = function*() {
+    var pre = 0, cur = 1;
+    for (;;) {
+      var temp = pre;
+      pre = cur;
+      cur += temp;
+      yield cur;
+    }
+  };
+  
+var it1 = iter.next();
+var it2 = iter.next();
+var it3 = iter.next();  //console.log('it1 = '+it1.value+", it2 = "+it2.value+', it3 = '+it3.value);
+var it4 = iter.next(); //breakpoint
 
-/**
- *
- * @author Martin Entlicher
- */
-public final class V8Scope {
-    
-    public enum Type {
-        Global,
-        Local,
-        With,
-        Closure,
-        Catch,
-        Block,
-        Module;     // ES6
-        
-        public static Type valueOf(int i) {
-            for (Type t : values()) {
-                if (t.ordinal() == i) {
-                    return t;
-                }
-            }
-            return null;
-        }
-    }
-    
-    private final long index;
-    private final PropertyLong frameIndex;
-    private final Type type;
-    private final ReferencedValue<V8Object> object;
-    private final String text;
-    
-    public V8Scope(long index, PropertyLong frameIndex, Type type, ReferencedValue<V8Object> object, String text) {
-        this.index = index;
-        this.frameIndex = frameIndex;
-        this.type = type;
-        this.object = object;
-        this.text = text;
-    }
+// Template Strings
 
-    public long getIndex() {
-        return index;
-    }
-
-    public PropertyLong getFrameIndex() {
-        return frameIndex;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public ReferencedValue<V8Object> getObject() {
-        return object;
-    }
-
-    public String getText() {
-        return text;
-    }
-}
+const n = 10;
+var ts = `The n = ${n}.`;
+var ts2 = `Multi
+line
+String`;
+ts2.length;

@@ -39,67 +39,24 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+package org.netbeans.lib.v8debug.events;
 
-import org.netbeans.lib.v8debug.vars.ReferencedValue;
-import org.netbeans.lib.v8debug.vars.V8Object;
+import org.netbeans.lib.v8debug.V8Body;
+import org.netbeans.lib.v8debug.V8Script;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Scope {
+public class CompileErrorEventBody extends V8Body {
     
-    public enum Type {
-        Global,
-        Local,
-        With,
-        Closure,
-        Catch,
-        Block,
-        Module;     // ES6
-        
-        public static Type valueOf(int i) {
-            for (Type t : values()) {
-                if (t.ordinal() == i) {
-                    return t;
-                }
-            }
-            return null;
-        }
-    }
+    private final V8Script script;
     
-    private final long index;
-    private final PropertyLong frameIndex;
-    private final Type type;
-    private final ReferencedValue<V8Object> object;
-    private final String text;
-    
-    public V8Scope(long index, PropertyLong frameIndex, Type type, ReferencedValue<V8Object> object, String text) {
-        this.index = index;
-        this.frameIndex = frameIndex;
-        this.type = type;
-        this.object = object;
-        this.text = text;
+    public CompileErrorEventBody(V8Script script) {
+        this.script = script;
     }
 
-    public long getIndex() {
-        return index;
-    }
-
-    public PropertyLong getFrameIndex() {
-        return frameIndex;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public ReferencedValue<V8Object> getObject() {
-        return object;
-    }
-
-    public String getText() {
-        return text;
+    public V8Script getScript() {
+        return script;
     }
 }
