@@ -71,14 +71,17 @@ import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class AddCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final VCSFileProxy[] roots;
     private final ProgressMonitor monitor;
     private final FileListener listener;
@@ -91,14 +94,16 @@ public class AddCommand extends GitCommand {
     }
 
     @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "add"); //NOI18N
-        addFiles(0, roots);
+    protected void run () throws GitException {
+        if (KIT) {
+            runKit();
+        } else {
+            runCLI();
+        }
     }
 
-    @Override
-    protected void run() throws GitException {
+//<editor-fold defaultstate="collapsed" desc="KIT">
+    protected void runKit() throws GitException {
         Repository repository = getRepository().getRepository();
         try {
             DirCache cache = null;
@@ -200,5 +205,104 @@ public class AddCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
+//</editor-fold>
+    
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument(0, "add"); //NOI18N
+        addArgument(0, "-v"); //NOI18N
+        addArgument(0, "--"); //NOI18N
+        if (roots.length == 0) {
+            addArgument(0, ".");
+        } else {
+            for (VCSFileProxy root : roots) {
+                String relativePath = Utils.getRelativePath(getRepository().getLocation(), root);
+                if (relativePath.isEmpty()) {
+                    addArgument(0, ".");
+                } else {
+                    addArgument(0, relativePath);
+                }
+            }
+        }
+    }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            runner(canceled, 0, new Parser() {
 
+                @Override
+                public void outputParser(String output) {
+                    parseAddVerboseOutput(output);
+                }
+
+                @Override
+                public void errorParser(String error) {
+                    parseAddError(error);
+                }
+            });
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            parser.errorParser(exitStatus.error);
+        }
+    }
+    
+    private void parseAddVerboseOutput(String output) {
+        //add 'folder1/subfolder/file1'
+        //add 'folder1/subfolder/file2'
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("add")) {
+                String s = line.substring(3).trim();
+                if (s.startsWith("'") && s.endsWith("'")) {
+                    String file = s.substring(1,s.length()-1);
+                    listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), file), file);
+                }
+                continue;
+            }
+        }
+    }
+    
+    private void parseAddError(String error) {
+        //The following paths are ignored by one of your .gitignore files:
+        //folder2
+        //Use -f if you really want to add them.
+        //fatal: no files added
+        processMessages(error);
+    }
+    
+    private abstract class Parser {
+        public abstract void outputParser(String output);
+        public void errorParser(String error){
+        }
+    }
 }

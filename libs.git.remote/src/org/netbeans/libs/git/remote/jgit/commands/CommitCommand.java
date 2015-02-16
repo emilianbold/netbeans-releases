@@ -42,11 +42,8 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.api.Git;
@@ -290,6 +287,7 @@ public class CommitCommand extends GitCommand {
         if (commiter != null) {
             addArgument(0, "--author="+author.toString());
         }
+        addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
         addArgument(1, "log"); //NOI18N
         addArgument(1, "--raw"); //NOI18N
