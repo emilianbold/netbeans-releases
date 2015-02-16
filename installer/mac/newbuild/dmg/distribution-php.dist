@@ -114,7 +114,8 @@ function checkSystemversion() {
             <line choice="baseide"></line>
             <line choice="webcommon"/>
             <line choice="extide"/>
-            <line choice="php"></line>                    
+            <line choice="php"></line>
+            <line choice="jre-nested"/>
         </line>
         <line choice="postinstallscripts"></line>
     </choices-outline>
@@ -131,6 +132,9 @@ function checkSystemversion() {
     <choice id="php" title="php-title" description="php-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.php"></pkg-ref>
     </choice>
+    <choice id="jre-nested" title="jre-nested-title" description="jre-nested-description" start_selected="true" start_enabled="true" start_visible="false" selected="true" enabled="ture">
+        <pkg-ref id="ident.pkg.jrenested"/>
+    </choice>
     <choice id="postinstallscripts" title="postinstallscripts-title" description="postinstallscripts-description" start_selected="true" start_enabled="true" start_visible="false" selected="true" enabled="true" visible="false">
         <pkg-ref id="ident.pkg.postinstallscripts"></pkg-ref>
     </choice>
@@ -138,5 +142,6 @@ function checkSystemversion() {
     <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">webcommon-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.extide" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">extide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.php" version="0.0.0.0.1" installKBytes="@SIZE_PHP@" auth="Root" onConclusion="None">php-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.jrenested" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">jre-nested-1.7.0_71.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.postinstallscripts" version="0.0.0.0.1" auth="Root" onConclusion="None">postinstallscripts.pkg</pkg-ref>
 </installer-gui-script>

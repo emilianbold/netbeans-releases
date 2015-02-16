@@ -43,6 +43,11 @@
     
     <import file="${basedir}/build.pro"/>
     <property file="${basedir}/Bundle.properties"/>
+    
+    <target name="build-jre-nested-pkg">
+        <echo message="Building nested JRE into ${basedir}/jre-nested"/>
+        <ant dir="netbeans/jre-nested" target="build-pkg"/>              
+    </target>
 
     <target name="build-glassfish-pkg" >
         <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
@@ -68,6 +73,7 @@
         <ant dir="${basedir}/glassfish" target="clean"/>
         <ant dir="${basedir}/tomcat" target="clean"/>
         <ant dir="${basedir}/netBeans/baseide" target="clean"/>
+        <ant dir="${basedir}/netBeans/jre-nested" target="clean"/>
         <delete dir="${basedir}/netBeans/ruby/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/cpp/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/javase/build" failonerror="no"/>
@@ -309,8 +315,9 @@
         <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg),
                                               -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
-                                              -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
+                                              -html(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/jre-nested-1.7.0_71.pkg),
+                                              -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/jre-nested-1.7.0_71.pkg),
+                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/jre-nested-1.7.0_71.pkg)
                                           "/>
         <property name="fx.bundles" value="    
                                                -javafx-full(./build/*pkg),
@@ -328,7 +335,7 @@
         
     </target>
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,init-bundles">
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-jre-nested-pkg,build-glassfish-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_pkg" failonerror="false"/>                          
             <ant target="build-dmg">
@@ -477,6 +484,7 @@
                 <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/> 
                 <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
                 <filter token="SIZE_EXTIDE" value="${sizeof.extide}"/>
+                <filter token="SIZE_JRENESTED" value="${sizeof.jrenested}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_JAVAME" value="${sizeof.javame}"/>
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>

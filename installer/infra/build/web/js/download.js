@@ -291,6 +291,7 @@ function hide_description(index) {
     document.getElementById('product_' + index + '_description').style.visibility = 'hidden';
 }
 
+
 function highlight(){
 	var table = document.getElementById("components_table");
 	var tr = table.getElementsByTagName("tr");
@@ -389,6 +390,8 @@ function unhighlightRow(table,cells,row){
 	}
 }
 
+
+
 function detect_platform() {
     var agent = navigator.userAgent;
     var platform;
@@ -486,7 +489,7 @@ function update() {
     /*For NetBeans we have native mac installer*/
 
     if(platform=="macosx") {
-	platform = "macosx-x86";
+        platform = "macosx-x86";
     }
 
     // update the "checks" and generate error messages, if any
@@ -593,32 +596,33 @@ function update() {
     }
 
     for (var i = 0; i < product_uids.length; i++) {
+        var plat=platform.replace('macosx-x86','macosx');
         if (!is_compatible(i, platform)) {
             continue;
         }
 
         for(var k=0;k<BUNDLE_IDS.length;k++) {
-	    if (is_product_in_bundle(product_uids[i], BUNDLE_IDS[k])) {
-                sizes[k] += new Number(product_download_sizes[i]);
+            if (is_product_in_bundle(product_uids[i], BUNDLE_IDS[k])) {
+                var sizes=[];
+                var size=0;
+                if(is_file_available(plat,BUNDLE_IDS[k],lang_id,'')) {
+                    sizes.push(get_file_size_mb(get_file_name(plat, BUNDLE_IDS[k], lang_id), lang_id, 0));
+                }
+                if(is_file_available(plat,BUNDLE_IDS[k],lang_id,'i586')) {
+                    sizes.push(get_file_size_mb(get_file_name(plat, BUNDLE_IDS[k], lang_id,'i586'), lang_id, 0));
+                }
+                if(is_file_available(plat,BUNDLE_IDS[k],lang_id,'x64')) {
+                    sizes.push(get_file_size_mb(get_file_name(plat, BUNDLE_IDS[k], lang_id,'x64'), lang_id, 0));
+                }
+                size=sizes.sort().join(' - ');
+                document.getElementById(BUNDLE_IDS[k] + "_size").innerHTML   = FREE_SIZE_MESSAGE.replace('{0}', size);
             }
 
         }
     }
 
-    for(var k=0;k<sizes.length;k++) {
-        sizes[k]   = Math.ceil(sizes[k] / 1024.0);
-    }
-
-    if(platform.indexOf("macosx")!=-1) {
-	   platform = "macosx";
-    }
-
-    for(var k=0;k<sizes.length;k++) {
-        sizes[k]   = get_file_size_mb(get_file_name(platform, BUNDLE_IDS[k],   lang_id), lang_id, sizes[k]);
-        document.getElementById(BUNDLE_IDS[k] + "_size").innerHTML   = FREE_SIZE_MESSAGE.replace('{0}', sizes[k]);
-    }
-
     for(var k=0;k<BUNDLE_IDS.length;k++) {
+        var plat=platform.replace('macosx-x86','macosx');
         var exists = false;
         var id = BUNDLE_IDS[k];
 
@@ -631,17 +635,17 @@ function update() {
         var button;
 
         var winButtons=[];
-        if(is_file_available(platform,id,lang_id,'')) {
+        if(is_file_available(plat,id,lang_id,'')) {
             winButtons.push(get_download_button(id, exists));
         }
-        if(is_file_available(platform,id,lang_id,'i586')) {
+        if(is_file_available(plat,id,lang_id,'i586')) {
             winButtons.push(get_download_button(id, exists,'i586'));
         }
-        if(is_file_available(platform,id,lang_id,'x64')) {
+        if(is_file_available(plat,id,lang_id,'x64')) {
             winButtons.push(get_download_button(id, exists,'x64'));
         }
         button=winButtons.join('<br/>');
-        
+
         document.getElementById(id + "_link").innerHTML   = button;
     }
 
