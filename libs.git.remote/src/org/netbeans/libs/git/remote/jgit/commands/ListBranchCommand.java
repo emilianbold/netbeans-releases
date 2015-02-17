@@ -208,15 +208,33 @@ public class ListBranchCommand extends GitCommand {
         //* master                79c5362 [origin/master] init commit
         //  nova1                 79c5362 [master] init commit
         //  remotes/origin/master 79c5362 init commit
+        //#git branch -vv --all
+        //* master    295d064 commit
+        //  newbranch fa663c1 [master: behind 2] initial commit        
+        //#git branch -vv --all
+        //  master    699a8aa commit
+        //* newbranch 1e2f87c [master: ahead 1, behind 1] commit
+        //#git branch -vv --all
+        //* (no branch) 024ac8c change
+        //  master      024ac8c change
+        //  nova        024ac8c change
         HashMap<String, String> links = new HashMap<String,String>();
         for (String line : output.split("\n")) { //NOI18N
             if (line.startsWith("* ") || line.startsWith("  ")) {
                 boolean def = '*' == line.charAt(0);
-                String[] s = line.substring(2).split("\\s");
+                line = line.substring(2);
+                String branchName = null;
+                if (line.startsWith("(no branch)")) {
+                    branchName = "(no branch)";
+                    line = "(no_branch)"+line.substring(11);
+                }
+                String[] s = line.split("\\s+");
                 if (s.length > 1 && "->".equals(s[1])) {
                     continue;
                 }
-                String branchName = s[0];
+                if (branchName == null) {
+                    branchName = s[0];
+                }
                 boolean remote = branchName.startsWith("remotes/");
                 if (remote) {
                     branchName = branchName.substring(8);
@@ -226,7 +244,13 @@ public class ListBranchCommand extends GitCommand {
                     int i = line.indexOf('[');
                     int j = line.indexOf(']');
                     if (i > 0 && j > 0 && i < j) {
-                        links.put(branchName, line.substring(i+1, j));
+                        String link = line.substring(i+1, j);
+                        int k = link.indexOf(':');
+                        if (k > 0) {
+                            links.put(branchName, link.substring(0, k));
+                        } else {
+                            links.put(branchName, link);
+                        }
                     }
                     createBranch = factory.createBranch(branchName, remote, def, s[1]);
                 } else {
