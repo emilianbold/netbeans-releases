@@ -146,7 +146,21 @@ bool is_subdir(const char* child, const char* parent);
 /** The same as strncpy, but stores trailing zero byte even in src len is more than limit */
 char *strncpy_w_zero(char *dst, const char *src, size_t limit);
 
-char file_type_char(int mode);
+typedef enum file_type {
+    FILETYPE_FIFO = 'p',
+    FILETYPE_CHR = 'c',
+    FILETYPE_DIR = 'd',
+    FILETYPE_BLK = 'b',
+    FILETYPE_REG = '-',
+    FILETYPE_LNK = 'l',
+    FILETYPE_SOCK = 's',
+    FILETYPE_DOOR = 'D',
+    FILETYPE_PORT = 'P', 
+    FILETYPE_UNKNOWN = 'u'
+} file_type;
+
+char mode_to_file_type_char(int mode);
+file_type mode_to_file_type(int mode);
 
 #ifdef	__cplusplus
 }

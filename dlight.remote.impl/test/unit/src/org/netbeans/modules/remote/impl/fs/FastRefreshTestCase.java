@@ -63,10 +63,9 @@ public class FastRefreshTestCase extends RemoteFileTestBase {
         getFileObject("/usr/include").getChildren();
 //        getFileObject("/usr/bin").getChildren();
 //        getFileObject("/tmp").getChildren();
-        long slow = doTestFastRefresh(false);
-        long fast = doTestFastRefresh(true);
-        System.out.println("");
-    }
+        doTestFastRefresh(false);
+        doTestFastRefresh(true);
+   }
 
     private long doTestFastRefresh(boolean fast) throws Exception {
         //RemoteLogger.getInstance().setLevel(Level.ALL);
