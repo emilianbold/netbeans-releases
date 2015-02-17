@@ -561,29 +561,33 @@ char *strncpy_w_zero(char *dst, const char *src, size_t limit) {
     return res;
 }
 
-char file_type_char(int mode) {
+char mode_to_file_type_char(int mode) {
+    return (char) mode_to_file_type(mode);
+}
+
+file_type mode_to_file_type(int mode) {
     
     if (S_ISFIFO(mode)) {
-        return 'p';
+        return FILETYPE_FIFO;
     } else if (S_ISCHR(mode)) {
-        return 'c';
+        return FILETYPE_CHR;
     } else if(S_ISDIR(mode)) {
-        return 'd';
+        return FILETYPE_DIR;
     } else if(S_ISBLK(mode)) {
-        return 'b';
+        return FILETYPE_BLK;
     } else if (S_ISREG(mode)) {
-        return '-';
+        return FILETYPE_REG;
     } else if (S_ISLNK(mode)) {
-        return 'l';
+        return FILETYPE_LNK;
     } else if(S_ISSOCK(mode)) {
-        return 's';
+        return FILETYPE_SOCK;
 #if __sun__        
     } else if(S_ISDOOR(mode)) {
-        return 'D';
+        return FILETYPE_DOOR;
     } else if(S_ISPORT(mode)) {
-        return 'P';
+        return FILETYPE_PORT;
 #endif        
     } else {
-        return 'u'; // for other stat info to have a default
+        return FILETYPE_UNKNOWN; // for other stat info to have a default
     }
 }
