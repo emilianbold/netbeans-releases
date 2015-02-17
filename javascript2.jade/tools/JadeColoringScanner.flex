@@ -359,6 +359,9 @@ UnbufferedComment = "//-"
                                         return JadeTokenId.PLAIN_TEXT_DELIMITER; 
                                         
                                     }
+    "#{"                            {   yypushback(2);
+                                        yybegin(JAVASCRIPT_EXPRESSION);
+                                    }
     .                               {   // we expect = != / or Css Id or Css class
                                         return JadeTokenId.UNKNOWN; }
 }
@@ -382,7 +385,9 @@ UnbufferedComment = "//-"
     
     [#!]"{"                         {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
-                                        return JadeTokenId.TEXT;
+                                        if (tokenLength > 2) {
+                                            return JadeTokenId.TEXT;
+                                        }
                                     }
     {LineTerminator}                {   
                                         yypushback(1);
