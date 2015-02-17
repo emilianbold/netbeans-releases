@@ -41,13 +41,20 @@
  */
 package org.netbeans.modules.javascript2.jade.editor;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
 
 /**
  *
@@ -57,18 +64,104 @@ public class JadeStructureScanner implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
-        System.out.println(info.getSnapshot().getTokenHierarchy());
         return Collections.emptyList();
     }
 
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        return Collections.emptyMap();
+        Map<String, List<OffsetRange>> folds = new HashMap<>();
+        TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
+        TokenSequence<JadeTokenId> ts = th.tokenSequence(JadeTokenId.jadeLanguage());
+//        List<FoldingItem> stack = new ArrayList<FoldingItem>();
+        List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
+//        List<JsStructureScanner.FoldingItem> stack = new ArrayList<JsStructureScanner.FoldingItem>();
+        ts.moveStart();
+        Token<JadeTokenId> token;
+        JadeTokenId id;
+        int indent = 0;
+        int line = 1;
+        List<FoldingItem> stack = new ArrayList<FoldingItem>();
+        boolean afterEOL = false;
+        while (ts.moveNext()) {
+            token = ts.token();
+            id = token.id();
+            if (afterEOL) {
+                if (id == JadeTokenId.WHITESPACE) {
+                    indent = token.length();
+                } else if (id == JadeTokenId.TAG) {
+                    afterEOL = false;
+                    stack.add(new FoldingItem(indent, ts.offset(), ts.offset() + token.length()));
+                } else {
+                    afterEOL = false;
+                }
+            }
+            if (id == JadeTokenId.EOL) {
+                afterEOL = true;
+                indent = 0;
+                line++;
+            } else if (id == JadeTokenId.COMMENT || id == JadeTokenId.UNBUFFERED_COMMENT) {
+                String comment = token.text().toString();
+                while (comment.charAt(comment.length() - 1) == '\n') {
+                    comment = comment.substring(0, comment.length() - 1);
+                }
+                if (comment.indexOf('\n') > 0) {
+                    appendFold(folds, FoldType.COMMENT.code(), ts.offset(), ts.offset() + comment.length());
+                }
+                afterEOL = true;
+            }
+            
+        }
+        if (!stack.isEmpty()) {
+            for(int i = 0; i < stack.size(); i++) {
+                FoldingItem item1 = stack.get(i);
+                boolean foldCreated = false;
+                for (int j = i + 1; j < stack.size(); j++) {
+                    FoldingItem item2 = stack.get(j);
+                    if (item1.indent >= item2.indent) {
+                        foldCreated = true;
+                        appendFold(folds, FoldType.TAG.code(), item1.tagEnd, item2.tagStart - item2.indent - 1);
+                        break;
+                    }
+                }
+                if (!foldCreated) {
+                    appendFold(folds, FoldType.TAG.code(), item1.tagEnd, ts.offset() + ts.token().length());
+                }
+            }
+            
+        }
+        return folds;
     }
 
+    private void appendFold(Map<String, List<OffsetRange>> folds, String kind, int startOffset, int endOffset) {
+        if (startOffset >= 0 && endOffset >= startOffset) {
+            getRanges(folds, kind).add(new OffsetRange(startOffset, endOffset));
+        }
+    }
+    
+    private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, String kind) {
+        List<OffsetRange> ranges = folds.get(kind);
+        if (ranges == null) {
+            ranges = new ArrayList<OffsetRange>();
+            folds.put(kind, ranges);
+        }
+        return ranges;
+    }
+    
     @Override
     public Configuration getConfiguration() {
         return null;
     }
     
+    private static class FoldingItem {
+        final int indent;
+        final int tagStart;
+        final int tagEnd;
+
+        public FoldingItem(int indent, int tagStart, int tagEnd) {
+            this.indent = indent;
+            this.tagStart = tagStart;
+            this.tagEnd = tagEnd;
+        }
+        
+    }
 }
