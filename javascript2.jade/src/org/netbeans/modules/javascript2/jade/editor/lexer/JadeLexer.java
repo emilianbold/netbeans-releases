@@ -80,17 +80,17 @@ public class JadeLexer implements Lexer<JadeTokenId> {
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
             }
-            if (token != null) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(token.id());
-                sb.append(" length: " + token.length());
-                System.out.println(sb.toString());
-                if (token.length() <= 0) {
-                    System.out.println("!!!!!!!!!!!!!!!!! delka je 0" + token.id());
-                }
-            } else {
-                System.out.println("token je null");
-            }
+//            if (token != null) {
+//                StringBuilder sb = new StringBuilder();
+//                sb.append(token.id());
+//                sb.append(" length: " + token.length());
+//                System.out.println(sb.toString());
+//                if (token.length() <= 0) {
+//                    System.out.println("!!!!!!!!!!!!!!!!! delka je 0" + token.id());
+//                }
+//            } else {
+//                System.out.println("token je null");
+//            }
             return token;
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
