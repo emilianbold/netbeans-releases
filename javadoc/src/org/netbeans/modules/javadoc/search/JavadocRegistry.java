@@ -50,7 +50,6 @@ import java.io.InputStream;
 
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,7 +59,9 @@ import java.util.StringTokenizer;
 import java.io.Reader;
 import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -81,6 +82,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 
@@ -175,12 +177,50 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
                 //System.out.println(" CCPR " + ccpRoot.getURL());
                 JavadocForBinaryQuery.Result result = JavadocForBinaryQuery.findJavadoc(ccpRoot.getURL());
                 results.add (result);
-                URL[] jdRoots = result.getRoots();                    
-                roots.addAll (Arrays.asList(jdRoots));
+                URL[] jdRoots = result.getRoots();
+                for (URL jdRoot : jdRoots) {
+                    if(verify(jdRoot)) {
+                        roots.add(jdRoot);
+                    }
+                }
             }
         }
         //System.out.println("roots=" + roots);
         return roots;
+    }
+    
+    /**
+     * Copied and modified from {@link org.netbeans.modules.java.classpath.SimplePathResourceImplementation}
+     * @param root
+     */
+    private static boolean verify(final URL root) {
+        if (root == null) {
+            return false;
+        }
+        final String rootS = root.toString();
+        if (rootS.matches("file:.+[.]jar/?")) { //NOI18N
+            File f = null;
+            boolean dir = false;
+            try {
+                f = BaseUtilities.toFile(root.toURI());
+                dir = f.isDirectory();
+            } catch (URISyntaxException use) {
+                //pass - handle as non dir
+            }
+            if (!dir) {
+                //Special case for /tmp/build/.jar/ see issue #235695
+                if (f == null || f.exists() || !f.getName().equals(".jar")) {   //NOI18N
+                    return false;
+                }
+            }
+        }
+        if (!rootS.endsWith("/")) {
+            return false;
+        }
+        if (rootS.contains("/../") || rootS.contains("/./")) {  //NOI18N
+            return false;
+        }
+        return true;
     }
     
     private static void registerListeners(
