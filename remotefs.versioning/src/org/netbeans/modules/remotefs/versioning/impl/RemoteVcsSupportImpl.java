@@ -415,6 +415,16 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         }
     }
 
+    @Override
+    public void deleteExternally(VCSFileProxy file) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            deleteRecursively(javaFile);
+        } else {
+            RemoteVcsSupportUtil.deleteExternally(getFileSystem(file), file.getPath());
+        }
+    }
+
     private static void deleteRecursively(File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();

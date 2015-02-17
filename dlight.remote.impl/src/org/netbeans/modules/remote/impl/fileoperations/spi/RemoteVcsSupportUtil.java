@@ -68,6 +68,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -274,7 +275,7 @@ public class RemoteVcsSupportUtil {
         if (fs instanceof RemoteFileSystem) {
             final RemoteFileSystem rfs = (RemoteFileSystem) fs;
             final ExecutionEnvironment env = rfs.getExecutionEnvironment();
-            if (true || rfs.isInsideVCS()) {
+            if (rfs.isInsideVCS()) {
                 deleteExternally(env, path);
             } else {
                 try {
@@ -287,6 +288,19 @@ public class RemoteVcsSupportUtil {
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }
+            }
+        }
+    }
+
+    public static void deleteExternally(FileSystem fs, String path) {
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        if (fs instanceof RemoteFileSystem) {
+            deleteExternally(((RemoteFileSystem) fs).getExecutionEnvironment(), path);
+            String parentPath = PathUtilities.getDirName(path);
+            try {
+                refreshFor(fs, (parentPath == null) ? "/" : parentPath); //NOI18N
+            } catch (IOException ex) {
+                RemoteLogger.fine(ex);
             }
         }
     }
@@ -344,9 +358,6 @@ public class RemoteVcsSupportUtil {
                 } else {
                     fo.refresh();
                 }
-            }
-            if (fo == null) {
-
             }
         }
     }

@@ -134,16 +134,16 @@ abstract public class FileOperationsProvider {
             String path = PathUtilities.normalizeUnixPath(file.getPath());
             RemoteFileObjectBase cached = fileSystem.getFactory().getCachedFileObject(path);
             RemoteFileObject fo;
-            if (cached != null /*&& cached.isValid()*/) {
+            if (cached != null && cached.isValid()) {
                 fo = cached.getOwnerFileObject();
             } else {
                 fo = fileSystem.findResource(path);
             }
             return fo;
         }
-
+        
         protected boolean isDirectory(FileProxyO file) {
-            if (RemoteVcsSupportUtil.USE_FS) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
                 RemoteFileObject fo = getFileObject(file);
                 return (fo == null || ! fo.isValid()) ? false : fo.isFolder();
             }
@@ -173,6 +173,10 @@ abstract public class FileOperationsProvider {
         }
         
         protected long lastModified(FileProxyO file) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                RemoteFileObject fo = getFileObject(file);
+                return (fo == null || !fo.isValid()) ? -1 : fo.lastModified().getTime();
+            }
             if (USE_CACHE) {
                 Long res = fileSystem.vcsSafeLastModified(file.getPath());
                 if (res != null) {
@@ -199,6 +203,10 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean isFile(FileProxyO file) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                RemoteFileObject fo = getFileObject(file);
+                return (fo == null || !fo.isValid()) ? false : fo.isData();
+            }
             if (USE_CACHE) {
                 Boolean res = fileSystem.vcsSafeIsFile(file.getPath());
                 if (res != null) {
@@ -225,6 +233,10 @@ abstract public class FileOperationsProvider {
         }
         
         protected boolean canWrite(FileProxyO file) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                RemoteFileObject fo = getFileObject(file);
+                return (fo == null || !fo.isValid()) ? false : fo.canWrite();
+            }
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
@@ -258,6 +270,10 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean exists(FileProxyO file) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                RemoteFileObject fo = getFileObject(file);
+                return fo != null && fo.isValid();
+            }
             if (USE_CACHE) {
                 Boolean res = fileSystem.vcsSafeExists(file.getPath());
                 if (res != null) {
@@ -284,8 +300,7 @@ abstract public class FileOperationsProvider {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
                 }
-                System.err.println("Exception on file "+file.getPath());
-                ex.printStackTrace(System.err);
+                RemoteLogger.finest(ex);
             }
             return false;
         }
@@ -331,6 +346,18 @@ abstract public class FileOperationsProvider {
 
         protected String[] list(FileProxyO file) {
             if (isDirectory(file)) {
+                if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                    RemoteFileObject fo = getFileObject(file);
+                    if (fo == null) {
+                        return null;
+                    }
+                    RemoteFileObject[] children = fo.getImplementor().getChildren();
+                    String[] names = new String[children.length];
+                    for (int i = 0; i < children.length; i++) {
+                        names[i] = children[i].getNameExt();
+                    }
+                    return names;
+                }                
                 Future<FileInfoProvider.StatInfo[]> stat = FileInfoProvider.ls(env, file.getPath());
                 try {
                     FileInfoProvider.StatInfo[] statInfo = stat.get();

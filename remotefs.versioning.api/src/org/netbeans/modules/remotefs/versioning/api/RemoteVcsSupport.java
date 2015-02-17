@@ -180,6 +180,10 @@ public final class RemoteVcsSupport {
         getImpl().delete(file);
     }
 
+    static void deleteExternally(VCSFileProxy file) {
+        getImpl().deleteExternally(file);
+    }
+
     public static void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile) {
         getImpl().setLastModified(file, referenceFile);
     }
