@@ -76,7 +76,7 @@ public class JadeLanguage extends DefaultLanguageConfig {
         extension={ "jade"},
         displayName="#JadeResolver",
         mimeType=JadeTokenId.JADE_MIME_TYPE,
-        position=196
+        position=191
     )
     @NbBundle.Messages("JadeResolver=Jade Files")
     @MultiViewElement.Registration(displayName = "#LBL_JadeEditorTab",
