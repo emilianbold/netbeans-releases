@@ -330,6 +330,14 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
 
         @Override
         protected String getNewFileContent() {
+            if (!isEnabled()) {
+                try {
+                    return parentFile.asText();
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                    return null;
+                }
+            }
             String result = newFileContent != null ? newFileContent.get() : null;
             if (result != null) return result;
             try {
