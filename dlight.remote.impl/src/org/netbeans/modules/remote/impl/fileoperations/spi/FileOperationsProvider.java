@@ -62,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
+import org.netbeans.modules.remote.impl.fs.RemoteDirectory;
 import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
@@ -70,6 +71,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper;
+import org.netbeans.modules.remote.impl.fs.RemotePlainFile;
 import org.netbeans.spi.extexecution.ProcessBuilderFactory;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.filesystems.FileObject;
@@ -153,6 +155,17 @@ abstract public class FileOperationsProvider {
                     return res.booleanValue();
                 }
             }
+            RemoteFileObjectBase beingCreated = fileSystem.getBeingCreated();
+            if (beingCreated != null) {
+                if (beingCreated.getPath().equals(file.getPath())) {
+                    if (beingCreated instanceof RemotePlainFile) {
+                        return false;
+                    } else if (beingCreated instanceof RemoteDirectory) {
+                        return true;
+                    }
+                }
+            }
+            
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }

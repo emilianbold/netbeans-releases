@@ -68,8 +68,6 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Static methods that are need for RemoteVcsSupportImpl
@@ -120,6 +118,13 @@ public class RemoteVcsSupportUtil {
         } else {
             return false;
         }
+    }
+    
+    public static Boolean isDirectoryFast(FileSystem fs, String path) throws IOException {        
+        if (fs instanceof RemoteFileSystem) {
+            return ((RemoteFileSystem) fs).vcsSafeIsDirectory(path);
+        }
+        return null;
     }
 
     public static String readSymbolicLinkPath(FileSystem fileSystem, String path) throws IOException {

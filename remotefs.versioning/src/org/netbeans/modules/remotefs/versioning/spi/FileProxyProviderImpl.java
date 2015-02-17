@@ -42,6 +42,7 @@
 package org.netbeans.modules.remotefs.versioning.spi;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,7 +52,9 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.RemoteVcsSupportUtil;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.openide.filesystems.FileObject;
@@ -191,7 +194,14 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
 
         @Override
         public URI toURI(VCSFileProxy file) throws URISyntaxException {
-            return super.toURI(file.getPath(), file.isDirectory());
+            Boolean isDirFast = null;
+            try {
+                isDirFast = RemoteVcsSupportUtil.isDirectoryFast(RemoteVcsSupport.getFileSystem(file), file.getPath());
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+            }
+            boolean isDir = (isDirFast == null) ? file.isDirectory() : isDirFast;
+            return super.toURI(file.getPath(), isDir);
         }
 
         @Override

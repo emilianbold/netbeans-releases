@@ -138,6 +138,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     transient private final StatusImpl status = new StatusImpl();
     private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
+    private final ThreadLocal<RemoteFileObjectBase> beingCreated = new ThreadLocal<RemoteFileObjectBase>();
     private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<RemoteFileObjectBase>();
     private final RemoteFileZipper remoteFileZipper;
     private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<Integer>();
@@ -780,6 +781,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     
     /*package*/ void setBeingRemoved(RemoteFileObjectBase fo) {
         beingRemoved.set(fo);
+    }
+
+    /*package*/ void setBeingCreated(RemoteFileObjectBase fo) {
+        beingCreated.set(fo);
+    }
+    
+    /** Be very CAUCIOUS when using this FO - it can be in process of VCS operations  */
+    public RemoteFileObjectBase getBeingCreated() {
+        return beingCreated.get();
     }
 
     /*package*/ void setExternallyRemoved(RemoteFileObjectBase fo) {
