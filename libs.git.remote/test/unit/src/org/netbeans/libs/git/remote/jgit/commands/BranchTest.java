@@ -73,6 +73,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author ondra
  */
 public class BranchTest extends AbstractGitTestCase {
+    private static final boolean KIT = ListBranchCommand.KIT;
     private JGitRepository repository;
     private VCSFileProxy workDir;
     private static final String BRANCH_NAME = "new_branch";
@@ -110,7 +111,8 @@ public class BranchTest extends AbstractGitTestCase {
         branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
         assertEquals("master", branches.get("master").getName());
-        assertEquals(commitId, branches.get("master").getId());
+if(KIT) assertEquals(commitId, branches.get("master").getId());
+else    assertEqualsID(commitId, branches.get("master").getId());
         assertFalse(branches.get("master").isRemote());
         assertTrue(branches.get("master").isActive());
 
@@ -119,12 +121,14 @@ public class BranchTest extends AbstractGitTestCase {
         assertEquals(2, branches.size());
         assertEquals("master", branches.get("master").getName());
         assertFalse(branches.get("master").isRemote());
-        assertTrue(branches.get("master").isActive());
-        assertEquals(commitId, branches.get("master").getId());
+        assertTrue(branches.get("master").isActive());    
+if(KIT) assertEquals(commitId, branches.get("master").getId());
+else    assertEqualsID(commitId, branches.get("master").getId());
         assertEquals("nova", branches.get("nova").getName());
         assertFalse(branches.get("nova").isRemote());
         assertFalse(branches.get("nova").isActive());
-        assertEquals(commitId, branches.get("nova").getId());
+if(KIT) assertEquals(commitId, branches.get("nova").getId());
+else    assertEqualsID(commitId, branches.get("nova").getId());
 
         Thread.sleep(1100);
         write(VCSFileProxy.createFileProxy(workDir, ".git/HEAD"), commitId);
@@ -133,7 +137,8 @@ public class BranchTest extends AbstractGitTestCase {
         assertEquals(GitBranch.NO_BRANCH, branches.get(GitBranch.NO_BRANCH).getName());
         assertFalse(branches.get(GitBranch.NO_BRANCH).isRemote());
         assertTrue(branches.get(GitBranch.NO_BRANCH).isActive());
-        assertEquals(commitId, branches.get(GitBranch.NO_BRANCH).getId());
+if(KIT) assertEquals(commitId, branches.get(GitBranch.NO_BRANCH).getId());
+else    assertEqualsID(commitId, branches.get(GitBranch.NO_BRANCH).getId());
         assertEquals("master", branches.get("master").getName());
         assertFalse(branches.get("master").isRemote());
         assertFalse(branches.get("master").isActive());
@@ -163,7 +168,8 @@ public class BranchTest extends AbstractGitTestCase {
         assertTrue(branches.containsKey("master"));
         assertTrue(branches.containsKey(BRANCH_NAME));
         assertEquals(BRANCH_NAME, branch.getName());
-        assertEquals(commitId, branch.getId());
+if(KIT) assertEquals(commitId, branch.getId());
+else    assertEqualsID(commitId, branch.getId());
         assertFalse(branch.isActive());
         assertFalse(branch.isRemote());
         branch = branches.get(BRANCH_NAME);
@@ -229,7 +235,8 @@ public class BranchTest extends AbstractGitTestCase {
         
         Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(otherWT.getPath(), NULL_PROGRESS_MONITOR);
         assertEquals(2, remoteBranches.size());
-        assertEquals(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
+if(KIT) assertEquals(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
+else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         assertEquals(master.getRevision(), remoteBranches.get("master").getId());
     }
     

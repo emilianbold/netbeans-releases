@@ -285,7 +285,7 @@ public class CommitCommand extends GitCommand {
             addArgument(0, "--author="+author.toString());
         }
         if (commiter != null) {
-            addArgument(0, "--author="+author.toString());
+            addArgument(0, "--author="+commiter.toString());
         }
         addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
@@ -465,10 +465,11 @@ public class CommitCommand extends GitCommand {
                 continue;
             }
             if (line.startsWith(" ")) {
-                if (buf.length() > 0) {
-                    buf.append('\n');
-                }
+                //if (buf.length() > 0) {
+                //    buf.append('\n');
+                //}
                 buf.append(line.trim());
+                buf.append('\n');
                 continue;
             }
             if (line.startsWith(":")) {
