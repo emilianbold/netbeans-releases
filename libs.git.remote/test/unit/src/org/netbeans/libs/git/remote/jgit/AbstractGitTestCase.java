@@ -248,7 +248,21 @@ public class AbstractGitTestCase extends NbTestCase {
             }
         }
     }
-    
+
+    protected void assertEqualsID(String golden, String fact) {
+        assertNotNull(golden);
+        assertNotNull(fact);
+        assertTrue(golden.length() >= 7);
+        assertTrue(fact.length() >= 7);
+        if (golden.length() > fact.length()) {
+            assertTrue(golden.startsWith(fact));
+        } else if (golden.length() < fact.length()) {
+            assertTrue(fact.startsWith(golden));
+        } else {
+            assertEquals(golden, fact);
+        }
+    }
+
     protected void clearRepositoryPool() throws NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException {
         ApiUtils.clearRepositoryPool();
     }

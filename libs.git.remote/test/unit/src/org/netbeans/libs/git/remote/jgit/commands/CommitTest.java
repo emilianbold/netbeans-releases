@@ -111,7 +111,8 @@ public class CommitTest extends AbstractGitTestCase {
         Git git = new Git(repository.getRepository());
         LogCommand log = git.log();
         RevCommit com = log.call().iterator().next();
-        assertEquals("initial commit", info.getFullMessage());
+if(KIT) assertEquals("initial commit", info.getFullMessage());
+else    assertEquals("initial commit\n", info.getFullMessage());
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
         assertEquals(ObjectId.toString(com.getId()), info.getRevision());
@@ -144,7 +145,8 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         Git git = new Git(repository.getRepository());
         LogCommand log = git.log();
         RevCommit com = log.call().iterator().next();
-        assertEquals("initial commit", info.getFullMessage());
+if(KIT) assertEquals("initial commit", info.getFullMessage());
+else    assertEquals("initial commit\n", info.getFullMessage());
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
         assertEquals( "john@git.com", info.getAuthor().getEmailAddress());
@@ -670,7 +672,9 @@ else    assertEquals("second commit\n", com.getFullMessage());
 
         assertEquals(1, lastCommit.getParents().length);
         assertEquals(info.getRevision(), lastCommit.getParents()[0]);
+if (ListBranchCommand.KIT) 
         assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
+else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
         
         Thread.sleep(1100);
         
@@ -693,7 +697,9 @@ else    assertEquals("second commit\n", com.getFullMessage());
 
         assertEquals(1, lastCommit.getParents().length);
         assertEquals(info.getRevision(), lastCommit.getParents()[0]);
+if (ListBranchCommand.KIT) 
         assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
+else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
     }
     
     public void testCherryPickCommit () throws Exception {
