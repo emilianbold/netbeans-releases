@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -63,21 +65,12 @@ import org.openide.util.Pair;
 
 public final class NewProjectWizardIterator extends BaseWizardIterator {
 
-    private static final String DEFAULT_SOURCE_FOLDER = ""; // NOI18N
-    private static final String DEFAULT_SITE_ROOT_FOLDER = "public"; // NOI18N
+    private final Wizard wizard;
 
-    private final String displayName;
-    private final boolean withSiteRoot;
-    private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
-    private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
 
-    private NewProjectWizardIterator(String displayName, boolean withSiteRoot) {
-        assert displayName != null;
-        this.displayName = displayName;
-        this.withSiteRoot = withSiteRoot;
-        baseWizard = CreateProjectUtils.createBaseWizardPanel("NodeJsApplication"); // NOI18N
-        toolsWizard = CreateProjectUtils.createToolsWizardPanel(new CreateProjectUtils.Tools()
-                .setNpm(true));
+    private NewProjectWizardIterator(Wizard wizard) {
+        assert wizard != null;
+        this.wizard = wizard;
     }
 
     @TemplateRegistration(
@@ -88,7 +81,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
             position = 150)
     @NbBundle.Messages("NewProjectWizardIterator.newNodeJsProject.displayName=Node.js Application")
     public static NewProjectWizardIterator newNodeJsProject() {
-        return new NewProjectWizardIterator(Bundle.NewProjectWizardIterator_newNodeJsProject_displayName(), false);
+        return new NewProjectWizardIterator(new NewNodeJsProject());
     }
 
     @TemplateRegistration(
@@ -99,28 +92,22 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
             position = 160)
     @NbBundle.Messages("NewProjectWizardIterator.newHtml5ProjectWithNodeJs.displayName=HTML5/JS Application with Node.js")
     public static NewProjectWizardIterator newHtml5ProjectWithNodeJs() {
-        return new NewProjectWizardIterator(Bundle.NewProjectWizardIterator_newHtml5ProjectWithNodeJs_displayName(), true);
+        return new NewProjectWizardIterator(new NewHtml5ProjectWithNodeJs());
     }
 
     @Override
     String getWizardTitle() {
-        return displayName;
+        return wizard.getTitle();
     }
 
     @Override
     WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            baseWizard.first(),
-            toolsWizard.first(),
-        };
+        return wizard.createPanels();
     }
 
     @Override
     String[] createSteps() {
-        return new String[] {
-            baseWizard.second(),
-            toolsWizard.second(),
-        };
+        return wizard.createSteps();
     }
 
     @Override
@@ -149,38 +136,18 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         CreateProjectProperties createProperties = new CreateProjectProperties()
                 .setProjectDir(projectDirectory)
                 .setProjectName((String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
-                .setSourceFolder(DEFAULT_SOURCE_FOLDER)
-                .setSiteRootFolder(withSiteRoot ? DEFAULT_SITE_ROOT_FOLDER : null)
+                .setSourceFolder(wizard.getSources())
+                .setSiteRootFolder(wizard.getSiteRoot())
                 .setPlatformProvider(NodeJsPlatformProvider.IDENT);
         Project project = ClientSideProjectGenerator.createProject(createProperties);
-        FileObject sources = projectDirectory.getFileObject(DEFAULT_SOURCE_FOLDER);
-        assert sources != null;
-        // create main.js file
-        FileObject mainJsFile = createMainJsFile(sources);
-        files.add(mainJsFile);
-        // create index.html?
-        if (withSiteRoot) {
-            FileObject siteRoot = projectDirectory.getFileObject(DEFAULT_SITE_ROOT_FOLDER);
-            assert siteRoot != null;
-            FileObject indexHtmlFile = createIndexHtmlFile(siteRoot);
-            files.add(indexHtmlFile);
-        }
 
-        // tools
-        CreateProjectUtils.instantiateTools(project, toolsWizard.first());
-
-        // set proper node.js start file
-        NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
-        if (!withSiteRoot) {
-            // set node.js run config only for server-side node.js project (since project URL is not known)
-            ProjectSetup.setupRun(project);
-        }
+        wizard.instantiate(files, handle, wizardDescriptor, project);
 
         handle.finish();
         return files;
     }
 
-    private FileObject createMainJsFile(FileObject sources) throws IOException {
+    static FileObject createMainJsFile(FileObject sources) throws IOException {
         assert sources != null;
         FileObject template = FileUtil.getConfigFile("Templates/Other/javascript.js"); // NOI18N
         DataFolder dataFolder = DataFolder.findFolder(sources);
@@ -188,12 +155,189 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         return dataTemplate.createFromTemplate(dataFolder, "main").getPrimaryFile(); // NOI18N
     }
 
-    private FileObject createIndexHtmlFile(FileObject siteRoot) throws IOException {
+    static FileObject createIndexHtmlFile(FileObject siteRoot) throws IOException {
         assert siteRoot != null;
         FileObject template = FileUtil.getConfigFile("Templates/Other/html.html"); // NOI18N
         DataFolder dataFolder = DataFolder.findFolder(siteRoot);
         DataObject dataTemplate = DataObject.find(template);
         return dataTemplate.createFromTemplate(dataFolder, "index").getPrimaryFile(); // NOI18N
+    }
+
+    //~ Inner classes
+
+    private interface Wizard {
+
+        String DEFAULT_SOURCE_FOLDER = ""; // NOI18N
+        String DEFAULT_SITE_ROOT_FOLDER = "public"; // NOI18N
+
+        String getTitle();
+
+        @CheckForNull
+        String getSources();
+
+        @CheckForNull
+        String getSiteRoot();
+
+        WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
+
+        String[] createSteps();
+
+        void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, Project project) throws IOException;
+
+        void uninitialize(WizardDescriptor wizardDescriptor);
+
+        void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, @NullAllowed FileObject sources, @NullAllowed FileObject siteRoot);
+
+    }
+
+    private static final class NewNodeJsProject implements Wizard {
+
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
+
+
+        public NewNodeJsProject() {
+            baseWizard = CreateProjectUtils.createBaseWizardPanel("NodeJsApplication"); // NOI18N
+            toolsWizard = CreateProjectUtils.createToolsWizardPanel(new CreateProjectUtils.Tools()
+                    .setNpm(true));
+        }
+
+        @Override
+        public String getTitle() {
+            return Bundle.NewProjectWizardIterator_newNodeJsProject_displayName();
+        }
+
+        @Override
+        public String getSources() {
+            return DEFAULT_SOURCE_FOLDER;
+        }
+
+        @Override
+        public String getSiteRoot() {
+            return null;
+        }
+
+        @Override
+        public WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
+            return new WizardDescriptor.Panel[] {
+                baseWizard.first(),
+                toolsWizard.first(),
+            };
+        }
+
+        @Override
+        public String[] createSteps() {
+            return new String[] {
+                baseWizard.second(),
+                toolsWizard.second(),
+            };
+        }
+
+        @Override
+        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, Project project) throws IOException {
+            FileObject projectDirectory = project.getProjectDirectory();
+            FileObject sources = projectDirectory.getFileObject(getSources());
+            assert sources != null;
+            // create main.js file
+            FileObject mainJsFile = createMainJsFile(sources);
+            files.add(mainJsFile);
+
+            // tools
+            CreateProjectUtils.instantiateTools(project, toolsWizard.first());
+
+            // set proper node.js start file
+            NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
+
+            // set node.js run config only for server-side node.js project (since project URL is not known)
+            ProjectSetup.setupRun(project);
+        }
+
+        @Override
+        public void uninitialize(WizardDescriptor wizardDescriptor) {
+            // noop
+        }
+
+        @Override
+        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject sources, FileObject siteRoot) {
+            // XXX
+        }
+
+    }
+
+    private static final class NewHtml5ProjectWithNodeJs implements Wizard {
+
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
+
+
+        public NewHtml5ProjectWithNodeJs() {
+            baseWizard = CreateProjectUtils.createBaseWizardPanel("NodeJsWebApplication"); // NOI18N
+            toolsWizard = CreateProjectUtils.createToolsWizardPanel(new CreateProjectUtils.Tools()
+                    .setNpm(true));
+        }
+
+        @Override
+        public String getTitle() {
+            return Bundle.NewProjectWizardIterator_newHtml5ProjectWithNodeJs_displayName();
+        }
+
+        @Override
+        public String getSources() {
+            return DEFAULT_SOURCE_FOLDER;
+        }
+
+        @Override
+        public String getSiteRoot() {
+            return DEFAULT_SITE_ROOT_FOLDER;
+        }
+
+        @Override
+        public WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
+            return new WizardDescriptor.Panel[] {
+                baseWizard.first(),
+                toolsWizard.first(),
+            };
+        }
+
+        @Override
+        public String[] createSteps() {
+            return new String[] {
+                baseWizard.second(),
+                toolsWizard.second(),
+            };
+        }
+
+        @Override
+        public void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, Project project) throws IOException {
+            FileObject projectDirectory = project.getProjectDirectory();
+            FileObject sources = projectDirectory.getFileObject(getSources());
+            assert sources != null;
+            // create main.js file
+            FileObject mainJsFile = createMainJsFile(sources);
+            files.add(mainJsFile);
+            // create index.html
+            FileObject siteRoot = projectDirectory.getFileObject(getSiteRoot());
+            assert siteRoot != null;
+            FileObject indexHtmlFile = createIndexHtmlFile(siteRoot);
+            files.add(indexHtmlFile);
+
+            // tools
+            CreateProjectUtils.instantiateTools(project, toolsWizard.first());
+
+            // set proper node.js start file
+            NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
+        }
+
+        @Override
+        public void uninitialize(WizardDescriptor wizardDescriptor) {
+            // noop
+        }
+
+        @Override
+        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject sources, FileObject siteRoot) {
+            // XXX
+        }
+
     }
 
 }
