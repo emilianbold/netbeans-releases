@@ -476,6 +476,15 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             }
             var text = ' ' + text + ' ' + borderRect.width + 'px \xD7 ' + borderRect.height + 'px ';
 
+            if (highlightedElement.classList.contains('oj-col')) {
+                var parentElement = highlightedElement.parentElement;
+                if (parentElement.classList.contains('oj-row')) {
+                    var parentRect = parentElement.getBoundingClientRect();
+                    var columns = Math.round(12*borderRect.width/parentRect.width);
+                    text += "(" + columns + " column" + ((columns === 1) ? "" : "s") + ") ";
+                }
+            }
+
             var width = ctx.measureText(text).width;
             var x = marginRect.left;
             var y = marginRect.top + marginRect.height + 2*fontSize;
