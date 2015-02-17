@@ -356,7 +356,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                         if (el.getModifiers().contains(Modifier.STATIC)) {
                             Tree newTree = make.QualIdent(el);
                             orig2trans.put(node, newTree);
-                        } else {
+                        } else if(methodSelect != null) {
                             Tree newTree = make.MemberSelect(methodSelect, el);
                             orig2trans.put(node, newTree);
                         }
@@ -391,12 +391,17 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                                 ExpressionTree expression = ((MemberSelectTree) methodInvocationSelect).getExpression();
                                 String isThis = expression.toString();
                                 if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
-                                    orig2trans.put(expression, methodSelect);
-                                } else {
+                                    if (methodSelect == null) { // We must be in Inner class.
+                                        MemberSelectTree memberSelect = make.MemberSelect(workingCopy.getTreeUtilities().parseExpression(bodyEnclosingTypeElement.getSimpleName() + ".this", new SourcePositions[1]), el);
+                                        orig2trans.put(node, memberSelect);
+                                    } else {
+                                        orig2trans.put(expression, methodSelect);
+                                    }
+                                } else if(methodSelect != null) {
                                     Tree newTree = make.MemberSelect(methodSelect, el);
                                     orig2trans.put(node, newTree);
                                 }
-                            } else {
+                            } else if(methodSelect != null) {
                                 Tree newTree = make.MemberSelect(methodSelect, el);
                                 orig2trans.put(methodInvocationSelect, newTree);
                             }
