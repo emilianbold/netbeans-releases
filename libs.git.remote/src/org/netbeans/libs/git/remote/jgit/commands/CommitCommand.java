@@ -489,13 +489,12 @@ public class CommitCommand extends GitCommand {
                     } else if ("D".equals(st)) {
                         gitSt =  GitRevisionInfo.GitFileInfo.Status.REMOVED;
                     }
-                    VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
                     status.commitedFiles.put(file, gitSt);
                 }
                 continue;
             }
-            status.message = buf.toString();
         }
+        status.message = buf.toString();
     }
     
     private void runner(ProcessUtils.Canceler canceled, int command, GitRevCommit list, Parser parser) {
