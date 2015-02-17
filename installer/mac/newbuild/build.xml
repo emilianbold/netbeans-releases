@@ -315,9 +315,9 @@
         <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg),
                                               -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                              -html(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/jre-nested-1.7.0_71.pkg),
-                                              -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/jre-nested-1.7.0_71.pkg),
-                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/jre-nested-1.7.0_71.pkg)
+                                              -html(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/jre-nested-${jre.version.string.long}.pkg),
+                                              -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/jre-nested-${jre.version.string.long}.pkg),
+                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/jre-nested-${jre.version.string.long}.pkg)
                                           "/>
         <property name="fx.bundles" value="    
                                                -javafx-full(./build/*pkg),
@@ -478,6 +478,7 @@
                 <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number.long}"/>                       
                 <filter token="JDK_UPDATE_NUMBER_SHORT" value="${jdk.update.number}"/>
                 <filter token="JDK_BUILD_NUMBER" value="${jdk.build.number}"/>
+                <filter token="JRE_VERSION" value="${jre.version.string.long}"/>
                 <filter token="TOMCAT_ID" value="${tomcat.id}"/>
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 

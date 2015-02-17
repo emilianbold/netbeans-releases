@@ -132,6 +132,6 @@ function checkSystemversion() {
     </choice>
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">cpp-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.jrenested" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">jre-nested-1.7.0_71.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.jrenested" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">jre-nested-@JRE_VERSION@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.postinstallscripts" version="0.0.0.0.1" auth="Root" onConclusion="None">postinstallscripts.pkg</pkg-ref>
 </installer-gui-script>

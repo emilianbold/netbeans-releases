@@ -690,7 +690,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </for-each>
         
         <!-- Build bundles with nested JRE -->
-        <property name="bundled.jvm.file.prefix" value="jre-7u71"/>
+        <property name="bundled.jvm.file.prefix" value="jre-8u31"/>
         <for-each list="html php cpp" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
@@ -1367,7 +1367,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="convert-netbeans-bundle"/>
     </target>-->
 
-    <target name="generate-netbeans-cpp-bundle" depends="init-bundled-jvms, get-bundled-jvm">
+    <target name="generate-netbeans-cpp-bundle" depends="init-nested-jres, get-nested-jres">
 	<property name="bundle.prefix" 
              value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-${bundle.platform}-${bundle.arch}"/>
 
@@ -1376,15 +1376,15 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-cnd"  version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="1.7.0.71.0"/>
+            <component uid="jre-nested"  version="${nestedjre.version}"/>
             <bundleProperty name="${welcome.type}" value="cnd"/>
-            <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
+            <property name="nbi.bundled.jvm.file" value="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
 
 	<antcall target="convert-netbeans-bundle"/>
     </target>
 
-    <target name="generate-netbeans-html-bundle" depends="init-bundled-jvms, get-bundled-jvm">
+    <target name="generate-netbeans-html-bundle" depends="init-nested-jres, get-nested-jres">
 	<property name="bundle.prefix" 
              value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-html-${bundle.platform}-${bundle.arch}"/>
 
@@ -1394,15 +1394,15 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base"      version="${nb.full.version}"/>
             <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="1.7.0.71.0"/>
+            <component uid="jre-nested"  version="${nestedjre.version}"/>
             <bundleProperty name="${welcome.type}" value="html"/>
-            <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
+            <property name="nbi.bundled.jvm.file" value="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
 
 	<antcall target="convert-netbeans-bundle"/>
     </target>
     
-    <target name="generate-netbeans-php-bundle" depends="init-bundled-jvms, get-bundled-jvm">
+    <target name="generate-netbeans-php-bundle" depends="init-nested-jres, get-nested-jres">
 	<property name="bundle.prefix" 
              value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-${bundle.platform}-${bundle.arch}"/>
 
@@ -1413,9 +1413,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-webcommon" version="${nb.full.version}"/>
             <component uid="nb-php"       version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="1.7.0.71.0"/>
+            <component uid="jre-nested"  version="${nestedjre.version}"/>
             <bundleProperty name="${welcome.type}" value="php"/>
-            <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
+            <property name="nbi.bundled.jvm.file" value="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
 
 	<antcall target="convert-netbeans-bundle"/>
@@ -1839,8 +1839,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>-->
 
     <target name="init-bundled-jvms">
-        <set property="jvm.cache.dir" 
-             value="${nbi.cache.dir}/jvm"/>
+        <set property="jvm.cache.dir" value="${nbi.cache.dir}/jvm"/>
 	<mkdir dir="${jvm.cache.dir}"/>
     </target>
 
@@ -1849,7 +1848,18 @@ jarsigner.storepass=${jarsigner.storepass}
 	     dest="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"
 	     usetimestamp="true"/>
     </target>
+    
+    <target name="init-nested-jres">        
+        <set property="nestedjre.cache.dir" value="${nbi.cache.dir}/nestedjre"/>
+	<mkdir dir="${nestedjre.cache.dir}"/>
+        <set property="nestedjre.version" value="1.8.0.31.0"/>
+    </target>
 
+    <target name="get-nested-jres">
+        <get src="${binary.cache.host}/nestedjre/${bundled.jvm.file.prefix}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"
+	     dest="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"
+	     usetimestamp="true"/>
+    </target>
 
     <target name="init-jdk-bundles" if="do.build.jdk">
 	<set property="jdk.output.dir"
