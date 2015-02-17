@@ -110,6 +110,10 @@ public class JadeLexerTest extends CslTestBase {
         checkLexer("testfiles/lexer/tag03.jade");
     }
     
+    public void testTag04() throws Exception {
+        checkLexer("testfiles/lexer/tag04.jade");
+    }
+    
     public void testAttribute01() throws Exception {
         checkLexer("testfiles/lexer/attribute01.jade");
     }
