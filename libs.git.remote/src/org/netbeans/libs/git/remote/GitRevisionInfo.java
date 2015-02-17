@@ -114,6 +114,7 @@ public final class GitRevisionInfo {
             modifiedFiles[i++] = info;
         }
         parents = status.parents.toArray(new String[status.parents.size()]);
+        commiterAndMail = status.commiterAndMail;
         commiterTime = status.commiterTime;
         this.repository = repository;
         isKIT = false;
@@ -155,7 +156,24 @@ public final class GitRevisionInfo {
             }
             return shortMessage;
         } else {
-            return message;
+            if (shortMessage == null) {
+                String msg = message;
+                StringBuilder sb = new StringBuilder();
+                boolean empty = true;
+                for (int pos = 0; pos < msg.length(); ++pos) {
+                    char c = msg.charAt(pos);
+                    if (c == '\r' || c == '\n') {
+                        if (!empty) {
+                            break;
+                        }
+                    } else {
+                        sb.append(c);
+                        empty = false;
+                    }
+                }
+                shortMessage = sb.toString();
+            }
+            return shortMessage;
         }
     }
 
