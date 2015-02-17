@@ -55,7 +55,8 @@ public class NodeJsOptionsValidator {
         if (validateNode) {
             validateNode(includingNodeSources);
         }
-        return validateNpm();
+        validateNpm();
+        return validateExpress();
     }
 
     public NodeJsOptionsValidator validateNode(boolean includingNodeSources) {
@@ -75,6 +76,15 @@ public class NodeJsOptionsValidator {
 
     public NodeJsOptionsValidator validateNpm(String npm) {
         ValidationUtils.validateNpm(result, npm);
+        return this;
+    }
+
+    public NodeJsOptionsValidator validateExpress() {
+        return validateExpress(NodeJsOptions.getInstance().getExpress());
+    }
+
+    public NodeJsOptionsValidator validateExpress(String express) {
+        ValidationUtils.validateExpress(result, express);
         return this;
     }
 
