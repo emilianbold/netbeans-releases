@@ -255,9 +255,13 @@ public class AbstractGitTestCase extends NbTestCase {
         assertTrue(golden.length() >= 7);
         assertTrue(fact.length() >= 7);
         if (golden.length() > fact.length()) {
-            assertTrue(golden.startsWith(fact));
+            if (!golden.startsWith(fact)) {
+                assertEquals(golden, fact);
+            }
         } else if (golden.length() < fact.length()) {
-            assertTrue(fact.startsWith(golden));
+            if (!fact.startsWith(golden)) {
+                assertEquals(golden, fact);
+            }
         } else {
             assertEquals(golden, fact);
         }
