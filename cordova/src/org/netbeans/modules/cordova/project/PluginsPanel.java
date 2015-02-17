@@ -75,6 +75,7 @@ public final class PluginsPanel extends JPanel {
         pluginsFilterTextField.setVisible(false);
         selectedPluginsModel = new PluginsListModel(current);
         selectedPluginsModel.sortLibraries();
+        all.removeAll(current); //remove already added plugins from available list
         allPluginsModel = new PluginsListModel(all);
         allPluginsModel.sortLibraries();
         initPlugins();
@@ -307,9 +308,11 @@ public final class PluginsPanel extends JPanel {
 
     private void selectSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSelectedButtonActionPerformed
         selectedPluginsModel.add(pluginsList.getSelectedValuesList());
+        allPluginsModel.remove(pluginsList.getSelectedValuesList());
     }//GEN-LAST:event_selectSelectedButtonActionPerformed
 
     private void deselectSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deselectSelectedButtonActionPerformed
+        allPluginsModel.add(selectedPluginsList.getSelectedValuesList());
         selectedPluginsModel.remove(selectedPluginsList.getSelectedValuesList());
     }//GEN-LAST:event_deselectSelectedButtonActionPerformed
 
