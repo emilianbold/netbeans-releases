@@ -70,6 +70,19 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
             </folder>
         </folder>
     </folder>
+    <folder name="Templates">
+        <folder name="Other">
+            <file name="jadeTemplate.jade" url="nbresloc:/org/netbeans/modules/javascript2/jade/resources/jadeTemplate.jade">
+                <attr name="position" intvalue="408"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.jade.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/jade/resources/jadeTemplate.html"/>
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="jade">
