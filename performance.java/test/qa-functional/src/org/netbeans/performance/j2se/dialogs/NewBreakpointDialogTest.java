@@ -44,11 +44,9 @@
 package org.netbeans.performance.j2se.dialogs;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
@@ -58,8 +56,6 @@ import org.netbeans.performance.j2se.setup.J2SESetup;
  * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class NewBreakpointDialogTest extends PerformanceTestCase {
-
-    private String MENU, TITLE;
 
     /**
      * Creates a new instance of NewBreakpointDialog
@@ -95,8 +91,6 @@ public class NewBreakpointDialogTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_AddBreakpoint");
-        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Breakpoint_Title");
     }
 
     @Override
@@ -105,7 +99,7 @@ public class NewBreakpointDialogTest extends PerformanceTestCase {
 
     @Override
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU, "|");
-        return new NbDialogOperator(TITLE);
+        new ActionNoBlock("Debug|New Breakpoint...", null).perform();
+        return new NbDialogOperator("New Breakpoint");
     }
 }
