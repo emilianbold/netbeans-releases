@@ -51,12 +51,12 @@ public class NodeJsOptionsValidator {
     private final ValidationResult result = new ValidationResult();
 
 
+    // do not validate Express since it is really optional
     public NodeJsOptionsValidator validate(boolean validateNode, boolean includingNodeSources) {
         if (validateNode) {
             validateNode(includingNodeSources);
         }
-        validateNpm();
-        return validateExpress();
+        return validateNpm();
     }
 
     public NodeJsOptionsValidator validateNode(boolean includingNodeSources) {
