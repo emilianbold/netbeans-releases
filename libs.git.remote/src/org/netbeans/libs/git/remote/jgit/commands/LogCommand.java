@@ -106,6 +106,7 @@ public class LogCommand extends GitCommand {
     private final String revision;
     private final SearchCriteria criteria;
     private final boolean fetchBranchInfo;
+    private final Revision revisionPlaseHolder;
     private static final Logger LOG = Logger.getLogger(LogCommand.class.getName());
 
     public LogCommand (JGitRepository repository, GitClassFactory gitFactory, SearchCriteria criteria,
@@ -117,6 +118,11 @@ public class LogCommand extends GitCommand {
         this.fetchBranchInfo = fetchBranchInfo;
         this.revision = null;
         this.revisions = new LinkedList<>();
+        if (fetchBranchInfo) {
+            this.revisionPlaseHolder = new Revision();
+        } else {
+            this.revisionPlaseHolder = null;
+        }
     }
     
     public LogCommand (JGitRepository repository, GitClassFactory gitFactory, String revision, ProgressMonitor monitor, RevisionInfoListener listener) {
@@ -127,6 +133,7 @@ public class LogCommand extends GitCommand {
         this.fetchBranchInfo = false;
         this.revision = revision;
         this.revisions = new LinkedList<>();
+        this.revisionPlaseHolder = null;
     }
     
     @Override
@@ -335,6 +342,9 @@ public class LogCommand extends GitCommand {
     
     @Override
     protected void prepare() throws GitException {
+        if (fetchBranchInfo) {
+            setCommandsNumber(2);
+        }
         super.prepare();
         addArgument(0, "log"); //NOI18N
         addArgument(0, "--raw"); //NOI18N
@@ -344,6 +354,8 @@ public class LogCommand extends GitCommand {
         }
         if (criteria != null && !criteria.isIncludeMerges()) {
             addArgument(0, "--no-merges"); //NOI18N
+        } else {
+            addArgument(0, "-m"); //NOI18N
         }
         
         if (revision != null) {
@@ -366,7 +378,17 @@ public class LogCommand extends GitCommand {
             addArgument(0, "--author="+criteria.getUsername());
         }
         if (criteria != null && criteria.getMessage() != null) {
-            addArgument(0, "--grep="+criteria.getMessage());
+            String pattern = criteria.getMessage();
+            if (pattern.indexOf('\n')>=0) {
+                pattern = pattern.substring(0,pattern.indexOf('\n'));
+            }
+            if (!pattern.startsWith("^") && !pattern.startsWith(".*")) {
+                pattern = ".*" + pattern;
+            }
+            if (!pattern.endsWith("$") && !pattern.endsWith(".*")) {
+                pattern = pattern + ".*";
+            }
+            addArgument(0, "--grep="+pattern);
         }
         if (criteria != null && criteria.getFrom() != null && criteria.getTo() != null) {
             addArgument(0, "--since="+criteria.getFrom().toString());
@@ -381,9 +403,18 @@ public class LogCommand extends GitCommand {
         }
         
         if (criteria != null && criteria.getFiles().length > 0) {
+            addArgument(0, "--full-diff");
             addArgument(0, "--");
             addFiles(0, criteria.getFiles());
         }
+        if (fetchBranchInfo) {
+            addArgument(1, "branch");
+            addArgument(1, "-vv"); //NOI18N
+            addArgument(1, "--all"); //NOI18N
+            addArgument(1, "--contains");
+            addArgument(1, revisionPlaseHolder);
+        }
+        
     }
     
     private void runCLI() throws GitException {
@@ -393,11 +424,12 @@ public class LogCommand extends GitCommand {
         }
         String cmd = getCommandLine();
         try {
-            runner(canceled, 0, new Parser() {
+            LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses = new LinkedHashMap<String, GitRevisionInfo.GitRevCommit>();
+            runner(canceled, 0, statuses, new Parser() {
 
                 @Override
-                public void outputParser(String output) {
-                    parseLog(output);
+                public void outputParser(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
+                    parseLog(output, statuses);
                 }
 
                 @Override
@@ -410,7 +442,16 @@ public class LogCommand extends GitCommand {
                 }
 
             });
-            
+            for(Map.Entry<String, GitRevisionInfo.GitRevCommit> entry : statuses.entrySet()) {
+                if (fetchBranchInfo) {
+                    revisionPlaseHolder.setContent(entry.getKey());
+                    Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
+                    runner2(canceled, 1, branches);
+                    revisions.add(getClassFactory().createRevisionInfo(entry.getValue(), branches, getRepository()));
+                } else {
+                    revisions.add(getClassFactory().createRevisionInfo(entry.getValue(), getRepository()));
+                }
+            }
             //command.commandCompleted(exitStatus.exitCode);
         } catch (Throwable t) {
             if (canceled.canceled()) {
@@ -422,7 +463,7 @@ public class LogCommand extends GitCommand {
         }
     }
     
-    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) throws IOException, GitException.MissingObjectException {
+    private void runner(ProcessUtils.Canceler canceled, int command, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses, Parser parser) throws IOException, GitException.MissingObjectException {
         if(canceled.canceled()) {
             return;
         }
@@ -437,15 +478,35 @@ public class LogCommand extends GitCommand {
             parser.errorParser(exitStatus.error);
         }
         if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output);
+            parser.outputParser(exitStatus.output, statuses);
         }
     }
 
-    private void parseLog(String output) {
-        System.err.println(output);
-        System.err.println("");
+    private boolean runner2(ProcessUtils.Canceler canceled, int command, Map<String, GitBranch> branches) throws IOException, GitException.MissingObjectException {
+        if(canceled.canceled()) {
+            return false;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return false;
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {            
+            return false;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            ListBranchCommand.parseBranches(exitStatus.output, getClassFactory(), branches);
+        }
+        return true;
+    }
+
+    private void parseLog(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
+        //System.err.println(output);
+        //System.err.println("");
         //#git --no-pager log --name-status --no-walk 0254bffe448b1951af6edef531d80f8e629c575a"
-        //commit 0254bffe448b1951af6edef531d80f8e629c575a
+        //commit 9c0e341a6a9197e2408862d2e6ff4b7635a01f9b (from 19f759b14972f669dc3eb203c06944e03365f6bc)
         //Merge: 1126f32 846626a
         //Author: Alexander Simon <alexander.simon@oracle.com>
         //Date:   Tue Feb 17 16:12:39 2015 +0300
@@ -464,13 +525,22 @@ public class LogCommand extends GitCommand {
                 continue;
             }
             if (line.startsWith("commit")) {
+                String revCode = line.substring(6).trim();
+                int i = revCode.indexOf('(');
+                if (i > 0) {
+                    revCode = revCode.substring(0, i-1).trim();
+                }
                 if (status.revisionCode != null) {
                     status.message = buf.toString();
                     buf.setLength(0);
-                    revisions.add(getClassFactory().createRevisionInfo(status, getRepository()));
-                    status = new GitRevisionInfo.GitRevCommit();
+                    statuses.put(status.revisionCode, status);
+                    if (statuses.containsKey(revCode)) {
+                        status = statuses.get(revCode);
+                    } else {
+                        status = new GitRevisionInfo.GitRevCommit();
+                    }
                 }
-                status.revisionCode = line.substring(6).trim();
+                status.revisionCode = revCode;
                 continue;
             }
             if (line.startsWith("tree")) {
@@ -522,15 +592,46 @@ public class LogCommand extends GitCommand {
         }
         if (status.revisionCode != null) {
             status.message = buf.toString();
-            revisions.add(getClassFactory().createRevisionInfo(status, getRepository()));
+            statuses.put(status.revisionCode, status);
         }
     }
                 
 
     private abstract class Parser {
-        public abstract void outputParser(String output) throws IOException;
+        public abstract void outputParser(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) throws IOException;
         public void errorParser(String error) throws GitException.MissingObjectException {
         }
     }
+    
+    private static final class Revision implements CharSequence {
+        private String currentRevision = "place-holder";
+        
+        private Revision() {
+            
+        }
 
+        private void setContent(String revision) {
+            currentRevision = revision;
+        }
+        
+        @Override
+        public int length() {
+            return currentRevision.length();
+        }
+
+        @Override
+        public char charAt(int index) {
+            return currentRevision.charAt(index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return currentRevision.subSequence(end, end);
+        }
+
+        @Override
+        public String toString() {
+            return currentRevision;
+        }
+    }
 }
