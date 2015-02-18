@@ -79,36 +79,40 @@ public class JadeStructureScanner implements StructureScanner {
         Token<JadeTokenId> token;
         JadeTokenId id;
         int indent = 0;
-        int line = 1;
+        int commentDelStart = 0;
+        int commentDelLength = 0;
         List<FoldingItem> stack = new ArrayList<FoldingItem>();
-        boolean afterEOL = false;
+        boolean afterEOL = true;
         while (ts.moveNext()) {
             token = ts.token();
             id = token.id();
             if (afterEOL) {
                 if (id == JadeTokenId.WHITESPACE) {
                     indent = token.length();
-                } else if (id == JadeTokenId.TAG) {
+                } else if (id == JadeTokenId.TAG || id == JadeTokenId.KEYWORD_BLOCK) {
                     afterEOL = false;
-                    stack.add(new FoldingItem(indent, ts.offset(), ts.offset() + token.length()));
+                    stack.add(new FoldingItem(FoldType.TAG, indent, ts.offset(), ts.offset() + token.length()));
+                } else  if (id != JadeTokenId.COMMENT_DELIMITER && id != JadeTokenId.UNBUFFERED_COMMENT_DELIMITER){
+                    afterEOL = false;
                 } else {
-                    afterEOL = false;
+                    commentDelStart = ts.offset();
+                    commentDelLength = token.length();
                 }
-            }
+                if (id == JadeTokenId.COMMENT || id == JadeTokenId.UNBUFFERED_COMMENT) {
+                    String comment = token.text().toString();
+                    while (comment.charAt(comment.length() - 1) == '\n') {
+                        comment = comment.substring(0, comment.length() - 1);
+                    }
+                    if (comment.indexOf('\n') >= 0) {
+                        stack.add(new FoldingItem(FoldType.COMMENT, indent, commentDelStart, commentDelStart + commentDelLength));
+                    }
+                    afterEOL = true;
+                }
+            } 
             if (id == JadeTokenId.EOL) {
                 afterEOL = true;
                 indent = 0;
-                line++;
-            } else if (id == JadeTokenId.COMMENT || id == JadeTokenId.UNBUFFERED_COMMENT) {
-                String comment = token.text().toString();
-                while (comment.charAt(comment.length() - 1) == '\n') {
-                    comment = comment.substring(0, comment.length() - 1);
-                }
-                if (comment.indexOf('\n') > 0) {
-                    appendFold(folds, FoldType.COMMENT.code(), ts.offset(), ts.offset() + comment.length());
-                }
-                afterEOL = true;
-            }
+            } 
             
         }
         if (!stack.isEmpty()) {
@@ -119,7 +123,7 @@ public class JadeStructureScanner implements StructureScanner {
                     FoldingItem item2 = stack.get(j);
                     if (item1.indent >= item2.indent) {
                         foldCreated = true;
-                        appendFold(folds, FoldType.TAG.code(), item1.tagEnd, item2.tagStart - item2.indent - 1);
+                        appendFold(folds, item1.type.code(), item1.tagEnd, item2.tagStart - item2.indent - 1);
                         break;
                     }
                 }
@@ -156,11 +160,13 @@ public class JadeStructureScanner implements StructureScanner {
         final int indent;
         final int tagStart;
         final int tagEnd;
+        final FoldType type;
 
-        public FoldingItem(int indent, int tagStart, int tagEnd) {
+        public FoldingItem(FoldType type, int indent, int tagStart, int tagEnd) {
             this.indent = indent;
             this.tagStart = tagStart;
             this.tagEnd = tagEnd;
+            this.type = type;
         }
         
     }
