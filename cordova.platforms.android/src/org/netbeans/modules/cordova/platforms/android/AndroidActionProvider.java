@@ -50,7 +50,6 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.spi.Device;
-import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -62,6 +61,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -103,6 +103,9 @@ public class AndroidActionProvider implements ActionProvider {
                 };
     }
 
+    @NbBundle.Messages(
+            "LBL_AvdManager=AVD Manager"
+    )
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
@@ -146,17 +149,30 @@ public class AndroidActionProvider implements ActionProvider {
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 @Override
                 public void run() {
-                    String checkDevices = checkDevices(p);
+                    String checkDevices = checkDevices(p);                    
                     while (checkDevices != null) {
                         NotifyDescriptor not = new NotifyDescriptor(
                                 checkDevices,
                                 Bundle.ERR_Title(),
                                 NotifyDescriptor.DEFAULT_OPTION,
                                 NotifyDescriptor.ERROR_MESSAGE,
-                                null,
+                                checkDevices.equals(Bundle.ERR_RunAndroidEmulator())
+                                        ? new Object[]{
+                                    DialogDescriptor.OK_OPTION,
+                                    DialogDescriptor.CANCEL_OPTION,
+                                    Bundle.LBL_AvdManager()
+                                } : null,
                                 null);
                         Object value = DialogDisplayer.getDefault().notify(not);
                         if (NotifyDescriptor.CANCEL_OPTION == value) {
+                            return;
+                        } else if (Bundle.LBL_AvdManager().equals(value)) {
+                            RequestProcessor.getDefault().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AndroidPlatform.getDefault().manageDevices();
+                                }
+                            });
                             return;
                         } else {
                             checkDevices = checkDevices(p);

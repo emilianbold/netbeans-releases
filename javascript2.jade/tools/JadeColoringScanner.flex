@@ -301,7 +301,7 @@ UnbufferedComment = "//-"
                                         dotAfterTag = true;
                                         hasCssId = false;
                                         return JadeTokenId.TAG ;}
-    {LineTerminator}                {   indent = 0; System.out.println("Indent reset");
+    {LineTerminator}                {   indent = 0; 
                                         return JadeTokenId.EOL; }
     
     {UnbufferedComment}             {   yybegin(IN_UNBUFFERED_COMMENT);
@@ -310,7 +310,7 @@ UnbufferedComment = "//-"
     {Comment}                       {   yybegin(IN_COMMENT); 
                                         return JadeTokenId.COMMENT_DELIMITER; }
     
-    [#\.]                            {   hasCssId = false;
+    [#\.]                            {  hasCssId = false;
                                         yypushback(1);
                                         yybegin(AFTER_TAG); }
         
@@ -359,6 +359,9 @@ UnbufferedComment = "//-"
                                         return JadeTokenId.PLAIN_TEXT_DELIMITER; 
                                         
                                     }
+    "#{"                            {   yypushback(2);
+                                        yybegin(JAVASCRIPT_EXPRESSION);
+                                    }
     .                               {   // we expect = != / or Css Id or Css class
                                         return JadeTokenId.UNKNOWN; }
 }
@@ -374,7 +377,7 @@ UnbufferedComment = "//-"
                                         indent = 0;
                                         return JadeTokenId.EOL;
                                     }
-    .                               {   System.out.println("Chyba v after colon in tag");
+    .                               {   
                                         return JadeTokenId.UNKNOWN; }
 }
 
@@ -382,7 +385,9 @@ UnbufferedComment = "//-"
     
     [#!]"{"                         {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
-                                        return JadeTokenId.TEXT;
+                                        if (tokenLength > 2) {
+                                            return JadeTokenId.TEXT;
+                                        }
                                     }
     {LineTerminator}                {   
                                         yypushback(1);
@@ -414,7 +419,7 @@ UnbufferedComment = "//-"
 <HTML_ATTRIBUTE_VALUE> {
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
     {LineTerminator}                {   return JadeTokenId.EOL; }
-    {AnyChar}                       {   System.out.println("Switch into javascript value " + tokenLength);
+    {AnyChar}                       {   
                                         parenBalance = 1;
                                         lastReaded = bracketBalance = braceBalance = 0;
                                         yypushback(1);
@@ -438,38 +443,38 @@ UnbufferedComment = "//-"
                                         if (delta > 0) {
                                             yypushback(delta);
                                             yybegin(AFTER_EOL);
-                                            return JadeTokenId.JAVASCRIPT;
+                                            if (tokenLength > delta) {
+                                                return JadeTokenId.JAVASCRIPT;
+                                            }
                                         }
                                         yypushback(tokenLength);
                                         yybegin(AFTER_EOL);
                                     }
-    {AnyChar}                       {   lastReaded = tokenLength; System.out.println("ctu char: " + (char)zzInput);}
+    {AnyChar}                       {   lastReaded = tokenLength; }
 }
 
 <JAVASCRIPT_VALUE> {
     \'                              {   yybegin(JS_SSTRING); }
     \"                              {   yybegin(JS_STRING); }
-    [\+\-\.&\*/%|]"="?              {   continueJS = true; lastReaded = tokenLength; System.out.println("consumuju +-*/% '" + (char)zzInput + "' : " +zzInput );}
+    [\+\-\.&\*/%|]"="?              {   continueJS = true; lastReaded = tokenLength; }
     "["                             {   braceBalance++; lastReaded = tokenLength; }
     "]"                             {   braceBalance--; lastReaded = tokenLength; }
     "{"                             {   bracketBalance++; lastReaded = tokenLength; }
     "}"                             {   bracketBalance--; lastReaded = tokenLength; }
     "("                             {   parenBalance++; lastReaded = tokenLength;}
     ")"                             {   parenBalance--; 
-                                        System.out.println("zaviraci zavorka");
+                                        
                                         if (checkEndJS(tokenLength, (char)zzInput)) {
                                             return JadeTokenId.JAVASCRIPT; 
                                         }
                                    }
-    {WS}+                           {   System.out.println("consumuju WS");} 
-    ","                             {   System.out.println("consumuju ,");                
+    {WS}+                           {   } 
+    ","                             {                   
                                         if (checkEndJS(tokenLength, (char)zzInput)) {
-                                            System.out.println("vracim js po ws s carkou");
                                             return JadeTokenId.JAVASCRIPT; 
                                         }
                                     }
     {HtmlIdentifier}                {
-                                        System.out.println("consumuju idetifikator");
                                         if (zzInput == ')') parenBalance--;
                                         if (checkEndJS(tokenLength, (char)zzInput)) {
                                             return JadeTokenId.JAVASCRIPT; 
@@ -477,13 +482,12 @@ UnbufferedComment = "//-"
                                         if (zzInput == ')') parenBalance++;  // ned to return back 
     }
     
-    {AnyChar}                         { lastReaded = tokenLength; continueJS = false; System.out.println("precten: " + (char)zzInput);}
+    {AnyChar}                         { lastReaded = tokenLength; continueJS = false;}
     
 }
 
 <JS_STRING> {
     \"                              {
-                                        System.out.println("consumed string \"");  
                                         continueJS = false;
                                         lastReaded = tokenLength;
                                         yybegin(JAVASCRIPT_VALUE);
@@ -499,12 +503,11 @@ UnbufferedComment = "//-"
                                          return JadeTokenId.UNKNOWN;
                                      }
                                  }
-   {AnyChar}                    { System.out.println("String char: " + (char)zzInput); }
+   {AnyChar}                    { }
 }
 
 <JS_SSTRING> {
     \'                              {
-                                        System.out.println("consumed string '");  
                                         continueJS = false;
                                         lastReaded = tokenLength;
                                         yybegin(JAVASCRIPT_VALUE);
@@ -520,7 +523,7 @@ UnbufferedComment = "//-"
                                          return JadeTokenId.UNKNOWN;
                                      }
                                  }
-   {AnyChar}                    { System.out.println("String char: " + (char)zzInput); }
+   {AnyChar}                    { }
 }
 <AFTER_INCLUDE> {
     ":"{Input}                      {   return JadeTokenId.FILTER; }
@@ -548,7 +551,9 @@ UnbufferedComment = "//-"
             yypushback(1);
             yybegin(HTML_ATTRIBUTE);
             parenBalance = 1;
-            return JadeTokenId.JAVASCRIPT;
+            if (tokenLength > 1) {
+                return JadeTokenId.JAVASCRIPT;
+            }
         }
                                     }
     {AnyChar}                       {}
@@ -560,7 +565,9 @@ UnbufferedComment = "//-"
     "}"                             {   braceBalance--;
                                         if (braceBalance == 0) {
                                             yypushback(1);
-                                            return JadeTokenId.JAVASCRIPT;
+                                            if (tokenLength > 1) {
+                                                return JadeTokenId.JAVASCRIPT;
+                                            }
                                         } else if (braceBalance == -1) {
                                             yybegin(TEXT_LINE);
                                             return JadeTokenId.EXPRESSION_DELIMITER_CLOSE; 
@@ -649,7 +656,9 @@ UnbufferedComment = "//-"
                                         if (blockIndent > currentIndent) {
                                             yypushback(currentIndent);
                                             yybegin(AFTER_EOL);
-                                            return JadeTokenId.PLAIN_TEXT;
+                                            if (tokenLength > currentIndent) {
+                                                return JadeTokenId.PLAIN_TEXT;
+                                            }
                                         }
                                         yybegin(IN_PLAIN_TEXT_BLOCK);
                                     }
@@ -657,7 +666,9 @@ UnbufferedComment = "//-"
     .                               {   yypushback(1);
                                         yybegin(AFTER_EOL);
                                         indent = 0;
-                                        return JadeTokenId.PLAIN_TEXT;
+                                        if (tokenLength > 1) {
+                                            return JadeTokenId.PLAIN_TEXT;
+                                        }
                                     }
 }
 
@@ -677,7 +688,9 @@ UnbufferedComment = "//-"
                                         if (blockIndent > indentInBlock) {
                                             yypushback(indentInBlock);
                                             yybegin(AFTER_EOL);
-                                            return JadeTokenId.FILTER_TEXT;
+                                            if (tokenLength > indentInBlock) {
+                                                return JadeTokenId.FILTER_TEXT;
+                                            }
                                         }
                                         yybegin(IN_FILTER_BLOCK);
                                     }
@@ -743,7 +756,9 @@ UnbufferedComment = "//-"
             yypushback(1);
             yybegin(AFTER_PLUS_MIXIN);
             parenBalance = 1;
-            return JadeTokenId.JAVASCRIPT;
+            if (tokenLength > 1) {
+                return JadeTokenId.JAVASCRIPT;
+            }
         }
                                     }
     {AnyChar}                       {}
@@ -765,14 +780,18 @@ UnbufferedComment = "//-"
                                         if (indent >= indentInComment) {
                                             yypushback(indentInComment + 1);  // return back also the EOL
                                             yybegin(AFTER_EOL);
-                                            return JadeTokenId.COMMENT;
+                                            if (tokenLength > (indentInComment + 1)) {
+                                                return JadeTokenId.COMMENT;
+                                            }
                                         }
                                         yybegin(IN_COMMENT);
                                     }
     {LineTerminator}                {}                                
     .                               {   yypushback(1);
                                         yybegin(AFTER_EOL);
-                                        return JadeTokenId.COMMENT;
+                                        if (tokenLength > 1) {
+                                            return JadeTokenId.COMMENT;
+                                        }
                                     }   
 }
 
@@ -789,14 +808,18 @@ UnbufferedComment = "//-"
                                         if (indent >= indentInComment) {
                                             yypushback(indentInComment);
                                             yybegin(AFTER_EOL);
-                                            return JadeTokenId.UNBUFFERED_COMMENT;
+                                            if (tokenLength > indentInComment) {
+                                                return JadeTokenId.UNBUFFERED_COMMENT;
+                                            }
                                         }
                                         yybegin(IN_UNBUFFERED_COMMENT);
                                     }
     {LineTerminator}                {}                                    
     .                               {   yypushback(1);
                                         yybegin(AFTER_EOL);
-                                        return JadeTokenId.UNBUFFERED_COMMENT;
+                                        if (tokenLength > 1) {
+                                            return JadeTokenId.UNBUFFERED_COMMENT;
+                                        }
                                     }   
 }
 
@@ -832,13 +855,16 @@ UnbufferedComment = "//-"
 <DOCTYPE_STRING> {
     {LineTerminator}                {   yypushback(1);
                                         yybegin(DOCTYPE);
-                                        if (tokenLength > 0) {
+                                        if (tokenLength > 1) {
                                             return JadeTokenId.UNKNOWN;
                                         }
                                     }
     [\"']                           {   yypushback(1);
                                         yybegin(DOCTYPE_STRING_END);
-                                        return JadeTokenId.DOCTYPE_STRING_END;}
+                                        if (tokenLength > 1) {
+                                            return JadeTokenId.DOCTYPE_STRING_END;
+                                        }
+                                    }
     [^\"'\r\n]+                     {   }
 }
 

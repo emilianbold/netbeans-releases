@@ -41,13 +41,25 @@
  */
 package org.netbeans.modules.javascript2.jade.editor;
 
+import com.sun.jmx.snmp.SnmpOid;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -64,20 +76,22 @@ public class JadeLanguage extends DefaultLanguageConfig {
         extension={ "jade"},
         displayName="#JadeResolver",
         mimeType=JadeTokenId.JADE_MIME_TYPE,
-        position=196
+        position=191
     )
     @NbBundle.Messages("JadeResolver=Jade Files")
     @MultiViewElement.Registration(displayName = "#LBL_JadeEditorTab",
         iconBase = "org/netbeans/modules/javascript2/jade/resources/jade16.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-        preferredID = "javascript.source",
+        preferredID = "jade.source",
         mimeType = JadeTokenId.JADE_MIME_TYPE,
-        position = 1)
+        position = 2)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
     
-    
+    public JadeLanguage() {
+        super();
+    }
     
     @Override
     public Language getLexerLanguage() {
@@ -98,6 +112,59 @@ public class JadeLanguage extends DefaultLanguageConfig {
     public boolean hasStructureScanner() {
         return true;
     }
+
+    @Override
+    public Parser getParser() {
+        return new JadeParser();
+    }
+
+    // This is a fake parser to get work some features like folding.
+    private static class JadeParser extends Parser {
+
+        private Snapshot lastSnapshot = null;
+        
+        public JadeParser() {
+        }
+
+        @Override
+        public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+            lastSnapshot = snapshot;
+        }
+
+        @Override
+        public Result getResult(Task task) throws ParseException {
+            return new JadeParserResult(lastSnapshot);
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener changeListener) {
+            
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener changeListener) {
+            
+        }
+    }
+
+    private static class JadeParserResult extends ParserResult {
+
+        public JadeParserResult(final Snapshot snapshot) {
+            super(snapshot);
+        }
+
+        @Override
+        protected void invalidate() {
+            
+        }
+
+        @Override
+        public List<? extends Error> getDiagnostics() {
+            return Collections.emptyList();
+        }
+    }
+
+    
     
     
     

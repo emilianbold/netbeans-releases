@@ -39,73 +39,37 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.jade.editor.lexer;
+package org.netbeans.modules.javascript2.jade.editor;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.netbeans.spi.lexer.TokenFactory;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.spi.editor.fold.FoldTypeProvider;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JadeLexer implements Lexer<JadeTokenId> {
+@MimeRegistration(mimeType = "text/jade", service = FoldTypeProvider.class, position = 1105)
+public class JadeFoldTypeProvider implements FoldTypeProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(JadeLexer.class.getName());
-    
-    private final JadeColoringLexer scanner;
-    private TokenFactory<JadeTokenId> tokenFactory;
-    
-    private JadeLexer(LexerRestartInfo<JadeTokenId> info) {
-        scanner = new JadeColoringLexer(info);
-        tokenFactory = info.tokenFactory();
+    private final Collection<FoldType>   types = new ArrayList<FoldType>(1);
+
+    public JadeFoldTypeProvider() {
+        types.add(FoldType.COMMENT);
+        types.add(FoldType.TAG);
     }
     
-    public static JadeLexer create(LexerRestartInfo<JadeTokenId> info) {
-        synchronized (JadeLexer.class) {
-            return new JadeLexer(info);
-        }
-    }
     
     @Override
-    public Token<JadeTokenId> nextToken() {
-        try {
-            JadeTokenId tokenId = scanner.nextToken();
-            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
-            Token<JadeTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
-            }
-//            if (token != null) {
-//                StringBuilder sb = new StringBuilder();
-//                sb.append(token.id());
-//                sb.append(" length: " + token.length());
-//                System.out.println(sb.toString());
-//                if (token.length() <= 0) {
-//                    System.out.println("!!!!!!!!!!!!!!!!! delka je 0" + token.id());
-//                }
-//            } else {
-//                System.out.println("token je null");
-//            }
-            return token;
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-        }
-        return null;
+    public Collection getValues(Class type) {
+        return types;
     }
 
     @Override
-    public Object state() {
-         return scanner.getState();
-    }
-
-    @Override
-    public void release() {
-        
+    public boolean inheritable() {
+        return false;
     }
     
 }
