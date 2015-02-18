@@ -217,6 +217,9 @@ public class RuleEditorNode extends AbstractNode {
                             //(as the css source model elements do not comparable by equals/hashcode)
                             Map<String, PropertyDeclaration> oName2DeclarationMap = new HashMap<>();
                             for (PropertyDeclaration d : om.keySet()) {
+                                if (lastRule.getModel() != d.getModel()) {
+                                    break update; // Issue 234155
+                                }
                                 oName2DeclarationMap.put(PropertyUtils.getDeclarationId(lastRule, d), d);
                             }
                             Map<String, PropertyDeclaration> nName2DeclarationMap = new HashMap<>();
