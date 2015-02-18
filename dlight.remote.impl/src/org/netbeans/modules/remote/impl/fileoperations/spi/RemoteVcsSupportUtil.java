@@ -48,7 +48,10 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -58,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
+import org.netbeans.modules.remote.impl.fs.RemoteDirectory;
 import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
@@ -68,7 +72,6 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  * Static methods that are need for RemoteVcsSupportImpl
@@ -78,7 +81,7 @@ public class RemoteVcsSupportUtil {
 
     private RemoteVcsSupportUtil() {        
     }
-    
+
     /** deprecated: use USE_FS instead */
     private static final boolean USE_CACHE;
     static {
@@ -119,6 +122,13 @@ public class RemoteVcsSupportUtil {
         } else {
             return false;
         }
+    }
+    
+    public static Boolean isDirectoryFast(FileSystem fs, String path) throws IOException {        
+        if (fs instanceof RemoteFileSystem) {
+            return ((RemoteFileSystem) fs).vcsSafeIsDirectory(path);
+        }
+        return null;
     }
 
     public static String readSymbolicLinkPath(FileSystem fileSystem, String path) throws IOException {
@@ -274,7 +284,7 @@ public class RemoteVcsSupportUtil {
         if (fs instanceof RemoteFileSystem) {
             final RemoteFileSystem rfs = (RemoteFileSystem) fs;
             final ExecutionEnvironment env = rfs.getExecutionEnvironment();
-            if (true || rfs.isInsideVCS()) {
+            if (rfs.isInsideVCS()) {
                 deleteExternally(env, path);
             } else {
                 try {
@@ -287,6 +297,19 @@ public class RemoteVcsSupportUtil {
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }
+            }
+        }
+    }
+
+    public static void deleteExternally(FileSystem fs, String path) {
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        if (fs instanceof RemoteFileSystem) {
+            deleteExternally(((RemoteFileSystem) fs).getExecutionEnvironment(), path);
+            String parentPath = PathUtilities.getDirName(path);
+            try {
+                refreshFor(fs, (parentPath == null) ? "/" : parentPath); //NOI18N
+            } catch (IOException ex) {
+                RemoteLogger.fine(ex);
             }
         }
     }
@@ -332,21 +355,50 @@ public class RemoteVcsSupportUtil {
         return connected.toArray(new FileSystem[connected.size()]);
     }
 
+    
     public static void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException {
-        // TODO: remove children if there if the list contains parents
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        for (String p : paths) {
+            RemoteLogger.assertTrue(p != null, "Path should not be null"); //NOI18N
+            RemoteLogger.assertTrue(p.startsWith("/"), "Path should be absolute: {0}", paths); //NOI18N
+        }
+        RemoteFileSystem rfs = (RemoteFileSystem) fs;
         AtomicBoolean refreshed = new AtomicBoolean(false);
-        for (String p : paths) {            
-            FileObject fo = getFileObject(fs, p, refreshed);
+        Set<RemoteDirectory> refreshSet = new HashSet<>();
+        for (String p : paths) {
+            FileObject fo = getFileObject(rfs, p, refreshed);            
             if (fo != null && !refreshed.get()) {
-                FileObject parent = fo.getParent();
-                if (parent != null) {
-                    parent.refresh();
+                RemoteFileObjectBase impl = ((RemoteFileObject) fo).getImplementor();
+                if (impl.isFolder()) {
+                    // for folder, add itself (canonicalized)
+                    impl = RemoteFileSystemUtils.getCanonicalFileObject(impl);
+                    if (impl instanceof RemoteDirectory) {
+                        refreshSet.add((RemoteDirectory) impl);
+                    } else {
+                        RemoteLogger.info("Unexpected file object instance, expected RemoteDirectory: {0}", impl); //NOI18N
+                        impl.refresh();
+                    }
                 } else {
-                    fo.refresh();
+                    // for not folder, add canonical paenr
+                    refreshSet.add(RemoteFileSystemUtils.getCanonicalParent(impl));
                 }
             }
-            if (fo == null) {
-
+        }
+        if (RemoteFileSystemTransport.canRefreshFast(rfs.getExecutionEnvironment())) {
+            for (RemoteDirectory impl : refreshSet) {
+                try {
+                    RemoteFileSystemTransport.refreshFast(impl, false);
+                } catch (InterruptedException | CancellationException ex) {
+                    InterruptedIOException ie = new InterruptedIOException(ex.getMessage());
+                    ie.initCause(ex);
+                    throw ie;
+                } catch (ExecutionException ex) {
+                    throw new IOException(ex.getMessage(), ex);
+                }
+            }
+        } else {
+            for (RemoteDirectory fo : refreshSet) {
+                fo.refresh();
             }
         }
     }

@@ -62,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
+import org.netbeans.modules.remote.impl.fs.RemoteDirectory;
 import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
@@ -70,6 +71,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper;
+import org.netbeans.modules.remote.impl.fs.RemotePlainFile;
 import org.netbeans.spi.extexecution.ProcessBuilderFactory;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.filesystems.FileObject;
@@ -134,16 +136,16 @@ abstract public class FileOperationsProvider {
             String path = PathUtilities.normalizeUnixPath(file.getPath());
             RemoteFileObjectBase cached = fileSystem.getFactory().getCachedFileObject(path);
             RemoteFileObject fo;
-            if (cached != null /*&& cached.isValid()*/) {
+            if (cached != null && cached.isValid()) {
                 fo = cached.getOwnerFileObject();
             } else {
                 fo = fileSystem.findResource(path);
             }
             return fo;
         }
-
+        
         protected boolean isDirectory(FileProxyO file) {
-            if (RemoteVcsSupportUtil.USE_FS) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
                 RemoteFileObject fo = getFileObject(file);
                 return (fo == null || ! fo.isValid()) ? false : fo.isFolder();
             }
@@ -153,6 +155,17 @@ abstract public class FileOperationsProvider {
                     return res.booleanValue();
                 }
             }
+            RemoteFileObjectBase beingCreated = fileSystem.getBeingCreated();
+            if (beingCreated != null) {
+                if (beingCreated.getPath().equals(file.getPath())) {
+                    if (beingCreated instanceof RemotePlainFile) {
+                        return false;
+                    } else if (beingCreated instanceof RemoteDirectory) {
+                        return true;
+                    }
+                }
+            }
+            
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
@@ -173,6 +186,10 @@ abstract public class FileOperationsProvider {
         }
         
         protected long lastModified(FileProxyO file) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                RemoteFileObject fo = getFileObject(file);
+                return (fo == null || !fo.isValid()) ? -1 : fo.lastModified().getTime();
+            }
             if (USE_CACHE) {
                 Long res = fileSystem.vcsSafeLastModified(file.getPath());
                 if (res != null) {
@@ -199,6 +216,10 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean isFile(FileProxyO file) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                RemoteFileObject fo = getFileObject(file);
+                return (fo == null || !fo.isValid()) ? false : fo.isData();
+            }
             if (USE_CACHE) {
                 Boolean res = fileSystem.vcsSafeIsFile(file.getPath());
                 if (res != null) {
@@ -225,6 +246,10 @@ abstract public class FileOperationsProvider {
         }
         
         protected boolean canWrite(FileProxyO file) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                RemoteFileObject fo = getFileObject(file);
+                return (fo == null || !fo.isValid()) ? false : fo.canWrite();
+            }
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
@@ -258,6 +283,10 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean exists(FileProxyO file) {
+            if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                RemoteFileObject fo = getFileObject(file);
+                return fo != null && fo.isValid();
+            }
             if (USE_CACHE) {
                 Boolean res = fileSystem.vcsSafeExists(file.getPath());
                 if (res != null) {
@@ -284,18 +313,17 @@ abstract public class FileOperationsProvider {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
                 }
-                System.err.println("Exception on file "+file.getPath());
-                ex.printStackTrace(System.err);
+                RemoteLogger.finest(ex);
             }
             return false;
         }
 
         protected FileObject toFileObject(FileProxyO path) {
             FileObject root = getRoot();
-            fo = root.getFileObject(path.getPath());
+            FileObject fo = root.getFileObject(path.getPath());
             if (fo == null && existsSafe(path)) {
                 String parent = path.getPath();
-                LinkedList<String> stack = new LinkedList<String>();
+                LinkedList<String> stack = new LinkedList<>();
                 while(true) {
                     parent = PathUtilities.getDirName(parent);
                     if (parent == null) {
@@ -320,7 +348,6 @@ abstract public class FileOperationsProvider {
             }
             return fo;
         }
-        private FileObject fo;
 
         protected InputStream getInputStream(FileObject fo, boolean checkLock) throws FileNotFoundException {
             if (fo instanceof RemoteFileObject) {
@@ -332,6 +359,18 @@ abstract public class FileOperationsProvider {
 
         protected String[] list(FileProxyO file) {
             if (isDirectory(file)) {
+                if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
+                    RemoteFileObject fo = getFileObject(file);
+                    if (fo == null) {
+                        return null;
+                    }
+                    RemoteFileObject[] children = fo.getImplementor().getChildren();
+                    String[] names = new String[children.length];
+                    for (int i = 0; i < children.length; i++) {
+                        names[i] = children[i].getNameExt();
+                    }
+                    return names;
+                }                
                 Future<FileInfoProvider.StatInfo[]> stat = FileInfoProvider.ls(env, file.getPath());
                 try {
                     FileInfoProvider.StatInfo[] statInfo = stat.get();
@@ -358,16 +397,26 @@ abstract public class FileOperationsProvider {
         }
         
         protected void refreshFor(FileProxyO ... files) {
-            List<RemoteFileObjectBase> roots = new ArrayList<RemoteFileObjectBase>();
+            List<RemoteFileObjectBase> roots = new ArrayList<>();
             for(FileProxyO f : files) {
                 RemoteFileObjectBase fo = findExistingParent(f.getPath());
-                if (fo != null) {
+                if (fo != null && fo.isValid()) {
                     roots.add(fo);
                 }
             }
-            for(RemoteFileObjectBase fo : roots) {
-                if (fo.isValid()) {
-                    fo.refresh(true);
+//            for(RemoteFileObjectBase fo : roots) {                
+//                fo.refresh(true);
+//            }
+            if (!roots.isEmpty()) {
+                RemoteFileSystem fs = roots.iterator().next().getFileSystem();
+                String[] paths = new String[roots.size()];
+                for (int i = 0; i < roots.size(); i++) {
+                    paths[i] = roots.get(i).getPath();
+                }
+                try {
+                    RemoteVcsSupportUtil.refreshFor(fs, paths);
+                } catch (IOException ex) {
+                    RemoteLogger.fine(ex);
                 }
             }
         }
@@ -402,6 +451,7 @@ abstract public class FileOperationsProvider {
         }
 
         @Override
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;
@@ -496,6 +546,7 @@ abstract public class FileOperationsProvider {
         }
 
         @Override
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;

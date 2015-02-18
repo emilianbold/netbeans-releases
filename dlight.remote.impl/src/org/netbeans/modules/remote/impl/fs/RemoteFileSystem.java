@@ -138,16 +138,16 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     transient private final StatusImpl status = new StatusImpl();
     private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
+    private final ThreadLocal<RemoteFileObjectBase> beingCreated = new ThreadLocal<RemoteFileObjectBase>();
     private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<RemoteFileObjectBase>();
     private final RemoteFileZipper remoteFileZipper;
-    private final ThreadLocal<Boolean> isInsideVCS = new ThreadLocal<Boolean>();
+    private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<Integer>();
 
     private final RequestProcessor.Task connectionTask;
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
-        this.isInsideVCS.set(Boolean.FALSE);
         this.remoteFileSupport = new RemoteFileSupport();
         factory = new RemoteFileObjectFactory(this);
         refreshManager = new RefreshManager(execEnv, factory);
@@ -195,11 +195,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     public boolean isInsideVCS() {
-        return isInsideVCS.get().booleanValue();
+        Integer currValue = isInsideVCS.get();        
+        int level = ((currValue == null) ? 0 : currValue.intValue());
+        return level > 0;
     }
 
     public void setInsideVCS(boolean value) {
-        isInsideVCS.set(value);
+        Integer currValue = isInsideVCS.get();
+        int newValue = ((currValue == null) ? 0 : currValue.intValue()) + (value ? +1 : -1);
+        isInsideVCS.set(newValue);
     }
 
     void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
@@ -779,6 +783,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         beingRemoved.set(fo);
     }
 
+    /*package*/ void setBeingCreated(RemoteFileObjectBase fo) {
+        beingCreated.set(fo);
+    }
+    
+    /** Be very CAUCIOUS when using this FO - it can be in process of VCS operations  */
+    public RemoteFileObjectBase getBeingCreated() {
+        return beingCreated.get();
+    }
+
     /*package*/ void setExternallyRemoved(RemoteFileObjectBase fo) {
         externallyRemoved.set(fo);
     }
@@ -1056,10 +1069,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             if (FileOperationsProvider.ATTRIBUTE.equals(attrName)) {
                 if (USE_VCS) {
                     try {
-                        getFileSystem().setInsideVCS(true);
+                        //getFileSystem().setInsideVCS(true);
                         return FileOperationsProvider.getDefault().getFileOperations(getFileSystem());
                     } finally {
-                        getFileSystem().setInsideVCS(false);
+                        //getFileSystem().setInsideVCS(false);
                     }
                 }
             }

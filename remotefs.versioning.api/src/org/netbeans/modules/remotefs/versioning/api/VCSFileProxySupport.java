@@ -74,6 +74,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -111,6 +112,10 @@ public final class VCSFileProxySupport {
         public int compare(VCSFileProxy o1, VCSFileProxy o2) {
             return o1.getPath().compareTo(o2.getPath());
         }
+    }
+    
+    public static void deleteExternally(VCSFileProxy file) {
+        RemoteVcsSupport.deleteExternally(file);
     }
     
     public static void delete(VCSFileProxy file) {

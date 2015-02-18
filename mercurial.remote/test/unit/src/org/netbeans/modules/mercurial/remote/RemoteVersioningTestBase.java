@@ -191,7 +191,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         if (skipTest) {
             return;
         }
-        VCSFileProxySupport.delete(dataRootDir.getParentFile());
+        VCSFileProxySupport.deleteExternally(dataRootDir.getParentFile());
     }
 
     protected static final OutputLogger NULL_LOGGER = Mercurial.getInstance().getLogger(null);

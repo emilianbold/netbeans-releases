@@ -1462,8 +1462,11 @@ itor tabs #66700).
 
     public static boolean isRepositoryLocked (VCSFileProxy repository) {
         List<String> locks = new ArrayList<String>();
-        for(VCSFileProxy file : getHgFolderForRoot(repository).listFiles()) {
-            locks.add(file.getPath());
+        final VCSFileProxy[] files = getHgFolderForRoot(repository).listFiles();
+        if (files != null) {
+            for(VCSFileProxy file : files) {
+                locks.add(file.getPath());
+            }
         }
         return locks.contains(WLOCK_FILE);
     }
