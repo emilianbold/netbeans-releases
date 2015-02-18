@@ -42,14 +42,68 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.dbx.spi;
+package org.netbeans.modules.cnd.debugger.dbx;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+//import com.sun.tools.swdev.toolscommon.base.InstallDir;
+//import java.io.File;
+//import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
+//import org.openide.DialogDisplayer;
+//import org.openide.NotifyDescriptor;
+//import org.openide.util.NbBundle;
 
 /**
  *
  * @author Egor Ushakov
  */
-public interface DbxPathProvider {
-    String getDbxPath(Host host);
+public final class DbxPathProvider {
+
+    public static String getDbxPath(Host host) {
+	String dbx = System.getProperty("SPRO_DBX_PATH");	// NOI18N
+        if (dbx == null)
+	    dbx = System.getenv("SPRO_DBX_PATH");		// NOI18N
+
+	if (dbx != null) {
+	    Platform platform;
+	    if (host != null)
+		platform = host.getPlatform();
+	    else
+		platform = Platform.local();
+	    String variant;
+	    if (host.isLinux64())
+		variant = platform.variant64();
+	    else
+		variant = platform.variant();
+	    dbx = dbx.replaceAll("/PLATFORM/", "/" + variant + "/"); // NOI18N
+	}
+
+        // this stuff should not be used in the projectless-based dbxtool
+        // use spro.home for Tool only, see CR 7014085
+//        if (dbx == null && ( NativeDebuggerManager.isStandalone() || NativeDebuggerManager.isPL() ) ) {
+//	    String overrideInstallDir = null;
+//	    if (host.isRemote())
+//		overrideInstallDir = host.getRemoteStudioLocation();
+//
+//	    if (overrideInstallDir != null) {
+//		dbx = overrideInstallDir + "/bin/dbx"; // NOI18N
+//	    } else {
+//
+//		String spro_home = InstallDir.get();
+//		if (spro_home == null) {
+//		    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+//			    NbBundle.getMessage(DbxPathProvider.class,
+//			    "MSG_MISSING_SPRO_HOME"))); // NOI18N
+//		} else {
+//                    String dbxPath = spro_home + "/bin/dbx"; // NOI18N
+//                    File dbxFile = new File(dbxPath);
+//
+//                    if (dbxFile.exists()) {
+//                        dbx = dbxFile.getAbsolutePath();
+//                    }
+//                }
+//	    }
+//        }
+        return dbx;
+    }
 }

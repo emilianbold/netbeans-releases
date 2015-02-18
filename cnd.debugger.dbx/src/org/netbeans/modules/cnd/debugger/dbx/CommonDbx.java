@@ -96,7 +96,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionLayers;
 
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcProgressManager;
-import org.netbeans.modules.cnd.debugger.dbx.spi.DbxPathProvider;
 import org.openide.windows.InputOutput;
 
 
@@ -488,12 +487,9 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	}
 
         private void updateDbxPath(Host host) {
-            final DbxPathProvider pathProvider = Lookup.getDefault().lookup(DbxPathProvider.class);
-            if (pathProvider != null) {
-                String newPath = pathProvider.getDbxPath(host);
-                if (newPath != null) {
-                    dbxname = newPath;
-                }
+            String newPath = DbxPathProvider.getDbxPath(host);
+            if (newPath != null) {
+                dbxname = newPath;
             }
         }
 
@@ -542,7 +538,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 		//
 		// Update dbx path if needed
 		//
-//                updateDbxPath(host);
+                updateDbxPath(host);
 
 		if (dbxname == null) {
                     listener.connectFailed("dbx", Catalog.format("MSG_CantFindDbx",""), null); // NOI18N
