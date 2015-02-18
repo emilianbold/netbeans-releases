@@ -45,11 +45,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.javascript.nodejs.exec.ExpressExecutable;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.web.clientproject.createprojectapi.ClientSideProjectGenerator;
@@ -114,6 +118,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
     void uninitializeInternal() {
         wizardDescriptor.putProperty(CreateProjectUtils.PROJECT_DIRECTORY, null);
         wizardDescriptor.putProperty(CreateProjectUtils.PROJECT_NAME, null);
+        wizard.uninitialize(wizardDescriptor);
     }
 
     @NbBundle.Messages("NewProjectWizardIterator.progress.creating=Creating project")
@@ -142,6 +147,8 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         Project project = ClientSideProjectGenerator.createProject(createProperties);
 
         wizard.instantiate(files, handle, wizardDescriptor, project);
+
+        wizard.logUsage(wizardDescriptor, projectDirectory);
 
         handle.finish();
         return files;
@@ -184,9 +191,9 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
 
         void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, Project project) throws IOException;
 
-        void uninitialize(WizardDescriptor wizardDescriptor);
+        void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir);
 
-        void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, @NullAllowed FileObject sources, @NullAllowed FileObject siteRoot);
+        void uninitialize(WizardDescriptor wizardDescriptor);
 
     }
 
@@ -253,27 +260,36 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         }
 
         @Override
+        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir) {
+            // XXX
+        }
+
+        @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
             // noop
         }
 
-        @Override
-        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject sources, FileObject siteRoot) {
-            // XXX
-        }
-
     }
 
-    private static final class NewHtml5ProjectWithNodeJs implements Wizard {
+    static final class NewHtml5ProjectWithNodeJs implements Wizard {
+
+        public static final String EXPRESS_ENABLED = "EXPRESS_ENABLED"; // NOI18N
+        public static final String EXPRESS_LESS = "EXPRESS_LESS"; // NOI18N
+
+        private static final String EXPRESS_MAIN_JS_FILE = "app.js"; // NOI18N
+        private static final String EXPRESS_MAIN_VIEW_FILE = "views/index.jade"; // NOI18N
+        private static final String EXPRESS_RUN_FILE = "bin/www"; // NOI18N
 
         private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
         private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
+        private final WizardDescriptor.FinishablePanel<WizardDescriptor> expressWizard;
 
 
         public NewHtml5ProjectWithNodeJs() {
             baseWizard = CreateProjectUtils.createBaseWizardPanel("NodeJsWebApplication"); // NOI18N
             toolsWizard = CreateProjectUtils.createToolsWizardPanel(new CreateProjectUtils.Tools()
                     .setNpm(true));
+            expressWizard = new ExpressPanel();
         }
 
         @Override
@@ -295,14 +311,17 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         public WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
             return new WizardDescriptor.Panel[] {
                 baseWizard.first(),
+                expressWizard,
                 toolsWizard.first(),
             };
         }
 
+        @NbBundle.Messages("NewHtml5ProjectWithNodeJs.express.title=Express")
         @Override
         public String[] createSteps() {
             return new String[] {
                 baseWizard.second(),
+                Bundle.NewHtml5ProjectWithNodeJs_express_title(),
                 toolsWizard.second(),
             };
         }
@@ -312,30 +331,67 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
             FileObject projectDirectory = project.getProjectDirectory();
             FileObject sources = projectDirectory.getFileObject(getSources());
             assert sources != null;
-            // create main.js file
-            FileObject mainJsFile = createMainJsFile(sources);
-            files.add(mainJsFile);
-            // create index.html
-            FileObject siteRoot = projectDirectory.getFileObject(getSiteRoot());
-            assert siteRoot != null;
-            FileObject indexHtmlFile = createIndexHtmlFile(siteRoot);
-            files.add(indexHtmlFile);
+            // express?
+            if (getBoolean(wizardDescriptor, EXPRESS_ENABLED, false)) {
+                ExpressExecutable express = ExpressExecutable.getDefault(project, false);
+                assert express != null;
+                Future<Integer> task = express.generate(projectDirectory, getBoolean(wizardDescriptor, EXPRESS_LESS, true));
+                try {
+                    task.get(1, TimeUnit.MINUTES);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException | TimeoutException ex) {
+                    throw new IOException(ex);
+                }
+
+                for (String mainFile : new String[] {EXPRESS_MAIN_JS_FILE, EXPRESS_MAIN_VIEW_FILE}) {
+                    FileObject file = projectDirectory.getFileObject(mainFile);
+                    if (file != null) {
+                        files.add(file);
+                    }
+                }
+
+                // set proper node.js start file
+                FileObject runFile = projectDirectory.getFileObject(EXPRESS_RUN_FILE);
+                if (runFile != null) {
+                    NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(runFile).getAbsolutePath());
+                }
+                // XXX configure to run as nodejs with browser!
+            } else {
+                // create main.js file
+                FileObject mainJsFile = createMainJsFile(sources);
+                files.add(mainJsFile);
+                // create index.html
+                FileObject siteRoot = projectDirectory.getFileObject(getSiteRoot());
+                assert siteRoot != null;
+                FileObject indexHtmlFile = createIndexHtmlFile(siteRoot);
+                files.add(indexHtmlFile);
+
+                // set proper node.js start file
+                NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
+            }
 
             // tools
             CreateProjectUtils.instantiateTools(project, toolsWizard.first());
+        }
 
-            // set proper node.js start file
-            NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
+        @Override
+        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir) {
+            // XXX
         }
 
         @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
-            // noop
+            wizardDescriptor.putProperty(EXPRESS_ENABLED, null);
+            wizardDescriptor.putProperty(EXPRESS_LESS, null);
         }
 
-        @Override
-        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject sources, FileObject siteRoot) {
-            // XXX
+        private boolean getBoolean(WizardDescriptor wizardDescriptor, String propertyName, boolean defaultValue) {
+            Boolean value = (Boolean) wizardDescriptor.getProperty(propertyName);
+            if (value == null) {
+                return defaultValue;
+            }
+            return value;
         }
 
     }
