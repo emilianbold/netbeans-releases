@@ -43,14 +43,22 @@ package org.netbeans.modules.javascript.nodejs.ui.options;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
@@ -60,9 +68,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.javascript.nodejs.exec.ExpressExecutable;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.ui.NodeJsPathPanel;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
@@ -70,6 +80,8 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
+
+    private static final Logger LOGGER = Logger.getLogger(NodeJsOptionsPanel.class.getName());
 
     final NodeJsPathPanel nodePanel;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -93,12 +105,17 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
     @NbBundle.Messages({
         "# {0} - npm file name",
         "NodeJsOptionsPanel.npm.hint=Full path of npm file (typically {0}).",
+        "# {0} - express file name",
+        "NodeJsOptionsPanel.express.hint=Full path of express file (typically {0}).",
     })
     private void init() {
         errorLabel.setText(" "); // NOI18N
         npmHintLabel.setText(Bundle.NodeJsOptionsPanel_npm_hint(NpmExecutable.NPM_NAME));
+        expressHintLabel.setText(Bundle.NodeJsOptionsPanel_express_hint(ExpressExecutable.EXPRESS_NAME));
         nodePanelHolder.add(nodePanel, BorderLayout.CENTER);
-        npmTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
+        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        npmTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        expressTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -146,6 +163,14 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         npmTextField.setText(npm);
     }
 
+    public String getExpress() {
+        return expressTextField.getText();
+    }
+
+    public void setExpress(String express) {
+        expressTextField.setText(express);
+    }
+
     void fireChange() {
         changeSupport.fireChange();
     }
@@ -164,14 +189,26 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
     private void initComponents() {
 
         nodePanelHolder = new JPanel();
+        npmHeaderLabel = new JLabel();
+        npmSeparator = new JSeparator();
         npmLabel = new JLabel();
         npmTextField = new JTextField();
         npmBrowseButton = new JButton();
         npmSearchButton = new JButton();
         npmHintLabel = new JLabel();
+        expressHeaderLabel = new JLabel();
+        expressSeparator = new JSeparator();
+        expressLabel = new JLabel();
+        expressTextField = new JTextField();
+        expressBrowseButton = new JButton();
+        expressSearchButton = new JButton();
+        expressHintLabel = new JLabel();
+        expressInstallLabel = new JLabel();
         errorLabel = new JLabel();
 
         nodePanelHolder.setLayout(new BorderLayout());
+
+        Mnemonics.setLocalizedText(npmHeaderLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.npmHeaderLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(npmLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.npmLabel.text")); // NOI18N
 
@@ -191,6 +228,37 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
 
         Mnemonics.setLocalizedText(npmHintLabel, "HINT"); // NOI18N
 
+        Mnemonics.setLocalizedText(expressHeaderLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.expressHeaderLabel.text")); // NOI18N
+
+        expressLabel.setLabelFor(expressTextField);
+        Mnemonics.setLocalizedText(expressLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.expressLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(expressBrowseButton, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.expressBrowseButton.text")); // NOI18N
+        expressBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                expressBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(expressSearchButton, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.expressSearchButton.text")); // NOI18N
+        expressSearchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                expressSearchButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(expressHintLabel, "HINT"); // NOI18N
+
+        Mnemonics.setLocalizedText(expressInstallLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.expressInstallLabel.text")); // NOI18N
+        expressInstallLabel.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent evt) {
+                expressInstallLabelMousePressed(evt);
+            }
+            public void mouseEntered(MouseEvent evt) {
+                expressInstallLabelMouseEntered(evt);
+            }
+        });
+
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -198,21 +266,43 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addComponent(nodePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(npmHeaderLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(npmSeparator))
+            .addGroup(layout.createSequentialGroup()
                 .addComponent(npmLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(npmHintLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(npmTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(npmBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(npmSearchButton))))
+                        .addComponent(npmSearchButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(npmHintLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(expressHeaderLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(expressSeparator))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(errorLabel)
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(expressLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(expressHintLabel)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(expressInstallLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(expressTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(expressBrowseButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(expressSearchButton))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {npmBrowseButton, npmSearchButton});
@@ -220,7 +310,11 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(nodePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                    .addComponent(npmHeaderLabel)
+                    .addComponent(npmSeparator, GroupLayout.PREFERRED_SIZE, 8, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(npmLabel)
                     .addComponent(npmTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -228,6 +322,20 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
                     .addComponent(npmBrowseButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(npmHintLabel)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                    .addComponent(expressHeaderLabel)
+                    .addComponent(expressSeparator, GroupLayout.PREFERRED_SIZE, 8, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(expressTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(expressBrowseButton)
+                    .addComponent(expressSearchButton)
+                    .addComponent(expressLabel))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(expressHintLabel)
+                    .addComponent(expressInstallLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
@@ -248,21 +356,66 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
     @NbBundle.Messages("NodeJsOptionsPanel.npm.none=No npm executable was found.")
     private void npmSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_npmSearchButtonActionPerformed
         assert EventQueue.isDispatchThread();
-        for (String node : FileUtils.findFileOnUsersPath(NpmExecutable.NPM_NAME)) {
-            npmTextField.setText(new File(node).getAbsolutePath());
+        for (String npm : FileUtils.findFileOnUsersPath(NpmExecutable.NPM_NAME)) {
+            npmTextField.setText(new File(npm).getAbsolutePath());
             return;
         }
-        // no node found
+        // no npm found
         StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsOptionsPanel_npm_none());
     }//GEN-LAST:event_npmSearchButtonActionPerformed
 
+    @NbBundle.Messages("NodeJsOptionsPanel.express.browse.title=Select Express")
+    private void expressBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_expressBrowseButtonActionPerformed
+        assert EventQueue.isDispatchThread();
+        File file = new FileChooserBuilder(NodeJsOptionsPanel.class)
+                .setFilesOnly(true)
+                .setTitle(Bundle.NodeJsOptionsPanel_express_browse_title())
+                .showOpenDialog();
+        if (file != null) {
+            expressTextField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_expressBrowseButtonActionPerformed
+
+    @NbBundle.Messages("NodeJsOptionsPanel.express.none=No Express executable was found.")
+    private void expressSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_expressSearchButtonActionPerformed
+        assert EventQueue.isDispatchThread();
+        for (String express : FileUtils.findFileOnUsersPath(ExpressExecutable.EXPRESS_NAME)) {
+            expressTextField.setText(new File(express).getAbsolutePath());
+            return;
+        }
+        // no express found
+        StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsOptionsPanel_express_none());
+    }//GEN-LAST:event_expressSearchButtonActionPerformed
+
+    private void expressInstallLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_expressInstallLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_expressInstallLabelMouseEntered
+
+    private void expressInstallLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_expressInstallLabelMousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://expressjs.com/starter/generator.html")); // NOI18N
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+    }//GEN-LAST:event_expressInstallLabelMousePressed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel errorLabel;
+    private JButton expressBrowseButton;
+    private JLabel expressHeaderLabel;
+    private JLabel expressHintLabel;
+    private JLabel expressInstallLabel;
+    private JLabel expressLabel;
+    private JButton expressSearchButton;
+    private JSeparator expressSeparator;
+    private JTextField expressTextField;
     private JPanel nodePanelHolder;
     private JButton npmBrowseButton;
+    private JLabel npmHeaderLabel;
     private JLabel npmHintLabel;
     private JLabel npmLabel;
     private JButton npmSearchButton;
+    private JSeparator npmSeparator;
     private JTextField npmTextField;
     // End of variables declaration//GEN-END:variables
 

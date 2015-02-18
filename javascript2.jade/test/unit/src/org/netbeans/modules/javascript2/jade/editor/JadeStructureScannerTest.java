@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.options;
+package org.netbeans.modules.javascript2.jade.editor;
 
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
-import org.netbeans.modules.web.common.api.ValidationResult;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
 
-
-public class NodeJsOptionsValidator {
-
-    private final ValidationResult result = new ValidationResult();
-
-
-    // do not validate Express since it is really optional
-    public NodeJsOptionsValidator validate(boolean validateNode, boolean includingNodeSources) {
-        if (validateNode) {
-            validateNode(includingNodeSources);
-        }
-        return validateNpm();
+/**
+ *
+ * @author Petr Pisl
+ */
+public class JadeStructureScannerTest extends JadeTestBase {
+    
+    public JadeStructureScannerTest(String testName) {
+        super(testName);
     }
-
-    public NodeJsOptionsValidator validateNode(boolean includingNodeSources) {
-        NodeJsOptions nodeJsOptions = NodeJsOptions.getInstance();
-        return validateNode(nodeJsOptions.getNode(), includingNodeSources ? nodeJsOptions.getNodeSources() : null);
+    
+    @Override
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
     }
-
-    public NodeJsOptionsValidator validateNode(String node, @NullAllowed String nodeSources) {
-        ValidationUtils.validateNode(result, node);
-        ValidationUtils.validateNodeSources(result, nodeSources);
-        return this;
+    
+    public void testComment01() throws Exception {
+        checkFolds("testfiles/folding/comment01.jade");
     }
-
-    public NodeJsOptionsValidator validateNpm() {
-        return validateNpm(NodeJsOptions.getInstance().getNpm());
+    
+    public void testBlock01() throws Exception {
+        checkFolds("testfiles/folding/comment01.jade");
     }
-
-    public NodeJsOptionsValidator validateNpm(String npm) {
-        ValidationUtils.validateNpm(result, npm);
-        return this;
-    }
-
-    public NodeJsOptionsValidator validateExpress() {
-        return validateExpress(NodeJsOptions.getInstance().getExpress());
-    }
-
-    public NodeJsOptionsValidator validateExpress(String express) {
-        ValidationUtils.validateExpress(result, express);
-        return this;
-    }
-
-    public ValidationResult getResult() {
-        return result;
-    }
-
 }

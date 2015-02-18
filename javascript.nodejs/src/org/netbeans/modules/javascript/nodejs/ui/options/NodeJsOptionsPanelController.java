@@ -84,6 +84,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             getPanel().setNode(getNodeJsOptions().getNode());
             getPanel().setNodeSources(getNodeJsOptions().getNodeSources());
             getPanel().setNpm(getNodeJsOptions().getNpm());
+            getPanel().setExpress(getNodeJsOptions().getExpress());
         }
         changed = false;
     }
@@ -96,6 +97,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
                 getNodeJsOptions().setNode(getPanel().getNode());
                 getNodeJsOptions().setNodeSources(getPanel().getNodeSources());
                 getNodeJsOptions().setNpm(getPanel().getNpm());
+                getNodeJsOptions().setExpress(getPanel().getExpress());
                 changed = false;
             }
         });
@@ -107,6 +109,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             getPanel().setNode(getNodeJsOptions().getNode());
             getPanel().setNodeSources(getNodeJsOptions().getNodeSources());
             getPanel().setNpm(getNodeJsOptions().getNpm());
+            getPanel().setExpress(getNodeJsOptions().getExpress());
         }
     }
 
@@ -117,15 +120,16 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         ValidationResult result = new NodeJsOptionsValidator()
                 .validateNode(panel.getNode(), panel.getNodeSources())
                 .validateNpm(panel.getNpm())
+                .validateExpress(panel.getExpress())
                 .getResult();
         // errors
         if (result.hasErrors()) {
-            panel.setError(result.getErrors().get(0).getMessage());
+            panel.setError(result.getFirstErrorMessage());
             return false;
         }
         // warnings
         if (result.hasWarnings()) {
-            panel.setWarning(result.getWarnings().get(0).getMessage());
+            panel.setWarning(result.getFirstWarningMessage());
             return true;
         }
         // everything ok
@@ -147,6 +151,11 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         }
         saved = getNodeJsOptions().getNpm();
         current = getPanel().getNpm().trim();
+        if (saved == null ? current != null : !saved.equals(current)) {
+            return true;
+        }
+        saved = getNodeJsOptions().getExpress();
+        current = getPanel().getExpress().trim();
         return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 

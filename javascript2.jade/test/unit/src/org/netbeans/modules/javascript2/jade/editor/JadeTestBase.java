@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.options;
+package org.netbeans.modules.javascript2.jade.editor;
 
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
-import org.netbeans.modules.web.common.api.ValidationResult;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
 
+/**
+ *
+ * @author Petr Pisl
+ */
+public class JadeTestBase extends CslTestBase {
 
-public class NodeJsOptionsValidator {
+    public static String JS_SOURCE_ID = "classpath/js-source"; // NOI18N
+    
+    public JadeTestBase(String testName) {
+        super(testName);
+    }
+    
+    @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+    
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new TestJadeLanguage();
+    }
+ 
+    @Override
+    protected String getPreferredMimeType() {
+        return JadeTokenId.JADE_MIME_TYPE;
+    }
+    
+    public static class TestJadeLanguage extends JadeLanguage {
 
-    private final ValidationResult result = new ValidationResult();
-
-
-    // do not validate Express since it is really optional
-    public NodeJsOptionsValidator validate(boolean validateNode, boolean includingNodeSources) {
-        if (validateNode) {
-            validateNode(includingNodeSources);
+        public TestJadeLanguage() {
+            super();
         }
-        return validateNpm();
+
+        @Override
+        public Set<String> getSourcePathIds() {
+            return Collections.singleton(JS_SOURCE_ID);
+        }
+        
+        
+        
     }
 
-    public NodeJsOptionsValidator validateNode(boolean includingNodeSources) {
-        NodeJsOptions nodeJsOptions = NodeJsOptions.getInstance();
-        return validateNode(nodeJsOptions.getNode(), includingNodeSources ? nodeJsOptions.getNodeSources() : null);
+    @Override
+    protected void setUp() throws Exception {        
+        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
+        super.setUp();
     }
-
-    public NodeJsOptionsValidator validateNode(String node, @NullAllowed String nodeSources) {
-        ValidationUtils.validateNode(result, node);
-        ValidationUtils.validateNodeSources(result, nodeSources);
-        return this;
-    }
-
-    public NodeJsOptionsValidator validateNpm() {
-        return validateNpm(NodeJsOptions.getInstance().getNpm());
-    }
-
-    public NodeJsOptionsValidator validateNpm(String npm) {
-        ValidationUtils.validateNpm(result, npm);
-        return this;
-    }
-
-    public NodeJsOptionsValidator validateExpress() {
-        return validateExpress(NodeJsOptions.getInstance().getExpress());
-    }
-
-    public NodeJsOptionsValidator validateExpress(String express) {
-        ValidationUtils.validateExpress(result, express);
-        return this;
-    }
-
-    public ValidationResult getResult() {
-        return result;
-    }
-
 }

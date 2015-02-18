@@ -100,8 +100,12 @@ public final class GitRevisionInfo {
     }
 
     GitRevisionInfo(GitRevCommit status, JGitRepository repository) {
+        this(status, Collections.<String, GitBranch>emptyMap(), repository);
+    }
+
+    GitRevisionInfo(GitRevCommit status, Map<String, GitBranch> affectedBranches, JGitRepository repository) {
         this.branch = status.branch;
-        this.branches = Collections.<String, GitBranch>emptyMap();
+        this.branches = affectedBranches;
         this.revisionCode = status.revisionCode;
         this.message = status.message;
         this.autorAndMail = status.autorAndMail;
@@ -119,7 +123,6 @@ public final class GitRevisionInfo {
         this.repository = repository;
         isKIT = false;
     }
-
 
     /**
      * @return id of the commit
