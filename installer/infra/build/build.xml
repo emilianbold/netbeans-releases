@@ -690,7 +690,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </for-each>
         
         <!-- Build bundles with nested JRE -->
-        <property name="bundled.jvm.file.prefix" value="jre-8u31"/>
+        <property name="bundled.jvm.file.prefix" value="jre-${jre-nested.version.number}u${jre-nested.update.number}"/>
         <for-each list="html php cpp" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
@@ -1852,7 +1852,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="init-nested-jres">        
         <set property="nestedjre.cache.dir" value="${nbi.cache.dir}/nestedjre"/>
 	<mkdir dir="${nestedjre.cache.dir}"/>
-        <set property="nestedjre.version" value="1.8.0.31.0"/>
+        <set property="nestedjre.version" value="1.${jre-nested.version.number}.0.${jre-nested.update.number}.0"/>
     </target>
 
     <target name="get-nested-jres">
