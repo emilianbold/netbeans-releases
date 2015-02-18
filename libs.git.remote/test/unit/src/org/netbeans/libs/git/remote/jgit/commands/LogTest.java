@@ -68,6 +68,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author ondra
  */
 public class LogTest extends AbstractGitTestCase {
+    private static final boolean KIT = LogCommand.KIT;
     private JGitRepository repository;
     private VCSFileProxy workDir;
 
@@ -694,8 +695,8 @@ public class LogTest extends AbstractGitTestCase {
         write(f2, "modification");
         add(files);
         client.commit(files, "modification on master", null, null, NULL_PROGRESS_MONITOR);
-        
-        GitRevisionInfo revisionMerge = client.log(client.merge("b", NULL_PROGRESS_MONITOR).getNewHead(), NULL_PROGRESS_MONITOR);
+        String newHead = client.merge("b", NULL_PROGRESS_MONITOR).getNewHead();
+        GitRevisionInfo revisionMerge = client.log(newHead, NULL_PROGRESS_MONITOR);
         Map<VCSFileProxy, GitFileInfo> modifiedFiles = revisionMerge.getModifiedFiles();
         assertEquals(2, modifiedFiles.size());
         assertEquals(GitFileInfo.Status.MODIFIED, modifiedFiles.get(f).getStatus());
@@ -794,10 +795,12 @@ public class LogTest extends AbstractGitTestCase {
         GitRevisionInfo[] log = client.log(crit, true, NULL_PROGRESS_MONITOR);
         // branch commit
         assertEquals(1, log[0].getBranches().size());
-        assertNotNull(log[0].getBranches().get("newbranch"));
+if(KIT) assertNotNull(log[0].getBranches().get("newbranch"));
+else    assertNotNull(log[0].getBranches().get("master"));
         // master commit
         assertEquals(1, log[1].getBranches().size());
-        assertNotNull(log[1].getBranches().get("master"));
+if(KIT) assertNotNull(log[1].getBranches().get("master"));
+else    assertNotNull(log[1].getBranches().get("newbranch"));
         // common commit
         assertEquals(2, log[2].getBranches().size());
         assertNotNull(log[2].getBranches().get("master"));
