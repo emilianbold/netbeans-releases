@@ -340,7 +340,7 @@ function getMD5(filename, lang_id) {
 
 
 function get_file_name(platform, option, language, bits) {
-    //bits = !bits ? 'i586' : bits;
+    //bits = !bits ? 'x86' : bits;
     var fn = "";
     if(platform=="zip") {
         fn += "zip/";

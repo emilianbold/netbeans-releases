@@ -608,8 +608,8 @@ function update() {
                 if(is_file_available(plat,BUNDLE_IDS[k],lang_id,'')) {
                     sizes.push(get_file_size_mb(get_file_name(plat, BUNDLE_IDS[k], lang_id), lang_id, 0));
                 }
-                if(is_file_available(plat,BUNDLE_IDS[k],lang_id,'i586')) {
-                    sizes.push(get_file_size_mb(get_file_name(plat, BUNDLE_IDS[k], lang_id,'i586'), lang_id, 0));
+                if(is_file_available(plat,BUNDLE_IDS[k],lang_id,'x86')) {
+                    sizes.push(get_file_size_mb(get_file_name(plat, BUNDLE_IDS[k], lang_id,'x86'), lang_id, 0));
                 }
                 if(is_file_available(plat,BUNDLE_IDS[k],lang_id,'x64')) {
                     sizes.push(get_file_size_mb(get_file_name(plat, BUNDLE_IDS[k], lang_id,'x64'), lang_id, 0));
@@ -638,8 +638,8 @@ function update() {
         if(is_file_available(plat,id,lang_id,'')) {
             winButtons.push(get_download_button(id, exists));
         }
-        if(is_file_available(plat,id,lang_id,'i586')) {
-            winButtons.push(get_download_button(id, exists,'i586'));
+        if(is_file_available(plat,id,lang_id,'x86')) {
+            winButtons.push(get_download_button(id, exists,'x86'));
         }
         if(is_file_available(plat,id,lang_id,'x64')) {
             winButtons.push(get_download_button(id, exists,'x64'));

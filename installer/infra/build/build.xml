@@ -1553,7 +1553,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-netbeans-cpp-bundles">
         <!-- CPP bundles -->
-        <for-each list="i586 x64" separator=" " property="bundle.arch">
+        <for-each list="x86 x64" separator=" " property="bundle.arch">
             <antcall target="generate-netbeans-cpp-bundle">
                 <param name="bundled.jvm.file.suffix" value="windows-${bundle.arch}.exe"/>	
                 <param name="bundle.platform"  value="windows"/>
@@ -1561,7 +1561,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 <param name="bundle.extension" value="exe"/>
             </antcall>
         </for-each>        
-        <for-each list="i586 x64" separator=" " property="bundle.arch">
+        <for-each list="x86 x64" separator=" " property="bundle.arch">
             <antcall target="generate-netbeans-cpp-bundle">
                 <param name="bundled.jvm.file.suffix" value="linux-${bundle.arch}.bin"/>	
                 <param name="bundle.platform"  value="linux"/>
@@ -1574,7 +1574,7 @@ jarsigner.storepass=${jarsigner.storepass}
     
     <target name="generate-netbeans-html-bundles">
         <!-- HTML bundles -->
-        <for-each list="i586 x64" separator=" " property="bundle.arch">
+        <for-each list="x86 x64" separator=" " property="bundle.arch">
             <antcall target="generate-netbeans-html-bundle">
                 <param name="bundled.jvm.file.suffix" value="windows-${bundle.arch}.exe"/>	
                 <param name="bundle.platform"  value="windows"/>
@@ -1582,7 +1582,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 <param name="bundle.extension" value="exe"/>
             </antcall>
         </for-each>        
-        <for-each list="i586 x64" separator=" " property="bundle.arch">
+        <for-each list="x86 x64" separator=" " property="bundle.arch">
             <antcall target="generate-netbeans-html-bundle">
                 <param name="bundled.jvm.file.suffix" value="linux-${bundle.arch}.bin"/>	
                 <param name="bundle.platform"  value="linux"/>
@@ -1595,7 +1595,7 @@ jarsigner.storepass=${jarsigner.storepass}
     
     <target name="generate-netbeans-php-bundles">
         <!-- PHP bundles -->
-        <for-each list="i586 x64" separator=" " property="bundle.arch">
+        <for-each list="x86 x64" separator=" " property="bundle.arch">
             <antcall target="generate-netbeans-php-bundle">
                 <param name="bundled.jvm.file.suffix" value="windows-${bundle.arch}.exe"/>	
                 <param name="bundle.platform"  value="windows"/>
@@ -1603,7 +1603,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 <param name="bundle.extension" value="exe"/>
             </antcall>
         </for-each>        
-        <for-each list="i586 x64" separator=" " property="bundle.arch">
+        <for-each list="x86 x64" separator=" " property="bundle.arch">
             <antcall target="generate-netbeans-php-bundle">
                 <param name="bundled.jvm.file.suffix" value="linux-${bundle.arch}.bin"/>	
                 <param name="bundle.platform"  value="linux"/>
@@ -1903,9 +1903,9 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="windows"/>
-		<param name="bundle.platform.filename"  value="windows-i586"/>
+		<param name="bundle.platform.filename"  value="windows-x86"/>
 		<param name="bundle.extension"		value=".exe"/>
-		<param name="bundled.jvm.file.suffix"   value="windows-i586.exe"/>
+		<param name="bundled.jvm.file.suffix"   value="windows-x86.exe"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
     </target>
@@ -1927,9 +1927,9 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="linux"/>
-                <param name="bundle.platform.filename"  value="linux-i586"/>
+                <param name="bundle.platform.filename"  value="linux-x86"/>
 		<param name="bundle.extension"		value=".sh"/>
-		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
+		<param name="bundled.jvm.file.suffix"   value="linux-x86.bin"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
     </target>
