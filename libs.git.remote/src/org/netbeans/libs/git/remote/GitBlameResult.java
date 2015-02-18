@@ -43,6 +43,7 @@ package org.netbeans.libs.git.remote;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
@@ -88,7 +89,39 @@ public final class GitBlameResult {
             }
         }
     }
+
+    GitBlameResult(VCSFileProxy file, Map<String, GitBlameContent> result, JGitRepository repository) {
+        this.blamedFile = file;
+        TreeMap<Integer, GitLineDetails> lines = new TreeMap<>();
+        for (Map.Entry<String, GitBlameContent> entry : result.entrySet()) {
+            GitBlameContent v = entry.getValue();
+            org.netbeans.libs.git.remote.GitRevisionInfo.GitRevCommit rev = new org.netbeans.libs.git.remote.GitRevisionInfo.GitRevCommit();
+            rev.autorAndMail = v.author+" "+v.author_mail;
+            rev.autorTime = v.author_time + " " + v.author_tz;
+            rev.commiterAndMail = v.committer + " " + v.committer_mail;
+            rev.commiterTime = v.committer_time + " " + v.committer_tz;
+            rev.message = v.summary;
+            rev.revisionCode = v.revision;
+            org.netbeans.libs.git.remote.GitRevisionInfo revInfo = new org.netbeans.libs.git.remote.GitRevisionInfo(rev, repository);
+            VCSFileProxy sourceFile = VCSFileProxy.createFileProxy(repository.getLocation(), v.filename);
+            GitUser author = revInfo.getAuthor();
+            GitUser committer = revInfo.getCommitter();
+            for(Map.Entry<Integer,LineInfo> e : v.lines.entrySet()) {
+                lines.put(e.getKey(), new GitLineDetails(e.getValue().lineContent, revInfo, author, committer, sourceFile, e.getValue().line - 1));
+            }
+        }
+        lineCount = lines.size();
+        this.lineDetails = new GitLineDetails[lineCount];
+        for (Map.Entry<Integer, GitLineDetails> entry : lines.entrySet()) {
+            if ("0000000000000000000000000000000000000000".equals(entry.getValue().getRevisionInfo().getRevision())) {
+                // local change
+            } else {
+                lineDetails[entry.getKey()-1] = entry.getValue();
+            }
+        }
+    }
     
+
     /**
      * @return annotated file
      */
@@ -128,5 +161,25 @@ public final class GitBlameResult {
             cached.put(relativePath, file);
         }
         return file;
+    }
+    
+    public static final class LineInfo {
+        public int line;
+        public String lineContent;
+    }
+    public static final class GitBlameContent {
+        public String revision;
+        public String author;
+        public String author_mail;
+        public String author_time;
+        public String author_tz;
+        public String committer;
+        public String committer_mail;
+        public String committer_time;
+        public String committer_tz;
+        public String summary;
+        public String previous;
+        public String filename;
+        public HashMap<Integer, LineInfo> lines = new HashMap<Integer, LineInfo>();
     }
 }

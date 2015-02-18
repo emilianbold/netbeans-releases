@@ -285,7 +285,8 @@ public class CommitCommand extends GitCommand {
             addArgument(0, "--author="+author.toString());
         }
         if (commiter != null) {
-            addArgument(0, "--author="+commiter.toString());
+            // unsupported in CLI
+            //addArgument(0, "--commiter="+commiter.toString());
         }
         addArgument(0, "--"); //NOI18N
         addFiles(0, roots);

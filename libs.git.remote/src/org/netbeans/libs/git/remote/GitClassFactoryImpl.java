@@ -83,6 +83,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
     public GitBlameResult createBlameResult (BlameResult result, JGitRepository repository) {
         return new GitBlameResult(result, repository);
     }
+    
+    @Override
+    public GitBlameResult createBlameResult (VCSFileProxy file, Map<String, GitBlameResult.GitBlameContent> result, JGitRepository repository) {
+        return new GitBlameResult(file, result, repository);
+    }
 
     @Override
     public GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id) {
