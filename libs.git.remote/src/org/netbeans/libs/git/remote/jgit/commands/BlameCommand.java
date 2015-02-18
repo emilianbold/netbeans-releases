@@ -42,6 +42,8 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.util.LinkedHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.blame.BlameResult;
@@ -49,20 +51,24 @@ import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.netbeans.libs.git.remote.GitBlameResult;
+import org.netbeans.libs.git.remote.GitBlameResult.GitBlameContent;
+import org.netbeans.libs.git.remote.GitBlameResult.LineInfo;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.jgit.utils.AutoCRLFComparator;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class BlameCommand extends GitCommand {
-
+    public static final boolean KIT = false;
     private final String revision;
     private final VCSFileProxy file;
     private final ProgressMonitor monitor;
@@ -74,9 +80,17 @@ public class BlameCommand extends GitCommand {
         this.revision = revision;
         this.monitor = monitor;
     }
-
     @Override
     protected void run () throws GitException {
+        if (KIT) {
+            runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="KIT">
+    protected void runKit () throws GitException {
         Repository repository = getRepository().getRepository();
         org.eclipse.jgit.api.BlameCommand cmd = new Git(repository).blame();
         cmd.setFilePath(Utils.getRelativePath(getRepository().getLocation(), file));
@@ -96,21 +110,196 @@ public class BlameCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
+    
+    public GitBlameResult getResult () {
+        return result;
+    }
+//</editor-fold>
 
     @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "blame"); //NOI18N
-        addArgument(0, "-l"); //NOI18N
-        addArgument(0, "-f"); //NOI18N
+        addArgument(0, "--porcelain"); //NOI18N
         if (revision != null) {
             addArgument(0, revision);
         }
+        addArgument(0, "--"); //NOI18N
         addFiles(0, new VCSFileProxy[]{file});
     }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            final LinkedHashMap<String, GitBlameContent> content = new LinkedHashMap<String, GitBlameContent>();
+            final AtomicBoolean failed = new AtomicBoolean(false);
+            runner(canceled, 0, content, new Parser() {
 
-    public GitBlameResult getResult () {
-        return result;
+                @Override
+                public void outputParser(String output, LinkedHashMap<String, GitBlameContent> content) {
+                    parseBlameOutput(output, content);
+                }
+
+                @Override
+                public void errorParser(String error) {
+                    failed.set(true);
+                    super.errorParser(error); //To change body of generated methods, choose Tools | Templates.
+                }
+            });
+            System.err.println("");
+            if (!failed.get()) {
+                result = getClassFactory().createBlameResult(file, content, getRepository());
+            }
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, LinkedHashMap<String, GitBlameContent> content, Parser parser) {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output, content);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            parser.errorParser(exitStatus.error);
+        }
+    }
+    
+    private void parseBlameOutput(String output, LinkedHashMap<String, GitBlameContent> content) {
+        //System.err.println(output);
+        //System.err.println("");
+        //48695c22e752fbed64a9a6ba73a91185c01c1542 1 1 1
+        //author user1
+        //author-mail <user1@company.com>
+        //author-time 1424260119
+        //author-tz +0300
+        //committer Alexander Simon
+        //committer-mail <alexander.simon@oracle.com>
+        //committer-time 1424260119
+        //committer-tz +0300
+        //summary initial commit
+        //boundary
+        //filename f
+        //	aaa
+        //0000000000000000000000000000000000000000 2 2 1
+        //author Not Committed Yet
+        //author-mail <not.committed.yet>
+        //author-time 1424260119
+        //author-tz +0300
+        //committer Not Committed Yet
+        //committer-mail <not.committed.yet>
+        //committer-time 1424260119
+        //committer-tz +0300
+        //summary Version of f from f
+        //previous 48695c22e752fbed64a9a6ba73a91185c01c1542 f
+        //filename f
+        //	ccc
+        State state = State.revision;
+        GitBlameContent current = null;
+        int currLine = -1;
+        LineInfo currLineInfo = null;
+        for (String line : output.split("\n")) { //NOI18N
+            if (state == State.revision) {
+                String[] s = line.split(" ");
+                String rev = s[0];
+                current = content.get(rev);
+                if (current == null) {
+                    current = new GitBlameContent();
+                    current.revision = rev;
+                    content.put(rev, current);
+                    state = State.header;
+                } else {
+                    state = State.line;
+                }
+                currLine = Integer.parseInt(s[2]);
+                currLineInfo = new LineInfo();
+                currLineInfo.line = Integer.parseInt(s[1]);
+                continue;
+            }
+            if (state == State.header) {
+                if (line.startsWith("author ")) {
+                    current.author = line.substring(7).trim();
+                    continue;
+                }
+                if (line.startsWith("author-mail ")) {
+                    current.author_mail = line.substring(12).trim();
+                    continue;
+                }
+                if (line.startsWith("author-time ")) {
+                    current.author_time = line.substring(12).trim();
+                    continue;
+                }
+                if (line.startsWith("author-tz ")) {
+                    current.author_tz = line.substring(10).trim();
+                    continue;
+                }
+                if (line.startsWith("committer ")) {
+                    current.committer = line.substring(10).trim();
+                    continue;
+                }
+                if (line.startsWith("committer-mail ")) {
+                    current.committer_mail = line.substring(15).trim();
+                    continue;
+                }
+                if (line.startsWith("committer-time ")) {
+                    current.committer_time = line.substring(15).trim();
+                    continue;
+                }
+                if (line.startsWith("committer-tz ")) {
+                    current.committer_tz = line.substring(13).trim();
+                    continue;
+                }
+                if (line.startsWith("summary ")) {
+                    current.summary = line.substring(8).trim();
+                    continue;
+                }
+                if (line.startsWith("previous ")) {
+                    current.previous = line.substring(9).trim();
+                    continue;
+                }
+                if (line.startsWith("boundary")) {
+                    continue;
+                }
+                if (line.startsWith("filename ")) {
+                    current.filename = line.substring(9).trim();
+                    state = State.line;
+                    continue;
+                }
+            }
+            if (state == State.line) {
+                currLineInfo.lineContent = line;
+                current.lines.put(currLine, currLineInfo);
+                state = State.revision;
+                continue;
+            }
+        }
     }
 
+    private abstract class Parser {
+        public abstract void outputParser(String output, LinkedHashMap<String, GitBlameContent> content);
+        public void errorParser(String error){
+        }
+    }
+    
+    private enum State {revision, header, line};
+    
 }

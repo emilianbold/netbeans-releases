@@ -87,6 +87,8 @@ public abstract class GitClassFactory {
     
     public abstract GitBlameResult createBlameResult (BlameResult result, JGitRepository repository);
     
+    public abstract GitBlameResult createBlameResult (VCSFileProxy file, Map<String, GitBlameResult.GitBlameContent> result, JGitRepository repository);
+    
     public abstract GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id);
     
     public abstract GitBranch createBranch (String name, boolean remote, boolean active, String id);
