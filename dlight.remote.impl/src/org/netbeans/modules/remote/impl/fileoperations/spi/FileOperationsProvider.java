@@ -400,13 +400,23 @@ abstract public class FileOperationsProvider {
             List<RemoteFileObjectBase> roots = new ArrayList<>();
             for(FileProxyO f : files) {
                 RemoteFileObjectBase fo = findExistingParent(f.getPath());
-                if (fo != null) {
+                if (fo != null && fo.isValid()) {
                     roots.add(fo);
                 }
             }
-            for(RemoteFileObjectBase fo : roots) {
-                if (fo.isValid()) {
-                    fo.refresh(true);
+//            for(RemoteFileObjectBase fo : roots) {                
+//                fo.refresh(true);
+//            }
+            if (!roots.isEmpty()) {
+                RemoteFileSystem fs = roots.iterator().next().getFileSystem();
+                String[] paths = new String[roots.size()];
+                for (int i = 0; i < roots.size(); i++) {
+                    paths[i] = roots.get(i).getPath();
+                }
+                try {
+                    RemoteVcsSupportUtil.refreshFor(fs, paths);
+                } catch (IOException ex) {
+                    RemoteLogger.fine(ex);
                 }
             }
         }
