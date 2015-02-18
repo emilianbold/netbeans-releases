@@ -71,6 +71,7 @@ public class ExpressExecutable {
 
     public static final String EXPRESS_NAME;
 
+    private static final String FORCE_PARAM = "--force"; // NOI18N
     private static final String CSS_PARAM = "--css"; // NOI18N
     private static final String LESS_PARAM = "less"; // NOI18N
 
@@ -121,7 +122,6 @@ public class ExpressExecutable {
         "# {0} - project name",
         "ExpressExecutable.generate=Express ({0})",
     })
-    @CheckForNull
     public Future<Integer> generate(FileObject target, boolean less) {
         assert !EventQueue.isDispatchThread();
         assert project != null;
@@ -148,7 +148,13 @@ public class ExpressExecutable {
                 .showSuspended(true)
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
-                .errLineBased(true);
+                .errLineBased(true)
+                .postExecution(new Runnable() {
+                    @Override
+                    public void run() {
+                        project.getProjectDirectory().refresh();
+                    }
+                });
     }
 
     private File getWorkDir() {
@@ -174,6 +180,7 @@ public class ExpressExecutable {
             params.add(CSS_PARAM);
             params.add(LESS_PARAM);
         }
+        params.add(FORCE_PARAM);
         params.add(FileUtil.toFile(target).getAbsolutePath());
         return getParams(params);
     }
