@@ -46,7 +46,13 @@ public class ConnectionListTest extends TestBase {
     public ConnectionListTest(String testName) {
         super(testName);
     }
-
+    
+    @Override
+    protected void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
+        super.setUp();
+    }
+    
     /**
      * Tests that ConnectionManager manages the same instance that was
      * added using the {@link ConnectionManager#addConnection} method.
