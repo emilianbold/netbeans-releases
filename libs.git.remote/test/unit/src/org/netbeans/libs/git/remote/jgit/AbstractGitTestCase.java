@@ -179,6 +179,7 @@ public class AbstractGitTestCase extends NbTestCase {
     private void initializeRepository() throws Exception {
         runExternally(repositoryLocation, Arrays.asList("init"));
         runExternally(wc.getParentFile(), Arrays.asList("clone", repositoryLocation.getPath(), wc.getName()));
+        localRepository = new JGitRepository(repositoryLocation);
     }
 
     protected GitClient getClient (VCSFileProxy repository) throws GitException {

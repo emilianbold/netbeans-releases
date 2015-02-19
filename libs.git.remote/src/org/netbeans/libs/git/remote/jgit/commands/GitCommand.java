@@ -47,7 +47,9 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -146,7 +148,15 @@ public abstract class GitCommand {
     public String getExecutable() {
         return "git"; //NOI18N
     }
-    
+        
+    protected Map<String, String> getEnvVar() {
+        Map<String,String> ret = new HashMap<>();
+        ret.put("LC_ALL", "");                // NOI18N    
+        ret.put("LC_MESSAGES", "C");          // NOI18N    
+        ret.put("LC_TIME", "C");              // NOI18N    
+        return ret;
+    }	    
+
     public String[] getCliArguments(int command) {
         final List<CharSequence> commandArgs = args.get(command);
         final String[] res = new String[args.get(command).size()];
