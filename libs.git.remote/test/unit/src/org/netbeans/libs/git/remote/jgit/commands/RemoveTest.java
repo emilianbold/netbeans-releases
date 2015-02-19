@@ -47,7 +47,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitClient;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitStatus;

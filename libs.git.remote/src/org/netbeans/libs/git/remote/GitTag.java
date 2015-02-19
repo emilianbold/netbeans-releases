@@ -41,12 +41,6 @@
  */
 package org.netbeans.libs.git.remote;
 
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.revwalk.RevObject;
-import org.eclipse.jgit.revwalk.RevTag;
-
 /**
  * Represents a git tag.
  * 
@@ -61,27 +55,27 @@ public final class GitTag {
     private final GitObjectType type;
     private boolean lightWeight;
 
-    GitTag (RevTag revTag) {
-        this.id = ObjectId.toString(revTag.getId());
-        this.name = revTag.getTagName();
-        this.message = revTag.getFullMessage();
-        this.taggedObject = ObjectId.toString(revTag.getObject().getId());
-        PersonIdent personIdent = revTag.getTaggerIdent();
-        if (personIdent == null) {
-            personIdent = new PersonIdent("", ""); //NOI18N
-        }
-        this.tagger = new GitUser(personIdent.getName(), personIdent.getEmailAddress());
-        this.type = getType(revTag.getObject());
-        this.lightWeight = false;
-    }
+//    GitTag (RevTag revTag) {
+//        this.id = ObjectId.toString(revTag.getId());
+//        this.name = revTag.getTagName();
+//        this.message = revTag.getFullMessage();
+//        this.taggedObject = ObjectId.toString(revTag.getObject().getId());
+//        PersonIdent personIdent = revTag.getTaggerIdent();
+//        if (personIdent == null) {
+//            personIdent = new PersonIdent("", ""); //NOI18N
+//        }
+//        this.tagger = new GitUser(personIdent.getName(), personIdent.getEmailAddress());
+//        this.type = getType(revTag.getObject());
+//        this.lightWeight = false;
+//    }
 
-    GitTag (String tagName, RevObject revObject) {
-        this.id = ObjectId.toString(revObject.getId());
+    GitTag (String tagName, String rev, GitObjectType type) {
+        this.id = rev;
         this.name = tagName;
         this.message = null;
         this.taggedObject = id;
         this.tagger = null;
-        this.type = getType(revObject);
+        this.type = type;
         this.lightWeight = true;
     }
 
@@ -145,25 +139,25 @@ public final class GitTag {
         return lightWeight;
     }
 
-    private GitObjectType getType (RevObject object) {
-        GitObjectType objType = GitObjectType.UNKNOWN;
-        if (object != null) {
-            switch (object.getType()) {
-                case Constants.OBJ_COMMIT:
-                    objType = GitObjectType.COMMIT;
-                    break;
-                case Constants.OBJ_BLOB:
-                    objType = GitObjectType.BLOB;
-                    break;
-                case Constants.OBJ_TAG:
-                    objType = GitObjectType.TAG;
-                    break;
-                case Constants.OBJ_TREE:
-                    objType = GitObjectType.TREE;
-                    break;
-            }
-        }
-        return objType;
-    }
+//    private GitObjectType getType (RevObject object) {
+//        GitObjectType objType = GitObjectType.UNKNOWN;
+//        if (object != null) {
+//            switch (object.getType()) {
+//                case Constants.OBJ_COMMIT:
+//                    objType = GitObjectType.COMMIT;
+//                    break;
+//                case Constants.OBJ_BLOB:
+//                    objType = GitObjectType.BLOB;
+//                    break;
+//                case Constants.OBJ_TAG:
+//                    objType = GitObjectType.TAG;
+//                    break;
+//                case Constants.OBJ_TREE:
+//                    objType = GitObjectType.TREE;
+//                    break;
+//            }
+//        }
+//        return objType;
+//    }
     
 }

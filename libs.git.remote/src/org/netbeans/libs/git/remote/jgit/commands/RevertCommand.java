@@ -42,36 +42,11 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheCheckout;
-import org.eclipse.jgit.lib.AnyObjectId;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.merge.MergeMessageFormatter;
-import org.eclipse.jgit.merge.MergeStrategy;
-import org.eclipse.jgit.merge.ResolveMerger;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.GitRevertResult;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -105,84 +80,76 @@ public class RevertCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        Repository repository = getRepository().getRepository();
-        RevCommit revertedCommit = Utils.findCommit(repository, revisionStr);
-        RevWalk revWalk = new RevWalk(repository);
-        DirCache dc = null;
-        GitRevertResult NO_CHANGE_INSTANCE = getClassFactory().createRevertResult(GitRevertResult.Status.NO_CHANGE, null, null, null);
-        try {
-            Ref headRef = repository.getRef(Constants.HEAD);
-            if (headRef == null) {
-                throw new GitException.MissingObjectException(Constants.HEAD, GitObjectType.COMMIT);
-            }
-            RevCommit headCommit = revWalk.parseCommit(headRef.getObjectId());
-            if (revertedCommit.getParentCount() != 1) {
-                throw new GitException("Cannot revert a merge commit");
-            }
-            RevCommit srcParent = revertedCommit.getParent(0);
-            revWalk.parseHeaders(srcParent);
-
-            ResolveMerger merger = (ResolveMerger) MergeStrategy.RECURSIVE.newMerger(repository);
-            merger.setWorkingTreeIterator(new FileTreeIterator(repository));
-            merger.setBase(revertedCommit.getTree());
-            String commitMessage = message == null || message.isEmpty() 
-                    ? "Revert \"" + revertedCommit.getShortMessage() + "\"" + "\n\n" + "This reverts commit " + revertedCommit.getId().getName() + "." //NOI18N
-                    : message;
-            if (merger.merge(headCommit, srcParent)) {
-                if (AnyObjectId.equals(headCommit.getTree().getId(), merger.getResultTreeId())) {
-                    result = NO_CHANGE_INSTANCE;
-                } else {
-                    DirCacheCheckout dco = new DirCacheCheckout(repository, headCommit.getTree(), dc = repository.lockDirCache(), merger.getResultTreeId());
-                    dco.setFailOnConflict(true);
-                    dco.checkout();
-                    if (commit) {
-                        RevCommit newHead = new Git(getRepository().getRepository()).commit().setMessage(commitMessage).call();
-                        result = getClassFactory().createRevertResult(GitRevertResult.Status.REVERTED, getClassFactory().createRevisionInfo(newHead, getRepository()), null, null);
-                    } else {
-                        result = getClassFactory().createRevertResult(GitRevertResult.Status.REVERTED_IN_INDEX, null, null, null);
-                    }
-                }
-            } else {
-                if (merger.getFailingPaths() != null) {
-                    result = getClassFactory().createRevertResult(GitRevertResult.Status.FAILED, null,
-                            merger.getMergeResults() == null ? null : getFiles(getRepository().getLocation(), merger.getMergeResults().keySet()),
-                            getFiles(getRepository().getLocation(), merger.getFailingPaths().keySet()));
-                } else {
-                    String mergeMessageWithConflicts = new MergeMessageFormatter().formatWithConflicts(commitMessage, merger.getUnmergedPaths());
-                    repository.writeMergeCommitMsg(mergeMessageWithConflicts);
-                    result = getClassFactory().createRevertResult(GitRevertResult.Status.CONFLICTING, null, 
-                            merger.getMergeResults() == null ? null : getFiles(getRepository().getLocation(), merger.getMergeResults().keySet()),
-                            null);
-                }
-            }
-        } catch (JGitInternalException ex) {
-            if (ex.getCause() instanceof CheckoutConflictException) {
-                String[] lines = ex.getCause().getMessage().split("\n"); //NOI18N
-                if (lines.length > 1) {
-                    throw new GitException.CheckoutConflictException(Arrays.copyOfRange(lines, 1, lines.length), ex.getCause());
-                }
-            }
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } catch (GitAPIException ex) {
-            throw new GitException(ex);
-        } finally {
-            if (dc != null) {
-                dc.unlock();
-            }
-            revWalk.release();
-        }
+//        Repository repository = getRepository().getRepository();
+//        RevCommit revertedCommit = Utils.findCommit(repository, revisionStr);
+//        RevWalk revWalk = new RevWalk(repository);
+//        DirCache dc = null;
+//        GitRevertResult NO_CHANGE_INSTANCE = getClassFactory().createRevertResult(GitRevertResult.Status.NO_CHANGE, null, null, null);
+//        try {
+//            Ref headRef = repository.getRef(Constants.HEAD);
+//            if (headRef == null) {
+//                throw new GitException.MissingObjectException(Constants.HEAD, GitObjectType.COMMIT);
+//            }
+//            RevCommit headCommit = revWalk.parseCommit(headRef.getObjectId());
+//            if (revertedCommit.getParentCount() != 1) {
+//                throw new GitException("Cannot revert a merge commit");
+//            }
+//            RevCommit srcParent = revertedCommit.getParent(0);
+//            revWalk.parseHeaders(srcParent);
+//
+//            ResolveMerger merger = (ResolveMerger) MergeStrategy.RECURSIVE.newMerger(repository);
+//            merger.setWorkingTreeIterator(new FileTreeIterator(repository));
+//            merger.setBase(revertedCommit.getTree());
+//            String commitMessage = message == null || message.isEmpty() 
+//                    ? "Revert \"" + revertedCommit.getShortMessage() + "\"" + "\n\n" + "This reverts commit " + revertedCommit.getId().getName() + "." //NOI18N
+//                    : message;
+//            if (merger.merge(headCommit, srcParent)) {
+//                if (AnyObjectId.equals(headCommit.getTree().getId(), merger.getResultTreeId())) {
+//                    result = NO_CHANGE_INSTANCE;
+//                } else {
+//                    DirCacheCheckout dco = new DirCacheCheckout(repository, headCommit.getTree(), dc = repository.lockDirCache(), merger.getResultTreeId());
+//                    dco.setFailOnConflict(true);
+//                    dco.checkout();
+//                    if (commit) {
+//                        RevCommit newHead = new Git(getRepository().getRepository()).commit().setMessage(commitMessage).call();
+//                        result = getClassFactory().createRevertResult(GitRevertResult.Status.REVERTED, getClassFactory().createRevisionInfo(newHead, getRepository()), null, null);
+//                    } else {
+//                        result = getClassFactory().createRevertResult(GitRevertResult.Status.REVERTED_IN_INDEX, null, null, null);
+//                    }
+//                }
+//            } else {
+//                if (merger.getFailingPaths() != null) {
+//                    result = getClassFactory().createRevertResult(GitRevertResult.Status.FAILED, null,
+//                            merger.getMergeResults() == null ? null : getFiles(getRepository().getLocation(), merger.getMergeResults().keySet()),
+//                            getFiles(getRepository().getLocation(), merger.getFailingPaths().keySet()));
+//                } else {
+//                    String mergeMessageWithConflicts = new MergeMessageFormatter().formatWithConflicts(commitMessage, merger.getUnmergedPaths());
+//                    repository.writeMergeCommitMsg(mergeMessageWithConflicts);
+//                    result = getClassFactory().createRevertResult(GitRevertResult.Status.CONFLICTING, null, 
+//                            merger.getMergeResults() == null ? null : getFiles(getRepository().getLocation(), merger.getMergeResults().keySet()),
+//                            null);
+//                }
+//            }
+//        } catch (JGitInternalException ex) {
+//            if (ex.getCause() instanceof CheckoutConflictException) {
+//                String[] lines = ex.getCause().getMessage().split("\n"); //NOI18N
+//                if (lines.length > 1) {
+//                    throw new GitException.CheckoutConflictException(Arrays.copyOfRange(lines, 1, lines.length), ex.getCause());
+//                }
+//            }
+//            throw new GitException(ex);
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        } catch (GitAPIException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            if (dc != null) {
+//                dc.unlock();
+//            }
+//            revWalk.release();
+//        }
     }
 
-    private List<VCSFileProxy> getFiles (VCSFileProxy workDir, Set<String> paths) {
-        List<VCSFileProxy> files = new LinkedList<VCSFileProxy>();
-        for (String path : paths) {
-            files.add(VCSFileProxy.createFileProxy(workDir, path));
-        }
-        return Collections.unmodifiableList(files);
-    }
-    
     public GitRevertResult getResult () {
         return result;
     }

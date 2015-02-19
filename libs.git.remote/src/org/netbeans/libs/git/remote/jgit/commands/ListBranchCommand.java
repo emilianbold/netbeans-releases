@@ -42,20 +42,14 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.eclipse.jgit.lib.Config;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefComparator;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -79,62 +73,15 @@ public class ListBranchCommand extends GitCommand {
     @Override
     protected void run () throws GitException {
         if (KIT) {
-            runKit();
+            //runKit();
         } else {
             runCLI();
         }
     }
 
-//<editor-fold defaultstate="collapsed" desc="KIT">
-    protected void runKit () throws GitException {
-        Repository repository = getRepository().getRepository();
-        Map<String, Ref> refs;
-        try {
-            refs = repository.getAllRefs();
-        } catch (IllegalArgumentException ex) {
-            throw new GitException("Corrupted repository metadata at " + getRepository().getLocation(), ex); //NOI18N
-        }
-        Ref head = refs.get(Constants.HEAD);
-        branches = new LinkedHashMap<String, GitBranch>();
-        Config cfg = repository.getConfig();
-        if (head != null) {
-            String current = head.getLeaf().getName();
-            if (current.equals(Constants.HEAD)) {
-                String name = GitBranch.NO_BRANCH;
-                branches.put(name, getClassFactory().createBranch(name, false, true, head.getLeaf().getObjectId()));
-            }
-            branches.putAll(getRefs(refs.values(), Constants.R_HEADS, false, current, cfg));
-        }
-        Map<String, GitBranch> allBranches = getRefs(refs.values(), Constants.R_REMOTES, true, null, cfg);
-        allBranches.putAll(branches);
-        setupTracking(branches, allBranches, repository.getConfig());
-        if (all) {
-            branches.putAll(allBranches);
-        }
-    }
-    
-    private Map<String, GitBranch> getRefs (Collection<Ref> allRefs, String prefix, boolean isRemote, String activeBranch, Config config) {
-        Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
-        for (final Ref ref : RefComparator.sort(allRefs)) {
-            String refName = ref.getLeaf().getName();
-            if (refName.startsWith(prefix)) {
-                String name = refName.substring(refName.indexOf('/', 5) + 1);
-                branches.put(name, getClassFactory().createBranch(name, isRemote, refName.equals(activeBranch), ref.getLeaf().getObjectId()));
-            }
-        }
-        return branches;
-    }
-    
     public Map<String, GitBranch> getBranches () {
         return branches;
     }
-    
-    private void setupTracking (Map<String, GitBranch> branches, Map<String, GitBranch> allBranches, Config cfg) {
-        for (GitBranch b : branches.values()) {
-            getClassFactory().setBranchTracking(b, Utils.getTrackedBranch(cfg, b.getName(), allBranches));
-        }
-    }
-//</editor-fold>
     
     @Override
     protected void prepare() throws GitException {
@@ -254,7 +201,7 @@ public class ListBranchCommand extends GitCommand {
                     }
                     createBranch = factory.createBranch(branchName, remote, def, s[1]);
                 } else {
-                    createBranch = factory.createBranch(branchName, remote, def, "HEAD");
+                    createBranch = factory.createBranch(branchName, remote, def, GitConstants.HEAD);
                 }
                 branches.put(branchName, createBranch);
                 //public abstract GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id);

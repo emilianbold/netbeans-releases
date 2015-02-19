@@ -42,27 +42,13 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheBuildIterator;
-import org.eclipse.jgit.dircache.DirCacheBuilder;
-import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.errors.CorruptObjectException;
-import org.eclipse.jgit.lib.FileMode;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -89,84 +75,84 @@ abstract class MoveTreeCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        if (!keepSourceTree && !after) {
-            rename();
-        }
-        Repository repository = getRepository().getRepository();
-        VCSFileProxy sourceFile = this.source;
-        VCSFileProxy targetFile = this.target;
-        try {
-            DirCache cache = repository.lockDirCache();
-            try {
-                boolean retried = false;
-                DirCacheBuilder builder = cache.builder();
-                TreeWalk treeWalk = new TreeWalk(repository);
-                PathFilter sourceFilter = PathFilter.create(Utils.getRelativePath(getRepository().getLocation(), sourceFile));
-                PathFilter targetFilter = PathFilter.create(Utils.getRelativePath(getRepository().getLocation(), targetFile));
-                treeWalk.setFilter(PathFilterGroup.create(Arrays.asList(sourceFilter, targetFilter)));
-                treeWalk.setRecursive(true);
-                treeWalk.reset();
-                treeWalk.addTree(new DirCacheBuildIterator(builder));
-                while (treeWalk.next() && !monitor.isCanceled()) {
-                    String path = treeWalk.getPathString();
-                    VCSFileProxy file = VCSFileProxy.createFileProxy(getRepository().getLocation(), path);
-                    DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
-                    if (e != null) {
-                        if (targetFilter.include(treeWalk)) {
-                            if (Utils.isUnderOrEqual(treeWalk, Collections.singletonList(targetFilter))) {
-                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Warning_IndexEntryExists"), path)); //NOI18N
-                            } else {
-                                // keep in index the files not directly under the path filter (as symlinks e.g.)
-                                builder.add(e);
-                            }
-                            continue;
-                        }
-                        boolean symlink = (e.getFileMode().getBits() & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK;
-                        String newPath = null;
-                        try {
-                            newPath = getRelativePath(file, sourceFile, targetFile);
-                        } catch (IllegalArgumentException ex) {
-                            if (symlink && !retried) {
-                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class)
-                                        .getString("MSG_Warning_FileMayBeSymlink"), sourceFile)); //NOI18N
-                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class)
-                                        .getString("MSG_Warning_FileMayBeSymlink"), targetFile)); //NOI18N
-                                // reset whole iterator and start from the beginning
-                                sourceFile = VCSFileProxySupport.getCanonicalFile(sourceFile);
-                                targetFile = VCSFileProxySupport.getCanonicalFile(targetFile);
-                                sourceFilter = PathFilter.create(Utils.getRelativePath(getRepository().getLocation(), sourceFile));
-                                targetFilter = PathFilter.create(Utils.getRelativePath(getRepository().getLocation(), targetFile));
-                                treeWalk.setFilter(PathFilterGroup.create(Arrays.asList(sourceFilter, targetFilter)));
-                                treeWalk.reset();
-                                builder = cache.builder();
-                                treeWalk.addTree(new DirCacheBuildIterator(builder));
-                                retried = true;
-                                continue;
-                            } else {
-                                throw ex;
-                            }
-                        }
-                        DirCacheEntry copied = new DirCacheEntry(newPath);
-                        copied.copyMetaData(e);
-                        VCSFileProxy newFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), newPath);
-                        listener.notifyFile(newFile, treeWalk.getPathString());
-                        builder.add(copied);
-                        if (keepSourceTree) {
-                            builder.add(e);
-                        }
-                    }
-                }
-                if (!monitor.isCanceled()) {
-                    builder.commit();
-                }
-            } finally {
-                cache.unlock();
-            }
-        } catch (CorruptObjectException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
+//        if (!keepSourceTree && !after) {
+//            rename();
+//        }
+//        Repository repository = getRepository().getRepository();
+//        VCSFileProxy sourceFile = this.source;
+//        VCSFileProxy targetFile = this.target;
+//        try {
+//            DirCache cache = repository.lockDirCache();
+//            try {
+//                boolean retried = false;
+//                DirCacheBuilder builder = cache.builder();
+//                TreeWalk treeWalk = new TreeWalk(repository);
+//                PathFilter sourceFilter = PathFilter.create(Utils.getRelativePath(getRepository().getLocation(), sourceFile));
+//                PathFilter targetFilter = PathFilter.create(Utils.getRelativePath(getRepository().getLocation(), targetFile));
+//                treeWalk.setFilter(PathFilterGroup.create(Arrays.asList(sourceFilter, targetFilter)));
+//                treeWalk.setRecursive(true);
+//                treeWalk.reset();
+//                treeWalk.addTree(new DirCacheBuildIterator(builder));
+//                while (treeWalk.next() && !monitor.isCanceled()) {
+//                    String path = treeWalk.getPathString();
+//                    VCSFileProxy file = VCSFileProxy.createFileProxy(getRepository().getLocation(), path);
+//                    DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
+//                    if (e != null) {
+//                        if (targetFilter.include(treeWalk)) {
+//                            if (Utils.isUnderOrEqual(treeWalk, Collections.singletonList(targetFilter))) {
+//                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Warning_IndexEntryExists"), path)); //NOI18N
+//                            } else {
+//                                // keep in index the files not directly under the path filter (as symlinks e.g.)
+//                                builder.add(e);
+//                            }
+//                            continue;
+//                        }
+//                        boolean symlink = (e.getFileMode().getBits() & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK;
+//                        String newPath = null;
+//                        try {
+//                            newPath = getRelativePath(file, sourceFile, targetFile);
+//                        } catch (IllegalArgumentException ex) {
+//                            if (symlink && !retried) {
+//                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class)
+//                                        .getString("MSG_Warning_FileMayBeSymlink"), sourceFile)); //NOI18N
+//                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class)
+//                                        .getString("MSG_Warning_FileMayBeSymlink"), targetFile)); //NOI18N
+//                                // reset whole iterator and start from the beginning
+//                                sourceFile = VCSFileProxySupport.getCanonicalFile(sourceFile);
+//                                targetFile = VCSFileProxySupport.getCanonicalFile(targetFile);
+//                                sourceFilter = PathFilter.create(Utils.getRelativePath(getRepository().getLocation(), sourceFile));
+//                                targetFilter = PathFilter.create(Utils.getRelativePath(getRepository().getLocation(), targetFile));
+//                                treeWalk.setFilter(PathFilterGroup.create(Arrays.asList(sourceFilter, targetFilter)));
+//                                treeWalk.reset();
+//                                builder = cache.builder();
+//                                treeWalk.addTree(new DirCacheBuildIterator(builder));
+//                                retried = true;
+//                                continue;
+//                            } else {
+//                                throw ex;
+//                            }
+//                        }
+//                        DirCacheEntry copied = new DirCacheEntry(newPath);
+//                        copied.copyMetaData(e);
+//                        VCSFileProxy newFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), newPath);
+//                        listener.notifyFile(newFile, treeWalk.getPathString());
+//                        builder.add(copied);
+//                        if (keepSourceTree) {
+//                            builder.add(e);
+//                        }
+//                    }
+//                }
+//                if (!monitor.isCanceled()) {
+//                    builder.commit();
+//                }
+//            } finally {
+//                cache.unlock();
+//            }
+//        } catch (CorruptObjectException ex) {
+//            throw new GitException(ex);
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        }
     }
 
     @Override
@@ -185,27 +171,5 @@ abstract class MoveTreeCommand extends GitCommand {
             }
         }
         return retval;
-    }
-
-    private void rename () throws GitException {
-        VCSFileProxy parentFile = target.getParentFile();
-        if (!parentFile.exists() && !VCSFileProxySupport.mkdirs(parentFile)) {
-            throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Exception_CannotCreateFolder"), parentFile.getPath())); //NOI18N
-        }
-        if (!VCSFileProxySupport.renameTo(source, target)) {
-            throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Exception_CannotRenameTo"), source.getPath(), target.getPath())); //NOI18N
-        }
-    }
-
-    private String getRelativePath (VCSFileProxy file, VCSFileProxy ancestor, VCSFileProxy target) {
-        String relativePathToAncestor = Utils.getRelativePath(ancestor, file);
-        StringBuilder relativePathToSource = new StringBuilder(Utils.getRelativePath(getRepository().getLocation(), target));
-        if (!relativePathToAncestor.isEmpty()) {
-            if (relativePathToSource.length() > 0) {
-                relativePathToSource.append("/"); //NOI18N
-            }
-            relativePathToSource.append(relativePathToAncestor);
-        }
-        return relativePathToSource.toString();
     }
 }

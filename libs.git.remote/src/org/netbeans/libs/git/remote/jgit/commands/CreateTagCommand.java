@@ -41,19 +41,10 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.util.Map;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.TagCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevObject;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitTag;
-import org.netbeans.libs.git.remote.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 
 /**
@@ -81,26 +72,26 @@ public class CreateTagCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        try {
-            RevObject obj = Utils.findObject(repository, taggedObject);
-            TagCommand cmd = new Git(repository).tag();
-            cmd.setName(tagName);
-            cmd.setForceUpdate(forceUpdate);
-            cmd.setObjectId(obj);
-            cmd.setAnnotated(message != null && !message.isEmpty() || signed);
-            if (cmd.isAnnotated()) {
-                cmd.setMessage(message);
-                cmd.setSigned(signed);
-            }
-            cmd.call();
-            ListTagCommand tagCmd = new ListTagCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
-            tagCmd.run();
-            Map<String, GitTag> tags = tagCmd.getTags();
-            tag = tags.get(tagName);
-        } catch (JGitInternalException | GitAPIException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        try {
+//            RevObject obj = Utils.findObject(repository, taggedObject);
+//            TagCommand cmd = new Git(repository).tag();
+//            cmd.setName(tagName);
+//            cmd.setForceUpdate(forceUpdate);
+//            cmd.setObjectId(obj);
+//            cmd.setAnnotated(message != null && !message.isEmpty() || signed);
+//            if (cmd.isAnnotated()) {
+//                cmd.setMessage(message);
+//                cmd.setSigned(signed);
+//            }
+//            cmd.call();
+//            ListTagCommand tagCmd = new ListTagCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
+//            tagCmd.run();
+//            Map<String, GitTag> tags = tagCmd.getTags();
+//            tag = tags.get(tagName);
+//        } catch (JGitInternalException | GitAPIException ex) {
+//            throw new GitException(ex);
+//        }
     }
     
     @Override

@@ -1732,6 +1732,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
+    public boolean hasCache() {
+        return getStorageFile().exists();
+    }
+
+    @Override
     public void diagnostics(boolean recursive) {
         RemoteFileObjectBase[] existentChildren = getExistentChildren();
         System.err.printf("\nRemoteFS diagnostics for %s\n", this); //NOI18N

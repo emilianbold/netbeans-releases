@@ -41,18 +41,12 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.RemoteConfig;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRemoteConfig;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -68,23 +62,23 @@ public class GetRemotesCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        try {
-            List<RemoteConfig> configs = RemoteConfig.getAllRemoteConfigs(repository.getConfig());
-            remotes = new HashMap<String, GitRemoteConfig>(configs.size());
-            for (RemoteConfig remote : configs) {
-                remotes.put(remote.getName(), getClassFactory().createRemoteConfig(remote));
-            }
-        } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().contains("Invalid wildcards")) {
-                throw new GitException("Unsupported remote definition in " 
-                        + VCSFileProxy.createFileProxy(getRepository().getMetadataLocation(), "config")
-                        + ". Please fix the definition before using remotes.", ex);
-            }
-            throw ex;
-        } catch (URISyntaxException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        try {
+//            List<RemoteConfig> configs = RemoteConfig.getAllRemoteConfigs(repository.getConfig());
+//            remotes = new HashMap<String, GitRemoteConfig>(configs.size());
+//            for (RemoteConfig remote : configs) {
+//                remotes.put(remote.getName(), getClassFactory().createRemoteConfig(remote));
+//            }
+//        } catch (IllegalArgumentException ex) {
+//            if (ex.getMessage().contains("Invalid wildcards")) {
+//                throw new GitException("Unsupported remote definition in " 
+//                        + VCSFileProxy.createFileProxy(getRepository().getMetadataLocation(), "config")
+//                        + ". Please fix the definition before using remotes.", ex);
+//            }
+//            throw ex;
+//        } catch (URISyntaxException ex) {
+//            throw new GitException(ex);
+//        }
     }
     
     @Override

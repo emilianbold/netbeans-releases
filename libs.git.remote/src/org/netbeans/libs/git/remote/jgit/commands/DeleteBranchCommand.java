@@ -41,16 +41,9 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.NotMergedException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -75,30 +68,12 @@ public class DeleteBranchCommand extends GitCommand {
     @Override
     protected void run () throws GitException {
         if (KIT) {
-            runKit();
+            //runKit();
         } else {
             runCLI();
         }
     }
 
-//<editor-fold defaultstate="collapsed" desc="KIT">
-    protected void runKit () throws GitException {
-        Repository repository = getRepository().getRepository();
-        org.eclipse.jgit.api.DeleteBranchCommand cmd = new Git(repository).branchDelete();
-        cmd.setForce(forceDeleteUnmerged || Utils.parseObjectId(repository, Constants.HEAD) == null);
-        cmd.setBranchNames(branchName);
-        try {
-            cmd.call();
-        } catch (JGitInternalException ex) {
-            throw new GitException(ex);
-        } catch (NotMergedException ex) {
-            throw new GitException.NotMergedException(branchName);
-        } catch (GitAPIException ex) {
-            throw new GitException(ex);
-        }
-    }
-//</editor-fold>
-    
     @Override
     protected void prepare() throws GitException {
         super.prepare();

@@ -43,20 +43,8 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheEditor;
-import org.eclipse.jgit.dircache.DirCacheIterator;
-import org.eclipse.jgit.errors.CorruptObjectException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
-import org.netbeans.libs.git.remote.GitClient;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -64,7 +52,6 @@ import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
@@ -100,65 +87,11 @@ public class RemoveCommand extends GitCommand {
     @Override
     protected void run () throws GitException {
         if (KIT) {
-            runKit();
+            //runKit();
         } else {
             runCLI();
         }
     }
-
-//<editor-fold defaultstate="collapsed" desc="KIT">
-    protected void runKit() throws GitException {
-        Repository repository = getRepository().getRepository();
-        try {
-            DirCache cache = repository.lockDirCache();
-            try {
-                DirCacheEditor edit = cache.editor();
-                TreeWalk treeWalk = new TreeWalk(repository);
-                Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
-                if (!pathFilters.isEmpty()) {
-                    treeWalk.setFilter(PathFilterGroup.create(pathFilters));
-                }
-                treeWalk.setRecursive(false);
-                treeWalk.setPostOrderTraversal(true);
-                treeWalk.reset();
-                treeWalk.addTree(new DirCacheIterator(cache));
-                treeWalk.addTree(new FileTreeIterator(repository));
-                while (treeWalk.next() && !monitor.isCanceled()) {
-                    VCSFileProxy path = VCSFileProxy.createFileProxy(getRepository().getLocation(), treeWalk.getPathString());
-                    if (!treeWalk.isPostChildren()) {
-                        if (treeWalk.isSubtree()) {
-                            treeWalk.enterSubtree();
-                            if (Utils.isUnderOrEqual(treeWalk, pathFilters)) {
-                                if (!cached) {
-                                    listener.notifyFile(path, treeWalk.getPathString());
-                                }
-                                edit.add(new DirCacheEditor.DeleteTree(treeWalk.getPathString()));
-                            }
-                        } else if (Utils.isUnderOrEqual(treeWalk, pathFilters)) {
-                            listener.notifyFile(path, treeWalk.getPathString());
-                            edit.add(new DirCacheEditor.DeletePath(treeWalk.getPathString()));
-                        }
-                    }
-                    if (!cached && !Utils.isFromNested(treeWalk.getFileMode(1).getBits())
-                            && (!treeWalk.isSubtree() || treeWalk.isPostChildren()) && Utils.isUnderOrEqual(treeWalk, pathFilters)) {
-                        // delete also the file
-                        VCSFileProxySupport.delete(path);
-                        if(path.exists()) {
-                            monitor.notifyError(MessageFormat.format(Utils.getBundle(RemoveCommand.class).getString("MSG_Error_CannotDeleteFile"), path.getPath())); //NOI18N
-                        }
-                    }
-                }
-                edit.commit();
-            } finally {
-                cache.unlock();
-            }
-        } catch (CorruptObjectException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
-    }
-//</editor-fold>
     
     @Override
     protected void prepare() throws GitException {

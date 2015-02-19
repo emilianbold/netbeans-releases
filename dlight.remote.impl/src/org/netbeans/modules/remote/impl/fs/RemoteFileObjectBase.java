@@ -194,7 +194,7 @@ public abstract class RemoteFileObjectBase {
         return cache;
     }
 
-    protected boolean hasCache() {
+    public boolean hasCache() {
         return cache != null && cache.exists();
     }
 

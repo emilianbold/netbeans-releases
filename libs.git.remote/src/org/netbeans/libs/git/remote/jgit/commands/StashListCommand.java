@@ -41,15 +41,8 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
@@ -75,18 +68,18 @@ public class StashListCommand extends GitCommand {
     
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        RevWalk fullWalk = new RevWalk(repository);
-        try {
-            Collection<RevCommit> stashes = new Git(repository).stashList().call();
-            for (RevCommit stash : stashes) {
-                addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(stash), getRepository()));
-            }
-        } catch (GitAPIException | IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            fullWalk.release();
-        }
+//        Repository repository = getRepository().getRepository();
+//        RevWalk fullWalk = new RevWalk(repository);
+//        try {
+//            Collection<RevCommit> stashes = new Git(repository).stashList().call();
+//            for (RevCommit stash : stashes) {
+//                addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(stash), getRepository()));
+//            }
+//        } catch (GitAPIException | IOException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            fullWalk.release();
+//        }
     }
     
     @Override

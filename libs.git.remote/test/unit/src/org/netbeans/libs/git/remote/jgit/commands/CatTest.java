@@ -43,11 +43,12 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Constants;
 import org.netbeans.libs.git.remote.GitClient;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitObjectType;
+import org.netbeans.libs.git.remote.GitRevisionInfo;
+import org.netbeans.libs.git.remote.SearchCriteria;
 import org.netbeans.libs.git.remote.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
@@ -83,18 +84,20 @@ public class CatTest extends AbstractGitTestCase {
         add(f);
         GitClient client = getClient(workDir);
         try {
-            client.catFile(f, Constants.HEAD, VCSFileProxySupport.getOutputStream(f), NULL_PROGRESS_MONITOR);
+            client.catFile(f, GitConstants.HEAD, VCSFileProxySupport.getOutputStream(f), NULL_PROGRESS_MONITOR);
             fail();
         } catch (GitException.MissingObjectException ex) {
             assertEquals(GitObjectType.COMMIT, ex.getObjectType());
-            assertEquals(Constants.HEAD, ex.getObjectName());
+            assertEquals(GitConstants.HEAD, ex.getObjectName());
         }
         commit(f);
 
-        assertTrue(client.catFile(f, Constants.HEAD, VCSFileProxySupport.getOutputStream(f), NULL_PROGRESS_MONITOR));
+        assertTrue(client.catFile(f, GitConstants.HEAD, VCSFileProxySupport.getOutputStream(f), NULL_PROGRESS_MONITOR));
         assertFile(f, goldenString);
-
-        String revision = new Git(repository.getRepository()).log().call().iterator().next().getId().getName();
+        final SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        String revision = log[0].getRevision();
         assertTrue(client.catFile(f, revision, VCSFileProxySupport.getOutputStream(f), NULL_PROGRESS_MONITOR));
         assertFile(f, goldenString);
 
@@ -133,7 +136,10 @@ public class CatTest extends AbstractGitTestCase {
         commit(f);
 
         GitClient client = getClient(workDir);
-        String revision = new Git(repository.getRepository()).log().call().iterator().next().getId().getName();
+        final SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        String revision = log[0].getRevision();
 
         // remove and commit
         client.remove(new VCSFileProxy[] { f }, false, NULL_PROGRESS_MONITOR);
@@ -141,6 +147,6 @@ public class CatTest extends AbstractGitTestCase {
         assertTrue(client.catFile(f, revision, VCSFileProxySupport.getOutputStream(f), NULL_PROGRESS_MONITOR));
         assertFile(f, goldenString);
 
-        assertFalse(client.catFile(f, Constants.HEAD, VCSFileProxySupport.getOutputStream(f), NULL_PROGRESS_MONITOR));
+        assertFalse(client.catFile(f, GitConstants.HEAD, VCSFileProxySupport.getOutputStream(f), NULL_PROGRESS_MONITOR));
     }
 }

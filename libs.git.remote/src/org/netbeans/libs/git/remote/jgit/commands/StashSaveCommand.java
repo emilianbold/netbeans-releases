@@ -41,11 +41,6 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.StashCreateCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
@@ -70,16 +65,16 @@ public class StashSaveCommand extends GitCommand {
     
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        try {
-            StashCreateCommand cmd = new Git(repository).stashCreate()
-                    .setIncludeUntracked(includeUntracked)
-                    .setWorkingDirectoryMessage(message);
-            RevCommit commit = cmd.call();
-            this.stash = getClassFactory().createRevisionInfo(commit, getRepository());
-        } catch (GitAPIException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        try {
+//            StashCreateCommand cmd = new Git(repository).stashCreate()
+//                    .setIncludeUntracked(includeUntracked)
+//                    .setWorkingDirectoryMessage(message);
+//            RevCommit commit = cmd.call();
+//            this.stash = getClassFactory().createRevisionInfo(commit, getRepository());
+//        } catch (GitAPIException ex) {
+//            throw new GitException(ex);
+//        }
     }
     
     @Override

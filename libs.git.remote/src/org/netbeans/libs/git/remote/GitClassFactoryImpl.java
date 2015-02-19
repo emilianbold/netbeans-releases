@@ -43,24 +43,10 @@ package org.netbeans.libs.git.remote;
 
 import java.util.List;
 import java.util.Map;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.RebaseResult;
-import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevObject;
-import org.eclipse.jgit.revwalk.RevTag;
-import org.eclipse.jgit.submodule.SubmoduleStatus;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.RemoteRefUpdate;
-import org.eclipse.jgit.transport.TrackingRefUpdate;
-import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.remote.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.remote.GitRevertResult.Status;
 import org.netbeans.libs.git.remote.GitRevisionInfo.GitFileInfo;
+import org.netbeans.libs.git.remote.GitStatus.GitDiffEntry;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -80,20 +66,10 @@ final class GitClassFactoryImpl extends GitClassFactory {
     }
 
     @Override
-    public GitBlameResult createBlameResult (BlameResult result, JGitRepository repository) {
-        return new GitBlameResult(result, repository);
-    }
-    
-    @Override
     public GitBlameResult createBlameResult (VCSFileProxy file, Map<String, GitBlameResult.GitBlameContent> result, JGitRepository repository) {
         return new GitBlameResult(file, result, repository);
     }
 
-    @Override
-    public GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id) {
-        return new GitBranch(name, remote, active, id);
-    }
-    
     @Override
     public GitBranch createBranch (String name, boolean remote, boolean active, String id) {
         return new GitBranch(name, remote, active, id);
@@ -109,10 +85,10 @@ final class GitClassFactoryImpl extends GitClassFactory {
         return new GitFileInfo(file, oldPath, status, originalFile, originalPath);
     }
 
-    @Override
-    public GitMergeResult createMergeResult (MergeResult mergeResult, VCSFileProxy workTree) {
-        return new GitMergeResult(mergeResult, workTree);
-    }
+//    @Override
+//    public GitMergeResult createMergeResult (MergeResult mergeResult, VCSFileProxy workTree) {
+//        return new GitMergeResult(mergeResult, workTree);
+//    }
 
     @Override
     public GitPullResult createPullResult (Map<String, GitTransportUpdate> fetchUpdates, GitMergeResult mergeResult) {
@@ -124,26 +100,26 @@ final class GitClassFactoryImpl extends GitClassFactory {
         return new GitPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
     }
 
-    @Override
-    public GitRebaseResult createRebaseResult (RebaseResult rebaseResult, List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures,
-            String newHead) {
-        return new GitRebaseResult(rebaseResult, rebaseConflicts, failures, newHead);
-    }
+//    @Override
+//    public GitRebaseResult createRebaseResult (RebaseResult rebaseResult, List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures,
+//            String newHead) {
+//        return new GitRebaseResult(rebaseResult, rebaseConflicts, failures, newHead);
+//    }
 
-    @Override
-    public GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig) {
-        return GitRemoteConfig.fromRemoteConfig(remoteConfig);
-    }
+//    @Override
+//    public GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig) {
+//        return GitRemoteConfig.fromRemoteConfig(remoteConfig);
+//    }
 
     @Override
     public GitRevertResult createRevertResult (Status status, GitRevisionInfo commit, List<VCSFileProxy> conflicts, List<VCSFileProxy> failures) {
         return new GitRevertResult(status, commit, conflicts, failures);
     }
 
-    @Override
-    public GitRevisionInfo createRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, JGitRepository repository) {
-        return new GitRevisionInfo(commit, affectedBranches, repository);
-    }
+//    @Override
+//    public GitRevisionInfo createRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, JGitRepository repository) {
+//        return new GitRevisionInfo(commit, affectedBranches, repository);
+//    }
 
     @Override
     public GitRevisionInfo createRevisionInfo(GitRevisionInfo.GitRevCommit status, Map<String, GitBranch> affectedBranches, JGitRepository repository) {
@@ -153,7 +129,7 @@ final class GitClassFactoryImpl extends GitClassFactory {
     @Override
     public GitStatus createStatus (boolean tracked, String path, String workTreePath, VCSFileProxy file, 
                 GitStatus.Status statusHeadIndex, GitStatus.Status statusIndexWC, GitStatus.Status statusHeadWC, 
-                GitConflictDescriptor conflictDescriptor, boolean folder, DiffEntry diffEntry,
+                GitConflictDescriptor conflictDescriptor, boolean folder, GitDiffEntry diffEntry,
                 long indexEntryTimestamp) {
         GitStatus status = new GitStatus(workTreePath, file, path, tracked);
         status.setDiffEntry(diffEntry);
@@ -166,37 +142,34 @@ final class GitClassFactoryImpl extends GitClassFactory {
         return status;
     }
 
-    @Override
-    public GitTag createTag (RevTag revTag) {
-        return new GitTag(revTag);
-    }
+//    @Override
+//    public GitTag createTag (RevTag revTag) {
+//        return new GitTag(revTag);
+//    }
+
+//    @Override
+//    public GitTag createTag (String tagName, RevObject revObject) {
+//        return new GitTag(tagName, revObject);
+//    }
+
+//    @Override
+//    public GitTag createTag (String tagName, GitRevisionInfo revCommit) {
+//        return new GitTag(tagName, revCommit);
+//    }
+
+//    @Override
+//    public GitTransportUpdate createTransportUpdate (URIish urI, TrackingRefUpdate update) {
+//        return new GitTransportUpdate(urI, update);
+//    }
+
+//    @Override
+//    public GitTransportUpdate createTransportUpdate (URIish urI, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches) {
+//        return new GitTransportUpdate(urI, update, remoteBranches);
+//    }
 
     @Override
-    public GitTag createTag (String tagName, RevObject revObject) {
-        return new GitTag(tagName, revObject);
-    }
-
-    @Override
-    public GitTag createTag (String tagName, GitRevisionInfo revCommit) {
-        return new GitTag(tagName, revCommit);
-    }
-
-    @Override
-    public GitTransportUpdate createTransportUpdate (URIish urI, TrackingRefUpdate update) {
-        return new GitTransportUpdate(urI, update);
-    }
-
-    @Override
-    public GitTransportUpdate createTransportUpdate (URIish urI, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches) {
-        return new GitTransportUpdate(urI, update, remoteBranches);
-    }
-
-    @Override
-    public GitUser createUser (PersonIdent personIdent) {
-        if (personIdent == null) {
-            personIdent = new PersonIdent("", ""); //NOI18N
-        }
-        return new GitUser(personIdent.getName(), personIdent.getEmailAddress());
+    public GitUser createUser (String name, String mail) {
+        return new GitUser(name, mail);
     }
     
     @Override
@@ -204,10 +177,10 @@ final class GitClassFactoryImpl extends GitClassFactory {
         branch.setTrackedBranch(trackedBranch);
     }
 
-    @Override
-    public GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, VCSFileProxy folder) {
-        return new GitSubmoduleStatus(status, folder);
-    }
+//    @Override
+//    public GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, VCSFileProxy folder) {
+//        return new GitSubmoduleStatus(status, folder);
+//    }
 
     @Override
     public GitCherryPickResult createCherryPickResult (GitCherryPickResult.CherryPickStatus status,

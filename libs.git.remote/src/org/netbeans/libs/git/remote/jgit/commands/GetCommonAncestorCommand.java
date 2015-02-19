@@ -42,20 +42,10 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 
 /**
@@ -73,28 +63,28 @@ public class GetCommonAncestorCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        RevWalk walk = null;
-        try {
-            if (revisions.length == 0) {
-                revision = null;
-            } else {
-                walk = new RevWalk(repository);
-                List<RevCommit> commits = new ArrayList<>(revisions.length);
-                for (String rev : revisions) {
-                    commits.add(Utils.findCommit(repository, rev, walk));
-                }
-                revision = getSingleBaseCommit(walk, commits);
-            }
-        } catch (MissingObjectException ex) {
-            throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            if (walk != null) {
-                walk.release();
-            }
-        }
+//        Repository repository = getRepository().getRepository();
+//        RevWalk walk = null;
+//        try {
+//            if (revisions.length == 0) {
+//                revision = null;
+//            } else {
+//                walk = new RevWalk(repository);
+//                List<RevCommit> commits = new ArrayList<>(revisions.length);
+//                for (String rev : revisions) {
+//                    commits.add(Utils.findCommit(repository, rev, walk));
+//                }
+//                revision = getSingleBaseCommit(walk, commits);
+//            }
+//        } catch (MissingObjectException ex) {
+//            throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            if (walk != null) {
+//                walk.release();
+//            }
+//        }
     }
     
     @Override
@@ -108,24 +98,5 @@ public class GetCommonAncestorCommand extends GitCommand {
     
     public GitRevisionInfo getRevision () {
         return revision;
-    }
-
-    private GitRevisionInfo getSingleBaseCommit (RevWalk walk, List<RevCommit> commits) throws IOException {
-        while (commits.size() > 1) {
-            walk.reset();
-            for (RevCommit c : commits) {
-                walk.markStart(walk.parseCommit(c));
-            }
-            walk.setRevFilter(RevFilter.MERGE_BASE);
-            commits.clear();
-            for (RevCommit commit = walk.next(); commit != null; commit = walk.next()) {
-                commits.add(commit);
-            }
-        }
-        if (commits.isEmpty()) {
-            return null;
-        } else {
-            return getClassFactory().createRevisionInfo(commits.get(0), getRepository());
-        }
     }
 }

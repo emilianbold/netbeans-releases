@@ -63,7 +63,7 @@ public enum GitObjectType {
     HEAD {
         @Override
         public String toString() {
-            return "HEAD"; //NOI18N
+            return GitConstants.HEAD;
         }
     },
     TAG {

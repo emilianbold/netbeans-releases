@@ -41,8 +41,9 @@
  */
 package org.netbeans.libs.git.remote;
 
+import java.net.URI;
 import java.net.URISyntaxException;
-import org.eclipse.jgit.transport.URIish;
+//import org.eclipse.jgit.transport.URIish;
 
 /**
  * Representation of a supported Git URI, that denotes a remote repository and
@@ -52,14 +53,14 @@ import org.eclipse.jgit.transport.URIish;
  * @author Tomas Stupka
  */
 public final class GitURI {
-    private URIish uri;
+    private URI uri;
     
     private GitURI() {}
     
     // a private constructor with URIish uri causes:
     // cannot access org.eclipse.jgit.transport.URIish 
     // class file for org.eclipse.jgit.transport.URIish not found
-    private GitURI create(URIish uri) {
+    private GitURI create(URI uri) {
         GitURI u = new GitURI();
         u.uri = uri;
         return u;
@@ -72,7 +73,7 @@ public final class GitURI {
      * @throws URISyntaxException if the given string has unsupported format
      */
     public GitURI(String uriString) throws URISyntaxException {
-        this.uri = new URIish(uriString);
+        this.uri = new URI(uriString);
 
         // WORKAROUND:
         // new URIish("https://foo.bar").getHost() returns null
@@ -86,7 +87,7 @@ public final class GitURI {
            uri.getHost() == null && 
            !uriString.endsWith("/")) 
         {
-            uri = new URIish(uriString + "/");
+            uri = new URI(uriString + "/");
         }
     }
 
@@ -95,7 +96,8 @@ public final class GitURI {
      * @return full form (along with user credentials) of the Git URI
      */
     public String toPrivateString() {
-        return uri.toPrivateString();
+        //TODO
+        return uri.toString();
     }
 
     /**
@@ -104,35 +106,37 @@ public final class GitURI {
      * @return new instance that contains user as part of the credential area.
      */
     public GitURI setUser (String user) {
-        return create(uri.setUser(user));
+        //TODO
+        //return create(uri.setUser(user));
+        return this;
     }
 
-    /**
-     * Constructs a new instance with the given user name.
-     * @param scheme new scheme
-     * @return a duplicate instance of this with modified scheme part
-     */
-    public GitURI setScheme (String scheme) {
-        return create(uri.setScheme(scheme));
-    }
+//    /**
+//     * Constructs a new instance with the given user name.
+//     * @param scheme new scheme
+//     * @return a duplicate instance of this with modified scheme part
+//     */
+//    public GitURI setScheme (String scheme) {
+//        return create(uri.setScheme(scheme));
+//    }
+//
+//    /**
+//     * Constructs a new instance with the given port number.
+//     * @param port port number
+//     * @return a duplicate instance of this with modified port number.
+//     */
+//    public GitURI setPort (int port) {
+//        return create(uri.setPort(port));
+//    }
 
-    /**
-     * Constructs a new instance with the given port number.
-     * @param port port number
-     * @return a duplicate instance of this with modified port number.
-     */
-    public GitURI setPort (int port) {
-        return create(uri.setPort(port));
-    }
-
-    /**
-     * Constructs a new instance with the given path.
-     * @param path path to a resource
-     * @return a duplicate instance of this with modified path to a resource.
-     */
-    public GitURI setPath (String path) {
-        return create(uri.setPath(path));
-    }
+//    /**
+//     * Constructs a new instance with the given path.
+//     * @param path path to a resource
+//     * @return a duplicate instance of this with modified path to a resource.
+//     */
+//    public GitURI setPath (String path) {
+//        return create(uri.setPath(path));
+//    }
 
     /**
      * Creates a new instance with the given new password.
@@ -140,30 +144,32 @@ public final class GitURI {
      * @return a duplicate instance of this with a new password
      */
     public GitURI setPass (String password) {
-        return create(uri.setPass(password));
+        //TODO
+        //return create(uri.setPass(password));
+        return this;
     }
 
-    /**
-     * Creates a new instance with the given new host name.
-     * @param host new host name
-     * @return a duplicate instance of this with a new host name
-     */
-    public GitURI setHost (String host) {
-        return create(uri.setHost(host));
-    }
+//    /**
+//     * Creates a new instance with the given new host name.
+//     * @param host new host name
+//     * @return a duplicate instance of this with a new host name
+//     */
+//    public GitURI setHost (String host) {
+//        return create(uri.setHost(host));
+//    }
 
-    /**
-     * Returns <code>true</code> if this URI references a repository on another system.
-     */
-    public boolean isRemote() {
-        return uri.isRemote();
-    }
+//    /**
+//     * Returns <code>true</code> if this URI references a repository on another system.
+//     */
+//    public boolean isRemote() {
+//        return uri.isRemote();
+//    }
 
     /**
      * Returns the username part of the URI's credentials part.
      */
     public String getUser() {
-        return uri.getUser();
+        return uri.getUserInfo();
     }
 
     /**
@@ -187,12 +193,12 @@ public final class GitURI {
         return uri.getPath();
     }
 
-    /**
-     * Returns the password part of the URI's credentials part.
-     */
-    public String getPass() {
-        return uri.getPass();
-    }
+//    /**
+//     * Returns the password part of the URI's credentials part.
+//     */
+//    public String getPass() {
+//        return uri.getPass();
+//    }
 
     /**
      * Returns the URI's host.
@@ -223,5 +229,5 @@ public final class GitURI {
     public int hashCode() {
         return uri.hashCode();
     }
-    
+
 }

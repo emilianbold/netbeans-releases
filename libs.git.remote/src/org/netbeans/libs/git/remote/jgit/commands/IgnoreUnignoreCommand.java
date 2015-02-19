@@ -47,6 +47,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -55,10 +56,6 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.jgit.ignore.IgnoreNode.MatchResult;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.CoreConfig;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.IgnoreRule;
@@ -75,6 +72,8 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  */
 public abstract class IgnoreUnignoreCommand extends GitCommand {
 
+    public static final String DOT_GIT_IGNORE = ".gitignore";
+    public static final Charset CHARSET = Charset.forName("UTF-8");
     protected final VCSFileProxy[] files;
     private final ProgressMonitor monitor;
     private final Set<VCSFileProxy> ignoreFiles;
@@ -135,12 +134,12 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
             parent = parent.getParentFile();
             String path = sb.toString();
             if (parent.equals(getRepository().getLocation())) {
-                if (addStatement(VCSFileProxy.createFileProxy(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, false) && handleAdditionalIgnores(path, isDirectory)) {
-                    addStatement(VCSFileProxy.createFileProxy(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, true);
+                if (addStatement(VCSFileProxy.createFileProxy(parent, DOT_GIT_IGNORE), path, isDirectory, false) && handleAdditionalIgnores(path, isDirectory)) {
+                    addStatement(VCSFileProxy.createFileProxy(parent, DOT_GIT_IGNORE), path, isDirectory, true);
                 }
                 cont = false;
             } else {
-                cont = addStatement(VCSFileProxy.createFileProxy(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, false);
+                cont = addStatement(VCSFileProxy.createFileProxy(parent, DOT_GIT_IGNORE), path, isDirectory, false);
             }
         }
     }
@@ -152,9 +151,9 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
 
     protected final void save (VCSFileProxy gitIgnore, List<IgnoreRule> ignoreRules) throws IOException {
         BufferedWriter bw = null;
-        VCSFileProxy tmpFile = VCSFileProxySupport.generateTemporaryFile(gitIgnore.getParentFile(), Constants.DOT_GIT_IGNORE+"tmp");
+        VCSFileProxy tmpFile = VCSFileProxySupport.generateTemporaryFile(gitIgnore.getParentFile(), DOT_GIT_IGNORE+"tmp");
         try {
-            bw = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tmpFile), Constants.CHARSET));
+            bw = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tmpFile), CHARSET));
             for (ListIterator<IgnoreRule> it = ignoreRules.listIterator(); it.hasNext(); ) {
                 String s = it.next().getPattern(false);
                 bw.write(s, 0, s.length());
@@ -170,7 +169,7 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
             }
             if (!VCSFileProxySupport.renameTo(tmpFile, gitIgnore)) {
                 // cannot rename directly, try backup and delete te original .gitignore
-                VCSFileProxy tmpCopy = generateTempFile(Constants.DOT_GIT_IGNORE, gitIgnore.getParentFile()); //NOI18N
+                VCSFileProxy tmpCopy = generateTempFile(DOT_GIT_IGNORE, gitIgnore.getParentFile()); //NOI18N
                 boolean success = false;
                 if (VCSFileProxySupport.renameTo(gitIgnore, tmpCopy)) {
                     // and try to rename again
@@ -196,7 +195,7 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
         if (gitIgnore.exists()) {
             BufferedReader br = null;
             try {
-                br = new BufferedReader(new InputStreamReader(gitIgnore.getInputStream(false), Constants.CHARSET));
+                br = new BufferedReader(new InputStreamReader(gitIgnore.getInputStream(false), CHARSET));
                 String txt;
                 while ((txt = br.readLine()) != null) {
                     rules.add(new IgnoreRule(txt));
@@ -229,7 +228,8 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
     }
 
     protected final MatchResult checkGlobalExcludeFile (String path, boolean directory) throws IOException {
-        VCSFileProxy excludeFile = getGlobalExcludeFile();
+        VCSFileProxy excludeFile = null;
+        //VCSFileProxy excludeFile = getGlobalExcludeFile();
         if (excludeFile != null && VCSFileProxySupport.canRead(excludeFile)) {
             List<IgnoreRule> ignoreRules = parse(excludeFile);
             return addStatement(ignoreRules, excludeFile, path, directory, false, false);
@@ -245,24 +245,29 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
         return tempFile;
     }
 
-    private VCSFileProxy getGlobalExcludeFile () {
-        Repository repository = getRepository().getRepository();
-        String path = repository.getConfig().get(CoreConfig.KEY).getExcludesFile();
-        VCSFileProxy excludesfile = null;
-        if (path != null) {
-            VCSFileProxy location = getRepository().getLocation();
-            if (path.startsWith("~/")) {
-                VCSFileProxy home = VCSFileProxySupport.getHome(location);
-                excludesfile = VCSFileProxy.createFileProxy(home, path.substring(2));
-            } else if (path.startsWith("/")) {
-                excludesfile = VCSFileProxySupport.getResource(location, path);
-            } else {
-                excludesfile = VCSFileProxy.createFileProxy(location, path);
-            }
-        }
-        return excludesfile;
-    }
+//    private VCSFileProxy getGlobalExcludeFile () {
+//        Repository repository = getRepository().getRepository();
+//        String path = repository.getConfig().get(CoreConfig.KEY).getExcludesFile();
+//        VCSFileProxy excludesfile = null;
+//        if (path != null) {
+//            VCSFileProxy location = getRepository().getLocation();
+//            if (path.startsWith("~/")) {
+//                VCSFileProxy home = VCSFileProxySupport.getHome(location);
+//                excludesfile = VCSFileProxy.createFileProxy(home, path.substring(2));
+//            } else if (path.startsWith("/")) {
+//                excludesfile = VCSFileProxySupport.getResource(location, path);
+//            } else {
+//                excludesfile = VCSFileProxy.createFileProxy(location, path);
+//            }
+//        }
+//        return excludesfile;
+//    }
 
     protected abstract boolean handleAdditionalIgnores (String path, boolean directory) throws IOException;
 
+    public static enum MatchResult {
+            NOT_IGNORED,
+            IGNORED,
+            CHECK_PARENT;
+    }
 }

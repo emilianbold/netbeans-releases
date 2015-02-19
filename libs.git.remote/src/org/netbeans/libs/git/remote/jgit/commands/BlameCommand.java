@@ -44,20 +44,12 @@ package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.lib.CoreConfig;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.netbeans.libs.git.remote.GitBlameResult;
 import org.netbeans.libs.git.remote.GitBlameResult.GitBlameContent;
 import org.netbeans.libs.git.remote.GitBlameResult.LineInfo;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
-import org.netbeans.libs.git.remote.jgit.utils.AutoCRLFComparator;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -83,38 +75,15 @@ public class BlameCommand extends GitCommand {
     @Override
     protected void run () throws GitException {
         if (KIT) {
-            runKit();
+            //runKit();
         } else {
             runCLI();
         }
     }
 
-//<editor-fold defaultstate="collapsed" desc="KIT">
-    protected void runKit () throws GitException {
-        Repository repository = getRepository().getRepository();
-        org.eclipse.jgit.api.BlameCommand cmd = new Git(repository).blame();
-        cmd.setFilePath(Utils.getRelativePath(getRepository().getLocation(), file));
-        if (revision != null) {
-            cmd.setStartCommit(Utils.findCommit(repository, revision));
-        } else if (repository.getConfig().get(WorkingTreeOptions.KEY).getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
-            // work-around for autocrlf
-            cmd.setTextComparator(new AutoCRLFComparator());
-        }
-        cmd.setFollowFileRenames(true);
-        try {
-            BlameResult cmdResult = cmd.call();
-            if (cmdResult != null) {
-                result = getClassFactory().createBlameResult(cmdResult, getRepository());
-            }
-        } catch (GitAPIException ex) {
-            throw new GitException(ex);
-        }
-    }
-    
     public GitBlameResult getResult () {
         return result;
     }
-//</editor-fold>
 
     @Override
     protected void prepare() throws GitException {

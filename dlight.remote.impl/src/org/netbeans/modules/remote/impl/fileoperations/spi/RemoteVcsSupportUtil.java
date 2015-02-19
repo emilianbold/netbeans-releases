@@ -360,12 +360,15 @@ public class RemoteVcsSupportUtil {
         RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
         for (String p : paths) {
             RemoteLogger.assertTrue(p != null, "Path should not be null"); //NOI18N
-            RemoteLogger.assertTrue(p.startsWith("/"), "Path should be absolute: {0}", paths); //NOI18N
+            RemoteLogger.assertTrue(p.isEmpty() || p.startsWith("/"), "Path should be absolute: {0}", paths); //NOI18N
         }
         RemoteFileSystem rfs = (RemoteFileSystem) fs;
         AtomicBoolean refreshed = new AtomicBoolean(false);
         Set<RemoteDirectory> refreshSet = new HashSet<>();
         for (String p : paths) {
+            if (p.isEmpty()) {
+                p = "/"; //NOI18N
+            }
             FileObject fo = getFileObject(rfs, p, refreshed);            
             if (fo != null && !refreshed.get()) {
                 RemoteFileObjectBase impl = ((RemoteFileObject) fo).getImplementor();

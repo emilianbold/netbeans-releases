@@ -42,20 +42,10 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Map;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.remote.GitBranch;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 
 /**
@@ -78,42 +68,42 @@ public class SetUpstreamBranchCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        
-        try {
-            Ref ref = repository.getRef(trackedBranchName);
-            if (ref == null) {
-                throw new GitException(MessageFormat.format(Utils.getBundle(SetUpstreamBranchCommand.class)
-                        .getString("MSG_Error_UpdateTracking_InvalidReference"), trackedBranchName)); //NOI18N)
-            }
-            String remote = null;
-            String branchName = ref.getName();
-            StoredConfig config = repository.getConfig();
-            if (branchName.startsWith(Constants.R_REMOTES)) {
-                String[] elements = branchName.split("/", 4);
-                remote = elements[2];
-                if (config.getSubsections(ConfigConstants.CONFIG_REMOTE_SECTION).contains(remote)) {
-                    branchName = Constants.R_HEADS + elements[3];
-                } else {
-                    // remote not yet set
-                    remote = null;
-                }
-            }
-            if (remote == null) {
-                remote = "."; //NOI18N
-            }
-            config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranchName,
-                    ConfigConstants.CONFIG_KEY_REMOTE, remote);
-            config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranchName,
-                    ConfigConstants.CONFIG_KEY_MERGE, branchName);
-            config.save();
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
-        ListBranchCommand branchCmd = new ListBranchCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
-        branchCmd.run();
-        Map<String, GitBranch> branches = branchCmd.getBranches();
-        branch = branches.get(localBranchName);
+//        Repository repository = getRepository().getRepository();
+//        
+//        try {
+//            Ref ref = repository.getRef(trackedBranchName);
+//            if (ref == null) {
+//                throw new GitException(MessageFormat.format(Utils.getBundle(SetUpstreamBranchCommand.class)
+//                        .getString("MSG_Error_UpdateTracking_InvalidReference"), trackedBranchName)); //NOI18N)
+//            }
+//            String remote = null;
+//            String branchName = ref.getName();
+//            StoredConfig config = repository.getConfig();
+//            if (branchName.startsWith(Constants.R_REMOTES)) {
+//                String[] elements = branchName.split("/", 4);
+//                remote = elements[2];
+//                if (config.getSubsections(ConfigConstants.CONFIG_REMOTE_SECTION).contains(remote)) {
+//                    branchName = Constants.R_HEADS + elements[3];
+//                } else {
+//                    // remote not yet set
+//                    remote = null;
+//                }
+//            }
+//            if (remote == null) {
+//                remote = "."; //NOI18N
+//            }
+//            config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranchName,
+//                    ConfigConstants.CONFIG_KEY_REMOTE, remote);
+//            config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranchName,
+//                    ConfigConstants.CONFIG_KEY_MERGE, branchName);
+//            config.save();
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        }
+//        ListBranchCommand branchCmd = new ListBranchCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
+//        branchCmd.run();
+//        Map<String, GitBranch> branches = branchCmd.getBranches();
+//        branch = branches.get(localBranchName);
     }
     
     @Override

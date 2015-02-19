@@ -42,36 +42,10 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collection;
-import java.util.List;
-import org.eclipse.jgit.diff.ContentSource;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.diff.RenameDetector;
-import org.eclipse.jgit.dircache.DirCacheIterator;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.CoreConfig;
-import org.eclipse.jgit.lib.NullProgressMonitor;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectReader;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.AbstractTreeIterator;
-import org.eclipse.jgit.treewalk.CanonicalTreeParser;
-import org.eclipse.jgit.treewalk.EmptyTreeIterator;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
-import org.eclipse.jgit.treewalk.WorkingTreeIterator;
-import org.eclipse.jgit.treewalk.WorkingTreeOptions;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
-import org.netbeans.libs.git.remote.GitClient;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
-import org.netbeans.libs.git.remote.jgit.utils.AutoCRLFComparator;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -102,88 +76,59 @@ public class ExportDiffCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        Repository repository = getRepository().getRepository();
-        DiffFormatter formatter = new DiffFormatter(out);
-        formatter.setRepository(repository);
-        ObjectReader or = null;
-        String workTreePath = repository.getWorkTree().getAbsolutePath();
-        try {
-            Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
-            if (!pathFilters.isEmpty()) {
-                formatter.setPathFilter(PathFilterGroup.create(pathFilters));
-            }
-            if (repository.getConfig().get(WorkingTreeOptions.KEY).getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
-                // work-around for autocrlf
-                formatter.setDiffComparator(new AutoCRLFComparator());
-            }
-            or = repository.newObjectReader();
-            AbstractTreeIterator firstTree = getIterator(firstCommit, or);
-            AbstractTreeIterator secondTree = getIterator(secondCommit, or);
-            List<DiffEntry> diffEntries;
-            if (secondTree instanceof WorkingTreeIterator) {
-                // remote when fixed in JGit, see ExportDiffTest.testDiffRenameDetectionProblem
-                formatter.setDetectRenames(false);
-                diffEntries = formatter.scan(firstTree, secondTree);
-                formatter.setDetectRenames(true);
-                RenameDetector detector = formatter.getRenameDetector();
-                detector.reset();
-                detector.addAll(diffEntries);
-		diffEntries = detector.compute(new ContentSource.Pair(ContentSource.create(or), ContentSource.create((WorkingTreeIterator) secondTree)), NullProgressMonitor.INSTANCE);
-            } else {
-                formatter.setDetectRenames(true);
-                diffEntries = formatter.scan(firstTree, secondTree);
-            }
-            for (DiffEntry ent : diffEntries) {
-                if (monitor.isCanceled()) {
-                    break;
-                }
-                listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), ent.getNewPath()), ent.getNewPath());
-                formatter.format(ent);
-            }
-            formatter.flush();
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            if (or != null) {
-                or.release();
-            }
-            formatter.release();
-        }
+//        Repository repository = getRepository().getRepository();
+//        DiffFormatter formatter = new DiffFormatter(out);
+//        formatter.setRepository(repository);
+//        ObjectReader or = null;
+//        String workTreePath = repository.getWorkTree().getAbsolutePath();
+//        try {
+//            Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
+//            if (!pathFilters.isEmpty()) {
+//                formatter.setPathFilter(PathFilterGroup.create(pathFilters));
+//            }
+//            if (repository.getConfig().get(WorkingTreeOptions.KEY).getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
+//                // work-around for autocrlf
+//                formatter.setDiffComparator(new AutoCRLFComparator());
+//            }
+//            or = repository.newObjectReader();
+//            AbstractTreeIterator firstTree = getIterator(firstCommit, or);
+//            AbstractTreeIterator secondTree = getIterator(secondCommit, or);
+//            List<DiffEntry> diffEntries;
+//            if (secondTree instanceof WorkingTreeIterator) {
+//                // remote when fixed in JGit, see ExportDiffTest.testDiffRenameDetectionProblem
+//                formatter.setDetectRenames(false);
+//                diffEntries = formatter.scan(firstTree, secondTree);
+//                formatter.setDetectRenames(true);
+//                RenameDetector detector = formatter.getRenameDetector();
+//                detector.reset();
+//                detector.addAll(diffEntries);
+//		diffEntries = detector.compute(new ContentSource.Pair(ContentSource.create(or), ContentSource.create((WorkingTreeIterator) secondTree)), NullProgressMonitor.INSTANCE);
+//            } else {
+//                formatter.setDetectRenames(true);
+//                diffEntries = formatter.scan(firstTree, secondTree);
+//            }
+//            for (DiffEntry ent : diffEntries) {
+//                if (monitor.isCanceled()) {
+//                    break;
+//                }
+//                listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), ent.getNewPath()), ent.getNewPath());
+//                formatter.format(ent);
+//            }
+//            formatter.flush();
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            if (or != null) {
+//                or.release();
+//            }
+//            formatter.release();
+//        }
     }
 
-    private AbstractTreeIterator getIterator (String commit, ObjectReader or) throws IOException, GitException {
-        Repository repository = getRepository().getRepository();
-        switch (commit) {
-            case Constants.HEAD:
-                return getHeadIterator(or);
-            case GitClient.INDEX:
-                return new DirCacheIterator(repository.readDirCache());
-            case GitClient.WORKING_TREE:
-                return new FileTreeIterator(repository);
-            default:
-                CanonicalTreeParser p = new CanonicalTreeParser();
-                p.reset(or, Utils.findCommit(repository, commit).getTree());
-                return p;
-        }
-    }
-    
     @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "diff"); //NOI18N
         addFiles(0, roots);
     }
-
-    private AbstractTreeIterator getHeadIterator (ObjectReader or) throws IOException {
-        Repository repository = getRepository().getRepository();
-        AbstractTreeIterator headIterator;
-        ObjectId headId = repository.resolve(Constants.HEAD);
-        if (headId != null) {
-            headIterator = new CanonicalTreeParser(null, or, new RevWalk(repository).parseTree(headId).getId());
-        } else {
-            headIterator = new EmptyTreeIterator();
-        }
-        return headIterator;
-    }
-
 }

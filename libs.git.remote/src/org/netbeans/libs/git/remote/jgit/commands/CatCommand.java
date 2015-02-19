@@ -45,18 +45,7 @@ package org.netbeans.libs.git.remote.jgit.commands;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.errors.NoWorkTreeException;
-import org.eclipse.jgit.lib.CoreConfig;
-import org.eclipse.jgit.lib.ObjectLoader;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.WorkingTreeOptions;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.util.io.AutoCRLFOutputStream;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
@@ -119,112 +108,15 @@ public class CatCommand extends GitCommand {
     @Override
     protected void run () throws GitException {
         if (KIT) {
-            runKit();
+            //runKit();
         } else {
             runCLI();
-        }
-    }
-
-//<editor-fold defaultstate="collapsed" desc="KIT">
-    protected void runKit () throws GitException {
-        if (fromRevision) {
-            catFromRevision();
-        } else {
-            catIndexEntry();
-        }
-    }
-    
-    private void catFromRevision () throws GitException.MissingObjectException, GitException {
-        Repository repository = getRepository().getRepository();
-        OutputStream out = null;
-        try {
-            RevCommit commit = Utils.findCommit(repository, revision);
-            TreeWalk walk = new TreeWalk(repository);
-            walk.reset();
-            walk.addTree(commit.getTree());
-            walk.setFilter(PathFilter.create(relativePath));
-            walk.setRecursive(true);
-            found = false;
-            while (!found && walk.next() && !monitor.isCanceled()) {
-                if (relativePath.equals(walk.getPathString())) {
-                    WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
-                    ObjectLoader loader = repository.getObjectDatabase().open(walk.getObjectId(0));
-                    if (opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
-                        out = new AutoCRLFOutputStream(os);
-                    } else {
-                        out = os;
-                    }
-                    loader.copyTo(os);
-                    found = true;
-                }
-            }
-        } catch (MissingObjectException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            try {
-                if (out == null) {
-                    os.close();
-                } else {
-                    out.close();
-                }
-            } catch (IOException ex) {
-                //
-            }
-        }
-    }
-    
-    private void catIndexEntry () throws GitException {
-        Repository repository = getRepository().getRepository();
-        OutputStream out = null;
-        try {
-            DirCache cache = repository.readDirCache();
-            int pos = cache.findEntry(relativePath);
-            DirCacheEntry entry = null;
-            if (pos >= 0) {
-                DirCacheEntry e = cache.getEntry(pos);
-                do {
-                    if (stage == e.getStage()) {
-                        entry = e;
-                    }
-                } while (entry == null && ++pos < cache.getEntryCount() && relativePath.equals((e = cache.getEntry(pos)).getPathString()));
-            }
-            found = false;
-            if (entry != null) {
-                found = true;
-                WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
-                ObjectLoader loader = repository.getObjectDatabase().open(entry.getObjectId());
-                if (opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
-                    out = new AutoCRLFOutputStream(os);
-                } else {
-                    out = os;
-                }
-                loader.copyTo(os);
-                found = true;
-            }
-        } catch (NoWorkTreeException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            try {
-                if (out == null) {
-                    os.close();
-                } else {
-                    out.close();
-                }
-            } catch (IOException ex) {
-                //
-            }
         }
     }
 
     public boolean foundInRevision () {
         return found;
     }
-
-//</editor-fold>
     
     @Override
     protected void prepare() throws GitException {
@@ -268,7 +160,7 @@ public class CatCommand extends GitCommand {
                     //fatal: Path 'removed' exists on disk, but not in 'HEAD'.
                     for (String msg : error.split("\n")) { //NOI18N
                         if (msg.startsWith("fatal: Invalid object")) {
-                            throw new GitException.MissingObjectException("HEAD" ,GitObjectType.COMMIT);
+                            throw new GitException.MissingObjectException(GitConstants.HEAD ,GitObjectType.COMMIT);
                         }
                     }
                 }

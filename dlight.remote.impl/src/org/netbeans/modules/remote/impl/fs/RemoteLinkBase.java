@@ -132,7 +132,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    protected boolean hasCache() {
+    public boolean hasCache() {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? false : delegate.hasCache();
     }
