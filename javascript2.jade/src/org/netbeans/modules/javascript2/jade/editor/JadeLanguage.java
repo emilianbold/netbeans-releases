@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.javascript2.jade.editor;
 
-import com.sun.jmx.snmp.SnmpOid;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -113,6 +113,11 @@ public class JadeLanguage extends DefaultLanguageConfig {
         return true;
     }
 
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JadeCodeCompletion();
+    }
+    
     @Override
     public Parser getParser() {
         return new JadeParser();

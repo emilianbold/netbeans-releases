@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.nodejs.spi;
+package org.netbeans.modules.javascript.nodejs.file;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Petr Pisl
- */
-public interface NodeJsSupport {
-
-    boolean isSupportEnabled();
-
-    /**
-     * <b>Warning</b>: This method should not be called in the UI thread!
-     * @return documentation URL or {@code null} if not known
-     * @since 0.7
-     */
-    @CheckForNull
-    String getDocumentationUrl();
-
-    /**
-     * <b>Warning</b>: This method should not be called in the UI thread!
-     */
-    @CheckForNull
-    FileObject getDocumentationFolder();
-
-    void addChangeListener(ChangeListener listener);
-
-    void removeChangeListener(ChangeListener listener);
-
+@NbBundle.Messages("NodeMimeResolver.displayName=Node.js executable files")
+@MIMEResolver.Registration(displayName = "#NodeMimeResolver.displayName", resource = "../resources/node-resolver.xml", position = 100000)
+public final class NodeMimeResolver {
 }

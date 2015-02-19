@@ -92,6 +92,7 @@ import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
+import org.netbeans.modules.javascript.v8debug.sources.ChangeLiveSupport;
 import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
@@ -121,6 +122,7 @@ public final class V8Debugger {
     private final int port;
     private final ClientConnection connection;
     private final ScriptsHandler scriptsHandler;
+    private final ChangeLiveSupport changeLiveSupport;
     private final BreakpointsHandler breakpointsHandler;
     @NullAllowed
     private final Runnable finishCallback;
@@ -172,6 +174,7 @@ public final class V8Debugger {
                                                  properties.getServerPaths(),
                                                  properties.getLocalPathExclusionFilters(),
                                                  this);
+        this.changeLiveSupport = new ChangeLiveSupport(this);
         this.breakpointsHandler = new BreakpointsHandler(this);
         this.finishCallback = finishCallback;
     }
@@ -211,6 +214,10 @@ public final class V8Debugger {
     
     public ScriptsHandler getScriptsHandler() {
         return scriptsHandler;
+    }
+    
+    public ChangeLiveSupport getChangeLiveSupport() {
+        return changeLiveSupport;
     }
     
     public BreakpointsHandler getBreakpointsHandler() {
