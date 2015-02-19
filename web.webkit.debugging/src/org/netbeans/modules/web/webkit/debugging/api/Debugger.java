@@ -147,6 +147,7 @@ public final class Debugger {
             webkit.getPage().enable();
             webkit.getNetwork().enable();
             webkit.getConsole().enable();
+            webkit.getDOM().enable();
             webkit.getCSS().enable();
 
             enabled = true;
@@ -187,6 +188,7 @@ public final class Debugger {
             webkit.getNetwork().disable();
             webkit.getConsole().disable();
             webkit.getCSS().disable();
+            webkit.getDOM().disable();
             transport.sendCommand(new Command(COMMAND_DISABLE));
             enabled = false;
             suspended = false;
