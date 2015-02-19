@@ -360,7 +360,6 @@ public class CommitCommand extends GitCommand {
         //
         // 1 file changed, 1 insertion(+)
         // create mode 100644 testnotadd.txt
-        //System.err.println(exitStatus.output);
         for (String line : output.split("\n")) { //NOI18N
             line = line.trim();
             if (line.startsWith("[")) {

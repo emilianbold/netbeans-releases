@@ -45,6 +45,8 @@ package org.netbeans.libs.git.remote.jgit.commands;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEditor;
 import org.eclipse.jgit.dircache.DirCacheIterator;
@@ -61,14 +63,17 @@ import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class RemoveCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final VCSFileProxy[] roots;
     private final FileListener listener;
     private final ProgressMonitor monitor;
@@ -91,9 +96,18 @@ public class RemoveCommand extends GitCommand {
         }
         return retval;
     }
-
+    
     @Override
-    protected void run() throws GitException {
+    protected void run () throws GitException {
+        if (KIT) {
+            runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="KIT">
+    protected void runKit() throws GitException {
         Repository repository = getRepository().getRepository();
         try {
             DirCache cache = repository.lockDirCache();
@@ -109,7 +123,7 @@ public class RemoveCommand extends GitCommand {
                 treeWalk.reset();
                 treeWalk.addTree(new DirCacheIterator(cache));
                 treeWalk.addTree(new FileTreeIterator(repository));
-		while (treeWalk.next() && !monitor.isCanceled()) {
+                while (treeWalk.next() && !monitor.isCanceled()) {
                     VCSFileProxy path = VCSFileProxy.createFileProxy(getRepository().getLocation(), treeWalk.getPathString());
                     if (!treeWalk.isPostChildren()) {
                         if (treeWalk.isSubtree()) {
@@ -134,7 +148,7 @@ public class RemoveCommand extends GitCommand {
                         }
                     }
                 }
-		edit.commit();
+                edit.commit();
             } finally {
                 cache.unlock();
             }
@@ -144,14 +158,96 @@ public class RemoveCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
+//</editor-fold>
     
     @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "rm"); //NOI18N
+        addArgument(0, "-r"); //NOI18N
         if (cached) {
             addArgument(0, "--cached"); //NOI18N
         }
+        addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
     }
+    
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            runner(canceled, 0, new Parser() {
+
+                @Override
+                public void outputParser(String output) {
+                    parseRemoveOutput(output);
+                }
+            });
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) throws IOException, GitException.MissingObjectException {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {            
+            parser.errorParser(exitStatus.error);
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output);
+        }
+    }
+
+    private void parseRemoveOutput(String output) {
+        //rm 'folder1/file1'
+        //rm 'folder1/file2'
+        //rm 'folder1/folder2/file3'
+        Set<VCSFileProxy> parents = new HashSet<VCSFileProxy>();
+        for (String line : output.split("\n")) { //NOI18N
+            line = line.trim();
+            if (line.startsWith("rm '") && line.endsWith("'")) {
+                String file = line.substring(4, line.length()-1);
+                VCSFileProxy path = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
+                if (file.indexOf('/') > 0) {
+                    parents.add(path.getParentFile());
+                }
+                listener.notifyFile(path, file);
+            }
+        }
+        for(VCSFileProxy parent : parents) {
+            if (!parent.exists()) {
+                listener.notifyFile(parent, Utils.getRelativePath(getRepository().getLocation(), parent));
+            }
+        }
+        
+    }
+
+    private abstract class Parser {
+        public abstract void outputParser(String output);
+        public void errorParser(String error) {
+        }
+    }
+    
 }

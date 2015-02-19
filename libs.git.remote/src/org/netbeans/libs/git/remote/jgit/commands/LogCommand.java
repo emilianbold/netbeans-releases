@@ -503,8 +503,6 @@ public class LogCommand extends GitCommand {
     }
 
     private void parseLog(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
-        //System.err.println(output);
-        //System.err.println("");
         //#git --no-pager log --name-status --no-walk 0254bffe448b1951af6edef531d80f8e629c575a"
         //commit 9c0e341a6a9197e2408862d2e6ff4b7635a01f9b (from 19f759b14972f669dc3eb203c06944e03365f6bc)
         //Merge: 1126f32 846626a
