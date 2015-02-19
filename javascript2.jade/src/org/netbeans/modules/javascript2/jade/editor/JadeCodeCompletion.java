@@ -42,6 +42,8 @@
 package org.netbeans.modules.javascript2.jade.editor;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +62,10 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
 
 /**
@@ -84,6 +90,9 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         switch (jadeContext) {
             case TAG_AND_KEYWORD :
                 completeKewords(request, resultList);
+            case TAG:
+                completeTags(request, resultList);
+                break;
         }
         if (!resultList.isEmpty()) {
             return new DefaultCompletionResult(resultList, false);
@@ -138,7 +147,6 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
                 }
             }
         }
-        System.out.println("prefix: " + prefix);
         return prefix;
     }
 
@@ -164,6 +172,11 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
     
     @Override
     public Documentation documentElement(ParserResult info, ElementHandle element, Callable<Boolean> cancel) {
+        if (element != null) {
+            if (element instanceof JadeCompletionItem.SimpleElement) {
+                return ((JadeCompletionItem.SimpleElement)element).getDocumentation();
+            }
+        }
         return null;
     }
 
@@ -171,6 +184,27 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         for (JadeTokenId id : JadeTokenId.values()) {
             if (id.isKeyword() && startsWith(id.getText(), request.prefix)) {
                 resultList.add(new JadeCompletionItem.KeywordItem(id.getText(), request));
+            }
+        }
+    }
+    
+    private void completeTags(JadeCompletionItem.CompletionRequest request, List<CompletionProposal> resultList) {
+        Collection<HtmlTag> result;
+        HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
+        Collection<HtmlTag> allTags = htmlModel.getAllTags();
+        if (request.prefix == null || request.prefix.isEmpty()) {
+            result = allTags;
+        } else {
+            result = new ArrayList<>();
+            for (HtmlTag htmlTag : allTags) {
+                if (startsWith(htmlTag.getName(), request.prefix)) {
+                    result.add(htmlTag);
+                }
+            }
+        }
+        if (!result.isEmpty()) {
+            for (HtmlTag tag : result) {
+                resultList.add(JadeCompletionItem.create(request, tag));
             }
         }
     }
