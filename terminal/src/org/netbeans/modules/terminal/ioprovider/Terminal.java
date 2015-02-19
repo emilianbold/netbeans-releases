@@ -739,7 +739,7 @@ public final class Terminal extends JComponent {
 		options[CLOSE].addActionListener(commandListener);
 		options[CANCEL].addActionListener(commandListener);
 
-		String message = NbBundle.getMessage(Terminal.class, "LBL_CloseTerminal");
+		String message = NbBundle.getMessage(Terminal.class, "LBL_CloseTerminal", getTitle());
 
 		DialogDescriptor dd = new DialogDescriptor(
 			message,
