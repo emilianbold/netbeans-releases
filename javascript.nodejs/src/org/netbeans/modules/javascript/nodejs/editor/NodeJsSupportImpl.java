@@ -60,6 +60,9 @@ import org.openide.util.ChangeSupport;
 @ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class NodeJsSupportImpl implements NodeJsSupport {
 
+    private static final String NODEJS_DOC_URL = "http://nodejs.org/docs/v%s/api/"; // NOI18N
+    private static final String IOJS_DOC_URL = "https://iojs.org/dist/v%s/doc/api/"; // NOI18N
+
     private final Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final PropertyChangeListener nodeJsChangeListener = new NodeJsChangeListener();
@@ -78,13 +81,17 @@ public final class NodeJsSupportImpl implements NodeJsSupport {
     }
 
     @Override
-    public Version getVersion() {
+    public String getDocumentationUrl() {
         assert !EventQueue.isDispatchThread() : "Should not be called in the UI thread";
         NodeExecutable node = NodeExecutable.forProject(project, false);
         if (node == null) {
             return null;
         }
-        return node.getVersion();
+        Version version = node.getVersion();
+        if (version == null) {
+            return null;
+        }
+        return String.format(node.isIojs() ? IOJS_DOC_URL : NODEJS_DOC_URL, version.toString());
     }
 
     @Override
