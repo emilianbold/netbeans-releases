@@ -149,6 +149,10 @@ public enum JadeTokenId implements TokenId {
         return text;
     }
     
+    public boolean isKeyword() {
+        return "keyword".equals(primaryCategory); //NOI18N
+    }
+    
     @Override
     public String primaryCategory() {
         return primaryCategory;

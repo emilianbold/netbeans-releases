@@ -110,6 +110,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        if (execEnv != null) {
+            HangupEnvList.clearHung(execEnv);
+        }
         RemoteTestSuiteBase.registerTestSetup(this);
         if (FSSTransport.getInstance(execEnv) != null) {
             FSSTransport.getInstance(execEnv).testSetCleanupUponStart(true);
@@ -141,6 +144,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         super.tearDown();
         setLoggers(false);
         RemoteTestSuiteBase.registerTestTearDown(this);
+        if (execEnv != null) {
+            HangupEnvList.clearHung(execEnv);
+        }
     }
    
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")

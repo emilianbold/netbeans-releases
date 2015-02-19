@@ -264,8 +264,8 @@ public class CatCommand extends GitCommand {
 
                 @Override
                 public void errorParser(String error) throws GitException.MissingObjectException {
-//fatal: Invalid object name 'HEAD'.
-//fatal: Path 'removed' exists on disk, but not in 'HEAD'.
+                    //fatal: Invalid object name 'HEAD'.
+                    //fatal: Path 'removed' exists on disk, but not in 'HEAD'.
                     for (String msg : error.split("\n")) { //NOI18N
                         if (msg.startsWith("fatal: Invalid object")) {
                             throw new GitException.MissingObjectException("HEAD" ,GitObjectType.COMMIT);

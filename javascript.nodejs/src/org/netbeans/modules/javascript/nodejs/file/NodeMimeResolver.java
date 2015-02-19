@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.nodejs.file;
 
-package org.netbeans.modules.remote.impl.fs;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.util.NbBundle;
 
-import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-
-/**
- *
- * @author vkvashin
- */
-public class HangupEnvList {
-
-    private static final ConcurrentHashMap<ExecutionEnvironment, Boolean> hanged = 
-            new ConcurrentHashMap<ExecutionEnvironment, Boolean>();
-    
-    private HangupEnvList() {
-    }
-
-    public static void setHung(ExecutionEnvironment env) {
-        hanged.put(env, Boolean.TRUE);
-    }
-
-    public static void clearHung(ExecutionEnvironment env) {
-        hanged.remove(env);
-    }
-
-    public static boolean isHung(ExecutionEnvironment env) {
-        return hanged.containsKey(env);
-    }    
+@NbBundle.Messages("NodeMimeResolver.displayName=Node.js executable files")
+@MIMEResolver.Registration(displayName = "#NodeMimeResolver.displayName", resource = "../resources/node-resolver.xml", position = 100000)
+public final class NodeMimeResolver {
 }

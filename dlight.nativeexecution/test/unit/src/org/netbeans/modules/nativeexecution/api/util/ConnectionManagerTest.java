@@ -48,6 +48,7 @@ import java.util.List;
 import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
@@ -110,6 +111,7 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
         assertEquals("Restopred connections list differ", referenceList, managersList);
     }
 
+    @RandomlyFails
     @ForAllEnvironments(section = "remote.platforms")
     public void testConnectDisconnect() throws Exception {
         final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
