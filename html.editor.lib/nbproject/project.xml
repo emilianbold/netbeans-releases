@@ -294,6 +294,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.html.parser</friend>
                 <friend>org.netbeans.modules.html.validation</friend>
                 <friend>org.netbeans.modules.javascript2.editor</friend>
+                <friend>org.netbeans.modules.javascript2.jade</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.php.latte</friend>

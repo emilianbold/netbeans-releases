@@ -45,10 +45,16 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -60,6 +66,11 @@ public class JadeCompletionItem implements CompletionProposal {
     protected final CompletionRequest request;
     protected final ElementHandle element;
 
+    public static CompletionProposal create(CompletionRequest request, HtmlTag tag) {
+        ElementHandle element = new HtmlTagElement(tag);
+        return new JadeCompletionItem(request, element);
+    }
+    
     public JadeCompletionItem(CompletionRequest request, ElementHandle element) {
         this.request = request;
         this.element = element;
@@ -143,6 +154,20 @@ public class JadeCompletionItem implements CompletionProposal {
         }
     }
     
+//    public static class HTMLTagCompletionItem extends JadeCompletionItem {
+//
+//        public HTMLTagCompletionItem(ElementHandle element, CompletionRequest request) {
+//            super(request, element);
+//        }
+//
+//        @Override
+//        public int getAnchorOffset() {
+//            return super.getAnchorOffset();
+//        }
+//
+//
+//    }
+    
     static class KeywordItem extends JadeCompletionItem {
         private static  ImageIcon keywordIcon = null;
         private String keyword = null;
@@ -197,6 +222,93 @@ public class JadeCompletionItem implements CompletionProposal {
         public int getSortPrioOverride() {
             return 130;
         }
+    }
+    
+    public static class SimpleElement implements ElementHandle {
+
+        private final String name;
+        private final ElementKind kind;
+
+        public SimpleElement(String name, ElementKind kind) {
+            this.name = name;
+            this.kind = kind;
+        }
+        
+        
+        @Override
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        @Override
+        public String getMimeType() {
+            return "";
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getIn() {
+            return "";
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return kind;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.<Modifier>emptySet();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+        
+        public Documentation getDocumentation() {
+            return null;
+        }
+    }
+    
+    public static class HtmlTagElement extends SimpleElement {
+        
+        final HtmlTag tag;
+        
+        public HtmlTagElement(HtmlTag tag) {
+            super(tag.getName(), ElementKind.TAG);
+            this.tag = tag;
+        }
+
+        @Override
+        public Documentation getDocumentation() {
+            HelpItem help = tag.getHelp();
+            if (help != null) {
+                if (help.getHelpContent() != null) {
+                    if (help.getHelpURL() != null) {
+                        return Documentation.create(help.getHelpContent(), help.getHelpURL());
+                    }
+                    return Documentation.create(help.getHelpContent());
+                } else if (help.getHelpResolver() != null && help.getHelpURL() != null) {
+                    String content = help.getHelpResolver().getHelpContent(help.getHelpURL());
+                    if (content != null) {
+                        return Documentation.create(content, help.getHelpURL());
+                    }
+                }
+            }
+            return null;
+        }
+        
+        
     }
     
 }
