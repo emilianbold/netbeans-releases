@@ -49,6 +49,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
+import org.netbeans.modules.javascript.v8debug.api.DebuggerOptions;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -83,6 +84,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             firstOpening = false;
             getPanel().setNode(getNodeJsOptions().getNode());
             getPanel().setNodeSources(getNodeJsOptions().getNodeSources());
+            getPanel().setLiveEdit(getDebuggerOptions().isLiveEdit());
             getPanel().setNpm(getNodeJsOptions().getNpm());
             getPanel().setExpress(getNodeJsOptions().getExpress());
         }
@@ -96,6 +98,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             public void run() {
                 getNodeJsOptions().setNode(getPanel().getNode());
                 getNodeJsOptions().setNodeSources(getPanel().getNodeSources());
+                getDebuggerOptions().setLiveEdit(getPanel().isLiveEdit());
                 getNodeJsOptions().setNpm(getPanel().getNpm());
                 getNodeJsOptions().setExpress(getPanel().getExpress());
                 changed = false;
@@ -108,6 +111,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
             getPanel().setNode(getNodeJsOptions().getNode());
             getPanel().setNodeSources(getNodeJsOptions().getNodeSources());
+            getPanel().setLiveEdit(getDebuggerOptions().isLiveEdit());
             getPanel().setNpm(getNodeJsOptions().getNpm());
             getPanel().setExpress(getNodeJsOptions().getExpress());
         }
@@ -147,6 +151,9 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         saved = getNodeJsOptions().getNodeSources();
         current = getPanel().getNodeSources();
         if (saved == null ? current != null : !saved.equals(current)) {
+            return true;
+        }
+        if (getDebuggerOptions().isLiveEdit() != getPanel().isLiveEdit()) {
             return true;
         }
         saved = getNodeJsOptions().getNpm();
@@ -200,6 +207,10 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
 
     private NodeJsOptions getNodeJsOptions() {
         return NodeJsOptions.getInstance();
+    }
+
+    private DebuggerOptions getDebuggerOptions() {
+        return DebuggerOptions.getInstance();
     }
 
 }
