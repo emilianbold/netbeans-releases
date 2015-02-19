@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.remote.jgit.utils;
-
-import org.eclipse.jgit.diff.RawText;
-import org.eclipse.jgit.diff.RawTextComparator;
+package org.netbeans.libs.git.remote;
 
 /**
  *
- * @author Ondrej Vrabec
+ * @author alsimon
  */
-public class AutoCRLFComparator extends RawTextComparator {
+public class GitRef implements Comparable<GitRef> {
 
-    @Override
-    public boolean equals (RawText a, int ai, RawText b, int bi) {
-        String line1 = a.getString(ai);
-        String line2 = b.getString(bi);
-        line1 = trimTrailingEoL(line1);
-        line2 = trimTrailingEoL(line2);
+    public String getName() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-        return line1.equals(line2);
+    public GitRef getLeaf() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    public String getObjectId() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected int hashRegion (final byte[] raw, int ptr, int end) {
-        int hash = 5381;
-        end = trimTrailingEoL(raw, ptr, end);
-        for (; ptr < end; ptr++) {
-            hash = ((hash << 5) + hash) + (raw[ptr] & 0xff);
-        }
-        return hash;
-    }
-
-    private static String trimTrailingEoL (String line) {
-        int end = line.length() - 1;
-        while (end >= 0 && isNewLine(line.charAt(end))) {
-            --end;
-        }
-        return line.substring(0, end + 1);
-    }
-
-    private static int trimTrailingEoL(byte[] raw, int start, int end) {
-        int ptr = end - 1;
-        while (start <= ptr && (raw[ptr] == '\r' || raw[ptr] == '\n')) {
-            ptr--;
-        }
-
-        return ptr + 1;
-    }
-
-    private static boolean isNewLine (char ch) {
-        return ch == '\n' || ch == '\r';
+    public int compareTo(GitRef o) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

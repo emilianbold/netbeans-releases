@@ -42,14 +42,10 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.transport.FetchResult;
-import org.eclipse.jgit.transport.RefSpec;
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.GitFetchResult;
 import org.netbeans.libs.git.remote.GitMergeResult;
 import org.netbeans.libs.git.remote.GitPullResult;
 import org.netbeans.libs.git.remote.GitTransportUpdate;
@@ -67,7 +63,7 @@ public class PullCommand extends TransportCommand {
     private final List<String> refSpecs;
     private final String remote;
     private Map<String, GitTransportUpdate> updates;
-    private FetchResult result;
+    private GitFetchResult result;
     private final String branchToMerge;
     private GitMergeResult mergeResult;
 
@@ -81,14 +77,14 @@ public class PullCommand extends TransportCommand {
 
     @Override
     protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
-        FetchCommand fetch = new FetchCommand(getRepository(), getClassFactory(), remote, refSpecs, monitor);
-        fetch.setCredentialsProvider(getCredentialsProvider());
-        fetch.run();
-        this.updates = fetch.getUpdates();
-        MergeCommand merge = new MergeCommand(getRepository(), getClassFactory(), branchToMerge, null, monitor);
-        merge.setCommitMessage("branch \'" + findRemoteBranchName() + "\' of " + fetch.getResult().getURI().setUser(null).setPass(null).toString());
-        merge.run();
-        this.mergeResult = merge.getResult();
+//        FetchCommand fetch = new FetchCommand(getRepository(), getClassFactory(), remote, refSpecs, monitor);
+//        fetch.setCredentialsProvider(getCredentialsProvider());
+//        fetch.run();
+//        this.updates = fetch.getUpdates();
+//        MergeCommand merge = new MergeCommand(getRepository(), getClassFactory(), branchToMerge, null, monitor);
+//        merge.setCommitMessage("branch \'" + findRemoteBranchName() + "\' of " + fetch.getResult().getURI().setUser(null).setPass(null).toString());
+//        merge.run();
+//        this.mergeResult = merge.getResult();
     }
     
     @Override
@@ -103,27 +99,5 @@ public class PullCommand extends TransportCommand {
 
     public GitPullResult getResult () {
         return getClassFactory().createPullResult(updates, mergeResult);
-    }
-
-    private String findRemoteBranchName () throws GitException {
-        Ref ref = null;
-        try {
-            ref = getRepository().getRepository().getRef(branchToMerge);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
-        if (ref != null) {
-            for (String s : refSpecs) {
-                RefSpec spec = new RefSpec(s);
-                if (spec.matchDestination(ref)) {
-                    spec = spec.expandFromDestination(ref);
-                    String refName = spec.getSource();
-                    if (refName.startsWith(Constants.R_HEADS)) {
-                        return refName.substring(Constants.R_HEADS.length());
-                    }
-                }
-            }
-        }
-        return branchToMerge;
     }
 }

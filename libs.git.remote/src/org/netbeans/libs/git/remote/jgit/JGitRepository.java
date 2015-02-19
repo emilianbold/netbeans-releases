@@ -43,7 +43,9 @@
 package org.netbeans.libs.git.remote.jgit;
 
 import java.io.IOException;
-import org.eclipse.jgit.lib.Repository;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+//import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -52,23 +54,21 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author ondra
  */
 public final class JGitRepository {
-    private Repository repository;
     private final VCSFileProxy location;
+    private final AtomicInteger counter = new AtomicInteger();
+    private final JGitConfig config;
 
     public JGitRepository (VCSFileProxy location) {
         this.location = location;
+        config = new JGitConfig(location);
     }
 
     public synchronized void increaseClientUsage () throws GitException {
-        if (repository == null) {
-            repository = getRepository(location);
-        } else {
-            repository.incrementOpen();
-        }
+        counter.incrementAndGet();
     }
 
     public synchronized void decreaseClientUsage () {
-        repository.close();
+        counter.decrementAndGet();
     }
 
     public VCSFileProxy getLocation() {
@@ -79,22 +79,7 @@ public final class JGitRepository {
         return VCSFileProxy.createFileProxy(location, ".git");
     }
     
-    private Repository getRepository (VCSFileProxy workDir) throws GitException {
-        try {
-            return Utils.getRepositoryForWorkingDir(workDir);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().matches("Repository config file (.*) invalid (.*)")) { //NOI18N
-                throw new GitException("It seems the config file for the repository at [" + workDir.getPath() + "] is corrupted.\nEnsure it ends with empty line.", ex); //NOI18N
-            } else {
-                throw new GitException(ex);
-            }
-        }
-    }
-
-    public Repository getRepository () {
-        assert repository != null;
-        return repository;
+    public JGitConfig getConfig(){
+        return config;
     }
 }

@@ -42,14 +42,11 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.remote.GitConflictDescriptor;
 import org.netbeans.libs.git.remote.GitStatus;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
@@ -125,24 +122,6 @@ public abstract class StatusCommandBase extends GitCommand {
             statuses.put(file, status);
         }
         listener.notifyStatus(status);
-    }
-
-    /**
-     * Any filter includes this path but only by denoting any of it's ancestors or the path itself
-     * Any filter that applies to a file/folder under the given path will not be taken into account
-     * @param filters
-     * @param treeWalk
-     * @return 
-     */
-    public static boolean includes (Collection<PathFilter> filters, TreeWalk treeWalk) {
-        boolean retval = filters.isEmpty();
-        for (PathFilter filter : filters) {
-            if (filter.include(treeWalk) && treeWalk.getPathString().length() >= filter.getPath().length()) {
-                retval = true;
-                break;
-            }
-        }
-        return retval;
     }
 }
 

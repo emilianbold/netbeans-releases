@@ -42,22 +42,12 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
-import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -101,32 +91,32 @@ public class CompareCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        TreeWalk walk = new TreeWalk(repository);
-        try {
-            walk.reset();
-            walk.setRecursive(true);
-            walk.addTree(Utils.findCommit(repository, revisionFirst).getTree());
-            walk.addTree(Utils.findCommit(repository, revisionSecond).getTree());
-            Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
-            if (pathFilters.isEmpty()) {
-                walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
-            } else {
-                walk.setFilter(AndTreeFilter.create(new TreeFilter[] { 
-                    TreeFilter.ANY_DIFF,
-                    PathFilter.ANY_DIFF,
-                    PathFilterGroup.create(pathFilters)
-                }));
-            }
-            List<GitRevisionInfo.GitFileInfo> infos = Utils.getDiffEntries(getRepository(), walk, getClassFactory());
-            for (GitRevisionInfo.GitFileInfo info : infos) {
-                statuses.put(info.getFile(), info);
-            }
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            walk.release();
-        }
+//        Repository repository = getRepository().getRepository();
+//        TreeWalk walk = new TreeWalk(repository);
+//        try {
+//            walk.reset();
+//            walk.setRecursive(true);
+//            walk.addTree(Utils.findCommit(repository, revisionFirst).getTree());
+//            walk.addTree(Utils.findCommit(repository, revisionSecond).getTree());
+//            Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
+//            if (pathFilters.isEmpty()) {
+//                walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
+//            } else {
+//                walk.setFilter(AndTreeFilter.create(new TreeFilter[] { 
+//                    TreeFilter.ANY_DIFF,
+//                    PathFilter.ANY_DIFF,
+//                    PathFilterGroup.create(pathFilters)
+//                }));
+//            }
+//            List<GitRevisionInfo.GitFileInfo> infos = Utils.getDiffEntries(getRepository(), walk, getClassFactory());
+//            for (GitRevisionInfo.GitFileInfo info : infos) {
+//                statuses.put(info.getFile(), info);
+//            }
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            walk.release();
+//        }
     }
 
     public Map<VCSFileProxy, GitRevisionInfo.GitFileInfo> getFileDifferences () {

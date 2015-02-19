@@ -43,7 +43,6 @@ package org.netbeans.libs.git.remote;
 
 import java.util.Collection;
 import java.util.List;
-import org.eclipse.jgit.api.RebaseResult;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -150,14 +149,14 @@ public final class GitRebaseResult {
         public abstract boolean isSuccessful ();
     }
 
-    GitRebaseResult (RebaseResult result, List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures, String currentHead) {
-        this.rebaseStatus = parseRebaseStatus(result.getStatus());
+    GitRebaseResult (/*RebaseResult result,*/ List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures, String currentHead) {
+        this.rebaseStatus = RebaseStatus.NOTHING_TO_COMMIT;//parseRebaseStatus(result.getStatus());
         this.currentHead = currentHead;
-        if (result.getCurrentCommit() == null) {
+        //if (result.getCurrentCommit() == null) {
             this.currentCommit = null;
-        } else {
-            this.currentCommit = result.getCurrentCommit().getId().getName();
-        }
+        //} else {
+        //    this.currentCommit = result.getCurrentCommit().getId().getName();
+        //}
         this.conflicts = rebaseConflicts;
         this.failures = failures;
     }
@@ -208,18 +207,18 @@ public final class GitRebaseResult {
         return failures;
     }
 
-    static RebaseStatus parseRebaseStatus (RebaseResult.Status rebaseStatus) {
-        switch (rebaseStatus) {
-            case EDIT:
-                return RebaseStatus.STOPPED;
-            case UNCOMMITTED_CHANGES:
-                return RebaseStatus.FAILED;
-            case INTERACTIVE_PREPARED:
-                return RebaseStatus.STOPPED;
-            case STASH_APPLY_CONFLICTS:
-                return RebaseStatus.CONFLICTS;
-                
-        }
-        return GitRebaseResult.RebaseStatus.valueOf(rebaseStatus.name());
-    }
+//    private RebaseStatus parseRebaseStatus (RebaseResult.Status rebaseStatus) {
+//        switch (rebaseStatus) {
+//            case EDIT:
+//                return RebaseStatus.STOPPED;
+//            case UNCOMMITTED_CHANGES:
+//                return RebaseStatus.FAILED;
+//            case INTERACTIVE_PREPARED:
+//                return RebaseStatus.STOPPED;
+//            case STASH_APPLY_CONFLICTS:
+//                return RebaseStatus.CONFLICTS;
+//                
+//        }
+//        return GitRebaseResult.RebaseStatus.valueOf(rebaseStatus.name());
+//    }
 }

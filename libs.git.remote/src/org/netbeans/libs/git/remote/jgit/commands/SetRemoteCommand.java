@@ -42,13 +42,6 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.storage.file.FileBasedConfig;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRemoteConfig;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
@@ -74,45 +67,45 @@ public class SetRemoteCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        StoredConfig config = repository.getConfig();
-        boolean finished = false;
-        try {
-            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_URL);
-            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSHURL);
-            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_FETCH);
-            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSH);
-            RemoteConfig cfg = new RemoteConfig(config, remote.getRemoteName());
-            for (String uri : remote.getUris()) {
-                cfg.addURI(new URIish(uri));
-            }
-            for (String uri : remote.getPushUris()) {
-                cfg.addPushURI(new URIish(uri));
-            }
-            for (String spec : remote.getFetchRefSpecs()) {
-                cfg.addFetchRefSpec(new RefSpec(spec));
-            }
-            for (String spec : remote.getPushRefSpecs()) {
-                cfg.addPushRefSpec(new RefSpec(spec));
-            }
-            cfg.update(config);
-            config.save();
-            finished = true;
-        } catch (Exception ex) {
-            throw new GitException(ex);
-        } finally {
-            if (!finished) {
-                try {
-                    if (config instanceof FileBasedConfig) {
-                        FileBasedConfig fileConfig = (FileBasedConfig) config;
-                        fileConfig.clear();
-                    }
-                    config.load();
-                } catch (Exception e) {
-
-                }
-            }
-        }
+//        Repository repository = getRepository().getRepository();
+//        StoredConfig config = repository.getConfig();
+//        boolean finished = false;
+//        try {
+//            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_URL);
+//            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSHURL);
+//            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_FETCH);
+//            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSH);
+//            RemoteConfig cfg = new RemoteConfig(config, remote.getRemoteName());
+//            for (String uri : remote.getUris()) {
+//                cfg.addURI(new URIish(uri));
+//            }
+//            for (String uri : remote.getPushUris()) {
+//                cfg.addPushURI(new URIish(uri));
+//            }
+//            for (String spec : remote.getFetchRefSpecs()) {
+//                cfg.addFetchRefSpec(new RefSpec(spec));
+//            }
+//            for (String spec : remote.getPushRefSpecs()) {
+//                cfg.addPushRefSpec(new RefSpec(spec));
+//            }
+//            cfg.update(config);
+//            config.save();
+//            finished = true;
+//        } catch (Exception ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            if (!finished) {
+//                try {
+//                    if (config instanceof FileBasedConfig) {
+//                        FileBasedConfig fileConfig = (FileBasedConfig) config;
+//                        fileConfig.clear();
+//                    }
+//                    config.load();
+//                } catch (Exception e) {
+//
+//                }
+//            }
+//        }
     }
     
     @Override

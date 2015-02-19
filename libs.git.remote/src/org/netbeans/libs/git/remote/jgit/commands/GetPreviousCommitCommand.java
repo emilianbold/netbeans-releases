@@ -42,24 +42,11 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.util.Iterator;
-import org.eclipse.jgit.diff.DiffConfig;
-import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.FollowFilter;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.revwalk.filter.AndRevFilter;
-import org.eclipse.jgit.revwalk.filter.MaxCountRevFilter;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
-import org.netbeans.libs.git.remote.jgit.utils.CancelRevFilter;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -82,32 +69,32 @@ public class GetPreviousCommitCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        RevWalk walk = null;
-        try {
-            RevCommit rev = Utils.findCommit(repository, revision);
-            if (rev.getParentCount() == 1) {
-                walk = new RevWalk(repository);
-                walk.markStart(walk.parseCommit(rev.getParent(0)));
-                String path = Utils.getRelativePath(getRepository().getLocation(), file);
-                if (path != null && !path.isEmpty()) {
-                    walk.setTreeFilter(FollowFilter.create(path, repository.getConfig().get(DiffConfig.KEY)));
-                }
-                walk.setRevFilter(AndRevFilter.create(new RevFilter[] { new CancelRevFilter(monitor), MaxCountRevFilter.create(1) }));
-                Iterator<RevCommit> it = walk.iterator();
-                if (it.hasNext()) {
-                    previousRevision = getClassFactory().createRevisionInfo(new RevWalk(repository).parseCommit(it.next()), getRepository());
-                }
-            }
-        } catch (MissingObjectException ex) {
-            throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            if (walk != null) {
-                walk.release();
-            }
-        }
+//        Repository repository = getRepository().getRepository();
+//        RevWalk walk = null;
+//        try {
+//            RevCommit rev = Utils.findCommit(repository, revision);
+//            if (rev.getParentCount() == 1) {
+//                walk = new RevWalk(repository);
+//                walk.markStart(walk.parseCommit(rev.getParent(0)));
+//                String path = Utils.getRelativePath(getRepository().getLocation(), file);
+//                if (path != null && !path.isEmpty()) {
+//                    walk.setTreeFilter(FollowFilter.create(path, repository.getConfig().get(DiffConfig.KEY)));
+//                }
+//                walk.setRevFilter(AndRevFilter.create(new RevFilter[] { new CancelRevFilter(monitor), MaxCountRevFilter.create(1) }));
+//                Iterator<RevCommit> it = walk.iterator();
+//                if (it.hasNext()) {
+//                    previousRevision = getClassFactory().createRevisionInfo(new RevWalk(repository).parseCommit(it.next()), getRepository());
+//                }
+//            }
+//        } catch (MissingObjectException ex) {
+//            throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            if (walk != null) {
+//                walk.release();
+//            }
+//        }
     }
     
     @Override

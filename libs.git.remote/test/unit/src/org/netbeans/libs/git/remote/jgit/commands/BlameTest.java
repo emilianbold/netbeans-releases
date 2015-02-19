@@ -42,12 +42,6 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.remote.ApiUtils;
 import org.netbeans.libs.git.remote.GitBlameResult;
 import org.netbeans.libs.git.remote.GitClient;
@@ -55,6 +49,7 @@ import org.netbeans.libs.git.remote.GitLineDetails;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.GitUser;
 import org.netbeans.libs.git.remote.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.remote.jgit.JGitConfig;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -66,8 +61,8 @@ public class BlameTest extends AbstractGitTestCase {
     private static final boolean KIT = BlameCommand.KIT;
     private JGitRepository repository;
     private VCSFileProxy workDir;
-    private static final GitUser USER1 = ApiUtils.getClassFactory().createUser(new PersonIdent("user1", "user1@company.com")); //NOI18N
-    private static final GitUser USER2 = ApiUtils.getClassFactory().createUser(new PersonIdent("user2", "user2@company.com")); //NOI18N
+    private static final GitUser USER1 = ApiUtils.getClassFactory().createUser("user1", "user1@company.com"); //NOI18N
+    private static final GitUser USER2 = ApiUtils.getClassFactory().createUser("user2", "user2@company.com"); //NOI18N
 
     public BlameTest (String testName) throws IOException {
         super(testName);
@@ -217,8 +212,8 @@ else    ;
         write(f, content);
 
         // lets turn autocrlf on
-        StoredConfig cfg = repository.getRepository().getConfig();
-        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        JGitConfig cfg = repository.getConfig();
+        cfg.setString(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_AUTOCRLF, "true");
         cfg.save();
 
         VCSFileProxy[] files = new VCSFileProxy[] { f };
@@ -230,17 +225,15 @@ else    ;
         write(f, content);
 
         // it should be up to date again
-        org.eclipse.jgit.api.BlameCommand cmd = new Git(repository.getRepository()).blame();
-        cmd.setFilePath("f");
-        BlameResult blameResult = cmd.call();
-        assertEquals(info.getRevision(), blameResult.getSourceCommit(1).getName());
+        GitBlameResult blameResult = client.blame(f, null, NULL_PROGRESS_MONITOR);
+        assertEquals(info.getRevision(), blameResult.getLineDetails(1).getRevisionInfo().getRevision());
         
         GitBlameResult res = client.blame(f, null, NULL_PROGRESS_MONITOR);
         assertNull(res.getLineDetails(0));
         assertLineDetails(f, 1, info.getRevision(), info.getAuthor(), info.getCommitter(), res.getLineDetails(1));
         
         // without autocrlf it should all be modified
-        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "false");
+        cfg.setString(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_AUTOCRLF, "false");
         cfg.save();
         res = client.blame(f, null, NULL_PROGRESS_MONITOR);
         assertNull(res.getLineDetails(1));

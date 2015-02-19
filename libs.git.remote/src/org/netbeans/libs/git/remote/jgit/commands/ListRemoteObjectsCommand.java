@@ -41,15 +41,9 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.net.URISyntaxException;
 import java.util.Collection;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.eclipse.jgit.errors.TransportException;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.transport.FetchConnection;
-import org.eclipse.jgit.transport.Transport;
-import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.GitRef;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
@@ -59,7 +53,7 @@ import org.netbeans.libs.git.remote.progress.ProgressMonitor;
  * @author ondra
  */
 abstract class ListRemoteObjectsCommand extends TransportCommand {
-    private Collection<Ref> refs;
+    private Collection<GitRef> refs;
     
     public ListRemoteObjectsCommand (JGitRepository repository, GitClassFactory gitFactory, String remoteRepositoryUrl, ProgressMonitor monitor) {
         super(repository, gitFactory, remoteRepositoryUrl, monitor);
@@ -67,38 +61,38 @@ abstract class ListRemoteObjectsCommand extends TransportCommand {
 
     @Override
     protected final void runTransportCommand () throws GitException {
-        Transport t = null;
-        FetchConnection conn = null;
-        try {
-            t = openTransport(false);
-            conn = t.openFetch();
-            refs = conn.getRefs();
-        } catch (URISyntaxException ex) {
-            throw new GitException(ex.getMessage(), ex);
-        } catch (NotSupportedException ex) {
-            throw new GitException(ex.getMessage(), ex);
-        } catch (TransportException e) {
-            URIish uriish = null;
-            try {
-                uriish = getUriWithUsername(false);
-            } catch (URISyntaxException ex) {
-                throw new GitException(ex.getMessage(), ex);
-            }
-            handleException(e, uriish);
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-            if (t != null) {
-                t.close();
-            }
-        }
-        processRefs();
+//        Transport t = null;
+//        FetchConnection conn = null;
+//        try {
+//            t = openTransport(false);
+//            conn = t.openFetch();
+//            refs = conn.getRefs();
+//        } catch (URISyntaxException ex) {
+//            throw new GitException(ex.getMessage(), ex);
+//        } catch (NotSupportedException ex) {
+//            throw new GitException(ex.getMessage(), ex);
+//        } catch (TransportException e) {
+//            URIish uriish = null;
+//            try {
+//                uriish = getUriWithUsername(false);
+//            } catch (URISyntaxException ex) {
+//                throw new GitException(ex.getMessage(), ex);
+//            }
+//            handleException(e, uriish);
+//        } finally {
+//            if (conn != null) {
+//                conn.close();
+//            }
+//            if (t != null) {
+//                t.close();
+//            }
+//        }
+//        processRefs();
     }
 
     protected abstract void processRefs ();
     
-    protected final Collection<Ref> getRefs () {
+    protected final Collection<GitRef> getRefs () {
         return refs;
     }
 }

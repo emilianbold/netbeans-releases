@@ -42,41 +42,33 @@
 
 package org.netbeans.libs.git.remote.jgit;
 
-import org.eclipse.jgit.lib.ProgressMonitor;
-
 /**
  *
  * @author ondra
  */
-public final class DelegatingProgressMonitor implements ProgressMonitor {
+public final class DelegatingProgressMonitor {
     private final org.netbeans.libs.git.remote.progress.ProgressMonitor monitor;
 
     public DelegatingProgressMonitor (org.netbeans.libs.git.remote.progress.ProgressMonitor monitor) {
         this.monitor = monitor;
     }
 
-    @Override
     public void start (int totalTasks) {
     }
 
-    @Override
     public void beginTask (String title, int totalWork) {
         monitor.beginTask(title, totalWork);
     }
 
-    @Override
     public void update (int completed) {
         monitor.updateTaskState(completed);
     }
 
-    @Override
     public void endTask () {
         monitor.endTask();
     }
 
-    @Override
     public boolean isCancelled () {
         return monitor.isCanceled();
     }
-
 }

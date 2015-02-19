@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.remote.jgit;
-
-import java.io.IOException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.treewalk.filter.TreeFilter;
+package org.netbeans.libs.git.remote;
 
 /**
  *
- * @author ondra
+ * @author alsimon
  */
-public class ExactPathFilter extends TreeFilter {
-
-    public static ExactPathFilter create (PathFilter filter) {
-        return new ExactPathFilter(filter);
-    }
-    final String pathStr;
-    final byte[] pathRaw;
-    private final PathFilter filter;
-
-    private ExactPathFilter (final PathFilter filter) {
-        pathStr = filter.getPath();
-        pathRaw = Constants.encode(pathStr);
-        this.filter = filter;
-    }
-
-    @Override
-    public TreeFilter clone() {
-        return this;
-    }
-
-    @Override
-    public boolean include(TreeWalk walker) throws MissingObjectException, IncorrectObjectTypeException, IOException {
-        return filter.include(walker) && walker.isPathSuffix(pathRaw, pathRaw.length);
-    }
-
-    @Override
-    public boolean shouldBeRecursive() {
-        return true;
-    }
+public class GitFetchResult {
+    
 }

@@ -44,20 +44,6 @@ package org.netbeans.libs.git.remote.jgit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.RebaseResult;
-import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevObject;
-import org.eclipse.jgit.revwalk.RevTag;
-import org.eclipse.jgit.submodule.SubmoduleStatus;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.RemoteRefUpdate;
-import org.eclipse.jgit.transport.TrackingRefUpdate;
-import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.remote.GitBlameResult;
 import org.netbeans.libs.git.remote.GitBranch;
 import org.netbeans.libs.git.remote.GitCherryPickResult;
@@ -66,15 +52,12 @@ import org.netbeans.libs.git.remote.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.remote.GitMergeResult;
 import org.netbeans.libs.git.remote.GitPullResult;
 import org.netbeans.libs.git.remote.GitPushResult;
-import org.netbeans.libs.git.remote.GitRebaseResult;
-import org.netbeans.libs.git.remote.GitRemoteConfig;
 import org.netbeans.libs.git.remote.GitRevertResult;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.remote.GitStatus;
+import org.netbeans.libs.git.remote.GitStatus.GitDiffEntry;
 import org.netbeans.libs.git.remote.GitStatus.Status;
-import org.netbeans.libs.git.remote.GitSubmoduleStatus;
-import org.netbeans.libs.git.remote.GitTag;
 import org.netbeans.libs.git.remote.GitTransportUpdate;
 import org.netbeans.libs.git.remote.GitUser;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -85,11 +68,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  */
 public abstract class GitClassFactory {
     
-    public abstract GitBlameResult createBlameResult (BlameResult result, JGitRepository repository);
-    
     public abstract GitBlameResult createBlameResult (VCSFileProxy file, Map<String, GitBlameResult.GitBlameContent> result, JGitRepository repository);
-    
-    public abstract GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id);
     
     public abstract GitBranch createBranch (String name, boolean remote, boolean active, String id);
 
@@ -101,24 +80,23 @@ public abstract class GitClassFactory {
 
     public abstract GitFileInfo createFileInfo (VCSFileProxy file, String oldPath, GitFileInfo.Status status, VCSFileProxy originalFile, String originalPath);
     
-    public abstract GitMergeResult createMergeResult (MergeResult mergeResult, VCSFileProxy workTree);
+    //public abstract GitMergeResult createMergeResult (MergeResult mergeResult, VCSFileProxy workTree);
 
     public abstract GitPullResult createPullResult (Map<String, GitTransportUpdate> fetchUpdates, GitMergeResult mergeResult);
 
     public abstract GitPushResult createPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates);
     
-    public abstract GitRebaseResult createRebaseResult (RebaseResult rebaseResult, List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures,
-            String newHead);
+    //public abstract GitRebaseResult createRebaseResult (RebaseResult rebaseResult, List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures, String newHead);
 
-    public abstract GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig);
+    //public abstract GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig);
 
     public abstract GitRevertResult createRevertResult (GitRevertResult.Status status, GitRevisionInfo createRevisionInfo, List<VCSFileProxy> conflicts, List<VCSFileProxy> failures);
+        
+    //public final GitRevisionInfo createRevisionInfo (RevCommit commit, JGitRepository repository) {
+    //    return createRevisionInfo(commit, Collections.<String, GitBranch>emptyMap(), repository);
+    //}
     
-    public final GitRevisionInfo createRevisionInfo (RevCommit commit, JGitRepository repository) {
-        return createRevisionInfo(commit, Collections.<String, GitBranch>emptyMap(), repository);
-    }
-    
-    public abstract GitRevisionInfo createRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, JGitRepository repository);
+    //public abstract GitRevisionInfo createRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, JGitRepository repository);
     
     public final GitRevisionInfo createRevisionInfo(GitRevisionInfo.GitRevCommit status, JGitRepository repository) {
         return createRevisionInfo(status, Collections.<String, GitBranch>emptyMap(), repository);
@@ -128,22 +106,22 @@ public abstract class GitClassFactory {
 
     public abstract GitStatus createStatus (boolean tracked, String path, String workTreePath, VCSFileProxy file, 
                 Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, 
-                GitConflictDescriptor conflictDescriptor, boolean folder, DiffEntry diffEntry,
+                GitConflictDescriptor conflictDescriptor, boolean folder, GitDiffEntry diffEntry,
                 long indexEntryTimestamp);
     
-    public abstract GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, VCSFileProxy folder);
+    //public abstract GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, VCSFileProxy folder);
 
-    public abstract GitTag createTag (RevTag revTag);
+    //public abstract GitTag createTag (RevTag revTag);
 
-    public abstract GitTag createTag (String tagName, RevObject revObject);
+    //public abstract GitTag createTag (String tagName, RevObject revObject);
 
-    public abstract GitTag createTag (String tagName, GitRevisionInfo revCommit);
+    //public abstract GitTag createTag (String tagName, GitRevisionInfo revCommit);
 
-    public abstract GitTransportUpdate createTransportUpdate (URIish urI, TrackingRefUpdate update);
+    //public abstract GitTransportUpdate createTransportUpdate (URIish urI, TrackingRefUpdate update);
 
-    public abstract GitTransportUpdate createTransportUpdate (URIish urI, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches);
+    //public abstract GitTransportUpdate createTransportUpdate (URIish urI, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches);
 
-    public abstract GitUser createUser (PersonIdent personIdent);
+    public abstract GitUser createUser (String name, String mail);
 
     public abstract void setBranchTracking (GitBranch branch, GitBranch trackedBranch);
 

@@ -42,25 +42,11 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.util.Collection;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.errors.CorruptObjectException;
-import org.eclipse.jgit.errors.NoWorkTreeException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.WorkingTreeIterator;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
-import org.netbeans.libs.git.remote.GitClient;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -89,64 +75,46 @@ public class CleanCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        Repository repository = getRepository().getRepository();        
-        try {
-            DirCache cache = null;
-            try {
-                cache = repository.lockDirCache();
-                TreeWalk treeWalk = new TreeWalk(repository);
-                Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
-                if (!pathFilters.isEmpty()) {
-                    treeWalk.setFilter(PathFilterGroup.create(pathFilters));
-                }
-                treeWalk.setRecursive(false);
-                treeWalk.setPostOrderTraversal(true);
-                treeWalk.reset();
-                                
-                treeWalk.addTree(new FileTreeIterator(repository));
-                while (treeWalk.next() && !monitor.isCanceled()) {
-                    String path = treeWalk.getPathString();                    
-                    WorkingTreeIterator f = treeWalk.getTree(0, WorkingTreeIterator.class);
-                    if(f != null) { // file exists
-                        if (!treeWalk.isPostChildren()) {
-                            if (treeWalk.isSubtree()) {
-                                treeWalk.enterSubtree();
-                                continue;
-                            } else {
-                                deleteIfUnversioned(cache, path, f, getRepository(), treeWalk);
-                            }
-                        } else {
-                            deleteIfUnversioned(cache, path, f, getRepository(), treeWalk);
-                        }                        
-                    }                    
-                }
-            } finally {
-                if (cache != null ) {
-                    cache.unlock();
-                }
-            }
-        } catch (CorruptObjectException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();        
+//        try {
+//            DirCache cache = null;
+//            try {
+//                cache = repository.lockDirCache();
+//                TreeWalk treeWalk = new TreeWalk(repository);
+//                Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
+//                if (!pathFilters.isEmpty()) {
+//                    treeWalk.setFilter(PathFilterGroup.create(pathFilters));
+//                }
+//                treeWalk.setRecursive(false);
+//                treeWalk.setPostOrderTraversal(true);
+//                treeWalk.reset();
+//                                
+//                treeWalk.addTree(new FileTreeIterator(repository));
+//                while (treeWalk.next() && !monitor.isCanceled()) {
+//                    String path = treeWalk.getPathString();                    
+//                    WorkingTreeIterator f = treeWalk.getTree(0, WorkingTreeIterator.class);
+//                    if(f != null) { // file exists
+//                        if (!treeWalk.isPostChildren()) {
+//                            if (treeWalk.isSubtree()) {
+//                                treeWalk.enterSubtree();
+//                                continue;
+//                            } else {
+//                                deleteIfUnversioned(cache, path, f, getRepository(), treeWalk);
+//                            }
+//                        } else {
+//                            deleteIfUnversioned(cache, path, f, getRepository(), treeWalk);
+//                        }                        
+//                    }                    
+//                }
+//            } finally {
+//                if (cache != null ) {
+//                    cache.unlock();
+//                }
+//            }
+//        } catch (CorruptObjectException ex) {
+//            throw new GitException(ex);
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        }
     }
-
-    private void deleteIfUnversioned(DirCache cache, String path, WorkingTreeIterator f, JGitRepository repository, TreeWalk treeWalk) throws IOException, NoWorkTreeException {
-        if (cache.getEntry(path) == null &&  // not in index 
-            !f.isEntryIgnored() &&             // not ignored
-            !Utils.isFromNested(f.getEntryFileMode().getBits()))
-        {            
-            VCSFileProxy file = VCSFileProxy.createFileProxy(repository.getLocation(), path);                        
-            if(file.isDirectory()) {
-                VCSFileProxy[] s = file.listFiles();
-                if(s != null && s.length > 0) { // XXX is there no better way to find out if empty?
-                    // not empty
-                    return; 
-                }
-            }
-            VCSFileProxySupport.delete(file);
-            listener.notifyFile(file, treeWalk.getPathString());
-        }
-    }    
 }

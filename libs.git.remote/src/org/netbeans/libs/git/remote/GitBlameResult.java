@@ -44,10 +44,7 @@ package org.netbeans.libs.git.remote;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
+import org.netbeans.libs.git.remote.GitRevisionInfo.GitRevCommit;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -62,47 +59,19 @@ public final class GitBlameResult {
     private final int lineCount;
     private final GitLineDetails[] lineDetails;
 
-    GitBlameResult (BlameResult result, JGitRepository repository) {
-        this.lineCount = result.getResultContents().size();
-        this.lineDetails = new GitLineDetails[lineCount];
-
-        Map<String, VCSFileProxy> cachedFiles = new HashMap<String, VCSFileProxy>(lineCount);
-        this.blamedFile = getFile(cachedFiles, result.getResultPath(), repository.getLocation());
-
-        Map<RevCommit, GitRevisionInfo> cachedRevisions = new HashMap<RevCommit, GitRevisionInfo>(lineCount);
-        Map<PersonIdent, GitUser> cachedUsers = new HashMap<PersonIdent, GitUser>(lineCount * 2);
-        for (int i = 0; i < lineCount; ++i) {
-            RevCommit commit = result.getSourceCommit(i);
-            if (commit == null) {
-                lineDetails[i] = null;
-            } else {
-                GitRevisionInfo revInfo = cachedRevisions.get(commit);
-                if (revInfo == null) {
-                    revInfo = new GitRevisionInfo(commit, repository);
-                    cachedRevisions.put(commit, revInfo);
-                }
-                GitUser author = getUser(cachedUsers, result.getSourceAuthor(i));
-                GitUser committer = getUser(cachedUsers, result.getSourceCommitter(i));
-                VCSFileProxy sourceFile = getFile(cachedFiles, result.getSourcePath(i), repository.getLocation());
-                String content = result.getResultContents().getString(i);
-                lineDetails[i] = new GitLineDetails(content, revInfo, author, committer, sourceFile, result.getSourceLine(i));
-            }
-        }
-    }
-
     GitBlameResult(VCSFileProxy file, Map<String, GitBlameContent> result, JGitRepository repository) {
         this.blamedFile = file;
         TreeMap<Integer, GitLineDetails> lines = new TreeMap<>();
         for (Map.Entry<String, GitBlameContent> entry : result.entrySet()) {
             GitBlameContent v = entry.getValue();
-            org.netbeans.libs.git.remote.GitRevisionInfo.GitRevCommit rev = new org.netbeans.libs.git.remote.GitRevisionInfo.GitRevCommit();
+            GitRevCommit rev = new GitRevCommit();
             rev.autorAndMail = v.author+" "+v.author_mail;
             rev.autorTime = v.author_time + " " + v.author_tz;
             rev.commiterAndMail = v.committer + " " + v.committer_mail;
             rev.commiterTime = v.committer_time + " " + v.committer_tz;
             rev.message = v.summary;
             rev.revisionCode = v.revision;
-            org.netbeans.libs.git.remote.GitRevisionInfo revInfo = new org.netbeans.libs.git.remote.GitRevisionInfo(rev, repository);
+            GitRevisionInfo revInfo = new GitRevisionInfo(rev, repository);
             VCSFileProxy sourceFile = VCSFileProxy.createFileProxy(repository.getLocation(), v.filename);
             GitUser author = revInfo.getAuthor();
             GitUser committer = revInfo.getCommitter();
@@ -145,24 +114,6 @@ public final class GitBlameResult {
         return lineNumber < lineCount ? lineDetails[lineNumber] : null;
     }
 
-    private GitUser getUser (Map<PersonIdent, GitUser> cached, PersonIdent ident) {
-        GitUser user = cached.get(ident);
-        if (user == null) {
-            user = GitClassFactoryImpl.getInstance().createUser(ident);
-            cached.put(ident, user);
-        }
-        return user;
-    }
-
-    private VCSFileProxy getFile (Map<String, VCSFileProxy> cached, String relativePath, VCSFileProxy workTree) {
-        VCSFileProxy file = cached.get(relativePath);
-        if (file == null) {
-            file = VCSFileProxy.createFileProxy(workTree, relativePath); //NOI18N
-            cached.put(relativePath, file);
-        }
-        return file;
-    }
-    
     public static final class LineInfo {
         public int line;
         public String lineContent;

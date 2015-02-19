@@ -42,22 +42,12 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.net.URISyntaxException;
 import java.util.Map;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitSubmoduleStatus;
 import org.netbeans.libs.git.remote.jgit.DelegatingGitProgressMonitor;
-import org.netbeans.libs.git.remote.jgit.DelegatingProgressMonitor;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -82,31 +72,31 @@ public class SubmoduleUpdateCommand extends TransportCommand {
 
     @Override
     protected void runTransportCommand () throws GitException {
-        Repository repository = getRepository().getRepository();
-        VCSFileProxy workTree = getRepository().getLocation();
-        org.eclipse.jgit.api.SubmoduleUpdateCommand cmd = new Git(repository).submoduleUpdate();
-        for (VCSFileProxy root : roots) {
-            cmd.addPath(Utils.getRelativePath(workTree, root));
-            try {
-                cmd.setProgressMonitor(new DelegatingProgressMonitor(monitor));
-                cmd.setCredentialsProvider(getCredentialsProvider());
-                cmd.setTimeout(45);
-                // if needed, transport can be set up using: cmd.setTransportConfigCallback();
-                cmd.call();
-            } catch (TransportException e) {
-                URIish uriish = null;
-                try {
-                    uriish = getUriWithUsername(false);
-                } catch (URISyntaxException ex) {
-                    throw new GitException(e.getMessage(), e);
-                }
-                Utils.deleteRecursively(VCSFileProxy.createFileProxy(root, Constants.DOT_GIT));
-                handleException(new org.eclipse.jgit.errors.TransportException(e.getMessage(), e), uriish);
-            } catch (GitAPIException | JGitInternalException ex) {
-                throw new GitException(ex);
-            }
-        }
-        statusCmd.run();
+//        Repository repository = getRepository().getRepository();
+//        VCSFileProxy workTree = getRepository().getLocation();
+//        org.eclipse.jgit.api.SubmoduleUpdateCommand cmd = new Git(repository).submoduleUpdate();
+//        for (VCSFileProxy root : roots) {
+//            cmd.addPath(Utils.getRelativePath(workTree, root));
+//            try {
+//                cmd.setProgressMonitor(new DelegatingProgressMonitor(monitor));
+//                cmd.setCredentialsProvider(getCredentialsProvider());
+//                cmd.setTimeout(45);
+//                // if needed, transport can be set up using: cmd.setTransportConfigCallback();
+//                cmd.call();
+//            } catch (TransportException e) {
+//                URIish uriish = null;
+//                try {
+//                    uriish = getUriWithUsername(false);
+//                } catch (URISyntaxException ex) {
+//                    throw new GitException(e.getMessage(), e);
+//                }
+//                Utils.deleteRecursively(VCSFileProxy.createFileProxy(root, Constants.DOT_GIT));
+//                handleException(new org.eclipse.jgit.errors.TransportException(e.getMessage(), e), uriish);
+//            } catch (GitAPIException | JGitInternalException ex) {
+//                throw new GitException(ex);
+//            }
+//        }
+//        statusCmd.run();
     }
     
     @Override

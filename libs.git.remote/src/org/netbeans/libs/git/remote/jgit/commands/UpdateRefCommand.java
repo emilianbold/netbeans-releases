@@ -42,12 +42,6 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectIdRef;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRefUpdateResult;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
@@ -71,36 +65,36 @@ public class UpdateRefCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        try {
-            
-            Ref ref = repository.getRef(refName);
-            if (ref == null || ref.isSymbolic()) {
-                // currently unable to update symbolic references
-                result = GitRefUpdateResult.valueOf(RefUpdate.Result.NOT_ATTEMPTED.name());
-                return;
-            }
-            
-            Ref newRef = repository.getRef(revision);
-            String name;
-            if (newRef == null) {
-                ObjectId id = repository.resolve(revision);
-                newRef = new ObjectIdRef.Unpeeled(Ref.Storage.LOOSE, id.name(),id.copy());
-                name = newRef.getName();
-            } else {
-                name = revision;
-            }
-            
-            RefUpdate u = repository.updateRef(ref.getName());
-            u.setNewObjectId(newRef.isPeeled() ? newRef.getPeeledObjectId() : newRef.getObjectId());
-            u.setRefLogMessage("merge " + name + ": Fast-forward", false); //NOI18N
-            u.update();
-            result = GitRefUpdateResult.valueOf((u.getResult() == null 
-                ? RefUpdate.Result.NOT_ATTEMPTED
-                : u.getResult()).name());
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        try {
+//            
+//            Ref ref = repository.getRef(refName);
+//            if (ref == null || ref.isSymbolic()) {
+//                // currently unable to update symbolic references
+//                result = GitRefUpdateResult.valueOf(RefUpdate.Result.NOT_ATTEMPTED.name());
+//                return;
+//            }
+//            
+//            Ref newRef = repository.getRef(revision);
+//            String name;
+//            if (newRef == null) {
+//                ObjectId id = repository.resolve(revision);
+//                newRef = new ObjectIdRef.Unpeeled(Ref.Storage.LOOSE, id.name(),id.copy());
+//                name = newRef.getName();
+//            } else {
+//                name = revision;
+//            }
+//            
+//            RefUpdate u = repository.updateRef(ref.getName());
+//            u.setNewObjectId(newRef.isPeeled() ? newRef.getPeeledObjectId() : newRef.getObjectId());
+//            u.setRefLogMessage("merge " + name + ": Fast-forward", false); //NOI18N
+//            u.update();
+//            result = GitRefUpdateResult.valueOf((u.getResult() == null 
+//                ? RefUpdate.Result.NOT_ATTEMPTED
+//                : u.getResult()).name());
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        }
     }
     
     @Override

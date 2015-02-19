@@ -46,30 +46,17 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.LogCommand;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheBuilder;
-import org.eclipse.jgit.dircache.DirCacheEditor;
-import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.FileMode;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectLoader;
-import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.remote.GitClient;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.remote.GitRevisionInfo.GitFileInfo.Status;
 import org.netbeans.libs.git.remote.GitStatus;
 import org.netbeans.libs.git.remote.GitUser;
+import org.netbeans.libs.git.remote.SearchCriteria;
 import org.netbeans.libs.git.remote.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.remote.jgit.JGitConfig;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
@@ -108,22 +95,25 @@ public class CommitTest extends AbstractGitTestCase {
         statuses = client.getStatus(new VCSFileProxy[] { toCommit }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
-        Git git = new Git(repository.getRepository());
-        LogCommand log = git.log();
-        RevCommit com = log.call().iterator().next();
+        final SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo com = log[0];
+        
+        
 if(KIT) assertEquals("initial commit", info.getFullMessage());
 else    assertEquals("initial commit\n", info.getFullMessage());
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
-        assertEquals(ObjectId.toString(com.getId()), info.getRevision());
+        assertEquals(com.getRevision(), info.getRevision());
         Map<VCSFileProxy, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertTrue(modifiedFiles.get(toCommit).getStatus().equals(Status.ADDED));
     }
 
     public void testSingleFileCommit () throws Exception {
-        repository.getRepository().getConfig().setString("user", null, "name", "John");
-        repository.getRepository().getConfig().setString("user", null, "email", "john@git.com");
-        repository.getRepository().getConfig().save();
+        repository.getConfig().setString("user", null, "name", "John");
+        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().save();
 
         VCSFileProxy toCommit = VCSFileProxy.createFileProxy(workDir, "testnotadd.txt");
         write(toCommit, "blablabla");
@@ -142,24 +132,25 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         assertStatus(statuses, workDir, toCommit, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertTrue(t1 <= info.getCommitTime() && t2 >= info.getCommitTime());
 
-        Git git = new Git(repository.getRepository());
-        LogCommand log = git.log();
-        RevCommit com = log.call().iterator().next();
+        final SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo com = log[0];
 if(KIT) assertEquals("initial commit", info.getFullMessage());
 else    assertEquals("initial commit\n", info.getFullMessage());
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
         assertEquals( "john@git.com", info.getAuthor().getEmailAddress());
-        assertEquals( "john@git.com", com.getAuthorIdent().getEmailAddress());
-        assertEquals(ObjectId.toString(com.getId()), info.getRevision());
+        assertEquals( "john@git.com", com.getAuthor().getEmailAddress());
+        assertEquals(com.getRevision(), info.getRevision());
         Map<VCSFileProxy, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertTrue(modifiedFiles.get(toCommit).getStatus().equals(Status.ADDED));
     }
 
     public void testMultipleFileCommit () throws Exception {
-        repository.getRepository().getConfig().setString("user", null, "name", "John");
-        repository.getRepository().getConfig().setString("user", null, "email", "john@git.com");
-        repository.getRepository().getConfig().save();
+        repository.getConfig().setString("user", null, "name", "John");
+        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().save();
 
         VCSFileProxy dir = VCSFileProxy.createFileProxy(workDir, "testdir");
         VCSFileProxy newOne = VCSFileProxy.createFileProxy(dir, "test.txt");
@@ -181,12 +172,13 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         assertTrue(modifiedFiles.get(newOne).getStatus().equals(Status.ADDED));
         assertTrue(modifiedFiles.get(another).getStatus().equals(Status.ADDED));
 
-        Git git = new Git(repository.getRepository());
-        LogCommand log = git.log();
-        RevCommit com = log.call().iterator().next();
+        SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo com = log[0];
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
-        assertEquals( "john@git.com", com.getAuthorIdent().getEmailAddress());
+        assertEquals( "john@git.com", com.getAuthor().getEmailAddress());
 
         write(newOne, "!modification!");
         write(another, "another modification!");
@@ -203,11 +195,13 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         assertTrue(modifiedFiles.get(newOne).getStatus().equals(Status.MODIFIED));
         assertTrue(modifiedFiles.get(another).getStatus().equals(Status.MODIFIED));
 
-        log = git.log();
-        com = log.call().iterator().next();
+        searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        com = log[0];
 if(KIT) assertEquals("second commit", com.getFullMessage());
 else    assertEquals("second commit\n", com.getFullMessage());
-        assertEquals( "john@git.com", com.getAuthorIdent().getEmailAddress());
+        assertEquals( "john@git.com", com.getAuthor().getEmailAddress());
     }
 
     public void testCommitOnlySomeOfAllFiles () throws Exception {
@@ -334,9 +328,10 @@ else    assertEquals("second commit\n", com.getFullMessage());
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
-        Git git = new Git(repository.getRepository());
-        LogCommand log = git.log();
-        RevCommit com = log.call().iterator().next();
+        SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo com = log[0];
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
     }
@@ -373,9 +368,10 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file22, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
-        Git git = new Git(repository.getRepository());
-        LogCommand log = git.log();
-        RevCommit com = log.call().iterator().next();
+        SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo com = log[0];
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
 
@@ -397,8 +393,10 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file22, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
-        log = git.log();
-        com = log.call().iterator().next();
+        searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        com = log[0];
 if(KIT) assertEquals("second commit", com.getFullMessage());
 else    assertEquals("second commit\n", com.getFullMessage());
     }
@@ -437,9 +435,10 @@ else    assertEquals("second commit\n", com.getFullMessage());
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file22, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
-        Git git = new Git(repository.getRepository());
-        LogCommand log = git.log();
-        RevCommit com = log.call().iterator().next();
+        SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo com = log[0];
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
         // COMMIT ALL
@@ -472,8 +471,10 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file22, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
 
-        log = git.log();
-        com = log.call().iterator().next();
+        searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        com = log[0];
 if(KIT) assertEquals("second commit", com.getFullMessage());
 else    assertEquals("second commit\n", com.getFullMessage());
 
@@ -528,20 +529,20 @@ else    assertEquals("second commit\n", com.getFullMessage());
 
     public void testNeverCommitConflicts () throws Exception {
         VCSFileProxy f = VCSFileProxy.createFileProxy(workDir, "conflict");
-        DirCache cache = repository.getRepository().lockDirCache();
-        try {
-            DirCacheBuilder builder = cache.builder();
-            DirCacheEntry e = new DirCacheEntry(f.getName(), 1);
-            e.setLength(0);
-            e.setLastModified(0);
-            e.setFileMode(FileMode.REGULAR_FILE);
-            builder.add(e);
-            builder.finish();
-            builder.commit();
-        } finally {
-            cache.unlock();
-        }
-        VCSFileProxy mergeFile = VCSFileProxy.createFileProxy(VCSFileProxy.createFileProxy(workDir, Constants.DOT_GIT), "MERGE_HEAD");
+//        DirCache cache = repository.getRepository().lockDirCache();
+//        try {
+//            DirCacheBuilder builder = cache.builder();
+//            DirCacheEntry e = new DirCacheEntry(f.getName(), 1);
+//            e.setLength(0);
+//            e.setLastModified(0);
+//            e.setFileMode(FileMode.REGULAR_FILE);
+//            builder.add(e);
+//            builder.finish();
+//            builder.commit();
+//        } finally {
+//            cache.unlock();
+//        }
+        VCSFileProxy mergeFile = VCSFileProxy.createFileProxy(VCSFileProxy.createFileProxy(workDir, GitConstants.DOT_GIT), "MERGE_HEAD");
         VCSFileProxySupport.createNew(mergeFile);
         try {
             getClient(workDir).commit(new VCSFileProxy[] { f }, "nothing", null, null, NULL_PROGRESS_MONITOR);
@@ -549,15 +550,15 @@ else    assertEquals("second commit\n", com.getFullMessage());
         } catch (GitException ex) {
             assertEquals("Index contains files in conflict, please resolve them before commit", ex.getMessage());
         }
-        cache = repository.getRepository().lockDirCache();
-        try {
-            DirCacheEditor edit = cache.editor();
-            edit.add(new DirCacheEditor.DeletePath(f.getName()));
-            edit.finish();
-            edit.commit();
-        } finally {
-            cache.unlock();
-        }
+//        cache = repository.getRepository().lockDirCache();
+//        try {
+//            DirCacheEditor edit = cache.editor();
+//            edit.add(new DirCacheEditor.DeletePath(f.getName()));
+//            edit.finish();
+//            edit.commit();
+//        } finally {
+//            cache.unlock();
+//        }
         try {
             getClient(workDir).commit(new VCSFileProxy[] { f }, "nothing", null, null, NULL_PROGRESS_MONITOR);
             fail();
@@ -573,8 +574,8 @@ else    assertEquals("second commit\n", com.getFullMessage());
             return;
         }
         // lets turn autocrlf on
-        StoredConfig cfg = repository.getRepository().getConfig();
-        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        JGitConfig cfg = repository.getConfig();
+        cfg.setString(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_AUTOCRLF, "true");
         cfg.save();
         
         VCSFileProxy f = VCSFileProxy.createFileProxy(workDir, "f");
@@ -583,7 +584,7 @@ else    assertEquals("second commit\n", com.getFullMessage());
         
         GitClient client = getClient(workDir);
         client.add(roots, NULL_PROGRESS_MONITOR);
-        DirCacheEntry e1 = repository.getRepository().readDirCache().getEntry("f");
+        //DirCacheEntry e1 = repository.getRepository().readDirCache().getEntry("f");
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
         List<String> res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
@@ -595,18 +596,18 @@ else    assertEquals("second commit\n", com.getFullMessage());
         res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
         assertEquals(0, res.size());
         
-        RevCommit commit = Utils.findCommit(repository.getRepository(), info.getRevision());
-        TreeWalk walk = new TreeWalk(repository.getRepository());
-        walk.reset();
-        walk.addTree(commit.getTree());
-        walk.setFilter(PathFilter.create("f"));
-        walk.setRecursive(true);
-        walk.next();
-        assertEquals("f", walk.getPathString());
-        ObjectLoader loader = repository.getRepository().getObjectDatabase().open(walk.getObjectId(0));
-        assertEquals(4, loader.getSize());
-        assertEquals("a\nb\n", new String(loader.getBytes()));
-        assertEquals(e1.getObjectId(), walk.getObjectId(0));
+//        RevCommit commit = Utils.findCommit(repository, info.getRevision());
+//        TreeWalk walk = new TreeWalk(repository.getRepository());
+//        walk.reset();
+//        walk.addTree(commit.getTree());
+//        walk.setFilter(PathFilter.create("f"));
+//        walk.setRecursive(true);
+//        walk.next();
+//        assertEquals("f", walk.getPathString());
+//        ObjectLoader loader = repository.getRepository().getObjectDatabase().open(walk.getObjectId(0));
+//        assertEquals(4, loader.getSize());
+//        assertEquals("a\nb\n", new String(loader.getBytes()));
+//        assertEquals(e1.getObjectId(), walk.getObjectId(0));
         
         
         VCSFileProxy f2 = VCSFileProxy.createFileProxy(workDir, "f2");
@@ -625,24 +626,24 @@ else    assertEquals("second commit\n", com.getFullMessage());
         res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
         assertEquals(0, res.size());
         
-        commit = Utils.findCommit(repository.getRepository(), info.getRevision());
-        walk = new TreeWalk(repository.getRepository());
-        walk.reset();
-        walk.addTree(commit.getTree());
-        walk.setFilter(PathFilter.create("f"));
-        walk.setRecursive(true);
-        while(walk.next()) {
-            loader = repository.getRepository().getObjectDatabase().open(walk.getObjectId(0));
-            assertEquals(4, loader.getSize());
-            assertEquals("a\nb\n", new String(loader.getBytes()));
-            assertEquals(e1.getObjectId(), walk.getObjectId(0));
-        }
+//        commit = Utils.findCommit(repository.getRepository(), info.getRevision());
+//        walk = new TreeWalk(repository.getRepository());
+//        walk.reset();
+//        walk.addTree(commit.getTree());
+//        walk.setFilter(PathFilter.create("f"));
+//        walk.setRecursive(true);
+//        while(walk.next()) {
+//            loader = repository.getRepository().getObjectDatabase().open(walk.getObjectId(0));
+//            assertEquals(4, loader.getSize());
+//            assertEquals("a\nb\n", new String(loader.getBytes()));
+//            assertEquals(e1.getObjectId(), walk.getObjectId(0));
+//        }
     }
     
     public void testAmendCommit () throws Exception {
-        repository.getRepository().getConfig().setString("user", null, "name", "John");
-        repository.getRepository().getConfig().setString("user", null, "email", "john@git.com");
-        repository.getRepository().getConfig().save();
+        repository.getConfig().setString("user", null, "name", "John");
+        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().save();
 
         VCSFileProxy dir = VCSFileProxy.createFileProxy(workDir, "testdir");
         VCSFileProxy newOne = VCSFileProxy.createFileProxy(dir, "test.txt");
@@ -673,21 +674,21 @@ else    assertEquals("second commit\n", com.getFullMessage());
         assertEquals(1, lastCommit.getParents().length);
         assertEquals(info.getRevision(), lastCommit.getParents()[0]);
 if (ListBranchCommand.KIT) 
-        assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
-else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
+        assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get(GitConstants.MASTER).getId());
+else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get(GitConstants.MASTER).getId());
         
         Thread.sleep(1100);
         
         long time = lastCommit.getCommitTime();
-        RevWalk walk = new RevWalk(repository.getRepository());
-        RevCommit originalCommit = walk.parseCommit(repository.getRepository().resolve(lastCommit.getRevision()));
+        //RevWalk walk = new RevWalk(repository.getRepository());
+        //RevCommit originalCommit = walk.parseCommit(repository.getRepository().resolve(lastCommit.getRevision()));
         lastCommit = client.commit(new VCSFileProxy[] { newOne, another }, "second commit, modified message",
                 new GitUser("user2", "user2.email"), new GitUser("committer2", "committer2.email"), true, NULL_PROGRESS_MONITOR);
-        RevCommit amendedCommit = walk.parseCommit(repository.getRepository().resolve(lastCommit.getRevision()));
+        //RevCommit amendedCommit = walk.parseCommit(repository.getRepository().resolve(lastCommit.getRevision()));
         assertEquals("Commit time should not change after amend", time, lastCommit.getCommitTime());
-        assertEquals(originalCommit.getAuthorIdent().getWhen(), amendedCommit.getAuthorIdent().getWhen());
+        //assertEquals(originalCommit.getAuthorIdent().getWhen(), amendedCommit.getAuthorIdent().getWhen());
         // commit time should not equal.
-        assertFalse(originalCommit.getCommitterIdent().getWhen().equals(amendedCommit.getCommitterIdent().getWhen()));
+        //assertFalse(originalCommit.getCommitterIdent().getWhen().equals(amendedCommit.getCommitterIdent().getWhen()));
         statuses = client.getStatus(new VCSFileProxy[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -698,14 +699,14 @@ else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_
         assertEquals(1, lastCommit.getParents().length);
         assertEquals(info.getRevision(), lastCommit.getParents()[0]);
 if (ListBranchCommand.KIT) 
-        assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
-else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
+        assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get(GitConstants.MASTER).getId());
+else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get(GitConstants.MASTER).getId());
     }
     
     public void testCherryPickCommit () throws Exception {
-        repository.getRepository().getConfig().setString("user", null, "name", "John");
-        repository.getRepository().getConfig().setString("user", null, "email", "john@git.com");
-        repository.getRepository().getConfig().save();
+        repository.getConfig().setString("user", null, "name", "John");
+        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().save();
         
         VCSFileProxy f = VCSFileProxy.createFileProxy(workDir, "f");
         write(f, "init");
@@ -722,7 +723,7 @@ else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_
         Thread.sleep(1100);
         
         client.reset("HEAD~1", GitClient.ResetType.MIXED, NULL_PROGRESS_MONITOR);
-        repository.getRepository().writeCherryPickHead(repository.getRepository().resolve(info.getRevision()));
+        //repository.getRepository().writeCherryPickHead(repository.getRepository().resolve(info.getRevision()));
         
         // now we are cherry-picking
         // amend is not allowed
@@ -737,7 +738,12 @@ else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_
         GitRevisionInfo commit = client.commit(new VCSFileProxy[0], info.getFullMessage(), null, null, NULL_PROGRESS_MONITOR);
         assertEquals(info.getAuthor(), commit.getAuthor());
         assertEquals(info.getCommitTime(), commit.getCommitTime());
-        assertEquals(Utils.findCommit(repository.getRepository(), info.getRevision()).getAuthorIdent().getWhen(),
-                Utils.findCommit(repository.getRepository(), commit.getRevision()).getAuthorIdent().getWhen());
+        SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setRevisionFrom(info.getRevision());
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        searchCriteria = new SearchCriteria();
+        searchCriteria.setRevisionFrom(commit.getRevision());
+        GitRevisionInfo[] log2 = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        assertEquals(log[0].getAuthorTime(), log2[0].getAuthorTime());
     }
 }

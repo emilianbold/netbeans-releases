@@ -42,27 +42,14 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.remote.GitBranch;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -89,73 +76,15 @@ public class CreateBranchCommand extends GitCommand {
     @Override
     protected void run () throws GitException {
         if (KIT) {
-            runKit();
+            //runKit();
         } else {
             runCLI();
         }
     }
 
-//<editor-fold defaultstate="collapsed" desc="KIT">
-    protected void runKit () throws GitException {
-        Repository repository = getRepository().getRepository();
-        org.eclipse.jgit.api.CreateBranchCommand cmd = new Git(repository).branchCreate();
-        cmd.setName(branchName);
-        if (revision.startsWith(Constants.R_HEADS) || revision.startsWith(Constants.R_REMOTES)) {
-            cmd.setUpstreamMode(SetupUpstreamMode.TRACK);
-        } else {
-            Utils.findCommit(repository, revision); // does it exist?
-        }
-        cmd.setStartPoint(revision);
-        String createdBranchName = branchName;
-        try {
-            Ref ref = cmd.call();
-            createdBranchName = ref.getName().substring(Constants.R_HEADS.length());
-        } catch (RefNotFoundException ex) {
-            if (!createBranchInEmptyRepository(repository)) {
-                throw new GitException(ex);
-            }
-        } catch (JGitInternalException | GitAPIException ex) {
-            throw new GitException(ex);
-        }
-        ListBranchCommand branchCmd = new ListBranchCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
-        branchCmd.run();
-        Map<String, GitBranch> branches = branchCmd.getBranches();
-        branch = branches.get(createdBranchName);
-        if (branch == null) {
-            LOG.log(Level.WARNING, "Branch {0}/{1} probably created but not in the branch list: {2}",
-                    new Object[] { branchName, createdBranchName, branches.keySet() });
-        }
-    }
-
-    private boolean createBranchInEmptyRepository (Repository repository) throws GitException {
-        // is this an empty repository after a fresh clone of an empty repository?
-        if (revision.startsWith(Constants.R_REMOTES)) {
-            try {
-                if (Utils.parseObjectId(repository, Constants.HEAD) == null) {
-                    StoredConfig config = repository.getConfig();
-                    String[] elements = revision.split("/", 4);
-                    String remoteName = elements[2];
-                    String remoteBranchName = elements[3];
-                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, branchName,
-                            ConfigConstants.CONFIG_KEY_REMOTE, remoteName);
-                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, branchName,
-                            ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + remoteBranchName);
-                    config.save();
-                    return true;
-                }
-            } catch (IOException ex) {
-                throw new GitException(ex);
-            } catch (GitException ex) {
-                throw ex;
-            }
-        }
-        return false;
-    }
-
     public GitBranch getBranch () {
         return branch;
     }
-//</editor-fold>
     
     @Override
     protected void prepare() throws GitException {

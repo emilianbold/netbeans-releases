@@ -42,7 +42,6 @@
 
 package org.netbeans.libs.git.remote;
 
-import org.eclipse.jgit.diff.DiffEntry;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -62,7 +61,7 @@ public final class GitStatus {
     private Status statusIndexWC;
     private Status statusHeadWC;
     private boolean isFolder;
-    private DiffEntry diffEntry;
+    private GitDiffEntry diffEntry;
     private final String workTreePath;
     private long indexEntryModificationDate;
 
@@ -149,14 +148,14 @@ public final class GitStatus {
      * @return <code>true</code> if the file is tracked in the Index as copied.
      */
     public boolean isCopied () {
-        return diffEntry != null && diffEntry.getChangeType().equals(DiffEntry.ChangeType.COPY);
+        return diffEntry != null && diffEntry.getChangeType() == GitChangeType.COPY;
     }
 
     /**
      * @return <code>true</code> if the file is tracked in the Index as renamed.
      */
     public boolean isRenamed () {
-        return diffEntry != null && diffEntry.getChangeType().equals(DiffEntry.ChangeType.RENAME);
+        return diffEntry != null && diffEntry.getChangeType() == GitChangeType.RENAME;
     }
 
     /**
@@ -192,7 +191,7 @@ public final class GitStatus {
         return indexEntryModificationDate;
     }
 
-    void setDiffEntry (DiffEntry diffEntry) {
+    void setDiffEntry (GitDiffEntry diffEntry) {
         this.diffEntry = diffEntry;
     }
 
@@ -218,5 +217,31 @@ public final class GitStatus {
 
     void setIndexEntryModificationDate (long ts) {
         this.indexEntryModificationDate = ts;
+    }
+    
+    public static class GitDiffEntry {
+        private final GitChangeType type;
+        private final String oldPath;
+        public GitDiffEntry(GitChangeType type, String oldPath){
+            this.type = type;
+            this.oldPath = oldPath;
+        }
+        
+        public GitChangeType getChangeType(){
+            return type;
+        }
+        
+        public String getOldPath() {
+            return oldPath;
+        }
+        
+    }
+    
+    public static enum GitChangeType {
+        ADD,
+        MODIFY,
+        DELETE,
+        RENAME,
+        COPY;
     }
 }

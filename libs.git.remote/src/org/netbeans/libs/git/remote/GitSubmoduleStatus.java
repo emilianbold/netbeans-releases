@@ -41,8 +41,6 @@
  */
 package org.netbeans.libs.git.remote;
 
-import org.eclipse.jgit.submodule.SubmoduleStatus;
-import org.eclipse.jgit.submodule.SubmoduleStatusType;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -53,7 +51,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  */
 public final class GitSubmoduleStatus {
 
-    private final SubmoduleStatus delegate;
+    //private final SubmoduleStatus delegate;
     private final StatusType statusType;
     private final VCSFileProxy folder;
 
@@ -81,10 +79,10 @@ public final class GitSubmoduleStatus {
         REV_CHECKED_OUT;
     }
 
-    GitSubmoduleStatus (SubmoduleStatus delegate, VCSFileProxy folder) {
-        this.delegate = delegate;
+    GitSubmoduleStatus (/*SubmoduleStatus delegate,*/ VCSFileProxy folder) {
+        //this.delegate = delegate;
         this.folder = folder;
-        this.statusType = parseStatus(delegate.getType());
+        this.statusType = StatusType.UNINITIALIZED; //parseStatus(delegate.getType());
     }
 
     /**
@@ -111,7 +109,8 @@ public final class GitSubmoduleStatus {
      * @return submodule's commit id.
      */
     public String getHeadId () {
-        return delegate.getHeadId().getName();
+        return GitConstants.HEAD;
+        //return delegate.getHeadId().getName();
     }
 
     /**
@@ -121,10 +120,11 @@ public final class GitSubmoduleStatus {
      * @return submodule's referenced commit id.
      */
     public String getReferencedCommitId () {
-        return delegate.getIndexId().getName();
+        return GitConstants.HEAD;
+        //return delegate.getIndexId().getName();
     }
 
-    static StatusType parseStatus (SubmoduleStatusType status) {
-        return StatusType.valueOf(status.name());
-    }
+//    private StatusType parseStatus (SubmoduleStatusType status) {
+//        return StatusType.valueOf(status.name());
+//    }
 }

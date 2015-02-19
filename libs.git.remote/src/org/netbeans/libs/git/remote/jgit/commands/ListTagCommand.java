@@ -42,16 +42,8 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.GitTag;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -72,30 +64,30 @@ public class ListTagCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        Map<String, Ref> tags = repository.getTags();
-        allTags = new LinkedHashMap<String, GitTag>(tags.size());
-        RevWalk walk = new RevWalk(repository);
-        try {
-            for (Map.Entry<String, Ref> e : tags.entrySet()) {
-                GitTag tag;
-                try {
-                    tag = getClassFactory().createTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
-                } catch (IncorrectObjectTypeException ex) {
-                    tag = getClassFactory().createTag(e.getKey(),
-                            getClassFactory().createRevisionInfo(walk.parseCommit(e.getValue().getLeaf().getObjectId()), getRepository()));
-                }
-                if (all || tag.getTaggedObjectType() == GitObjectType.COMMIT) {
-                    allTags.put(tag.getTagName(), tag);
-                }
-            }
-        } catch (MissingObjectException ex) {
-            throw new GitException.MissingObjectException(ex.getObjectId().getName(), GitObjectType.TAG);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            walk.release();
-        }
+//        Repository repository = getRepository().getRepository();
+//        Map<String, Ref> tags = repository.getTags();
+//        allTags = new LinkedHashMap<String, GitTag>(tags.size());
+//        RevWalk walk = new RevWalk(repository);
+//        try {
+//            for (Map.Entry<String, Ref> e : tags.entrySet()) {
+//                GitTag tag;
+//                try {
+//                    tag = getClassFactory().createTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
+//                } catch (IncorrectObjectTypeException ex) {
+//                    tag = getClassFactory().createTag(e.getKey(),
+//                            getClassFactory().createRevisionInfo(walk.parseCommit(e.getValue().getLeaf().getObjectId()), getRepository()));
+//                }
+//                if (all || tag.getTaggedObjectType() == GitObjectType.COMMIT) {
+//                    allTags.put(tag.getTagName(), tag);
+//                }
+//            }
+//        } catch (MissingObjectException ex) {
+//            throw new GitException.MissingObjectException(ex.getObjectId().getName(), GitObjectType.TAG);
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            walk.release();
+//        }
     }
     
     @Override

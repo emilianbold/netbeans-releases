@@ -42,24 +42,12 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.eclipse.jgit.errors.TransportException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.FetchResult;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.TagOpt;
-import org.eclipse.jgit.transport.TrackingRefUpdate;
-import org.eclipse.jgit.transport.Transport;
-import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.GitFetchResult;
 import org.netbeans.libs.git.remote.GitTransportUpdate;
-import org.netbeans.libs.git.remote.jgit.DelegatingProgressMonitor;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
@@ -74,7 +62,7 @@ public class FetchCommand extends TransportCommand {
     private final List<String> refSpecs;
     private final String remote;
     private Map<String, GitTransportUpdate> updates;
-    private FetchResult result;
+    private GitFetchResult result;
     
     public FetchCommand (JGitRepository repository, GitClassFactory gitFactory, String remoteName, ProgressMonitor monitor) {
         this(repository, gitFactory, remoteName, Collections.<String>emptyList(), monitor);
@@ -89,42 +77,42 @@ public class FetchCommand extends TransportCommand {
 
     @Override
     protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
-        Repository repository = getRepository().getRepository();
-        List<RefSpec> specs = new ArrayList<RefSpec>(refSpecs.size());
-        for (String refSpec : refSpecs) {
-            specs.add(new RefSpec(refSpec));
-        }
-        Transport transport = null;
-        try {
-            transport = openTransport(false);
-            transport.setRemoveDeletedRefs(false); // cannot enable, see FetchTest.testDeleteStaleReferencesFails
-            transport.setDryRun(false);
-            transport.setFetchThin(true);
-            transport.setTagOpt(TagOpt.FETCH_TAGS);
-            result = transport.fetch(new DelegatingProgressMonitor(monitor), specs);
-            processMessages(result.getMessages());
-            updates = new HashMap<String, GitTransportUpdate>(result.getTrackingRefUpdates().size());
-            for (TrackingRefUpdate update : result.getTrackingRefUpdates()) {
-                GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update);
-                updates.put(upd.getLocalName(), upd);
-            }
-        } catch (NotSupportedException e) {
-            throw new GitException(e.getMessage(), e);
-        } catch (URISyntaxException e) {
-            throw new GitException(e.getMessage(), e);
-        } catch (TransportException e) {
-            URIish uriish = null;
-            try {
-                uriish = getUriWithUsername(false);
-            } catch (URISyntaxException ex) {
-                throw new GitException(e.getMessage(), e);
-            }
-            handleException(e, uriish);
-        } finally {
-            if (transport != null) {
-                transport.close();
-            }
-        }
+//        Repository repository = getRepository().getRepository();
+//        List<RefSpec> specs = new ArrayList<RefSpec>(refSpecs.size());
+//        for (String refSpec : refSpecs) {
+//            specs.add(new RefSpec(refSpec));
+//        }
+//        Transport transport = null;
+//        try {
+//            transport = openTransport(false);
+//            transport.setRemoveDeletedRefs(false); // cannot enable, see FetchTest.testDeleteStaleReferencesFails
+//            transport.setDryRun(false);
+//            transport.setFetchThin(true);
+//            transport.setTagOpt(TagOpt.FETCH_TAGS);
+//            result = transport.fetch(new DelegatingProgressMonitor(monitor), specs);
+//            processMessages(result.getMessages());
+//            updates = new HashMap<String, GitTransportUpdate>(result.getTrackingRefUpdates().size());
+//            for (TrackingRefUpdate update : result.getTrackingRefUpdates()) {
+//                GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update);
+//                updates.put(upd.getLocalName(), upd);
+//            }
+//        } catch (NotSupportedException e) {
+//            throw new GitException(e.getMessage(), e);
+//        } catch (URISyntaxException e) {
+//            throw new GitException(e.getMessage(), e);
+//        } catch (TransportException e) {
+//            URIish uriish = null;
+//            try {
+//                uriish = getUriWithUsername(false);
+//            } catch (URISyntaxException ex) {
+//                throw new GitException(e.getMessage(), e);
+//            }
+//            handleException(e, uriish);
+//        } finally {
+//            if (transport != null) {
+//                transport.close();
+//            }
+//        }
     }
     
     @Override
@@ -141,7 +129,7 @@ public class FetchCommand extends TransportCommand {
         return Collections.unmodifiableMap(updates);
     }
     
-    public FetchResult getResult () {
+    public GitFetchResult getResult () {
         return result;
     }
 }

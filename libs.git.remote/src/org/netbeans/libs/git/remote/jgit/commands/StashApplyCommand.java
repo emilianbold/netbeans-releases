@@ -41,9 +41,6 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -64,13 +61,13 @@ public class StashApplyCommand extends GitCommand {
     
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        try {
-            new Git(repository).stashApply()
-                    .setStashRef(stashRef).call();
-        } catch (GitAPIException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        try {
+//            new Git(repository).stashApply()
+//                    .setStashRef(stashRef).call();
+//        } catch (GitAPIException ex) {
+//            throw new GitException(ex);
+//        }
     }    
     
     @Override

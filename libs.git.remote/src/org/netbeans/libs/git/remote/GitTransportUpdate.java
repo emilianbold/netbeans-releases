@@ -43,12 +43,6 @@
 package org.netbeans.libs.git.remote;
 
 import java.util.Map;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.transport.RemoteRefUpdate;
-import org.eclipse.jgit.transport.TrackingRefUpdate;
-import org.eclipse.jgit.transport.URIish;
 
 /**
  * Represents a result of transport and update of a git reference between a local and remote
@@ -85,26 +79,26 @@ public final class GitTransportUpdate {
         REFERENCE
     }
 
-    GitTransportUpdate (URIish uri, TrackingRefUpdate update) {
-        this.localName = stripRefs(update.getLocalName());
-        this.remoteName = stripRefs(update.getRemoteName());
-        this.oldObjectId = update.getOldObjectId() == null || ObjectId.zeroId().equals(update.getOldObjectId()) ? null : update.getOldObjectId().getName();
-        this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
-        this.result = GitRefUpdateResult.valueOf((update.getResult() == null 
-                ? RefUpdate.Result.NOT_ATTEMPTED 
-                : update.getResult()).name());
-        this.uri = uri.toString();
-        this.type = getType(update.getLocalName());
-    }
+//    GitTransportUpdate (URIish uri, TrackingRefUpdate update) {
+//        this.localName = stripRefs(update.getLocalName());
+//        this.remoteName = stripRefs(update.getRemoteName());
+//        this.oldObjectId = update.getOldObjectId() == null || ObjectId.zeroId().equals(update.getOldObjectId()) ? null : update.getOldObjectId().getName();
+//        this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
+//        this.result = GitRefUpdateResult.valueOf((update.getResult() == null 
+//                ? RefUpdate.Result.NOT_ATTEMPTED 
+//                : update.getResult()).name());
+//        this.uri = uri.toString();
+//        this.type = getType(update.getLocalName());
+//    }
 
-    GitTransportUpdate (URIish uri, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches) {
-        this.localName = stripRefs(update.getSrcRef());
-        this.remoteName = stripRefs(update.getRemoteName());
+    GitTransportUpdate (/*URIish uri, RemoteRefUpdate update,*/ Map<String, GitBranch> remoteBranches) {
+        this.localName = null;//stripRefs(update.getSrcRef());
+        this.remoteName = null;//stripRefs(update.getRemoteName());
         this.oldObjectId = getOldRevisionId(remoteBranches.get(remoteName));
-        this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
-        this.result = GitRefUpdateResult.valueOf(update.getStatus().name());
-        this.uri = uri.toString();
-        this.type = getType(update.getRemoteName());
+        this.newObjectId = null;//update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
+        this.result = null;//GitRefUpdateResult.valueOf(update.getStatus().name());
+        this.uri = null;//uri.toString();
+        this.type = null;//getType(update.getRemoteName());
     }
     
     /**
@@ -161,32 +155,32 @@ public final class GitTransportUpdate {
         return type;
     }
 
-    private static String stripRefs (String refName) {
-        if (refName == null) {
-            
-        } else if (refName.startsWith(Constants.R_HEADS)) {
-            refName = refName.substring(Constants.R_HEADS.length());
-        } else if (refName.startsWith(Constants.R_TAGS)) {
-            refName = refName.substring(Constants.R_TAGS.length());
-        } else if (refName.startsWith(Constants.R_REMOTES)) {
-            refName = refName.substring(Constants.R_REMOTES.length());
-        } else if (refName.startsWith(Constants.R_REFS)) {
-            refName = refName.substring(Constants.R_REFS.length());
-        } else {
-            throw new IllegalArgumentException("Unknown refName: " + refName);
-        }
-        return refName;
-    }
+//    private static String stripRefs (String refName) {
+//        if (refName == null) {
+//            
+//        } else if (refName.startsWith(Constants.R_HEADS)) {
+//            refName = refName.substring(Constants.R_HEADS.length());
+//        } else if (refName.startsWith(Constants.R_TAGS)) {
+//            refName = refName.substring(Constants.R_TAGS.length());
+//        } else if (refName.startsWith(Constants.R_REMOTES)) {
+//            refName = refName.substring(Constants.R_REMOTES.length());
+//        } else if (refName.startsWith(Constants.R_REFS)) {
+//            refName = refName.substring(Constants.R_REFS.length());
+//        } else {
+//            throw new IllegalArgumentException("Unknown refName: " + refName);
+//        }
+//        return refName;
+//    }
 
     private Type getType (String refName) {
         Type retval;
-        if (refName.startsWith(Constants.R_TAGS)) {
+        if (refName.startsWith(GitConstants.R_TAGS)) {
             retval = Type.TAG;
-        } else if (refName.startsWith(Constants.R_REMOTES)) {
+        } else if (refName.startsWith(GitConstants.R_REMOTES)) {
             retval = Type.BRANCH;
-        } else if (refName.startsWith(Constants.R_HEADS)) {
+        } else if (refName.startsWith(GitConstants.R_HEADS)) {
             retval = Type.BRANCH;
-        } else if (refName.startsWith(Constants.R_REFS)) {
+        } else if (refName.startsWith(GitConstants.R_REFS)) {
             retval = Type.REFERENCE;
         } else {
             throw new IllegalArgumentException("Unknown type for: " + refName);
