@@ -498,7 +498,9 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 final RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
                 fs.getRefreshManager().removeFromRefresh(changedPath);
                 RemoteFileObjectBase fo = fs.getFactory().getCachedFileObject(changedPath);
-                fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
+                if (fo != null) {
+                    fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
+                }
                 // TODO: should we proceed with other directories in the case of exception?
             }
             if (ex != null) {
