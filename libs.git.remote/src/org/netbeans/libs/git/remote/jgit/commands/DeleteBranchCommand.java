@@ -52,23 +52,37 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class DeleteBranchCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final String branchName;
     private final boolean forceDeleteUnmerged;
+    private final ProgressMonitor monitor;
 
     public DeleteBranchCommand (JGitRepository repository, GitClassFactory gitFactory, String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.branchName = branchName;
         this.forceDeleteUnmerged = forceDeleteUnmerged;
+        this.monitor = monitor;
     }
-
+    
     @Override
     protected void run () throws GitException {
+        if (KIT) {
+            runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="KIT">
+    protected void runKit () throws GitException {
         Repository repository = getRepository().getRepository();
         org.eclipse.jgit.api.DeleteBranchCommand cmd = new Git(repository).branchDelete();
         cmd.setForce(forceDeleteUnmerged || Utils.parseObjectId(repository, Constants.HEAD) == null);
@@ -83,6 +97,7 @@ public class DeleteBranchCommand extends GitCommand {
             throw new GitException(ex);
         }
     }
+//</editor-fold>
     
     @Override
     protected void prepare() throws GitException {
@@ -95,4 +110,71 @@ public class DeleteBranchCommand extends GitCommand {
         }
         addArgument(0, branchName);
     }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            runner(canceled, 0, new Parser() {
+
+                @Override
+                public void outputParser(String output) {
+                }
+
+                @Override
+                public void errorParser(String error) throws GitException {
+                    //error: The branch 'new_branch' is not fully merged.
+                    //If you are sure you want to delete it, run 'git branch -D new_branch'.                    
+                    //
+                    //error: Cannot delete the branch 'master' which you are currently on.
+                    for (String msg : error.split("\n")) { //NOI18N
+                        if (msg.startsWith("error: The branch")) {
+                            throw new GitException.NotMergedException(branchName);
+                        } else if (msg.startsWith("error: Cannot delete the branch")) {
+                            throw new GitException.DeleteBranchException(branchName);
+                        }
+                    }
+                }
+            });
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) throws GitException {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), null, false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            parser.errorParser(exitStatus.error);
+        }
+    }
+    
+    private abstract class Parser {
+        public abstract void outputParser(String output);
+        public void errorParser(String error) throws GitException {
+        }
+    }    
 }
