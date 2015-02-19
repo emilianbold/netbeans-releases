@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.lib.terminalemulator.support.FindState;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
@@ -62,7 +61,7 @@ import org.openide.util.Lookup;
 })
 public class FindAction extends TerminalAction {
 
-    public FindAction(Lookup context) {
+    public FindAction(Terminal context) {
 	super(context);
 	putValue(NAME, getMessage("CTL_Find")); //NOI18N
 	/* LATER
@@ -73,7 +72,7 @@ public class FindAction extends TerminalAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
+    public void performAction() {
 	Terminal terminal = getTerminal();
 
 	if (!terminal.isEnabled()) {
@@ -96,12 +95,8 @@ public class FindAction extends TerminalAction {
     }
 
     // --------------------------------------------- 
-    public FindAction() {
-	super(null);
-    }
-
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new FindAction(actionContext);
+	return new FindAction(actionContext.lookup(Terminal.class));
     }
 }

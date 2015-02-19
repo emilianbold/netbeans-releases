@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -68,7 +67,7 @@ import org.openide.util.Lookup;
 })
 public class DumpSequencesAction extends TerminalAction {
 
-    public DumpSequencesAction(Lookup context) {
+    public DumpSequencesAction(Terminal context) {
 	super(context);
 
 	putValue(NAME, getMessage("CTL_DumpSequences")); //NOI18N
@@ -94,7 +93,7 @@ public class DumpSequencesAction extends TerminalAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
+    public void performAction() {
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 
@@ -106,12 +105,9 @@ public class DumpSequencesAction extends TerminalAction {
     }
 
     // --------------------------------------------- 
-    public DumpSequencesAction() {
-	super(null);
-    }
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new DumpSequencesAction(actionContext);
+	return new DumpSequencesAction(actionContext.lookup(Terminal.class));
     }
 }

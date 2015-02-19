@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.awt.ActionID;
@@ -61,26 +60,23 @@ import org.openide.util.Lookup;
 })
 public class SmallerFontAction extends TerminalAction {
 
-    public SmallerFontAction(Lookup context) {
+    public SmallerFontAction(Terminal context) {
 	super(context);
 
 	putValue(NAME, getMessage("CTL_SmallerFont")); //NOI18N
     }
 
     @Override
-    public void actionPerformed(final ActionEvent e) {
+    public void performAction() {
 	Terminal terminal = getTerminal();
 
 	terminal.changeFontSizeBy(-1);
     }
 
     // --------------------------------------------- 
-    public SmallerFontAction() {
-	super(null);
-    }
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new SmallerFontAction(actionContext);
+	return new SmallerFontAction(actionContext.lookup(Terminal.class));
     }
 }

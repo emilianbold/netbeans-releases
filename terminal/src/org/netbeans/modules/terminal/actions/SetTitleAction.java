@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.DialogDisplayer;
@@ -63,15 +62,14 @@ import org.openide.util.Lookup;
 })
 public class SetTitleAction extends TerminalAction {
 
-    public SetTitleAction(Lookup context) {
+    public SetTitleAction(Terminal context) {
 	super(context);
 
 	putValue(NAME, getMessage("CTL_SetTitle")); //NOI18N
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-	super.actionPerformed(e);
+    public void performAction() {
 	Terminal terminal = getTerminal();
 
 	NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(getMessage("LBL_Title"), getMessage("LBL_SetTitle")); // NOI18N
@@ -90,12 +88,8 @@ public class SetTitleAction extends TerminalAction {
     }
 
     // --------------------------------------------- 
-    public SetTitleAction() {
-	super(null);
-    }
-
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new SetTitleAction(actionContext);
+	return new SetTitleAction(actionContext.lookup(Terminal.class));
     }
 }
