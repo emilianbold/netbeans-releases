@@ -150,7 +150,6 @@ public class BlameCommand extends GitCommand {
                     super.errorParser(error); //To change body of generated methods, choose Tools | Templates.
                 }
             });
-            System.err.println("");
             if (!failed.get()) {
                 result = getClassFactory().createBlameResult(file, content, getRepository());
             }
@@ -185,8 +184,6 @@ public class BlameCommand extends GitCommand {
     }
     
     private void parseBlameOutput(String output, LinkedHashMap<String, GitBlameContent> content) {
-        //System.err.println(output);
-        //System.err.println("");
         //48695c22e752fbed64a9a6ba73a91185c01c1542 1 1 1
         //author user1
         //author-mail <user1@company.com>

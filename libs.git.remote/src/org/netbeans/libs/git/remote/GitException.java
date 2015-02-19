@@ -221,4 +221,30 @@ public class GitException extends Exception {
             return unmergedRevision;
         }
     }
+    
+    /**
+     * Thrown to notify a caller of the fact that a branch is active and cannot be deleted.
+     * <br/>
+     * CLI message:
+     * <br/>
+     * error: Cannot delete the branch 'master' which you are currently on.
+     */
+    public static class DeleteBranchException extends GitException {
+        private final String branch;
+
+        /**
+         * @param branch name of the branch.
+         */
+        public DeleteBranchException (String branch) {
+            super("Branch "+branch+" is checked out and can not be deleted");
+            this.branch = branch;
+        }
+        
+        /**
+         * @return name of the branch.
+         */
+        public String getBranch () {
+            return branch;
+        }
+    }
 }
