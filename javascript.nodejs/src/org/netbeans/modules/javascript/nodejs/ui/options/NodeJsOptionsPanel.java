@@ -47,6 +47,8 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -56,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -113,6 +116,7 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         npmHintLabel.setText(Bundle.NodeJsOptionsPanel_npm_hint(NpmExecutable.NPM_NAME));
         expressHintLabel.setText(Bundle.NodeJsOptionsPanel_express_hint(ExpressExecutable.EXPRESS_NAME));
         nodePanelHolder.add(nodePanel, BorderLayout.CENTER);
+        liveEditCheckBox.addItemListener(new DefaultItemListener());
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         npmTextField.getDocument().addDocumentListener(defaultDocumentListener);
         expressTextField.getDocument().addDocumentListener(defaultDocumentListener);
@@ -155,6 +159,14 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         nodePanel.setNodeSources(nodeSources);
     }
 
+    public boolean isLiveEdit() {
+        return liveEditCheckBox.isSelected();
+    }
+
+    public void setLiveEdit(boolean liveEdit) {
+        liveEditCheckBox.setSelected(liveEdit);
+    }
+
     public String getNpm() {
         return npmTextField.getText();
     }
@@ -189,6 +201,9 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
     private void initComponents() {
 
         nodePanelHolder = new JPanel();
+        liveEditCheckBox = new JCheckBox();
+        liveEditInfo1Label = new JLabel();
+        liveEditInfo2Label = new JLabel();
         npmHeaderLabel = new JLabel();
         npmSeparator = new JSeparator();
         npmLabel = new JLabel();
@@ -207,6 +222,12 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         errorLabel = new JLabel();
 
         nodePanelHolder.setLayout(new BorderLayout());
+
+        Mnemonics.setLocalizedText(liveEditCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.liveEditCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(liveEditInfo1Label, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.liveEditInfo1Label.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(liveEditInfo2Label, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.liveEditInfo2Label.text")); // NOI18N
 
         Mnemonics.setLocalizedText(npmHeaderLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.npmHeaderLabel.text")); // NOI18N
 
@@ -264,11 +285,6 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(nodePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(npmHeaderLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(npmSeparator))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(npmLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -287,9 +303,6 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(expressSeparator))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(errorLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addComponent(expressLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -303,6 +316,21 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
                         .addComponent(expressBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(expressSearchButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(npmHeaderLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(npmSeparator))
+            .addComponent(nodePanelHolder, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(errorLabel)
+                    .addComponent(liveEditCheckBox)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(liveEditInfo2Label)
+                            .addComponent(liveEditInfo1Label))))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {npmBrowseButton, npmSearchButton});
@@ -310,6 +338,12 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(nodePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(liveEditCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(liveEditInfo1Label)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(liveEditInfo2Label)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                     .addComponent(npmHeaderLabel)
@@ -409,6 +443,9 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
     private JButton expressSearchButton;
     private JSeparator expressSeparator;
     private JTextField expressTextField;
+    private JCheckBox liveEditCheckBox;
+    private JLabel liveEditInfo1Label;
+    private JLabel liveEditInfo2Label;
     private JPanel nodePanelHolder;
     private JButton npmBrowseButton;
     private JLabel npmHeaderLabel;
@@ -439,6 +476,15 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 
