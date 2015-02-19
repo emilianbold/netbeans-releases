@@ -199,12 +199,14 @@ public class NodeExecutable {
     }
 
     public boolean isIojs() {
-        File cli = new File(new ExternalExecutable(nodePath).getExecutable());
-        if (cli.getName().equals(IO_NAME)) {
+        File node = new File(new ExternalExecutable(nodePath).getExecutable());
+        if (node.getName().equals(IO_NAME)) {
             return true;
         }
         // #250534 - selected "node" file in io.js sources?
-        return new File(cli.getParentFile(), IO_NAME).isFile();
+        File iojs = new File(node.getParentFile(), IO_NAME);
+        // do not check if iojs exists but simply immediately compare their sizes
+        return node.length() == iojs.length();
     }
 
     public void resetVersion() {
