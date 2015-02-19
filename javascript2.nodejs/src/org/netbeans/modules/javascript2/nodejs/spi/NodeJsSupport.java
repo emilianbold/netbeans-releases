@@ -61,6 +61,9 @@ public interface NodeJsSupport {
     @CheckForNull
     String getDocumentationUrl();
 
+    /**
+     * <b>Warning</b>: This method should not be called in the UI thread!
+     */
     @CheckForNull
     FileObject getDocumentationFolder();
 

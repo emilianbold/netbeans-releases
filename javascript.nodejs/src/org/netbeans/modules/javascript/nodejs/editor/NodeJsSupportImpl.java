@@ -96,6 +96,7 @@ public final class NodeJsSupportImpl implements NodeJsSupport {
 
     @Override
     public FileObject getDocumentationFolder() {
+        assert !EventQueue.isDispatchThread() : "Should not be called in the UI thread";
         File nodeSources = NodeJsUtils.getNodeSources(project);
         if (nodeSources == null) {
             return null;
