@@ -463,13 +463,13 @@ public class AddTest extends AbstractGitTestCase {
         VCSFileProxy[] roots = new VCSFileProxy[] { f };
         
         GitClient client = getClient(workDir);
-        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        runExternally(workDir, Arrays.asList("add", "f"));
         //DirCacheEntry e1 = repository.getRepository().readDirCache().getEntry("f");
         client.add(roots, NULL_PROGRESS_MONITOR);
         //DirCacheEntry e2 = repository.getRepository().readDirCache().getEntry("f");
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
-        List<String> res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        List<String> res = runExternally(workDir, Arrays.asList("status", "-s"));
         assertEquals(Arrays.asList("A  f"), res);
         //assertEquals(e1.getFileMode(), e2.getFileMode());
         //assertEquals(e1.getPathString(), e2.getPathString());
@@ -479,13 +479,13 @@ public class AddTest extends AbstractGitTestCase {
         //assertEquals(e1.getObjectId(), e2.getObjectId());
 
         write(f, "a\nb\n");
-        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        res = runExternally(workDir, Arrays.asList("status", "-s"));
         assertEquals(Arrays.asList("AM f"), res);
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false);
         
-        res = runExternally(workDir, Arrays.asList("git.cmd", "commit", "-m", "gugu"));
-        res = runExternally(workDir, Arrays.asList("git.cmd", "checkout", "--", "f"));
+        res = runExternally(workDir, Arrays.asList("commit", "-m", "gugu"));
+        res = runExternally(workDir, Arrays.asList("checkout", "--", "f"));
         
 //        RevCommit commit = Utils.findCommit(repository.getRepository(), GitConstants.HEAD);
 //        TreeWalk walk = new TreeWalk(repository.getRepository());
@@ -500,7 +500,7 @@ public class AddTest extends AbstractGitTestCase {
 //        assertEquals("a\nb\n", new String(loader.getBytes()));
 //        assertEquals(e1.getObjectId(), walk.getObjectId(0));
         
-        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        res = runExternally(workDir, Arrays.asList("status", "-s"));
         assertEquals(0, res.size());
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);

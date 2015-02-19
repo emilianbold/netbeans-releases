@@ -587,13 +587,13 @@ else    assertEquals("second commit\n", com.getFullMessage());
         //DirCacheEntry e1 = repository.getRepository().readDirCache().getEntry("f");
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
-        List<String> res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        List<String> res = runExternally(workDir, Arrays.asList("status", "-s"));
         assertEquals(Arrays.asList("A  f"), res);
         GitRevisionInfo info = client.commit(roots, "aaa", null, null, NULL_PROGRESS_MONITOR);
         
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
-        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        res = runExternally(workDir, Arrays.asList("status", "-s"));
         assertEquals(0, res.size());
         
 //        RevCommit commit = Utils.findCommit(repository, info.getRevision());
@@ -617,13 +617,13 @@ else    assertEquals("second commit\n", com.getFullMessage());
         client.add(roots, NULL_PROGRESS_MONITOR);
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f2, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
-        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        res = runExternally(workDir, Arrays.asList("status", "-s"));
         assertEquals(Arrays.asList("A  f2"), res);
         info = client.commit(roots, "bbb", null, null, NULL_PROGRESS_MONITOR);
         
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
-        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        res = runExternally(workDir, Arrays.asList("status", "-s"));
         assertEquals(0, res.size());
         
 //        commit = Utils.findCommit(repository.getRepository(), info.getRevision());

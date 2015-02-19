@@ -72,8 +72,10 @@ import org.netbeans.libs.git.remote.jgit.utils.TestUtils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.libs.git.remote.progress.StatusListener;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.util.Cancellable;
 
 /**
@@ -103,10 +105,6 @@ public class AbstractGitTestCase extends NbTestCase {
         initializeRepository();
     }
     
-    protected  boolean createLocalClone () {
-        return true;
-    }
-
     protected VCSFileProxy getWorkingDirectory () {
         return wc;
     }
@@ -179,17 +177,8 @@ public class AbstractGitTestCase extends NbTestCase {
 //    }
 
     private void initializeRepository() throws Exception {
-        runExternally(repositoryLocation, Arrays.asList("git.cmd", "init"));
-
-        if (createLocalClone()) {
-            GitRepository fact = GitRepository.getInstance(wc);
-            GitClient client = fact.createClient();
-            client.init(NULL_PROGRESS_MONITOR);
-            Field f = GitRepository.class.getDeclaredField("gitRepository");
-            f.setAccessible(true);
-            localRepository = (JGitRepository) f.get(fact);
-            client.release();
-        }
+        runExternally(repositoryLocation, Arrays.asList("init"));
+        runExternally(wc.getParentFile(), Arrays.asList("clone", repositoryLocation.getPath(), wc.getName()));
     }
 
     protected GitClient getClient (VCSFileProxy repository) throws GitException {
@@ -374,49 +363,12 @@ public class AbstractGitTestCase extends NbTestCase {
     }
     
     protected final List<String> runExternally (VCSFileProxy workdir, List<String> command) throws Exception {
-        ProcessBuilder pb = new ProcessBuilder(command);
-        pb.environment().putAll(System.getenv());
-        pb.directory(workdir.toFile());
-        Process p = pb.start();
-        final BufferedReader outReader = new BufferedReader(Channels.newReader(Channels.newChannel(p.getInputStream()), "UTF-8"));
-        final BufferedReader errReader = new BufferedReader(Channels.newReader(Channels.newChannel(p.getErrorStream()), "UTF-8"));
-        final List<String> output = new LinkedList<String>();
-        final List<String> err = new LinkedList<String>();
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run () {
-                try {
-                    for (String line = outReader.readLine(); line != null; line = outReader.readLine()) {
-                        output.add(line);
-                    }
-                } catch (IOException ex) {
-                    
-                }
-            }
-        });
-        Thread t2 = new Thread(new Runnable() {
-            @Override
-            public void run () {
-                try {
-                    for (String line = errReader.readLine(); line != null; line = errReader.readLine()) {
-                        err.add(line);
-                    }
-                } catch (IOException ex) {
-                    
-                }
-            }
-        });
-        t1.start();
-        t2.start();
-        t1.join();
-        t2.join();
-        p.waitFor();
-        outReader.close();
-        errReader.close();
-        if (!err.isEmpty()) {
-            throw new Exception(err.toString());
-        }
-        return output;
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        String[] args = command.toArray(new String[command.size()]);
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(workdir);
+        VCSFileProxySupport.mkdirs(workdir);
+        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, processBuilder, "git", args);
+        return Arrays.asList(executeInDir.output.split("\n"));
     }
     
     protected void assertStatus(Map<VCSFileProxy, GitStatus> statuses, VCSFileProxy repository, VCSFileProxy file, boolean tracked,
