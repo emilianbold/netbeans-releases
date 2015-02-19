@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
@@ -68,7 +67,7 @@ public class WrapAction extends TerminalAction implements Presenter.Popup {
     private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";	// NOI18N
     private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";	// NOI18N
 
-    public WrapAction(Lookup context) {
+    public WrapAction(Terminal context) {
 	super(context);	// NOI18N
 	// LATER KeyStroke accelerator = Utilities.stringToKey("A-R");
 	putValue(NAME, getMessage("CTL_Wrap")); //NOI18N
@@ -76,7 +75,7 @@ public class WrapAction extends TerminalAction implements Presenter.Popup {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
+    public void performAction() {
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 
@@ -102,13 +101,9 @@ public class WrapAction extends TerminalAction implements Presenter.Popup {
     }
 
     // --------------------------------------------- 
-    public WrapAction() {
-	super(null);
-    }
-
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new WrapAction(actionContext);
+	return new WrapAction(actionContext.lookup(Terminal.class));
     }
 
     @Override

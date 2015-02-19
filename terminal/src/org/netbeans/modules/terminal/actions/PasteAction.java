@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
@@ -63,14 +62,14 @@ import org.openide.util.Lookup;
 })
 public class PasteAction extends TerminalAction {
 
-    public PasteAction(Lookup context) {
+    public PasteAction(Terminal context) {
 	super(context);
 
 	putValue(NAME, getMessage("CTL_Paste")); //NOI18N
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
+    public void performAction() {
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 
@@ -81,12 +80,9 @@ public class PasteAction extends TerminalAction {
     }
 
     // --------------------------------------------- 
-    public PasteAction() {
-	super(null);
-    }
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new PasteAction(actionContext);
+	return new PasteAction(actionContext.lookup(Terminal.class));
     }
 }

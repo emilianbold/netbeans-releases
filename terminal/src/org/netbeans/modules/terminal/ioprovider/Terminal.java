@@ -58,7 +58,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -68,10 +67,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -80,24 +76,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import static javax.swing.Action.NAME;
 import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
@@ -105,7 +92,6 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Keymap;
-import org.openide.NotifyDescriptor.InputLine;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
@@ -137,24 +123,19 @@ import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Extent;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.lib.terminalemulator.TermStream;
-import org.netbeans.modules.terminal.PinPanel;
 import org.netbeans.modules.terminal.actions.ActionFactory;
+import org.netbeans.modules.terminal.actions.PinTabAction;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.DetailsStateListener;
-import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalDetails;
-import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalPinningDetails;
 import org.openide.DialogDescriptor;
-import static org.openide.DialogDescriptor.DEFAULT_ALIGN;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.Actions;
-import org.openide.awt.DynamicMenuContent;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -230,6 +211,7 @@ public final class Terminal extends JComponent {
     private boolean closable = true;
 
     private boolean pinned = false;
+    private String cwd;
 
     private boolean closedUnconditionally;
 
@@ -376,25 +358,46 @@ public final class Terminal extends JComponent {
         term.setHistorySize(4000);
         term.setRenderingHints(getRenderingHints());
 	
+		term.addListener(new TermListener() {
+
+	    @Override
+	    public void sizeChanged(Dimension cells, Dimension pixels) {
+	    }
+
+	    @Override
+	    public void titleChanged(String title) {
+	    }
+
+	    @Override
+	    public void cwdChanged(String aCwd) {
+		cwd = aCwd;
+	    }
+	});
+	
 	shortcutsDir.addFileChangeListener(shortcutsListener);
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
 	
-	/* Do not use this actions -- they are here only for keybindings */
-	final Action copyAction = ActionFactory.forID(ActionFactory.COPY_ACTION_ID);
-	final Action pasteAction = ActionFactory.forID(ActionFactory.PASTE_ACTION_ID);
-	final Action findAction = ActionFactory.forID(ActionFactory.FIND_ACTION_ID);
-	final Action wrapAction = ActionFactory.forID(ActionFactory.WRAP_ACTION_ID);
-	final Action clearAction = ActionFactory.forID(ActionFactory.CLEAR_ACTION_ID);
-	final Action closeAction = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
-
 	final Set<Action> actions = new HashSet<Action>();
+	final Set<Action> awareActions = new HashSet<Action>();
 	actions.add(copyAction);
 	actions.add(pasteAction);
 	actions.add(findAction);
 	actions.add(wrapAction);
+	actions.add(largerFontAction);
+	actions.add(smallerFontAction);
+	actions.add(setTitleAction);
+	actions.add(pinTabAction);
 	actions.add(clearAction);
+	actions.add(dumpSequencesAction);
 	actions.add(closeAction);
+	
+	for (Action action : actions) {
+	    if (action instanceof ContextAwareAction) {
+		action = ((ContextAwareAction) action).createContextAwareInstance(Lookups.fixed(this));
+	    }
+	    awareActions.add(action);
+	}
 	
 	final TerminalPinSupport support = TerminalPinSupport.getDefault();
 	TerminalPinSupport.DetailsStateListener listener = new TerminalPinSupport.DetailsStateListener() {
@@ -418,7 +421,7 @@ public final class Terminal extends JComponent {
 
 	support.addDetailsStateListener(WeakListeners.create(DetailsStateListener.class, listener, support));
 	
-	setupKeymap(actions);
+	setupKeymap(awareActions);
 
         mouseAdapter = new MouseAdapter() {
             @Override
@@ -609,6 +612,10 @@ public final class Terminal extends JComponent {
     public ActiveTerm term() {
         return term;
     }
+    
+    public String getCwd() {
+	return cwd;
+    }
 
     public void setTitle(String title) {
 	customTitle = true;
@@ -699,7 +706,7 @@ public final class Terminal extends JComponent {
 		final String CMD_CANCEL = "Cancel"; //NOI18N
 
 		JButton[] options = new JButton[]{
-		    new JButton(NbBundle.getMessage(Terminal.class, "TXT_CloseAndUnpin")),
+		    new JButton(NbBundle.getMessage(Terminal.class, "TXT_CloseAndUnpin", getTitle())),
 		    new JButton(NbBundle.getMessage(Terminal.class, "TXT_Close")),
 		    new JButton(NbBundle.getMessage(Terminal.class, "TXT_Cancel"))
 		};
@@ -869,6 +876,8 @@ public final class Terminal extends JComponent {
 	TerminalPinSupport.getDefault().findPinningDetails(term).setPinned(newState);
 
 	setPinned(newState);
+	
+	pinTabAction.putValue("Name", PinTabAction.getMessage(newState)); //NOI18N
     }
     
     private boolean isPinnable() {
@@ -876,7 +885,7 @@ public final class Terminal extends JComponent {
 	return clientProperty != null && clientProperty.equals("enabled"); //NOI18N
     }
 
-    /* 
+    /*
     private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";	// NOI18N
     private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";	// NOI18N
 
@@ -901,6 +910,18 @@ public final class Terminal extends JComponent {
 	}
     }
     */
+    
+    private Action copyAction = ActionFactory.forID(ActionFactory.COPY_ACTION_ID);
+    private Action pasteAction = ActionFactory.forID(ActionFactory.PASTE_ACTION_ID);
+    private Action findAction = ActionFactory.forID(ActionFactory.FIND_ACTION_ID);
+    private Action wrapAction = ActionFactory.forID(ActionFactory.WRAP_ACTION_ID);
+    private Action largerFontAction = ActionFactory.forID(ActionFactory.LARGER_FONT_ACTION_ID);
+    private Action smallerFontAction = ActionFactory.forID(ActionFactory.SMALLER_FONT_ACTION_ID);
+    private Action setTitleAction = ActionFactory.forID(ActionFactory.SET_TITLE_ACTION_ID);
+    private Action pinTabAction = ActionFactory.forID(ActionFactory.PIN_TAB_ACTION_ID);
+    private Action clearAction = ActionFactory.forID(ActionFactory.CLEAR_ACTION_ID);
+    private Action dumpSequencesAction = ActionFactory.forID(ActionFactory.DUMP_SEQUENCE_ACTION_ID);
+    private Action closeAction = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
 
     private void setupKeymap(Set<Action> actions) {
 	// We need to do two things.
@@ -956,18 +977,6 @@ public final class Terminal extends JComponent {
     }
 
     private void postPopupMenu(Point p) {
-	final Action copyAction = ActionFactory.forID(ActionFactory.COPY_ACTION_ID);
-	final Action pasteAction = ActionFactory.forID(ActionFactory.PASTE_ACTION_ID);
-	final Action findAction = ActionFactory.forID(ActionFactory.FIND_ACTION_ID);
-	final Action wrapAction = ActionFactory.forID(ActionFactory.WRAP_ACTION_ID);
-	final Action largerFontAction = ActionFactory.forID(ActionFactory.LARGER_FONT_ACTION_ID);
-	final Action smallerFontAction = ActionFactory.forID(ActionFactory.SMALLER_FONT_ACTION_ID);
-	final Action setTitleAction = ActionFactory.forID(ActionFactory.SET_TITLE_ACTION_ID);
-	final Action pinTabAction = ActionFactory.forID(ActionFactory.PIN_TAB_ACTION_ID);
-	final Action clearAction = ActionFactory.forID(ActionFactory.CLEAR_ACTION_ID);
-	final Action dumpSequencesAction = ActionFactory.forID(ActionFactory.DUMP_SEQUENCE_ACTION_ID);
-	final Action closeAction = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
-
 	findAction.setEnabled(!findState.isVisible());
 
 	// TMP Find is not operation so keep it disabled
@@ -979,8 +988,9 @@ public final class Terminal extends JComponent {
 		    copyAction,
 		    pasteAction,
 		    null,
+		    /*
 		    findAction,
-		    null,
+		    null,*/
 		    wrapAction,
 		    largerFontAction,
 		    smallerFontAction,

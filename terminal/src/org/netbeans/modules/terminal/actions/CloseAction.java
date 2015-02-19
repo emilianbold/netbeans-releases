@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.awt.ActionID;
@@ -62,14 +61,14 @@ import org.openide.util.Lookup;
 })
 public final class CloseAction extends TerminalAction {
 
-    public CloseAction(Lookup context) {
+    public CloseAction(Terminal context) {
 	super(context);
 
 	putValue(NAME, getMessage("CTL_Close")); //NOI18N
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
+    public void performAction() {
 	Terminal terminal = getTerminal();
 
 	if (!isEnabled()) {
@@ -84,12 +83,8 @@ public final class CloseAction extends TerminalAction {
     }
 
     // --------------------------------------------- 
-    public CloseAction() {
-	super(null);
-    }
-
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new CloseAction(actionContext);
+	return new CloseAction(actionContext.lookup(Terminal.class));
     }
 }
