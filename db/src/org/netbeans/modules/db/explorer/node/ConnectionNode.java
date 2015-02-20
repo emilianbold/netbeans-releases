@@ -197,7 +197,7 @@ public class ConnectionNode extends BaseNode {
     private void updateLocalProperties() {
         try {
             clearProperties();
-            boolean connected = !connection.getConnector().isDisconnected();
+            boolean connected = connection.isConnected();
 
             addProperty(DISPLAYNAME, DISPLAYNAMEDESC, String.class, true, connection.getDisplayName());
             addProperty(DATABASEURL, DATABASEURLDESC, String.class, !connected, connection.getDatabase());
@@ -345,10 +345,10 @@ public class ConnectionNode extends BaseNode {
             new Runnable() {
                 @Override
                 public void run() {
-                    boolean connected = !connection.getConnector().isDisconnected();
+                    boolean connected = connection.isConnected();
 
                     if (connected) {
-                        MetadataModel model = MetadataModels.createModel(connection.getConnection(), connection.getSchema());
+                        MetadataModel model = MetadataModels.createModel(connection.getJDBCConnection(), connection.getSchema());
                         connection.setMetadataModel(model);
                         MetadataModelManager.update(connection.getDatabaseConnection(), model);
                         refresh();
@@ -372,7 +372,7 @@ public class ConnectionNode extends BaseNode {
         
         Connection conn = connection.getJDBCConnection();
         if (conn != null) {
-            result = ! DatabaseConnection.isVitalConnection(conn, connection);
+            result = ! connection.isVitalConnection();
         }
         
         return result;
@@ -438,7 +438,7 @@ public class ConnectionNode extends BaseNode {
 
     @Override
     public String getIconBase() {
-        boolean disconnected = ! DatabaseConnection.isVitalConnection(connection.getConnection(), null);
+        boolean disconnected = ! connection.isVitalConnection();
 
         if (disconnected) {
             return DISCONNECTEDICONBASE;
@@ -482,8 +482,7 @@ public class ConnectionNode extends BaseNode {
 
     @Override
     public Action getPreferredAction() {
-        boolean disconnected = !DatabaseConnection.isVitalConnection(
-                connection.getConnection(), null);
+        boolean disconnected = ! connection.isVitalConnection();
         if (disconnected) {
             return SystemAction.get(ConnectAction.class);
         } else {

@@ -60,14 +60,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DatabaseConnector;
+import org.netbeans.modules.db.explorer.DatabaseConnection.State;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.ConnectPanel;
 import org.netbeans.modules.db.explorer.dlg.ConnectProgressDialog;
@@ -88,7 +87,6 @@ public class ConnectAction extends BaseAction {
 
     ConnectionDialog dlg;
     boolean advancedPanel = false;
-    boolean okPressed = false;
 
     @Override
     public String getName() {
@@ -108,7 +106,7 @@ public class ConnectAction extends BaseAction {
             ConnectionNode node = lookup.lookup(ConnectionNode.class);
             if (node != null) {
                 DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                enabled = dbconn.getConnector().isDisconnected();
+                enabled = ! dbconn.isConnected();
             }
         }
 
@@ -129,7 +127,6 @@ public class ConnectAction extends BaseAction {
     public static final class ConnectionDialogDisplayer extends ConnectionDialogMediator {
         
         ConnectionDialog dlg;
-        boolean okPressed = false;
         
         // This flag is used to detect whether there was a failure to connect
         // when using the progress bar.  The flag is set in the property
@@ -174,8 +171,6 @@ public class ConnectAction extends BaseAction {
         }
 
         public void showDialog(final DatabaseConnection dbcon, boolean showDialog) {
-            final DatabaseConnector connector = dbcon.getConnector();
-
             String user = dbcon.getUser();
             boolean remember = dbcon.rememberPassword();
 
@@ -194,23 +189,14 @@ public class ConnectAction extends BaseAction {
                 final PropertyChangeListener connectionListener = new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent event) {
-                        if (event.getPropertyName().equals("connecting")) { // NOI18N
+                        if ("state".equals(event.getPropertyName())) {
+                            if (event.getNewValue() == State.connecting) {
                             fireConnectionStarted();
-                        }
-                        if (event.getPropertyName().equals("failed")) { // NOI18N
+                            } else if (event.getNewValue() == State.failed) {
                             fireConnectionFailed();
-                        }
-                        if (event.getPropertyName().equals("connected")) { //NOI18N
+                            } else if (event.getNewValue() == State.connected) {
                             fireConnectionFinished();
                             dbcon.setSchema(dbcon.getSchema());
-                            
-                            try {
-                                connector.finishConnect(null, dbcon, dbcon.getConnection());
-                            } catch (DatabaseException exc) {
-                                LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
-                                DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
-                                return;
-                            }
                             
                             DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
                             if (realDbcon != null) {
@@ -222,13 +208,9 @@ public class ConnectAction extends BaseAction {
 
                             if (dlg != null) {
                                 dlg.close();
-    //                        removeListeners(cinfo);
                             }
-
-                            dbcon.fireConnectionComplete();
-                        } else {
-                            okPressed = false;
                         }
+                    }
                     }
                 };
 
@@ -238,24 +220,15 @@ public class ConnectAction extends BaseAction {
                     @Override
                     public void actionPerformed(ActionEvent event) {
                         if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                            okPressed = true;
                             dbcon.setUser(basePanel.getUser());
                             dbcon.setPassword(basePanel.getPassword());
                             dbcon.setUser(basePanel.getUser());
                             dbcon.setPassword(basePanel.getPassword());
                             dbcon.setRememberPassword(basePanel.rememberPassword());
 
-                            if (! DatabaseConnection.isVitalConnection(dbcon.getConnection(), null)) {
+                            if (! dbcon.isVitalConnection()) {
                                 dbcon.connectAsync();
                             } else {
-                                try {
-                                    connector.finishConnect(null, dbcon, dbcon.getConnection());
-                                } catch (DatabaseException exc) {
-                                    LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
-                                    DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
-                                    return;
-                                }
-
                                 DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
                                 if (realDbcon != null) {
                                     realDbcon.setPassword(dbcon.getPassword());
@@ -267,9 +240,7 @@ public class ConnectAction extends BaseAction {
                                 if (dlg != null) {
                                     dlg.close();
                                 }
-                                dbcon.fireConnectionComplete();
                             }
-                            return;
                         }
                     }
                 };
@@ -302,19 +273,12 @@ public class ConnectAction extends BaseAction {
                         }
 
                         private void handlePropertyChange(PropertyChangeEvent event) {
-                            if (event.getPropertyName().equals("connected")) { //NOI18N
-                                try {
-                                    connector.finishConnect(null, dbcon, dbcon.getConnection());
+                            if ("state".equals(event.getPropertyName())) {
+                                if (event.getNewValue() == State.connected) { //NOI18N
                                     if (dialog != null) {
                                         dialog.setVisible(false);
                                     }
-                                }
-                                catch (DatabaseException exc) {
-                                    LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
-                                    DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
-                                    return;
-                                }
-                            } else if (event.getPropertyName().equals("failed")) { // NOI18N
+                                } else if (event.getNewValue() == State.failed) { // NOI18N
                                 if (dialog != null) {
                                     dialog.setVisible(false);
                                 }
@@ -329,6 +293,7 @@ public class ConnectAction extends BaseAction {
                                 // dialog.
                                 failed = true;
                             }
+                        }
                         }
                     };
                     
@@ -349,8 +314,6 @@ public class ConnectAction extends BaseAction {
                         // another shot after changing some values, like the username
                         // or password.
                         showDialog(dbcon, true);
-                    } else {
-                        dbcon.fireConnectionComplete();
                     }
                 } catch (Exception exc) {
                     String message = MessageFormat.format(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToConnect"), exc.getMessage()); // NOI18N
@@ -372,7 +335,7 @@ public class ConnectAction extends BaseAction {
             fireConnectionStep(NbBundle.getMessage (ConnectAction.class, "ConnectionProgress_Schemas")); // NOI18N
             List<String> schemas = new ArrayList<String> ();
             try {
-                DatabaseMetaData dbMetaData = dbcon.getConnection().getMetaData();
+                DatabaseMetaData dbMetaData = dbcon.getJDBCConnection().getMetaData();
                 if (dbMetaData.supportsSchemasInTableDefinitions()) {
                     ResultSet rs = dbMetaData.getSchemas();
                     if (rs != null) {

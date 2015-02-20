@@ -265,6 +265,6 @@ public class DatabaseConnectionTest extends DBTestBase {
     }
 
     private static boolean connectionIsValid(Connection conn) throws Exception {
-        return org.netbeans.modules.db.explorer.DatabaseConnection.isVitalConnection(conn, null);
+        return (conn != null) && (! conn.isClosed());
     }
 }

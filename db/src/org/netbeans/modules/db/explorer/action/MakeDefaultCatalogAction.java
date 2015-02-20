@@ -120,7 +120,7 @@ public class MakeDefaultCatalogAction extends BaseAction {
      */
     private void handleDLLException(DatabaseConnection dbConn,
             DDLException e) throws SQLException, MissingResourceException {
-        Connection conn = dbConn == null ? null : dbConn.getConnection();
+        Connection conn = dbConn == null ? null : dbConn.getJDBCConnection();
         if (conn != null && !conn.isValid(1000)) {
             LOGGER.log(Level.INFO, e.getMessage(), e);
             NotifyDescriptor nd = new NotifyDescriptor.Message(

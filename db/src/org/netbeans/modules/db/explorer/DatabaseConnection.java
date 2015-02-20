@@ -101,13 +101,19 @@ import org.openide.windows.TopComponent;
  * open connection.
  */
 public final class DatabaseConnection implements DBConnection {
+    public enum State {
+        disconnected,
+        connecting,
+        connected,
+        failed
+    }
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
 
     static final long serialVersionUID =4554639187416958735L;
 
     private final Set<ExceptionListener> exceptionListeners = Collections.synchronizedSet (new HashSet<ExceptionListener> ());
-    private Connection con;
+    private Connection jdbcConnection;
 
     /** Driver URL and name */
     private String drv, drvname;
@@ -167,6 +173,8 @@ public final class DatabaseConnection implements DBConnection {
 
     private Boolean useScrollableCursors = null; // null = driver default
 
+    private State state;
+    
     /**
      * The API DatabaseConnection (delegates to this instance)
      */
@@ -296,7 +304,7 @@ public final class DatabaseConnection implements DBConnection {
     public Connection getJDBCConnection(boolean test) {
         Connection conn = getJDBCConnection();
         if (test) {
-            if (! test(conn, getName())) {
+            if (! test()) {
                 try {
                     disconnect();
                 } catch (DatabaseException e) {
@@ -318,16 +326,16 @@ public final class DatabaseConnection implements DBConnection {
         return metadataModel;
     }
 
-    public static boolean isVitalConnection(Connection conn, DatabaseConnection dbconn) {
-        if (conn == null) {
+    public boolean isVitalConnection() {
+        if (this.getJDBCConnection() == null) {
             return false;
         }
         try {
-            return !checkClosedWithTimeout(conn);
+            return !checkClosedWithTimeout(this.getJDBCConnection());
         } catch (Exception ex) {
             if (dbconn != null) {
                 try {
-                    dbconn.disconnect();
+                    this.disconnect();
                 } catch (DatabaseException ex1) {
                     LOGGER.log(Level.FINE, "While trying vitality of connection: " + ex1.getLocalizedMessage(), ex1);
                 }
@@ -372,17 +380,17 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
 
-    public static boolean test(Connection conn, String connectionName) {
+    private boolean test() {
         try {
-            if (! isVitalConnection(conn, null)) {
+            if (! this.isVitalConnection()) {
                 return false;
             }
 
             // Send a command to the server, if it fails we know the connection is invalid.
-            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
-        } catch (SQLException e) {
+            getJDBCConnection().getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+        } catch (SQLException | NullPointerException e) {
             LOGGER.log(Level.INFO, NbBundle.getMessage(DatabaseConnection.class,
-                    "MSG_TestFailed", connectionName, e.getMessage()));
+                    "MSG_TestFailed", getName(), e.getMessage()));
             LOGGER.log(Level.FINE, null, e);
             return false;
         }
@@ -796,7 +804,7 @@ public final class DatabaseConnection implements DBConnection {
         }
 
         try {
-            propertySupport.firePropertyChange("connecting", null, null);
+            setState(State.connecting);
 
             // For Java Studio Enterprise.
             getOpenConnection().enable();
@@ -812,11 +820,11 @@ public final class DatabaseConnection implements DBConnection {
             }
 
             Connection connection = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
-            setConnection(connection);
+            setJDBCConnection(connection);
 
             DatabaseUILogger.logConnection(drv);
 
-            propertySupport.firePropertyChange("connected", null, null);
+            setState(State.connected);
 
             // For Java Studio Enterprise.
             getOpenConnection().disable();
@@ -825,7 +833,7 @@ public final class DatabaseConnection implements DBConnection {
         } catch (SQLException e) {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", db, drv, e.getMessage()); // NOI18N
 
-            propertySupport.firePropertyChange("failed", null, null);
+            setState(State.failed);
 
             // For Java Studio Enterprise.
             getOpenConnection().disable();
@@ -835,7 +843,7 @@ public final class DatabaseConnection implements DBConnection {
         } catch (ClassNotFoundException | RuntimeException exc) {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", db, drv, exc.getMessage()); // NOI18N
 
-            propertySupport.firePropertyChange("failed", null, null);
+            setState(State.failed);
 
             // For Java Studio Enterprise.
             getOpenConnection().disable();
@@ -848,8 +856,8 @@ public final class DatabaseConnection implements DBConnection {
             doConnect();
         } catch (Exception exc) {
             try {
-                if (getConnection() != null) {
-                    getConnection().close();
+                if (getJDBCConnection() != null) {
+                    getJDBCConnection().close();
                 }
             } catch (SQLException e) {
                 LOGGER.log(Level.FINE, null, e);
@@ -884,7 +892,7 @@ public final class DatabaseConnection implements DBConnection {
 
         Connection conn = null;
         try {
-            propertySupport.firePropertyChange("connecting", null, null);
+            setState(State.connecting);
 
             // For Java Studio Enterprise.
             getOpenConnection().enable();
@@ -901,11 +909,14 @@ public final class DatabaseConnection implements DBConnection {
             }
 
             conn = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
-            setConnection(conn);
+            setJDBCConnection(conn);
 
             DatabaseUILogger.logConnection(drv);
 
-            propertySupport.firePropertyChange("connected", null, null);
+            connector.finishConnect(null);
+            
+            setState(State.connected);
+            
             if (getConnector().getDatabaseSpecification() != null && getConnector().supportsCommand(Specification.DEFAULT_SCHEMA)) {
                 try {
                     setDefaultSchema(getSchema());
@@ -926,7 +937,7 @@ public final class DatabaseConnection implements DBConnection {
                 }
             }
 
-            propertySupport.firePropertyChange("failed", null, null);
+            setState(State.failed);
 
             if (e instanceof SQLException) {
                 initSQLException((SQLException)e);
@@ -936,7 +947,7 @@ public final class DatabaseConnection implements DBConnection {
             ddle.initCause(e);
 
             if (conn != null) {
-                setConnection(null);
+                setJDBCConnection(null);
                 try {
                     conn.close();
                 } catch (SQLException sqle) {
@@ -949,7 +960,7 @@ public final class DatabaseConnection implements DBConnection {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", // NOI18N
                         db, drv, t.getMessage());
             DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Exception (t, message));
-            propertySupport.firePropertyChange("failed", null, null);
+            setState(State.failed);
         } finally {
             getOpenConnection().disable();
         }
@@ -972,6 +983,10 @@ public final class DatabaseConnection implements DBConnection {
 
         Task task = RP.post(runnable, 0);
         return task;
+    }
+
+    public boolean isConnected() {
+        return jdbcConnection != null;
     }
 
     /** Calls the initCause() for SQLException with the value
@@ -1029,12 +1044,12 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
 
-    public void setConnection(Connection c) {
-        con = c;
+    private void setJDBCConnection(Connection c) {
+        jdbcConnection = c;
     }
 
-    public Connection getConnection() {
-        return con;
+    public Connection getJDBCConnection() {
+        return jdbcConnection;
     }
 
     /** Add property change listener
@@ -1221,7 +1236,7 @@ public final class DatabaseConnection implements DBConnection {
         try {
             final ConnectionNode cni = findConnectionNode(getDisplayName());
             assert cni != null : "DatabaseConnection node not found for " + this;
-            if (cni != null && cni.getDatabaseConnection().getConnector().isDisconnected()) {
+            if (cni != null && (! isConnected())) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     @Override
                     public void run() {
@@ -1234,10 +1249,6 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
 
-    public Connection getJDBCConnection() {
-        return connector.getConnection();
-    }
-
     public DatabaseConnector getConnector() {
         return connector;
     }
@@ -1246,14 +1257,17 @@ public final class DatabaseConnection implements DBConnection {
         propertySupport.firePropertyChange("changed", null, null);
     }
 
-    public void fireConnectionComplete() {
-        propertySupport.firePropertyChange("connectionComplete", null, null);
+    public void disconnect() throws DatabaseException {
+        if (jdbcConnection != null) {
+            try {
+                jdbcConnection.close();
+            } catch (Exception ex) {
     }
 
-    public void disconnect() throws DatabaseException {
-        if (!connector.isDisconnected()) {
+            DerbyConectionEventListener.getDefault().afterDisconnect(this, jdbcConnection);
             connector.performDisconnect();
-            propertySupport.firePropertyChange("disconnected", null, null);
+            jdbcConnection = null;
+            setState(State.disconnected);
         }
     }
 
@@ -1385,5 +1399,15 @@ public final class DatabaseConnection implements DBConnection {
         boolean oldVal = isUseScrollableCursors();
         this.useScrollableCursors = useScrollableCursors;
         propertySupport.firePropertyChange("useScrollableCursors", oldVal, useScrollableCursors); //NOI18N
+    }
+
+    public State getState() {
+        return state;
+}
+
+    private void setState(State state) {
+        State oldState = this.state;
+        this.state = state;
+        propertySupport.firePropertyChange("state", oldState, state);
     }
 }

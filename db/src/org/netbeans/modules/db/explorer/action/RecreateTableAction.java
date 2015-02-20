@@ -87,7 +87,7 @@ public class RecreateTableAction extends BaseAction {
             DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
 
             if (dbconn != null && (tn == null || (!tn.isSystem()))) {
-                enabled = DatabaseConnection.isVitalConnection(dbconn.getConnection(), dbconn);
+                enabled = dbconn.isVitalConnection();
             }
         }
 

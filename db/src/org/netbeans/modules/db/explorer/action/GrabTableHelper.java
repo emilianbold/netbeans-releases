@@ -55,6 +55,7 @@ import org.netbeans.lib.ddl.impl.AbstractTableColumn;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.TableColumn;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Column;
@@ -65,12 +66,13 @@ import org.netbeans.modules.db.metadata.model.api.Table;
 
 public class GrabTableHelper {
 
-    public void execute(final DatabaseConnector connector,
+    public void execute(final DatabaseConnection databaseConnection,
             final Specification spec,
             final MetadataElementHandle<Table> tableHandle,
             final File file) throws Exception {
 
-        MetadataModel model = connector.getDatabaseConnection().getMetadataModel();
+        final DatabaseConnector connector = databaseConnection.getConnector();
+        final MetadataModel model = databaseConnection.getMetadataModel();
 
         final Exception[] array = new Exception[1];
 
