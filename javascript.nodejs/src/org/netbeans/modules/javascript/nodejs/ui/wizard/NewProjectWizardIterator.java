@@ -138,9 +138,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         assert projectDirectory != null : "FileObject must be found for " + projectDir;
         files.add(projectDirectory);
 
-        CreateProjectProperties createProperties = new CreateProjectProperties()
-                .setProjectDir(projectDirectory)
-                .setProjectName((String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
+        CreateProjectProperties createProperties = new CreateProjectProperties(projectDirectory, (String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
                 .setSourceFolder(wizard.getSources())
                 .setSiteRootFolder(wizard.getSiteRoot())
                 .setPlatformProvider(NodeJsPlatformProvider.IDENT);
