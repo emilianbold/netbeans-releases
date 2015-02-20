@@ -171,7 +171,9 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
 
         private String detectSiteRoot() {
             for (String dir : KNOWN_SITE_ROOTS) {
-                if (projectDirectory.getFileObject(dir) != null)  {
+                FileObject fo = projectDirectory.getFileObject(dir);
+                if (fo != null
+                        && fo.isFolder())  {
                     return dir;
                 }
             }
