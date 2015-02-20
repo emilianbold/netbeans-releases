@@ -65,7 +65,7 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
         String title = NbBundle.getMessage (LabeledTextFieldDialog.class, "RecreateTableRenameTable"); // NOI18N
         String lab = NbBundle.getMessage (LabeledTextFieldDialog.class, "RecreateTableNewName"); // NOI18N
         original_notes = notes;
-
+        
         initComponents();
         
         try
@@ -131,6 +131,15 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
         textField.setText(val);
     }
 
+    public void setErrors(String errors) {
+        if (errors != null) {
+            errorTextPane.setText(errors);
+            errorScrollPane.setVisible(true);
+        } else {
+            errorScrollPane.setVisible(false);
+        }
+    }
+    
     private void updateState()
     {
         isEditMode = !isEditMode;
@@ -173,6 +182,8 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
         notesAreaScrollPane = new javax.swing.JScrollPane();
         notesArea = new javax.swing.JTextArea();
         editButton = new javax.swing.JButton();
+        errorScrollPane = new javax.swing.JScrollPane();
+        errorTextPane = new javax.swing.JTextPane();
 
         titleLabel.setLabelFor(textField);
         titleLabel.setText(org.openide.util.NbBundle.getMessage(LabeledTextFieldDialog.class, "LabeledTextFieldDialog.titleLabel.text")); // NOI18N
@@ -182,8 +193,8 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
         descLabel.setLabelFor(notesArea);
         descLabel.setText(org.openide.util.NbBundle.getMessage(LabeledTextFieldDialog.class, "LabeledTextFieldDialog.descLabel.text")); // NOI18N
 
-        notesArea.setColumns(20);
         notesArea.setEditable(false);
+        notesArea.setColumns(20);
         notesArea.setLineWrap(true);
         notesArea.setRows(5);
         notesArea.setWrapStyleWord(true);
@@ -199,20 +210,27 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
             }
         });
 
+        errorTextPane.setForeground(new java.awt.Color(255, 0, 51));
+        errorScrollPane.setViewportView(errorTextPane);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(notesAreaScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(errorScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(notesAreaScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(titleLabel)
                         .addGap(18, 18, 18)
-                        .addComponent(textField, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE))
-                    .addComponent(descLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(editButton, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addComponent(textField, javax.swing.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(descLabel)
+                            .addComponent(editButton))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -225,9 +243,11 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(descLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(notesAreaScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(notesAreaScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(editButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(errorScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -249,6 +269,8 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel descLabel;
     private javax.swing.JButton editButton;
+    private javax.swing.JScrollPane errorScrollPane;
+    private javax.swing.JTextPane errorTextPane;
     private javax.swing.JTextArea notesArea;
     private javax.swing.JScrollPane notesAreaScrollPane;
     private javax.swing.JTextField textField;
