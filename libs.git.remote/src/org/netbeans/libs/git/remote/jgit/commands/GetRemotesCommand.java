@@ -41,27 +41,43 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRemoteConfig;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class GetRemotesCommand extends GitCommand {
-
+    public static final boolean KIT = false;
+    private final ProgressMonitor monitor;
     private Map<String, GitRemoteConfig> remotes;
     
     public GetRemotesCommand (JGitRepository repository, GitClassFactory gitFactory, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
+        this.monitor = monitor;
     }
-
+    
     @Override
     protected void run () throws GitException {
+        if (KIT) {
+            //runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+    protected void runKit () throws GitException {
 //        Repository repository = getRepository().getRepository();
 //        try {
 //            List<RemoteConfig> configs = RemoteConfig.getAllRemoteConfigs(repository.getConfig());
@@ -81,6 +97,10 @@ public class GetRemotesCommand extends GitCommand {
 //        }
     }
     
+    public Map<String, GitRemoteConfig> getRemotes () {
+        return remotes;
+    }
+    
     @Override
     protected void prepare() throws GitException {
         super.prepare();
@@ -88,7 +108,102 @@ public class GetRemotesCommand extends GitCommand {
         addArgument(0, "-v"); //NOI18N
     }
 
-    public Map<String, GitRemoteConfig> getRemotes () {
-        return remotes;
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            remotes = new LinkedHashMap<>();
+            runner(canceled, 0, new Parser() {
+
+                @Override
+                public void outputParser(String output) {
+                    parseRemoteOutput(output);
+                }
+
+                @Override
+                public void errorParser(String error) {
+                    parseAddError(error);
+                }
+            });
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
     }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            parser.errorParser(exitStatus.error);
+        }
+    }
+    
+    private void parseRemoteOutput(String output) {
+        //$ git remote -v
+        //origin	https://github.com/git/git (fetch)
+        //origin	https://github.com/git/git (push)
+        Map<String, RemoteContainer> list = new LinkedHashMap<>();
+        for (String line : output.split("\n")) { //NOI18N
+            if (!line.isEmpty()) {
+                line = line.replace('\t', ' ').trim();
+                String[] s = line.split(" ");
+                String remoteName = s[0];
+                RemoteContainer conf = list.get(remoteName);
+                if (conf == null) {
+                    conf = new RemoteContainer();
+                    list.put(remoteName, conf);
+                }
+                if (s.length == 3) {
+                    if ("(fetch)".equals(s[2])) {
+                        conf.fetchSpecs.add(s[1]);
+                    } else if ("(push)".equals(s[2])) {
+                        conf.pushSpecs.add(s[1]);
+                    }  
+                }
+            }
+        }
+        for(Map.Entry<String, RemoteContainer> e : list.entrySet()) {
+            GitRemoteConfig conf = new GitRemoteConfig(e.getKey(), e.getValue().uris, e.getValue().pushUris, e.getValue().fetchSpecs, e.getValue().pushSpecs);
+            remotes.put(e.getKey(), conf);
+        }
+    }
+    
+    private void parseAddError(String error) {
+        processMessages(error);
+    }
+    
+    private abstract class Parser {
+        public abstract void outputParser(String output);
+        public void errorParser(String error){
+        }
+    }
+    
+    private static final class RemoteContainer {
+        List<String> uris = new ArrayList<>();
+        List<String> pushUris = new ArrayList<>();
+        List<String> fetchSpecs = new ArrayList<>();
+        List<String> pushSpecs = new ArrayList<>();
+    }
+
 }
