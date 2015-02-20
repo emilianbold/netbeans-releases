@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular.navigate;
+package org.netbeans.modules.html.angular.cc;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.modules.html.angular.GeneralAngular;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
  *
  * @author vriha
  */
-public class BindOnceNavTest extends GeneralAngular {
-
-    static final String[] tests = new String[]{
-        "openProject",
-        "testExpression21"
-    };
-
-    public BindOnceNavTest(String args) {
-        super(args);
-    }
+public class CompletionAsSuite {
 
     public static Test suite() {
-        return createModuleTest(BindOnceNavTest.class, tests);
+        return JellyTestCase.emptyConfiguration().
+                addTest(BindOnceAsTest.class, BindOnceAsTest.tests).
+                addTest(CompletionAsTest.class, CompletionAsTest.tests).
+                addTest(ControllersAsGlobalTest.class, ControllersAsGlobalTest.tests).
+                addTest(CtrlAsModule2Test.class, CtrlAsModule2Test.tests).
+                addTest(CtrlAsModuleTest.class, CtrlAsModuleTest.tests).
+                suite();
     }
 
-    public void openProject() throws Exception {
-        startTest();
-        JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
-        openDataProjects("asctrlmodule");
-        evt.waitNoEvent(2000);
-        openFile("partials|bindonce.html", "asctrlmodule");
-        BindOnceNavTest.originalContent = new EditorOperator("bindonce.html").getText();
-        endTest();
-    }
-
-    public void testExpression21() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("bindonce.html"), 18);
-        endTest();
-    }
 }
