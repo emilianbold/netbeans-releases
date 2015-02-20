@@ -142,10 +142,10 @@ final class GitClassFactoryImpl extends GitClassFactory {
         return status;
     }
 
-//    @Override
-//    public GitTag createTag (RevTag revTag) {
-//        return new GitTag(revTag);
-//    }
+    @Override
+    public GitTag createTag (GitTag.TagContainer revTag) {
+        return new GitTag(revTag);
+    }
 
 //    @Override
 //    public GitTag createTag (String tagName, RevObject revObject) {

@@ -55,19 +55,20 @@ public final class GitTag {
     private final GitObjectType type;
     private boolean lightWeight;
 
-//    GitTag (RevTag revTag) {
-//        this.id = ObjectId.toString(revTag.getId());
-//        this.name = revTag.getTagName();
-//        this.message = revTag.getFullMessage();
-//        this.taggedObject = ObjectId.toString(revTag.getObject().getId());
-//        PersonIdent personIdent = revTag.getTaggerIdent();
-//        if (personIdent == null) {
-//            personIdent = new PersonIdent("", ""); //NOI18N
-//        }
-//        this.tagger = new GitUser(personIdent.getName(), personIdent.getEmailAddress());
-//        this.type = getType(revTag.getObject());
-//        this.lightWeight = false;
-//    }
+    GitTag (TagContainer revTag) {
+        this.id = revTag.id;
+        this.name = revTag.name;
+        this.message = revTag.message;
+        this.taggedObject = revTag.objectId;
+        if (revTag.author != null) {
+            int i = revTag.author.indexOf('<');
+            this.tagger = new GitUser(revTag.author.substring(0,i).trim(), revTag.author.substring(i+1, revTag.author.length()-1));
+        } else {
+            this.tagger = new GitUser("", "");
+        }
+        this.type = revTag.type;
+        this.lightWeight = false;
+    }
 
     GitTag (String tagName, String rev, GitObjectType type) {
         this.id = rev;
@@ -159,5 +160,16 @@ public final class GitTag {
 //        }
 //        return objType;
 //    }
+
+    public static final class TagContainer {
+        public String id;
+        public String ref;
+        public String name;
+        public String author;
+        public String time;
+        public String message;
+        public GitObjectType type;
+        public String objectId;
+    }
     
 }
