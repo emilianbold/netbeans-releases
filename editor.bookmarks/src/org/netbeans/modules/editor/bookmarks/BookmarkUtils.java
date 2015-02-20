@@ -59,12 +59,14 @@ import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -153,13 +155,21 @@ public final class BookmarkUtils {
     public static void openEditor(EditorCookie ec, int lineIndex) {
         Line.Set lineSet = ec.getLineSet();
         if (lineSet != null) {
-            Line line = lineSet.getCurrent(lineIndex);
-            if (line != null) {
-                line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                JEditorPane[] panes = ec.getOpenedPanes();
-                if (panes.length > 0) {
-                    panes[0].requestFocusInWindow();
+            try {
+                Line line = lineSet.getCurrent(lineIndex);
+                if (line != null) {
+                    line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                 }
+            } catch (IndexOutOfBoundsException ex) {
+                // attempt at least to open the editor
+                ec.open();
+                // expected, bookmark contains an invalid line
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(BookmarkUtils.class, "MSG_InvalidLineNumnber", lineIndex));
+            }
+            JEditorPane[] panes = ec.getOpenedPanes();
+            if (panes.length > 0) {
+                panes[0].requestFocusInWindow();
             }
         }
     }
