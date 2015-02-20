@@ -252,6 +252,15 @@ public class CreateTagCommand extends GitCommand {
         //    init commit
         //
         //:000000 100644 0000000... cdb8d0e... A  f
+        //=================
+        //commit 68f1985c7152d71a1b7296e5113feb88aeef7b80
+        //Author: Alexander Simon <alexander.simon@oracle.com>
+        //Date:   Fri Feb 20 17:40:43 2015 +0300
+        //
+        //    init commit
+        //
+        //:000000 100644 0000000... cdb8d0e... A	f        
+        
         State state = State.header;
         for (String line : output.split("\n")) { //NOI18N
             if (state == State.header) {
@@ -266,8 +275,12 @@ public class CreateTagCommand extends GitCommand {
                     container.time = line.substring(5).trim();
                     continue;
                 }
-                state = State.message;
-                continue;
+                if (line.startsWith("commit")) {
+                    state = State.object;
+                } else {
+                    state = State.message;
+                    continue;
+                }
             }
             if (state == State.message) {
                 if (line.length() > 0) {
