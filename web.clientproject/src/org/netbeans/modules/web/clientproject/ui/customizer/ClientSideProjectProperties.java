@@ -56,6 +56,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.env.Env;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -183,7 +184,13 @@ public final class ClientSideProjectProperties {
             }
         }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_RUN_BROWSER, runBrowser);
-        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
+        if (startFile != null) {
+            if (StringUtilities.hasText(startFile)) {
+                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
+            } else {
+                projectProperties.remove(ClientSideProjectConstants.PROJECT_START_FILE);
+            }
+        }
         // #227995: store PROJECT_SELECTED_BROWSER in private.properties:
         projectProperties.remove(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
         putProperty(privateProperties, ClientSideProjectConstants.PROJECT_SELECTED_BROWSER, selectedBrowser);
@@ -323,7 +330,7 @@ public final class ClientSideProjectProperties {
 
     public String getStartFile() {
         if (startFile == null) {
-            startFile = project.getStartFile();
+            startFile = getProjectProperty(ClientSideProjectConstants.PROJECT_START_FILE, ""); // NOI18N
         }
         return startFile;
     }

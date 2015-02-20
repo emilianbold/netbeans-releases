@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.browser;
 
 import java.net.URL;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -59,8 +60,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 public class BrowserActionProvider implements ActionProvider {
 
@@ -90,27 +91,25 @@ public class BrowserActionProvider implements ActionProvider {
             if (!validateRun(true)) {
                 return;
             }
-            String startFile = project.getStartFile();
-            String splt[] = ClientSideProjectUtilities.splitPathAndFragment(startFile);
-            String justStartFile = splt[0];
-            String fragment = splt[1];
-            FileObject siteRoot = project.getSiteRootFolder();
-            if (siteRoot == null) {
-                ProjectProblems.showAlert(project);
+            Pair<FileObject, String> startFileWithFragment = getStartFileWithFragment();
+            if (startFileWithFragment == null) {
                 return;
             }
-            FileObject fo = siteRoot.getFileObject(justStartFile);
+            FileObject fo = startFileWithFragment.first();
+            String fragment = startFileWithFragment.second();
             if (fo == null) {
                 DialogDisplayer.getDefault().notify(
                     new DialogDescriptor.Message(
-                        org.openide.util.NbBundle.getMessage(BrowserActionProvider.class, "MAIN_FILE", startFile)));
+                        org.openide.util.NbBundle.getMessage(BrowserActionProvider.class, "MAIN_FILE", project.getStartFile())));
                 CustomizerProviderImpl cust = project.getLookup().lookup(CustomizerProviderImpl.class);
                 cust.showCustomizer(CompositePanelProviderImpl.RUN);
                 // try again:
-                splt = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile());
-                justStartFile = splt[0];
-                fragment = splt[1];
-                fo = siteRoot.getFileObject(justStartFile);
+                startFileWithFragment = getStartFileWithFragment();
+                if (startFileWithFragment == null) {
+                    return;
+                }
+                fo = startFileWithFragment.first();
+                fragment = startFileWithFragment.second();
                 if (fo == null) {
                     return;
                 }
@@ -126,7 +125,22 @@ public class BrowserActionProvider implements ActionProvider {
             }
         }
     }
-    
+
+    @CheckForNull
+    private Pair<FileObject, String> getStartFileWithFragment() {
+        FileObject siteRoot = project.getSiteRootFolder();
+        if (siteRoot == null) {
+            ProjectProblems.showAlert(project);
+            return null;
+        }
+        String startFile = project.getStartFile();
+        if (startFile == null) {
+            return Pair.of(siteRoot, ""); // NOI18N
+        }
+        String[] parts = ClientSideProjectUtilities.splitPathAndFragment(startFile);
+        return Pair.of(siteRoot.getFileObject(parts[0]), parts[1]);
+    }
+
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         return true;
@@ -142,7 +156,7 @@ public class BrowserActionProvider implements ActionProvider {
     
     private void browseFile(BrowserSupport bs, FileObject fo, String fragment) {
         URL url;
-        if (FileUtil.isParentOf(project.getSiteRootFolder(), fo)) {
+        if (ClientSideProjectUtilities.isParentOrItself(project.getSiteRootFolder(), fo)) {
             url = ServerURLMapping.toServer(project, fo);
             if (fragment.length() > 0) {
                 url = WebUtils.stringToUrl(WebUtils.urlToString(url)+fragment);
