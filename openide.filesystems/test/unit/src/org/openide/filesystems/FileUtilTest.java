@@ -459,6 +459,7 @@ public class FileUtilTest extends NbTestCase {
         } catch (NullPointerException npe) {
             // exception correctly thrown
         }
+        assertNull(fo.getMIMEType("text/x-fakemime", null));
         
         fo = FileUtil.createData(testFolder, "fo2.mime1");
         withinMIMETypes = new String[0];
