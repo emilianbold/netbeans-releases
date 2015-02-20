@@ -100,7 +100,7 @@ public class JadeStructureScanner implements StructureScanner {
                 }
                 if (id == JadeTokenId.COMMENT || id == JadeTokenId.UNBUFFERED_COMMENT) {
                     String comment = token.text().toString();
-                    while (comment.charAt(comment.length() - 1) == '\n') {
+                    while (!comment.isEmpty() && comment.charAt(comment.length() - 1) == '\n') {
                         comment = comment.substring(0, comment.length() - 1);
                     }
                     if (comment.indexOf('\n') >= 0) {

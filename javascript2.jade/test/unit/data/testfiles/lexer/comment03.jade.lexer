@@ -30,4 +30,4 @@
   line comment 3
 
   line coment
-][TAG(4):This][WHITESPACE(1): ][UNKNOWN(18):is not comment now]
+][TAG(4):This][WHITESPACE(1): ][TEXT(18):is not comment now]

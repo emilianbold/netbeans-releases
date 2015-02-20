@@ -67,4 +67,8 @@ public class JadeStructureScannerTest extends JadeTestBase {
     public void testBlock01() throws Exception {
         checkFolds("testfiles/folding/comment01.jade");
     }
+    
+    public void testIssue250570() throws Exception {
+        checkFolds("testfiles/folding/issue250570.jade");
+    }
 }

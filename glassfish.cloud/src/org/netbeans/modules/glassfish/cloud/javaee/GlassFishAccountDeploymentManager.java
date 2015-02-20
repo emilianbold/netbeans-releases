@@ -54,10 +54,10 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.glassfish.tools.ide.TaskEvent;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.TaskStateListener;
-import org.glassfish.tools.ide.admin.cloud.CloudTasks;
+import org.netbeans.modules.glassfish.tooling.TaskEvent;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.TaskStateListener;
+import org.netbeans.modules.glassfish.tooling.admin.cloud.CloudTasks;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;

@@ -47,7 +47,7 @@ import java.util.*;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import org.glassfish.tools.ide.utils.NetUtils;
+import org.netbeans.modules.glassfish.tooling.utils.NetUtils;
 
 /**
  * Combo box to select IP address.
