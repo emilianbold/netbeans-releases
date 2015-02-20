@@ -42,7 +42,6 @@
 package org.netbeans.modules.odcs.ui.project.activity;
 
 import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
-import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;

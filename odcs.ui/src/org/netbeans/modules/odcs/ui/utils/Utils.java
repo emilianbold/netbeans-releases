@@ -248,6 +248,7 @@ public class Utils {
         private static final String SHOW_TASKS = "odcs.ui.show_tasks";
         private static final String SHOW_SCM = "odcs.ui.show_scm";
         private static final String SHOW_WIKI = "odcs.ui.show_wiki";
+        private static final String SHOW_RSS = "odcs.ui.show_rss";
         private static final String SHOW_BUILDS = "odcs.ui.show_builds";
         private static final String SHOW_BUILDS_UNWATCHED = "odcs.ui.show_builds_unwatched";
 
@@ -273,6 +274,14 @@ public class Utils {
 
         public static void setShowWiki(boolean showWiki) {
             getPreferences().putBoolean(SHOW_WIKI, showWiki);
+        }
+        
+        public static boolean isShowRss() {
+            return getPreferences().getBoolean(SHOW_RSS, true);
+        }
+        
+        public static void setShowRss(boolean showRss) {
+            getPreferences().putBoolean(SHOW_WIKI, showRss);
         }
 
         public static boolean isShowBuilds() {

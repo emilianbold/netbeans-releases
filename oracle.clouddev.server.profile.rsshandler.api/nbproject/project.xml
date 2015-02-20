@@ -3,12 +3,12 @@
    <type>org.netbeans.modules.apisupport.project</type>
    <configuration>
        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-           <code-name-base>com.tasktop.c2c.server.wiki.api</code-name-base>
+           <code-name-base>oracle.clouddev.server.profile.rsshandler.api</code-name-base>
            <module-dependencies/>
            <public-packages/>
            <class-path-extension>
-               <runtime-relative-path>com-tasktop-c2c-server-wiki-api.jar</runtime-relative-path>
-                <binary-origin>external/com.tasktop.c2c.server.wiki.api_1.2.0.20150218-000236.jar</binary-origin>
+               <runtime-relative-path>oracle-clouddev-server-profile-rsshandler-api.jar</runtime-relative-path>
+                <binary-origin>external/oracle.clouddev.server.profile.rsshandler.api_1.2.0.20150218-000236.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
