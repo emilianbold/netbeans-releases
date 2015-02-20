@@ -44,13 +44,17 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import org.netbeans.modules.glassfish.tooling.admin.CommandSetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.ResultString;
+import org.netbeans.modules.glassfish.tooling.admin.CommandAddResources;
+import org.netbeans.modules.glassfish.tooling.admin.CommandGetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.ResultMap;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.GlassFishIdeException;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.admin.*;
+import org.netbeans.modules.glassfish.tooling.GlassFishIdeException;
+import org.netbeans.modules.glassfish.tooling.TaskState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.common.parser.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;

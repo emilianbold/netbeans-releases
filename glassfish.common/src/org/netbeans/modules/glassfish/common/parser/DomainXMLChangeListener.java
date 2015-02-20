@@ -73,7 +73,7 @@ public class DomainXMLChangeListener implements FileChangeListener {
             GlassfishInstance instance) {
         String domainDirPath = instance.getDomainsFolder();
         String domainName = instance.getDomainName();
-        String domainXMLName = org.glassfish.tools.ide.utils.ServerUtils
+        String domainXMLName = org.netbeans.modules.glassfish.tooling.utils.ServerUtils
                 .getDomainConfigFile(domainDirPath, domainName);
         File configPAth = FileUtil.normalizeFile(new File(domainXMLName));
         FileUtil.addFileChangeListener(
@@ -89,7 +89,7 @@ public class DomainXMLChangeListener implements FileChangeListener {
     public static void unregisterListener(GlassfishInstance instance) {
         String domainDirPath = instance.getDomainsFolder();
         String domainName = instance.getDomainName();
-        String domainXMLName = org.glassfish.tools.ide.utils.ServerUtils
+        String domainXMLName = org.netbeans.modules.glassfish.tooling.utils.ServerUtils
                 .getDomainConfigFile(domainDirPath, domainName);
         File configPAth = FileUtil.normalizeFile(new File(domainXMLName));
         FileUtil.removeFileChangeListener(
