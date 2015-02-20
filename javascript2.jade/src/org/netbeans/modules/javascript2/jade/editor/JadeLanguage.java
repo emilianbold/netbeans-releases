@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.jade.editor;
 
+import org.netbeans.modules.javascript2.jade.editor.indent.JadeFormatter;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -49,6 +50,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
@@ -123,6 +125,16 @@ public class JadeLanguage extends DefaultLanguageConfig {
         return new JadeParser();
     }
 
+    @Override
+    public Formatter getFormatter() {
+        return new JadeFormatter();
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
     // This is a fake parser to get work some features like folding.
     private static class JadeParser extends Parser {
 
@@ -169,9 +181,4 @@ public class JadeLanguage extends DefaultLanguageConfig {
         }
     }
 
-    
-    
-    
-    
-    
 }

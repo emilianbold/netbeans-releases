@@ -11,4 +11,4 @@
 [EOL(1):\n]
 [OPERATOR_PLUS(1):+][MIXIN_NAME(7):article][BRACKET_LEFT_PAREN(1):(][JAVASCRIPT(13):'Hello world'][BRACKET_LEFT_PAREN(1):)][EOL(1):\n]
 [WHITESPACE(2):  ][TAG(1):p][WHITESPACE(1): ][TEXT(10):This is my][EOL(1):\n]
-[WHITESPACE(2):  ][TAG(1):p][WHITESPACE(1): ][UNKNOWN(15):Amazing article]
+[WHITESPACE(2):  ][TAG(1):p][WHITESPACE(1): ][TEXT(15):Amazing article]

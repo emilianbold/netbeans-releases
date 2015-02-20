@@ -43,12 +43,12 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
-import org.glassfish.tools.ide.data.GlassFishJavaEEConfig;
-import org.glassfish.tools.ide.data.GlassFishJavaSEConfig;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
-import org.glassfish.tools.ide.server.config.ConfigBuilder;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishJavaEEConfig;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishJavaSEConfig;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilderProvider;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilder;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
