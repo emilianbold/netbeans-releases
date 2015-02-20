@@ -42,20 +42,11 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.util.Arrays;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.errors.CheckoutConflictException;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitMergeResult;
 import org.netbeans.libs.git.remote.GitRepository.FastForwardOption;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 
 /**
@@ -77,37 +68,37 @@ public class MergeCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        org.eclipse.jgit.api.MergeCommand command = new Git(repository).merge();
-        setFastForward(command);
-        Ref ref = null;
-        try {
-            ref = repository.getRef(revision);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
-
-        if (ref == null) {
-            command.include(Utils.findCommit(repository, revision));
-        } else {
-            String msg = commitMessage;
-            if (msg == null) {
-                msg = Utils.getRefName(ref);
-            }
-            command.include(msg, ref.getTarget().getObjectId());
-        }
-        try {
-            result = getClassFactory().createMergeResult(command.call(), getRepository().getLocation());
-        } catch (org.eclipse.jgit.api.errors.CheckoutConflictException ex) {
-            parseConflicts(ex);
-        } catch (JGitInternalException ex) {
-            if (ex.getCause() instanceof CheckoutConflictException) {
-                parseConflicts(ex.getCause());
-            }
-            throw new GitException(ex);
-        } catch (GitAPIException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        org.eclipse.jgit.api.MergeCommand command = new Git(repository).merge();
+//        setFastForward(command);
+//        Ref ref = null;
+//        try {
+//            ref = repository.getRef(revision);
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        }
+//
+//        if (ref == null) {
+//            command.include(Utils.findCommit(repository, revision));
+//        } else {
+//            String msg = commitMessage;
+//            if (msg == null) {
+//                msg = Utils.getRefName(ref);
+//            }
+//            command.include(msg, ref.getTarget().getObjectId());
+//        }
+//        try {
+//            result = getClassFactory().createMergeResult(command.call(), getRepository().getLocation());
+//        } catch (org.eclipse.jgit.api.errors.CheckoutConflictException ex) {
+//            parseConflicts(ex);
+//        } catch (JGitInternalException ex) {
+//            if (ex.getCause() instanceof CheckoutConflictException) {
+//                parseConflicts(ex.getCause());
+//            }
+//            throw new GitException(ex);
+//        } catch (GitAPIException ex) {
+//            throw new GitException(ex);
+//        }
     }
     
     @Override
@@ -129,31 +120,5 @@ public class MergeCommand extends GitCommand {
             message = message.replace("\n", "").replace("\r", ""); //NOI18N
         }
         this.commitMessage = message;
-    }
-
-    private void parseConflicts (Throwable original) throws GitException.CheckoutConflictException, GitException {
-        String[] lines = original.getMessage().split("\n"); //NOI18N
-        if (lines.length > 1) {
-            throw new GitException.CheckoutConflictException(Arrays.copyOfRange(lines, 1, lines.length), original);
-        }
-        throw new GitException(original);
-    }
-
-    private void setFastForward (org.eclipse.jgit.api.MergeCommand cmd) {
-        if (ffOption == null) {
-            // will fall back on the config default
-            return;
-        }
-        switch (ffOption) {
-            case FAST_FORWARD:
-                cmd.setFastForward(org.eclipse.jgit.api.MergeCommand.FastForwardMode.FF);
-                break;
-            case FAST_FORWARD_ONLY:
-                cmd.setFastForward(org.eclipse.jgit.api.MergeCommand.FastForwardMode.FF_ONLY);
-                break;
-            case NO_FAST_FORWARD:
-                cmd.setFastForward(org.eclipse.jgit.api.MergeCommand.FastForwardMode.NO_FF);
-                break;
-        }
     }
 }

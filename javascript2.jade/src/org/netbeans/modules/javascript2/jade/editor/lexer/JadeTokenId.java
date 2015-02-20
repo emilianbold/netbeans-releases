@@ -149,6 +149,10 @@ public enum JadeTokenId implements TokenId {
         return text;
     }
     
+    public boolean isKeyword() {
+        return "keyword".equals(primaryCategory); //NOI18N
+    }
+    
     @Override
     public String primaryCategory() {
         return primaryCategory;
@@ -185,7 +189,7 @@ public enum JadeTokenId implements TokenId {
                     if (id == JAVASCRIPT) {
                         return LanguageEmbedding.create(JsTokenId.javascriptLanguage(), 0, 0, true);
                     }
-                    if (id == PLAIN_TEXT) {
+                    if (id == PLAIN_TEXT || id == TEXT) {
                         return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                     }
                     return null; // No embedding

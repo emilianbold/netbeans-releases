@@ -41,32 +41,29 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.util.Map;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.TagCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevObject;
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.GitTag;
-import org.netbeans.libs.git.remote.jgit.DelegatingGitProgressMonitor;
+import org.netbeans.libs.git.remote.GitTag.TagContainer;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class CreateTagCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final boolean forceUpdate;
     private final String tagName;
     private final String taggedObject;
     private final String message;
     private final boolean signed;
     private GitTag tag;
+    private final Revision revisionPlaseHolder;
     private final ProgressMonitor monitor;
 
     public CreateTagCommand (JGitRepository repository, GitClassFactory gitFactory, String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) {
@@ -77,34 +74,48 @@ public class CreateTagCommand extends GitCommand {
         this.message = message;
         this.signed = signed;
         this.forceUpdate = forceUpdate;
-    }
-
-    @Override
-    protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        try {
-            RevObject obj = Utils.findObject(repository, taggedObject);
-            TagCommand cmd = new Git(repository).tag();
-            cmd.setName(tagName);
-            cmd.setForceUpdate(forceUpdate);
-            cmd.setObjectId(obj);
-            cmd.setAnnotated(message != null && !message.isEmpty() || signed);
-            if (cmd.isAnnotated()) {
-                cmd.setMessage(message);
-                cmd.setSigned(signed);
-            }
-            cmd.call();
-            ListTagCommand tagCmd = new ListTagCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
-            tagCmd.run();
-            Map<String, GitTag> tags = tagCmd.getTags();
-            tag = tags.get(tagName);
-        } catch (JGitInternalException | GitAPIException ex) {
-            throw new GitException(ex);
-        }
+        revisionPlaseHolder = new Revision();
     }
     
     @Override
+    protected void run () throws GitException {
+        if (KIT) {
+            //runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+    protected void runKit () throws GitException {
+//        Repository repository = getRepository().getRepository();
+//        try {
+//            RevObject obj = Utils.findObject(repository, taggedObject);
+//            TagCommand cmd = new Git(repository).tag();
+//            cmd.setName(tagName);
+//            cmd.setForceUpdate(forceUpdate);
+//            cmd.setObjectId(obj);
+//            cmd.setAnnotated(message != null && !message.isEmpty() || signed);
+//            if (cmd.isAnnotated()) {
+//                cmd.setMessage(message);
+//                cmd.setSigned(signed);
+//            }
+//            cmd.call();
+//            ListTagCommand tagCmd = new ListTagCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
+//            tagCmd.run();
+//            Map<String, GitTag> tags = tagCmd.getTags();
+//            tag = tags.get(tagName);
+//        } catch (JGitInternalException | GitAPIException ex) {
+//            throw new GitException(ex);
+//        }
+    }
+    
+    public GitTag getTag () {
+        return tag;
+    }
+
+    @Override
     protected void prepare() throws GitException {
+        setCommandsNumber(3);
         super.prepare();
         addArgument(0, "tag"); //NOI18N
         if (signed) {
@@ -121,9 +132,186 @@ public class CreateTagCommand extends GitCommand {
         if (taggedObject != null) {
             addArgument(0, taggedObject);
         }
-    }
+        
+        addArgument(1, "show-ref"); //NOI18N
+        addArgument(1, "--tags"); //NOI18N
+        addArgument(1, tagName);
 
-    public GitTag getTag () {
-        return tag;
+        addArgument(2, "show"); //NOI18N
+        addArgument(2, "--raw"); //NOI18N
+        addArgument(2, revisionPlaseHolder);
+    }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            TagContainer container = new TagContainer();
+            runner(canceled, 0, container, new Parser() {
+
+                @Override
+                public void outputParser(String output, TagContainer container) {
+                }
+
+                @Override
+                public void errorParser(String error) {
+                    parseAddError(error);
+                }
+            });
+            runner(canceled, 1, container, new Parser() {
+
+                @Override
+                public void outputParser(String output, TagContainer container) {
+                    parseShowRef(output, container);
+                }
+
+                @Override
+                public void errorParser(String error) {
+                    parseAddError(error);
+                }
+            });
+            if (container.id != null) {
+                revisionPlaseHolder.setContent(container.id);
+                runner(canceled, 2, container, new Parser() {
+
+                    @Override
+                    public void outputParser(String output, TagContainer container) {
+                        parseShowDetails(output, container);
+                    }
+
+                    @Override
+                    public void errorParser(String error) {
+                        parseAddError(error);
+                    }
+                });
+                tag = getClassFactory().createTag(container);
+            }
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, TagContainer container, Parser parser) {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output, container);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            parser.errorParser(exitStatus.error);
+        }
+    }
+    
+    static void parseShowRef(String output, TagContainer container) {
+        //751a4e1249c3588f7d75e223482603e9f6521063 refs/tags/tag-name
+        for (String line : output.split("\n")) { //NOI18N
+            String[] s = line.split(" ");
+            if (s.length == 2) {
+                String rev = s[0];
+                String ref = s[1];
+                int i = ref.lastIndexOf('/');
+                if (i > 0) {
+                    container.id = rev;
+                    container.name = ref.substring(i+1);
+                    container.ref = ref;
+                }
+            }
+        }
+    }
+    
+    static void parseShowDetails(String output, TagContainer container) {
+        //tag tag-name
+        //Tagger: Alexander Simon <alexander.simon@oracle.com>
+        //Date:   Fri Feb 20 12:00:07 2015 +0300
+        //
+        //tag message
+        //
+        //commit 37684447393e088928aa256a61058303422b0462
+        //Author: Alexander Simon <alexander.simon@oracle.com>
+        //Date:   Fri Feb 20 12:00:07 2015 +0300
+        //
+        //    init commit
+        //
+        //:000000 100644 0000000... cdb8d0e... A  f
+        State state = State.header;
+        for (String line : output.split("\n")) { //NOI18N
+            if (state == State.header) {
+                if (line.startsWith("tag ")) {
+                    continue;
+                }
+                if (line.startsWith("Tagger:")) {
+                    container.author = line.substring(7).trim();
+                    continue;
+                }
+                if (line.startsWith("Date:")) {
+                    container.time = line.substring(5).trim();
+                    continue;
+                }
+                state = State.message;
+                continue;
+            }
+            if (state == State.message) {
+                if (line.length() > 0) {
+                    if (container.message == null) {
+                        container.message = line.trim();
+                    } else {
+                        container.message += "\n"+line.trim();
+                    }
+                } else {
+                    state = State.object;
+                }
+                continue;
+            }
+            if (state == State.object) {
+                if (line.startsWith("commit")) {
+                    container.type = GitObjectType.COMMIT;
+                    container.objectId = line.substring(6).trim();
+                    break;
+                }
+                continue;
+            }
+        }
+        if (container.type == null) { 
+            System.err.println(output);
+        }
+    }
+    
+    private void parseAddError(String error) {
+        //The following paths are ignored by one of your .gitignore files:
+        //folder2
+        //Use -f if you really want to add them.
+        //fatal: no files added
+        processMessages(error);
+    }
+    
+    abstract static class Parser {
+        public abstract void outputParser(String output, TagContainer container);
+        public void errorParser(String error){
+        }
+    }
+    
+    private enum State {
+        header,
+        message,
+        object
     }
 }

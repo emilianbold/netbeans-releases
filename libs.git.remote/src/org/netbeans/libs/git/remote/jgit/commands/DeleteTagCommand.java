@@ -41,13 +41,7 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.lib.RefUpdate.Result;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.GitRefUpdateResult;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -68,28 +62,28 @@ public class DeleteTagCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        Ref currentRef = repository.getTags().get(tagName);
-        if (currentRef == null) {
-            throw new GitException.MissingObjectException(tagName, GitObjectType.TAG);
-        }
-        String fullName = currentRef.getName();
-        try {
-            RefUpdate update = repository.updateRef(fullName);
-            update.setRefLogMessage("tag deleted", false);
-            update.setForceUpdate(true);
-            Result deleteResult = update.delete();
-
-            switch (deleteResult) {
-                case IO_FAILURE:
-                case LOCK_FAILURE:
-                case REJECTED:
-                    throw new GitException.RefUpdateException("Cannot delete tag " + tagName, GitRefUpdateResult.valueOf(deleteResult.name()));
-            }
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
-        
+//        Repository repository = getRepository().getRepository();
+//        Ref currentRef = repository.getTags().get(tagName);
+//        if (currentRef == null) {
+//            throw new GitException.MissingObjectException(tagName, GitObjectType.TAG);
+//        }
+//        String fullName = currentRef.getName();
+//        try {
+//            RefUpdate update = repository.updateRef(fullName);
+//            update.setRefLogMessage("tag deleted", false);
+//            update.setForceUpdate(true);
+//            Result deleteResult = update.delete();
+//
+//            switch (deleteResult) {
+//                case IO_FAILURE:
+//                case LOCK_FAILURE:
+//                case REJECTED:
+//                    throw new GitException.RefUpdateException("Cannot delete tag " + tagName, GitRefUpdateResult.valueOf(deleteResult.name()));
+//            }
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        }
+//        
     }
     
     @Override

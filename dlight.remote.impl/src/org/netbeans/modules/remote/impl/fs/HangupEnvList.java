@@ -61,7 +61,11 @@ public class HangupEnvList {
         hanged.put(env, Boolean.TRUE);
     }
 
+    public static void clearHung(ExecutionEnvironment env) {
+        hanged.remove(env);
+    }
+
     public static boolean isHung(ExecutionEnvironment env) {
         return hanged.containsKey(env);
-    }
+    }    
 }

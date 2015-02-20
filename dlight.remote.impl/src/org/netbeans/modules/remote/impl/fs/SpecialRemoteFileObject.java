@@ -84,7 +84,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
 
     @Override
     public boolean isData() {
-        return true;
+        return false;
     }
 
     @Override

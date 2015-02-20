@@ -44,8 +44,8 @@ package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.eclipse.jgit.lib.Constants;
 import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -67,7 +67,7 @@ public class ListRemoteBranchesCommand extends ListRemoteObjectsCommand {
     @Override
     protected void processRefs () {
         remoteBranches = new LinkedHashMap<String, GitBranch>();
-        remoteBranches.putAll(Utils.refsToBranches(getRefs(), Constants.R_HEADS, getClassFactory()));
+        remoteBranches.putAll(Utils.refsToBranches(getRefs(), GitConstants.R_HEADS, getClassFactory()));
     }
     
     @Override

@@ -42,7 +42,6 @@
 
 package org.netbeans.libs.git.remote;
 
-import org.eclipse.jgit.lib.RepositoryState;
 import org.netbeans.libs.git.remote.jgit.Utils;
 
 /**
@@ -201,33 +200,33 @@ public enum GitRepositoryState {
 	 */
 	public abstract boolean canResetHead ();
 
-        static GitRepositoryState getStateFor (RepositoryState state) {
-            switch (state) {
-                case APPLY:
-                    return GitRepositoryState.APPLY;
-                case BARE:
-                    return GitRepositoryState.BARE;
-                case BISECTING:
-                    return GitRepositoryState.BISECTING;
-                case MERGING:
-                case REVERTING:
-                    return GitRepositoryState.MERGING;
-                case CHERRY_PICKING:
-                    return GitRepositoryState.CHERRY_PICKING;
-                case CHERRY_PICKING_RESOLVED:
-                    return GitRepositoryState.CHERRY_PICKING_RESOLVED;
-                case MERGING_RESOLVED:
-                case REVERTING_RESOLVED:
-                    return GitRepositoryState.MERGING_RESOLVED;
-                case REBASING:
-                case REBASING_INTERACTIVE:
-                case REBASING_MERGE:
-                case REBASING_REBASING:
-                    return GitRepositoryState.REBASING;
-                case SAFE:
-                    return GitRepositoryState.SAFE;
-                default:
-                    throw new IllegalStateException(state.getDescription());
-            }
-        }
+//        private GitRepositoryState getStateFor (RepositoryState state) {
+//            switch (state) {
+//                case APPLY:
+//                    return GitRepositoryState.APPLY;
+//                case BARE:
+//                    return GitRepositoryState.BARE;
+//                case BISECTING:
+//                    return GitRepositoryState.BISECTING;
+//                case MERGING:
+//                case REVERTING:
+//                    return GitRepositoryState.MERGING;
+//                case CHERRY_PICKING:
+//                    return GitRepositoryState.CHERRY_PICKING;
+//                case CHERRY_PICKING_RESOLVED:
+//                    return GitRepositoryState.CHERRY_PICKING_RESOLVED;
+//                case MERGING_RESOLVED:
+//                case REVERTING_RESOLVED:
+//                    return GitRepositoryState.MERGING_RESOLVED;
+//                case REBASING:
+//                case REBASING_INTERACTIVE:
+//                case REBASING_MERGE:
+//                case REBASING_REBASING:
+//                    return GitRepositoryState.REBASING;
+//                case SAFE:
+//                    return GitRepositoryState.SAFE;
+//                default:
+//                    throw new IllegalStateException(state.getDescription());
+//            }
+//        }
 }

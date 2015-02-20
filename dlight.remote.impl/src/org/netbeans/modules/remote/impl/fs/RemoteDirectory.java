@@ -298,6 +298,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (USE_VCS) {
                     try {
                         getFileSystem().setInsideVCS(true);
+                        getFileSystem().setBeingCreated(fo.getImplementor());
                         FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                         if (interceptor != null) {
                             if (this == orig) {
@@ -313,6 +314,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         }
                     } finally {
                         getFileSystem().setInsideVCS(false);
+                        getFileSystem().setBeingCreated(null);
                     }
                 }
                 return fo;
@@ -1727,6 +1729,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private File getStorageFile() {
         return new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
+    }
+
+    @Override
+    public boolean hasCache() {
+        return getStorageFile().exists();
     }
 
     @Override

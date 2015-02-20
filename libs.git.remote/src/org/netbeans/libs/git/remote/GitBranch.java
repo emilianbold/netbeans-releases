@@ -42,8 +42,6 @@
 
 package org.netbeans.libs.git.remote;
 
-import org.eclipse.jgit.lib.ObjectId;
-
 /**
  * Represents a local or remote branch in the local Git repository.
  * 
@@ -59,30 +57,19 @@ public final class GitBranch {
     /**
      * A null branch instance. Usually used for just initialized repositories that contain no HEAD yet.
      */
-    public static final GitBranch NO_BRANCH_INSTANCE = new GitBranch(NO_BRANCH, false, true, ObjectId.zeroId());
+    public static final GitBranch NO_BRANCH_INSTANCE = new GitBranch(NO_BRANCH, false, true, "0000000000000000000000000000000000000000");
 
     private final String name;
     private final boolean remote;
     private final boolean active;
-    private ObjectId id;
     private GitBranch trackedBranch;
-    private final boolean isKIT;
     private String branchCode;
-
-    GitBranch (String name, boolean remote, boolean active, ObjectId id) {
-        this.name = name;
-        this.remote = remote;
-        this.active = active;
-        this.id = id;
-        isKIT = true;
-    }
 
     GitBranch (String name, boolean remote, boolean active, String id) {
         this.name = name;
         this.remote = remote;
         this.active = active;
         this.branchCode = id;
-        isKIT = false;
     }
 
     /**
@@ -110,11 +97,7 @@ public final class GitBranch {
      * @return commit id of the HEAD commit in the branch.
      */
     public String getId () {
-        if (isKIT) {
-            return ObjectId.toString(id);
-        } else {
-            return branchCode;
-        }
+        return branchCode;
     }
     
     /**

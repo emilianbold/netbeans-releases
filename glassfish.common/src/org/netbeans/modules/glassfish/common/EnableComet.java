@@ -42,12 +42,15 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.tooling.admin.CommandSetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.ResultMap;
+import org.netbeans.modules.glassfish.tooling.admin.CommandGetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.ResultString;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.GlassFishIdeException;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.admin.*;
+import org.netbeans.modules.glassfish.tooling.GlassFishIdeException;
+import org.netbeans.modules.glassfish.tooling.TaskState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 /**

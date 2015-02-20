@@ -42,29 +42,16 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.List;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.treewalk.EmptyTreeIterator;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
+import org.netbeans.libs.git.remote.GitRevisionInfo.GitRevCommit;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -88,44 +75,44 @@ public class ExportCommitCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        Repository repository = getRepository().getRepository();
-        RevCommit commit = Utils.findCommit(repository, revisionStr);
-        if (commit.getParentCount() > 1) {
-            throw new GitException("Unable to export a merge commit");
-        }
-        DiffFormatter formatter = null;
-        try {
-            out.write(Constants.encode(formatCommitInfo(commit)));
-            formatter = new DiffFormatter(out);
-            formatter.setRepository(repository);
-            List<DiffEntry> diffEntries;
-            if (commit.getParentCount() > 0) {
-                formatter.setDetectRenames(true);
-                diffEntries = formatter.scan(commit.getParent(0), commit);
-            } else {
-                TreeWalk walk = new TreeWalk(repository);
-                walk.reset();
-                walk.setRecursive(true);
-                walk.addTree(new EmptyTreeIterator());
-                walk.addTree(commit.getTree());
-                walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
-                diffEntries = DiffEntry.scan(walk);
-            }
-            for (DiffEntry ent : diffEntries) {
-                if (monitor.isCanceled()) {
-                    break;
-                }
-                listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), ent.getNewPath()), ent.getNewPath());
-                formatter.format(ent);
-            }
-            formatter.flush();
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            if (formatter != null) {
-                formatter.release();
-            }
-        }
+//        Repository repository = getRepository().getRepository();
+//        RevCommit commit = Utils.findCommit(repository, revisionStr);
+//        if (commit.getParentCount() > 1) {
+//            throw new GitException("Unable to export a merge commit");
+//        }
+//        DiffFormatter formatter = null;
+//        try {
+//            out.write(Constants.encode(formatCommitInfo(commit)));
+//            formatter = new DiffFormatter(out);
+//            formatter.setRepository(repository);
+//            List<DiffEntry> diffEntries;
+//            if (commit.getParentCount() > 0) {
+//                formatter.setDetectRenames(true);
+//                diffEntries = formatter.scan(commit.getParent(0), commit);
+//            } else {
+//                TreeWalk walk = new TreeWalk(repository);
+//                walk.reset();
+//                walk.setRecursive(true);
+//                walk.addTree(new EmptyTreeIterator());
+//                walk.addTree(commit.getTree());
+//                walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
+//                diffEntries = DiffEntry.scan(walk);
+//            }
+//            for (DiffEntry ent : diffEntries) {
+//                if (monitor.isCanceled()) {
+//                    break;
+//                }
+//                listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), ent.getNewPath()), ent.getNewPath());
+//                formatter.format(ent);
+//            }
+//            formatter.flush();
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            if (formatter != null) {
+//                formatter.release();
+//            }
+//        }
     }
     
     @Override
@@ -137,7 +124,7 @@ public class ExportCommitCommand extends GitCommand {
         addArgument(0, revisionStr);
     }
 
-    private String formatCommitInfo (RevCommit commit) {
+    private String formatCommitInfo (GitRevCommit commit) {
         GitRevisionInfo info = getClassFactory().createRevisionInfo(commit, getRepository());
         StringBuilder sb = new StringBuilder();
         sb.append("From ").append(info.getRevision()).append(" ").append("Mon Sep 17 00:00:00 2001").append(NL);

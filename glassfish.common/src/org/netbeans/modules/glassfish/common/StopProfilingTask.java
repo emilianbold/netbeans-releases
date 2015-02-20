@@ -43,9 +43,9 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.TaskEvent;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.TaskStateListener;
+import org.netbeans.modules.glassfish.tooling.TaskEvent;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.TaskStateListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.util.NbBundle;
 

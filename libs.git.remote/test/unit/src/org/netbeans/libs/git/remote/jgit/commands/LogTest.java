@@ -45,15 +45,9 @@ package org.netbeans.libs.git.remote.jgit.commands;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.revwalk.filter.AndRevFilter;
-import org.eclipse.jgit.revwalk.filter.MessageRevFilter;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.netbeans.libs.git.remote.ApiUtils;
 import org.netbeans.libs.git.remote.GitClient;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.GitRevisionInfo.GitFileInfo;
@@ -382,7 +376,7 @@ public class LogTest extends AbstractGitTestCase {
         add(files);
 
         GitClient client = getClient(workDir);
-        GitUser user1 = ApiUtils.getClassFactory().createUser(new PersonIdent("git-test-user", "git-test-user@domain.com"));
+        GitUser user1 = ApiUtils.getClassFactory().createUser("git-test-user", "git-test-user@domain.com");
         GitRevisionInfo revision1 = client.commit(files, "modification1", user1, null, NULL_PROGRESS_MONITOR);
 
         write(f, "modification2");
@@ -470,59 +464,59 @@ public class LogTest extends AbstractGitTestCase {
     }
     
     public void testSubstringFilter () throws Exception {
-        Git git = new Git(repository.getRepository());
-        RevCommit c = git.commit().setMessage("abcd").call();
-
-        RevWalk walk = new RevWalk(repository.getRepository());
-        {
-            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("ab")));
-            walk.markStart(c);
-            RevCommit next = walk.next();
-            assertNotNull(next);
-            walk.reset();
-            SearchCriteria crit = new SearchCriteria();
-            crit.setMessage("ab");
-            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
-            assertEquals(1, log.length);
-        }
-
-        {
-            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("bc")));
-            walk.markStart(c);
-            RevCommit next = walk.next();
-            assertNotNull(next);
-            walk.reset();
-            SearchCriteria crit = new SearchCriteria();
-            crit.setMessage("bc");
-            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
-            assertEquals(1, log.length);
-        }
-
-        {
-            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("cd")));
-            walk.markStart(c);
-            RevCommit next = walk.next();
-            // JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
-            assertNotNull(next);
-            walk.reset();
-            SearchCriteria crit = new SearchCriteria();
-            crit.setMessage("cd");
-            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
-            assertEquals(1, log.length);
-        }
-
-        {
-            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("abcd")));
-            walk.markStart(c);
-            RevCommit next = walk.next();
-            // JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
-            assertNotNull(next);
-            walk.reset();
-            SearchCriteria crit = new SearchCriteria();
-            crit.setMessage("abcd");
-            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
-            assertEquals(1, log.length);
-        }
+//        Git git = new Git(repository.getRepository());
+//        RevCommit c = git.commit().setMessage("abcd").call();
+//
+//        RevWalk walk = new RevWalk(repository.getRepository());
+//        {
+//            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("ab")));
+//            walk.markStart(c);
+//            RevCommit next = walk.next();
+//            assertNotNull(next);
+//            walk.reset();
+//            SearchCriteria crit = new SearchCriteria();
+//            crit.setMessage("ab");
+//            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
+//            assertEquals(1, log.length);
+//        }
+//
+//        {
+//            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("bc")));
+//            walk.markStart(c);
+//            RevCommit next = walk.next();
+//            assertNotNull(next);
+//            walk.reset();
+//            SearchCriteria crit = new SearchCriteria();
+//            crit.setMessage("bc");
+//            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
+//            assertEquals(1, log.length);
+//        }
+//
+//        {
+//            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("cd")));
+//            walk.markStart(c);
+//            RevCommit next = walk.next();
+//            // JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
+//            assertNotNull(next);
+//            walk.reset();
+//            SearchCriteria crit = new SearchCriteria();
+//            crit.setMessage("cd");
+//            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
+//            assertEquals(1, log.length);
+//        }
+//
+//        {
+//            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("abcd")));
+//            walk.markStart(c);
+//            RevCommit next = walk.next();
+//            // JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
+//            assertNotNull(next);
+//            walk.reset();
+//            SearchCriteria crit = new SearchCriteria();
+//            crit.setMessage("abcd");
+//            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
+//            assertEquals(1, log.length);
+//        }
     }
     
     public void testLogShowMerges () throws Exception {
@@ -533,7 +527,7 @@ public class LogTest extends AbstractGitTestCase {
         commit(files);
 
         GitClient client = getClient(workDir);
-        client.createBranch("b", "master", NULL_PROGRESS_MONITOR);
+        client.createBranch("b", GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         client.checkoutRevision("b", true, NULL_PROGRESS_MONITOR);
         
         write(f, "modification on branch\nb\nc");
@@ -542,7 +536,7 @@ public class LogTest extends AbstractGitTestCase {
         
         Thread.sleep(1100);
         
-        client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(GitConstants.MASTER, true, NULL_PROGRESS_MONITOR);
         write(f, "a\nb\nmodification on master");
         add(files);
         GitRevisionInfo revisionMaster = client.commit(files, "modification on master", null, null, NULL_PROGRESS_MONITOR);
@@ -550,7 +544,7 @@ public class LogTest extends AbstractGitTestCase {
         GitRevisionInfo revisionMerge = client.log(client.merge("b", NULL_PROGRESS_MONITOR).getNewHead(), NULL_PROGRESS_MONITOR);
         
         SearchCriteria crit = new SearchCriteria();
-        crit.setRevisionTo("master");
+        crit.setRevisionTo(GitConstants.MASTER);
         GitRevisionInfo[] revisions = client.log(crit, true, NULL_PROGRESS_MONITOR);
         assertEquals(4, revisions.length);
         assertRevisions(revisionMerge, revisions[0]);
@@ -684,14 +678,14 @@ public class LogTest extends AbstractGitTestCase {
         commit(files);
 
         GitClient client = getClient(workDir);
-        client.createBranch("b", "master", NULL_PROGRESS_MONITOR);
+        client.createBranch("b", GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         client.checkoutRevision("b", true, NULL_PROGRESS_MONITOR);
         
         write(f, "modification on branch");
         add(files);
         client.commit(files, "modification on branch", null, null, NULL_PROGRESS_MONITOR);
         
-        client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(GitConstants.MASTER, true, NULL_PROGRESS_MONITOR);
         write(f2, "modification");
         add(files);
         client.commit(files, "modification on master", null, null, NULL_PROGRESS_MONITOR);
@@ -717,9 +711,9 @@ public class LogTest extends AbstractGitTestCase {
         commit(files);
         
         GitClient client = getClient(workDir);
-        client.createBranch("BRANCH", "master", NULL_PROGRESS_MONITOR);
+        client.createBranch("BRANCH", GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         SearchCriteria crit = new SearchCriteria();
-        crit.setRevisionTo("master");
+        crit.setRevisionTo(GitConstants.MASTER);
         GitRevisionInfo[] log = client.log(crit, NULL_PROGRESS_MONITOR);
         for (GitRevisionInfo info : log) {
             // no branch info fetched by this version of the command
@@ -730,7 +724,7 @@ public class LogTest extends AbstractGitTestCase {
         for (GitRevisionInfo info : log) {
             // all commits are from master
             assertEquals(2, info.getBranches().size());
-            assertNotNull(info.getBranches().get("master"));
+            assertNotNull(info.getBranches().get(GitConstants.MASTER));
             assertNotNull(info.getBranches().get("BRANCH"));
         }
     }
@@ -746,7 +740,7 @@ public class LogTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         GitRevisionInfo firstCommit = client.commit(files, "initial commit", null, null, NULL_PROGRESS_MONITOR);
         
-        client.createBranch("newbranch", "master", NULL_PROGRESS_MONITOR);
+        client.createBranch("newbranch", GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         
         write(f, "modification");
         add(files);
@@ -780,7 +774,7 @@ public class LogTest extends AbstractGitTestCase {
         commit(files);
                 
         GitClient client = getClient(workDir);
-        client.createBranch("newbranch", "master", NULL_PROGRESS_MONITOR);
+        client.createBranch("newbranch", GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         write(f, "modification on trunk");
         add(files);
         commit(files);
@@ -796,18 +790,18 @@ public class LogTest extends AbstractGitTestCase {
         // branch commit
         assertEquals(1, log[0].getBranches().size());
 if(KIT) assertNotNull(log[0].getBranches().get("newbranch"));
-else    assertNotNull(log[0].getBranches().get("master"));
+else    assertNotNull(log[0].getBranches().get(GitConstants.MASTER));
         // master commit
         assertEquals(1, log[1].getBranches().size());
-if(KIT) assertNotNull(log[1].getBranches().get("master"));
+if(KIT) assertNotNull(log[1].getBranches().get(GitConstants.MASTER));
 else    assertNotNull(log[1].getBranches().get("newbranch"));
         // common commit
         assertEquals(2, log[2].getBranches().size());
-        assertNotNull(log[2].getBranches().get("master"));
+        assertNotNull(log[2].getBranches().get(GitConstants.MASTER));
         assertNotNull(log[2].getBranches().get("newbranch"));
         // initial commit
         assertEquals(2, log[3].getBranches().size());
-        assertNotNull(log[3].getBranches().get("master"));
+        assertNotNull(log[3].getBranches().get(GitConstants.MASTER));
         assertNotNull(log[3].getBranches().get("newbranch"));
     }
     
@@ -818,17 +812,17 @@ else    assertNotNull(log[1].getBranches().get("newbranch"));
         add(files);
         GitClient client = getClient(workDir);
         client.commit(files, "short message", null, null, NULL_PROGRESS_MONITOR);
-        assertEquals("short message", client.log("HEAD", NULL_PROGRESS_MONITOR).getShortMessage());
+        assertEquals("short message", client.log(GitConstants.HEAD, NULL_PROGRESS_MONITOR).getShortMessage());
         
         write(f, "m1");
         add(f);
         client.commit(files, "short message\n\n\n", null, null, NULL_PROGRESS_MONITOR);
-        assertEquals("short message", client.log("HEAD", NULL_PROGRESS_MONITOR).getShortMessage());
+        assertEquals("short message", client.log(GitConstants.HEAD, NULL_PROGRESS_MONITOR).getShortMessage());
         
         write(f, "m1");
         add(f);
         client.commit(files, "short message\nbla\nbla\nbla", null, null, NULL_PROGRESS_MONITOR);
-        assertEquals("short message", client.log("HEAD", NULL_PROGRESS_MONITOR).getShortMessage());
+        assertEquals("short message", client.log(GitConstants.HEAD, NULL_PROGRESS_MONITOR).getShortMessage());
     }
     
     public void testLimit () throws Exception {

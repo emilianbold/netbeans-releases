@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.eclipse.jgit.transport.RemoteConfig;
 
 /**
  * Represents the <code>[remote]</code> area of a gitconfig file.
@@ -122,12 +121,12 @@ public final class GitRemoteConfig {
         return new ArrayList<String>(set);
     }
     
-    static GitRemoteConfig fromRemoteConfig (RemoteConfig config) {
-        return new GitRemoteConfig(config.getName(),
-                getAsStrings(config.getURIs()),
-                getAsStrings(config.getPushURIs()),
-                getAsStrings(config.getFetchRefSpecs()),
-                getAsStrings(config.getPushRefSpecs()));
-    }
+//    private GitRemoteConfig fromRemoteConfig (RemoteConfig config) {
+//        return new GitRemoteConfig(config.getName(),
+//                getAsStrings(config.getURIs()),
+//                getAsStrings(config.getPushURIs()),
+//                getAsStrings(config.getFetchRefSpecs()),
+//                getAsStrings(config.getPushRefSpecs()));
+//    }
 
 }

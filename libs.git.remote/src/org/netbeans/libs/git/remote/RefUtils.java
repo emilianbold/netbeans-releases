@@ -42,33 +42,31 @@
 package org.netbeans.libs.git.remote;
 
 import java.util.List;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.RefSpec;
+//import org.eclipse.jgit.lib.Repository;
+//import org.eclipse.jgit.transport.RefSpec;
 
 /**
  *
  * @author alsimon
  */
 public class RefUtils {
-    private static final String PREFIX_R_HEADS = "refs/heads/"; //NOI18N
-    private static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
 
     private RefUtils(){
     }
 
     public static boolean isValidRefName (String refName) {
-        return Repository.isValidRefName(refName);
+        return true;//Repository.isValidRefName(refName);
     }
     
     public static String findRemotePeer (List<String> fetchRefSpecs, GitBranch branch) {
         for (String refSpec : fetchRefSpecs) {
-            RefSpec spec = new RefSpec(refSpec);
-            if (spec.matchDestination(PREFIX_R_REMOTES + branch.getName())) {
-                if (spec.isWildcard()) {
-                    spec = spec.expandFromDestination(PREFIX_R_REMOTES + branch.getName());
-                }
-                return spec.getSource().substring(PREFIX_R_HEADS.length());
-            }
+//            RefSpec spec = new RefSpec(refSpec);
+//            if (spec.matchDestination(GitConstants.R_REMOTES + branch.getName())) {
+//                if (spec.isWildcard()) {
+//                    spec = spec.expandFromDestination(GitConstants.R_REMOTES + branch.getName());
+//                }
+//                return spec.getSource().substring(GitConstants.R_HEADS.length());
+//            }
         }
         return null;
     }

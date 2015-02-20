@@ -44,12 +44,7 @@ package org.netbeans.libs.git.remote;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.merge.ResolveMerger;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -120,14 +115,14 @@ public final class GitMergeResult {
         }
     }
     
-    GitMergeResult (MergeResult result, VCSFileProxy workDir) {
-        this.mergeStatus = parseMergeStatus(result.getMergeStatus());
+    GitMergeResult (/*MergeResult result,*/ VCSFileProxy workDir) {
+        this.mergeStatus = MergeStatus.NOT_SUPPORTED;//parseMergeStatus(result.getMergeStatus());
         this.workDir = workDir;
-        this.newHead = result.getNewHead() == null ? null : result.getNewHead().getName();
-        this.base = result.getBase() == null ? null : result.getBase().getName();
-        this.mergedCommits = getMergedCommits(result);
-        this.conflicts = getConflicts(result);
-        this.failures = getFailures(result);
+        this.newHead = null;//result.getNewHead() == null ? null : result.getNewHead().getName();
+        this.base = null;//result.getBase() == null ? null : result.getBase().getName();
+        this.mergedCommits = new String[]{};//getMergedCommits(result);
+        this.conflicts = Collections.emptyList();//getConflicts(result);
+        this.failures = Collections.emptyList();//getFailures(result);
     }
     
     /**
@@ -179,49 +174,49 @@ public final class GitMergeResult {
         return failures;
     }
 
-    static MergeStatus parseMergeStatus (MergeResult.MergeStatus mergeStatus) {
-        if (mergeStatus == MergeResult.MergeStatus.FAST_FORWARD_SQUASHED) {
-            mergeStatus = MergeResult.MergeStatus.FAST_FORWARD;
-        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_SQUASHED) {
-            mergeStatus = MergeResult.MergeStatus.MERGED;
-        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_NOT_COMMITTED) {
-            mergeStatus = MergeResult.MergeStatus.MERGED;
-        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_SQUASHED_NOT_COMMITTED) {
-            mergeStatus = MergeResult.MergeStatus.MERGED;
-        } else if (mergeStatus == MergeResult.MergeStatus.CHECKOUT_CONFLICT) {
-            mergeStatus = MergeResult.MergeStatus.CONFLICTING;
-        }
-        return GitMergeResult.MergeStatus.valueOf(mergeStatus.name());
-    }
-
-    private String[] getMergedCommits (MergeResult result) {
-        ObjectId[] mergedObjectIds = result.getMergedCommits();
-        String[] commits = new String[mergedObjectIds.length];
-        for (int i = 0; i < mergedObjectIds.length; ++i) {
-            commits[i] = ObjectId.toString(mergedObjectIds[i]);
-        }
-        return commits;
-    }
-
-    private List<VCSFileProxy> getConflicts(MergeResult result) {
-        List<VCSFileProxy> files = new LinkedList<VCSFileProxy>();
-        Map<String, int[][]> mergeConflicts = result.getConflicts();
-        if (mergeConflicts != null) {
-            for (Map.Entry<String, int[][]> conflict : mergeConflicts.entrySet()) {
-                files.add(VCSFileProxy.createFileProxy(workDir, conflict.getKey()));
-            }
-        }
-        return Collections.unmodifiableList(files);
-    }
-
-    private List<VCSFileProxy> getFailures (MergeResult result) {
-        List<VCSFileProxy> files = new LinkedList<VCSFileProxy>();
-        Map<String, ResolveMerger.MergeFailureReason> obstructions = result.getFailingPaths();
-        if (obstructions != null) {
-            for (Map.Entry<String, ResolveMerger.MergeFailureReason> failure : obstructions.entrySet()) {
-                files.add(VCSFileProxy.createFileProxy(workDir, failure.getKey()));
-            }
-        }
-        return Collections.unmodifiableList(files);
-    }
+//    private MergeStatus parseMergeStatus (MergeResult.MergeStatus mergeStatus) {
+//        if (mergeStatus == MergeResult.MergeStatus.FAST_FORWARD_SQUASHED) {
+//            mergeStatus = MergeResult.MergeStatus.FAST_FORWARD;
+//        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_SQUASHED) {
+//            mergeStatus = MergeResult.MergeStatus.MERGED;
+//        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_NOT_COMMITTED) {
+//            mergeStatus = MergeResult.MergeStatus.MERGED;
+//        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_SQUASHED_NOT_COMMITTED) {
+//            mergeStatus = MergeResult.MergeStatus.MERGED;
+//        } else if (mergeStatus == MergeResult.MergeStatus.CHECKOUT_CONFLICT) {
+//            mergeStatus = MergeResult.MergeStatus.CONFLICTING;
+//        }
+//        return GitMergeResult.MergeStatus.valueOf(mergeStatus.name());
+//    }
+//
+//    private String[] getMergedCommits (MergeResult result) {
+//        ObjectId[] mergedObjectIds = result.getMergedCommits();
+//        String[] commits = new String[mergedObjectIds.length];
+//        for (int i = 0; i < mergedObjectIds.length; ++i) {
+//            commits[i] = ObjectId.toString(mergedObjectIds[i]);
+//        }
+//        return commits;
+//    }
+//
+//    private List<VCSFileProxy> getConflicts(MergeResult result) {
+//        List<VCSFileProxy> files = new LinkedList<VCSFileProxy>();
+//        Map<String, int[][]> mergeConflicts = result.getConflicts();
+//        if (mergeConflicts != null) {
+//            for (Map.Entry<String, int[][]> conflict : mergeConflicts.entrySet()) {
+//                files.add(VCSFileProxy.createFileProxy(workDir, conflict.getKey()));
+//            }
+//        }
+//        return Collections.unmodifiableList(files);
+//    }
+//
+//    private List<VCSFileProxy> getFailures (MergeResult result) {
+//        List<VCSFileProxy> files = new LinkedList<VCSFileProxy>();
+//        Map<String, ResolveMerger.MergeFailureReason> obstructions = result.getFailingPaths();
+//        if (obstructions != null) {
+//            for (Map.Entry<String, ResolveMerger.MergeFailureReason> failure : obstructions.entrySet()) {
+//                files.add(VCSFileProxy.createFileProxy(workDir, failure.getKey()));
+//            }
+//        }
+//        return Collections.unmodifiableList(files);
+//    }
 }

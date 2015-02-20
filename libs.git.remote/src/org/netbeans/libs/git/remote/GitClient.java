@@ -48,14 +48,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.RepositoryState;
 import org.netbeans.libs.git.remote.GitRepository.FastForwardOption;
 import org.netbeans.libs.git.remote.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
-import org.netbeans.libs.git.remote.jgit.JGitCredentialsProvider;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.commands.AddCommand;
 import org.netbeans.libs.git.remote.jgit.commands.BlameCommand;
@@ -326,7 +321,7 @@ public final class GitClient {
     private final JGitRepository gitRepository;
     private final Set<NotificationListener> listeners;
     private final Set<ProgressMonitor> pmListeners;
-    private JGitCredentialsProvider credentialsProvider;
+    //private JGitCredentialsProvider credentialsProvider;
 
     GitClient (JGitRepository gitRepository) throws GitException {
         this.gitRepository = gitRepository;
@@ -593,10 +588,10 @@ public final class GitClient {
     public void exportDiff (VCSFileProxy[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException {
         switch (mode) {
             case HEAD_VS_INDEX:
-                exportDiff(roots, Constants.HEAD, INDEX, out, monitor);
+                exportDiff(roots, GitConstants.HEAD, INDEX, out, monitor);
                 break;
             case HEAD_VS_WORKINGTREE:
-                exportDiff(roots, Constants.HEAD, WORKING_TREE, out, monitor);
+                exportDiff(roots, GitConstants.HEAD, WORKING_TREE, out, monitor);
                 break;
             case INDEX_VS_WORKINGTREE:
                 exportDiff(roots, INDEX, WORKING_TREE, out, monitor);
@@ -637,7 +632,7 @@ public final class GitClient {
      */
     public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         FetchCommand cmd = new FetchCommand(gitRepository, getClassFactory(), remote, monitor);
-        cmd.setCredentialsProvider(this.credentialsProvider);
+        //cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getUpdates();
     }
@@ -653,7 +648,7 @@ public final class GitClient {
      */
     public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         FetchCommand cmd = new FetchCommand(gitRepository, getClassFactory(), remote, fetchRefSpecifications, monitor);
-        cmd.setCredentialsProvider(this.credentialsProvider);
+        //cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getUpdates();
     }
@@ -732,7 +727,7 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public Map<VCSFileProxy, GitStatus> getStatus (VCSFileProxy[] roots, ProgressMonitor monitor) throws GitException {
-        return getStatus(roots, Constants.HEAD, monitor);
+        return getStatus(roots, GitConstants.HEAD, monitor);
     }
 
     /**
@@ -747,7 +742,7 @@ public final class GitClient {
      * @since 1.9
      */
     public Map<VCSFileProxy, GitStatus> getStatus (VCSFileProxy[] roots, String revision, ProgressMonitor monitor) throws GitException {
-        StatusCommand cmd = new StatusCommand(gitRepository, revision == null ? Constants.HEAD : revision,
+        StatusCommand cmd = new StatusCommand(gitRepository, revision == null ? GitConstants.HEAD : revision,
                 roots, getClassFactory(), monitor, delegateListener);
         cmd.execute();
         return cmd.getStatuses();
@@ -820,9 +815,11 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException {
-        Repository repository = gitRepository.getRepository();
-        RepositoryState state = repository.getRepositoryState();
-        return GitRepositoryState.getStateFor(state);
+        //TODO
+        //Repository repository = gitRepository.getRepository();
+        //RepositoryState state = repository.getRepositoryState();
+        //return GitRepositoryState.getStateFor(state);
+        return GitRepositoryState.BARE;
     }
 
     /**
@@ -830,7 +827,8 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public GitUser getUser() throws GitException {        
-        return getClassFactory().createUser(new PersonIdent(gitRepository.getRepository()));
+        // TODO
+        return getClassFactory().createUser("user", "user@git.com");
     }
 
     /**
@@ -896,7 +894,7 @@ public final class GitClient {
      */
     public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         ListRemoteBranchesCommand cmd = new ListRemoteBranchesCommand(gitRepository, getClassFactory(), remoteRepositoryUrl, monitor);
-        cmd.setCredentialsProvider(this.credentialsProvider);
+        //cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getBranches();
     }
@@ -911,7 +909,7 @@ public final class GitClient {
      */
     public Map<String, String> listRemoteTags (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         ListRemoteTagsCommand cmd = new ListRemoteTagsCommand(gitRepository, getClassFactory(), remoteRepositoryUrl, monitor);
-        cmd.setCredentialsProvider(this.credentialsProvider);
+        //cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getTags();
     }
@@ -1016,7 +1014,7 @@ public final class GitClient {
     public GitPullResult pull (String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) throws GitException.AuthorizationException, 
             GitException.CheckoutConflictException, GitException.MissingObjectException, GitException {
         PullCommand cmd = new PullCommand(gitRepository, getClassFactory(), remote, fetchRefSpecifications, branchToMerge, monitor);
-        cmd.setCredentialsProvider(this.credentialsProvider);
+        //cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getResult();
     }
@@ -1035,7 +1033,7 @@ public final class GitClient {
      */
     public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         PushCommand cmd = new PushCommand(gitRepository, getClassFactory(), remote, pushRefSpecifications, fetchRefSpecifications, monitor);
-        cmd.setCredentialsProvider(this.credentialsProvider);
+        //cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getResult();
     }
@@ -1168,7 +1166,8 @@ public final class GitClient {
      * @param callback callback implementation providing credentials for an authentication process.
      */
     public void setCallback (GitClientCallback callback) {
-        this.credentialsProvider = callback == null ? null : new JGitCredentialsProvider(callback);
+        //TODO
+        //this.credentialsProvider = callback == null ? null : new JGitCredentialsProvider(callback);
     }
     
     /**
@@ -1322,7 +1321,7 @@ public final class GitClient {
     public Map<VCSFileProxy, GitSubmoduleStatus> updateSubmodules (VCSFileProxy[] roots, ProgressMonitor monitor) throws GitException {
         SubmoduleUpdateCommand cmd = new SubmoduleUpdateCommand(gitRepository, getClassFactory(),
                 roots, monitor);
-        cmd.setCredentialsProvider(credentialsProvider);
+        //cmd.setCredentialsProvider(credentialsProvider);
         cmd.execute();
         return cmd.getStatuses();
     }

@@ -42,11 +42,6 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import java.util.Set;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -66,21 +61,21 @@ public class RemoveRemoteCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        StoredConfig config = repository.getConfig();
-        config.unsetSection(ConfigConstants.CONFIG_REMOTE_SECTION, remote);
-        Set<String> subSections = config.getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION);
-        for (String subSection : subSections) {
-            if (remote.equals(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_REMOTE))) {
-                config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_REMOTE);
-                config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_MERGE);
-            }
-        }
-        try {
-            config.save();
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        StoredConfig config = repository.getConfig();
+//        config.unsetSection(ConfigConstants.CONFIG_REMOTE_SECTION, remote);
+//        Set<String> subSections = config.getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION);
+//        for (String subSection : subSections) {
+//            if (remote.equals(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_REMOTE))) {
+//                config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_REMOTE);
+//                config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_MERGE);
+//            }
+//        }
+//        try {
+//            config.save();
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        }
     }
     
     @Override

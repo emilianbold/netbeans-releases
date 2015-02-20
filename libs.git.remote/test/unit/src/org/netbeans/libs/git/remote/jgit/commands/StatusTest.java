@@ -44,17 +44,13 @@ package org.netbeans.libs.git.remote.jgit.commands;
 import java.io.IOException;
 import java.util.Map;
 import static junit.framework.Assert.assertFalse;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheBuilder;
-import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.remote.GitClient;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitStatus;
 import org.netbeans.libs.git.remote.GitStatus.Status;
 import org.netbeans.libs.git.remote.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.remote.jgit.JGitConfig;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor.DefaultProgressMonitor;
 import org.netbeans.libs.git.remote.progress.StatusListener;
@@ -245,7 +241,7 @@ else    assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_R
         write(deleted_modified, "deleted_modified\nchange");
         
         GitClient client = getClient(workDir);
-        String revId = client.getBranches(false, NULL_PROGRESS_MONITOR).get(Constants.MASTER).getId();
+        String revId = client.getBranches(false, NULL_PROGRESS_MONITOR).get(GitConstants.MASTER).getId();
         
         VCSFileProxy someFile = VCSFileProxy.createFileProxy(workDir, "fileforothercommit");
         write(someFile, "fileforothercommit");
@@ -254,7 +250,7 @@ else    assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_R
 
         TestStatusListener listener = new TestStatusListener();
         client.addNotificationListener(listener);
-        Map<VCSFileProxy, GitStatus> statuses = client.getStatus(new VCSFileProxy[] { workDir }, Constants.HEAD, NULL_PROGRESS_MONITOR);
+        Map<VCSFileProxy, GitStatus> statuses = client.getStatus(new VCSFileProxy[] { workDir }, GitConstants.HEAD, NULL_PROGRESS_MONITOR);
         assertFalse(statuses.isEmpty());
         //?? untracked
         assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false, listener);
@@ -578,33 +574,33 @@ else    assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Stat
         Map<VCSFileProxy, GitStatus> conflicts = client.getConflicts(roots, NULL_PROGRESS_MONITOR);
         assertEquals(0, conflicts.size());
 
-        DirCache cache = repository.getRepository().lockDirCache();
-        try {
-            DirCacheEntry e = cache.getEntry("f");
-            DirCacheBuilder builder = cache.builder();
-            DirCacheEntry toAdd = new DirCacheEntry("f", 1);
-            toAdd.setFileMode(e.getFileMode());
-            toAdd.setObjectId(e.getObjectId());
-            builder.add(toAdd);
-            toAdd = new DirCacheEntry("f", 2);
-            toAdd.setFileMode(e.getFileMode());
-            toAdd.setObjectId(e.getObjectId());
-            builder.add(toAdd);
-
-            e = cache.getEntry("f2");
-            toAdd = new DirCacheEntry("f2", 1);
-            toAdd.setFileMode(e.getFileMode());
-            toAdd.setObjectId(e.getObjectId());
-            builder.add(toAdd);
-            toAdd = new DirCacheEntry("f2", 2);
-            toAdd.setFileMode(e.getFileMode());
-            toAdd.setObjectId(e.getObjectId());
-            builder.add(toAdd);
-            builder.finish();
-            builder.commit();
-        } finally {
-            cache.unlock();
-        }
+//        DirCache cache = repository.getRepository().lockDirCache();
+//        try {
+//            DirCacheEntry e = cache.getEntry("f");
+//            DirCacheBuilder builder = cache.builder();
+//            DirCacheEntry toAdd = new DirCacheEntry("f", 1);
+//            toAdd.setFileMode(e.getFileMode());
+//            toAdd.setObjectId(e.getObjectId());
+//            builder.add(toAdd);
+//            toAdd = new DirCacheEntry("f", 2);
+//            toAdd.setFileMode(e.getFileMode());
+//            toAdd.setObjectId(e.getObjectId());
+//            builder.add(toAdd);
+//
+//            e = cache.getEntry("f2");
+//            toAdd = new DirCacheEntry("f2", 1);
+//            toAdd.setFileMode(e.getFileMode());
+//            toAdd.setObjectId(e.getObjectId());
+//            builder.add(toAdd);
+//            toAdd = new DirCacheEntry("f2", 2);
+//            toAdd.setFileMode(e.getFileMode());
+//            toAdd.setObjectId(e.getObjectId());
+//            builder.add(toAdd);
+//            builder.finish();
+//            builder.commit();
+//        } finally {
+//            cache.unlock();
+//        }
         conflicts = client.getConflicts(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals(1, conflicts.size());
         conflicts = client.getConflicts(new VCSFileProxy[] { f2 }, NULL_PROGRESS_MONITOR);
@@ -638,19 +634,19 @@ else    assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Stat
         statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
         
-        StoredConfig config = repository.getRepository().getConfig();
-        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
+        JGitConfig config = repository.getConfig();
+        config.setBoolean(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_FILEMODE, false);
         config.save();
         statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         
-        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
+        config.setBoolean(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_FILEMODE, true);
         config.save();
         add(roots);
         statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
         
-        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
+        config.setBoolean(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_FILEMODE, false);
         config.save();
         add(roots);
         statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);

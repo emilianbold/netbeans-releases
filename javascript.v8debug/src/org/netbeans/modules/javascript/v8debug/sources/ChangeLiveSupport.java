@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.javascript.v8debug.sources;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Phaser;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,13 +67,17 @@ import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Script;
+import org.netbeans.lib.v8debug.V8StepAction;
 import org.netbeans.lib.v8debug.commands.ChangeLive;
 import org.netbeans.lib.v8debug.commands.ChangeLive.ChangeLog.BreakpointUpdate;
 import org.netbeans.lib.v8debug.commands.ChangeLive.ChangeLog.BreakpointUpdate.Position;
+import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Source;
 import org.netbeans.modules.javascript.v8debug.ScriptsHandler;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.V8DebuggerEngineProvider;
+import org.netbeans.modules.javascript.v8debug.api.DebuggerOptions;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.filesystems.FileAttributeEvent;
@@ -87,8 +94,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Martin Entlicher
  */
-@LazyActionsManagerListener.Registration(path=V8DebuggerEngineProvider.ENGINE_NAME)
-public final class ChangeLiveSupport extends LazyActionsManagerListener {
+public final class ChangeLiveSupport {
     
     private static final Logger LOG = Logger.getLogger(ChangeLiveSupport.class.getName());
     
@@ -98,14 +104,18 @@ public final class ChangeLiveSupport extends LazyActionsManagerListener {
     //private static final String PREP_TEXT = "(function (exports, require, module, __filename, __dirname) { ";
     private static final String APP_TEXT = "})();";
     
+    public static final String PROP_CHANGES = "changes";
+    
     private final V8Debugger dbg;
-    private final ActionsProvider stepIntoActionsProvider;
     private final FileChangeListener sourceChangeListener;
+    private FileChangeDelivery fileChangeDelivery = new FileChangeDelivery();
     private final File[] sourceChangeRoots;
     private final RequestProcessor rp = new RequestProcessor(ChangeLiveSupport.class);
+    private final PropertyChangeSupport pcl = new PropertyChangeSupport(this);
+    private volatile boolean haveChanges = false;
     
-    public ChangeLiveSupport(ContextProvider lookupProvider) {
-        this.dbg = lookupProvider.lookupFirst(null, V8Debugger.class);
+    public ChangeLiveSupport(V8Debugger dbg) {
+        this.dbg = dbg;
         this.sourceChangeListener = new SourceChangeListener();
         this.sourceChangeRoots = dbg.getScriptsHandler().getLocalRoots();
         if (LOG.isLoggable(Level.FINE)) {
@@ -118,14 +128,39 @@ public final class ChangeLiveSupport extends LazyActionsManagerListener {
                 FileUtil.addRecursiveListener(sourceChangeListener, root);
             }
         }
-        ActionsProvider stepIntoAP = null;
-        List<? extends ActionsProvider> actionProviders = lookupProvider.lookup(null, ActionsProvider.class);
-        for (ActionsProvider ap : actionProviders) {
-            if (ap.getActions().contains(ActionsManager.ACTION_STEP_INTO)) {
-                stepIntoAP = ap;
+        dbg.addListener(new V8Debugger.Listener() {
+            @Override public void notifySuspended(boolean suspended) {}
+
+            @Override public void notifyCurrentFrame(CallFrame cf) {}
+
+            @Override public void notifyFinished() {
+                destroy();
             }
+        });
+    }
+    
+    public boolean hasChanges() {
+        return haveChanges;
+    }
+    
+    private void setHasChanges(boolean haveChanges) {
+        if (haveChanges == this.haveChanges) {
+            return ;
         }
-        this.stepIntoActionsProvider = stepIntoAP;
+        this.haveChanges = haveChanges;
+        pcl.firePropertyChange(PROP_CHANGES, !haveChanges, haveChanges);
+    }
+    
+    public void applyChanges() {
+        fileChangeDelivery.applyChanges();
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcl.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcl.removePropertyChangeListener(l);
     }
     
     private void applyModifiedFiles(List<FileObject> modifiedFiles) {
@@ -225,18 +260,40 @@ public final class ChangeLiveSupport extends LazyActionsManagerListener {
         }
         phaser.arriveAndAwaitAdvance();
         boolean doStepIn = doStepInto.get();
-        LOG.log(Level.FINE, "ALl ChangeLive commands processed. Will step into = {0}", doStepIn && stepIntoActionsProvider != null);
-        if (doStepIn && stepIntoActionsProvider != null) {
+        doStepIn = doStepIn && dbg.isSuspended();
+        LOG.log(Level.FINE, "ALl ChangeLive commands processed. Will step into = {0}", doStepIn);
+        if (doStepIn) {
             final CountDownLatch cdl = new CountDownLatch(1);
-            stepIntoActionsProvider.postAction(ActionsManager.ACTION_STEP_INTO, new Runnable() {
-                @Override
-                public void run() {
-                    cdl.countDown();
+            Continue.Arguments ca = new Continue.Arguments(V8StepAction.in);
+            V8Request stepInRequest = dbg.sendCommandRequest(V8Command.Continue, ca, new V8Debugger.CommandResponseCallback() {
+                @Override public void notifyResponse(V8Request request, V8Response response) {
+                    if (response != null) {
+                        dbg.addListener(new V8Debugger.Listener() {
+
+                            @Override public void notifySuspended(boolean suspended) {
+                                if (suspended) {
+                                    cdl.countDown();
+                                    dbg.removeListener(this);
+                                }
+                            }
+
+                            @Override public void notifyCurrentFrame(CallFrame cf) {}
+
+                            @Override public void notifyFinished() {
+                                cdl.countDown();
+                                dbg.removeListener(this);
+                            }
+                        });
+                    } else {
+                        cdl.countDown();
+                    }
                 }
             });
-            try {
-                cdl.await();
-            } catch (InterruptedException ex) {}
+            if (stepInRequest != null) {
+                try {
+                    cdl.await();
+                } catch (InterruptedException ex) {}
+            }
         }
     }
 
@@ -259,8 +316,7 @@ public final class ChangeLiveSupport extends LazyActionsManagerListener {
         }
     }
     
-    @Override
-    protected void destroy() {
+    private void destroy() {
         if (sourceChangeRoots.length == 0) {
             FileUtil.removeFileChangeListener(sourceChangeListener);
         } else {
@@ -270,15 +326,8 @@ public final class ChangeLiveSupport extends LazyActionsManagerListener {
         }
     }
 
-    @Override
-    public String[] getProperties() {
-        return new String[] {};
-    }
-
     private final class SourceChangeListener implements FileChangeListener {
         
-        private FileChangeDelivery fileChangeDelivery = new FileChangeDelivery();
-
         @Override
         public void fileFolderCreated(FileEvent fe) {
         }
@@ -315,15 +364,23 @@ public final class ChangeLiveSupport extends LazyActionsManagerListener {
             synchronized (changedFiles) {
                 changedFiles.add(file);
             }
+            setHasChanges(true);
         }
         
         @Override
         public void run() {
+            if (DebuggerOptions.getInstance().isLiveEdit()) {
+                applyChanges();
+            }
+        }
+        
+        void applyChanges() {
             final List<FileObject> modifiedFiles;
             synchronized (changedFiles) {
                 modifiedFiles = new ArrayList<>(changedFiles);
                 changedFiles.clear();
             }
+            setHasChanges(false);
             rp.post(new Runnable() {
                 @Override
                 public void run() {

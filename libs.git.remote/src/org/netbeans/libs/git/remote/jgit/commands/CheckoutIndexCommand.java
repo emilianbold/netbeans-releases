@@ -41,14 +41,9 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheBuilder;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.utils.CheckoutIndex;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -74,26 +69,26 @@ public class CheckoutIndexCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        Repository repository = getRepository().getRepository();
-        DirCache cache = null;
-        try {
-            // cache must be locked because checkout index may modify its entries
-            cache = repository.lockDirCache();
-            DirCacheBuilder builder = cache.builder();
-            if (cache.getEntryCount() > 0) {
-                builder.keep(0, cache.getEntryCount());
-            }
-            builder.finish();
-            new CheckoutIndex(getRepository(), cache, roots, recursively, listener, monitor, true).checkout();
-            // cache must be saved to disk because checkout index may modify its entries
-            builder.commit();
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            if (cache != null) {
-                cache.unlock();
-            }
-        }
+//        Repository repository = getRepository().getRepository();
+//        DirCache cache = null;
+//        try {
+//            // cache must be locked because checkout index may modify its entries
+//            cache = repository.lockDirCache();
+//            DirCacheBuilder builder = cache.builder();
+//            if (cache.getEntryCount() > 0) {
+//                builder.keep(0, cache.getEntryCount());
+//            }
+//            builder.finish();
+//            new CheckoutIndex(getRepository(), cache, roots, recursively, listener, monitor, true).checkout();
+//            // cache must be saved to disk because checkout index may modify its entries
+//            builder.commit();
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        } finally {
+//            if (cache != null) {
+//                cache.unlock();
+//            }
+//        }
     }
 
     @Override

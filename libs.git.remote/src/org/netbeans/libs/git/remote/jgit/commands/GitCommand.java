@@ -47,7 +47,9 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
@@ -146,7 +148,15 @@ public abstract class GitCommand {
     public String getExecutable() {
         return "git"; //NOI18N
     }
-    
+        
+    protected Map<String, String> getEnvVar() {
+        Map<String,String> ret = new HashMap<>();
+        ret.put("LC_ALL", "");                // NOI18N    
+        ret.put("LC_MESSAGES", "C");          // NOI18N    
+        ret.put("LC_TIME", "C");              // NOI18N    
+        return ret;
+    }	    
+
     public String[] getCliArguments(int command) {
         final List<CharSequence> commandArgs = args.get(command);
         final String[] res = new String[args.get(command).size()];
@@ -182,4 +192,35 @@ public abstract class GitCommand {
     private static final String MSG_ERROR = "error:"; //NOI18N
     private static final String MSG_FATAL = "fatal:"; //NOI18N
     
+    protected static final class Revision implements CharSequence {
+        private String currentRevision = "place-holder";
+        
+        protected Revision() {
+            
+        }
+
+        protected void setContent(String revision) {
+            currentRevision = revision;
+        }
+        
+        @Override
+        public int length() {
+            return currentRevision.length();
+        }
+
+        @Override
+        public char charAt(int index) {
+            return currentRevision.charAt(index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return currentRevision.subSequence(end, end);
+        }
+
+        @Override
+        public String toString() {
+            return currentRevision;
+        }
+    }    
 }

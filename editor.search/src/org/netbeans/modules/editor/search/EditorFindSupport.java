@@ -259,24 +259,29 @@ public final class EditorFindSupport {
         final int so = startOffset;
         final int eo = endOffset;
         final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        currentResult = null;
         try {
             executor.submit(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        cacheContent = DocumentFinder.findBlocks(doc, so, eo, props, blocks);
+                        currentResult = DocumentFinder.findBlocks(doc, so, eo, props, blocks);
+                        cacheContent = currentResult.getFoundPositions();
                     } catch (BadLocationException ble) {
                         cacheContent = Arrays.copyOf(blocks, blocks.length);
                         LOG.log(Level.INFO, ble.getMessage(), ble);
                     }
-
+                    
                 }
             }).get(TIME_LIMIT, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException ex) {
             cacheContent = Arrays.copyOf(blocks, blocks.length);
             org.netbeans.editor.Utilities.setStatusBoldText(getFocusedTextComponent(), NbBundle.getMessage(EditorFindSupport.class, "slow-search"));
             LOG.log(Level.INFO, ex.getMessage(), ex);
+        }
+        if (currentResult != null && currentResult.hasErrorMsg()) {
+            org.netbeans.editor.Utilities.setStatusBoldText(getFocusedTextComponent(), currentResult.getErrorMsg());
         }
         executor.shutdown();
 
@@ -563,6 +568,12 @@ public final class EditorFindSupport {
                         (blockSearch && blockSearchStart > -1) ? blockSearchStart : 0, 
                         (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : -1, 
                         props, oppositeDir);
+                
+                if (result.hasErrorMsg()) {
+                    ComponentUtils.setStatusText(c, result.getErrorMsg());
+                    c.getCaret().setDot(c.getCaret().getDot());
+                    return null;
+                }
                 int[] blk = null; 
                 if (result != null){
                     blk = result.getFoundPositions();
@@ -660,6 +671,10 @@ public final class EditorFindSupport {
                 if (currentResult == null) {
                     executor.shutdown();
                     return null;
+                }
+                
+                if (currentResult.hasErrorMsg()) {
+                    return currentResult;
                 }
                 retFind = currentResult.getFoundPositions();
                 replaced = currentResult.getReplacedString();

@@ -45,25 +45,16 @@ package org.netbeans.libs.git.remote.jgit.commands;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.storage.file.FileBasedConfig;
-import org.eclipse.jgit.transport.Transport;
-import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.remote.GitBranch;
 import org.netbeans.libs.git.remote.GitClient;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRemoteConfig;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.SearchCriteria;
 import org.netbeans.libs.git.remote.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.remote.jgit.JGitConfig;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -104,26 +95,28 @@ public class BranchTest extends AbstractGitTestCase {
         write(f, "hello again");
         client.commit(files, "change", null, null, NULL_PROGRESS_MONITOR);
 
-        Iterator<RevCommit> it = new Git(repository.getRepository()).log().call().iterator();
-        RevCommit info = it.next();
-        String commitId = info.getId().getName();
+        final SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setLimit(1);
+        GitRevisionInfo[] log = client.log(searchCriteria, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = log[0];
+        String commitId = info.getRevision();
 
         branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
-        assertEquals("master", branches.get("master").getName());
-if(KIT) assertEquals(commitId, branches.get("master").getId());
-else    assertEqualsID(commitId, branches.get("master").getId());
-        assertFalse(branches.get("master").isRemote());
-        assertTrue(branches.get("master").isActive());
+        assertEquals(GitConstants.MASTER, branches.get(GitConstants.MASTER).getName());
+if(KIT) assertEquals(commitId, branches.get(GitConstants.MASTER).getId());
+else    assertEqualsID(commitId, branches.get(GitConstants.MASTER).getId());
+        assertFalse(branches.get(GitConstants.MASTER).isRemote());
+        assertTrue(branches.get(GitConstants.MASTER).isActive());
 
         write(VCSFileProxy.createFileProxy(workDir, ".git/refs/heads/nova"), commitId);
         branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
-        assertEquals("master", branches.get("master").getName());
-        assertFalse(branches.get("master").isRemote());
-        assertTrue(branches.get("master").isActive());    
-if(KIT) assertEquals(commitId, branches.get("master").getId());
-else    assertEqualsID(commitId, branches.get("master").getId());
+        assertEquals(GitConstants.MASTER, branches.get(GitConstants.MASTER).getName());
+        assertFalse(branches.get(GitConstants.MASTER).isRemote());
+        assertTrue(branches.get(GitConstants.MASTER).isActive());    
+if(KIT) assertEquals(commitId, branches.get(GitConstants.MASTER).getId());
+else    assertEqualsID(commitId, branches.get(GitConstants.MASTER).getId());
         assertEquals("nova", branches.get("nova").getName());
         assertFalse(branches.get("nova").isRemote());
         assertFalse(branches.get("nova").isActive());
@@ -139,9 +132,9 @@ else    assertEqualsID(commitId, branches.get("nova").getId());
         assertTrue(branches.get(GitBranch.NO_BRANCH).isActive());
 if(KIT) assertEquals(commitId, branches.get(GitBranch.NO_BRANCH).getId());
 else    assertEqualsID(commitId, branches.get(GitBranch.NO_BRANCH).getId());
-        assertEquals("master", branches.get("master").getName());
-        assertFalse(branches.get("master").isRemote());
-        assertFalse(branches.get("master").isActive());
+        assertEquals(GitConstants.MASTER, branches.get(GitConstants.MASTER).getName());
+        assertFalse(branches.get(GitConstants.MASTER).isRemote());
+        assertFalse(branches.get(GitConstants.MASTER).isActive());
         assertEquals("nova", branches.get("nova").getName());
         assertFalse(branches.get("nova").isRemote());
         assertFalse(branches.get("nova").isActive());
@@ -165,7 +158,7 @@ else    assertEqualsID(commitId, branches.get(GitBranch.NO_BRANCH).getId());
         GitBranch branch = client.createBranch(BRANCH_NAME, commitId, NULL_PROGRESS_MONITOR);
         Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
-        assertTrue(branches.containsKey("master"));
+        assertTrue(branches.containsKey(GitConstants.MASTER));
         assertTrue(branches.containsKey(BRANCH_NAME));
         assertEquals(BRANCH_NAME, branch.getName());
 if(KIT) assertEquals(commitId, branch.getId());
@@ -177,25 +170,25 @@ else    assertEqualsID(commitId, branch.getId());
         assertEquals(commitId, branch.getId());
         assertFalse(branch.isActive());
         assertFalse(branch.isRemote());
-        assertTrue(branches.get("master").isActive());
+        assertTrue(branches.get(GitConstants.MASTER).isActive());
         assertEquals(commitId, read(VCSFileProxy.createFileProxy(workDir, ".git/refs/heads/" + BRANCH_NAME)));
 
-        client.createBranch(BRANCH_NAME_2, Constants.HEAD, NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH_NAME_2, GitConstants.HEAD, NULL_PROGRESS_MONITOR);
         branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(3, branches.size());
-        assertTrue(branches.containsKey("master"));
+        assertTrue(branches.containsKey(GitConstants.MASTER));
         assertTrue(branches.containsKey(BRANCH_NAME));
         assertTrue(branches.containsKey(BRANCH_NAME_2));
-        assertTrue(branches.get("master").isActive());
+        assertTrue(branches.get(GitConstants.MASTER).isActive());
         assertEquals(lastCommitId, read(VCSFileProxy.createFileProxy(workDir, ".git/refs/heads/" + BRANCH_NAME_2)));
         client.createBranch(BRANCH_NAME_3, "refs/heads/master", NULL_PROGRESS_MONITOR);
         branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(4, branches.size());
-        assertTrue(branches.containsKey("master"));
+        assertTrue(branches.containsKey(GitConstants.MASTER));
         assertTrue(branches.containsKey(BRANCH_NAME));
         assertTrue(branches.containsKey(BRANCH_NAME_2));
         assertTrue(branches.containsKey(BRANCH_NAME_3));
-        assertTrue(branches.get("master").isActive());
+        assertTrue(branches.get(GitConstants.MASTER).isActive());
         assertEquals(lastCommitId, read(VCSFileProxy.createFileProxy(workDir, ".git/refs/heads/" + BRANCH_NAME_3)));
 
         try {
@@ -207,17 +200,8 @@ else    assertEqualsID(commitId, branch.getId());
         }
         branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(4, branches.size());
-        assertTrue(branches.get("master").isActive());
+        assertTrue(branches.get(GitConstants.MASTER).isActive());
         assertEquals(commitId, read(VCSFileProxy.createFileProxy(workDir, ".git/refs/heads/" + BRANCH_NAME)));
-    }
-    
-    public void testFileProtocolFails () throws Exception {
-        try {
-            Transport.open(repository.getRepository(), new URIish(workDir.toURI().toURL()));
-            fail("Workaround not needed, fix ListRemoteBranchesCommand - Transport.open(String) to Transport.open(URL)");
-        } catch (NotSupportedException ex) {
-            
-        }
     }
     
     public void testListRemoteBranches () throws Exception {
@@ -228,7 +212,7 @@ else    assertEqualsID(commitId, branch.getId());
         write(f, "init");
         client.add(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR);
         client.commit(new VCSFileProxy[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
-        GitBranch branch = client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
+        GitBranch branch = client.createBranch(BRANCH_NAME, GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         write(f, "change on master");
         client.add(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR);
         GitRevisionInfo master = client.commit(new VCSFileProxy[] { f }, "change on master", null, null, NULL_PROGRESS_MONITOR);
@@ -237,7 +221,7 @@ else    assertEqualsID(commitId, branch.getId());
         assertEquals(2, remoteBranches.size());
 if(KIT) assertEquals(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
 else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
-        assertEquals(master.getRevision(), remoteBranches.get("master").getId());
+        assertEquals(master.getRevision(), remoteBranches.get(GitConstants.MASTER).getId());
     }
     
     public void testDeleteUntrackedLocalBranch () throws Exception {
@@ -247,11 +231,11 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         add(files);
         commit(files);
         GitClient client = getClient(workDir);
-        GitBranch b = client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
+        GitBranch b = client.createBranch(BRANCH_NAME, GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         Map<String, GitBranch> branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertNotNull(branches.get(BRANCH_NAME));
-        assertEquals(0, repository.getRepository().getConfig().getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION).size());
+        assertEquals(0, repository.getConfig().getSubsections(JGitConfig.CONFIG_BRANCH_SECTION).size());
         
         // delete branch
         client.deleteBranch(BRANCH_NAME, false, NULL_PROGRESS_MONITOR);
@@ -281,14 +265,14 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         Map<String, GitBranch> branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertNotNull(branches.get(BRANCH_NAME));
-        assertEquals(1, repository.getRepository().getConfig().getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION).size());
+        assertEquals(1, repository.getConfig().getSubsections(JGitConfig.CONFIG_BRANCH_SECTION).size());
         
         //delete tracked branch and test
         client.deleteBranch(BRANCH_NAME, false, NULL_PROGRESS_MONITOR);
         branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
         assertNull(branches.get(BRANCH_NAME));
-        assertEquals(0, repository.getRepository().getConfig().getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION).size());        
+        assertEquals(0, repository.getConfig().getSubsections(JGitConfig.CONFIG_BRANCH_SECTION).size());        
     }
     
     public void testDeleteUnmergedBranch () throws Exception {
@@ -298,13 +282,13 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         add(files);
         commit(files);
         GitClient client = getClient(workDir);
-        GitBranch b = client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
+        GitBranch b = client.createBranch(BRANCH_NAME, GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
         write(f, "change on branch");
         add(files);
         commit(files);
         //checkout other revision
-        client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(GitConstants.MASTER, true, NULL_PROGRESS_MONITOR);
         Map<String, GitBranch> branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertNotNull(branches.get(BRANCH_NAME));
@@ -333,7 +317,7 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         commit(files);
         GitClient client = getClient(workDir);
         try {
-            client.deleteBranch("master", true, NULL_PROGRESS_MONITOR);
+            client.deleteBranch(GitConstants.MASTER, true, NULL_PROGRESS_MONITOR);
             fail("Can not delete active branch");
         } catch (GitException ex) {
             assertTrue(ex.getMessage().contains("Branch master is checked out and can not be deleted"));
@@ -376,24 +360,24 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
                 Arrays.asList(otherWT.getPath()),
                 Arrays.asList("+refs/heads/*:refs/remotes/origin/*"), Collections.<String>emptyList()), NULL_PROGRESS_MONITOR);
         client.fetch("origin", NULL_PROGRESS_MONITOR);
-        GitBranch b = client.createBranch(Constants.MASTER, "origin/master", NULL_PROGRESS_MONITOR);
+        GitBranch b = client.createBranch(GitConstants.MASTER, "origin/master", NULL_PROGRESS_MONITOR);
         assertEquals("origin/master", b.getTrackedBranch().getName());
         assertTrue(b.getTrackedBranch().isRemote());
-        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(GitConstants.MASTER, true, NULL_PROGRESS_MONITOR);
         
-        b = client.createBranch("nova1", Constants.MASTER, NULL_PROGRESS_MONITOR);
+        b = client.createBranch("nova1", GitConstants.MASTER, NULL_PROGRESS_MONITOR);
         assertNull(b.getTrackedBranch());
         
-        StoredConfig cfg = repository.getRepository().getConfig();
-        cfg.setString(ConfigConstants.CONFIG_BRANCH_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOSETUPMERGE, "always");
+        JGitConfig cfg = repository.getConfig();
+        cfg.setString(JGitConfig.CONFIG_BRANCH_SECTION, null, JGitConfig.CONFIG_KEY_AUTOSETUPMERGE, "always");
         cfg.save();
-        b = client.createBranch("nova2", Constants.MASTER, NULL_PROGRESS_MONITOR);
-        assertEquals("master", b.getTrackedBranch().getName());
+        b = client.createBranch("nova2", GitConstants.MASTER, NULL_PROGRESS_MONITOR);
+        assertEquals(GitConstants.MASTER, b.getTrackedBranch().getName());
         assertFalse(b.getTrackedBranch().isRemote());
         
         // list branches
         Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
-        b = branches.get(Constants.MASTER);
+        b = branches.get(GitConstants.MASTER);
         assertEquals("origin/master", b.getTrackedBranch().getName());
         assertTrue(b.getTrackedBranch().isRemote());
         b = branches.get("origin/master");
@@ -408,7 +392,7 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         client.commit(new VCSFileProxy[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
         
         // cannot end with a RuntimeException
-        VCSFileProxy configFile = VCSFileProxy.createFileProxy(Utils.getMetadataFolder(workDir), Constants.CONFIG);
+        VCSFileProxy configFile = VCSFileProxy.createFileProxy(Utils.getMetadataFolder(workDir), GitConstants.CONFIG);
         String config = read(configFile);
         config += "\n\tbla:\n";
         write(configFile, config);
@@ -424,21 +408,17 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         VCSFileProxy emptyRepo = VCSFileProxy.createFileProxy(workDir, "empty");
         GitClient client = getClient(emptyRepo);
         client.init(NULL_PROGRESS_MONITOR);
-        Repository repo = getRepository(client);
-        FileBasedConfig cfg = new FileBasedConfig(repo.getFS().resolve(repo.getDirectory(), Constants.CONFIG),
-				repo.getFS());
+        JGitConfig cfg = repository.getConfig();
         cfg.load();
-        assertFalse(cfg.getSections().contains(ConfigConstants.CONFIG_BRANCH_SECTION));
-        client.createBranch(Constants.MASTER, Constants.R_REMOTES + "origin/whateverbranch", NULL_PROGRESS_MONITOR);
+        assertFalse(cfg.getSections().contains(JGitConfig.CONFIG_BRANCH_SECTION));
+        client.createBranch(GitConstants.MASTER, GitConstants.R_REMOTES + "origin/whateverbranch", NULL_PROGRESS_MONITOR);
         Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertTrue(branches.isEmpty());
-        cfg = new FileBasedConfig(repo.getFS().resolve(repo.getDirectory(), Constants.CONFIG),
-				repo.getFS());
         cfg.load();
-        assertTrue(cfg.getSections().contains(ConfigConstants.CONFIG_BRANCH_SECTION));
-        assertEquals("origin", cfg.getString(ConfigConstants.CONFIG_BRANCH_SECTION,
-                Constants.MASTER, ConfigConstants.CONFIG_KEY_REMOTE));
-        assertEquals(Constants.R_HEADS + "whateverbranch", cfg.getString(ConfigConstants.CONFIG_BRANCH_SECTION,
-                Constants.MASTER, ConfigConstants.CONFIG_KEY_MERGE));
+        assertTrue(cfg.getSections().contains(JGitConfig.CONFIG_BRANCH_SECTION));
+        assertEquals("origin", cfg.getString(JGitConfig.CONFIG_BRANCH_SECTION,
+                GitConstants.MASTER, JGitConfig.CONFIG_KEY_REMOTE));
+        assertEquals(GitConstants.R_HEADS + "whateverbranch", cfg.getString(JGitConfig.CONFIG_BRANCH_SECTION,
+                GitConstants.MASTER, JGitConfig.CONFIG_KEY_MERGE));
     }
 }

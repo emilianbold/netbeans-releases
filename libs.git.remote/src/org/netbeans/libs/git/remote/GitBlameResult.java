@@ -43,10 +43,8 @@ package org.netbeans.libs.git.remote;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
+import java.util.TreeMap;
+import org.netbeans.libs.git.remote.GitRevisionInfo.GitRevCommit;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -61,34 +59,38 @@ public final class GitBlameResult {
     private final int lineCount;
     private final GitLineDetails[] lineDetails;
 
-    GitBlameResult (BlameResult result, JGitRepository repository) {
-        this.lineCount = result.getResultContents().size();
+    GitBlameResult(VCSFileProxy file, Map<String, GitBlameContent> result, JGitRepository repository) {
+        this.blamedFile = file;
+        TreeMap<Integer, GitLineDetails> lines = new TreeMap<>();
+        for (Map.Entry<String, GitBlameContent> entry : result.entrySet()) {
+            GitBlameContent v = entry.getValue();
+            GitRevCommit rev = new GitRevCommit();
+            rev.autorAndMail = v.author+" "+v.author_mail;
+            rev.autorTime = v.author_time + " " + v.author_tz;
+            rev.commiterAndMail = v.committer + " " + v.committer_mail;
+            rev.commiterTime = v.committer_time + " " + v.committer_tz;
+            rev.message = v.summary;
+            rev.revisionCode = v.revision;
+            GitRevisionInfo revInfo = new GitRevisionInfo(rev, repository);
+            VCSFileProxy sourceFile = VCSFileProxy.createFileProxy(repository.getLocation(), v.filename);
+            GitUser author = revInfo.getAuthor();
+            GitUser committer = revInfo.getCommitter();
+            for(Map.Entry<Integer,LineInfo> e : v.lines.entrySet()) {
+                lines.put(e.getKey(), new GitLineDetails(e.getValue().lineContent, revInfo, author, committer, sourceFile, e.getValue().line - 1));
+            }
+        }
+        lineCount = lines.size();
         this.lineDetails = new GitLineDetails[lineCount];
-
-        Map<String, VCSFileProxy> cachedFiles = new HashMap<String, VCSFileProxy>(lineCount);
-        this.blamedFile = getFile(cachedFiles, result.getResultPath(), repository.getLocation());
-
-        Map<RevCommit, GitRevisionInfo> cachedRevisions = new HashMap<RevCommit, GitRevisionInfo>(lineCount);
-        Map<PersonIdent, GitUser> cachedUsers = new HashMap<PersonIdent, GitUser>(lineCount * 2);
-        for (int i = 0; i < lineCount; ++i) {
-            RevCommit commit = result.getSourceCommit(i);
-            if (commit == null) {
-                lineDetails[i] = null;
+        for (Map.Entry<Integer, GitLineDetails> entry : lines.entrySet()) {
+            if ("0000000000000000000000000000000000000000".equals(entry.getValue().getRevisionInfo().getRevision())) {
+                // local change
             } else {
-                GitRevisionInfo revInfo = cachedRevisions.get(commit);
-                if (revInfo == null) {
-                    revInfo = new GitRevisionInfo(commit, repository);
-                    cachedRevisions.put(commit, revInfo);
-                }
-                GitUser author = getUser(cachedUsers, result.getSourceAuthor(i));
-                GitUser committer = getUser(cachedUsers, result.getSourceCommitter(i));
-                VCSFileProxy sourceFile = getFile(cachedFiles, result.getSourcePath(i), repository.getLocation());
-                String content = result.getResultContents().getString(i);
-                lineDetails[i] = new GitLineDetails(content, revInfo, author, committer, sourceFile, result.getSourceLine(i));
+                lineDetails[entry.getKey()-1] = entry.getValue();
             }
         }
     }
     
+
     /**
      * @return annotated file
      */
@@ -112,21 +114,23 @@ public final class GitBlameResult {
         return lineNumber < lineCount ? lineDetails[lineNumber] : null;
     }
 
-    private GitUser getUser (Map<PersonIdent, GitUser> cached, PersonIdent ident) {
-        GitUser user = cached.get(ident);
-        if (user == null) {
-            user = GitClassFactoryImpl.getInstance().createUser(ident);
-            cached.put(ident, user);
-        }
-        return user;
+    public static final class LineInfo {
+        public int line;
+        public String lineContent;
     }
-
-    private VCSFileProxy getFile (Map<String, VCSFileProxy> cached, String relativePath, VCSFileProxy workTree) {
-        VCSFileProxy file = cached.get(relativePath);
-        if (file == null) {
-            file = VCSFileProxy.createFileProxy(workTree, relativePath); //NOI18N
-            cached.put(relativePath, file);
-        }
-        return file;
+    public static final class GitBlameContent {
+        public String revision;
+        public String author;
+        public String author_mail;
+        public String author_time;
+        public String author_tz;
+        public String committer;
+        public String committer_mail;
+        public String committer_time;
+        public String committer_tz;
+        public String summary;
+        public String previous;
+        public String filename;
+        public HashMap<Integer, LineInfo> lines = new HashMap<Integer, LineInfo>();
     }
 }

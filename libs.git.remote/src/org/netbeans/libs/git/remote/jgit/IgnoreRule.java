@@ -46,13 +46,13 @@ package org.netbeans.libs.git.remote.jgit;
  *
  * @author ondra
  */
-public class IgnoreRule extends org.eclipse.jgit.ignore.IgnoreRule {
+public class IgnoreRule /*extends org.eclipse.jgit.ignore.IgnoreRule*/ {
 
     private final String pattern;
     private final String noNegationPattern;
     
     public IgnoreRule (String pattern) {
-        super(pattern.trim());
+        //super(pattern.trim());
         this.pattern = pattern;
         pattern = pattern.trim();
         this.noNegationPattern = pattern.startsWith("!") ? pattern.substring(1) : null;
@@ -71,15 +71,23 @@ public class IgnoreRule extends org.eclipse.jgit.ignore.IgnoreRule {
         return retval;
     }
 
-    @Override
     public boolean isMatch(String target, boolean isDirectory) {
         String trimmed = pattern.trim();
         if (trimmed.isEmpty() || trimmed.startsWith("#")) {
             // this is a comment or an empty line
             return false;
         } else {
-            return super.isMatch(target, isDirectory);
+            //return super.isMatch(target, isDirectory);
         }
+        return true;
+    }
+
+    private boolean getNameOnly() {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean getResult() {
+        throw new UnsupportedOperationException();
     }
 
 }

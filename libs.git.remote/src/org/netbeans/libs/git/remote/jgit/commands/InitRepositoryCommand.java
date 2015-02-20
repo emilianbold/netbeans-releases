@@ -42,17 +42,12 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.text.MessageFormat;
-import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -85,21 +80,21 @@ public class InitRepositoryCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        Repository repository = getRepository().getRepository();
-        try {
-            if (!(workDir.exists() || VCSFileProxySupport.mkdirs(workDir))) {
-                throw new GitException(MessageFormat.format(Utils.getBundle(InitRepositoryCommand.class).getString("MSG_Exception_CannotCreateFolder"), workDir.getPath())); //NOI18N
-            }
-            repository.create();
-            StoredConfig cfg = repository.getConfig();
-            cfg.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_BARE, false);
-            cfg.unset(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF);
-            cfg.save();
-        } catch (IllegalStateException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        try {
+//            if (!(workDir.exists() || VCSFileProxySupport.mkdirs(workDir))) {
+//                throw new GitException(MessageFormat.format(Utils.getBundle(InitRepositoryCommand.class).getString("MSG_Exception_CannotCreateFolder"), workDir.getPath())); //NOI18N
+//            }
+//            repository.create();
+//            StoredConfig cfg = repository.getConfig();
+//            cfg.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_BARE, false);
+//            cfg.unset(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF);
+//            cfg.save();
+//        } catch (IllegalStateException ex) {
+//            throw new GitException(ex);
+//        } catch (IOException ex) {
+//            throw new GitException(ex);
+//        }
     }
     
     @Override

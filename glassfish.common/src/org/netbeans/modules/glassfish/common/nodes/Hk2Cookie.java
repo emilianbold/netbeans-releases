@@ -41,6 +41,16 @@
  */
 package org.netbeans.modules.glassfish.common.nodes;
 
+import org.netbeans.modules.glassfish.tooling.admin.CommandUndeploy;
+import org.netbeans.modules.glassfish.tooling.admin.CommandDisable;
+import org.netbeans.modules.glassfish.tooling.admin.CommandDeploy;
+import org.netbeans.modules.glassfish.tooling.admin.CommandSetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.ResultMap;
+import org.netbeans.modules.glassfish.tooling.admin.CommandGetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.CommandEnable;
+import org.netbeans.modules.glassfish.tooling.admin.CommandDeleteResource;
+import org.netbeans.modules.glassfish.tooling.admin.ServerAdmin;
+import org.netbeans.modules.glassfish.tooling.admin.ResultString;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,7 +65,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.PartialCompletionException;

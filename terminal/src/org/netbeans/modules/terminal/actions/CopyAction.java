@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import javax.swing.Action;
-import javax.swing.KeyStroke;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.awt.ActionID;
@@ -66,14 +62,14 @@ import org.openide.util.Lookup;
 })
 public final class CopyAction extends TerminalAction {
 
-    public CopyAction(Lookup context) {
+    public CopyAction(Terminal context) {
 	super(context);
 
 	putValue(NAME, getMessage("CTL_Copy")); //NOI18N
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
+    public void performAction() {
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 
@@ -84,12 +80,9 @@ public final class CopyAction extends TerminalAction {
     }
 
     // --------------------------------------------- 
-    public CopyAction() {
-	super(null);
-    }
-
+  
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new CopyAction(actionContext);
+	return new CopyAction(actionContext.lookup(Terminal.class));
     }
 }

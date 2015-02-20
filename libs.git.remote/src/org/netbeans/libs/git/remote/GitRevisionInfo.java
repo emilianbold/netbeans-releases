@@ -42,26 +42,13 @@
 
 package org.netbeans.libs.git.remote;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -72,7 +59,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  */
 public final class GitRevisionInfo {
     private static final Logger LOG = Logger.getLogger(GitRevisionInfo.class.getName());
-    private RevCommit revCommit;
     private JGitRepository repository;
     private final Map<String, GitBranch> branches;
     private GitFileInfo[] modifiedFiles;
@@ -86,18 +72,6 @@ public final class GitRevisionInfo {
     private String autorTime;
     private String commiterTime;
     private String[] parents;
-    private final boolean isKIT;
-
-    GitRevisionInfo (RevCommit commit, JGitRepository repository) {
-        this(commit, Collections.<String, GitBranch>emptyMap(), repository);
-    }
-
-    GitRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, JGitRepository repository) {
-        this.revCommit = commit;
-        this.repository = repository;
-        this.branches = Collections.unmodifiableMap(affectedBranches);
-        isKIT = true;
-    }
 
     GitRevisionInfo(GitRevCommit status, JGitRepository repository) {
         this(status, Collections.<String, GitBranch>emptyMap(), repository);
@@ -121,105 +95,71 @@ public final class GitRevisionInfo {
         commiterAndMail = status.commiterAndMail;
         commiterTime = status.commiterTime;
         this.repository = repository;
-        isKIT = false;
     }
 
     /**
      * @return id of the commit
      */
     public String getRevision () {
-        if (isKIT) {
-            return ObjectId.toString(revCommit.getId());
-        } else {
-            return revisionCode;
-        }
+        return revisionCode;
     }
 
     /**
      * @return the first line of the commit message.
      */
     public String getShortMessage () {
-        if (isKIT) {
-            if (shortMessage == null) {
-                String msg = revCommit.getFullMessage();
-                StringBuilder sb = new StringBuilder();
-                boolean empty = true;
-                for (int pos = 0; pos < msg.length(); ++pos) {
-                    char c = msg.charAt(pos);
-                    if (c == '\r' || c == '\n') {
-                        if (!empty) {
-                            break;
-                        }
-                    } else {
-                        sb.append(c);
-                        empty = false;
+        if (shortMessage == null) {
+            String msg = message;
+            StringBuilder sb = new StringBuilder();
+            boolean empty = true;
+            for (int pos = 0; pos < msg.length(); ++pos) {
+                char c = msg.charAt(pos);
+                if (c == '\r' || c == '\n') {
+                    if (!empty) {
+                        break;
                     }
+                } else {
+                    sb.append(c);
+                    empty = false;
                 }
-                shortMessage = sb.toString();
             }
-            return shortMessage;
-        } else {
-            if (shortMessage == null) {
-                String msg = message;
-                StringBuilder sb = new StringBuilder();
-                boolean empty = true;
-                for (int pos = 0; pos < msg.length(); ++pos) {
-                    char c = msg.charAt(pos);
-                    if (c == '\r' || c == '\n') {
-                        if (!empty) {
-                            break;
-                        }
-                    } else {
-                        sb.append(c);
-                        empty = false;
-                    }
-                }
-                shortMessage = sb.toString();
-            }
-            return shortMessage;
+            shortMessage = sb.toString();
         }
+        return shortMessage;
     }
 
     /**
      * @return full commit message
      */
     public String getFullMessage () {
-        if (isKIT) {
-            return revCommit.getFullMessage();
-        } else {
-            return message;
-        }
+        return message;
     }
 
     /**
      * @return time this commit was created in milliseconds.
      */
     public long getCommitTime () {
-        if (isKIT) {
-            // must be indeed author, that complies with CLI
-            // committer time is different after rebase
-            PersonIdent author = revCommit.getAuthorIdent();
-            if (author == null) {
-                return (long) revCommit.getCommitTime() * 1000;
-            } else {
-                return author.getWhen().getTime();
-            }
-        } else {
-            if (autorTime != null) {
-                //1423691643 -0800
-                String[] s = autorTime.split(" ");
-                long res = Long.parseLong(s[0])*1000;
-                //int zone = Integer.parseInt(s[1]);
-                //res += (zone/100)*3600*1000;
-                return res;
-            }
-            if (commiterTime != null) {
-                String[] s = commiterTime.split(" ");
-                long res = Long.parseLong(s[0])*1000;
-                //int zone = Integer.parseInt(s[1]);
-                //res += (zone/100)*3600*1000;
-                return res;
-            }
+        if (commiterTime != null) {
+            String[] s = commiterTime.split(" ");
+            long res = Long.parseLong(s[0])*1000;
+            //int zone = Integer.parseInt(s[1]);
+            //res += (zone/100)*3600*1000;
+            return res;
+        }
+        return -1;
+    }
+
+    /**
+     * @return time this commit was created in milliseconds.
+     */
+    public long getAuthorTime () {
+        if (autorTime != null) {
+            //1423691643 -0800
+            String[] s = autorTime.split(" ");
+            long res = Long.parseLong(s[0])*1000;
+            //int zone = Integer.parseInt(s[1]);
+            //res += (zone/100)*3600*1000;
+            return res;
         }
         return -1;
     }
@@ -228,13 +168,9 @@ public final class GitRevisionInfo {
      * @return author of the commit
      */
     public GitUser getAuthor () {
-        if (isKIT) {
-            return GitClassFactoryImpl.getInstance().createUser(revCommit.getAuthorIdent());
-        } else {
-            if (autorAndMail != null) {
-                int i = autorAndMail.indexOf("<");
-                return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i+1,autorAndMail.length()-1));
-            }
+        if (autorAndMail != null) {
+            int i = autorAndMail.indexOf("<");
+            return new GitUser(autorAndMail.substring(0,i).trim(), autorAndMail.substring(i+1,autorAndMail.length()-1));
         }
         return null;
     }
@@ -243,13 +179,9 @@ public final class GitRevisionInfo {
      * @return person who actually committed the changes, may or may not be the same as a return value of the <code>getAuthor</code> method.
      */
     public GitUser getCommitter () {
-        if (isKIT) {
-            return GitClassFactoryImpl.getInstance().createUser(revCommit.getCommitterIdent());
-        } else {
-            if (commiterAndMail != null) {
-                int i = commiterAndMail.indexOf("<");
-                return new GitUser(commiterAndMail.substring(0,i).trim(), commiterAndMail.substring(i+1,commiterAndMail.length()-1));
-            }
+        if (commiterAndMail != null) {
+            int i = commiterAndMail.indexOf("<");
+            return new GitUser(commiterAndMail.substring(0,i).trim(), commiterAndMail.substring(i+1,commiterAndMail.length()-1));
         }
         return null;
     }
@@ -263,11 +195,6 @@ public final class GitRevisionInfo {
      * @throws GitException when an error occurs
      */
     public java.util.Map<VCSFileProxy, GitFileInfo> getModifiedFiles () throws GitException {
-        if (modifiedFiles == null) {
-            synchronized (this) {
-                listFiles();
-            }
-        }
         Map<VCSFileProxy, GitFileInfo> files = new HashMap<VCSFileProxy, GitFileInfo>(modifiedFiles.length);
         for (GitFileInfo info : modifiedFiles) {
             files.put(info.getFile(), info);
@@ -279,15 +206,7 @@ public final class GitRevisionInfo {
      * @return commit ids of this commit's parents
      */
     public String[] getParents () {
-        if (isKIT) {
-            String[] parents = new String[revCommit.getParentCount()];
-            for (int i = 0; i < revCommit.getParentCount(); ++i) {
-                parents[i] = ObjectId.toString(revCommit.getParent(i).getId());
-            }
-            return parents;
-        } else {
-            return parents;
-        }
+        return parents;
     }
     
     /**
@@ -297,53 +216,7 @@ public final class GitRevisionInfo {
     public Map<String, GitBranch> getBranches () {
         return branches;
     }
-    
-    private void listFiles() throws GitException {
-        RevWalk revWalk = new RevWalk(repository.getRepository());
-        TreeWalk walk = new TreeWalk(repository.getRepository());
-        try {
-            List<GitFileInfo> result;
-            walk.reset();
-            walk.setRecursive(true);
-            RevCommit parentCommit = null;
-            if (revCommit.getParentCount() > 0) {
-                for (RevCommit commit : revCommit.getParents()) {
-                    revWalk.markStart(revWalk.lookupCommit(commit));
-                }
-                revWalk.setRevFilter(RevFilter.MERGE_BASE);
-                Iterator<RevCommit> it = revWalk.iterator();
-                if (it.hasNext()) {
-                    parentCommit = it.next();
-                }
-                if (parentCommit != null) {
-                    walk.addTree(parentCommit.getTree().getId());
-                }
-            }
-            walk.addTree(revCommit.getTree().getId());
-            walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
-            if (parentCommit != null) {
-                result = Utils.getDiffEntries(repository, walk, GitClassFactoryImpl.getInstance());
-            } else {
-                result = new ArrayList<GitFileInfo>();
-                while (walk.next()) {
-                    result.add(new GitFileInfo(VCSFileProxy.createFileProxy(repository.getLocation(), walk.getPathString()), walk.getPathString(), GitFileInfo.Status.ADDED, null, null));
-                }
-            }
-            this.modifiedFiles = result.toArray(new GitFileInfo[result.size()]);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } finally {
-            revWalk.release();
-            walk.release();
-        }
-    }
 
-    private static Map<String, GitBranch> buildBranches (RevCommit commit, Map<String, GitBranch> branches) {
-        Map<String, GitBranch> retval = new LinkedHashMap<>(branches.size());
-        
-        return retval;
-    }
-    
     /**
      * Provides information about what happened to a file between two different commits.
      * If the file is copied or renamed between the two commits, you can get the path

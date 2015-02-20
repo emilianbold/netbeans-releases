@@ -44,11 +44,7 @@ package org.netbeans.libs.git.remote;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.eclipse.jgit.api.MergeCommand;
-import org.eclipse.jgit.merge.MergeConfig;
-import org.eclipse.jgit.transport.SshSessionFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.JGitSshSessionFactory;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -173,28 +169,28 @@ public final class GitRepository {
      * @since 1.26
      */
     public FastForwardOption getDefaultFastForwardOption () throws GitException {
-        JGitRepository repository = getRepository();
-        repository.increaseClientUsage();
-        try {
-            MergeConfig cfg = MergeConfig.getConfigForCurrentBranch(repository.getRepository());
-            MergeCommand.FastForwardMode mode = cfg.getFastForwardMode();
-            switch (mode) {
-                case FF_ONLY:
-                    return FastForwardOption.FAST_FORWARD_ONLY;
-                case NO_FF:
-                    return FastForwardOption.NO_FAST_FORWARD;
-                default:
+//        JGitRepository repository = getRepository();
+//        repository.increaseClientUsage();
+//        try {
+//            MergeConfig cfg = MergeConfig.getConfigForCurrentBranch(repository.getRepository());
+//            MergeCommand.FastForwardMode mode = cfg.getFastForwardMode();
+//            switch (mode) {
+//                case FF_ONLY:
+//                    return FastForwardOption.FAST_FORWARD_ONLY;
+//                case NO_FF:
+//                    return FastForwardOption.NO_FAST_FORWARD;
+//                default:
                     return FastForwardOption.FAST_FORWARD;
-            }
-        } finally {
-            repository.decreaseClientUsage();
-        }
+//            }
+//        } finally {
+//            repository.decreaseClientUsage();
+//        }
     }
 
     private synchronized JGitRepository getRepository () {
         if (gitRepository == null) {
             gitRepository = new JGitRepository(repositoryLocation);
-            SshSessionFactory.setInstance(JGitSshSessionFactory.getDefault(repositoryLocation));
+//            SshSessionFactory.setInstance(JGitSshSessionFactory.getDefault(repositoryLocation));
         }
         return gitRepository;
     }

@@ -44,16 +44,10 @@ package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.submodule.SubmoduleStatus;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitSubmoduleStatus;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -75,22 +69,22 @@ public class SubmoduleStatusCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        Repository repository = getRepository().getRepository();
-        VCSFileProxy workTree = getRepository().getLocation();
-        org.eclipse.jgit.api.SubmoduleStatusCommand cmd = new Git(repository).submoduleStatus();
-        for (String path : Utils.getRelativePaths(workTree, roots)) {
-            cmd.addPath(path);
-        }
-        try {
-            Map<String, SubmoduleStatus> result = cmd.call();
-            GitClassFactory fac = getClassFactory();
-            for (Map.Entry<String, SubmoduleStatus> e : result.entrySet()) {
-                VCSFileProxy root = VCSFileProxy.createFileProxy(workTree, e.getKey());
-                statuses.put(root, fac.createSubmoduleStatus(e.getValue(), root));
-            }
-        } catch (GitAPIException | JGitInternalException ex) {
-            throw new GitException(ex);
-        }
+//        Repository repository = getRepository().getRepository();
+//        VCSFileProxy workTree = getRepository().getLocation();
+//        org.eclipse.jgit.api.SubmoduleStatusCommand cmd = new Git(repository).submoduleStatus();
+//        for (String path : Utils.getRelativePaths(workTree, roots)) {
+//            cmd.addPath(path);
+//        }
+//        try {
+//            Map<String, SubmoduleStatus> result = cmd.call();
+//            GitClassFactory fac = getClassFactory();
+//            for (Map.Entry<String, SubmoduleStatus> e : result.entrySet()) {
+//                VCSFileProxy root = VCSFileProxy.createFileProxy(workTree, e.getKey());
+//                statuses.put(root, fac.createSubmoduleStatus(e.getValue(), root));
+//            }
+//        } catch (GitAPIException | JGitInternalException ex) {
+//            throw new GitException(ex);
+//        }
     }
     
     @Override

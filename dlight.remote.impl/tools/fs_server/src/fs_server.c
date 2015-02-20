@@ -663,7 +663,7 @@ static bool response_entry_create(buffer response_buf,
         return true;
     } else {
         err_set(errno, "error getting lstat for '%s': %s", abspath, err_to_string(errno));
-        report_error("error getting lstat for '%s': %s\n", abspath, err_get_message());
+        //report_error("error getting lstat for '%s': %s\n", abspath, err_get_message());
         return false;
     }
 }
@@ -859,7 +859,6 @@ static void response_stat(int request_id, const char* path) {
     }  else {
         int err_code = errno;
         const char* strerr = err_to_string(err_code);
-        report_error("error getting stat for '%s': %s\n", path, strerr);
         my_fprintf(STDOUT, "%c %i %i %s: %s\n", FS_RSP_ERROR, request_id, err_code, strerr, path);
         my_fflush(STDOUT);
     }
@@ -1047,7 +1046,6 @@ static void response_lstat(int request_id, const char* path) {
 //            fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
 //        }
     } else {
-        report_error("error formatting response for '%s'\n", path);
         //TODO: pass error message from response_entry_create
         my_fprintf(STDOUT, "%c %i %i %s\n", FS_RSP_ERROR, request_id, err_get_code(), err_get_message());
         my_fflush(STDOUT);

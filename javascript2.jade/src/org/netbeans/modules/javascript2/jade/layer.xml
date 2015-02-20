@@ -73,7 +73,7 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
         </folder>
     </folder>
     <folder name="Templates">
-        <folder name="Other">
+        <folder name="ClientSide">
             <file name="jadeTemplate.jade" url="nbresloc:/org/netbeans/modules/javascript2/jade/resources/jadeTemplate.jade">
                 <attr name="position" intvalue="408"/>
                 <attr name="template" boolvalue="true"/>

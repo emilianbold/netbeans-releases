@@ -264,6 +264,45 @@ public class JadeLexerTest extends CslTestBase {
         checkLexer("testfiles/lexer/mixin04.jade");
     }
     
+    public void testIssue250531() throws Exception {
+        checkLexer("testfiles/lexer/issue250531.jade");
+    }
+    
+    public void testIssue250547() throws Exception {
+        checkLexer("testfiles/lexer/issue250547.jade");
+    }
+    
+    public void testIssue250566() throws Exception {
+        checkLexer("testfiles/lexer/issue250566.jade");
+    }
+    
+    public void testIssue250564() throws Exception {
+        checkLexer("testfiles/lexer/issue250564.jade");
+    }
+    
+    public void testIssue250567_01() throws Exception {
+        checkLexer("testfiles/lexer/issue250567_01.jade");
+    }
+    
+    public void testIssue250567_02() throws Exception {
+        checkLexer("testfiles/lexer/issue250567_02.jade");
+    }
+    
+    public void testIssue250563() throws Exception {
+        checkLexer("testfiles/lexer/issue250563.jade");
+    }
+    
+    public void testIssue250543() throws Exception {
+        checkLexer("testfiles/lexer/issue250543.jade");
+    }
+    
+    public void testIssue250539() throws Exception {
+        checkLexer("testfiles/lexer/issue250539.jade");
+    }
+    
+    public void testIssue250519() throws Exception {
+        checkLexer("testfiles/lexer/issue250519.jade");
+    }
     
     private void checkLexer(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));

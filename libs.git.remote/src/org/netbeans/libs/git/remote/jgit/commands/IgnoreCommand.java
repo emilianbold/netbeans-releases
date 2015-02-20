@@ -45,7 +45,6 @@ package org.netbeans.libs.git.remote.jgit.commands;
 import java.io.IOException;
 import java.util.List;
 import java.util.ListIterator;
-import org.eclipse.jgit.ignore.IgnoreNode.MatchResult;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.IgnoreRule;
@@ -118,5 +117,5 @@ public class IgnoreCommand extends IgnoreUnignoreCommand {
     @Override
     protected boolean handleAdditionalIgnores (String path, boolean directory) throws IOException {
         return checkExcludeFile(path, directory) != MatchResult.IGNORED && checkGlobalExcludeFile(path, directory) != MatchResult.IGNORED;
-    }
+    }    
 }
