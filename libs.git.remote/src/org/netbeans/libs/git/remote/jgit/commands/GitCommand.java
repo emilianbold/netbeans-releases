@@ -192,4 +192,35 @@ public abstract class GitCommand {
     private static final String MSG_ERROR = "error:"; //NOI18N
     private static final String MSG_FATAL = "fatal:"; //NOI18N
     
+    protected static final class Revision implements CharSequence {
+        private String currentRevision = "place-holder";
+        
+        protected Revision() {
+            
+        }
+
+        protected void setContent(String revision) {
+            currentRevision = revision;
+        }
+        
+        @Override
+        public int length() {
+            return currentRevision.length();
+        }
+
+        @Override
+        public char charAt(int index) {
+            return currentRevision.charAt(index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return currentRevision.subSequence(end, end);
+        }
+
+        @Override
+        public String toString() {
+            return currentRevision;
+        }
+    }    
 }
