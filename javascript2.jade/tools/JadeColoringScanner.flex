@@ -489,7 +489,7 @@ UnbufferedComment = "//-"
                                         if (zzInput == ')') parenBalance++;  // ned to return back 
     }
     
-    {AnyChar}                         { lastReaded = tokenLength; continueJS = false;}
+    {AnyChar}                         { lastReaded = tokenLength; /*continueJS = false;*/}
     
 }
 
