@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -96,7 +97,7 @@ public class WebPersistenceProviderTest extends NbTestCase {
 
     @Override
     public void setUp() throws Exception {
-        TestUtil.setLookup();
+        MockLookup.setLayersAndInstances();
         // in an attempt to find the cause of issue 90762
         Logger.getLogger(PersistenceScopesHelper.class.getName()).setLevel(Level.FINEST);
         // setup the project
