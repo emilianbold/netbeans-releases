@@ -45,7 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;

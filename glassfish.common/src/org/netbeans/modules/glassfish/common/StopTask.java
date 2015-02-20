@@ -44,12 +44,15 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.tooling.admin.CommandStopDAS;
+import org.netbeans.modules.glassfish.tooling.admin.CommandStopCluster;
+import org.netbeans.modules.glassfish.tooling.admin.ResultString;
+import org.netbeans.modules.glassfish.tooling.admin.CommandStopInstance;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.TaskEvent;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.TaskStateListener;
-import org.glassfish.tools.ide.admin.*;
+import org.netbeans.modules.glassfish.tooling.TaskEvent;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.TaskStateListener;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 

@@ -46,9 +46,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.admin.CommandListResources;
-import org.glassfish.tools.ide.admin.ResultList;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.admin.CommandListResources;
+import org.netbeans.modules.glassfish.tooling.admin.ResultList;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 

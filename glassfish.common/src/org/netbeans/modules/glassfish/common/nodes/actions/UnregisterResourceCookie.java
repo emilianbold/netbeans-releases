@@ -45,7 +45,7 @@
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
 import java.util.concurrent.Future;
-import org.glassfish.tools.ide.admin.ResultString;
+import org.netbeans.modules.glassfish.tooling.admin.ResultString;
 import org.openide.nodes.Node;
 
 
