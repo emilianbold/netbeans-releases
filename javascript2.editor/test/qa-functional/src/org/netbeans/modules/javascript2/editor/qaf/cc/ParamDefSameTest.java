@@ -79,6 +79,7 @@ public class ParamDefSameTest extends GeneralJavaScript {
 
     public void openProject() throws Exception {
         startTest();
+        GeneralJavaScript.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("completionTest");
         evt.waitNoEvent(2000);

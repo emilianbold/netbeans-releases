@@ -43,7 +43,6 @@ package org.netbeans.modules.html.angular.cc;
 
 import org.netbeans.modules.html.angular.GeneralAngular;
 import java.awt.event.InputEvent;
-import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
@@ -55,22 +54,23 @@ import org.netbeans.jemmy.JemmyProperties;
  */
 public class CompletionTest extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExpression12",
+        "testExpression13",
+        "testExpression17",
+        "testMatchingCCExpression",
+        "testAttribute30",
+        "testAttribute32",
+        "testAttribute33"
+    };
+
     public CompletionTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CompletionTest.class).addTest(
-                        "openProject",
-                        "testExpression12",
-                        "testExpression13",
-                        "testExpression17",
-                        "testMatchingCCExpression",
-                        "testAttribute30",
-                        "testAttribute32",
-                        "testAttribute33"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(CompletionTest.class, tests);
     }
 
     public void openProject() throws Exception {

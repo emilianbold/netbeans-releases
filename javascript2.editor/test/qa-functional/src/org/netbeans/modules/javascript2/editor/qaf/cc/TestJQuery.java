@@ -51,7 +51,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -60,6 +59,20 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class TestJQuery extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testChainCC",
+        "testCCMethod",
+        "testSimpleClassSelector",
+        "testSimpleIdSelector",
+        "testtestSimpleIdSelectorJQuery",
+        "testSimpleClassSelectorJQuery",
+        "testElementSelector",
+        "testElementSelectorjQuery",
+        "testMultipleSelectors",
+        "testMultipleSelectorsJQuery",
+        "testHelpWindow"
+    };
     private String projectName = "completionTest";
 
     public TestJQuery(String args) {
@@ -67,20 +80,7 @@ public class TestJQuery extends GeneralJavaScript {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(TestJQuery.class).addTest(
-                "openProject",
-                "testChainCC",
-                "testCCMethod",
-                "testSimpleClassSelector",
-                "testSimpleIdSelector",
-                "testtestSimpleIdSelectorJQuery",
-                "testSimpleClassSelectorJQuery",
-                "testElementSelector",
-                "testElementSelectorjQuery",
-                "testMultipleSelectors",
-                "testMultipleSelectorsJQuery",
-                "testHelpWindow").enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(TestJQuery.class, tests);
     }
 
     public void openProject() throws Exception {
