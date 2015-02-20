@@ -783,8 +783,9 @@ UnbufferedComment = "//-"
                                             if (tokenLength > (indentInComment + 1)) {
                                                 return JadeTokenId.COMMENT;
                                             }
+                                        } else {
+                                            yybegin(IN_COMMENT);
                                         }
-                                        yybegin(IN_COMMENT);
                                     }
     {LineTerminator}                {}                                
     .                               {   yypushback(1);
@@ -811,8 +812,9 @@ UnbufferedComment = "//-"
                                             if (tokenLength > indentInComment) {
                                                 return JadeTokenId.UNBUFFERED_COMMENT;
                                             }
+                                        } else {
+                                            yybegin(IN_UNBUFFERED_COMMENT);
                                         }
-                                        yybegin(IN_UNBUFFERED_COMMENT);
                                     }
     {LineTerminator}                {}                                    
     .                               {   yypushback(1);
