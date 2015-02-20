@@ -222,10 +222,17 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /* base structural elements */
 AnyChar = (.|[\n])
+h = [0-9a-f]
+nonascii = [\200-\377]
+unicode	= \\{h}{1,6}(\r\n|[ \t\r\n\f])?
+escape =	{unicode}|\\[ -~\200-\377]
+nmstart	 =	[_a-z]|{nonascii}|{escape}
+nmchar	=	[_a-zA-Z0-9-]|{nonascii}|{escape}
+
 HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 HtmlIdentifierPart = [-[:letter:][:digit:]]+
 HtmlIdentifier = {HtmlIdentifierPart}(:{HtmlIdentifierPart})*
-CssIdentifier = [@\-[:letter:][:digit:]]+
+CssIdentifier = {nmstart}{nmchar}*
 LineTerminator = \r|\n|\r\n
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 WS = [ \t\f\u00A0\u000B]
@@ -362,8 +369,7 @@ UnbufferedComment = "//-"
     "#{"                            {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
                                     }
-    .                               {   // we expect = != / or Css Id or Css class
-                                        return JadeTokenId.UNKNOWN; }
+    .                               {   yybegin(TEXT_LINE); }
 }
 
 <AFTER_COLON_IN_TAG>                {
@@ -885,6 +891,16 @@ UnbufferedComment = "//-"
     [^\r\n]                         { }
 }
 
+<TEXT_LINE><<EOF>>  {
+    {   if (input.readLength() > 0) {
+        // backup eof
+        input.backup(1);
+        //and return the text as error token
+        return JadeTokenId.TEXT;
+    } else {
+        return null;
+    }}
+}
 <IN_UNBUFFERED_COMMENT_AFTER_EOL><<EOF>>              {   if (input.readLength() > 0) {
         // backup eof
         input.backup(1);
