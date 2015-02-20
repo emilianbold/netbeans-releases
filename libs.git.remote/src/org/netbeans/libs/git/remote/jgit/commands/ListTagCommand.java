@@ -42,28 +42,49 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitTag;
+import org.netbeans.libs.git.remote.GitTag.TagContainer;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class ListTagCommand extends GitCommand {
+    public static final boolean KIT = false;
     private Map<String, GitTag> allTags;
+    private final ProgressMonitor monitor;
     private final boolean all;
+    private final Revision revisionPlaseHolder;
+    private final Revision tagNamePlaceHolder;
 
     public ListTagCommand (JGitRepository repository, GitClassFactory gitFactory, boolean all, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.all = all;
+        this.monitor = monitor;
+        revisionPlaseHolder = new Revision();
+        tagNamePlaceHolder = new Revision();
     }
-
+    
     @Override
     protected void run () throws GitException {
+        if (KIT) {
+            //runKit();
+        } else {
+            runCLI();
+        }
+    }
+
+    protected void runKit () throws GitException {
 //        Repository repository = getRepository().getRepository();
 //        Map<String, Ref> tags = repository.getTags();
 //        allTags = new LinkedHashMap<String, GitTag>(tags.size());
@@ -89,16 +110,153 @@ public class ListTagCommand extends GitCommand {
 //            walk.release();
 //        }
     }
-    
-    @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "tag"); //NOI18N
-        addArgument(0, "-l"); //NOI18N
-    }
 
     public Map<String, GitTag> getTags () {
         return allTags;
     }
+    
+    @Override
+    protected void prepare() throws GitException {
+        setCommandsNumber(3);
+        super.prepare();
+        addArgument(0, "tag"); //NOI18N
+        addArgument(0, "-l"); //NOI18N
 
+        addArgument(1, "show-ref"); //NOI18N
+        addArgument(1, "--tags"); //NOI18N
+        addArgument(1, tagNamePlaceHolder);
+
+        addArgument(2, "show"); //NOI18N
+        addArgument(2, "--raw"); //NOI18N
+        addArgument(2, revisionPlaseHolder);
+    }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            allTags = new LinkedHashMap<>();
+            List<GitTag.TagContainer> list = new ArrayList<GitTag.TagContainer>();
+            runner(canceled, 0, list, new Parser() {
+
+                @Override
+                public void outputParser(String output, List<GitTag.TagContainer> list) {
+                    parseTagOutput(output, list);
+                }
+
+                @Override
+                public void errorParser(String error) {
+                    parseAddError(error);
+                }
+            });
+            for (GitTag.TagContainer container : list) {
+                tagNamePlaceHolder.setContent(container.name);
+                runner2(canceled, 1, container, new CreateTagCommand.Parser() {
+
+                    @Override
+                    public void outputParser(String output, TagContainer container) {
+                        CreateTagCommand.parseShowRef(output, container);
+                    }
+
+                    @Override
+                    public void errorParser(String error) {
+                        parseAddError(error);
+                    }
+                });
+                if (container.id != null) {
+                    revisionPlaseHolder.setContent(container.id);
+                    runner2(canceled, 2, container, new CreateTagCommand.Parser() {
+
+                        @Override
+                        public void outputParser(String output, TagContainer container) {
+                            CreateTagCommand.parseShowDetails(output, container);
+                        }
+
+                        @Override
+                        public void errorParser(String error) {
+                            parseAddError(error);
+                        }
+                    });
+                    allTags.put(container.name, getClassFactory().createTag(container));
+                }
+            }
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, List<GitTag.TagContainer> list, Parser parser) {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output, list);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            parser.errorParser(exitStatus.error);
+        }
+    }
+    
+    private void runner2(ProcessUtils.Canceler canceled, int command, TagContainer container, CreateTagCommand.Parser parser) {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output, container);
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {
+            parser.errorParser(exitStatus.error);
+        }
+    }
+    
+    private void parseTagOutput(String output, List<GitTag.TagContainer> list) {
+        //tag-name
+        //tag-name-3
+        for (String line : output.split("\n")) { //NOI18N
+            if (!line.isEmpty()) {
+                GitTag.TagContainer tag =new GitTag.TagContainer();
+                tag.name = line.trim();
+                list.add(tag);
+            }
+        }
+    }
+    
+    private void parseAddError(String error) {
+        //The following paths are ignored by one of your .gitignore files:
+        //folder2
+        //Use -f if you really want to add them.
+        //fatal: no files added
+        processMessages(error);
+    }
+    
+    private abstract class Parser {
+        public abstract void outputParser(String output, List<GitTag.TagContainer> list);
+        public void errorParser(String error){
+        }
+    }
 }
