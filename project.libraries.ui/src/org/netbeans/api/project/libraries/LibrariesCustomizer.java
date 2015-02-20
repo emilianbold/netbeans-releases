@@ -142,7 +142,7 @@ public final class LibrariesCustomizer {
                     return null;
                 }
                 impl = provider.createLibrary();
-                impl.setName(p.getLibraryName());
+                impl.setName(antLibraryName);
             }
             LibrariesSupport.setDisplayName(impl, currentLibraryName);
             customizer.getModel().addLibrary(impl);
