@@ -74,7 +74,7 @@ public class BrowserActionProvider implements ActionProvider {
         this.support = support;
         this.cfg = cfg;
     }
-    
+
     @Override
     public String[] getSupportedActions() {
         return new String[] {COMMAND_RUN, COMMAND_RUN_SINGLE};
@@ -133,11 +133,7 @@ public class BrowserActionProvider implements ActionProvider {
             ProjectProblems.showAlert(project);
             return null;
         }
-        String startFile = project.getStartFile();
-        if (startFile == null) {
-            return Pair.of(siteRoot, ""); // NOI18N
-        }
-        String[] parts = ClientSideProjectUtilities.splitPathAndFragment(startFile);
+        String[] parts = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile());
         return Pair.of(siteRoot.getFileObject(parts[0]), parts[1]);
     }
 
@@ -145,7 +141,7 @@ public class BrowserActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         return true;
     }
-    
+
     private FileObject getFile(Lookup context) {
         return context.lookup(FileObject.class);
     }
@@ -153,7 +149,7 @@ public class BrowserActionProvider implements ActionProvider {
     private void browseFile(BrowserSupport bs, FileObject fo) {
         browseFile(bs, fo, "");
     }
-    
+
     private void browseFile(BrowserSupport bs, FileObject fo, String fragment) {
         URL url;
         if (ClientSideProjectUtilities.isParentOrItself(project.getSiteRootFolder(), fo)) {

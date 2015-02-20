@@ -72,10 +72,7 @@ public final class RunProjectValidator {
 
     public RunProjectValidator validate(ClientSideProject project, boolean validateStartFile) {
         if (validateStartFile) {
-            String startFile = project.getStartFile();
-            if (startFile != null) {
-                startFile = ClientSideProjectUtilities.splitPathAndFragment(startFile)[0];
-            }
+            String startFile = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile())[0];
             File siteRoot = getSiteRoot(project);
             validateStartFile(getSiteRoot(project), resolveFile(siteRoot, startFile));
         }
@@ -150,11 +147,11 @@ public final class RunProjectValidator {
     }
 
     @CheckForNull
-    private File resolveFile(@NullAllowed File root, @NullAllowed String child) {
+    private File resolveFile(@NullAllowed File root, String child) {
         if (root == null) {
             return null;
         }
-        if (child == null) {
+        if (child.isEmpty()) {
             return root;
         }
         return new File(root, child);

@@ -418,9 +418,12 @@ public class ClientSideProject implements Project {
         return getProjectDirectory().getFileObject(tests);
     }
 
-    @CheckForNull
     public String getStartFile() {
-        return getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
+        String startFile = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
+        if (startFile == null) {
+            startFile = "index.html"; // NOI18N
+        }
+        return startFile;
     }
 
     public String getSelectedBrowser() {
