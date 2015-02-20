@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.GitTag;
 import org.netbeans.libs.git.remote.GitTag.TagContainer;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
@@ -65,14 +66,14 @@ public class ListTagCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final boolean all;
     private final Revision revisionPlaseHolder;
-    private final Revision tagNamePlaceHolder;
+    private final String onlyTagName;
 
-    public ListTagCommand (JGitRepository repository, GitClassFactory gitFactory, boolean all, ProgressMonitor monitor) {
+    public ListTagCommand (JGitRepository repository, GitClassFactory gitFactory, boolean all, ProgressMonitor monitor, String tagName) {
         super(repository, gitFactory, monitor);
         this.all = all;
         this.monitor = monitor;
         revisionPlaseHolder = new Revision();
-        tagNamePlaceHolder = new Revision();
+        onlyTagName = tagName;
     }
     
     @Override
@@ -117,18 +118,18 @@ public class ListTagCommand extends GitCommand {
     
     @Override
     protected void prepare() throws GitException {
-        setCommandsNumber(3);
+        setCommandsNumber(2);
         super.prepare();
-        addArgument(0, "tag"); //NOI18N
-        addArgument(0, "-l"); //NOI18N
+        addArgument(0, "show-ref"); //NOI18N
+        addArgument(0, "--tags"); //NOI18N
+        addArgument(0, "-d"); //NOI18N
+        if (onlyTagName != null) {
+            addArgument(0, onlyTagName); //NOI18N
+        }
 
-        addArgument(1, "show-ref"); //NOI18N
-        addArgument(1, "--tags"); //NOI18N
-        addArgument(1, tagNamePlaceHolder);
-
-        addArgument(2, "show"); //NOI18N
-        addArgument(2, "--raw"); //NOI18N
-        addArgument(2, revisionPlaseHolder);
+        addArgument(1, "show"); //NOI18N
+        addArgument(1, "--raw"); //NOI18N
+        addArgument(1, revisionPlaseHolder);
     }
     
     private void runCLI() throws GitException {
@@ -152,35 +153,24 @@ public class ListTagCommand extends GitCommand {
                     parseAddError(error);
                 }
             });
-            for (GitTag.TagContainer container : list) {
-                tagNamePlaceHolder.setContent(container.name);
-                runner2(canceled, 1, container, new CreateTagCommand.Parser() {
+            if (list.size() == 1) {
+                for (GitTag.TagContainer container : list) {
+                    if (container.id != null) {
+                        revisionPlaseHolder.setContent(container.id);
+                        runner2(canceled, 1, container, new CreateTagCommand.Parser() {
 
-                    @Override
-                    public void outputParser(String output, TagContainer container) {
-                        CreateTagCommand.parseShowRef(output, container);
+                            @Override
+                            public void outputParser(String output, TagContainer container) {
+                                CreateTagCommand.parseShowDetails(output, container);
+                            }
+
+                            @Override
+                            public void errorParser(String error) {
+                                parseAddError(error);
+                            }
+                        });
+                        allTags.put(container.name, getClassFactory().createTag(container));
                     }
-
-                    @Override
-                    public void errorParser(String error) {
-                        parseAddError(error);
-                    }
-                });
-                if (container.id != null) {
-                    revisionPlaseHolder.setContent(container.id);
-                    runner2(canceled, 2, container, new CreateTagCommand.Parser() {
-
-                        @Override
-                        public void outputParser(String output, TagContainer container) {
-                            CreateTagCommand.parseShowDetails(output, container);
-                        }
-
-                        @Override
-                        public void errorParser(String error) {
-                            parseAddError(error);
-                        }
-                    });
-                    allTags.put(container.name, getClassFactory().createTag(container));
                 }
             }
             //command.commandCompleted(exitStatus.exitCode);
@@ -238,14 +228,43 @@ public class ListTagCommand extends GitCommand {
         //git show-ref --tags -d
         //b2eaccb05d0c3f22174824899c4fd796700e66c6 refs/tags/v2.3.0-rc2
         //15598cf41beed0d86cd2ac443e0f69c5a3b40321 refs/tags/v2.3.0-rc2^{}
-
-        //tag-name
-        //tag-name-3
         for (String line : output.split("\n")) { //NOI18N
             if (!line.isEmpty()) {
-                GitTag.TagContainer tag =new GitTag.TagContainer();
-                tag.name = line.trim();
-                list.add(tag);
+                int i = line.indexOf(' ');
+                if (i > 0) {
+                    String id = line.substring(0,i);
+                    String rest = line.substring(i+1);
+                    i = rest.indexOf('^');
+                    String ref;
+                    boolean first;
+                    if (i < 0) {
+                        ref = rest;
+                        first = true;
+                    } else {
+                        ref = rest.substring(0,i);
+                        first = false;
+                    }
+                    i = ref.lastIndexOf("/");
+                    String tag;
+                    if (i > 0) {
+                        tag = ref.substring(i+1);
+                    } else {
+                        tag = ref;
+                    }
+                    if (first) {
+                        GitTag.TagContainer container = new GitTag.TagContainer();
+                        list.add(container);
+                        container.name = tag;
+                        container.id = id;
+                        container.ref = ref;
+                        container.type = GitObjectType.UNKNOWN;
+                    } else if (list.size() > 0){
+                        TagContainer container = list.get(list.size()-1);
+                        assert container.name.equals(tag);
+                        container.objectId = id;
+                        container.type = GitObjectType.COMMIT;
+                    }
+                }
             }
         }
     }

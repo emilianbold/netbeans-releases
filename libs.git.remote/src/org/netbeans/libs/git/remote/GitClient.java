@@ -673,7 +673,7 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public Map<String, GitTag> getTags (ProgressMonitor monitor, boolean allTags) throws GitException {
-        ListTagCommand cmd = new ListTagCommand(gitRepository, getClassFactory(), allTags, monitor);
+        ListTagCommand cmd = new ListTagCommand(gitRepository, getClassFactory(), allTags, monitor, null);
         cmd.execute();
         return cmd.getTags();
     }
