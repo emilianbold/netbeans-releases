@@ -160,6 +160,9 @@ public final class CreateMethodFix implements Fix {
     public ChangeInfo implement() throws IOException {
         //use the original cp-info so it is "sure" that the proposedType can be resolved:
         JavaSource js = JavaSource.create(cpInfo, targetFile);
+        if (js == null) {
+            return null;
+        }
         // tag used for selection
         final String methodBodyTag = "mbody"; //NOI18N
         

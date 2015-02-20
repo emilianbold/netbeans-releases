@@ -163,6 +163,9 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                     return; //TODO...
                 }
                 tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
+                if (!Utilities.isValidType(tm)) {
+                    return; // TODO... 
+                }
                 Tree original = resolved.getLeaf();
                 boolean variableRewrite = original.getKind() == Tree.Kind.VARIABLE;
                 ExpressionTree expression = !variableRewrite ? (ExpressionTree) resolved.getLeaf() : ((VariableTree) original).getInitializer();
