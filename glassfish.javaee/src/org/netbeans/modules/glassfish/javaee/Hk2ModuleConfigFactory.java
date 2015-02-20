@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
-import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;

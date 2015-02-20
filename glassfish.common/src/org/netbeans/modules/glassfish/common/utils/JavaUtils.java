@@ -49,9 +49,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.data.GlassFishJavaSEConfig;
-import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
-import org.glassfish.tools.ide.server.config.JavaSEPlatform;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishJavaSEConfig;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilderProvider;
+import org.netbeans.modules.glassfish.tooling.server.config.JavaSEPlatform;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -136,10 +136,10 @@ public class JavaUtils {
         }
         // Java SE home was not found in installed Java SE platforms.
         // Version should be retrieved using external check.
-        String javaExec = org.glassfish.tools.ide.utils.JavaUtils
+        String javaExec = org.netbeans.modules.glassfish.tooling.utils.JavaUtils
                 .javaVmExecutableFullPath(javaHome.getAbsolutePath());
-        org.glassfish.tools.ide.utils.JavaUtils.JavaVersion version
-                = org.glassfish.tools.ide.utils.JavaUtils
+        org.netbeans.modules.glassfish.tooling.utils.JavaUtils.JavaVersion version
+                = org.netbeans.modules.glassfish.tooling.utils.JavaUtils
                 .javaVmVersion(new File(javaExec));
         JavaSEPlatform javaSEPlatform
                 = version != null ? version.toPlatform() : null;
@@ -302,11 +302,11 @@ public class JavaUtils {
                 return true;
             }
             // Otherwise check for Java version and register when valid.
-            File javaVm = new File(org.glassfish.tools.ide.utils
+            File javaVm = new File(org.netbeans.modules.glassfish.tooling.utils
                     .JavaUtils.javaVmExecutableFullPath(javaHome));
             if (javaVm.canExecute()) {
-                org.glassfish.tools.ide.utils.JavaUtils.JavaVersion javaVersion
-                        = org.glassfish.tools.ide.utils
+                org.netbeans.modules.glassfish.tooling.utils.JavaUtils.JavaVersion javaVersion
+                        = org.netbeans.modules.glassfish.tooling.utils
                         .JavaUtils.javaVmVersion(javaVm);
                 if (javaVersion != null) {
                     String platformversion = javaVersion.toPlatform().toString();

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.glassfish.javaee.ide;
 
+import org.netbeans.modules.glassfish.tooling.admin.CommandGetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.ResultMap;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -58,12 +60,11 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.*;
-import org.glassfish.tools.ide.GlassFishIdeException;
-import org.glassfish.tools.ide.TaskEvent;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.TaskStateListener;
-import org.glassfish.tools.ide.admin.*;
-import org.glassfish.tools.ide.utils.Utils;
+import org.netbeans.modules.glassfish.tooling.GlassFishIdeException;
+import org.netbeans.modules.glassfish.tooling.TaskEvent;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.TaskStateListener;
+import org.netbeans.modules.glassfish.tooling.utils.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
