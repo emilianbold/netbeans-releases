@@ -235,6 +235,10 @@ public class ListTagCommand extends GitCommand {
     }
     
     private void parseTagOutput(String output, List<GitTag.TagContainer> list) {
+        //git show-ref --tags -d
+        //b2eaccb05d0c3f22174824899c4fd796700e66c6 refs/tags/v2.3.0-rc2
+        //15598cf41beed0d86cd2ac443e0f69c5a3b40321 refs/tags/v2.3.0-rc2^{}
+
         //tag-name
         //tag-name-3
         for (String line : output.split("\n")) { //NOI18N
