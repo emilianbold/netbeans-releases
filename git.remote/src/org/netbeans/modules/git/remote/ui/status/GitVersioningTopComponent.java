@@ -53,6 +53,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +64,7 @@ import org.netbeans.libs.git.remote.GitBranch;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.remote.utils.GitUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -136,14 +138,25 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(this.contentTitle);
-        out.writeObject(context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]));
+        out.writeInt(context.getRootFiles().size());
+        for(VCSFileProxy root : context.getRootFiles()) {
+            URI uri = VCSFileProxySupport.toURI(root);
+            out.writeObject(uri);
+        }
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         contentTitle = (String) in.readObject();
-        VCSFileProxy[] files = (VCSFileProxy[]) in.readObject();
+        int size = in.readInt();
+        List<VCSFileProxy> rootFiles = new ArrayList<VCSFileProxy>(size);
+        for(int i = 0; i < size; i++) {
+            URI uri = (URI)in.readObject();
+            VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
+            rootFiles.add(root);
+        }
+        VCSFileProxy[] files = rootFiles.toArray(new VCSFileProxy[size]);
         final List<Node> nodes = new ArrayList<>(files.length);
         for (VCSFileProxy file : files) {
             nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)) {

@@ -43,8 +43,8 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
 import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;

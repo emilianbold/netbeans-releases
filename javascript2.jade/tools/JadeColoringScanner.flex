@@ -222,10 +222,17 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /* base structural elements */
 AnyChar = (.|[\n])
+h = [0-9a-f]
+nonascii = [\200-\377]
+unicode	= \\{h}{1,6}(\r\n|[ \t\r\n\f])?
+escape =	{unicode}|\\[ -~\200-\377]
+nmstart	 =	[_a-z]|{nonascii}|{escape}
+nmchar	=	[_a-zA-Z0-9-]|{nonascii}|{escape}
+
 HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 HtmlIdentifierPart = [-[:letter:][:digit:]]+
 HtmlIdentifier = {HtmlIdentifierPart}(:{HtmlIdentifierPart})*
-CssIdentifier = [@\-[:letter:][:digit:]]+
+CssIdentifier = {nmstart}{nmchar}*
 LineTerminator = \r|\n|\r\n
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 WS = [ \t\f\u00A0\u000B]
@@ -320,6 +327,7 @@ UnbufferedComment = "//-"
                                         blockIndent = -1;
                                         return JadeTokenId.FILTER; }
     "<"                             {   yybegin(IN_PLAIN_TEXT_LINE); }
+    "&"                             {   yybegin(IN_PLAIN_TEXT_LINE); }
     .                               {   return JadeTokenId.UNKNOWN;}
     
 }
@@ -362,8 +370,7 @@ UnbufferedComment = "//-"
     "#{"                            {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
                                     }
-    .                               {   // we expect = != / or Css Id or Css class
-                                        return JadeTokenId.UNKNOWN; }
+    .                               {   yybegin(TEXT_LINE); }
 }
 
 <AFTER_COLON_IN_TAG>                {
@@ -482,7 +489,7 @@ UnbufferedComment = "//-"
                                         if (zzInput == ')') parenBalance++;  // ned to return back 
     }
     
-    {AnyChar}                         { lastReaded = tokenLength; continueJS = false;}
+    {AnyChar}                         { lastReaded = tokenLength; /*continueJS = false;*/}
     
 }
 
@@ -728,8 +735,10 @@ UnbufferedComment = "//-"
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
     {Identifier}                    {   return JadeTokenId.MIXIN_NAME; }
     "("                             {   yybegin(MIXIN_CALL_ARGUMENT);
+                                        parenBalance = 1; braceBalance = 0;
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
     ","                             {   yybegin(MIXIN_CALL_ARGUMENT);
+                                        parenBalance = 1; braceBalance = 0;
                                         return JadeTokenId.OPERATOR_COMMA; }
     ")"                             {   yybegin(IN_PLAIN_TEXT_LINE);
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
@@ -783,8 +792,9 @@ UnbufferedComment = "//-"
                                             if (tokenLength > (indentInComment + 1)) {
                                                 return JadeTokenId.COMMENT;
                                             }
+                                        } else {
+                                            yybegin(IN_COMMENT);
                                         }
-                                        yybegin(IN_COMMENT);
                                     }
     {LineTerminator}                {}                                
     .                               {   yypushback(1);
@@ -811,8 +821,9 @@ UnbufferedComment = "//-"
                                             if (tokenLength > indentInComment) {
                                                 return JadeTokenId.UNBUFFERED_COMMENT;
                                             }
+                                        } else {
+                                            yybegin(IN_UNBUFFERED_COMMENT);
                                         }
-                                        yybegin(IN_UNBUFFERED_COMMENT);
                                     }
     {LineTerminator}                {}                                    
     .                               {   yypushback(1);
@@ -883,6 +894,16 @@ UnbufferedComment = "//-"
     [^\r\n]                         { }
 }
 
+<TEXT_LINE><<EOF>>  {
+    {   if (input.readLength() > 0) {
+        // backup eof
+        input.backup(1);
+        //and return the text as error token
+        return JadeTokenId.TEXT;
+    } else {
+        return null;
+    }}
+}
 <IN_UNBUFFERED_COMMENT_AFTER_EOL><<EOF>>              {   if (input.readLength() > 0) {
         // backup eof
         input.backup(1);

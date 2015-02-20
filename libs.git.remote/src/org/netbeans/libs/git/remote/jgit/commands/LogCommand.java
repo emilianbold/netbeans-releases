@@ -376,36 +376,4 @@ public class LogCommand extends GitCommand {
         public void errorParser(String error) throws GitException.MissingObjectException {
         }
     }
-    
-    private static final class Revision implements CharSequence {
-        private String currentRevision = "place-holder";
-        
-        private Revision() {
-            
-        }
-
-        private void setContent(String revision) {
-            currentRevision = revision;
-        }
-        
-        @Override
-        public int length() {
-            return currentRevision.length();
-        }
-
-        @Override
-        public char charAt(int index) {
-            return currentRevision.charAt(index);
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end) {
-            return currentRevision.subSequence(end, end);
-        }
-
-        @Override
-        public String toString() {
-            return currentRevision;
-        }
-    }
 }

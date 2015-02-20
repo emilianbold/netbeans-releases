@@ -45,12 +45,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.admin.CommandGetProperty;
-import org.glassfish.tools.ide.admin.ResultMap;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.utils.StringPrefixTree;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.admin.CommandGetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.ResultMap;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.utils.StringPrefixTree;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
 /**

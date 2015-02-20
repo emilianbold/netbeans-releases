@@ -58,6 +58,7 @@ import org.netbeans.libs.git.remote.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.remote.GitStatus;
 import org.netbeans.libs.git.remote.GitStatus.GitDiffEntry;
 import org.netbeans.libs.git.remote.GitStatus.Status;
+import org.netbeans.libs.git.remote.GitTag;
 import org.netbeans.libs.git.remote.GitTransportUpdate;
 import org.netbeans.libs.git.remote.GitUser;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -111,7 +112,7 @@ public abstract class GitClassFactory {
     
     //public abstract GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, VCSFileProxy folder);
 
-    //public abstract GitTag createTag (RevTag revTag);
+    public abstract GitTag createTag (GitTag.TagContainer revTag);
 
     //public abstract GitTag createTag (String tagName, RevObject revObject);
 

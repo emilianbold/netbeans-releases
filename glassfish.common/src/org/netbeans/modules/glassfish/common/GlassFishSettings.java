@@ -42,7 +42,7 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.util.prefs.Preferences;
-import org.glassfish.tools.ide.GlassFishToolsConfig;
+import org.netbeans.modules.glassfish.tooling.GlassFishToolsConfig;
 import org.openide.util.NbPreferences;
 
 /**
