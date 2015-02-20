@@ -43,6 +43,7 @@ package org.netbeans.modules.odcs.ui.project;
 
 import com.tasktop.c2c.server.profile.domain.activity.BuildActivity;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
+import com.tasktop.c2c.server.profile.domain.activity.RssActivity;
 import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
 import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
 import com.tasktop.c2c.server.profile.domain.activity.WikiActivity;
@@ -94,6 +95,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     private JCheckBox chbBuildWatched;
     private JCheckBox chbBuildUnwatched;
     private JCheckBox chbScm;
+    private JCheckBox chbRss;
     private List<ProjectActivity> recentActivities = Collections.emptyList();
     private final Map<ProjectActivity, ActivityPanel> activity2Panel = new HashMap<ProjectActivity, ActivityPanel>();
     private int maxWidth = -1;
@@ -290,6 +292,11 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         chbScm.setOpaque(false);
         chbScm.addActionListener(new ShowActionListener(ScmActivity.class));
         pnlShow.add(chbScm, gbc);
+        
+        chbRss = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Commits"), Utils.Settings.isShowRss());
+        chbRss.setOpaque(false);
+        chbRss.addActionListener(new ShowActionListener(ScmActivity.class));
+        pnlShow.add(chbRss, gbc);
 
         chbBuildWatched = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Builds"), Utils.Settings.isShowBuilds());
         chbBuildWatched.setOpaque(false);
@@ -399,6 +406,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         return activity instanceof TaskActivity && chbTask.isSelected()
                 || activity instanceof ScmActivity && chbScm.isSelected()
                 || activity instanceof WikiActivity && chbWiki.isSelected()
+                || activity instanceof RssActivity && chbRss.isSelected()
                 || isBuildActivity;
     }
 
@@ -440,6 +448,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         Utils.Settings.setShowScm(chbScm.isSelected());
         Utils.Settings.setShowTasks(chbTask.isSelected());
         Utils.Settings.setShowWiki(chbWiki.isSelected());
+        Utils.Settings.setShowRss(chbRss.isSelected());
     }
 
     private class ShowActionListener implements ActionListener {

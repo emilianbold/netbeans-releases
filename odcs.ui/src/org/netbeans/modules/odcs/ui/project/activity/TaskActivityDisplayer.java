@@ -51,6 +51,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -68,6 +69,7 @@ import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
