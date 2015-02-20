@@ -433,12 +433,71 @@ public class Utilities {
         return result[0];
     }
     
-    private static int findBodyStartImpl(Tree cltree, CompilationUnitTree cu, SourcePositions positions, Document doc) {
+    /**
+     * Finds end position among supplied Trees. The method accepts Tree, or List&lt? extends Tree> as the untyped
+     * vararg parameter. It's assumed that the caller passes varargs list is sorted starting from the rightmost tree or forest, so
+     * mutual relationships of items in the vararg list are not checked.
+     * 
+     * The method returns end position of the first found tree; synthetic trees are ignored.
+     * 
+     * @param cu compilation unit
+     * @param pos position information
+     * @param treeSets trees or forests
+     * @return end position or -1, if no suitable subtree was found.
+     */
+    private static int findSubtreeEnd(CompilationUnitTree cu, SourcePositions pos, Object... treeSets) {
+        for (Object o : treeSets) {
+            if (o == null) {
+                continue;
+            }
+            if (o instanceof Tree) {
+                int offset = (int)pos.getEndPosition(cu, (Tree)o);
+                if (offset >= 0) {
+                    return offset;
+                }
+            } 
+            List<? extends Tree> set = (List<? extends Tree>)o;
+            if (!set.isEmpty()) {
+                // assume that the compiler will fake a single item in otherwise empty list; it should not add a fake item after some real Tree items.
+                Tree t = set.get(set.size() - 1);
+                int offset = (int)pos.getEndPosition(cu, t);
+                if (offset >= 0) {
+                    return offset;
+                }
+            }
+        }
+        return -1;
+    }
+    
+    private static int findBodyStartImpl(CompilationInfo info, Tree cltree, CompilationUnitTree cu, SourcePositions positions, Document doc) {
         int start = (int)positions.getStartPosition(cu, cltree);
         int end   = (int)positions.getEndPosition(cu, cltree);
         
         if (start == (-1) || end == (-1)) {
             return -1;
+        }
+        int startPos = -1;
+        switch (cltree.getKind()) {
+            case CLASS: case INTERFACE: case ENUM: {
+                ClassTree ct = (ClassTree)cltree;
+                startPos = findSubtreeEnd(cu, positions,
+                        ct.getImplementsClause(),
+                        ct.getExtendsClause(),
+                        ct.getTypeParameters(),
+                        ct.getModifiers()
+                );
+                break;
+            }
+                
+            case METHOD:  {
+                // if the method contains some parameters, skip to the end of the parameter list
+                MethodTree mt = (MethodTree)cltree;
+                startPos = findSubtreeEnd(cu, positions, mt.getDefaultValue(), mt.getThrows(), mt.getParameters(), mt.getModifiers());
+                break;
+            }
+        }
+        if (startPos > start) {
+            start = startPos;
         }
         
         if (start > doc.getLength() || end > doc.getLength()) {
@@ -452,26 +511,18 @@ public class Utilities {
             
             return (-1);
         }
-        
-        try {
-            String text = doc.getText(start, end - start);
-            
-            int index = text.indexOf('{');
-            
-            if (index == (-1)) {
-                return -1;
-//                throw new IllegalStateException("Should NEVER happen.");
+        TokenHierarchy<JavaTokenId> th = (TokenHierarchy<JavaTokenId>)info.getTokenHierarchy();
+        TokenSequence<JavaTokenId> seq = (TokenSequence<JavaTokenId>)th.tokenSequence();
+        seq.move(start);
+        while (seq.moveNext()) {
+            if (seq.token().id() == JavaTokenId.LBRACE) {
+                return seq.offset();
             }
-            
-            return start + index;
-        } catch (BadLocationException e) {
-            LOG.log(Level.INFO, null, e);
         }
-        
         return (-1);
     }
     
-    public static int findBodyStart(final Tree cltree, final CompilationUnitTree cu, final SourcePositions positions, final Document doc) {
+    public static int findBodyStart(final CompilationInfo info, final Tree cltree, final CompilationUnitTree cu, final SourcePositions positions, final Document doc) {
         Kind kind = cltree.getKind();
         if (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Kind.METHOD)
             throw new IllegalArgumentException("Unsupported kind: "+ kind);
@@ -479,7 +530,7 @@ public class Utilities {
         
         doc.render(new Runnable() {
             public void run() {
-                result[0] = findBodyStartImpl(cltree, cu, positions, doc);
+                result[0] = findBodyStartImpl(info, cltree, cu, positions, doc);
             }
         });
         

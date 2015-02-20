@@ -200,7 +200,25 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         return DataLoadersBridge.getDefault().getDocument(file);
     }
     
-    private Position[] getLine(Error d, final Document doc, int startOffset, int endOffset) {
+    private Position[] getLine(final Error d, final Document doc, final int startOffset, final int endOffset) {
+        if (doc == null) {
+            return new Position[2];
+        }
+        final Position[][] ret = new Position[][] { new Position[2] };
+        // line nunmber conversion + getText from the line should happen
+        // under the document read-lock.
+        doc.render(new Runnable() {
+            public void run() {
+                if (isCanceled()) {
+                    return;
+                }
+                ret[0] = getLine0(d, doc, startOffset, endOffset);
+            }
+        });
+        return ret[0];
+    }
+    
+    private Position[] getLine0(Error d, final Document doc, int startOffset, int endOffset) {
         StyledDocument sdoc = (StyledDocument) doc;
         int lineNumber = NbDocument.findLineNumber(sdoc, startOffset);
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
@@ -238,34 +256,26 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         final int endOffsetFinal = endOffset;
         final Position[] result = new Position[2];
         
-        doc.render(new Runnable() {
-            public @Override void run() {
-                if (isCanceled()) {
-                    return;
-                }
-                
-                int len = doc.getLength();
-                
-                if (startOffsetFinal > len || endOffsetFinal > len) {
-                    if (!isCanceled() && LOG.isLoggable(Level.WARNING)) {
-                        LOG.log(Level.WARNING, "document changed, but not canceled?" );
-                        LOG.log(Level.WARNING, "len = " + len );
-                        LOG.log(Level.WARNING, "startOffset = " + startOffsetFinal );
-                        LOG.log(Level.WARNING, "endOffset = " + endOffsetFinal );
-                    }
-                    cancel();
-                    
-                    return;
-                }
-                
-                try {
-                    result[0] = NbDocument.createPosition(doc, startOffsetFinal, Bias.Forward);
-                    result[1] = NbDocument.createPosition(doc, endOffsetFinal, Bias.Backward);
-                } catch (BadLocationException e) {
-                    LOG.log(Level.WARNING, null, e);
-                }
+        int len = doc.getLength();
+
+        if (startOffsetFinal > len || endOffsetFinal > len) {
+            if (!isCanceled() && LOG.isLoggable(Level.WARNING)) {
+                LOG.log(Level.WARNING, "document changed, but not canceled?" );
+                LOG.log(Level.WARNING, "len = " + len );
+                LOG.log(Level.WARNING, "startOffset = " + startOffsetFinal );
+                LOG.log(Level.WARNING, "endOffset = " + endOffsetFinal );
             }
-        });
+            cancel();
+
+            return result;
+        }
+
+        try {
+            result[0] = NbDocument.createPosition(doc, startOffsetFinal, Bias.Forward);
+            result[1] = NbDocument.createPosition(doc, endOffsetFinal, Bias.Backward);
+        } catch (BadLocationException e) {
+            LOG.log(Level.WARNING, null, e);
+        }
         
         return result;
     }
