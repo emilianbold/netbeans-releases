@@ -52,6 +52,7 @@ import org.netbeans.modules.git.remote.client.GitClient;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -86,7 +87,9 @@ public class VersionsCache {
         if (GitUtils.CURRENT.equals(revision)) {
             return base.exists() ? base : null;
         } else {
-            VCSFileProxy tempFile = VCSFileProxySupport.createTempFile(base, "nb-git-" + base.getName(), null, true);
+            VCSFileProxySupport.getTempFolder(base, true);
+            FileObject tempFolder = VCSFileProxySupport.getFileSystem(base).getTempFolder();
+            VCSFileProxy tempFile = VCSFileProxySupport.createTempFile(VCSFileProxy.createFileProxy(tempFolder), "nb-git-" + base.getName(), null, true);
             GitClient client = null;
             try {
                 client = Git.getInstance().getClient(repository);

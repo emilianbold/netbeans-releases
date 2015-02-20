@@ -103,7 +103,7 @@ import org.openide.util.RequestProcessor.Task;
 @ActionID(id = "org.netbeans.modules.git.remote.ui.clone.CloneAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_CloneAction_Name")
 @ActionReferences({
-   @ActionReference(path="Versioning/Git/Actions/Global", position=310)
+   @ActionReference(path="Versioning/GitRemote/Actions/Global", position=311)
 })
 @NbBundle.Messages("LBL_CloneAction_Name=&Clone...")
 public class CloneAction implements ActionListener, HelpCtx.Provider {

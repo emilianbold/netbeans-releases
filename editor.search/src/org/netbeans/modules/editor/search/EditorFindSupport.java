@@ -569,7 +569,7 @@ public final class EditorFindSupport {
                         (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : -1, 
                         props, oppositeDir);
                 
-                if (result.hasErrorMsg()) {
+                if (result != null && result.hasErrorMsg()) {
                     ComponentUtils.setStatusText(c, result.getErrorMsg());
                     c.getCaret().setDot(c.getCaret().getDot());
                     return null;

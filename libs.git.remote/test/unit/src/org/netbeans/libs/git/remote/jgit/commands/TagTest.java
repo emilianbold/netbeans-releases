@@ -52,7 +52,6 @@ import org.netbeans.libs.git.remote.GitTag;
 import org.netbeans.libs.git.remote.GitUser;
 import org.netbeans.libs.git.remote.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**

@@ -41,12 +41,18 @@
  */
 package org.netbeans.libs.git.remote.jgit;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -61,6 +67,7 @@ public class JGitConfig {
     public static final String CONFIG_KEY_AUTOSETUPMERGE = "autosetupmerge";
     public static final String CONFIG_KEY_REMOTE = "remote";
     public static final String CONFIG_KEY_MERGE = "merge";
+    private static final String CONFIG_LOCATION = ".git/config";
     
     private final TreeMap<SectionKey, TreeMap<String,String>> map = new TreeMap<>();
     private final VCSFileProxy location;
@@ -70,9 +77,107 @@ public class JGitConfig {
     }
     
     public void load() {
+        //[core]
+        //	repositoryformatversion = 0
+        //	filemode = true
+        //	bare = false
+        //	logallrefupdates = true
+        //[remote "origin"]
+        //	fetch = +refs/heads/*:refs/remotes/origin/*
+        //	url = https://github.com/git/git
+        //[branch "master"]
+        //	remote = origin
+        //	merge = refs/heads/master
+        VCSFileProxy config = VCSFileProxy.createFileProxy(location, CONFIG_LOCATION);
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(config.getInputStream(false)));
+            SectionKey section = null;
+            String line;
+            map.clear();
+            while ((line = reader.readLine()) != null) {
+                int i = line.indexOf('#');
+                if (i >= 0) {
+                    if (i == 0) {
+                        continue;
+                    }
+                    line = line.substring(0, i);
+                }
+                line = line.replace('\t', ' ');
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+                i = line.indexOf('[');
+                int j = line.indexOf(']');
+                if (i >= 0 && j > i) {
+                    // start section
+                    String s = line.substring(i+1,j);
+                    i = s.indexOf('"');
+                    if (i > 0) {
+                        String key = s.substring(0,i).trim();
+                        String sub = s.substring(i+1, s.length()-1);
+                        section = new SectionKey(key, sub);
+                    } else {
+                        section = new SectionKey(s, null);
+                    }
+                    map.put(section, new TreeMap<String, String>());
+                    continue;
+                }
+                i = line.indexOf('=');
+                if (section != null && i > 0) {
+                    String key = line.substring(0, i).trim();
+                    String value = line.substring(i+1).trim();
+                    map.get(section).put(key, value);
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
     }
 
     public void save() {
+        VCSFileProxy config = VCSFileProxy.createFileProxy(location, CONFIG_LOCATION);
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(config)));
+            for(Map.Entry<SectionKey, TreeMap<String,String>> entry : map.entrySet()) {
+                SectionKey key = entry.getKey();
+                bw.write('[');
+                bw.write(key.section);
+                if (key.subSection != null) {
+                    bw.write(" \"");
+                    bw.write(key.subSection);
+                    bw.write('"');
+                }
+                bw.write(']');
+                bw.newLine();
+                for(Map.Entry<String,String> e : entry.getValue().entrySet()) {
+                    bw.write('\t');
+                    bw.write(e.getKey());
+                    bw.write(" = ");
+                    bw.write(e.getValue());
+                    bw.newLine();
+                }
+            }
+            
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
     }
 
     public void setString(String section, String subsection, String key, String value) {
@@ -130,7 +235,14 @@ public class JGitConfig {
 
 
     public Collection<String> getSections() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<String> res = new ArrayList<>();
+        for(Map.Entry<SectionKey, TreeMap<String,String>> entry : map.entrySet()) {
+            SectionKey key = entry.getKey();
+            if (!res.contains(key.section)) {
+                res.add(key.section);
+            }
+        }
+        return res;
     }
 
 
@@ -186,6 +298,12 @@ public class JGitConfig {
             return hash;
         }
 
+        @Override
+        public String toString() {
+            if (subSection != null) {
+                return "["+section+" \""+subSection+"\"]";
+            }
+            return "["+section+"]";
+        }
     }
-    
 }

@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     
     <folder name="VersioningOptionsDialog">
-        <file name="Git.instance">
+        <file name="GitRemote.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.git.remote.options.GitAdvancedOption"/>
         </file>
     </folder>    

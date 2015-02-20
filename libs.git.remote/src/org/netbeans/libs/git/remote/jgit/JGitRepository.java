@@ -42,8 +42,6 @@
 
 package org.netbeans.libs.git.remote.jgit;
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 //import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;

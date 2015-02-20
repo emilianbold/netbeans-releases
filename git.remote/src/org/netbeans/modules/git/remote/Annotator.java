@@ -125,7 +125,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts");
 
     private final FileStatusCache cache;
-    public static final String ACTIONS_PATH_PREFIX = "Actions/Git/";                        // NOI18N
+    public static final String ACTIONS_PATH_PREFIX = "Actions/GitRemote/";                        // NOI18N
     static final String DEFAULT_ANNOTATION_PROJECT = "[{repository_state} {branch}]"; //NOI18N
     
     @NbBundle.Messages({
