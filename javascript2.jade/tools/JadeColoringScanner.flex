@@ -327,6 +327,7 @@ UnbufferedComment = "//-"
                                         blockIndent = -1;
                                         return JadeTokenId.FILTER; }
     "<"                             {   yybegin(IN_PLAIN_TEXT_LINE); }
+    "&"                             {   yybegin(IN_PLAIN_TEXT_LINE); }
     .                               {   return JadeTokenId.UNKNOWN;}
     
 }
