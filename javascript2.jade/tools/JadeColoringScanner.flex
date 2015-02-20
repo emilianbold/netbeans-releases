@@ -735,8 +735,10 @@ UnbufferedComment = "//-"
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
     {Identifier}                    {   return JadeTokenId.MIXIN_NAME; }
     "("                             {   yybegin(MIXIN_CALL_ARGUMENT);
+                                        parenBalance = 1; braceBalance = 0;
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
     ","                             {   yybegin(MIXIN_CALL_ARGUMENT);
+                                        parenBalance = 1; braceBalance = 0;
                                         return JadeTokenId.OPERATOR_COMMA; }
     ")"                             {   yybegin(IN_PLAIN_TEXT_LINE);
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
