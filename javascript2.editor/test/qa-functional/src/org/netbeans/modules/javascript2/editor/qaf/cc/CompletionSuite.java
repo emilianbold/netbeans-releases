@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,71 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.qaf.cc;
 
-import java.awt.event.KeyEvent;
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
  *
  * @author vriha
  */
-public class CssSelectorsTest extends GeneralJavaScript {
-
-    static final String[] tests = new String[]{
-        "openProject",
-        "testClass",
-        "testId"
-    };
-
-    public CssSelectorsTest(String arg0) {
-        super(arg0);
-    }
+public class CompletionSuite {
 
     public static Test suite() {
-        return createModuleTest(CssSelectorsTest.class, tests);
+        return JellyTestCase.emptyConfiguration().
+                addTest(BrowserObjectsTest.class, BrowserObjectsTest.tests).
+                addTest(CssSelectorsTest.class, CssSelectorsTest.tests).
+                addTest(DOMObjectsTest.class, DOMObjectsTest.tests).
+                addTest(EmbeddedHTMLTest.class, EmbeddedHTMLTest.tests).
+                addTest(ExtJSTest.class, ExtJSTest.tests).
+                addTest(ExtendsTest.class, ExtendsTest.tests).
+                addTest(JQueryPluginTest.class, JQueryPluginTest.tests).
+                addTest(JQueryWidgetTest.class, JQueryWidgetTest.tests).
+                addTest(JSObjectsTest.class, JSObjectsTest.tests).
+                addTest(ParamDefSameTest.class, ParamDefSameTest.tests).
+                addTest(ParamSameFileTest.class, ParamSameFileTest.tests).
+                addTest(TestCC.class, TestCC.tests).
+                addTest(TestCCInsideWith.class, TestCCInsideWith.tests).
+                addTest(TestJQuery.class, TestJQuery.tests).
+                addTest(TypeDefTest.class, TypeDefTest.tests).
+                suite();
     }
 
-  public void openProject() throws Exception {
-        startTest();
-        GeneralJavaScript.currentLine = 0;
-        JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
-        openDataProjects("completionTest");
-        evt.waitNoEvent(2000);
-        openFile("css.js", "completionTest");
-        endTest();
-    }
-
-
-    public void testId() throws Exception {
-        startTest();
-        testCompletion(new EditorOperator("css.js"), 1);
-        endTest();
-    }
-    public void testClass() throws Exception {
-        startTest();
-        testCompletion(new EditorOperator("css.js"), 3);
-        endTest();
-    }
-
-    @Override
-    public void tearDown() {
-        if (GeneralJavaScript.currentLine < 1) {
-            return;
-        }
-        EditorOperator eo = new EditorOperator("css.js");
-        eo.setCaretPositionToEndOfLine(GeneralJavaScript.currentLine);
-        String l = eo.getText(eo.getLineNumber());
-        for (int i = 0; i < l.length() - 1; i++) {
-            eo.pressKey(KeyEvent.VK_BACK_SPACE);
-        }
-
-        evt.waitNoEvent(1000);
-
-    }
 }
