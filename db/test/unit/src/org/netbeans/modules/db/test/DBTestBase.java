@@ -120,7 +120,7 @@ public abstract class DBTestBase extends TestBase {
 
     @Override
     protected void setUp() throws Exception {
-        suppressSuperfluousLogging();
+        Util.suppressSuperfluousLogging();
         super.setUp();
         getProperties();
         createDBProvider();
@@ -791,40 +791,6 @@ public abstract class DBTestBase extends TestBase {
             LOGGER.log(Level.FINE, null, sqle);
             
             quotedCaseRule = QUOTE_RETAINS_CASE;
-        }
-    }
-    
-    /**
-     * Disable logging of logging messages from DatabaseUILogger. See #215375.
-     *
-     * Usefulness of the whole logger seems to be doubtful
-     */
-    public static void suppressSuperfluousLogging() {
-        for (Handler h : Logger.getLogger("").getHandlers()) {
-            h.setFilter(new Filter() {
-                @Override
-                public boolean isLoggable(LogRecord lr) {
-                    if (lr.getSourceClassName().equals(
-                            "org.netbeans.modules.db.explorer.DatabaseUILogger")) {
-                        return false;
-                    } else if (lr.getSourceClassName().equals(
-                            "org.netbeans.api.db.sql.support.SQLIdentifiers$DatabaseMetaDataQuoter")) {
-                        if (lr.getSourceMethodName().equals("getExtraNameChars")
-                                && lr.getLevel() == Level.WARNING
-                                && lr.getMessage().startsWith(
-                                "DatabaseMetaData.getExtraNameCharacters() failed")) {
-                            return false;
-                        } else if (lr.getSourceMethodName().equals("needToQuote")
-                                && lr.getLevel().intValue() <= Level.INFO.intValue()) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    } else {
-                        return true;
-                    }
-                }
-            });
         }
     }
 }

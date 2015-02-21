@@ -707,7 +707,7 @@ public class DataViewWindow extends TopComponent {
             Connection con;
             Statement stat;
             try {
-                con = connection.getConnection();
+                con = connection.getJDBCConnection();
                 stat = con.createStatement();
             } catch ( Exception exc ) {
                 String message = NbBundle.getMessage (DataViewWindow.class, "EXC_ConnectionError", exc.getMessage()); // NOI18N

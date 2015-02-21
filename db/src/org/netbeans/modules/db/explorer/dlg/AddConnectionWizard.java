@@ -43,8 +43,6 @@ package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Dialog;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashSet;
@@ -66,7 +64,6 @@ import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
@@ -79,7 +76,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     
     private String driverName;
     private String downloadFrom;
-    private final Set<String> allPrivilegedFileNames = new HashSet<String>();
+    private final Set<String> allPrivilegedFileNames = new HashSet<>();
     private String privilegedFileName;
     private String[] steps;
     private WizardDescriptor.Panel<AddConnectionWizard>[] panels;
@@ -314,26 +311,14 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     }
 
     @Override
-    public void closeConnection()
-    {
-        if (connection != null)
-        {
-            Connection conn = connection.getConnection();
-            if (conn != null)
-            {
-                try 
-                {
-                    conn.close();
-                    connection.setConnection(null);
+    public void closeConnection() {
+        if (connection != null) {
+            try {
+                connection.disconnect();
+            } catch (DatabaseException ex) {
                 } 
-                catch (SQLException e) 
-                {
-                    //unable to close db connection
-                    connection.setConnection(null);
                 }
             }
-        }
-    }
 
     private void updateState(String driverName, String driverClass, String databaseUrl, String user, String password) {
         this.driverName = driverName;

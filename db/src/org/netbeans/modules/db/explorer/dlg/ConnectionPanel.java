@@ -42,8 +42,6 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -57,11 +55,11 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseConnection.State;
 import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -179,7 +177,6 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
         pw.setCurrentSchema(databaseConnection.getUser().toUpperCase());
         pw.setDatabaseConnection(databaseConnection);
     }
-    private String state;
     private String errorMessage;
 
     @Override
@@ -193,26 +190,6 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     @SuppressWarnings({"SleepWhileInLoop"})
     public void validate() throws WizardValidationException {
         try {
-            state = null;
-            PropertyChangeListener connectionListener = new PropertyChangeListener() {
-
-                @Override
-                public void propertyChange(PropertyChangeEvent event) {
-                    if (event.getPropertyName().equals("connecting")) { // NOI18N
-                    } else if (event.getPropertyName().equals("failed")) { // NOI18N
-                        state = event.getPropertyName();
-                    } else if (event.getPropertyName().equals("connected")) { //NOI18N
-                        try {
-                            databaseConnection.getConnector().finishConnect(null, databaseConnection, databaseConnection.getConnection());
-                            state = event.getPropertyName();
-                        } catch (DatabaseException exc) {
-                            Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
-                            state = "failed";
-                        }
-                        //boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
-                    }
-                }
-            };
             ExceptionListener excListener = new ExceptionListener() {
 
                 @Override
@@ -241,25 +218,22 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
                 }
             };
 
-
-            databaseConnection.addPropertyChangeListener(connectionListener);
             databaseConnection.addExceptionListener(excListener);
             databaseConnection.connectAsync();
             int maxLoops = 60;
             int loop = 0;
-            while ((!"connected".equals(state) || !"failed".equals(state)) && loop < maxLoops) { // NOI18N
+            while (loop < maxLoops) {
                 try {
                     Thread.sleep(1000);
                     loop++;
                 } catch (InterruptedException ex) {
                 }
-                if ("connected".equals(state)) { // NOI18N
+                if (databaseConnection.getState() == State.connected) {
                     // all ok
-                    databaseConnection.removePropertyChangeListener(connectionListener);
                     databaseConnection.removeExceptionListener(excListener);
                     List<String> schemas = null;
                     try {
-                        DatabaseMetaData dbMetaData = databaseConnection.getConnection().getMetaData();
+                        DatabaseMetaData dbMetaData = databaseConnection.getJDBCConnection().getMetaData();
                         if (dbMetaData.supportsSchemasInTableDefinitions()) {
                             ResultSet rs = dbMetaData.getSchemas();
                             if (rs != null) {
@@ -278,19 +252,16 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
                     }
                     pw.setSchemas(schemas);
                     return;
-                } else if ("failed".equals(state)) { // NOI18N
-                    databaseConnection.removePropertyChangeListener(connectionListener);
+                } else if (databaseConnection.getState() == State.failed) { // NOI18N
                     databaseConnection.removeExceptionListener(excListener);
-                    throw new WizardValidationException((JComponent) component, state, errorMessage);
+                    throw new WizardValidationException((JComponent) component, errorMessage, errorMessage);
                 } else if (loop >= maxLoops) {
-                    databaseConnection.removePropertyChangeListener(connectionListener);
                     databaseConnection.removeExceptionListener(excListener);
                     throw new WizardValidationException((JComponent) component,
                             "Timeout expired", // NOI18N
                             NbBundle.getMessage(ConnectionPanel.class, "ConnectionPanel_TimeoutExpired")); // NOI18N
                 }
             }
-            databaseConnection.removePropertyChangeListener(connectionListener);
             databaseConnection.removeExceptionListener(excListener);
         } finally {
             if (component != null) {

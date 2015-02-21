@@ -46,6 +46,7 @@ package org.netbeans.modules.db;
 
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.modules.db.test.TestBase;
+import org.netbeans.modules.db.test.Util;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,6 +63,12 @@ public class DatabaseModuleTest extends TestBase {
     
     public DatabaseModuleTest(String testName) {
         super(testName);
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
+        super.setUp();
     }
 
     public void testRuntimesAreStopped() throws Exception {

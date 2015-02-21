@@ -166,7 +166,6 @@ public class TableListNode extends BaseNode implements SchemaNameProvider {
             );
         } catch (MetadataModelException e) {
             NodeRegistry.handleMetadataModelException(TableListNode.class, connection, e, true);
-            DatabaseConnection.isVitalConnection(null, connection);
         }
 
         return array[0];
