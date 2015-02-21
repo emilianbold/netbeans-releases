@@ -243,4 +243,5 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-api-templates@" value="${javadoc.docs.org-netbeans-api-templates}"/>
 <replacefilter token="@org-netbeans-api-io@" value="${javadoc.docs.org-netbeans-api-io}"/>
 <replacefilter token="@org-netbeans-api-htmlui@" value="${javadoc.docs.org-netbeans-api-htmlui}"/>
+<replacefilter token="@org-netbeans-api-knockout@" value="${javadoc.docs.org-netbeans-api-knockout}"/>
 <replacefilter token="@org-netbeans-lib-v8debug@" value="${javadoc.docs.org-netbeans-lib-v8debug}"/>

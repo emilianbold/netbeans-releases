@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.angular.cc;
 
-package org.netbeans.modules.web.project.test;
-
-import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.Repository;
+import junit.framework.Test;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
- * Common ancestor for all test classes.
  *
- * @author Andrei Badea, Radko Najman
+ * @author vriha
  */
-public class TestBase extends NbTestCase {
-    
-    private static final Repository REPOSITORY;
-    
-    static {
-        REPOSITORY = new RepositoryImpl();
-        // for setting the default lookup to TestUtil's one
-        setLookup(new Object[0]);
+public class CompletionSuite {
+
+    public static Test suite() {
+        return JellyTestCase.emptyConfiguration().
+                addTest(BindOnceTest.class, BindOnceTest.tests).
+                addTest(CompletionTest.class, CompletionTest.tests).
+                addTest(ControllersGlobalTest.class, ControllersGlobalTest.tests).
+                addTest(CtrlModuleArrayTest.class, CtrlModuleArrayTest.tests).
+                addTest(CtrlModuleArrayETest.class, CtrlModuleArrayETest.tests).
+                addTest(CtrlModuleTest.class, CtrlModuleTest.tests).
+                suite();
     }
-    
-    public static void setLookup(Object[] instances) {
-        Object[] newInstances = new Object[instances.length + 1];
-        System.arraycopy(instances, 0, newInstances, 0, instances.length);
-        newInstances[newInstances.length - 1] = REPOSITORY;
-        
-        TestUtil.setLookup(newInstances);
-    }
-    
-    public TestBase(String name) {
-        super(name);
-    }
+
 }

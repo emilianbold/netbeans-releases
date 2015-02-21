@@ -89,6 +89,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.test.MockLookup;
 import org.xml.sax.SAXException;
 
 /**
@@ -97,51 +98,13 @@ import org.xml.sax.SAXException;
  */
 public final class TestUtil extends ProxyLookup {
     
-    static {
-        TestUtil.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", TestUtil.class.getName());
-        Assert.assertEquals(TestUtil.class, Lookup.getDefault().getClass());
-        Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
-        p.lookupAll(AntBasedProjectType.class);
-        projects = p;
-        setLookup(new Object[0]);
-    }
-    
     private static TestUtil DEFAULT;
     private static final int BUFFER = 2048;
-    private static final Lookup projects;
     
     /** Do not call directly */
     public TestUtil() {
         Assert.assertNull(DEFAULT);
         DEFAULT = this;
-        ClassLoader l = TestUtil.class.getClassLoader();
-        setLookups(new Lookup[] {
-            Lookups.metaInfServices(l),
-            Lookups.singleton(l)
-        });
-    }
-    
-    /**
-     * Set the global default lookup.
-     * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
-     * e.g. {@link #makeScratchDir} will not work.
-     */
-    public static void setLookup(Lookup l) {
-        DEFAULT.setLookups(new Lookup[] {l});
-    }
-    
-    /**
-     * Set the global default lookup with some fixed instances including META-INF/services/*.
-     */
-    public static void setLookup(Object... instances) {
-        ClassLoader l = TestUtil.class.getClassLoader();
-        DEFAULT.setLookups(new Lookup[] {
-            Lookups.fixed(instances),
-            Lookups.metaInfServices(l),
-            Lookups.singleton(l),
-            projects
-        });
     }
     
     private static boolean warned = false;
@@ -296,7 +259,7 @@ public final class TestUtil extends ProxyLookup {
         Object[] instances = new Object[additionalLookupItems.length + appServerNeed.length];
         System.arraycopy(additionalLookupItems, 0, instances, 0, additionalLookupItems.length);
         System.arraycopy(appServerNeed, 0, instances, additionalLookupItems.length, appServerNeed.length);
-        TestUtil.setLookup(instances);
+        MockLookup.setLayersAndInstances(instances);
         
         File asRoot = null;
         if (System.getProperty("appserv.home") != null) { // NOI18N
