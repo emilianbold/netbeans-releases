@@ -1,0 +1,118 @@
+	// op_al
+	// IL (Insert Lines)
+	:AL=\E[%dL:\
+	:al=\E[L:\
+	:kI=\E[L:\
+
+	// op_bc (back cursor/column)
+	// CUB
+	:le=\E[D:\		cursor LEft
+	:LE=\E[%dD:\
+
+	// op_cm
+	// CUP (CUrsor Position)
+	:cm=\E[%i%d;%dH:\	CursorMotion
+	:ho=\E[H:\		HOme
+	:kh=\E[H:\
+
+	// op_cl
+	// ED 	(Erase in Display)
+	:cl=\E[H\E[J:\		// clear screen and home cursor
+	:cd=\E[J:\		// clear to end of screen
+
+	// op_ce 012
+	// EL (Erase in Line)
+	:ce=\E[K:\
+
+	// op_dc 01N
+	// DCH (Delete CHaracters)
+	// affected by margin
+	:DC=\E[%dP:\
+	:dc=\E[P:\
+
+	// NOT IMPLEMENTED
+	// ECH (Erase CHaracters)
+	// affected by margin
+	:ec=\E[%dX:\
+
+	// op_dl 01N
+	// DL 01N	(Delete Lines)
+	:DL=\E[%dM:\
+	:dl=\E[M:\
+
+	// op_do 01N
+	// CUD (CUrsor Down)
+	// affected by margin
+	:DO=\E[%dB:\
+	:do=\E[B:\
+	:kd=\E[B:\
+
+	// op_ic 01N
+	// ICH (insert CHaracter)
+	:IC=\E[%d@:\
+
+	// op_nd 01N
+	// CUF (Cursor Forward)
+	:nd=\E[C:\
+	:kr=\E[C:\
+	:RI=\E[%dC:\
+
+	// op_up 01N
+	// CUU (CUrsor Up)
+	// affected by margin
+	:up=\E[A:\
+	:ku=\E[A:\
+	:UP=\E[%dA:\
+
+	!!!!!!!!! not part of infocmp ansi
+	// DECSC (Save Cursor)
+	:sc=\E7		xterm,Term,dtterm
+
+	!!!!!!!!! not part of infocmp ansi
+	// DECRC (Restore Cursor)
+	:rc=\E8		xterm,Term,dtterm
+
+	!!!!!!!!! not part of infocmp ansi
+	:cs=\E[%i%d;%dr:\
+
+	// op_attr
+	// SG (Set Graphics?)
+	:me=\E[0m:\	all off
+	:md=\E[1m:\	bold
+	:us=\E[4m:	underlined
+	:mb=\E[5m:\	blinking
+	:mr=\E[7m:\	reverse video
+	:so=\E[7m:\
+	:se=\E[m:\
+	:ue=\E[m:\
+
+	// op_set_mode
+	!!!!!!!!! not part of infocmp ansi
+	:im=\E[4h:\	insert mode
+
+	// op_reverse
+	!!!!!!!!! not part of infocmp ansi
+	\E[?5h
+	\E[?5l
+
+	!!!!!!!!! not part of infocmp ansi
+	:ve=\E[?12l\E[?25h:\	solid cursor + cursor invisible
+	:vs=\E[?12;25h:		blinking cursor + cursor visible
+
+	:cr=^M:\
+	:kb=^H:\
+	:sf=^J:\
+
+#	Reconstructed via infocmp from file: /usr/share/terminfo/a/ansi
+	:SF=\E[%dS:\			// scroll up
+	:SR=\E[%dT:\			// scroll dn
+
+
+	:bt=\E[%dZ:\			// tab stops back
+	:ta=\E[%dI:\			// tab stops ahead
+	:ct=\E[3g:\			// clear tab
+	:st=\EH:\			// HTS tab set (at cursor location)
+
+	:nw=\r\E[S:\
+	:..rp=%p1%c\E[%p2%{1}%-%db:\
+	:..sa=\E[0;10%?%p1%t;7%;%?%p2%t;4%;%?%p3%t;7%;%?%p4%t;5%;%?%p6%t;1%;%?%p7%t;8%;%?%p9%t;11%;m:\
