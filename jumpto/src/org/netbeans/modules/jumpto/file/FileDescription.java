@@ -64,6 +64,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -168,7 +170,11 @@ public class FileDescription extends FileDescriptor {
         if (od != null) {
             // if linenumber is given then try to open file at this line
             // code taken from org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link.show()
-            final LineCookie lineCookie = od.getLookup().lookup(LineCookie.class);
+            LineCookie lineCookie = od.getLookup().lookup(LineCookie.class);
+            if (lineCookie == null) {
+                //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
+                lineCookie = od.getLookup().lookup(EditorCookie.class);
+            }
             if (lineCookie != null && lineNr != -1) {
                 try {
                     Line l = lineCookie.getLineSet().getCurrent(lineNr - 1);
@@ -181,7 +187,11 @@ public class FileDescription extends FileDescriptor {
                     LOG.log(Level.FINE, "Line no more exists.", oob);   //NOI18N
                 }
             }
-            final Editable editable = od.getLookup().lookup(Editable.class);
+            Editable editable = od.getLookup().lookup(Editable.class);
+            if (editable == null) {
+                //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
+                editable = od.getLookup().lookup(EditCookie.class);
+            }
             if (editable != null) {
                 editable.edit();
                 return;
