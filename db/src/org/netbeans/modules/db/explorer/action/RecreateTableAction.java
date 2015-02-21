@@ -44,23 +44,25 @@ package org.netbeans.modules.db.explorer.action;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.DatabaseException;
+import javax.swing.SwingUtilities;
+import javax.xml.ws.Holder;
 import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.dataview.DataViewWindow;
 import org.netbeans.modules.db.explorer.dlg.LabeledTextFieldDialog;
 import org.netbeans.modules.db.explorer.node.SchemaNameProvider;
 import org.netbeans.modules.db.explorer.node.TableListNode;
 import org.netbeans.modules.db.explorer.node.TableNode;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -68,7 +70,6 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -96,42 +97,41 @@ public class RecreateTableAction extends BaseAction {
 
     @Override
     public void performAction (Node[] activatedNodes) {
-
+        assert SwingUtilities.isEventDispatchThread();
+      
         final BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
         final DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
         final DatabaseConnector connector = connection.getConnector();
 
-        //final DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
-        final java.awt.Component par = WindowManager.getDefault().getMainWindow();
+        // Get filename
+        FileChooserBuilder chooser = new FileChooserBuilder(RecreateTableAction.class);
+        chooser.setTitle(NbBundle.getMessage(RecreateTableAction.class, "RecreateTableFileOpenDialogTitle")); //NOI18N
+        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
+            }
+
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(RecreateTableAction.class, "GrabTableFileTypeDescription"); //NOI18N
+            }
+        });
+
+        final File file = chooser.showOpenDialog();
+        
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    //TableListNodeInfo nfo = (TableListNodeInfo) info.getParent(nodename);
-                    Specification spec = connector.getDatabaseSpecification(); //Specification) nfo.getSpecification();
+                    Specification spec = connector.getDatabaseSpecification();
                     AbstractCommand cmd;
 
-                    // Get filename
-                    FileChooserBuilder chooser = new FileChooserBuilder(RecreateTableAction.class);
-                    chooser.setTitle(NbBundle.getMessage (RecreateTableAction.class, "RecreateTableFileOpenDialogTitle")); //NOI18N
-                    chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                        @Override
-                        public boolean accept(File f) {
-                            return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
-                        }
-
-                        @Override
-                        public String getDescription() {
-                            return NbBundle.getMessage (RecreateTableAction.class, "GrabTableFileTypeDescription"); //NOI18N
-                        }
-                    });
-
-                    File file = chooser.showOpenDialog();
                     if (file != null && file.isFile()) {
                         FileInputStream fstream = new FileInputStream(file);
-                        ObjectInputStream istream = new ObjectInputStream(fstream);
-                        cmd = (AbstractCommand)istream.readObject();
-                        istream.close();
+                        try (ObjectInputStream istream = new ObjectInputStream(fstream)) {
+                            cmd = (AbstractCommand)istream.readObject();
+                        }
                         cmd.setSpecification(spec);
                     } else {
                         return;
@@ -146,23 +146,54 @@ public class RecreateTableAction extends BaseAction {
                     
                     cmd.setObjectOwner(schemaName);
 
-                    String newtab = cmd.getObjectName();
-                    String msg = cmd.getCommand();
-                    LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(msg); //NOI18N
-                    dlg.setStringValue(newtab);
-                    boolean noResult = true;
-                    while(noResult) {
-                        if (dlg.run()) { // OK option
-                            if(!dlg.isEditable()) {
-                                noResult = runCommand(dlg, cmd);
+                    final String newtab = cmd.getObjectName();
+                    final String msg = cmd.getCommand();
+                    
+                    final LabeledTextFieldDialog dlg = Mutex.EVENT.readAccess(
+                            new Mutex.Action<LabeledTextFieldDialog>() {
+
+                            @Override
+                            public LabeledTextFieldDialog run() {
+                                return new LabeledTextFieldDialog(msg);
+                            }
+                    });
+                    
+                    final Holder<String> error = new Holder<>();
+                    while (true) {
+                        final Holder<Boolean> isEditable = new Holder<>(false);
+                        final Holder<Boolean> okPressed = new Holder<>(false);
+                        final Holder<String> tableName = new Holder<>("");
+                        final Holder<String> edittedCmd = new Holder<>("");
+                        
+                        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+
+                            @Override
+                            public Void run() {
+                                assert SwingUtilities.isEventDispatchThread();
+                                dlg.setErrors(error.value);
+                                dlg.setStringValue(newtab);
+                                okPressed.value = dlg.run();
+                                isEditable.value = dlg.isEditable();
+                                tableName.value = dlg.getStringValue();
+                                edittedCmd.value = dlg.getEditedCommand();
+                                return null;
+                            }
+                        });
+                        
+                        if (okPressed.value) { // OK option
+                            if (! isEditable.value) {
+                                error.value = runCommand(tableName.value, cmd);
                             } else { // from editable text area
-                                noResult = runWindow(connection, dlg);
+                                error.value = runCommand(connection, edittedCmd.value);
+                            }
+                            if (error.value == null) {
+                                break;
                             }
                         } else { // CANCEL option
-                            noResult = false;
+                            break;
                         }
                     }
-                } catch (Exception exc) {
+                } catch (IOException | ClassNotFoundException | DDLException exc) {
                     LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                     DbUtilities.reportError(NbBundle.getMessage (RecreateTableAction.class, "ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
                 }
@@ -186,80 +217,36 @@ public class RecreateTableAction extends BaseAction {
         }, 0);
     }
 
-    private boolean runCommand(final LabeledTextFieldDialog dlg, final AbstractCommand cmd) {
-        boolean noResult = true;
-        String newtab = dlg.getStringValue();
+    private String runCommand(final String newtab, final AbstractCommand cmd) {
+        assert ! SwingUtilities.isEventDispatchThread();
+
         cmd.setObjectName(newtab);
         try {
             cmd.execute();
-            //info.addTable(newtab);
-            noResult = false;
-        } catch (org.netbeans.lib.ddl.DDLException exc) {
-            LOGGER.log(Level.INFO, null, exc);
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(exc.getMessage(),
-                    NotifyDescriptor.ERROR_MESSAGE));
-            noResult = true;
+            return null;
         } catch (Exception exc) {
-            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
-            DbUtilities.reportError(
-                    NbBundle.getMessage (RecreateTableAction.class, "ERR_UnableToRecreateTable"), // NOI18N
-                    exc.getMessage());
-            noResult = false;
-        }
-        return noResult;
-    }
-
-    private boolean runWindow(DatabaseConnection connection, LabeledTextFieldDialog dlg)
-        throws Exception {
-        WindowTask wintask = new WindowTask(connection, dlg);
-
-        // We have to create the window on the AWT thread...
-        Mutex.EVENT.postReadRequest(wintask);
-
-        // I thought Thread.join() was supposed to wait for the thread to
-        // complete, but this isn't working, perhaps because the run method
-        // has not yet been called?
-        while ( ! wintask.completed ) {
-            Thread.sleep(10);
-        }
-
-        if ( wintask.exc != null ) {
-            throw new DatabaseException(wintask.exc);
-        }
-
-        if ( wintask.win.executeCommand() ) {
-            return false;
-        } else {
-            return true;
+            LOGGER.log(Level.INFO, null, exc);
+            return exc.getMessage();
         }
     }
 
-    private static class WindowTask implements Runnable {
-        public DataViewWindow win;
-        public Exception exc = null;
-        public boolean completed = false;
-        private final DatabaseConnection connection;
-        private final LabeledTextFieldDialog dlg;
-
-        public WindowTask(DatabaseConnection conn, LabeledTextFieldDialog dlg) {
-            super();
-            this.connection = conn;
-            this.dlg = dlg;
-        }
-
-        @Override
-        public void run() {
-            try {
-                win = new DataViewWindow(connection, dlg.getEditedCommand());
-            } catch ( Exception e ) {
-                this.exc = e;
+    private String runCommand(DatabaseConnection connection, String command) {
+        assert ! SwingUtilities.isEventDispatchThread();
+        try {
+            Connection con = connection.getJDBCConnection();
+            try (Statement stat = con.createStatement()) {
+                stat.execute(command);
+                connection.notifyChange();
             }
-
-            completed = true;
+            return null;
+        } catch (Exception exc) {
+            return NbBundle.getMessage(
+                    RecreateTableAction.class, 
+                    "DataViewFetchErrorPrefix", 
+                    exc.getMessage());
         }
     }
-
+    
     @Override
     public String getName() {
         return NbBundle.getMessage (RecreateTableAction.class, "RecreateTable"); // NOI18N
