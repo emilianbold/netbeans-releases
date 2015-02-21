@@ -252,7 +252,7 @@ public class BlameCommand extends GitCommand {
                 }
             }
             if (state == State.line) {
-                currLineInfo.lineContent = line;
+                currLineInfo.lineContent = line.substring(1);
                 current.lines.put(currLine, currLineInfo);
                 state = State.revision;
                 continue;
