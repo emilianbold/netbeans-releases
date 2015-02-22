@@ -691,7 +691,8 @@ jarsigner.storepass=${jarsigner.storepass}
         
         <!-- Build bundles with nested JRE -->
         <property name="bundled.jvm.file.prefix" value="jre-${jre-nested.version.number}u${jre-nested.update.number}"/>
-        <for-each list="html php cpp" separator=" " property="bundle.type">
+        <!-- html must be after php - symlink HTML -> PHP -->
+        <for-each list="php html cpp" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1385,21 +1386,11 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="generate-netbeans-html-bundle" depends="init-nested-jres, get-nested-jres">
-	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-html-${bundle.platform}-${bundle.arch}"/>
+	<property name="bundle.source" value="${nb.bundle.files.prefix}-php-${bundle.platform}-${bundle.arch}.${bundle.extension}"/>        
+	<property name="bundle.link" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-html-${bundle.platform}-${bundle.arch}.${bundle.extension}"/>
 
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="${bundle.platform}" 
-                       target="${bundle.prefix}.${bundle.extension}">
-            <component uid="nb-base"      version="${nb.full.version}"/>
-            <component uid="nb-extide"  version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="${nestedjre.version}"/>
-            <bundleProperty name="${welcome.type}" value="html"/>
-            <property name="nbi.bundled.jvm.file" value="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
-        </create-bundle>
-
-	<antcall target="convert-netbeans-bundle"/>
+        <echo message="Creating symlink: ${bundle.link} -> ${bundle.source}"/>
+        <symlink link="${bundle.link}" resource="${bundle.source}"/>
     </target>
     
     <target name="generate-netbeans-php-bundle" depends="init-nested-jres, get-nested-jres">

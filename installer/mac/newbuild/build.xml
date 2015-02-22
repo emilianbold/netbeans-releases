@@ -314,8 +314,7 @@
     <target name="init-bundles">
         <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg),
-                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                              -html(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/jre-nested-${jre.version.string.long}.pkg),
+                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),                                              
                                               -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/jre-nested-${jre.version.string.long}.pkg),
                                               -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/jre-nested-${jre.version.string.long}.pkg)
                                           "/>
@@ -344,7 +343,12 @@
                  <property name="background.name" value="bgimage.tif"/>
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
-        </for-each>         
+        </for-each>
+        
+        <!-- for html distro, just create symlink to php -->
+        <echo message="Creating symlink: ${basedir}/dist/${dmg.prefix.name}-html-macosx.dmg -> ${dmg.prefix.name}-php-macosx.dmg"/>
+        <symlink link="${basedir}/dist/${dmg.prefix.name}-html-macosx.dmg" resource="${dmg.prefix.name}-php-macosx.dmg"/>
+                 
         <delete file="${basedir}/build/sizes.pro"/>
     </target>     
             
@@ -356,7 +360,7 @@
                  <property name="pkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
                  <property name="background.name" value="background-jdk.tif"/>
             </ant>     
-        </for-each>
+        </for-each>                
         <delete file="${basedir}/build/sizes.pro"/>
     </target>     
             
