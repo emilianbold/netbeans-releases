@@ -208,7 +208,7 @@ public class WildflyClient {
         }
     }
 
-    public void shutdownServer() throws IOException {
+    public synchronized void shutdownServer() throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             // ModelNode
