@@ -41,14 +41,9 @@
  */
 package org.netbeans.modules.html.angular.navigate;
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
@@ -57,25 +52,26 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  */
 public class CtrlAsModuleNavTest extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testGoTo28",
+        "testGoTo29",
+        "testGoTo30",
+        "testGoTo31",
+        //                        "testGoTo32",
+        "testGoTo33",
+        //                        "testGoTo34",
+        //                        "testGoTo35",
+        //                        "testGoTo36",
+        "testGoTo37"
+    };
+
     public CtrlAsModuleNavTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CtrlAsModuleNavTest.class).addTest(
-                        "openProject",
-                        "testGoTo28",
-                        "testGoTo29",
-                        "testGoTo30",
-                        "testGoTo31",
-//                        "testGoTo32",
-                        "testGoTo33",
-//                        "testGoTo34",
-//                        "testGoTo35",
-//                        "testGoTo36",
-                        "testGoTo37"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(CtrlAsModuleNavTest.class, tests);
     }
 
     public void openProject() throws Exception {

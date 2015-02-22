@@ -92,6 +92,7 @@ public class MELiteralRefTest extends MELiteralTest {
     @Override
     public void openProject() throws Exception {
         startTest();
+        GeneralNodeJs.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleNode");
         evt.waitNoEvent(2000);

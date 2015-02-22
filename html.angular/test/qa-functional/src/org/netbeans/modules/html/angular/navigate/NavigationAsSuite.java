@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,43 +34,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.angular.navigate;
 
-package org.netbeans.modules.web.project.test;
-
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.xml.sax.SAXException;
+import junit.framework.Test;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
- * Repository whose getDefaultFileSystem returns a writeable FS containing
- * the layer of the websvc/jaxwsmodel. It is put in the default lookup,
- * thus it is returned by Repository.getDefault().
  *
- * @author Andrei Badea, Radko Najman
+ * @author vriha
  */
-public class RepositoryImpl extends Repository {
-    
-    private XMLFileSystem system;
-    
-    public RepositoryImpl() {
-        super(createDefFs());
+public class NavigationAsSuite {
+
+    public static Test suite() {
+        return JellyTestCase.emptyConfiguration().
+                addTest(CtrlAsGlobalTest.class, CtrlAsGlobalTest.tests).
+                addTest(CtrlAsModuleNav2Test.class, CtrlAsModuleNav2Test.tests).
+                addTest(CtrlAsModuleNavTest.class, CtrlAsModuleNavTest.tests).
+                addTest(NavigationAsTest.class, NavigationAsTest.tests).
+                suite();
     }
-    
-    private static FileSystem createDefFs() {
-        try
-        {
-            FileSystem writeFs = FileUtil.createMemoryFileSystem();
-            FileSystem layerWebProject = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
-            return new MultiFileSystem(new FileSystem[] {writeFs, layerWebProject});
-        } catch (SAXException e) {
-            AssertionError ae = new AssertionError(e.getMessage());
-            ae.initCause(e);
-            throw ae;
-        }
-    }
-    
+
 }
