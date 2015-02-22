@@ -44,7 +44,6 @@ package org.netbeans.modules.html.angular.cc;
 import org.netbeans.modules.html.angular.GeneralAngular;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
@@ -56,24 +55,25 @@ import org.netbeans.jemmy.JemmyProperties;
  */
 public class CompletionAsTest extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExpression12",
+        "testExpression13",
+        "testExpression17",
+        "testMatchingCCExpression",
+        "testAttribute30",
+        "testAttribute32",
+        "testAttribute33",
+        "testControllerAs",
+        "testControllerAs2"
+    };
+
     public CompletionAsTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CompletionAsTest.class).addTest(
-                        "openProject",
-                        "testExpression12",
-                        "testExpression13",
-                        "testExpression17",
-                        "testMatchingCCExpression",
-                        "testAttribute30",
-                        "testAttribute32",
-                        "testAttribute33",
-                        "testControllerAs",
-                        "testControllerAs2"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(CompletionAsTest.class, tests);
     }
 
     public void openProject() throws Exception {

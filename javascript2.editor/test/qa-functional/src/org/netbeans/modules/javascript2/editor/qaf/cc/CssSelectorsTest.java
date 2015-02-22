@@ -45,29 +45,31 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
  *
  * @author vriha
  */
-public class CssSelectorsTest extends GeneralJavaScript{
+public class CssSelectorsTest extends GeneralJavaScript {
+
+    static final String[] tests = new String[]{
+        "openProject",
+        "testClass",
+        "testId"
+    };
 
     public CssSelectorsTest(String arg0) {
         super(arg0);
     }
-    
-     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CssSelectorsTest.class).addTest(
-                "openProject",
-                "testClass",
-                "testId").enableModules(".*").clusters(".*"));
+
+    public static Test suite() {
+        return createModuleTest(CssSelectorsTest.class, tests);
     }
 
   public void openProject() throws Exception {
         startTest();
+        GeneralJavaScript.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("completionTest");
         evt.waitNoEvent(2000);
