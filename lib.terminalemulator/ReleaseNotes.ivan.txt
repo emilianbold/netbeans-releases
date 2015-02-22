@@ -1,5 +1,14 @@
+nobugid - Track various NB API changes
+	These are in projects in the examples directory.
+	- JNA Structure now needs getFieldOrder() implemented.
+	- TermListener now needs cwdChanged() implemented.
+
 nobugid - TermTester
-	[ See xxx for how to use ]
+	These are testing utilities and various specs that I had kept
+	separate. It's high time they got integrated.
+
+	See http://wiki.netbeans.org/TerminalTestingAndTroubleshooting
+	for an introduction to the use of these utilities.
 	
 nobugid - termcap and terminfo sequences
 	... for xterm, ansi and dtterm added to doc-files/
