@@ -47,6 +47,8 @@ package org.netbeans.lib.richexecution;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Structure;
+import java.util.Arrays;
+import java.util.List;
 
 // public because it's needed by "Term Driver".
 public class CLibrary {
@@ -216,7 +218,9 @@ public class CLibrary {
             this.ws_ypixel = (short) height;
         }
 
-
+        protected List getFieldOrder() {
+            return Arrays.asList(new String[] {"ws_row", "ws_col", "ws_xpixel", "ws_ypixel"});
+        }
     }
 
     // struct termios
@@ -231,6 +235,10 @@ public class CLibrary {
 
         public SolarisTermios() {
             c_cc = new byte[INSTANCE.NCCS()];
+        }
+
+        protected List getFieldOrder() {
+            return Arrays.asList(new String[] {"c_iflag", "c_oflag", "c_cflag", "c_lflag", "c_cc"});
         }
     }
 
@@ -247,6 +255,10 @@ public class CLibrary {
 
         public LinuxTermios() {
             c_cc = new byte[INSTANCE.NCCS()];
+        }
+
+        protected List getFieldOrder() {
+            return Arrays.asList(new String[] {"c_iflag", "c_oflag", "c_cflag", "c_lflag", "c_line", "c_cc", "c_ispeed", "c_ospeed"});
         }
     }
 
