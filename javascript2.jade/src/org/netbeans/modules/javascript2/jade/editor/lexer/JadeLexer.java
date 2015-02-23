@@ -75,7 +75,6 @@ public class JadeLexer implements Lexer<JadeTokenId> {
     public Token<JadeTokenId> nextToken() {
         try {
             JadeTokenId tokenId = scanner.nextToken();
-            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
             Token<JadeTokenId> token = null;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
@@ -83,14 +82,11 @@ public class JadeLexer implements Lexer<JadeTokenId> {
             if (token != null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(token.id());
-                sb.append(" length: " + token.length());
-                System.out.println(sb.toString());
-                if (token.length() <= 0) {
-                    System.out.println("!!!!!!!!!!!!!!!!! delka je 0" + token.id());
+                if (token != null) {
+                    sb.append(" length: " + token.length());
                 }
-            } else {
-                System.out.println("token je null");
-            }
+                LOGGER.log(Level.FINEST, "Lexed token is {0}", sb.toString());
+            } 
             return token;
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
