@@ -67,6 +67,10 @@ public class JadeCompletionContextTest extends JadeTestBase {
         checkCompletionContext("testfiles/lexer/tag01.jade");
     }
     
+    public void testAttribute03() throws Exception {
+        checkCompletionContext("testfiles/lexer/attribute03.jade");
+    }
+    
     private void checkCompletionContext(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         final Snapshot snapshot = testSource.createSnapshot();

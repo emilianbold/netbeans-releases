@@ -46,7 +46,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
@@ -55,31 +54,32 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  */
 public class ControllersAsGlobalTest extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testNgClick",
+        "testExpression2",
+        "testDirective6",
+        "testDirective7",
+        "testDirective8",
+        "testDirective9",
+        "testExpression12",
+        "testExpression14",
+        "testExpression16",
+        "testExpression18",
+        "testDirective20",
+        "testNgBind",
+        "testNgModel",
+        "testControllers",
+        "testAlias",
+        "testAliasExp"
+    };
+
     public ControllersAsGlobalTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ControllersAsGlobalTest.class).addTest(
-                        "openProject",
-                        "testNgClick",
-                        "testExpression2",
-                        "testDirective6",
-                        "testDirective7",
-                        "testDirective8",
-                        "testDirective9",
-                        "testExpression12",
-                        "testExpression14",
-                        "testExpression16",
-                        "testExpression18",
-                        "testDirective20",
-                        "testNgBind",
-                        "testNgModel",
-                        "testControllers",
-                        "testAlias",
-                        "testAliasExp"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(ControllersAsGlobalTest.class, tests);
     }
 
     public void openProject() throws Exception {

@@ -138,12 +138,14 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         assert projectDirectory != null : "FileObject must be found for " + projectDir;
         files.add(projectDirectory);
 
-        CreateProjectProperties createProperties = new CreateProjectProperties()
-                .setProjectDir(projectDirectory)
-                .setProjectName((String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
+        wizard.readSettings(wizardDescriptor);
+
+        CreateProjectProperties createProperties = new CreateProjectProperties(projectDirectory, (String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
                 .setSourceFolder(wizard.getSources())
                 .setSiteRootFolder(wizard.getSiteRoot())
-                .setPlatformProvider(NodeJsPlatformProvider.IDENT);
+                .setPlatformProvider(NodeJsPlatformProvider.IDENT)
+                .setStartFile(wizard.getStartFile())
+                .setProjectUrl(wizard.getProjectUrl());
         Project project = ClientSideProjectGenerator.createProject(createProperties);
 
         wizard.instantiate(files, handle, wizardDescriptor, project);
@@ -177,13 +179,22 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         String DEFAULT_SOURCE_FOLDER = ""; // NOI18N
         String DEFAULT_SITE_ROOT_FOLDER = "public"; // NOI18N
 
+
         String getTitle();
+
+        void readSettings(WizardDescriptor wizardDescriptor);
 
         @CheckForNull
         String getSources();
 
         @CheckForNull
         String getSiteRoot();
+
+        @CheckForNull
+        String getStartFile();
+
+        @CheckForNull
+        String getProjectUrl();
 
         WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
 
@@ -194,6 +205,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir);
 
         void uninitialize(WizardDescriptor wizardDescriptor);
+
 
     }
 
@@ -215,12 +227,27 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         }
 
         @Override
+        public void readSettings(WizardDescriptor wizardDescriptor) {
+            // noop
+        }
+
+        @Override
         public String getSources() {
             return DEFAULT_SOURCE_FOLDER;
         }
 
         @Override
         public String getSiteRoot() {
+            return null;
+        }
+
+        @Override
+        public String getStartFile() {
+            return null;
+        }
+
+        @Override
+        public String getProjectUrl() {
             return null;
         }
 
@@ -279,10 +306,14 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         private static final String EXPRESS_MAIN_JS_FILE = "app.js"; // NOI18N
         private static final String EXPRESS_MAIN_VIEW_FILE = "views/index.jade"; // NOI18N
         private static final String EXPRESS_RUN_FILE = "bin/www"; // NOI18N
+        private static final String EXPRESS_START_FILE = ""; // NOI18N
+        private static final String EXPRESS_PROJECT_URL = "http://localhost:3000/"; // NOI18N
 
         private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
         private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
         private final WizardDescriptor.FinishablePanel<WizardDescriptor> expressWizard;
+
+        private WizardDescriptor descriptor;
 
 
         public NewHtml5ProjectWithNodeJs() {
@@ -298,6 +329,11 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         }
 
         @Override
+        public void readSettings(WizardDescriptor wizardDescriptor) {
+            descriptor = wizardDescriptor;
+        }
+
+        @Override
         public String getSources() {
             return DEFAULT_SOURCE_FOLDER;
         }
@@ -305,6 +341,22 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         @Override
         public String getSiteRoot() {
             return DEFAULT_SITE_ROOT_FOLDER;
+        }
+
+        @Override
+        public String getStartFile() {
+            if (isExpress()) {
+                return EXPRESS_START_FILE;
+            }
+            return null;
+        }
+
+        @Override
+        public String getProjectUrl() {
+            if (isExpress()) {
+                return EXPRESS_PROJECT_URL;
+            }
+            return null;
         }
 
         @Override
@@ -332,7 +384,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
             FileObject sources = projectDirectory.getFileObject(getSources());
             assert sources != null;
             // express?
-            if (getBoolean(wizardDescriptor, EXPRESS_ENABLED, false)) {
+            if (isExpress()) {
                 ExpressExecutable express = ExpressExecutable.getDefault(project, false);
                 assert express != null;
                 Future<Integer> task = express.generate(projectDirectory, getBoolean(wizardDescriptor, EXPRESS_LESS, true));
@@ -356,7 +408,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
                 if (runFile != null) {
                     NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(runFile).getAbsolutePath());
                 }
-                // XXX configure to run as nodejs with browser!
+                ProjectSetup.setupRun(project);
             } else {
                 // create main.js file
                 FileObject mainJsFile = createMainJsFile(sources);
@@ -392,6 +444,11 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
                 return defaultValue;
             }
             return value;
+        }
+
+        private boolean isExpress() {
+            assert descriptor != null;
+            return getBoolean(descriptor, EXPRESS_ENABLED, false);
         }
 
     }

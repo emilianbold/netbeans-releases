@@ -19,13 +19,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -65,14 +65,15 @@ BUNDLE_IDS [0] = "javase";
 //BUNDLE_IDS [1] = "javafx";
 BUNDLE_IDS [1] = "javaee";
 //BUNDLE_IDS [2] = "ruby";
-BUNDLE_IDS [2] = "cpp";
+BUNDLE_IDS [2] = "html";
 BUNDLE_IDS [3] = "php";
-BUNDLE_IDS [4] = "all";
+BUNDLE_IDS [4] = "cpp";
+BUNDLE_IDS [5] = "all";
 
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";
 
-var OMNITURE_CODE_JS = "http://netbeans.org/images_www/js/s_code_remote.js";
+var OMNITURE_CODE_JS = "//netbeans.org/images_www/js/s_code_remote.js";
 var GOOGLE_ANALYTICS_JS = "http://www.google-analytics.com/ga.js";
 
 function getNameById(id,ids,names) {
@@ -116,7 +117,7 @@ function get_overridden_language() {
 	langcode = url.substring(idx + PAGELANG_SEP.length, url.length);
     }
     return langcode;
-    
+
 }
 
 
@@ -156,7 +157,7 @@ function get_language(option) {
         if (override != DEFAULT_LANGUAGE) lang = override;
         else if(navigator.userLanguage)  lang = navigator.userLanguage;
         else if(navigator.language) lang = navigator.language;
-        lang = lang.replace("-", "_");        
+        lang = lang.replace("-", "_");
         for(var i=0; i < variants.length; i++ ) {
             var value = (option == 0 ) ? variants[i].id : variants[i].suffix;
             if(value && lang.toLowerCase().indexOf(value.toLowerCase())!=-1) {
@@ -164,7 +165,7 @@ function get_language(option) {
                     resultLanguage = value;
                 }
             }
-        }    
+        }
     }
 
     //no language (for id) selected - fallback to en if it is available
@@ -182,7 +183,7 @@ function get_language(option) {
 
 function load_js(script_filename) {
     document.write('<script language="javascript" type="text/javascript" src="' + script_filename + '"></script>');
-} 
+}
 
 function load_page_js_locale(name,ext) {
     load_js_locale(name, ext);
@@ -202,7 +203,7 @@ function isMainLanguage(language) {
     return false;
 }
 
-function load_js_locale(script_filename, extension) {  
+function load_js_locale(script_filename, extension) {
     var suffix = "";
     var locale_suffix = "";
     locale_suffix = get_language_suffix();
@@ -229,19 +230,19 @@ function other_webpage_langs_available() {
         if ( LANGUAGES[i].suffix && LANGUAGES[i].suffix.length > 0) {
             return true;
         }
-    }    
+    }
     return false;
 }
 
 function page_languages_sort_function(a, b){
-    if (a.webpagename && b.webpagename) { 
+    if (a.webpagename && b.webpagename) {
        return a.webpagename > b.webpagename ? 1 : (a.webpagename ==  b.webpagename ? 0 : -1);
     } else {
        return a.suffix > b.suffix ? 1 : (a.suffix ==  b.suffix ? 0 : -1);
     }
 }
 
-function write_page_languages() {    
+function write_page_languages() {
     var locale_suffix = get_language_suffix();
 
     if(other_webpage_langs_available()) {
@@ -252,12 +253,12 @@ function write_page_languages() {
     var aIndex = url.indexOf("&")!=-1 ? url.indexOf("&") : url.length;
     var page = url.substring(0, Math.min(qIndex, aIndex));
     var get_request = url.substring(url.indexOf(page) + page.length, url.length);
-    if(get_request.indexOf(PAGELANG_SEP)==-1) { 
+    if(get_request.indexOf(PAGELANG_SEP)==-1) {
         if(get_request.indexOf("?")==-1) {
             get_request += "?";
         } else if(get_request.indexOf("&")) {
             get_request += "&";
-        } 
+        }
         get_request += PAGELANG_SEP;
     } else {
         var regexp =  new RegExp(PAGELANG_SEP + "[a-zA-Z]+(_[a-zA-Z]+){0,2}","g");
@@ -273,7 +274,7 @@ function write_page_languages() {
 }
 
 function startList() {
-    // source: http://netbeans.org/branding/scripts/lang-pulldown.js
+    // source: //netbeans.org/branding/scripts/lang-pulldown.js
     if (document.all&&document.getElementById) {
         navRoot = document.getElementById("nav");
         if (navRoot!=null) { //if the language panel is active
@@ -286,16 +287,16 @@ function startList() {
                     node.onmouseout=function() {
                         this.className=this.className.replace(" over", "");
                     }
-                }	
+                }
 	    }
 	}
     }
 }
 
-function get_file_list(dir,lang_id) {	
+function get_file_list(dir,lang_id) {
 	lst = new Array();
 	if(FILES.length > 0) {
-            for (var i = 0; i < FILES.length; i++) {		
+            for (var i = 0; i < FILES.length; i++) {
 		if(FILES[i].name.indexOf(dir)==0 && languageCompatible(FILES[i].locales, lang_id) && is_suitable_location(lang_id, FILES[i].location)) {
 			var stripped = FILES[i].name.substring(dir.length, FILES[i].name.length);
 			if(stripped.indexOf('/')==-1) {
@@ -315,10 +316,10 @@ function languageCompatible(language_list, lang_id) {
 }
 
 function get_file_info(filename,lang_id) {
-        var file = null;
+    var file = null;
 	if(FILES.length > 0) {
-            for (var i = 0; i < FILES.length; i++) {		
-		if(FILES[i].name == filename && languageCompatible(FILES[i].locales, lang_id)) {		
+            for (var i = 0; i < FILES.length; i++) {
+		if(FILES[i].name == filename && languageCompatible(FILES[i].locales, lang_id)) {
 			file = FILES[i];
 			break;
 		}
@@ -338,18 +339,19 @@ function getMD5(filename, lang_id) {
 }
 
 
-function get_file_name(platform, option, language) {
+function get_file_name(platform, option, language, bits) {
+    //bits = !bits ? 'x86' : bits;
     var fn = "";
     if(platform=="zip") {
         fn += "zip/";
     } else {
         fn += "bundles/";
     }
-    return fn + get_file_name_short(platform, option, language);
+    return fn + get_file_name_short(platform, option, language,bits);
 }
 
-function is_file_available(platform, option, language) {
-    return get_file_info(get_file_name(platform, option, language), language) != null;
+function is_file_available(platform, option, language, bits) {
+    return get_file_info(get_file_name(platform, option, language, bits), language) != null;
 }
 
 function get_build_location(lang_id) {
@@ -369,7 +371,7 @@ function get_bundles_files_prefix(lang_id) {
     return get_build_info(isMainLanguage(lang_id)).BUNDLE_FILES_PREFIX;
 }
 
-function get_file_name_short(platform, option, language) {
+function get_file_name_short(platform, option, language, bits) {
     var file_name = "";
     if(platform=="zip") {
         if(option == "javadoc" || option == "platform-src" || option == "src") {
@@ -385,14 +387,19 @@ function get_file_name_short(platform, option, language) {
     }
 
     if ( platform != "zip" ) {
-   	file_name += "-" + platform;
+   	    file_name += "-" + platform;
     }
+
+    if(bits) {
+        file_name += "-"+bits;
+    } 
+
     if (platform == "windows") {
         file_name += ".exe";
     } else if (platform == "macosx") {
-	file_name += ".dmg";
+	   file_name += ".dmg";
     } else if(platform == "zip"){
-	file_name += ".zip"        
+	   file_name += ".zip"
     } else {
         file_name += ".sh";
     }
@@ -401,7 +408,7 @@ function get_file_name_short(platform, option, language) {
 
 function get_file_url(filename, lang_id) {
     var url  = get_build_location(lang_id);
-    url += filename;    
+    url += filename;
     return url;
 }
 
@@ -426,7 +433,7 @@ function set_page_title(title) {
     document.title = title;
     var titleElement = document.getElementsByTagName("title");
     if(titleElement.length == 1) {
-        titleElement[0].text = title;       
+        titleElement[0].text = title;
     } else {
         document.write('<title>' + title + '</title>');
     }
@@ -454,7 +461,7 @@ function load_files_information(additional) {
     }
 }
 
-function add_language(id, name, suffix, webpagename) {    
+function add_language(id, name, suffix, webpagename) {
     var index = LANGUAGES.length;
     for(var i=0;i<index;i++) {
        if(LANGUAGES[i].id == id) {

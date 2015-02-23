@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -54,26 +53,29 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class TypeDefTest extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testTypDef1",
+        "testTypDef2",
+        "testTypDef3",
+        "testTypDef4",
+        "testTypDef5",
+        "testTypDef6",
+        "testTypDef7",
+        "testTypDef8"
+    };
+
     public TypeDefTest(String arg0) {
         super(arg0);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(TypeDefTest.class).addTest(
-                        "openProject",
-                        "testTypDef1",
-                        "testTypDef2",
-                        "testTypDef3",
-                        "testTypDef4",
-                        "testTypDef5",
-                        "testTypDef6",
-                        "testTypDef7",
-                        "testTypDef8").enableModules(".*").clusters(".*"));
+        return createModuleTest(TypeDefTest.class, tests);
     }
 
     public void openProject() throws Exception {
         startTest();
+        GeneralJavaScript.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("completionTest");
         evt.waitNoEvent(2000);

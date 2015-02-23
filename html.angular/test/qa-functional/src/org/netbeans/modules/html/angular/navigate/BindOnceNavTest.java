@@ -44,23 +44,25 @@ package org.netbeans.modules.html.angular.navigate;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
  *
  * @author vriha
  */
-public class BindOnceNavTest extends GeneralAngular{
+public class BindOnceNavTest extends GeneralAngular {
+
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExpression21"
+    };
 
     public BindOnceNavTest(String args) {
         super(args);
     }
+
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BindOnceNavTest.class).addTest(
-                        "openProject",
-                        "testExpression21"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(BindOnceNavTest.class, tests);
     }
 
     public void openProject() throws Exception {

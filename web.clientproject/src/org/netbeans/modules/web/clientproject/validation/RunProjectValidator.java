@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
@@ -71,9 +72,9 @@ public final class RunProjectValidator {
 
     public RunProjectValidator validate(ClientSideProject project, boolean validateStartFile) {
         if (validateStartFile) {
-            String[] startFileParts = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile());
+            String startFile = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile())[0];
             File siteRoot = getSiteRoot(project);
-            validateStartFile(getSiteRoot(project), resolveFile(siteRoot, startFileParts[0]));
+            validateStartFile(getSiteRoot(project), resolveFile(siteRoot, startFile));
         }
         if (!project.isUsingEmbeddedServer()) {
             validateProjectUrl(project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL));
@@ -98,11 +99,11 @@ public final class RunProjectValidator {
         if (result.hasErrors()) {
             return this;
         }
-        if (startFile == null || !startFile.isFile()) {
+        if (startFile == null || !startFile.exists()) {
             result.addWarning(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_invalid()));
             return this;
         }
-        if (!FileUtil.isParentOf(FileUtil.toFileObject(siteRootFolder), FileUtil.toFileObject(startFile))) {
+        if (!ClientSideProjectUtilities.isParentOrItself(FileUtil.toFileObject(siteRootFolder), FileUtil.toFileObject(startFile))) {
             result.addWarning(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_notUnderSiteRoot()));
         }
         return this;
@@ -146,9 +147,12 @@ public final class RunProjectValidator {
     }
 
     @CheckForNull
-    private File resolveFile(File root, String child) {
+    private File resolveFile(@NullAllowed File root, String child) {
         if (root == null) {
             return null;
+        }
+        if (child.isEmpty()) {
+            return root;
         }
         return new File(root, child);
     }

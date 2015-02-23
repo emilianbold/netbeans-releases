@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -69,11 +70,15 @@ public class ProjectWebModuleTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        MockLookup.setLayersAndInstances();
+    }
+
     /**
      * Tests that the metadata models are returned correctly.
      */
     public void testMetadataModel() throws Exception {
-        TestUtil.setLookup();
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);

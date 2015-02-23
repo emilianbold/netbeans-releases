@@ -704,7 +704,12 @@ public class ElementJavadoc {
                                     throwsInlineTags.put(entry.getKey(), tags);
                             }
                         }
-                        if (inlineTags.length > 0 || doc.tags().length > 0) {
+                        if (inlineTags.length > 0 ||
+                            doc.tags().length > 0 ||
+                            returnTags.length > 0 ||
+                            (paramTags != null && !paramTags.isEmpty()) ||
+                            !throwsTags.isEmpty() ||
+                            !throwsInlineTags.isEmpty()) {
                             sb.append(getDeprecatedTag(doc, ctx));
                             sb.append(inlineTags(doc, inlineTags, ctx));
                             sb.append("<p>"); //NOI18N
