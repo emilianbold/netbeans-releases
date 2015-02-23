@@ -158,12 +158,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 version = JavaUtils.getVersion(location);
             }
             if (version == null) {
-                for (Product jdk: registry.getProducts(JDK_PRODUCT_UID)) {
-                    if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
-                            jdk.getInstallationLocation().equals(location)) {
-                        version = jdk.getVersion();
-                    }
-                }
+                version = getVersion(location);
             }
             
             // if we could not fetch the version, we should skip this jdk
@@ -571,6 +566,11 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     version = jdk.getVersion();
                 }
             }
+            for (Product jreNested : Registry.getInstance().getProducts(JRE_NESTED_PRODUCT_UID)) {
+                if ((jreNested.getStatus() == Status.TO_BE_INSTALLED) && jreNested.getInstallationLocation().equals(file)) {
+                    version = jreNested.getVersion();
+                }
+            }
         }
         
         return version;
@@ -585,16 +585,27 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         boolean sort = false;
         if(objectContext != null && objectContext instanceof Product) {
             final Product product = (Product) objectContext;
-            for (Dependency dependency: product.getDependencies(
-                    InstallAfter.class)) {
+            for (Dependency dependency : product.getDependencies(InstallAfter.class)) {
+                
                 if (dependency.getUid().equals(JDK_PRODUCT_UID)) {
-                    for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
+                    for (Product jdk : Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
                         if (jdk.getStatus() == Status.TO_BE_INSTALLED &&
                                 !SearchForJavaAction.getJavaLocations().
                                 contains(jdk.getInstallationLocation())) {
                             SearchForJavaAction.addJavaLocation(
                                     jdk.getInstallationLocation(),
                                     jdk.getVersion(),
+                                    SUN_MICROSYSTEMS_VENDOR);
+                            sort = true;
+                        }
+                    }
+                }
+                if (dependency.getUid().equals(JRE_NESTED_PRODUCT_UID)) {
+                    for (Product jreNested : Registry.getInstance().getProducts(JRE_NESTED_PRODUCT_UID)) {
+                        if (jreNested.getStatus() == Status.TO_BE_INSTALLED) {
+                            SearchForJavaAction.addJavaLocation(
+                                    jreNested.getInstallationLocation(),
+                                    jreNested.getVersion(),
                                     SUN_MICROSYSTEMS_VENDOR);
                             sort = true;
                         }
@@ -748,4 +759,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     
     private static final String JDK_PRODUCT_UID =
             "jdk"; //NOI18N
+    
+    private static final String JRE_NESTED_PRODUCT_UID =
+            "jre-nested"; //NOI18N
 }
