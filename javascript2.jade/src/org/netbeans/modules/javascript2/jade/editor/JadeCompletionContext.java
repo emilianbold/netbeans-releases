@@ -58,7 +58,7 @@ public enum JadeCompletionContext {
     NONE, // There shouldn't be any code completion
     TAG,  // offer only html tags
     TAG_AND_KEYWORD, // tags and keywords
-    ARGUMENT;   // html arguments
+    ATTRIBUTE;   // html attributes
     
     private static final List<Object[]> START_LINE = Arrays.asList(
         new Object[]{JadeTokenId.EOL},
@@ -74,6 +74,13 @@ public enum JadeCompletionContext {
         new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE},
         new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE, JadeTokenId.TAG}
     );
+    
+    private static final List<Object[]> ATTRIBUTE_POSITION = Arrays.asList(
+        new Object[]{JadeTokenId.ATTRIBUTE},
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE}
+    );
+    
     
     @NonNull
     public static JadeCompletionContext findCompletionContext(ParserResult info, int offset){
@@ -91,6 +98,14 @@ public enum JadeCompletionContext {
         if (!ts.movePrevious()) {
             return TAG_AND_KEYWORD;
         }
+        
+        Token<JadeTokenId> token = ts.token();
+        JadeTokenId id = token.id();
+        
+        if (id == JadeTokenId.ATTRIBUTE) {
+            return ATTRIBUTE;
+        }
+        
         if (!ts.moveNext()){
             return TAG_AND_KEYWORD;
         }
@@ -103,8 +118,17 @@ public enum JadeCompletionContext {
             return TAG;
         }
         
-        Token<JadeTokenId> token = ts.token();
-        JadeTokenId id = token.id();
+        
+        
+        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, false)) {
+            return ATTRIBUTE;
+        }
+        
+//        if (acceptTokenChains(ts, ATTRIBUTE_POSITION_AFTER, true)) {
+//            return ATTRIBUTE;
+//        }
+        
+        
         if (id == JadeTokenId.EOL && ts.movePrevious()) {
             token = ts.token(); id = token.id();
             if (id == JadeTokenId.TAG && !ts.movePrevious()) {

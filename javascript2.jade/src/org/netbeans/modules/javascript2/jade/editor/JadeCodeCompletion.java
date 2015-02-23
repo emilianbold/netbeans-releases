@@ -44,13 +44,17 @@ package org.netbeans.modules.javascript2.jade.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
@@ -66,7 +70,13 @@ import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
+import static org.netbeans.modules.javascript2.jade.editor.JadeCompletionContext.ATTRIBUTE;
+import static org.netbeans.modules.javascript2.jade.editor.JadeCompletionContext.NONE;
+import static org.netbeans.modules.javascript2.jade.editor.JadeCompletionContext.TAG_AND_KEYWORD;
 import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -74,6 +84,8 @@ import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
  */
 public class JadeCodeCompletion implements CodeCompletionHandler2 {
 
+    private static final Logger LOGGER = Logger.getLogger(JadeCodeCompletion.class.getName());
+    
     private boolean caseSensitive;
     
     @Override
@@ -84,15 +96,18 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         this.caseSensitive = context.isCaseSensitive();
         
         JadeCompletionContext jadeContext = JadeCompletionContext.findCompletionContext(info, carretOffset);
-        final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
-        JadeCompletionItem.CompletionRequest request = new JadeCompletionItem.CompletionRequest(
+        final List<CompletionProposal> resultList = new ArrayList<>();
+        JadeCompletionItem.CompletionRequest request = new JadeCompletionItem.CompletionRequest( info, 
                 prefix == null ? carretOffset : carretOffset - prefix.length(), prefix);
+        LOGGER.log(Level.FINEST, "Jade Completion Context {0}, prefix: {1}, anchorOffset: {2}", new Object[] {jadeContext, request.prefix, request.anchor}); //NOI18N
         switch (jadeContext) {
             case TAG_AND_KEYWORD :
                 completeKewords(request, resultList);
             case TAG:
                 completeTags(request, resultList);
                 break;
+            case ATTRIBUTE:
+                completeAttributes(request, resultList);
         }
         if (!resultList.isEmpty()) {
             return new DefaultCompletionResult(resultList, false);
@@ -209,6 +224,39 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         }
     }
     
+    private void completeAttributes(JadeCompletionItem.CompletionRequest request, List<CompletionProposal> resultList) {
+        Collection<HtmlTagAttribute> resultAttrs = Collections.<HtmlTagAttribute>emptyList();
+        HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
+        String tagName = findTag(request);
+        String prefix = request.prefix == null ? "" : request.prefix;
+        HtmlTag htmlTag = tagName == null ? null : htmlModel.getTag(tagName);
+        if (tagName != null && !tagName.isEmpty() && htmlTag != null) {
+            if (prefix.isEmpty()) {
+                if (tagName.isEmpty()) {
+                    resultAttrs = getAllAttributes(htmlModel);
+                } else {
+                    resultAttrs = htmlTag.getAttributes();
+                }
+            } else {
+                Collection<HtmlTagAttribute> attributes = htmlTag.getAttributes();
+                if (tagName.isEmpty() || htmlTag.getTagClass() == HtmlTagType.UNKNOWN) {
+                    attributes = getAllAttributes(htmlModel);
+                }
+                resultAttrs = new ArrayList<HtmlTagAttribute>();
+                for (HtmlTagAttribute htmlTagAttribute : attributes) {
+                    if(htmlTagAttribute.getName().startsWith(prefix)) {
+                        resultAttrs.add(htmlTagAttribute);
+                    }
+                }
+            }
+        } else {
+            resultAttrs = getAllAttributes(htmlModel);
+        }
+        for (HtmlTagAttribute attribute: resultAttrs) {
+            resultList.add(JadeCompletionItem.create(request, attribute));
+        }
+    }
+    
     private boolean startsWith(String theString, String prefix) {
         if (prefix == null || prefix.length() == 0) {
             return true;
@@ -216,5 +264,45 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
 
         return caseSensitive ? theString.startsWith(prefix)
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
+    }
+
+    private String findTag(JadeCompletionItem.CompletionRequest request) {
+        TokenHierarchy<?> th = request.parserResult.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return null;
+        }
+        TokenSequence<JadeTokenId> ts = th.tokenSequence(JadeTokenId.jadeLanguage());
+        if (ts == null) {
+            return null;
+        }
+        
+        ts.move(request.anchor);
+        
+        if (!ts.movePrevious()) {
+            return null;
+        }
+        
+        Token<JadeTokenId> token = LexerUtils.followsToken(ts, JadeTokenId.TAG, true, false);
+        JadeTokenId id = token.id();
+        
+        String tagName = null;
+        if (id == JadeTokenId.TAG) {
+            tagName = token.text().toString();
+        }
+        return tagName;
+    }
+
+    private Collection<HtmlTagAttribute> getAllAttributes(HtmlModel htmlModel) {
+        Map<String, HtmlTagAttribute> result = new HashMap<String, HtmlTagAttribute>();
+        for (HtmlTag htmlTag : htmlModel.getAllTags()) {
+            for (HtmlTagAttribute htmlTagAttribute : htmlTag.getAttributes()) {
+                // attributes can probably differ per tag so we can just offer some of them,
+                // at least for the CC purposes it should be complete list of attributes for unknown tag
+                if (!result.containsKey(htmlTagAttribute.getName())) {
+                    result.put(htmlTagAttribute.getName(), htmlTagAttribute);
+                }
+            }
+        }
+        return result.values();
     }
 }

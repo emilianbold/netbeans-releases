@@ -8,4 +8,4 @@ img[TAG]
 a[TAG]: img
 [TAG_AND_KEYWORD]
 foo[NONE]/
-[TAG_AND_KEYWORD]foo[NONE](bar='baz')/
+[TAG_AND_KEYWORD]foo[NONE]([ATTRIBUTE]bar=[NONE]'baz')/
