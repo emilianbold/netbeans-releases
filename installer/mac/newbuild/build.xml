@@ -43,6 +43,11 @@
     
     <import file="${basedir}/build.pro"/>
     <property file="${basedir}/Bundle.properties"/>
+    
+    <target name="build-jre-nested-pkg">
+        <echo message="Building nested JRE into ${basedir}/jre-nested"/>
+        <ant dir="netbeans/jre-nested" target="build-pkg"/>              
+    </target>
 
     <target name="build-glassfish-pkg" >
         <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
@@ -68,6 +73,7 @@
         <ant dir="${basedir}/glassfish" target="clean"/>
         <ant dir="${basedir}/tomcat" target="clean"/>
         <ant dir="${basedir}/netBeans/baseide" target="clean"/>
+        <ant dir="${basedir}/netBeans/jre-nested" target="clean"/>
         <delete dir="${basedir}/netBeans/ruby/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/cpp/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/javase/build" failonerror="no"/>
@@ -308,9 +314,9 @@
     <target name="init-bundles">
         <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg),
-                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
-                                              -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
+                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),                                              
+                                              -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/jre-nested-${jre.version.string.long}.pkg),
+                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/jre-nested-${jre.version.string.long}.pkg)
                                           "/>
         <property name="fx.bundles" value="    
                                                -javafx-full(./build/*pkg),
@@ -328,7 +334,7 @@
         
     </target>
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,init-bundles">
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-jre-nested-pkg,build-glassfish-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_pkg" failonerror="false"/>                          
             <ant target="build-dmg">
@@ -337,7 +343,12 @@
                  <property name="background.name" value="bgimage.tif"/>
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
-        </for-each>         
+        </for-each>
+        
+        <!-- for html distro, just create symlink to php -->
+        <echo message="Creating symlink: ${basedir}/dist/${dmg.prefix.name}-html-macosx.dmg -> ${dmg.prefix.name}-php-macosx.dmg"/>
+        <symlink link="${basedir}/dist/${dmg.prefix.name}-html-macosx.dmg" resource="${dmg.prefix.name}-php-macosx.dmg"/>
+                 
         <delete file="${basedir}/build/sizes.pro"/>
     </target>     
             
@@ -349,7 +360,7 @@
                  <property name="pkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
                  <property name="background.name" value="background-jdk.tif"/>
             </ant>     
-        </for-each>
+        </for-each>                
         <delete file="${basedir}/build/sizes.pro"/>
     </target>     
             
@@ -471,12 +482,14 @@
                 <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number.long}"/>                       
                 <filter token="JDK_UPDATE_NUMBER_SHORT" value="${jdk.update.number}"/>
                 <filter token="JDK_BUILD_NUMBER" value="${jdk.build.number}"/>
+                <filter token="JRE_VERSION" value="${jre.version.string.long}"/>
                 <filter token="TOMCAT_ID" value="${tomcat.id}"/>
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
                 <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/> 
                 <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
                 <filter token="SIZE_EXTIDE" value="${sizeof.extide}"/>
+                <filter token="SIZE_JRENESTED" value="${sizeof.jrenested}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_JAVAME" value="${sizeof.javame}"/>
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
