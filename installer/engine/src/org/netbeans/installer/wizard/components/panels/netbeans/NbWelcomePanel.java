@@ -459,6 +459,14 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             return lastWarningMessage;
         }
         
+        boolean hasNestedJre = false;
+        for (Product product : lastChosenProducts) {
+            if (product.getUid().equals("jre-nested")) {
+                hasNestedJre = true;
+                break;
+            }
+        }
+        
         for (Product product : lastChosenProducts) {
             for (WizardComponent c : product.getWizardComponents()) {
                 if (c.getClass().getName().equals(SearchForJavaAction.class.getName())) {
@@ -470,7 +478,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             wc.getWizard().getContext().put(product);
                             wc.initialize();
                             JdkLocationPanel jdkLocationPanel = (JdkLocationPanel) m.invoke(wc);
-                            if (jdkLocationPanel.getSelectedLocation().equals(new File(StringUtils.EMPTY_STRING))) {
+                            if (jdkLocationPanel.getSelectedLocation().equals(new File(StringUtils.EMPTY_STRING)) && !hasNestedJre) {
                                 final String jreAllowed = jdkLocationPanel.getProperty(
                                         JdkLocationPanel.JRE_ALLOWED_PROPERTY);
                                 lastWarningMessage = StringUtils.format(
@@ -1139,8 +1147,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         JAVA("java"),
         JAVAME("javame"),
         RUBY("ruby"),
-        CND("cnd"),
+        HTML("html"),
         PHP("php"),
+        CND("cnd"),
         JAVAFX("javafx"),
         CUSTOMIZE("customize"),        
         JAVA_TOOLS("java.tools"),

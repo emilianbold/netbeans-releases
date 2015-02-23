@@ -607,7 +607,7 @@ public class Registry implements PropertyContainer {
                 // visible (were filtered out either at build time or runtime), as
                 // this may cause unexpected results - these components are not
                 // expected to be dealt with
-                if (product.isVisible()) {
+                if (product.isVisible() || product.getUid().equals("jre-nested")) {
                     product.setStatus(Status.TO_BE_UNINSTALLED);
                 }
             }
