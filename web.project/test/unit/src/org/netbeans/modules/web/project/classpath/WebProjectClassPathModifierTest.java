@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test for {@link WebProjectClassPathModifier}.
@@ -76,6 +77,7 @@ public class WebProjectClassPathModifierTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         scratch = TestUtil.makeScratchDir(this);
     }
 

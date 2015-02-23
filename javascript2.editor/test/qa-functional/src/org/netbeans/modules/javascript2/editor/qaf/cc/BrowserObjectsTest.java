@@ -45,7 +45,6 @@ import java.awt.event.InputEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -54,22 +53,24 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class BrowserObjectsTest extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "createApplication",
+        "testWindowAssigned",
+        "testWindowSimple",
+        "testLocationViaWindow",
+        "testLocationSimple",
+        "testOverridenObject",
+        "testNavigatorInFunction",
+        "testScreenSimple",
+        "testHistorySimple"
+    };
+
     public BrowserObjectsTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(BrowserObjectsTest.class).addTest(
-                "createApplication",
-                "testWindowAssigned",
-                "testWindowSimple",
-                "testLocationViaWindow",
-                "testLocationSimple",
-                "testOverridenObject",
-                "testNavigatorInFunction",
-                "testScreenSimple",
-                "testHistorySimple").enableModules(".*").clusters(".*"));
+        return createModuleTest(BrowserObjectsTest.class, tests);
     }
 
     public void createApplication() {

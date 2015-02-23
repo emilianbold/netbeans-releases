@@ -146,9 +146,7 @@ public final class ExistingProjectWizardIterator extends BaseWizardIterator {
             files.add(siteRoot);
         }
 
-        CreateProjectProperties createProperties = new CreateProjectProperties()
-                .setProjectDir(projectDirectory)
-                .setProjectName((String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
+        CreateProjectProperties createProperties = new CreateProjectProperties(projectDirectory, (String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
                 .setSourceFolder(relativizePath(projectDirectory, sourceRoot))
                 .setSiteRootFolder(relativizePath(projectDirectory, siteRoot))
                 .setPlatformProvider(NodeJsPlatformProvider.IDENT);

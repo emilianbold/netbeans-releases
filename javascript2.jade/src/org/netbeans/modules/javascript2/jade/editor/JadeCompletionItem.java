@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
@@ -68,6 +69,11 @@ public class JadeCompletionItem implements CompletionProposal {
 
     public static CompletionProposal create(CompletionRequest request, HtmlTag tag) {
         ElementHandle element = new HtmlTagElement(tag);
+        return new JadeCompletionItem(request, element);
+    }
+    
+    public static CompletionProposal create(CompletionRequest request, HtmlTagAttribute attribute) {
+        ElementHandle element = new HtmlTagAttributeElement(attribute);
         return new JadeCompletionItem(request, element);
     }
     
@@ -147,10 +153,12 @@ public class JadeCompletionItem implements CompletionProposal {
     protected static class CompletionRequest {
         final public int anchor;
         final public String prefix;
+        final public ParserResult parserResult;
 
-        public CompletionRequest(int anchor, String prefix) {
+        public CompletionRequest(ParserResult parserResult, int anchor, String prefix) {
             this.anchor = anchor;
             this.prefix = prefix;
+            this.parserResult = parserResult;
         }
     }
     
@@ -292,6 +300,35 @@ public class JadeCompletionItem implements CompletionProposal {
         @Override
         public Documentation getDocumentation() {
             HelpItem help = tag.getHelp();
+            if (help != null) {
+                if (help.getHelpContent() != null) {
+                    if (help.getHelpURL() != null) {
+                        return Documentation.create(help.getHelpContent(), help.getHelpURL());
+                    }
+                    return Documentation.create(help.getHelpContent());
+                } else if (help.getHelpResolver() != null && help.getHelpURL() != null) {
+                    String content = help.getHelpResolver().getHelpContent(help.getHelpURL());
+                    if (content != null) {
+                        return Documentation.create(content, help.getHelpURL());
+                    }
+                }
+            }
+            return null;
+        }
+    }
+    
+    public static class HtmlTagAttributeElement extends SimpleElement {
+        
+        final HtmlTagAttribute attribute;
+        
+        public HtmlTagAttributeElement(HtmlTagAttribute attribute) {
+            super(attribute.getName(), ElementKind.ATTRIBUTE);
+            this.attribute = attribute;
+        }
+
+        @Override
+        public Documentation getDocumentation() {
+            HelpItem help = attribute.getHelp();
             if (help != null) {
                 if (help.getHelpContent() != null) {
                     if (help.getHelpURL() != null) {

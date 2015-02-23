@@ -58,15 +58,15 @@ public enum JadeCompletionContext {
     NONE, // There shouldn't be any code completion
     TAG,  // offer only html tags
     TAG_AND_KEYWORD, // tags and keywords
-    ARGUMENT;   // html arguments
-    
-    private static final List<Object[]> START_LINE = Arrays.asList(
-        new Object[]{JadeTokenId.EOL},
-        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE},
-        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE, JadeTokenId.TAG}
-    );
-    
+    ATTRIBUTE;   // html attributes
+        
     private static final List<Object[]> TAG_POSITON = Arrays.asList(
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
+        new Object[]{JadeTokenId.EOL, JadeTokenId.EOL},
+        new Object[]{JadeTokenId.EOL, JadeTokenId.TAG},
+        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE},    
+        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE, JadeTokenId.TAG},    
+        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON},    
         new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON},
         new Object[]{JadeTokenId.TAG, JadeTokenId.WHITESPACE},
         new Object[]{JadeTokenId.TAG, JadeTokenId.EOL},
@@ -74,6 +74,15 @@ public enum JadeCompletionContext {
         new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE},
         new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE, JadeTokenId.TAG}
     );
+    
+    private static final List<Object[]> ATTRIBUTE_POSITION = Arrays.asList(
+        new Object[]{JadeTokenId.ATTRIBUTE},
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL},
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE}, 
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL, JadeTokenId.WHITESPACE},
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE, JadeTokenId.EOL, JadeTokenId.WHITESPACE}    
+    );
+    
     
     @NonNull
     public static JadeCompletionContext findCompletionContext(ParserResult info, int offset){
@@ -91,20 +100,35 @@ public enum JadeCompletionContext {
         if (!ts.movePrevious()) {
             return TAG_AND_KEYWORD;
         }
+        
+        Token<JadeTokenId> token = ts.token();
+        JadeTokenId id = token.id();
+        
+        if (id == JadeTokenId.ATTRIBUTE) {
+            return ATTRIBUTE;
+        }
+        
         if (!ts.moveNext()){
             return TAG_AND_KEYWORD;
         }
-               
-        if (acceptTokenChains(ts, START_LINE, true)) {
-            return TAG_AND_KEYWORD;
+        
+        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, false)) {
+            return ATTRIBUTE;
         }
         
         if (acceptTokenChains(ts, TAG_POSITON, false)) {
             return TAG;
         }
         
-        Token<JadeTokenId> token = ts.token();
-        JadeTokenId id = token.id();
+        
+        
+        
+        
+//        if (acceptTokenChains(ts, ATTRIBUTE_POSITION_AFTER, true)) {
+//            return ATTRIBUTE;
+//        }
+        
+        
         if (id == JadeTokenId.EOL && ts.movePrevious()) {
             token = ts.token(); id = token.id();
             if (id == JadeTokenId.TAG && !ts.movePrevious()) {

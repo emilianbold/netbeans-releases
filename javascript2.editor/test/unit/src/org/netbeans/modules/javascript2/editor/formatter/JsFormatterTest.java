@@ -1770,6 +1770,10 @@ public class JsFormatterTest extends JsTestBase {
                 options, ".expand.formatted");
     }
 
+    public void testIssue250557() throws Exception {
+        reformatFileContents("testfiles/formatter/issue250557.js", new IndentPrefs(4, 4));
+    }
+
     // braces formatting tests
     public void testBracesSameLine() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();

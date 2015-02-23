@@ -122,9 +122,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         }
         final FileObject projectDirFO = FileUtil.toFileObject(projectDir);
 
-        CreateProjectProperties props = new CreateProjectProperties();
-        props.setProjectDir(projectDirFO);
-        props.setProjectName(name);
+        CreateProjectProperties props = new CreateProjectProperties(projectDirFO, name);
 
         OnlineSiteTemplate siteTemplate = getSiteTemplate();
         if (siteTemplate != null) {

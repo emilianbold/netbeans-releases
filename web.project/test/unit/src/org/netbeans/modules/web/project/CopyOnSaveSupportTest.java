@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -73,7 +74,7 @@ public class CopyOnSaveSupportTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        TestUtil.setLookup();
+        MockLookup.setLayersAndInstances();
     }
 
     public void testSingleDir() throws Exception {

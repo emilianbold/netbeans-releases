@@ -19,13 +19,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -44,14 +44,15 @@ var lang_id="";
 var option_id="";
 var platform_id="";
 var url = "";
-var filename = "";	    
+var filename = "";
 var string = "";
 var parent_folder = "";
+var bits_id = "";
 
 function initialize() {
-	    string = "" + window.location;	    
+	    string = "" + window.location;
             var query    = string.substring(string.indexOf("?") + 1, string.length);
-	    var sep = "&";	    
+	    var sep = "&";
 	    var email = "";
             var monthly = "0";
 	    var weekly  = "0";
@@ -60,78 +61,87 @@ function initialize() {
             var monthly_sep  = "monthly=";
             var weekly_sep   = "weekly=";
             var contact_sep  = "contact=";
-            var start_page_string = (string.indexOf("?")==-1) ? string : string.substring(0, string.indexOf("?"));            
+            var start_page_string = (string.indexOf("?")==-1) ? string : string.substring(0, string.indexOf("?"));
             parent_folder  = start_page_string.substring(0, start_page_string.lastIndexOf("/") + 1);
 
 	    if(query!="" && query != string/* && query.indexOf(sep)!=-1*/)  {
 		    while(query!="") {
-		            var lang_sep     = "lang=";
+		        var lang_sep     = "lang=";
 			    var platform_sep = "platform=";
+			    var bits_sep = "bits=";
 			    var option_sep   = "option=";
-                            var filename_sep = "filename=";
-                            
+                var filename_sep = "filename=";
 
-			    if(query.indexOf(lang_sep)==0) { 
+
+			    if(query.indexOf(lang_sep)==0) {
 				 if(query.indexOf(sep)!=-1) {
 					lang_id = query.substring(lang_sep.length, query.indexOf(sep));
 					query = query.substring(query.indexOf(sep) + 1, query.length);
-        	        	 } else {	
+        	        	 } else {
 					lang_id = query.substring(lang_sep.length, query.length);
 					query = "";
-				 }		 
-		            } else if(query.indexOf(platform_sep)==0) { 
+				 }
+		            } else if(query.indexOf(platform_sep)==0) {
 				 if(query.indexOf(sep)!=-1) {
 					platform_id = query.substring(platform_sep.length, query.indexOf(sep));
 					query = query.substring(query.indexOf(sep) + 1, query.length);
-	                	 } else {	
+	                	 } else {
 					platform_id = query.substring(platform_sep.length, query.length);
 					query = "";
-				 }		 
-			   } else if(query.indexOf(option_sep)==0) { 
+				 }
+			    } else if(query.indexOf(option_sep)==0) {
 				 if(query.indexOf(sep)!=-1) {
 					option_id = query.substring(option_sep.length, query.indexOf(sep));
 					query = query.substring(query.indexOf(sep) + 1, query.length);
-	                	 } else {	
+	                	 } else {
 					option_id = query.substring(option_sep.length, query.length);
 					query = "";
-				 }		 
-		           } else if(query.indexOf(email_sep)==0) { 
+				 }
+				} else if(query.indexOf(bits_sep)==0) {
+				 if(query.indexOf(sep)!=-1) {
+					bits_id = query.substring(bits_sep.length, query.indexOf(sep));
+					query = query.substring(query.indexOf(sep) + 1, query.length);
+	                	 } else {
+					bits_id = query.substring(bits_sep.length, query.length);
+					query = "";
+				 }
+		        } else if(query.indexOf(email_sep)==0) {
 				 if(query.indexOf(sep)!=-1) {
 					email = query.substring(email_sep.length, query.indexOf(sep));
 					query = query.substring(query.indexOf(sep) + 1, query.length);
-	                	 } else {	
+	                	 } else {
 					email = query.substring(email_sep.length, query.length);
 					query = "";
-				 }		 
-		           } else if(query.indexOf(monthly_sep)==0) { 
+				 }
+		           } else if(query.indexOf(monthly_sep)==0) {
 				 if(query.indexOf(sep)!=-1) {
 					monthly = query.substring(monthly_sep.length, query.indexOf(sep));
 					query = query.substring(query.indexOf(sep) + 1, query.length);
-	                	 } else {	
+	                	 } else {
 					monthly = query.substring(monthly_sep.length, query.length);
 					query = "";
-				 }		 
-		            } else if(query.indexOf(weekly_sep)==0) { 
+				 }
+		            } else if(query.indexOf(weekly_sep)==0) {
 				 if(query.indexOf(sep)!=-1) {
 					weekly = query.substring(weekly_sep.length, query.indexOf(sep));
 					query = query.substring(query.indexOf(sep) + 1, query.length);
-	                	 } else {	
+	                	 } else {
 					weekly = query.substring(weekly_sep.length, query.length);
 					query = "";
-				 }		 
-		            } else if(query.indexOf(contact_sep)==0) { 
+				 }
+		            } else if(query.indexOf(contact_sep)==0) {
 				 if(query.indexOf(sep)!=-1) {
 					contact = query.substring(contact_sep.length, query.indexOf(sep));
 					query = query.substring(query.indexOf(sep) + 1, query.length);
-	                	 } else {	
+	                	 } else {
 					contact = query.substring(contact_sep.length, query.length);
 					query = "";
-				 }		 
-		            } else if(query.indexOf(filename_sep)==0) { 
+				 }
+		            } else if(query.indexOf(filename_sep)==0) {
 				 if(query.indexOf(sep)!=-1) {
 					filename = query.substring(filename_sep.length, query.indexOf(sep));
 					query = query.substring(query.indexOf(sep) + 1, query.length);
-	                	 } else {	
+	                	 } else {
 					filename = query.substring(filename_sep.length, query.length);
 					query = "";
 				 }
@@ -139,7 +149,7 @@ function initialize() {
 				query = "";
 			    }
 	            }
-		    if(email!="") {			
+		    if(email!="") {
 			var phpRequest = SUBSCRIPTION_PHP_URL;
 			phpRequest += "?" + email_sep   + email;
 			phpRequest += "&" + monthly_sep + monthly;
@@ -149,18 +159,19 @@ function initialize() {
 			var image = new Image();
 			image.src = phpRequest;
 			image.style.display="none";
-		    } 
+		    }
+
 	            if(filename!="") {
 			for(var i=0;i<PLATFORM_IDS.length;i++) {
 			    for(var j=0;j<BUNDLE_IDS.length;j++) {
 				var testFileName = get_file_name(PLATFORM_IDS[i], BUNDLE_IDS[j], "en");
-				
+
 				if(testFileName==filename) {
 				    platform_id = PLATFORM_IDS[i];
 				    option_id   = BUNDLE_IDS[j];
-				    lang_id     = get_language_id();				    
+				    lang_id     = get_language_id();
 				    i = PLATFORM_IDS.length;
-				    j = BUNDLE_IDS.length;	
+				    j = BUNDLE_IDS.length;
 				    filename = "";
                                 }
                             }
@@ -170,11 +181,11 @@ function initialize() {
 
 		    if(option_id != "" && platform_id != "") {
 	    	        if (useBouncer(lang_id) == 1) {
-                            url      = get_file_bouncer_url(platform_id, option_id, lang_id);
-                        } else {				
-                            url      = get_file_url(get_file_name(platform_id, option_id, lang_id), lang_id);
+                            url      = get_file_bouncer_url(platform_id, option_id, lang_id, bits_id);
+                        } else {
+                            url      = get_file_url(get_file_name(platform_id, option_id, lang_id, bits_id), lang_id);
 		        }
-                        filename     = get_file_name(platform_id, option_id, lang_id, lang_id);
+                        filename     = get_file_name(platform_id, option_id, lang_id, bits_id);
 		    } else if(filename!="") {
 	    	        ADDITIONAL_BUNDLES = new Array();
 			ADDITIONAL_BUNDLES[0] = "javadoc";
@@ -183,9 +194,9 @@ function initialize() {
 
 			if (useBouncer(lang_id) == 1) {
                 	    for(var i=0;i<ADDITIONAL_BUNDLES.length;i++) {
-			        var testFileName = get_file_name("zip", ADDITIONAL_BUNDLES[i], lang_id);
+			        var testFileName = get_file_name("zip", ADDITIONAL_BUNDLES[i], lang_id, bits_id);
 			            if(testFileName==filename) {
-				        url      = get_file_bouncer_url("zip", ADDITIONAL_BUNDLES[i], lang_id);
+				        url      = get_file_bouncer_url("zip", ADDITIONAL_BUNDLES[i], lang_id, bits_id);
 					break;
 				    }
                             }
@@ -214,20 +225,20 @@ function write_download_header() {
 }
 
 function useBouncer(lang_id) {
-        return get_build_info(isMainLanguage(lang_id)).USE_BOUNCER == 1; 
+        return get_build_info(isMainLanguage(lang_id)).USE_BOUNCER == 1;
 }
 
 function write_download_info() {
 	var size = getSize(filename,lang_id);
-	var md5 = getMD5(filename,lang_id);		
+	var md5 = getMD5(filename,lang_id);
 	var platform_display_name = getPlatformShortName(platform_id);
 	var lang_display_name     = getLanguageName(lang_id);
-        var option_display_name   = getBundleShortName(option_id);
+    var option_display_name   = getBundleShortName(option_id);
+    var short_name = get_file_name_short(platform_id,option_id,lang_id, bits_id);
 
-	
 	/* format size */
 	mb = Math.floor(size / (1024 * 1024));
-	mb_dec = Math.floor((size - (mb * 1024 * 1024))/ (1024 * 102));		
+	mb_dec = Math.floor((size - (mb * 1024 * 1024))/ (1024 * 102));
         size = mb + ((mb_dec>0) ? ('.' + mb_dec) : '');
 
 	document.write('<br>');
@@ -241,7 +252,7 @@ function write_download_info() {
 		 		replace('{2}', ((platform_id == 'zip') ? (platform_display_name) : (INSTALLER_MESSAGE.replace('{0}',platform_display_name)))).
 		 		replace('{3}', lang_display_name).
 		 		replace('{4}', lang_id).
-		 		replace('{5}', get_file_name_short(platform_id,option_id,lang_id)).
+		 		replace('{5}', short_name).
 				replace('{6}', size).
 		 		replace('{7}', md5);
     	} else if(filename!="") {

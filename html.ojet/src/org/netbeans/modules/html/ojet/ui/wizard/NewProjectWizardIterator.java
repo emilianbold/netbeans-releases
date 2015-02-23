@@ -151,9 +151,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         assert projectDirectory != null : "FileObject must be found for " + projectDir;
         files.add(projectDirectory);
 
-        CreateProjectProperties createProperties = new CreateProjectProperties()
-                .setProjectDir(projectDirectory)
-                .setProjectName((String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
+        CreateProjectProperties createProperties = new CreateProjectProperties(projectDirectory, (String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
                 .setSiteRootFolder(""); // NOI18N
         ClientSideProjectGenerator.createProject(createProperties);
 

@@ -45,7 +45,6 @@ import java.awt.event.InputEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -54,26 +53,28 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class DOMObjectsTest extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "createApplication",
+        "testNodeById",
+        "testAssignedNode",
+        "testNodeInFunction",
+        "testNodeInLiteral",
+        "testAttributes",
+        "testNodeList",
+        "testAttributes",
+        "testNamedNodeMap",
+        "testNamedNodeMapProperty",
+        "testDocument",
+        "testElement",
+        "testNodeByTagName"
+    };
+
     public DOMObjectsTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(DOMObjectsTest.class).addTest(
-                "createApplication",
-                "testNodeById",
-                "testAssignedNode",
-                "testNodeInFunction",
-                "testNodeInLiteral",
-                "testAttributes",
-                "testNodeList",
-                "testAttributes",
-                "testNamedNodeMap",
-                "testNamedNodeMapProperty",
-                "testDocument",
-                "testElement",
-                "testNodeByTagName").enableModules(".*").clusters(".*"));
+        return createModuleTest(DOMObjectsTest.class, tests);
     }
 
     public void createApplication() {

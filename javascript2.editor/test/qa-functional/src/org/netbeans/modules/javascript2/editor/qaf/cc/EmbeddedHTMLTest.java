@@ -45,7 +45,6 @@ import java.awt.event.InputEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -54,6 +53,17 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class EmbeddedHTMLTest extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "createApplication",
+        "testSimplePrototype",
+        "testObjectFunction",
+        "testObjectLiteral",
+        "testPrototypeInheritance",
+        "testAllCompletionMultipleFiles",
+        "testLearning",
+        "testDOMReferences",
+        "testSetterGetter"
+    };
     private static String originalContent;
 
     public EmbeddedHTMLTest(String args) {
@@ -61,17 +71,7 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(EmbeddedHTMLTest.class).addTest(
-                "createApplication",
-                "testSimplePrototype",
-                "testObjectFunction",
-                "testObjectLiteral",
-                "testPrototypeInheritance",
-                "testAllCompletionMultipleFiles",
-                "testLearning",
-                "testDOMReferences",
-                "testSetterGetter").enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(EmbeddedHTMLTest.class, tests);
     }
 
     public void createApplication() {

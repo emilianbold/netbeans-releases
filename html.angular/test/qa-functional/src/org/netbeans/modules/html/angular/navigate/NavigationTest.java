@@ -46,7 +46,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
@@ -55,22 +54,23 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  */
 public class NavigationTest extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testNavigationController",
+        "testNavigationExpression",
+        "testNavigationModel",
+        "testNavigationClick",
+        "testNavigationRepeat",
+        "testNavigationRepeat2",
+        "testNavigationExpression2"
+    };
+
     public NavigationTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(NavigationTest.class).addTest(
-                        "openProject",
-                        "testNavigationController",
-                        "testNavigationExpression",
-                        "testNavigationModel",
-                        "testNavigationClick",
-                        "testNavigationRepeat",
-                        "testNavigationRepeat2",
-                        "testNavigationExpression2"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(NavigationTest.class, tests);
     }
 
     public void openProject() throws Exception {

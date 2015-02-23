@@ -50,7 +50,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -59,21 +58,22 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class JQueryPluginTest extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testPluginObj",
+        "testPluginProp",
+        "testPluginNestedProp",
+        "testPluginObjectProp",
+        "testPluginCustomProp",
+        "testPluginObjectPropNested"
+    };
+
     public JQueryPluginTest(String arg0) {
         super(arg0);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(JQueryPluginTest.class).addTest(
-                        "openProject",
-                        "testPluginObj",
-                        "testPluginProp",
-                        "testPluginNestedProp",
-                        "testPluginObjectProp",
-                        "testPluginCustomProp",
-                        "testPluginObjectPropNested"
-                ).enableModules(".*").clusters(".*"));
+        return createModuleTest(JQueryPluginTest.class, tests);
     }
 
     public void openProject() throws Exception {

@@ -345,7 +345,7 @@ UnbufferedComment = "//-"
                                     }
     "\."{CssIdentifier}                {   return JadeTokenId.CSS_CLASS; }
     "("                             {   yybegin(HTML_ATTRIBUTE);
-                                        return JadeTokenId.BRACKET_RIGHT_PAREN;
+                                        return JadeTokenId.BRACKET_LEFT_PAREN;
                                     }
     ":"                             {   yybegin(AFTER_COLON_IN_TAG);
                                         return JadeTokenId.OPERATOR_COLON;
