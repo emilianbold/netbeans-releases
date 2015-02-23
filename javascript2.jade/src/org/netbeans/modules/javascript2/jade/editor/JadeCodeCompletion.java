@@ -283,6 +283,10 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         }
         
         Token<JadeTokenId> token = LexerUtils.followsToken(ts, JadeTokenId.TAG, true, false);
+        if (token == null) {
+            return null;
+        }
+        
         JadeTokenId id = token.id();
         
         String tagName = null;

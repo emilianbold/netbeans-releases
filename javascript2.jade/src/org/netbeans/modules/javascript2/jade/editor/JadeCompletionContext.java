@@ -59,14 +59,14 @@ public enum JadeCompletionContext {
     TAG,  // offer only html tags
     TAG_AND_KEYWORD, // tags and keywords
     ATTRIBUTE;   // html attributes
-    
-    private static final List<Object[]> START_LINE = Arrays.asList(
-        new Object[]{JadeTokenId.EOL},
-        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE},
-        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE, JadeTokenId.TAG}
-    );
-    
+        
     private static final List<Object[]> TAG_POSITON = Arrays.asList(
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
+        new Object[]{JadeTokenId.EOL, JadeTokenId.EOL},
+        new Object[]{JadeTokenId.EOL, JadeTokenId.TAG},
+        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE},    
+        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE, JadeTokenId.TAG},    
+        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON},    
         new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON},
         new Object[]{JadeTokenId.TAG, JadeTokenId.WHITESPACE},
         new Object[]{JadeTokenId.TAG, JadeTokenId.EOL},
@@ -77,8 +77,10 @@ public enum JadeCompletionContext {
     
     private static final List<Object[]> ATTRIBUTE_POSITION = Arrays.asList(
         new Object[]{JadeTokenId.ATTRIBUTE},
-        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
-        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE}
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL},
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE}, 
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL, JadeTokenId.WHITESPACE},
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE, JadeTokenId.EOL, JadeTokenId.WHITESPACE}    
     );
     
     
@@ -109,9 +111,9 @@ public enum JadeCompletionContext {
         if (!ts.moveNext()){
             return TAG_AND_KEYWORD;
         }
-               
-        if (acceptTokenChains(ts, START_LINE, true)) {
-            return TAG_AND_KEYWORD;
+        
+        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, false)) {
+            return ATTRIBUTE;
         }
         
         if (acceptTokenChains(ts, TAG_POSITON, false)) {
@@ -120,9 +122,7 @@ public enum JadeCompletionContext {
         
         
         
-        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, false)) {
-            return ATTRIBUTE;
-        }
+        
         
 //        if (acceptTokenChains(ts, ATTRIBUTE_POSITION_AFTER, true)) {
 //            return ATTRIBUTE;
