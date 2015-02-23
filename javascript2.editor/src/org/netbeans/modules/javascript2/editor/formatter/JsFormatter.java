@@ -997,12 +997,20 @@ public class JsFormatter implements Formatter {
         if (result == null
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
-                || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
                 || result.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
                 || result.getKind().isIndentationMarker()) {
             return false;
+        } else if (result.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
+            FormatToken nextNonWs = next;
+            while (nextNonWs != null
+                    && (nextNonWs.getKind() == FormatToken.Kind.WHITESPACE
+                    || nextNonWs.getKind() == FormatToken.Kind.EOL)) {
+                nextNonWs = nextNonWs.next();
+            }
+            return nextNonWs != null
+                    && nextNonWs.getKind() == FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT;
         }
 
         return !(JsTokenId.BRACKET_LEFT_CURLY == result.getId()
