@@ -28,6 +28,7 @@
                 <friend>org.netbeans.modules.glassfish.common</friend>
                 <friend>org.netbeans.modules.glassfish.eecommon</friend>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <package>org.netbeans.modules.glassfish.tooling</package>
                 <package>org.netbeans.modules.glassfish.tooling.data</package>
                 <package>org.netbeans.modules.glassfish.tooling.data.cloud</package>
