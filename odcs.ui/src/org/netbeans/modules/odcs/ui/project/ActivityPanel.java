@@ -54,6 +54,7 @@ import javax.swing.border.Border;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.project.activity.ActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.BuildActivityDisplayer;
+import org.netbeans.modules.odcs.ui.project.activity.RssActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.ScmActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.TaskActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.WikiActivityDisplayer;
@@ -83,6 +84,8 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable {
             activityAccessor = new ScmActivityDisplayer((ScmActivity) activity, projectHandle, tc.getProject().getScmUrl(), maxWidth);
         } else if (activity instanceof WikiActivity) {
             activityAccessor = new WikiActivityDisplayer((WikiActivity) activity, maxWidth);
+        } else if (activity instanceof RssActivity) {
+            activityAccessor = new RssActivityDisplayer((RssActivity) activity, maxWidth);
         }
         initComponents();
         lblIcon.setIcon(activityAccessor.getActivityIcon());

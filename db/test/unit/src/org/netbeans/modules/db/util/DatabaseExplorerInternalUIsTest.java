@@ -63,7 +63,13 @@ public class DatabaseExplorerInternalUIsTest extends TestBase {
     public DatabaseExplorerInternalUIsTest(String testName) {
         super(testName);
     }
-
+    
+    @Override
+    protected void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
+        super.setUp();
+    }
+    
     private void setUpDrivers() throws Exception {
         removeDrivers();
 

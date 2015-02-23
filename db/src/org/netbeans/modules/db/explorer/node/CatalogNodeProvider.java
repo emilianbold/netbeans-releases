@@ -79,13 +79,14 @@ public class CatalogNodeProvider extends NodeProvider implements PropertyChangeL
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public CatalogNodeProvider createInstance(Lookup lookup) {
                 CatalogNodeProvider provider = new CatalogNodeProvider(lookup);
                 return provider;
             }
         };
     }
-    private final List<Node> nodes = new ArrayList<Node>();
+    private final List<Node> nodes = new ArrayList<>();
     private final DatabaseConnection connection;
 
     private CatalogNodeProvider(Lookup lookup) {
@@ -95,11 +96,11 @@ public class CatalogNodeProvider extends NodeProvider implements PropertyChangeL
 
     @Override
     protected synchronized void initialize() {
-        final List<Node> newList = new ArrayList<Node>();
-        final List<Node> otherList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<>();
+        final List<Node> otherList = new ArrayList<>();
 
         MetadataModel metaDataModel = connection.getMetadataModel();
-        boolean isConnected = !connection.getConnector().isDisconnected();
+        boolean isConnected = connection.isConnected();
 
         nodes.clear();
 
@@ -172,10 +173,10 @@ public class CatalogNodeProvider extends NodeProvider implements PropertyChangeL
     @Override
     public void propertyChange(PropertyChangeEvent pce) {
         if (this.initialized && "importantCatalogs".equals(pce.getPropertyName())) { //NOI18N
-            final List<Node> mainList = new ArrayList<Node>();
-            final List<Node> otherList = new ArrayList<Node>();
+            final List<Node> mainList = new ArrayList<>();
+            final List<Node> otherList = new ArrayList<>();
 
-            for (Node node : new ArrayList<Node>(nodes)) {
+            for (Node node : new ArrayList<>(nodes)) {
                 if (connection.isImportantCatalog(node.getName())) {
                     mainList.add(node.cloneNode());
                 } else {
@@ -191,7 +192,7 @@ public class CatalogNodeProvider extends NodeProvider implements PropertyChangeL
         }
     }
 
-    static class CatalogComparator implements Comparator<Node> {
+    private static class CatalogComparator implements Comparator<Node> {
 
         @Override
         public int compare(Node node1, Node node2) {

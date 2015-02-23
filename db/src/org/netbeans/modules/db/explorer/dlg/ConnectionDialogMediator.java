@@ -62,11 +62,10 @@ public abstract class ConnectionDialogMediator {
     
     public static final String PROP_VALID = "valid"; // NOI18N
     
-    private final List<ConnectionProgressListener> connProgressListeners = new ArrayList<ConnectionProgressListener>();
+    private final List<ConnectionProgressListener> connProgressListeners = new ArrayList<>();
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     
     private boolean valid = true;
-    private boolean connected = false;
     
     public void addConnectionProgressListener(ConnectionProgressListener listener) {
         synchronized (connProgressListeners) {
@@ -136,20 +135,9 @@ public abstract class ConnectionDialogMediator {
     private Iterator<ConnectionProgressListener> connProgressListenersCopy() {
         List<ConnectionProgressListener> listenersCopy = null;
         synchronized (connProgressListeners) {
-            listenersCopy = new ArrayList<ConnectionProgressListener>(connProgressListeners);
+            listenersCopy = new ArrayList<>(connProgressListeners);
         }
         return listenersCopy.iterator();
-    }
-    
-    public void setConnected(boolean conn)
-    {
-        connected = conn;
-        propChangeSupport.firePropertyChange(PROP_VALID, null, null);
-    }
-    
-    public boolean isConnected()
-    {
-        return connected;
     }
     
     public void setValid(boolean valid) {

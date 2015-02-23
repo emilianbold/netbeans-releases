@@ -82,6 +82,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     
     @Override
     protected void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
         super.setUp();
         Util.clearConnections();
     }

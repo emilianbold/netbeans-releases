@@ -114,6 +114,10 @@ public final class TermExecutor {
             if (titledWindow != null)
                 titledWindow.setTitle(title);
         }
+
+        public void cwdChanged(String cwd) {
+            // ignore -- for now
+       }
     }
 
     private static void error(String fmt, Object...args) {

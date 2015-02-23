@@ -49,6 +49,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 
@@ -62,6 +63,7 @@ import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.explorer.dlg.AddConnectionWizard;
 import org.netbeans.modules.db.explorer.node.DriverNode;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -101,8 +103,6 @@ public class ConnectUsingDriverAction extends BaseAction {
         // the most recent task passed to the RequestProcessor
         Task activeTask = null;
 
-        private DatabaseConnection cinfo = null;
-        
         public void showDialog(String driverName, String driverClass) {
             showDialog(driverName, driverClass, null, null, null);
         }
@@ -119,30 +119,6 @@ public class ConnectUsingDriverAction extends BaseAction {
         }
 
         @Override
-        public void closeConnection()
-        {
-            if (cinfo != null)
-            {
-                Connection conn = cinfo.getConnection();
-                if (conn != null)
-                {
-                    try 
-                    {
-                        conn.close();
-                        cinfo.setConnection(null);
-                    } 
-                    catch (SQLException e) 
-                    {
-                        //unable to close db connection
-                        cinfo.setConnection(null);
-                    }
-                }
-            }
-            
-            setConnected(false);
-        }
-        
-        @Override
         protected Task retrieveSchemasAsync(final SchemaPanel schemaPanel, final DatabaseConnection dbcon, final String defaultSchema)
         {
             activeTask = super.retrieveSchemasAsync(schemaPanel, dbcon, defaultSchema);
@@ -155,7 +131,7 @@ public class ConnectUsingDriverAction extends BaseAction {
             fireConnectionStep(NbBundle.getMessage (ConnectUsingDriverAction.class, "ConnectionProgress_Schemas")); // NOI18N
             List<String> schemas = new ArrayList<String>();
             try {
-                DatabaseMetaData dbMetaData = dbcon.getConnection().getMetaData();
+                DatabaseMetaData dbMetaData = dbcon.getJDBCConnection().getMetaData();
                 if (dbMetaData.supportsSchemasInTableDefinitions()) {
                     ResultSet rs = dbMetaData.getSchemas();
                     if (rs != null) {

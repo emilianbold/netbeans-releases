@@ -91,7 +91,7 @@ public class IndexColumnNode extends BaseNode {
     }
 
     protected void initialize() {
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             try {

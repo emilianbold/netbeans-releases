@@ -73,7 +73,7 @@ public class CreateViewAction extends BaseAction {
         DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
 
         if (dbconn != null) {
-            enabled = DatabaseConnection.isVitalConnection(dbconn.getConnection(), dbconn);
+            enabled = dbconn.isVitalConnection();
         }
 
         return enabled;
@@ -106,7 +106,7 @@ public class CreateViewAction extends BaseAction {
             boolean viewsSupported = connection.getConnector().getDriverSpecification(schemaName).areViewsSupported();
             if (!viewsSupported) {
                 String message = NbBundle.getMessage (CreateViewAction.class, "MSG_ViewsAreNotSupported", // NOI18N
-                        connection.getConnection().getMetaData().getDatabaseProductName().trim());
+                        connection.getJDBCConnection().getMetaData().getDatabaseProductName().trim());
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }

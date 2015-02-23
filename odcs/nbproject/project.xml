@@ -36,6 +36,11 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>oracle.clouddev.server.profile.rsshandler.api</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>                
+                <dependency>
                     <code-name-base>org.apache.commons.httpclient</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>

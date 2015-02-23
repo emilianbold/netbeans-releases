@@ -78,7 +78,7 @@ public class DisconnectAction extends BaseAction {
             ConnectionNode node = lookup.lookup(ConnectionNode.class);
             if (node != null) {
                 DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                if (dbconn.getConnector().isDisconnected()) {
+                if (! dbconn.isConnected()) {
                     return false;
                 }
             } else {

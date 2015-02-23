@@ -61,7 +61,13 @@ public class DatabaseExplorerUIsTest extends TestBase {
     public DatabaseExplorerUIsTest(String testName) {
         super(testName);
     }
-
+    
+    @Override
+    protected void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
+        super.setUp();
+    }
+    
     private void clearConnections() throws Exception {
         DatabaseConnection[] connections = ConnectionManager.getDefault().getConnections();
         for (DatabaseConnection dc : connections) {
