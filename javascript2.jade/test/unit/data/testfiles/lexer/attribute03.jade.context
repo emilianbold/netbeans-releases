@@ -1,4 +1,4 @@
-[TAG_AND_KEYWORD]input[NONE](
+[TAG_AND_KEYWORD]input[ATTRIBUTE]([NONE]
 [TAG_AND_KEYWORD]  type[ATTRIBUTE]=[NONE]'checkbox'
   [ATTRIBUTE]name=[NONE]'agreement'
   [ATTRIBUTE]checked
