@@ -223,7 +223,7 @@ public class CommitCommand extends GitCommand {
         }
     }
     
-    private void parseLog(String output, GitRevCommit status) {
+    static void parseLog(String output, GitRevCommit status) {
         //#git log --raw --pretty=raw -1 4644eabd   
         //commit 4644eabd50d2b49b1631e9bc613818b2a9b8d87f
         //tree 9b2ab9e89b019b008f10a29762f05c38b05d8cdb
