@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect.sourcemap;
+package org.netbeans.modules.web.common.sourcemap;
 
 /**
  * Mapping of a source map.
