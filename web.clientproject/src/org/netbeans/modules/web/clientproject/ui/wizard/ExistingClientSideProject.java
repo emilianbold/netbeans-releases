@@ -77,8 +77,6 @@ public class ExistingClientSideProject extends JPanel {
     boolean fireChanges = true;
     // @GuardedBy("EDT")
     String lastSiteRoot = ""; // NOI18N
-    // @GuardedBy("EDT")
-    String lastProjectName = ""; // NOI18N
     volatile String testDir = null;
 
 
@@ -105,16 +103,7 @@ public class ExistingClientSideProject extends JPanel {
         // sources
         sourcesTextField.getDocument().addDocumentListener(defaultDocumentListener);
         // project name
-        projectNameTextField.getDocument().addDocumentListener(new DefaultDocumentListener(new Runnable() {
-            @Override
-            public void run() {
-                assert EventQueue.isDispatchThread();
-                fireChanges = false;
-                updateProjectDirectoryName();
-                lastProjectName = getProjectName();
-                fireChanges = true;
-            }
-        }));
+        projectNameTextField.getDocument().addDocumentListener(defaultDocumentListener);
         // project dir
         projectDirectoryTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
@@ -253,21 +242,6 @@ public class ExistingClientSideProject extends JPanel {
             return;
         }
         projectDirectoryTextField.setText(getSiteRoot());
-    }
-
-    void updateProjectDirectoryName() {
-        String projectDirectory = getProjectDirectory();
-        if (projectDirectory.equals(getSiteRoot())) {
-            // project directory is site root => do nothing
-            return;
-        }
-        if (!lastProjectName.isEmpty()
-                && !projectDirectory.equals(lastProjectName)
-                && projectDirectory.endsWith(lastProjectName)) {
-            // yes, project directory follows project name
-            String newProjDir = projectDirectory.substring(0, projectDirectory.length() - lastProjectName.length()) + getProjectName();
-            projectDirectoryTextField.setText(newProjDir);
-        }
     }
 
     void detectClientSideProject(String folder) {
