@@ -32,6 +32,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.json_simple</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -219,14 +228,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -240,6 +241,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -334,6 +343,7 @@
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.javascript.karma</friend>
                 <friend>org.netbeans.modules.javascript.nodejs</friend>
+                <friend>org.netbeans.modules.javascript.v8debug</friend>
                 <friend>org.netbeans.modules.javascript2.editor</friend>
                 <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
@@ -363,6 +373,7 @@
                 <friend>org.netbeans.modules.web.webkit.tooling</friend>
                 <package>org.netbeans.modules.web.common.api</package>
                 <package>org.netbeans.modules.web.common.refactoring</package>
+                <package>org.netbeans.modules.web.common.sourcemap</package>
                 <package>org.netbeans.modules.web.common.spi</package>
                 <package>org.netbeans.modules.web.common.taginfo</package>
             </friend-packages>

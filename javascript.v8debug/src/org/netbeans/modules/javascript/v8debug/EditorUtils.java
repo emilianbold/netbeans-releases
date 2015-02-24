@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
+import org.netbeans.modules.javascript.v8debug.sources.SourceMapsTranslator;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
@@ -63,6 +64,14 @@ public final class EditorUtils {
     private EditorUtils() {}
     
     public static Line getLine(FileObject fo, int line) {
+        SourceMapsTranslator smtr = SourceMapsTranslator.get(fo);
+        if (smtr != null) {
+            FileObject tfo = smtr.getTranslatedFile(line);
+            if (tfo != null) {
+                fo = tfo;
+            }
+            line = smtr.getTranslatedLine(line);
+        }
         LineCookie lineCookie = fo.getLookup().lookup(LineCookie.class);
         try {
             return lineCookie.getLineSet().getCurrent(line);
