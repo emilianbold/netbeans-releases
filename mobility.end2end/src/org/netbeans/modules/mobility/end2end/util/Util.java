@@ -105,7 +105,7 @@ public final class Util {
                 }
             }
         }
-        return groups.length >= 0 ? groups[0] : null;
+        return groups.length > 0 ? groups[0] : null;
     }
 
     public static Project openProject() {
