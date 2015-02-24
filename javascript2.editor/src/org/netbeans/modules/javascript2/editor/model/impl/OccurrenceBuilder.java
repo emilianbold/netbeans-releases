@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +49,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.hints.JSHintSupport;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -106,6 +108,13 @@ public class OccurrenceBuilder {
             }
         }
         holder.clear(); // we don't need to keep it anymore.
+        Collection<Identifier> usedInJsHintInline = JSHintSupport.getDefinedGlobal(parserResult.getSnapshot(), global.getOffset());
+        for (Identifier iden: usedInJsHintInline) {
+            JsObject object = global.getProperty(iden.getName());
+            if (object != null) {
+                object.addOccurrence(iden.getOffsetRange());
+            }
+        }
     }
 
     private void processOccurrence(JsObject global, String name, Item item) {

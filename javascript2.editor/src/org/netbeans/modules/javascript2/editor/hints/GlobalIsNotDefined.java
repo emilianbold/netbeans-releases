@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,17 +52,20 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -119,10 +123,13 @@ public class GlobalIsNotDefined extends JsAstRule {
             add = true;
         }
         if (add) {
+            List<HintFix> fixes;
+            fixes = new ArrayList<HintFix>();
+            fixes.add(new AddJsHintFix(context.getJsParserResult().getSnapshot(), offset, name));
             hints.add(new Hint(this, Bundle.JsGlobalIsNotDefinedHintDesc(name),
                     context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                     ModelUtils.documentOffsetRange(context.getJsParserResult(),
-                    range.getStart(), range.getEnd()), null, 500));
+                    range.getStart(), range.getEnd()), fixes, 500));
         }
     }
     
@@ -153,12 +160,57 @@ public class GlobalIsNotDefined extends JsAstRule {
 
     @Override
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
+        return HintSeverity.WARNING;
     }
    
     @Override
     public boolean getDefaultEnabled() {
         return true;
+    }
+    
+    private Collection<String> findJsHintGlobalDefinition(Snapshot snapshot) {
+        ArrayList<String> names = new ArrayList<String>();
+        Collection<Identifier> definedGlobal = JSHintSupport.getDefinedGlobal(snapshot, 0);
+        for (Identifier identifier: definedGlobal) {
+            names.add(identifier.getName());
+        }
+        return names;
+    }
+    
+    static class AddJsHintFix implements HintFix {
+
+        private final Snapshot snapshot;
+        private final String name;
+        private int offset;
+
+        public AddJsHintFix(final Snapshot snapshot, final int offset, final String name) {
+            this.snapshot = snapshot;
+            this.name = name;
+            this.offset = offset;
+        }
+        
+        
+        @Override
+        @NbBundle.Messages({"AddGlobalJsHint_Description=Generate JsHint global directive"})
+        public String getDescription() {
+            return Bundle.AddGlobalJsHint_Description();
+        }
+
+        @Override
+        public void implement() throws Exception {
+            JSHintSupport.addGlobalInline(snapshot, offset, name);
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+        
     }
     
 }
