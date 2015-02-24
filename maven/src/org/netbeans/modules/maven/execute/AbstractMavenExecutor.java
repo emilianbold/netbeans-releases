@@ -89,7 +89,6 @@ import org.openide.windows.OutputListener;
  * @author mkleint
  */
 public abstract class AbstractMavenExecutor extends OutputTabMaintainer<AbstractMavenExecutor.TabContext> implements MavenExecutor, Cancellable {
-
     public static final class TabContext {
         ReRunAction rerun;
         ReRunAction rerunDebug;
@@ -114,7 +113,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
     }
 
     protected RunConfig config;
-    private TabContext tabContext = new TabContext();
+    private TabContext tabContext;
     private List<String> messages = new ArrayList<String>();
     private List<OutputListener> listeners = new ArrayList<OutputListener>();
     protected ExecutorTask task;
@@ -123,9 +122,13 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
     
     
     protected AbstractMavenExecutor(RunConfig conf) {
+        this(conf, new TabContext());
+    }
+    
+    AbstractMavenExecutor(RunConfig conf, TabContext tc) {
         super(conf.getExecutionName());
         config = conf;
-
+        this.tabContext = tc == null ? new TabContext() : tc;
     }
 
 
@@ -163,6 +166,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
     protected final void actionStatesAtStart() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
+                createNewTabActions();
                 tabContext.rerun.setEnabled(false);
                 tabContext.rerunDebug.setEnabled(false);
                 tabContext.overview.setRoot(null);
@@ -179,6 +183,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
     protected final void actionStatesAtFinish(final @NullAllowed ResumeFromFinder resumeFromFinder, final @NullAllowed ExecutionEventObject.Tree root) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
+                createNewTabActions();
                 tabContext.rerun.setEnabled(true);
                 tabContext.rerunDebug.setEnabled(true);
                 tabContext.resume.setFinder(resumeFromFinder);
@@ -206,16 +211,18 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
     }
 
     @Override protected Action[] createNewTabActions() {
+        if (tabContext.rerun == null) {
         tabContext.rerun = new ReRunAction(false);
         tabContext.rerunDebug = new ReRunAction(true);
         tabContext.resume = new ResumeAction();
         tabContext.stop = new StopAction();
         tabContext.options = new OptionsAction();
         tabContext.overview = new ShowOverviewAction();
-        tabContext.overview.setExecutor((MavenCommandLineExecutor) this);
+        }
         tabContext.rerun.setConfig(config);
         tabContext.rerunDebug.setConfig(config);
         tabContext.resume.setConfig(config);
+        tabContext.overview.setExecutor((MavenCommandLineExecutor) this);
         tabContext.stop.setExecutor(this);
         return new Action[] {
             tabContext.rerun,
@@ -227,7 +234,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         };
     }
 
-    static class ReRunAction extends AbstractAction {
+    class ReRunAction extends AbstractAction {
 
         private RunConfig config;
         private boolean debug;
@@ -255,20 +262,26 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
 
         @Messages("TIT_Run_maven=Run Maven")
         @Override public void actionPerformed(ActionEvent e) {
+            BeanRunConfig newConfig = new BeanRunConfig(config);
             if (debug) {
                 RunGoalsPanel pnl = new RunGoalsPanel();
                 DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Run_maven());
                 pnl.readConfig(config);
                 Object retValue = DialogDisplayer.getDefault().notify(dd);
                 if (retValue == DialogDescriptor.OK_OPTION) {
-                    BeanRunConfig newConfig = new BeanRunConfig(config);
                     pnl.applyValues(newConfig);
-                    RunUtils.executeMaven(newConfig);
-                }
             } else {
-                RunConfig newConfig = new BeanRunConfig(config);
-                RunUtils.executeMaven(newConfig);
+                    return;
             }
+            }
+            actionStatesAtStart();
+            InputOutput inputOutput = getInputOutput();
+            try {
+                inputOutput.getOut().reset();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            MavenCommandLineExecutor.executeMaven(newConfig, inputOutput, tabContext);
         //TODO the waiting on tasks won't work..
         }
     }

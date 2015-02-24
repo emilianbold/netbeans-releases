@@ -65,6 +65,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.AbstractAction;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -94,9 +95,14 @@ import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
+import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
+import org.openide.LifecycleManager;
 import org.openide.awt.HtmlBrowser;
+import org.openide.execution.ExecutionEngine;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -104,6 +110,8 @@ import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColors;
@@ -130,9 +138,49 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     
     private static final RequestProcessor RP = new RequestProcessor(MavenCommandLineExecutor.class.getName(),1);
     
-    @SuppressWarnings("LeakingThisInConstructor")
-    public MavenCommandLineExecutor(RunConfig conf) {
-        super(conf);       
+    private final static RequestProcessor UPDATE_INDEX_RP = new RequestProcessor(RunUtils.class.getName(), 5);
+    /**
+     * Execute maven build in NetBeans execution engine.
+     * Most callers should rather use {@link #run} as this variant does no (non-late-bound) prerequisite checks.
+     * It is mostly suitable for cases where you need full control by the caller over the config, or want to rerun a previous execution.
+     * @param config
+     * @param io <code>null</code> or InputOutput to reuse for output of the execution
+     * @param tc tab context to use or <code>null</code>
+     * @return
+     * @since 2.113
+     */
+    public static ExecutorTask executeMaven(final RunConfig config, InputOutput io, TabContext tc) {
+        LifecycleManager.getDefault().saveAll();
+        MavenExecutor exec = new MavenCommandLineExecutor(config, io, tc);
+        ExecutorTask task =  ExecutionEngine.getDefault().execute(config.getTaskDisplayName(), exec, new ProxyNonSelectableInputOutput(exec.getInputOutput()));
+        exec.setTask(task);
+        task.addTaskListener(new TaskListener() {
+            @Override
+            public void taskFinished(Task t) {
+                MavenProject mp = config.getMavenProject();
+                if (mp == null) {
+                    return;
+    }
+                final List<Artifact> arts = new ArrayList<Artifact>();
+                Artifact main = mp.getArtifact();
+                if (main != null) {
+                    arts.add(main);
+                }
+                arts.addAll(mp.getArtifacts());
+                UPDATE_INDEX_RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), arts);
+                    }
+                });
+            }
+        });
+        return task;
+    }
+    
+    public MavenCommandLineExecutor(RunConfig conf, InputOutput io, TabContext tc) {
+        super(conf, tc);
+        this.io = io;
     }
     
     /**
