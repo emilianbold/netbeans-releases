@@ -141,7 +141,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
 
         FileObject siteRoot = project.getProjectDirectory().getFileObject(props.getSiteRootFolder());
         assert siteRoot != null;
-        FileObject startFile = siteRoot.getFileObject(getStartFile());
+        FileObject startFile = siteRoot.getFileObject(props.getStartFile());
         if (startFile != null) {
             files.add(startFile);
         }
@@ -153,10 +153,6 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
 
         handle.finish();
         return files;
-    }
-
-    protected String getStartFile() {
-        return "index.html";
     }
 
     @NbBundle.Messages({

@@ -139,7 +139,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.existingProject.displayName",
             description="../resources/ExistingClientSideProjectDescription.html",
-            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
+            iconBase=NEW_HTML5_PROJECT_ICON,
             position=300)
     @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5/JS Application with Existing Sources")
     public static ClientSideProjectWizardIterator existingHtml5Project() {

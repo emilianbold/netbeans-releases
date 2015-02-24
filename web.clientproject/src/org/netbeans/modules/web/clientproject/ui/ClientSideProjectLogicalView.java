@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.web.clientproject.ui;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
-import java.io.FileFilter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +55,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -66,10 +65,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
@@ -93,9 +92,6 @@ import org.openide.actions.ToolsAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -535,21 +531,21 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         return JsTestingProviders.getDefault().createJsTestingProvidersNodeFactory();
     }
 
-    private static class ClientProjectNodeList implements NodeList<Key> {
+    private static class ClientProjectNodeList implements NodeList<Key>, ChangeListener {
 
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final ClientSideProject project;
         private final FileObject nbprojectFolder;
-        private final Listener listener;
-        // @GuardedBy(this)
-        private final List<Key> keysCache = new ArrayList<>();
+        private final Sources projectSources;
+        private final ChangeListener changeListener;
 
 
-        public ClientProjectNodeList(ClientSideProject p) {
+        private ClientProjectNodeList(ClientSideProject p) {
             this.project = p;
             nbprojectFolder = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
             assert nbprojectFolder != null : "Folder nbproject must exist for project " + project.getName();
-            listener = new Listener();
+            projectSources = ProjectUtils.getSources(p);
+            changeListener = WeakListeners.change(this, projectSources);
         }
 
         @Override
@@ -565,171 +561,48 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         @Override
         public void addNotify() {
             // #230378 - use weak listeners otherwise project is not garbage collected
-            project.getEvaluator().addPropertyChangeListener(
-                    WeakListeners.propertyChange(listener, project.getEvaluator()));
-            addFsListeners();
+            projectSources.addChangeListener(changeListener);
         }
 
         @Override
         public void removeNotify() {
-            // #230378 - weak listeners are used so no need to call "removeListener"
+            // #230378 - weak listeners are used so in fact, no need to call "removeListener"
+            projectSources.removeChangeListener(changeListener);
         }
 
-        private void addFsListeners() {
-            FileObject projectDirectory = project.getProjectDirectory();
-            FileUtil.addRecursiveListener(listener, FileUtil.toFile(projectDirectory), new FileFilter() {
-                @Override
-                public boolean accept(File pathname) {
-                    // #249908
-                    if ("node_modules".equals(pathname.getName())) { // NOI18N
-                        return false;
-                    }
-                    return true;
-                }
-            }, null);
-            addTestsListener();
-            addTestsSeleniumListener();
-        }
-
-        private void addTestsListener() {
-            FileObject projectDirectory = project.getProjectDirectory();
-            FileObject testsFolder = project.getTestsFolder(false);
-            if (testsFolder != null
-                    && !ClientSideProjectUtilities.isParentOrItself(projectDirectory, testsFolder)) {
-                testsFolder.addRecursiveListener(
-                        WeakListeners.create(FileChangeListener.class, listener, testsFolder));
-            }
-        }
-
-        private void addTestsSeleniumListener() {
-            FileObject projectDirectory = project.getProjectDirectory();
-            FileObject testsFolder = project.getTestsSeleniumFolder(false);
-            if (testsFolder != null
-                    && !ClientSideProjectUtilities.isParentOrItself(projectDirectory, testsFolder)) {
-                testsFolder.addRecursiveListener(
-                        WeakListeners.create(FileChangeListener.class, listener, testsFolder));
-            }
-        }
-
-        private class Listener extends FileChangeAdapter implements PropertyChangeListener {
-
-            private volatile boolean sourcesNodeHidden;
-            private volatile boolean siteRootNodeHidden;
-            private volatile boolean sourcesAndSiteRootNodeHidden;
-            private volatile boolean testsNodeHidden;
-            private volatile boolean testsSeleniumNodeHidden;
-
-            public Listener() {
-                sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
-                siteRootNodeHidden = isNodeHidden(BasicNodes.SiteRoot);
-                sourcesAndSiteRootNodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
-                testsNodeHidden = isNodeHidden(BasicNodes.Tests);
-                testsSeleniumNodeHidden = isNodeHidden(BasicNodes.TestsSelenium);
-            }
-
-            @Override
-            public void fileFolderCreated(FileEvent fe) {
-                updateNodesVisibility();
-            }
-
-            @Override
-            public void fileDataCreated(FileEvent fe) {
-                updateNodesVisibility();
-            }
-
-
-            @Override
-            public void fileDeleted(FileEvent fe) {
-                updateNodesVisibility();
-            }
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (ClientSideProjectConstants.PROJECT_SOURCE_FOLDER.equals(evt.getPropertyName())) {
-                    sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
-                    sourcesAndSiteRootNodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
-                    refreshKey(BasicNodes.Sources);
-                    refreshKey(BasicNodes.SourcesAndSiteRoot);
-                } else if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
-                    siteRootNodeHidden = isNodeHidden(BasicNodes.SiteRoot);
-                    sourcesAndSiteRootNodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
-                    refreshKey(BasicNodes.SiteRoot);
-                    refreshKey(BasicNodes.SourcesAndSiteRoot);
-                } else if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
-                    testsNodeHidden = isNodeHidden(BasicNodes.Tests);
-                    refreshKey(BasicNodes.Tests);
-                    addTestsListener();
-                } else if (ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER.equals(evt.getPropertyName())) {
-                    testsSeleniumNodeHidden = isNodeHidden(BasicNodes.TestsSelenium);
-                    refreshKey(BasicNodes.TestsSelenium);
-                    addTestsListener();
-                }
-            }
-
-            private void updateNodesVisibility() {
-                boolean nodeHidden = isNodeHidden(BasicNodes.Sources);
-                if (nodeHidden != sourcesNodeHidden) {
-                    sourcesNodeHidden = nodeHidden;
-                    refreshKey(BasicNodes.Sources);
-                }
-                nodeHidden = isNodeHidden(BasicNodes.SiteRoot);
-                if (nodeHidden != siteRootNodeHidden) {
-                    siteRootNodeHidden = nodeHidden;
-                    refreshKey(BasicNodes.SiteRoot);
-                }
-                nodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
-                if (nodeHidden != sourcesAndSiteRootNodeHidden) {
-                    sourcesAndSiteRootNodeHidden = nodeHidden;
-                    refreshKey(BasicNodes.SourcesAndSiteRoot);
-                }
-                nodeHidden = isNodeHidden(BasicNodes.Tests);
-                if (nodeHidden != testsNodeHidden) {
-                    testsNodeHidden = nodeHidden;
-                    refreshKey(BasicNodes.Tests);
-                }
-                nodeHidden = isNodeHidden(BasicNodes.TestsSelenium);
-                if (nodeHidden != testsSeleniumNodeHidden) {
-                    testsSeleniumNodeHidden = nodeHidden;
-                    refreshKey(BasicNodes.TestsSelenium);
-            }
-            }
-
-        }
-
-        private void refreshKey(final BasicNodes type) {
-            // force key refresh:
-            removeKey(type);
+        void fireChange() {
             changeSupport.fireChange();
         }
 
-        private synchronized void removeKey(final BasicNodes type) {
-            assert Thread.holdsLock(this);
-            for (int i = 0; i < keysCache.size(); i++) {
-                if (type.equals(keysCache.get(i).getNode())) {
-                    keysCache.remove(i);
-                    break;
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    fireChange();
                 }
-            }
+            });
         }
 
         @Override
-        public Node node(Key k) {
-            switch (k.getNode()) {
+        public Node node(Key key) {
+            BasicNodes node = key.getNode();
+            switch (node) {
                 case Sources:
                 case SiteRoot:
                 case SourcesAndSiteRoot:
                 case Tests:
                 case TestsSelenium:
-                    return createNodeForFolder(k.getNode());
+                    return createNodeForFolder(key);
                 default:
-                    assert false : "Unknown node type: " + k.getNode();
+                    assert false : "Unknown node type: " + node;
                     return null;
             }
         }
 
         // #218736
         private List<File> getIgnoredFiles(BasicNodes basicNodes) {
-            List<File> ignoredFiles = new ArrayList<File>();
+            List<File> ignoredFiles = new ArrayList<>();
             FileObject buildFolder = project.getProjectDirectory().getFileObject("build"); // NOI18N
             switch (basicNodes) {
                 case Sources:
@@ -754,13 +627,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             if (file != null) {
                 ignoredFiles.add(file);
             }
-        }
-
-        private boolean isNodeHidden(BasicNodes type) {
-            FileObject root = getRootForNode(type);
-            return root == null
-                    || !root.isValid()
-                    || root.getChildren().length == 0;
         }
 
         private FileObject getRootForNode(BasicNodes node) {
@@ -802,65 +668,26 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
         }
 
-        // the same logic as createNodeForFolder() bellow but prevents calling
-        // getNodeDelegate() from background thread (see eg. issue 230580)
-        private boolean canCreateNodeFor(BasicNodes type) {
-            FileObject root = getRootForNode(type);
-            if (root != null && root.isValid()) {
-                if (!isNodeHidden(type)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private Node createNodeForFolder(BasicNodes type) {
-            FileObject root = getRootForNode(type);
-            if (root != null && root.isValid()) {
-                DataFolder df = DataFolder.findFolder(root);
-                if (!isNodeHidden(type)) {
-                    return new FolderFilterNode(type, df.getNodeDelegate().cloneNode(), getIgnoredFiles(type));
-                }
-            }
-            // missing root should be solved by project problems
-            return null;
+        private Node createNodeForFolder(Key key) {
+            BasicNodes node = key.getNode();
+            FileObject root = key.getRoot();
+            assert root != null;
+            assert root.isValid() : root;
+            DataFolder df = DataFolder.findFolder(root);
+            return new FolderFilterNode(node, df.getNodeDelegate().cloneNode(), getIgnoredFiles(node));
         }
 
         @Override
         public List<Key> keys() {
-            // in order to resolve #225877 the only way to refresh a node in NodeList
-            // is to add it or remove it. There is nothing like Children.Keys.refreshKey(...).
-            // Hence I have to create a new key instance here as a workaround:
-            ArrayList<Key> keys = new ArrayList<>();
-            if (canCreateNodeFor(BasicNodes.Sources)) {
-                keys.add(getKey(BasicNodes.Sources));
-            }
-            if (canCreateNodeFor(BasicNodes.SiteRoot)) {
-                keys.add(getKey(BasicNodes.SiteRoot));
-            }
-            if (canCreateNodeFor(BasicNodes.SourcesAndSiteRoot)) {
-                assert keys.isEmpty() : keys;
-                keys.add(getKey(BasicNodes.SourcesAndSiteRoot));
-            }
-            if (canCreateNodeFor(BasicNodes.Tests)) {
-                keys.add(getKey(BasicNodes.Tests));
-            }
-            if (canCreateNodeFor(BasicNodes.TestsSelenium)) {
-                keys.add(getKey(BasicNodes.TestsSelenium));
-            }
-            return keys;
-        }
-
-        private synchronized Key getKey(BasicNodes n) {
-            assert Thread.holdsLock(this);
-            for (Key k : keysCache) {
-                if (n.equals(k.getNode())) {
-                    return k;
+            BasicNodes[] allNodes = BasicNodes.values();
+            ArrayList<Key> keys = new ArrayList<>(allNodes.length);
+            for (BasicNodes node : allNodes) {
+                FileObject root = getRootForNode(node);
+                if (root != null && root.isValid()) {
+                    keys.add(new Key(node, root));
                 }
             }
-            Key k = new Key(n);
-            keysCache.add(k);
-            return k;
+            return keys;
         }
 
     }
@@ -872,26 +699,31 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
      */
     private static class Key {
 
-        private static final AtomicInteger counter = new AtomicInteger();
-
         private final BasicNodes node;
-        private final int timestamp;
+        private final FileObject root;
 
 
-        public Key(BasicNodes node) {
+        public Key(BasicNodes node, FileObject root) {
+            assert node != null;
+            assert root != null;
             this.node = node;
-            this.timestamp = counter.incrementAndGet();
+            this.root = root;
         }
+
 
         public BasicNodes getNode() {
             return node;
         }
 
+        public FileObject getRoot() {
+            return root;
+        }
+
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 67 * hash + (this.node != null ? this.node.hashCode() : 0);
-            hash += this.timestamp * 67;
+            hash = 89 * hash + Objects.hashCode(this.node);
+            hash = 89 * hash + Objects.hashCode(this.root);
             return hash;
         }
 
@@ -907,15 +739,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             if (this.node != other.node) {
                 return false;
             }
-            if (this.timestamp != other.timestamp) {
+            if (!Objects.equals(this.root, other.root)) {
                 return false;
             }
             return true;
-        }
-
-        @Override
-        public String toString() {
-            return "Key{" + "node=" + node + ", timestamp=" + timestamp + ", hash="+ hashCode()+"}";
         }
 
     }

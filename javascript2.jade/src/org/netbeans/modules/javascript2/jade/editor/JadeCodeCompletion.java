@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.javascript2.jade.editor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +58,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler2;
@@ -66,6 +70,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
@@ -73,10 +78,11 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import static org.netbeans.modules.javascript2.jade.editor.JadeCompletionContext.ATTRIBUTE;
-import static org.netbeans.modules.javascript2.jade.editor.JadeCompletionContext.NONE;
 import static org.netbeans.modules.javascript2.jade.editor.JadeCompletionContext.TAG_AND_KEYWORD;
 import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -87,6 +93,9 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
     private static final Logger LOGGER = Logger.getLogger(JadeCodeCompletion.class.getName());
     
     private boolean caseSensitive;
+    
+    private static String CSS_ID_PREFIX = "#";
+    private static String CSS_CLASS_PREFIX = ".";
     
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
@@ -108,6 +117,13 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
                 break;
             case ATTRIBUTE:
                 completeAttributes(request, resultList);
+                break;
+            case CSS_ID:
+                completeTagIds(request, resultList);
+                break;
+            case CSS_CLASS:
+                completeCSSClasses(request, resultList);
+                break;  
         }
         if (!resultList.isEmpty()) {
             return new DefaultCompletionResult(resultList, false);
@@ -225,7 +241,7 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
     }
     
     private void completeAttributes(JadeCompletionItem.CompletionRequest request, List<CompletionProposal> resultList) {
-        Collection<HtmlTagAttribute> resultAttrs = Collections.<HtmlTagAttribute>emptyList();
+        Collection<HtmlTagAttribute> resultAttrs;
         HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         String tagName = findTag(request);
         String prefix = request.prefix == null ? "" : request.prefix;
@@ -242,7 +258,7 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
                 if (tagName.isEmpty() || htmlTag.getTagClass() == HtmlTagType.UNKNOWN) {
                     attributes = getAllAttributes(htmlModel);
                 }
-                resultAttrs = new ArrayList<HtmlTagAttribute>();
+                resultAttrs = new ArrayList<>();
                 for (HtmlTagAttribute htmlTagAttribute : attributes) {
                     if(htmlTagAttribute.getName().startsWith(prefix)) {
                         resultAttrs.add(htmlTagAttribute);
@@ -254,6 +270,57 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         }
         for (HtmlTagAttribute attribute: resultAttrs) {
             resultList.add(JadeCompletionItem.create(request, attribute));
+        }
+    }
+    
+    private void completeTagIds(JadeCompletionItem.CompletionRequest request, List<CompletionProposal> resultList) {
+        FileObject fo = request.parserResult.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return;
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        HashSet<String> unique = new HashSet<>();
+        String prefix = request.prefix == null ? "" : request.prefix;
+        try {
+            CssIndex cssIndex = CssIndex.create(project);
+            Map<FileObject, Collection<String>> findIdsByPrefix = cssIndex.findIdsByPrefix(prefix);
+
+            for (Collection<String> ids : findIdsByPrefix.values()) {
+                for (String id : ids) {
+                    unique.add(id);
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        for(String className: unique) {
+            resultList.add(JadeCompletionItem.createCssItem(request, CSS_ID_PREFIX + className));
+        }
+    }
+    
+    private void completeCSSClasses(JadeCompletionItem.CompletionRequest request, List<CompletionProposal> resultList) {
+        FileObject fo = request.parserResult.getSnapshot().getSource().getFileObject();
+        if(fo == null) {
+            return;
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        HashSet<String> unique = new HashSet<>();
+        String prefix = request.prefix == null ? "" : request.prefix;
+        try {
+            CssIndex cssIndex = CssIndex.create(project);
+            Map<FileObject, Collection<String>> findIdsByPrefix = cssIndex.findClassesByPrefix(prefix);
+
+            for (Collection<String> ids : findIdsByPrefix.values()) {
+                for (String id : ids) {
+                    unique.add(id);
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        for(String className: unique) {
+            resultList.add(JadeCompletionItem.createCssItem(request, CSS_CLASS_PREFIX + className));
         }
     }
     

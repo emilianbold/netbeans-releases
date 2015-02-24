@@ -42,19 +42,27 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.GitObjectType;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
  * @author ondra
  */
 public class GetPreviousCommitCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final String revision;
     private GitRevisionInfo previousRevision;
     private final VCSFileProxy file;
@@ -69,38 +77,21 @@ public class GetPreviousCommitCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-//        Repository repository = getRepository().getRepository();
-//        RevWalk walk = null;
-//        try {
-//            RevCommit rev = Utils.findCommit(repository, revision);
-//            if (rev.getParentCount() == 1) {
-//                walk = new RevWalk(repository);
-//                walk.markStart(walk.parseCommit(rev.getParent(0)));
-//                String path = Utils.getRelativePath(getRepository().getLocation(), file);
-//                if (path != null && !path.isEmpty()) {
-//                    walk.setTreeFilter(FollowFilter.create(path, repository.getConfig().get(DiffConfig.KEY)));
-//                }
-//                walk.setRevFilter(AndRevFilter.create(new RevFilter[] { new CancelRevFilter(monitor), MaxCountRevFilter.create(1) }));
-//                Iterator<RevCommit> it = walk.iterator();
-//                if (it.hasNext()) {
-//                    previousRevision = getClassFactory().createRevisionInfo(new RevWalk(repository).parseCommit(it.next()), getRepository());
-//                }
-//            }
-//        } catch (MissingObjectException ex) {
-//            throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        } finally {
-//            if (walk != null) {
-//                walk.release();
-//            }
-//        }
+        if (KIT) {
+            //runKit();
+        } else {
+            runCLI();
+        }
     }
-    
+
     @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "log"); //NOI18N
+        addArgument(0, "--raw"); //NOI18N
+        addArgument(0, "--pretty=raw"); //NOI18N
+        addArgument(0, "--full-diff");
+        addArgument(0, "-2");
         addArgument(0, revision);
         addArgument(0, "--"); //NOI18N
         addArgument(0, Utils.getRelativePath(getRepository().getLocation(), file));
@@ -108,5 +99,71 @@ public class GetPreviousCommitCommand extends GitCommand {
 
     public GitRevisionInfo getRevision () {
         return previousRevision;
+    }
+    
+    private void runCLI() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        String cmd = getCommandLine();
+        try {
+            LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses = new LinkedHashMap<String, GitRevisionInfo.GitRevCommit>();
+            runner(canceled, 0, statuses, new Parser() {
+
+                @Override
+                public void outputParser(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
+                    LogCommand.parseLog(output, statuses);
+                }
+
+                @Override
+                public void errorParser(String error) throws GitException.MissingObjectException {
+                    for (String msg : error.split("\n")) { //NOI18N
+                        if (msg.startsWith("fatal: Invalid object")) {
+                            throw new GitException.MissingObjectException(GitConstants.HEAD ,GitObjectType.COMMIT);
+                        }
+                    }
+                }
+
+            });
+            if (statuses.size() == 2) {
+                Iterator<GitRevisionInfo.GitRevCommit> iterator = statuses.values().iterator();
+                iterator.next();
+                previousRevision = getClassFactory().createRevisionInfo(iterator.next(), getRepository());
+            }
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+    
+    private void runner(ProcessUtils.Canceler canceled, int command, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses, Parser parser) throws IOException, GitException.MissingObjectException {
+        if(canceled.canceled()) {
+            return;
+        }
+        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+        String executable = getExecutable();
+        String[] args = getCliArguments(command);
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
+        if(canceled.canceled()) {
+            return;
+        }
+        if (exitStatus.error != null && !exitStatus.isOK()) {            
+            parser.errorParser(exitStatus.error);
+        }
+        if (exitStatus.output!= null && exitStatus.isOK()) {
+            parser.outputParser(exitStatus.output, statuses);
+        }
+    }
+
+    private abstract class Parser {
+        public abstract void outputParser(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) throws IOException;
+        public void errorParser(String error) throws GitException.MissingObjectException {
+        }
     }
 }
