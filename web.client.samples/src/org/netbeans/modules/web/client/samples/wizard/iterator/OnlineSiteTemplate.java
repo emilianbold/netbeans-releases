@@ -83,7 +83,8 @@ public class OnlineSiteTemplate {
 
     public void configure(CreateProjectProperties projectProperties) {
         projectProperties.setSiteRootFolder("public_html") // NOI18N
-                .setTestFolder("test"); // NOI18N
+                .setTestFolder("test") // NOI18N
+                .setStartFile("index.html"); // NOI18N
     }
 
     public final void apply(FileObject projectDir, CreateProjectProperties projectProperties, ProgressHandle handle) throws IOException {
