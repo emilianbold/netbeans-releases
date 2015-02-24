@@ -643,12 +643,10 @@ public class ElementJavadoc {
                             } else {
                                 List<Tag> tags = new ArrayList<Tag>();
                                 for(Tag tag : returnTags) {
-                                    for(Tag t : tag.inlineTags()) {
-                                        if (INHERIT_DOC_TAG.equals(t.kind()))
-                                            tags.addAll(inheritedReturnTags);
-                                        else
-                                            tags.add(t);
-                                    }
+                                    if (INHERIT_DOC_TAG.equals(tag.kind()))
+                                        tags.addAll(inheritedReturnTags);
+                                    else
+                                        tags.add(tag);
                                 }
                                 returnTags = tags.toArray(new Tag[tags.size()]);
                             }
@@ -701,7 +699,12 @@ public class ElementJavadoc {
                                     throwsInlineTags.put(entry.getKey(), tags);
                             }
                         }
-                        if (inlineTags.length > 0 || doc.tags().length > 0) {
+                        if (inlineTags.length > 0 ||
+                            doc.tags().length > 0 ||
+                            returnTags.length > 0 ||
+                            (paramTags != null && !paramTags.isEmpty()) ||
+                            !throwsTags.isEmpty() ||
+                            !throwsInlineTags.isEmpty()) {
                             sb.append(getDeprecatedTag(doc, ctx));
                             sb.append(inlineTags(doc, inlineTags, ctx));
                             sb.append("<p>"); //NOI18N
