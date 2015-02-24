@@ -42,14 +42,12 @@
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.DatabaseException;
 
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 
@@ -63,7 +61,6 @@ import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.explorer.dlg.AddConnectionWizard;
 import org.netbeans.modules.db.explorer.node.DriverNode;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -94,7 +91,7 @@ public class ConnectUsingDriverAction extends BaseAction {
         
         if (node != null) {
             JDBCDriver driver = node.getDatabaseDriver().getJDBCDriver();
-            new NewConnectionDialogDisplayer().showDialog(driver.getName(), driver.getClassName());
+            new NewConnectionDialogDisplayer().showDialog(driver, null, null, null);
         }
     }
     
@@ -103,19 +100,8 @@ public class ConnectUsingDriverAction extends BaseAction {
         // the most recent task passed to the RequestProcessor
         Task activeTask = null;
 
-        public void showDialog(String driverName, String driverClass) {
-            showDialog(driverName, driverClass, null, null, null);
-        }
-        
         public DatabaseConnection showDialog(JDBCDriver driver, String databaseUrl, String user, String password) {
-            String driverName = (driver != null) ? driver.getName() : null;
-            String driverClass = (driver != null) ? driver.getClassName() : null;
-            return showDialog(driverName, driverClass, databaseUrl, user, password);
-        }
-        
-        private DatabaseConnection showDialog(String driverName, String driverClass, String databaseUrl, String user, String password) {
-            AddConnectionWizard.showWizard(driverName, driverClass, databaseUrl, user, password);
-            return null;
+            return AddConnectionWizard.showWizard(driver, databaseUrl, user, password);
         }
 
         @Override
