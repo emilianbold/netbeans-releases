@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,6 +94,18 @@ public final class Git {
     private GitVCS gitVCS;
     private Result<? extends VCSHyperlinkProvider> hpResult;
     private HistoryProvider historyProvider;
+    private static final List<String> allowableFolders;
+    static {
+        List<String> files = new ArrayList<String>();
+        try {
+            String allowable = System.getProperty("versioning.git.allowableFolders", "/"); //NOI18N
+            files.addAll(Arrays.asList(allowable.split("\\;"))); //NOI18N
+            files.remove(""); //NOI18N
+        } catch (Exception e) {
+            LOG.log(Level.INFO, e.getMessage(), e);
+        }
+        allowableFolders = files;
+    }
     
     private Git () {}
 
@@ -295,6 +308,12 @@ public final class Git {
     private final Set<VCSFileProxy> unversionedParents = Collections.synchronizedSet(new HashSet<VCSFileProxy>(20));
 
     public VCSFileProxy getTopmostManagedAncestor (VCSFileProxy file) {
+        if (file.toFile() != null) {
+            return null;
+        }
+        if (!isAllowable(file)) {
+            return null;
+        }
         long t = System.currentTimeMillis();
         LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
@@ -416,5 +435,21 @@ public final class Git {
             historyProvider = new HistoryProvider();
         }
         return historyProvider;
+    }
+
+    private boolean isAllowable(VCSFileProxy file) {
+        String path = file.getPath()+"/"; //NOI18N
+        for(String s : allowableFolders) {
+            if (s.endsWith("/")) { //NOI18N
+                if (path.startsWith(s)) {
+                    return true;
+                }
+            } else {
+                if (path.startsWith(s+"/")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
