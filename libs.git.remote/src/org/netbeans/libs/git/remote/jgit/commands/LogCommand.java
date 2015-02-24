@@ -125,8 +125,12 @@ public class LogCommand extends GitCommand {
         addArgument(0, "log"); //NOI18N
         addArgument(0, "--raw"); //NOI18N
         addArgument(0, "--pretty=raw"); //NOI18N
+        boolean isFollow = false;
         if (criteria != null && criteria.isFollow() && criteria.getFiles() != null && criteria.getFiles().length == 1) {
-            addArgument(0, "--follow"); //NOI18N
+            // Options --follow and  --full-diff are not compatible.
+            // Lets give preference to --full-diff. As result log will not tack renames.
+            //addArgument(0, "--follow"); //NOI18N
+            isFollow = true;
         }
         if (criteria != null && !criteria.isIncludeMerges()) {
             addArgument(0, "--no-merges"); //NOI18N
@@ -278,7 +282,7 @@ public class LogCommand extends GitCommand {
         return true;
     }
 
-    private void parseLog(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
+    static void parseLog(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
         //#git --no-pager log --name-status --no-walk 0254bffe448b1951af6edef531d80f8e629c575a"
         //commit 9c0e341a6a9197e2408862d2e6ff4b7635a01f9b (from 19f759b14972f669dc3eb203c06944e03365f6bc)
         //Merge: 1126f32 846626a
