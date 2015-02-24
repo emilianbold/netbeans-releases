@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect.sourcemap;
+package org.netbeans.modules.web.common.sourcemap;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,14 +70,16 @@ public class SourceMap {
      * is ordered according to the increasing column.
      */
     private final Map<Integer,List<Mapping>> mappings = new HashMap<Integer,List<Mapping>>();
+    private final String sourceRoot;
 
     /**
      * Parses the given text representation of a source map.
      * 
      * @param sourceMap text representation of a source map.
      * @return parsed source map.
+     * @throws IllegalArgumentException when the parsing fails.
      */
-    public static SourceMap parse(String sourceMap) {
+    public static SourceMap parse(String sourceMap) throws IllegalArgumentException {
         SourceMap map = cache.get(sourceMap);
         if (map == null) {
             map = new SourceMap(sourceMap);
@@ -127,6 +130,7 @@ public class SourceMap {
         if (lineInfo != null) {
             mappings.put(line, lineInfo);
         }
+        sourceRoot = (String) sourceMap.get("sourceRoot"); // NOI18N
     }
 
     /**
@@ -138,7 +142,22 @@ public class SourceMap {
      */
     public String getSourcePath(int sourceIndex) {
         JSONArray sources = (JSONArray)sourceMap.get("sources"); // NOI18N
-        return (String)sources.get(sourceIndex);
+        String source = (String)sources.get(sourceIndex);
+        if (sourceRoot != null && !sourceRoot.isEmpty()) {
+            return sourceRoot + File.separator + source;
+        } else {
+            return source;
+        }
+    }
+    
+    /**
+     * Returns name at the specified index.
+     * @param nameIndex name index.
+     * @return name at the specified index.
+     */
+    public String getName(int nameIndex) {
+        JSONArray names = (JSONArray)sourceMap.get("names"); // NOI18N
+        return (String)names.get(nameIndex);
     }
 
     /**
