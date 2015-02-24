@@ -493,7 +493,12 @@ class PreferredCCParser {
             }
             Scope scope = null;
             int offset = 0;
-            LineMap lineMap = ci.getCompilationUnit().getLineMap();
+            LineMap lineMap;
+            if (ci.getFileObject() != null) {
+                lineMap = ci.getCompilationUnit().getLineMap();
+            } else {
+                lineMap = null;
+            }
             if (lineMap != null) {
                 offset = findLineOffset(lineMap, ci.getSnapshot().getText(), line);
                 scope = ci.getTreeUtilities().scopeFor(offset);
