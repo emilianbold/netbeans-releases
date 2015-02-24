@@ -1637,8 +1637,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private void removeFile(File cache) {
         if (cache.isDirectory()) {
-            for (File child : cache.listFiles()) {
-                removeFile(child);
+            File[] children = cache.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    removeFile(child);
+                }
             }
         }
         cache.delete();
