@@ -170,8 +170,8 @@ public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu 
         if (vs.length == 1) {
             // actions depending on the central patch storage
             ShelveChangesActionProvider actionProvider = ShelveChangesActionsRegistry.getInstance().getActionProvider(vs[0]);
-            JComponent[] components = actionProvider.getUnshelveActions(ctx, lkp != null);
-            if (components.length > 0) {
+            JComponent[] components;
+            if (actionProvider != null && (components = actionProvider.getUnshelveActions(ctx, lkp != null)).length > 0) {
                 items.add(null);
                 items.addAll(Arrays.asList(components));
             }

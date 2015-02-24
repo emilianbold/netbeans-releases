@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,48 +53,50 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class CoreModulesTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testCore1",
+        "testCore2",
+        "testCore3",
+        "testCore4",
+        "testCore5",
+        "testCore6",
+        "testCore7",
+        "testCore8",
+        "testCore9",
+        "testCore10",
+        "testCore11",
+        "testCore12",
+        "testCore13",
+        "testCore14",
+        "testCore15",
+        "testCore16",
+        "testCore17",
+        "testCore18",
+        "testCore19",
+        "testCore20",
+        "testCore21",
+        "testCore22",
+        "testCore23",
+        "testCore24",
+        "testCore25",
+        "testCore26",
+        "testCore27",
+        "testCore28",
+        "testCore29"
+    };
+
     public CoreModulesTest(String args) {
         super(args);
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CoreModulesTest.class).addTest(
-                        "openProject",
-                        "testCore1",
-                        "testCore2",
-                        "testCore3",
-                        "testCore4",
-                        "testCore5",
-                        "testCore6",
-                        "testCore7",
-                        "testCore8",
-                        "testCore9",
-                        "testCore10",
-                        "testCore11",
-                        "testCore12",
-                        "testCore13",
-                        "testCore14",
-                        "testCore15",
-                        "testCore16",
-                        "testCore17",
-                        "testCore18",
-                        "testCore19",
-                        "testCore20",
-                        "testCore21",
-                        "testCore22",
-                        "testCore23",
-                        "testCore24",
-                        "testCore25",
-                        "testCore26",
-                        "testCore27",
-                        "testCore28",
-                        "testCore29"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+    public static Test suite() {       
+        return createModuleTest(CoreModulesTest.class, tests);
     }
 
     public void openProject() throws Exception {
         startTest();
+        GeneralNodeJs.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleNode");
         evt.waitNoEvent(2000);

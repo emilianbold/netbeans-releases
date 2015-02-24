@@ -53,8 +53,11 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -1563,31 +1566,10 @@ public final class FileUtils {
             if (!target.canWrite()) {
                 throw new IOException(ResourceUtils.getString(FileUtils.class,
                         ERROR_DEST_NOT_WRITABLE_KEY, target));
-            }
+            }            
             
-            FileInputStream in = null;
-            FileOutputStream out = null;
-            try {
-                StreamUtils.transferData(
-                        in = new FileInputStream(source),
-                        out = new FileOutputStream(target));
-                list.add(target);
-            } finally {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    ErrorManager.notifyDebug(ResourceUtils.getString(
-                            FileUtils.class, ERROR_CLOSE_STREAM_KEY),
-                            e);
-                }
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    ErrorManager.notifyDebug(ResourceUtils.getString(
-                            FileUtils.class, ERROR_CLOSE_STREAM_KEY),
-                            e);
-                }
-            }
+            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING, LinkOption.NOFOLLOW_LINKS);
+            list.add(target);
         } else {
             LogManager.log("copying directory: " + source + " to: " + target + (recurse ? " with recursion" : ""));
             progress.setDetail(StringUtils.format(MESSAGE_COPY_DIRECTORY, source, target));

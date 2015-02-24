@@ -1229,11 +1229,13 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 	    ndi.setTarget("-"); //NOI18N
         } else {
             String execPath = ndi.getTarget();
-            if (host.getPlatform() != Platform.Windows_x86 && host.getPlatform() != Platform.MacOSX_x86) {
-                execPath = executor.readlink(dt.getPid());
-            } else {
+            if (host.getPlatform() == Platform.MacOSX_x86) {
+                execPath = executor.readlsof(dt.getPid());
+            } else if (host.getPlatform() == Platform.Windows_x86) {
                 // omit arguments (IZ 230518)
                 execPath = execPath.split(" ")[0]; // NOI18N
+            } else {
+                execPath = executor.readlink(dt.getPid());
             }
             ndi.setTarget(execPath);
         }

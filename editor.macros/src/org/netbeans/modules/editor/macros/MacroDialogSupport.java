@@ -306,13 +306,18 @@ outer:      for(MultiKeyBinding mkb : m.getShortcuts()) {
                 return;
             }
 
+            // changed as reponse to #250157: other events may get fired during
+            // the course of key binding processing and if an event is processed
+            // as nested (i.e. hierarchy change resulting from a component retracting from the screen),
+            // thie following test would fail.
             AWTEvent maybeKeyEvent = EventQueue.getCurrentEvent();
-            if (!(maybeKeyEvent instanceof KeyEvent)) {
-                return;
+            KeyStroke keyStroke = null;
+            
+            if (maybeKeyEvent instanceof KeyEvent) {
+                keyStroke = KeyStroke.getKeyStrokeForEvent((KeyEvent) maybeKeyEvent);
             }
 
             // try simple keystorkes first
-            KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent((KeyEvent) maybeKeyEvent);
             MimePath mimeType = MimePath.parse(NbEditorUtilities.getMimeType(target));
             MacroDescription macro = null;
             if (keyStroke != null) {

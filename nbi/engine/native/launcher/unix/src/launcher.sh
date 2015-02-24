@@ -727,7 +727,7 @@ installJVM() {
 			debug "... unpacked file = $unpacked"
 			fEsc=`escapeString "$f"`
 			uEsc=`escapeString "$unpacked"`
-			cmd="$jvmDirEscaped/bin/unpack200 $fEsc $uEsc"
+			cmd="$jvmDirEscaped/bin/unpack200 -r $fEsc $uEsc"
 			runCommand "$cmd"
 			if [ $? != 0 ] ; then
 			    message "$MSG_ERROR_UNPACK_JVM_FILE" "$f"
@@ -1060,13 +1060,28 @@ searchJavaUserDefined() {
 	fi
 }
 
+searchJavaInstallFolder() {
+        installFolder="`dirname \"$0\"`"
+        installFolder="`( cd \"$installFolder\" && pwd )`"
+        installFolder="$installFolder/bin/jre"
+        tempJreFolder="$TEST_JVM_CLASSPATH/_jvm"
+
+        if [ -d "$installFolder" ] ; then
+            #copy nested JRE to temp folder
+            cp -r "$installFolder" "$tempJreFolder"
+
+            verifyJVM "$tempJreFolder"
+        fi
+}
+
 searchJava() {
 	message "$MSG_JVM_SEARCH"
         if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! $isSymlink "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
                 debug "Cannot find file for testing JVM at $TEST_JVM_CLASSPATH"
 		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
                 exitProgram $ERROR_TEST_JVM_FILE
-        else		
+        else	
+                searchJavaInstallFolder
 		searchJavaUserDefined
 		installBundledJVMs
 		searchJavaEnvironment

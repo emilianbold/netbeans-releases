@@ -133,7 +133,7 @@ public class DocumentUtil {
         return new BinaryNameConvertor ();
     }
     
-    static Convertor<Document,String> sourceNameConvertor () {
+    public static Convertor<Document,String> sourceNameConvertor () {
         return new SourceNameConvertor();
     }
     
@@ -372,8 +372,10 @@ public class DocumentUtil {
     }       
     
     
-    static FieldSelector declaredTypesFieldSelector () {
-        return Queries.createFieldSelector(FIELD_PACKAGE_NAME,FIELD_BINARY_NAME);
+    public static FieldSelector declaredTypesFieldSelector (final boolean includeSource) {
+        return includeSource ?
+            Queries.createFieldSelector(FIELD_PACKAGE_NAME, FIELD_BINARY_NAME, FIELD_SOURCE) :
+            Queries.createFieldSelector(FIELD_PACKAGE_NAME,FIELD_BINARY_NAME);
     }
     
     static FieldSelector sourceNameFieldSelector () {

@@ -85,7 +85,7 @@ public class TableListNodeProvider extends NodeProvider {
 
     @Override
     protected void initialize() {
-        if (connection.getConnector().isDisconnected()) {
+        if (! connection.isConnected()) {
             removeAllNodes();
             setup = false;
         } else {

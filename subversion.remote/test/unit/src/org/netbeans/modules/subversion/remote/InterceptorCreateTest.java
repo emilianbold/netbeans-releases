@@ -219,7 +219,7 @@ public class InterceptorCreateTest extends RemoteVersioningTestBase {
         
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
         
-        VCSFileProxySupport.delete(file);
+        VCSFileProxySupport.deleteExternally(file);
         VersioningSupport.refreshFor(new VCSFileProxy[]{file});
         assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
         assertCachedStatus(file, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY);

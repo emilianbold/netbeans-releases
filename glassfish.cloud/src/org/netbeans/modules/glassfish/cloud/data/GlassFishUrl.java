@@ -46,8 +46,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.enterprise.deploy.spi.Target;
-import org.glassfish.tools.ide.data.DataException;
-import org.glassfish.tools.ide.utils.StringPrefixTree;
+import org.netbeans.modules.glassfish.tooling.data.DataException;
+import org.netbeans.modules.glassfish.tooling.utils.StringPrefixTree;
 
 /**
  * GlassFish cloud URL representing key attribute in JavaEE server registry.

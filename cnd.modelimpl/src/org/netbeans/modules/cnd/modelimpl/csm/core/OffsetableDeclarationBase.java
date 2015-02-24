@@ -185,7 +185,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             // 1. check for definition of template class's method
             // like template<class A> C<A>:C() {}
             AST startTemplateSign = qIdToken != null ? AstUtil.findChildOfType(qIdToken, CPPTokenTypes.LESSTHAN) : null;
-            while (startTemplateSign != null) {
+            while (templateNode != null && startTemplateSign != null) {
                 // TODO: fix parsing of inline definition of template operator <
                 // like template<class T, class P> bool operator<(T x, P y) {return x<y};
                 // workaround is next validation
@@ -216,6 +216,15 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 } else {
                     break;
                 }
+            }
+            
+            if (false) {
+              // Both templateNode and startTemplateSign should be null
+              if (templateNode != startTemplateSign) {
+                // TODO: maybe notify here about error: unbalanced "template <>" nodes and specialization suffixes "<smth>"
+                // Example: template<> void A<short>::f<int>()
+                return null;
+              }
             }
             
             if (!_template) {

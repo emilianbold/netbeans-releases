@@ -104,6 +104,8 @@ public class NodeExecutable {
     public static final String[] NODE_NAMES;
     public static final int DEFAULT_DEBUG_PORT = 9292;
 
+    private static final String IO_NAME;
+
     private static final String DEBUG_COMMAND = "--debug-brk=%d"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
 
@@ -118,8 +120,10 @@ public class NodeExecutable {
     static {
         if (Utilities.isWindows()) {
             NODE_NAMES = new String[] {"node.exe"}; // NOI18N
+            IO_NAME = "iojs.exe"; // NOI18N
         } else {
             NODE_NAMES = new String[] {"node", "nodejs"}; // NOI18N
+            IO_NAME = "iojs"; // NOI18N
         }
     }
 
@@ -195,8 +199,14 @@ public class NodeExecutable {
     }
 
     public boolean isIojs() {
-        File cli = new File(new ExternalExecutable(nodePath).getExecutable());
-        return cli.getName().startsWith("io"); // NOI18N
+        File node = new File(new ExternalExecutable(nodePath).getExecutable());
+        if (node.getName().equals(IO_NAME)) {
+            return true;
+        }
+        // #250534 - selected "node" file in io.js sources?
+        File iojs = new File(node.getParentFile(), IO_NAME);
+        // do not check if iojs exists but simply immediately compare their sizes
+        return node.length() == iojs.length();
     }
 
     public void resetVersion() {

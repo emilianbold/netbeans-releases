@@ -75,7 +75,7 @@ public class WebProjectTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup();
+        MockLookup.setLayersAndInstances();
 //        MockLookup.init();
 //        Collection<? extends AntBasedProjectType> all = Lookups.forPath("Services/AntBasedProjectTypes").lookupAll(AntBasedProjectType.class);
 //        MockLookup.setInstances(

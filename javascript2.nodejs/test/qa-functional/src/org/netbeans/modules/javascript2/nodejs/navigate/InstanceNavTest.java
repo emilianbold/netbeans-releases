@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.nodejs.navigate;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -53,29 +52,30 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class InstanceNavTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testDirectProperty",
+        "testDirectProperty2",
+        "testDirectProperty3",
+        "testDirectProperty4",
+        "testDirectProperty5",
+        "testPrototypeProperty",
+        "testPrototypeProperty2",
+        "testRefProperty",
+        "testRefProperty2",
+        "testRefProperty3",
+        "testRefProperty4",
+        "testRefProperty5",
+        "testRefPrototypeProperty",
+        "testRefPrototypeProperty2"
+    };
+
     public InstanceNavTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(InstanceNavTest.class).addTest(
-                        "openProject",
-                        "testDirectProperty",
-                        "testDirectProperty2",
-                        "testDirectProperty3",
-                        "testDirectProperty4",
-                        "testDirectProperty5",
-                        "testPrototypeProperty",
-                        "testPrototypeProperty2",
-                        "testRefProperty",
-                        "testRefProperty2",
-                        "testRefProperty3",
-                        "testRefProperty4",
-                        "testRefProperty5",
-                        "testRefPrototypeProperty",
-                        "testRefPrototypeProperty2"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(InstanceNavTest.class, tests);
     }
 
     public void openProject() throws Exception {

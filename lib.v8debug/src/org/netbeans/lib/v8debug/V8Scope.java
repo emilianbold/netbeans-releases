@@ -57,7 +57,7 @@ public final class V8Scope {
         Closure,
         Catch,
         Block,
-        Module;
+        Module;     // ES6
         
         public static Type valueOf(int i) {
             for (Type t : values()) {

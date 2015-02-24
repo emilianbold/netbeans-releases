@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
+import org.netbeans.modules.glassfish.tooling.data.cloud.GlassFishCloud;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;

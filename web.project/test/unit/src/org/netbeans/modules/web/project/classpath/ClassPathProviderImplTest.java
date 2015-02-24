@@ -58,7 +58,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.project.TestPlatformProvider;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.web.project.test.TestBase;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -66,6 +65,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -104,10 +104,8 @@ public class ClassPathProviderImplTest extends NbTestCase {
         FileObject scratch = TestUtil.makeScratchDir(this);
         bootPlatformRoot = scratch.createFolder("DefaultPlatformRoot");
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[] { bootPlatformRoot.getURL() });
-        
-        TestBase.setLookup(new Object[] {
-            new TestPlatformProvider(defBCP, defBCP)
-        });
+
+        MockLookup.setLayersAndInstances(new TestPlatformProvider(defBCP, defBCP));
         
         assertTrue("No Java platforms found.", JavaPlatformManager.getDefault().getInstalledPlatforms().length >= 2);
         

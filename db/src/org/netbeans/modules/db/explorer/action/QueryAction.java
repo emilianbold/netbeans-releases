@@ -154,7 +154,7 @@ public abstract class QueryAction extends BaseAction {
         StringBuilder fullTableName = new StringBuilder();
         boolean tableIsQualified = false;
 
-        tableIsQualified = appendQualifiedName(fullTableName, quoter, catName, connection.getConnection().getCatalog(), tableIsQualified, dmd.getCatalogSeparator());
+        tableIsQualified = appendQualifiedName(fullTableName, quoter, catName, connection.getJDBCConnection().getCatalog(), tableIsQualified, dmd.getCatalogSeparator());
         // add schema always if possible
         appendQualifiedName(fullTableName, quoter, schemaName, null, tableIsQualified, null);
         fullTableName.append(quoter.quoteIfNeeded(simpleTableName));
@@ -169,7 +169,7 @@ public abstract class QueryAction extends BaseAction {
         SQLIdentifiers.Quoter quoter;
 
         try {
-            DatabaseMetaData dmd = connection.getConnection().getMetaData();
+            DatabaseMetaData dmd = connection.getJDBCConnection().getMetaData();
             quoter = SQLIdentifiers.createQuoter(dmd);
 
             SchemaNameProvider provider = activatedNodes[0].getLookup().lookup(SchemaNameProvider.class);

@@ -44,25 +44,38 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
@@ -87,6 +100,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -219,6 +233,62 @@ public final class GeneratorUtilities {
         int gsidx = -1;
         String[] gsnames = codeStyle.keepGettersAndSettersTogether() ? correspondingGSNames(member) : null;
         int i = 0;
+        
+        // minIndex is the latest (textually) depended-on symbol +1
+        int minIndex = -1;
+        // maxIndex is the earliest symbol which depend on the new member
+        int maxIndex = Integer.MAX_VALUE;
+        
+        FieldRefVisitor v = null;
+        if (codeStyle.computeMemberDependencies()) {
+            if (member.getKind() == Tree.Kind.VARIABLE) {
+                // avoid costly computation for trivial cases - without initializer and
+                VariableTree vt = (VariableTree)member;
+                v = new FieldRefVisitor(clazz, vt.getModifiers().getFlags().contains(Modifier.STATIC));
+                v.registerTreeName(member, vt.getName());
+            }
+
+            if (member.getKind() == Tree.Kind.BLOCK) {
+                v = new FieldRefVisitor(clazz, ((BlockTree)member).isStatic());
+            }
+            
+            if (v != null) {
+                try {
+
+                v.collectNames = true;
+                TreePath classTP = new TreePath(new TreePath(compilationUnit), clazz);
+                v.scan(classTP, null);
+
+                TreePath memberPath = new TreePath(classTP, member);
+                v.collectNames = false;
+                v.scan(memberPath, null);
+
+                Collection<Name> deps = v.dependencies.get(member);
+                if (deps != null) {
+                    for (Name n : v.dependencies.get(member)) {
+                        Tree t = v.namedTrees.get(n);
+                        if (t == null) {
+                            continue;
+                        }
+                        minIndex = Math.max(minIndex, 1 + clazz.getMembers().indexOf(t));
+                    }
+                }
+                for (Tree t : v.revDependencies) {
+                    maxIndex = Math.min(maxIndex, clazz.getMembers().indexOf(t));
+                }
+
+                if (minIndex > maxIndex) {
+                    // God save us, there's a reference cycle probably
+                    minIndex = maxIndex = -1;
+                }
+                } catch (RuntimeException ex) {
+                    Exceptions.printStackTrace(ex);
+                    throw ex;
+                }
+            }
+        }
+        
+        
         for (Tree tree : clazz.getMembers()) {
             if (!utils.isSynthetic(compilationUnit, tree)) {
                 if (gsnames != null && gsidx < 0) {
@@ -253,9 +323,190 @@ public final class GeneratorUtilities {
         if (idx < 0) {
             idx = i;
         }
-        return copy.getTreeMaker().insertClassMember(clazz, gsidx < 0 ? idx : gsidx, member);
+        idx = gsidx < 0 ? idx : gsidx;
+        
+        // obey reference rules -- should there be an option for this ??
+        if (minIndex >= 0) {
+            idx = Math.max(minIndex, idx);
+        }
+        if (maxIndex < Integer.MAX_VALUE) {
+            idx = Math.min(maxIndex, idx);
+        }
+        return copy.getTreeMaker().insertClassMember(clazz, idx, member);
     }
+    
+    /**
+     * Visitor which collects references to class' members. It operates in two modes:
+     * if 'collectNames' is set, it collects field names from the class definition. If
+     * 'insertedName' is not null, it also collects references to that name in 
+     * 'revDependencies'.
+     * <p/>
+     * For the secondPass, set 'collectNames' to false: the visitor will collect
+     * dependencies of the scanned node into 'dependencies'. After 2 passes,
+     * the revDependencies and dependencies can be used to determine partial order
+     * between existing members and the newly inserted one.
+     */
+    private class FieldRefVisitor extends TreePathScanner {
+        private final ClassTree clazz;
+        // collects field names; serves to identify unqualified indentifiers
+        // which might refer to field names.
+        private Set<Name>     fieldNames = new HashSet<>();
+        // controls class members, which are interesting for us
+        private boolean       staticFields;
+        private boolean       collectNames;
+        private Name          insertedName;
+        
+        private Collection<Tree>    revDependencies = new ArrayList<>();
+        private Map<Tree, Collection<Name>> dependencies = new HashMap<>();
+        private Map<Name, Tree> namedTrees = new HashMap<>();
+        private Tree            member;
 
+        public FieldRefVisitor(ClassTree clazz, boolean stat) {
+            this.clazz = clazz;
+            this.staticFields = stat;
+        }
+        
+        void registerTreeName(Tree t, Name n) {
+            fieldNames.add(n);
+            namedTrees.put(n, t);
+            insertedName = n;
+        }
+        
+        private void addDependency(Name n) {
+            Collection<Name> deps = dependencies.get(member);
+            if (deps == null) {
+                deps = new ArrayList<>(3);
+                dependencies.put(member, deps);
+            }
+            deps.add(n);
+        }
+
+        // the following Nodes would just confuse the Identifier scanner:
+        @Override public Object visitAnnotatedType(AnnotatedTypeTree node, Object p) { return null; }
+        @Override public Object visitTypeParameter(TypeParameterTree node, Object p) { return null; }
+        @Override public Object visitArrayType(ArrayTypeTree node, Object p) { return null; }
+        @Override public Object visitInstanceOf(InstanceOfTree node, Object p) { return null; }
+        @Override public Object visitBreak(BreakTree node, Object p) { return null; }
+        
+        @Override public Object visitTypeCast(TypeCastTree node, Object p) {
+            return scan(node.getExpression(), p);
+        }
+
+        @Override
+        public Object visitCase(CaseTree node, Object p) {
+            return scan(node.getStatements(), p);
+        }
+
+        @Override
+        public Object visitLabeledStatement(LabeledStatementTree node, Object p) {
+            return scan(node.getStatement(), p);
+        }
+
+        @Override public Object visitAnnotation(AnnotationTree node, Object p) { return null; }
+        @Override public Object visitParameterizedType(ParameterizedTypeTree node, Object p) { return null; }
+
+        @Override
+        public Object visitNewArray(NewArrayTree node, Object p) {
+            scan(node.getDimensions(), p);
+            return scan(node.getInitializers(), p);
+        }
+
+        @Override
+        public Object visitNewClass(NewClassTree node, Object p) {
+            return scan(node.getArguments(), p);
+        }
+        
+        @Override
+        public Object visitIdentifier(IdentifierTree node, Object p) {
+            if (!fieldNames.contains(node.getName())) {
+                return null;
+            }
+            // TODO do not track dependencies for method refs
+            boolean ok = false;
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            
+            switch (parent.getKind()) {
+                case MEMBER_SELECT:
+                    // dependency is only introduced by dereferencing the identifier.
+                    ok = ((MemberSelectTree)parent).getExpression() != node;
+                    break;
+                case ASSIGNMENT:
+                    ok = ((AssignmentTree)parent).getVariable() == node;
+                    break;
+            }
+            
+            if (ok) {
+                return null;
+            }
+
+            if (!ok) {
+                if (collectNames) {
+                    if (node.getName().equals(insertedName)) {
+                        revDependencies.add(member);
+                    }
+                } else {
+                    addDependency(node.getName());
+                }
+            }
+            
+            return null;
+        }
+
+        // TODO: handle assignment and compound assignment expressions: L-value references are legal.
+        @Override
+        public Object visitMemberSelect(MemberSelectTree node, Object p) {
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            if (fieldNames.contains(node.getIdentifier())) {
+                // NOTE: because of JLS 8.3.3, forward reference which is NOT a simple name (even this.id, or MyClassname.this.id !!)
+                // is NOT illegal, so I will not count the appearance as a dependency
+            }
+            Object o = super.visitMemberSelect(node, p);
+            return o;
+        }
+
+        @Override
+        public Object visitVariable(VariableTree node, Object p) {
+            // the other group of fields is not interesting for us.
+            if (node.getModifiers().getFlags().contains(Modifier.STATIC) != staticFields) {
+                return null;
+            }
+            if (collectNames) {
+                fieldNames.add(node.getName());
+                namedTrees.put(node.getName(), node);
+            }
+            // ignore type
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            Tree.Kind k = parent.getKind();
+            if (k == Tree.Kind.CLASS || k == Tree.Kind.INTERFACE || k == Tree.Kind.ENUM) {
+                member = node;
+            }
+            Object o = scan(node.getInitializer(), p);
+            return o;
+        }
+
+        // the block is either an initializer or 
+        @Override public Object visitBlock(BlockTree node, Object p) { 
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            Tree.Kind k = parent.getKind();
+            if (k == Tree.Kind.CLASS || k == Tree.Kind.INTERFACE || k == Tree.Kind.ENUM) {
+                member = node;
+                return super.visitBlock(node, p);
+            }
+            return p; 
+        }
+
+        // blocks (= initializers), methods (incl.ctors) and inner classes (incl. anon classes in expressions)
+        // are not important
+        @Override public Object visitMethod(MethodTree node, Object p) { return p; }
+        @Override public Object visitClass(ClassTree node, Object p) { 
+            if (node == clazz) {
+                return super.visitClass(node, p);
+            }
+            return p; 
+        }
+        
+    }
+    
     /**
      * Inserts members to a class. Using the rules specified in the {@link CodeStyle}
      * it finds the proper place for each of the members and calls {@link TreeMaker.insertClassMember}

@@ -112,11 +112,12 @@ public class Utilities {
     }
 
     //Helpers for indexing in java.source, will be removed when indexing will be part of parsing api
-    /**
-     * Temporary may be replaced by scheduler, hepefully.
-     */
-    public static void scheduleSpecialTask (final Runnable runnable, int priority) {
-        TaskProcessor.scheduleSpecialTask(runnable, priority);
+
+    public static void scheduleSpecialTask (
+            @NonNull final Runnable runnable,
+            @NonNull final Lookup context,
+            final int priority) {
+        TaskProcessor.scheduleSpecialTask(runnable, context, priority);
     }
 
     //Helpers to bridge java.source factories into parsing.api

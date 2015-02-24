@@ -43,9 +43,7 @@ package org.netbeans.modules.terminal.actions;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import static javax.swing.Action.NAME;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.modules.terminal.PinPanel;
@@ -73,53 +71,35 @@ import org.openide.util.NbBundle;
 public class PinTabAction extends TerminalAction {
 
     public static final String pinMessage = getMessage("CTL_PinTab");
-    public static  final String unpinMessage = getMessage("CTL_UnpinTab");
+    public static final String unpinMessage = getMessage("CTL_UnpinTab");
 
     private final TerminalPinSupport support = TerminalPinSupport.getDefault();
 
-    private String cwd = null;
-
-    public PinTabAction(Lookup context) {
+    public PinTabAction(Terminal context) {
 	super(context);
 
 	final Terminal terminal = getTerminal();
-	final Term term = terminal.term();
 
 	putValue(NAME, getMessage(terminal.isPinned()));
 	putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-	
-
-	term.addListener(new TermListener() {
-
-	    @Override
-	    public void sizeChanged(Dimension cells, Dimension pixels) {
-	    }
-
-	    @Override
-	    public void titleChanged(String title) {
-	    }
-
-	    @Override
-	    public void cwdChanged(String aCwd) {
-		cwd = aCwd;
-	    }
-	});
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
+    public void performAction() {
 	final Terminal terminal = getTerminal();
 	final Term term = terminal.term();
 
 	TerminalPinSupport.TerminalPinningDetails pinningDetails = support.findPinningDetails(term);
 	boolean oldState = pinningDetails == null ? false : pinningDetails.isPinned();
 	boolean newState = !oldState;
+	
+	putValue(NAME, getMessage(!terminal.isPinned()));
 
 	if (newState) {
 	    boolean customTitle = terminal.isCustomTitle();
 	    String title = terminal.getTitle();
 	    String name = terminal.name();
-	    TerminalPinSupport.TerminalPinningDetails defaultValues = TerminalPinSupport.TerminalPinningDetails.create(customTitle, customTitle ? title : name, cwd, enabled);
+	    TerminalPinSupport.TerminalPinningDetails defaultValues = TerminalPinSupport.TerminalPinningDetails.create(customTitle, customTitle ? title : name, terminal.getCwd(), enabled);
 	    PinPanel pinPanel = new PinPanel(new TerminalPinSupport.TerminalDetails(support.findCreationDetails(term), defaultValues));
 
 	    DialogDescriptor dd = new DialogDescriptor(
@@ -177,17 +157,13 @@ public class PinTabAction extends TerminalAction {
 	terminal.pin(newState);
     }
 
-    private String getMessage(boolean isPinned) {
+    public static String getMessage(boolean isPinned) {
 	return isPinned ? unpinMessage : pinMessage;
     }
 
     // --------------------------------------------- 
-    public PinTabAction() {
-	super(null);
-    }
-
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new PinTabAction(actionContext);
+	return new PinTabAction(actionContext.lookup(Terminal.class));
     }
 }

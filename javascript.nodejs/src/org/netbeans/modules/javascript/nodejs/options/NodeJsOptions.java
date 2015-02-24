@@ -46,6 +46,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.javascript.nodejs.exec.ExpressExecutable;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
@@ -56,6 +57,7 @@ public final class NodeJsOptions {
     public static final String NODE_PATH = "node.path"; // NOI18N
     public static final String NODE_SOURCES_PATH = "node.sources.path"; // NOI18N
     private static final String NPM_PATH = "npm.path"; // NOI18N
+    private static final String EXPRESS_PATH = "express.path"; // NOI18N
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
@@ -67,6 +69,7 @@ public final class NodeJsOptions {
 
     private volatile boolean nodeSearched = false;
     private volatile boolean npmSearched = false;
+    private volatile boolean expressSearched = false;
 
 
     private NodeJsOptions() {
@@ -133,6 +136,25 @@ public final class NodeJsOptions {
 
     public void setNpm(String npm) {
         preferences.put(NPM_PATH, npm);
+    }
+
+    @CheckForNull
+    public String getExpress() {
+        String path = preferences.get(EXPRESS_PATH, null);
+        if (path == null
+                && !expressSearched) {
+            expressSearched = true;
+            List<String> files = FileUtils.findFileOnUsersPath(ExpressExecutable.EXPRESS_NAME);
+            if (!files.isEmpty()) {
+                path = files.get(0);
+                setExpress(path);
+            }
+        }
+        return path;
+    }
+
+    public void setExpress(String express) {
+        preferences.put(EXPRESS_PATH, express);
     }
 
 }

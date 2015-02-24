@@ -84,6 +84,7 @@ import org.netbeans.lib.v8debug.commands.Scripts;
 import org.netbeans.lib.v8debug.commands.SetBreakpoint;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
+import org.netbeans.lib.v8debug.events.CompileErrorEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.lib.v8debug.events.ScriptCollectedEventBody;
 import org.netbeans.lib.v8debug.vars.V8Value;
@@ -91,6 +92,7 @@ import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
+import org.netbeans.modules.javascript.v8debug.sources.ChangeLiveSupport;
 import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
@@ -120,6 +122,7 @@ public final class V8Debugger {
     private final int port;
     private final ClientConnection connection;
     private final ScriptsHandler scriptsHandler;
+    private final ChangeLiveSupport changeLiveSupport;
     private final BreakpointsHandler breakpointsHandler;
     @NullAllowed
     private final Runnable finishCallback;
@@ -171,6 +174,7 @@ public final class V8Debugger {
                                                  properties.getServerPaths(),
                                                  properties.getLocalPathExclusionFilters(),
                                                  this);
+        this.changeLiveSupport = new ChangeLiveSupport(this);
         this.breakpointsHandler = new BreakpointsHandler(this);
         this.finishCallback = finishCallback;
     }
@@ -210,6 +214,10 @@ public final class V8Debugger {
     
     public ScriptsHandler getScriptsHandler() {
         return scriptsHandler;
+    }
+    
+    public ChangeLiveSupport getChangeLiveSupport() {
+        return changeLiveSupport;
     }
     
     public BreakpointsHandler getBreakpointsHandler() {
@@ -573,6 +581,11 @@ public final class V8Debugger {
             case AfterCompile:
                 AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
                 V8Script script = aceb.getScript();
+                scriptsHandler.add(script);
+                break;
+            case CompileError:
+                CompileErrorEventBody ceeb = (CompileErrorEventBody) event.getBody();
+                script = ceeb.getScript();
                 scriptsHandler.add(script);
                 break;
             case ScriptCollected:

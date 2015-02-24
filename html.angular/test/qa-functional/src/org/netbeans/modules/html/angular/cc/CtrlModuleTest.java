@@ -49,7 +49,6 @@ import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
@@ -57,39 +56,41 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  * @author vriha
  */
 public class CtrlModuleTest extends GeneralAngular{
-     public CtrlModuleTest(String args) {
+    
+    static final String[] tests = new String[]{
+        "openProject",
+        "testNgClick",
+        "testExpression2",
+        "testDirective6",
+        "testDirective7",
+        "testDirective8",
+        "testDirective9",
+        "testExpression12",
+        "testExpression14",
+        "testExpression16",
+        "testExpression18",
+        "testDirective20",
+        "testNgBind",
+        "testNgModel",
+        "testGoTo28",
+        "testGoTo29",
+        "testGoTo30",
+        "testGoTo31",
+        //                        "testGoTo32",
+        "testGoTo33",
+        //                        "testGoTo34",
+        //                        "testGoTo35",
+        //                        "testGoTo36",
+        "testGoTo37",
+        "testGoToController"
+    };
+
+    public CtrlModuleTest(String args) {
         super(args);
     }
-    
-      public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CtrlModuleTest.class).addTest(
-                             "openProject",
-                        "testNgClick",
-                        "testExpression2",
-                        "testDirective6",
-                        "testDirective7",
-                        "testDirective8",
-                        "testDirective9",
-                        "testExpression12",
-                        "testExpression14",
-                        "testExpression16",
-                        "testExpression18",
-                        "testDirective20",
-                        "testNgBind",
-                        "testNgModel",
-                        "testGoTo28",
-                        "testGoTo29",
-                        "testGoTo30",
-                        "testGoTo31",
-//                        "testGoTo32",
-                        "testGoTo33",
-//                        "testGoTo34",
-//                        "testGoTo35",
-//                        "testGoTo36",
-                        "testGoTo37",
-                        "testGoToController"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+
+    public static Test suite() {
+        return createModuleTest(CtrlModuleTest.class, tests);
     }
 
     public void openProject() throws Exception {

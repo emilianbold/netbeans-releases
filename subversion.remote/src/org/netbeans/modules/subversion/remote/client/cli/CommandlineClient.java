@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.api.Annotations;
@@ -113,6 +114,7 @@ import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
@@ -220,6 +222,7 @@ public class CommandlineClient implements SvnClient {
     public void addFile(VCSFileProxy file) throws SVNClientException {
         AddCommand cmd = new AddCommand(fileSystem, new VCSFileProxy[] { file }, false, false);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
 
@@ -227,24 +230,28 @@ public class CommandlineClient implements SvnClient {
     public void addDirectory(VCSFileProxy dir, boolean recursive) throws SVNClientException {
         AddCommand cmd = new AddCommand(fileSystem, new VCSFileProxy[] { dir } , recursive, false);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
     public void checkout(SVNUrl url, VCSFileProxy file, SVNRevision revision, boolean recurse) throws SVNClientException {
         CheckoutCommand cmd = new CheckoutCommand(fileSystem, url, file, revision, recurse);
         exec(cmd);
+        refresh(file);
     }
 
     @Override
     public void doExport(SVNUrl url, VCSFileProxy destination, SVNRevision revision, boolean force) throws SVNClientException {
         ExportCommand cmd = new ExportCommand(fileSystem, url, destination, revision, force);
         exec(cmd);
+        refresh(destination);
     }
 
     @Override
     public void doExport(VCSFileProxy fileFrom, VCSFileProxy fileTo, boolean force) throws SVNClientException {
         ExportCommand cmd = new ExportCommand(fileSystem, fileFrom, fileTo, force);
         exec(cmd);
+        refresh(fileTo);
     }
 
     @Override
@@ -280,9 +287,10 @@ public class CommandlineClient implements SvnClient {
                 }
             }
         }
+        refresh(files);
         return cmd != null ? cmd.getRevision() : SVNRevision.INVALID_REVISION.getNumber();
     }
-
+    
     @Override
     public ISVNDirEntry[] getList(SVNUrl url, SVNRevision revision, boolean recursivelly) throws SVNClientException {
         ListCommand cmd = new ListCommand(fileSystem, url, revision, recursivelly);
@@ -332,18 +340,21 @@ public class CommandlineClient implements SvnClient {
     public void copy(VCSFileProxy fileFrom, VCSFileProxy fileTo) throws SVNClientException {
         CopyCommand cmd = new CopyCommand(fileSystem, fileFrom, fileTo);
         exec(cmd);
+        refresh(fileTo);
     }
 
     @Override
     public void copy(VCSFileProxy file, SVNUrl url, String msg) throws SVNClientException {
         CopyCommand cmd = new CopyCommand(fileSystem, file, url, msg);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
     public void copy(SVNUrl url, VCSFileProxy file, SVNRevision rev) throws SVNClientException {
         CopyCommand cmd = new CopyCommand(fileSystem, url, file, rev);
         exec(cmd);
+        refresh(file);
     }
 
     @Override
@@ -355,36 +366,42 @@ public class CommandlineClient implements SvnClient {
     public void remove(VCSFileProxy[] files, boolean force) throws SVNClientException {
         RemoveCommand cmd = new RemoveCommand(fileSystem, files, force);
         exec(cmd);
+        refreshParents(files);
     }
 
     @Override
     public void doImport(VCSFileProxy File, SVNUrl url, String msg, boolean recursivelly) throws SVNClientException {
         ImportCommand cmd = new ImportCommand(fileSystem, File, url, recursivelly, msg);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
     public void mkdir(SVNUrl url, String msg) throws SVNClientException {
         MkdirCommand cmd = new MkdirCommand(fileSystem, url, msg);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
     public void mkdir(VCSFileProxy file) throws SVNClientException {
         MkdirCommand cmd = new MkdirCommand(fileSystem, file);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
     public void move(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) throws SVNClientException {
         MoveCommand cmd = new MoveCommand(fileSystem, fromFile, toFile, force);
         exec(cmd);
+        refreshParents(fromFile, toFile);
     }
 
     @Override
     public long update(VCSFileProxy file, SVNRevision rev, boolean recursivelly) throws SVNClientException {
         UpdateCommand cmd = new UpdateCommand(fileSystem, new VCSFileProxy[] { file }, rev, recursivelly, false);
         exec(cmd);
+        refresh(file);
         return cmd.getRevision();
     }
 
@@ -400,6 +417,7 @@ public class CommandlineClient implements SvnClient {
         }
         RevertCommand cmd = new RevertCommand(fileSystem, files, recursivelly);
         exec(cmd);
+        refresh(files);
     }
 
     @Override
@@ -606,6 +624,7 @@ public class CommandlineClient implements SvnClient {
         PropertySetCommand cmd = new PropertySetCommand(fileSystem, name, value, file, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
+        // TODO: do we need refresh?
     }
 
     @Override
@@ -614,6 +633,7 @@ public class CommandlineClient implements SvnClient {
         PropertySetCommand cmd = new PropertySetCommand(fileSystem, name, propFile, file, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
+        // TODO: do we need refresh?
     }
 
     @Override
@@ -622,6 +642,7 @@ public class CommandlineClient implements SvnClient {
         PropertyDelCommand cmd = new PropertyDelCommand(fileSystem, file, name, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
+        // TODO: do we need refresh?
     }
 
     @Override
@@ -845,12 +866,14 @@ public class CommandlineClient implements SvnClient {
     public void merge(SVNUrl startUrl, SVNRevision startRev, SVNUrl endUrl, SVNRevision endRev, VCSFileProxy file, boolean force, boolean recurse, boolean dryRun, boolean ignoreAncestry) throws SVNClientException {
         MergeCommand cmd = new MergeCommand(fileSystem, startUrl, endUrl, startRev, endRev, file, recurse, force, ignoreAncestry, dryRun);
         exec(cmd);
+        refresh(file);
     }
 
     @Override
     public void relocate(Context context, String from, String to, String path, boolean rec) throws SVNClientException {
         RelocateCommand cmd = new RelocateCommand(fileSystem, null, from, to, path, rec);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     // parser start
@@ -1001,6 +1024,7 @@ public class CommandlineClient implements SvnClient {
     public void cleanup(VCSFileProxy file) throws SVNClientException {
         CleanupCommand cmd = new CleanupCommand(fileSystem, file);
         exec(cmd);
+        refresh(file);
     }
 
     private void notifyChangedStatus(VCSFileProxy file, boolean rec, ISVNStatus[] oldStatuses) throws SVNClientException {
@@ -1050,18 +1074,21 @@ public class CommandlineClient implements SvnClient {
     public void upgrade (VCSFileProxy wcRoot) throws SVNClientException {
         UpgradeCommand cmd = new UpgradeCommand(fileSystem, wcRoot);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
     public void unlock(VCSFileProxy[] vcsFileProxy, boolean b) throws SVNClientException {
         UnlockCommand cmd = new UnlockCommand(fileSystem, vcsFileProxy);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
     public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b) throws SVNClientException {
         LockCommand cmd = new LockCommand(fileSystem, vcsFileProxy);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
@@ -1093,12 +1120,14 @@ public class CommandlineClient implements SvnClient {
             CopyCommand cmd = new CopyCommand(fileSystem, file, targetUrl, message, makeParents);
             exec(cmd);
         }
+        // TODO: do we need refresh?
     }
 
     @Override
     public void copy(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev, boolean makeParents) throws SVNClientException {
         CopyCommand cmd = new CopyCommand(fileSystem, fromUrl, toUrl, msg, rev, makeParents);
         exec(cmd);
+        // TODO: do we need refresh?
     }
 
     @Override
@@ -1132,5 +1161,24 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void dispose() {
+    }
+    
+    private void refresh(VCSFileProxy... files) {
+        try {
+            RemoteVcsSupport.refreshFor(files);
+        } catch (IOException ex) {
+            Subversion.LOG.log(Level.INFO, "error when refreshing: {0}", ex.getLocalizedMessage());
+        }
+    }
+
+    private void refreshParents(VCSFileProxy... files) {
+        VCSFileProxy[] parents = new VCSFileProxy[files.length];
+        for (int i = 0; i < files.length; i++) {
+            parents[i] = files[i].getParentFile();  
+            if (parents[i] == null) {
+                parents[i] = files[i];
+            }
+        }
+        refresh(parents);
     }
 }

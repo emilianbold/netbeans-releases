@@ -59,6 +59,8 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.libs.git.remote</friend>
+                <friend>org.netbeans.modules.git.remote</friend>
                 <friend>org.netbeans.modules.hudson.git</friend>
                 <friend>org.netbeans.modules.hudson.mercurial</friend>
                 <friend>org.netbeans.modules.mercurial</friend>

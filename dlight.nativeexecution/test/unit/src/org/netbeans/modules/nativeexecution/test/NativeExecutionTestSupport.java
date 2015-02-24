@@ -97,7 +97,8 @@ public class NativeExecutionTestSupport {
         if (localRcFile == null) {
             String rcFileName = System.getProperty("cnd.remote.rcfile"); // NOI18N
             if (rcFileName == null) {
-                String homePath = System.getProperty("user.home");                if (homePath != null) {
+                String homePath = System.getProperty("user.home");                
+                if (homePath != null) {
                     File homeDir = new File(homePath);
                     localRcFile = RcFile.create(new File(homeDir, ".cndtestrc"));
                 }

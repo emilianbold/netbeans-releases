@@ -179,9 +179,10 @@ tokens {
 	CSM_NAMESPACE_ALIAS<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_USING_DIRECTIVE<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_USING_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
+    CSM_TYPE_ALIAS<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
-        CSM_CTOR_INITIALIZER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-        CSM_CTOR_INITIALIZER_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+    CSM_CTOR_INITIALIZER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+    CSM_CTOR_INITIALIZER_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_QUALIFIED_ID<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
@@ -1929,7 +1930,7 @@ declaration[int kind]
     |
         (LITERAL_using literal_ident ASSIGNEQUAL) => alias_declaration
     |
-	using_declaration	// DW 19/04/04
+        using_declaration	// DW 19/04/04
     |
         namespace_alias_definition
     |
@@ -4117,10 +4118,11 @@ using_declaration
 	;
 
 alias_declaration
-    {String s;}
+    {String s="";}
 	:	LITERAL_using
 		s=literal_ident ASSIGNEQUAL alias_declaration_type
 		SEMICOLON //{end_of_stmt();}
+        {#alias_declaration = #(#[CSM_TYPE_ALIAS, s], #alias_declaration);}
 	;
 
 // Rule to catch class definition inside type alias

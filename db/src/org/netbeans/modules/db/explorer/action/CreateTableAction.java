@@ -67,7 +67,7 @@ public class CreateTableAction extends BaseAction {
         DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
 
         if (dbconn != null) {
-            enabled = DatabaseConnection.isVitalConnection(dbconn.getConnection(), dbconn);
+            enabled = dbconn.isVitalConnection();
         }
 
         return enabled;

@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.Query;
@@ -212,9 +213,9 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                 QueryUtil.createPackageUsagesQuery(binaryName,usageType,Occur.SHOULD),
                                 scope);
                         if (q!=null) {
-                            index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
+                            index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(false), cancel.get(), q);
                             if (ctu.second() != null) {
-                                ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
+                                ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(false), cancel.get(), q);
                             }
                         }
                         return null;
@@ -238,9 +239,9 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                     QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD),
                                     scope);
                             if (usagesQuery != null) {
-                                index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                                index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(false), cancel.get(), usagesQuery);
                                 if (ctu.second() != null) {
-                                    ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                                    ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(false), cancel.get(), usagesQuery);
                                 }
                             }
                             return null;
@@ -261,6 +262,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             @NonNull final String simpleName,
             @NonNull final ClassIndex.NameKind kind,
             @NonNull final Set<? extends ClassIndex.SearchScopeType> scope,
+            @NonNull final FieldSelector selector,
             @NonNull final Convertor<? super Document, T> convertor,
             @NonNull final Collection<? super T> result) throws InterruptedException, IOException {
         final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
@@ -276,9 +278,9 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                             DocumentUtil.translateQueryKind(kind)),
                         scope);
                     if (query != null) {
-                        index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                        index.query(result, ctu.first(), selector, cancel.get(), query);
                         if (ctu.second() != null) {
-                            ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                            ctu.second().query(result, convertor, selector, cancel.get(), query);
                         }
                     }
                     return null;
@@ -316,7 +318,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                             result,
                             ctu.first(),
                             t2s,
-                            DocumentUtil.declaredTypesFieldSelector(),
+                            DocumentUtil.declaredTypesFieldSelector(false),
                             cancel.get(),
                             query);
                     if (ctu.second() != null) {
@@ -324,7 +326,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                             result,
                             convertor,
                             t2s,
-                            DocumentUtil.declaredTypesFieldSelector(),
+                            DocumentUtil.declaredTypesFieldSelector(false),
                             cancel.get(),
                             query);
                     }
@@ -621,7 +623,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                             index.query(
                                     filter,
                                     DocumentUtil.binaryNameConvertor(),
-                                    DocumentUtil.declaredTypesFieldSelector(),
+                                    DocumentUtil.declaredTypesFieldSelector(false),
                                     null,
                                     DocumentUtil.queryClassWithEncConvertor(true).convert(Pair.<String,String>of(clsName,relPath)));
                         } catch (InterruptedException ie) {

@@ -373,9 +373,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         APTFileCacheEntry aptCacheEntry = null;
         FilePreprocessorConditionState pcState = null;
         boolean foundInCache = false;
-        // check post include cache
-        if (params.postIncludeState != null && params.postIncludeState.hasDeadBlocks()) {
-            assert params.postIncludeState.hasPostIncludeMacroState() : "how could it be? " + params.includedPath;
+        // check cache if it has complete post include state
+        if (params.postIncludeState != null 
+                && params.postIncludeState.hasPostIncludeMacroState()
+                && params.postIncludeState.hasDeadBlocks()) {
             pcState = getCsmCorePackageAccessor().createPCState(params.includedPath, params.postIncludeState.getDeadBlocks());
             params.preprocHandler.getMacroMap().setState(params.postIncludeState.getPostIncludeMacroState());
             foundInCache = true;

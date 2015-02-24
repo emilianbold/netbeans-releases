@@ -42,7 +42,7 @@
 package org.netbeans.modules.glassfish.cloud.data;
 
 import java.util.*;
-import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
+import org.netbeans.modules.glassfish.tooling.data.cloud.GlassFishCloud;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;

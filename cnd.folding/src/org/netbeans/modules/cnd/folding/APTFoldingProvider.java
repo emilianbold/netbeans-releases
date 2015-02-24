@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.parser.FoldingParser.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.parser.FoldingParser.class, position = 1)
 public class APTFoldingProvider implements FoldingParser {
     
     /** we need public constructor for lookup */

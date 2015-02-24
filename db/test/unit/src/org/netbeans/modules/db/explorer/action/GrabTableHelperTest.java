@@ -100,7 +100,7 @@ public class GrabTableHelperTest extends DDLTestBase {
             assertNotNull(tableNode);
 
 
-            new GrabTableHelper().execute(tableNode.getLookup().lookup(DatabaseConnection.class).getConnector(),
+            new GrabTableHelper().execute(tableNode.getLookup().lookup(DatabaseConnection.class),
                     getSpecification(), tableNode.getTableHandle(), file);
 
             assertTrue(file.exists());

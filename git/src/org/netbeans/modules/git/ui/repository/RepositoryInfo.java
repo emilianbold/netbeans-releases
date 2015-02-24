@@ -753,14 +753,12 @@ public class RepositoryInfo {
     
     @NbBundle.Messages({
         "CTL_TrackingInfo.inSync=in sync with upstream branch",
-        "# {0} - number of outgoing commits", "CTL_TrackingInfo.out={0} outgoing commit",
-        "CTL_TrackingInfo.out1=1 outgoing commit",
-        "# {0} - number of incoming commits", "CTL_TrackingInfo.in={0} incoming commit",
-        "CTL_TrackingInfo.in1=1 incoming commit",
-        "# {0} - number of outgoing commits", "# {1} - number of incoming commits",
-        "CTL_TrackingInfo.inout={0} outgoing, {1} incoming commits",
         "# {0} - number of outgoing commits",
-        "CTL_TrackingInfo.inout1={0} outgoing, 1 incoming commit"
+        "CTL_TrackingInfo.out={0} outgoing {0,choice,1#commit|1<commits}",
+        "# {0} - number of incoming commits",
+        "CTL_TrackingInfo.in={0} incoming {0,choice,1#commit|1<commits}",
+        "# {0} - number of outgoing commits", "# {1} - number of incoming commits",
+        "CTL_TrackingInfo.inout={0} outgoing, {1} incoming {1,choice,1#commit|1<commits}"
     })
     public static class TrackingInfo {
         
@@ -816,19 +814,9 @@ public class RepositoryInfo {
             if (commitsIn == 0 && commitsOut == 0) {
                 return Bundle.CTL_TrackingInfo_inSync();
             } else if (commitsOut == 0) {
-                if (commitsIn == 1) {
-                    return Bundle.CTL_TrackingInfo_in1();
-                } else {
-                    return Bundle.CTL_TrackingInfo_in(commitsIn);
-                }
+                return Bundle.CTL_TrackingInfo_in(commitsIn);
             } else if (commitsIn == 0) {
-                if (commitsOut == 1) {
-                    return Bundle.CTL_TrackingInfo_out1();
-                } else {
-                    return Bundle.CTL_TrackingInfo_out(commitsOut);
-                }
-            } else if (commitsIn == 1) {
-                return Bundle.CTL_TrackingInfo_inout1(commitsOut);
+                return Bundle.CTL_TrackingInfo_out(commitsOut);
             } else {
                 return Bundle.CTL_TrackingInfo_inout(commitsOut, commitsIn);
             }

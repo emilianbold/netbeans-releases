@@ -414,7 +414,10 @@ public enum CppTokenId implements TokenId {
     
     // Errors
     INVALID_COMMENT_END("*/", "error"), // NOI18N
-    FLOAT_LITERAL_INVALID(null, "number"); // NOI18N
+    FLOAT_LITERAL_INVALID(null, "number"), // NOI18N
+    
+    // special EOF marker
+    EOF(null, "whitespace"); // NOI18N
     
     // make sure string names are the same used in the tokenIds above
     public static final String IDENTIFIER_CATEGORY = "identifier"; // NOI18N

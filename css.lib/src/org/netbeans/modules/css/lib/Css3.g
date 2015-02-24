@@ -645,7 +645,11 @@ sass_map_pair
 
 rule
     :
-    ((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws?
+        (
+            (SASS_AT_ROOT (ws selectorsGroup)?) 
+            | (SASS_AT_ROOT ws LPAREN ws? {tokenNameEquals("without") || tokenNameEquals("with")}? IDENT /* with || without */ ws? COLON ws? IDENT ws? RPAREN) 
+            | selectorsGroup
+        ) ws?
     LBRACE ws? syncToFollow
         declarations?
     RBRACE
@@ -673,7 +677,7 @@ declaration
     | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call)=> {isCssPreprocessorSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    | (((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws? LBRACE)=>rule
+    | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
     | {isLessSource()}? AT_IDENT LPAREN RPAREN
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control

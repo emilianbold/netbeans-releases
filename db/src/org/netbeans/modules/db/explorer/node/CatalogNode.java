@@ -93,11 +93,13 @@ public class CatalogNode extends BaseNode {
         lookup.add(toggleImportantInfo);
     }
 
+    @Override
     protected void initialize() {
         refreshMetaData();
 
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(DatabaseConnection.PROP_DEFCATALOG)) {
                         updateProperties();
@@ -109,7 +111,7 @@ public class CatalogNode extends BaseNode {
 
     private void refreshMetaData() {
         final MetadataModel metaDataModel = connection.getMetadataModel();
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         if (connected && metaDataModel != null) {
             new SwingWorker() {
                 @Override

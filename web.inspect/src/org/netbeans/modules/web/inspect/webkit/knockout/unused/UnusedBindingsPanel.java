@@ -125,15 +125,19 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
             @Override
             public void run() {
                 Page page = pageModel.getWebKit().getPage();
-                String scriptToInject = Files.getScript("knockout"); // NOI18N
-                scriptToInject = scriptToInject.replace("\"", "\\\""); // NOI18N
-                scriptToInject = scriptToInject.replace("\n", "\\n"); // NOI18N
+                String prefix = Files.getScript("knockout-pre"); // NOI18N
+                prefix = prefix.replace("\"", "\\\""); // NOI18N
+                prefix = toOneLiner(prefix);
+                String suffix = Files.getScript("knockout-post"); // NOI18N
+                suffix = suffix.replace("\"", "\\\""); // NOI18N
+                suffix = suffix.replace("\n", "\\n"); // NOI18N
                 String preprocessor =
                         "(function (script) {\n" + // NOI18N
-                        "  var scriptToInject = \"" + scriptToInject + "\";\n" +  // NOI18N
+                        "  var prefix = \"" + prefix + "\";\n" +  // NOI18N
+                        "  var suffix = \"" + suffix + "\";\n" +  // NOI18N
                         "  var newScript;\n" + // NOI18N
                         "  if (script.indexOf('getBindingAccessors') != -1 && script.indexOf('bindingProvider') != -1) {\n" + // NOI18N
-                        "    newScript = script + scriptToInject;\n" + // NOI18N
+                        "    newScript = prefix + script + suffix;\n" + // NOI18N
                         "  } else {\n" + // NOI18N
                         "    newScript = script;\n" + // NOI18N
                         "  }\n" + // NOI18N
@@ -142,6 +146,29 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
                 page.reload(false, null, preprocessor);
             }
         });
+    }
+
+    /**
+     * Removes all new-line characters (and line comments) from
+     * the given JavaScript source code. In other words, puts all the JavaScript
+     * source code on one line.
+     * 
+     * @param jsCode JavaScript source code.
+     * @return one-liner equivalent to the specified JavaScript code. 
+     */
+    private String toOneLiner(String jsCode) {
+        StringBuilder result = new StringBuilder(jsCode.length());
+        for (String line : jsCode.split("\n")) { // NOI18N
+            int index = line.indexOf("//"); // NOI18N
+            String lineWithoutComment;
+            if (index == -1) {
+                lineWithoutComment = line;
+            } else {
+                lineWithoutComment = line.substring(0,index);
+            }
+            result.append(lineWithoutComment);
+        }
+        return result.toString();
     }
 
     /**
@@ -268,13 +295,17 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
             for (Object o : array) {
                 JSONObject jsonBinding = (JSONObject)o;
                 String name = (String)jsonBinding.get("name"); // NOI18N
+                if (ignoreUnusedBinding(name)) {
+                    continue;
+                }
                 int id = ((Number)jsonBinding.get("id")).intValue();
                 UnusedBinding binding = new UnusedBinding(id, name,
                     (String)jsonBinding.get("nodeTagName"), // NOI18N
                     (String)jsonBinding.get("nodeId"), // NOI18N
                     (String)jsonBinding.get("nodeClasses"), // NOI18N
+                    (Boolean)jsonBinding.get("nodeRemoved"), // NOI18N
                     pageModel
-                ); 
+                );
                 Map<Integer,UnusedBinding> innerMap = map.get(name);
                 if (innerMap == null) {
                     innerMap = new HashMap<Integer,UnusedBinding>();
@@ -286,6 +317,19 @@ public class UnusedBindingsPanel extends javax.swing.JPanel implements ExplorerM
             Logger.getLogger(UnusedBindingsPanel.class.getName()).log(Level.INFO, null, pex);
         }
         return map;
+    }
+
+    /**
+     * Determines whether the unused binding with the specified name should
+     * be ignored.
+     * 
+     * @param name name of the unused binding.
+     * @return {@code true} if the unused binding with the specified name
+     * should be ignored, returns {@code false} otherwise.
+     */
+    private boolean ignoreUnusedBinding(String name) {
+        // Ignore Knockout's implementation details like _ko_property_writers
+        return name.startsWith("_ko_"); // NOI18N
     }
 
     /**

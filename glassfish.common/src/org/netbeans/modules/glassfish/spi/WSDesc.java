@@ -50,9 +50,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.admin.CommandListWebServices;
-import org.glassfish.tools.ide.admin.ResultList;
-import org.glassfish.tools.ide.admin.ServerAdmin;
+import org.netbeans.modules.glassfish.tooling.admin.CommandListWebServices;
+import org.netbeans.modules.glassfish.tooling.admin.ResultList;
+import org.netbeans.modules.glassfish.tooling.admin.ServerAdmin;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 

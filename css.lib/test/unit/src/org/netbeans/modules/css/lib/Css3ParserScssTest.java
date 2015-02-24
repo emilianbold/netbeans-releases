@@ -1788,4 +1788,17 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testAtRootDeclaration() {
+        String source = "@media print {\n"
+                + "  .page {\n"
+                + "    width: 8in;\n"
+                + "    @at-root (without: media) {\n"
+                + "      color: red;\n"
+                + "    }\n"
+                + "  }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }

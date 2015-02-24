@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.terminal.actions;
 
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
@@ -62,7 +61,7 @@ import org.openide.util.Lookup;
 })
 public class ClearAction extends TerminalAction {
 
-    public ClearAction(Lookup context) {
+    public ClearAction(Terminal context) {
 	super(context);
 	putValue(NAME, getMessage("CTL_Clear")); //NOI18N
 	/* OLD
@@ -73,7 +72,7 @@ public class ClearAction extends TerminalAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {super.actionPerformed(e);
+    public void performAction() {
 	Terminal terminal = getTerminal();
 	Term term = terminal.term();
 
@@ -84,12 +83,8 @@ public class ClearAction extends TerminalAction {
     }
 
     // --------------------------------------------- 
-    public ClearAction() {
-	super(null);
-    }
-
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new ClearAction(actionContext);
+	return new ClearAction(actionContext.lookup(Terminal.class));
     }
 }

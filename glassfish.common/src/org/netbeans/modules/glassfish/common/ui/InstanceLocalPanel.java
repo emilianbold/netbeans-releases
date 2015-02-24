@@ -46,7 +46,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.modules.glassfish.tooling.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.PortCollection;

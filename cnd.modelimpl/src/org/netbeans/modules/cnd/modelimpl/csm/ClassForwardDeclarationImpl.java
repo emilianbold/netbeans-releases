@@ -162,6 +162,16 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                     secondChild.getType() == CPPTokenTypes.LITERAL_class)) {
                 return getStartOffset(secondChild);
             }
+        } else if (firstChild != null && firstChild.getType() == CPPTokenTypes.LITERAL_using) {
+            AST assign = AstUtil.findSiblingOfType(firstChild, CPPTokenTypes.ASSIGNEQUAL);
+            if (assign != null && assign.getNextSibling() != null) {
+                switch (assign.getNextSibling().getType()) {
+                    case CPPTokenTypes.LITERAL_class:
+                    case CPPTokenTypes.LITERAL_struct:
+                    case CPPTokenTypes.LITERAL_union:
+                        return getStartOffset(assign.getNextSibling());
+                }
+            }
         }
         return getStartOffset(ast);        
     }

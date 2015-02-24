@@ -98,6 +98,20 @@ public class DOM {
     }
 
     /**
+     * Enables the DOM agent.
+     */
+    public void enable() {
+        transport.sendBlockingCommand(new Command("DOM.enable")); // NOI18N
+    }
+
+    /**
+     * Disables the DOM agent.
+     */
+    public void disable() {
+        transport.sendCommand(new Command("DOM.disable")); // NOI18N
+    }
+
+    /**
      * Returns the document node (the root DOM node).
      * 
      * @return document node.

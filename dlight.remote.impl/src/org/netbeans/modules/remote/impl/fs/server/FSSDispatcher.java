@@ -127,7 +127,7 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
-    private static final String MIN_SERVER_VERSION = "1.5.2"; // NOI18N
+    private static final String MIN_SERVER_VERSION = "1.6.2"; // NOI18N
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
@@ -361,6 +361,8 @@ import org.openide.util.RequestProcessor;
             srv = getOrCreateServer();
         } catch (ConnectionManager.CancellationException ex) {
             throw new java.util.concurrent.CancellationException(ex.getMessage());
+        } catch (ConnectException ex) {
+            throw ex; // that's normal, transport still valid, just disconnect occurred
         } catch (IOException ex) {
             setInvalid(false);
             throw ex;
@@ -675,6 +677,11 @@ import org.openide.util.RequestProcessor;
             }
             if (cleanupUponStart) {
                 argsList.add("-c"); // NOI18N
+            } else {
+                if (!RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+                    // there is no cache locally => clean remote cache as well
+                    argsList.add("-c"); // NOI18N
+                }
             }
             if (SERVER_THREADS > 0 ) {
                 argsList.add("-t"); // NOI18N

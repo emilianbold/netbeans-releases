@@ -78,7 +78,7 @@ public final class DbUtilities {
 
     public static void reportError(String message, String exception) {
         String error = formatError(message, exception);
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(error, NotifyDescriptor.ERROR_MESSAGE));
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(error, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     public static <T> T doWithProgress(String message, final Callable<? extends T> run) throws InvocationTargetException {

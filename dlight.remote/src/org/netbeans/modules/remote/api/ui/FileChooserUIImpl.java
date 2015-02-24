@@ -927,8 +927,9 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
             // F2 as rename shortcut
             if (evt.getKeyCode() == KeyEvent.VK_F2) {
-                FileNode node = (FileNode)tree.getLastSelectedPathComponent();
-                if (node != null) {
+                final Object lastSelectedPathComponent = tree.getLastSelectedPathComponent();
+                if (lastSelectedPathComponent instanceof FileNode) {
+                    FileNode node = (FileNode)lastSelectedPathComponent;
                     applyEdit(node);
                 }
             }
@@ -964,18 +965,21 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 for (int i = 0; i < 2; ++i) {
                     String searchedText = searchBuf.toString().toLowerCase();
                     String curFileName = null;
-                    if (i == 0 && activePath != null && (curFileName = fileChooser.getName(((FileNode) activePath.getLastPathComponent()).getFile())) != null
+                    if (i == 0 && activePath != null && (curFileName = fileChooser.getName(getLeafFile(activePath))) != null
                             && curFileName.toLowerCase().startsWith(searchedText)) {
                         // keep selection
                         return;
                     }
                     for (TreePath path : paths) {
-                        curFileName = fileChooser.getName(((FileNode) path.getLastPathComponent()).getFile());
-                        if (curFileName != null && curFileName.toLowerCase().startsWith(searchedText)) {
-                            tree.makeVisible(path);
-                            tree.scrollPathToVisible(path);
-                            tree.setSelectionPath(path);
-                            return;
+                        final File file = getLeafFile(path);
+                        if (file != null) {
+                            curFileName = fileChooser.getName(file);
+                            if (curFileName != null && curFileName.toLowerCase().startsWith(searchedText)) {
+                                tree.makeVisible(path);
+                                tree.scrollPathToVisible(path);
+                                tree.setSelectionPath(path);
+                                return;
+                            }
                         }
                     }
                     searchBuf.delete(0, searchBuf.length() - 1);
@@ -1035,8 +1039,11 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         item2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                FileNode node = (FileNode)tree.getLastSelectedPathComponent();
-                applyEdit(node);
+                final Object lastSelectedPathComponent = tree.getLastSelectedPathComponent();
+                if (lastSelectedPathComponent instanceof FileNode) {
+                    FileNode node = (FileNode)lastSelectedPathComponent;
+                    applyEdit(node);
+                }
             }
         });
 
@@ -1065,7 +1072,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
         if(nodePath.length == 1) {
 
-            File file = ((FileNode)nodePath[0].getLastPathComponent()).getFile();
+            File file = getLeafFile(nodePath[0]);
             // Don't do anything if it's a special file
             if(!canWrite(file)) {
                 return;
@@ -1092,15 +1099,18 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                         setCursor(fileChooser, Cursor.WAIT_CURSOR);
                         cannotDelete = 0;
                         for(int i = 0; i < nodePath.length; i++) {
-                            FileNode nodeToDelete = (FileNode)nodePath[i].getLastPathComponent();
-                            try {
-                                delete(nodeToDelete.getFile());
-                                nodes2Remove.add(nodeToDelete);
-                            } catch (IOException ignore) {
-                                cannotDelete++;
+                            final Object lastPathComponent = nodePath[i].getLastPathComponent();
+                            if (lastPathComponent instanceof FileNode) {                                
+                                FileNode nodeToDelete = (FileNode)lastPathComponent;
+                                try {
+                                    delete(nodeToDelete.getFile());
+                                    nodes2Remove.add(nodeToDelete);
+                                } catch (IOException ignore) {
+                                    cannotDelete++;
 
-                                if(canWrite(nodeToDelete.getFile())) {
-                                    list.add(nodeToDelete.getFile());
+                                    if(canWrite(nodeToDelete.getFile())) {
+                                        list.add(nodeToDelete.getFile());
+                                    }
                                 }
                             }
                         }
@@ -1820,18 +1830,21 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        FileNode selectedNode = (FileNode)path.getLastPathComponent();
+                        Object lastPathComponent = path.getLastPathComponent();
+                        if (lastPathComponent instanceof FileNode) {
+                            FileNode selectedNode = (FileNode)lastPathComponent;
 
-                        if(selectedNode == null || !canWrite(selectedNode.getFile())) {
-                            return;
-                        }
+                            if(selectedNode == null || !canWrite(selectedNode.getFile())) {
+                                return;
+                            }
 
-                        try {
-                            newFolderNode = new FileNode(fileChooser.getFileSystemView().createNewFolder(selectedNode.getFile()));
-                            model.insertNodeInto(newFolderNode, selectedNode, selectedNode.getChildCount());
-                            applyEdit(newFolderNode);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                            try {
+                                newFolderNode = new FileNode(fileChooser.getFileSystemView().createNewFolder(selectedNode.getFile()));
+                                model.insertNodeInto(newFolderNode, selectedNode, selectedNode.getChildCount());
+                                applyEdit(newFolderNode);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
                 });
@@ -1879,10 +1892,13 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                     // first pass, out of EQ thread, loads data
                     markStartTime();
                     setCursor(fileChooser, Cursor.WAIT_CURSOR);
-                    node = (FileNode) path.getLastPathComponent();
-                    node.loadChildren(fileChooser, true);
-                    // send to second pass
-                    EventQueue.invokeLater(this);
+                    final Object lastPathComponent = path.getLastPathComponent();
+                    if (lastPathComponent instanceof FileNode) {
+                        node = (FileNode) lastPathComponent;
+                        node.loadChildren(fileChooser, true);
+                        // send to second pass
+                        EventQueue.invokeLater(this);
+                    }
                 } else {
                     // second pass, in EQ thread
                     ((DefaultTreeModel) tree.getModel()).nodeStructureChanged(node);
@@ -2433,13 +2449,15 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         private File[] getSelectedNodes(TreePath[] paths) {
             List<File> files = new LinkedList<File>();
             for(int i = 0; i < paths.length; i++) {
-                File file = ((FileNode)paths[i].getLastPathComponent()).getFile();
-                if(file.isDirectory()
-                        && fileChooser.isTraversable(file)
-                        && !fileChooser.getFileSystemView().isFileSystem(file)) {
-                    continue;
+                File file = getLeafFile(paths[i]);
+                if (file!= null) {
+                    if(file.isDirectory()
+                            && fileChooser.isTraversable(file)
+                            && !fileChooser.getFileSystemView().isFileSystem(file)) {
+                        continue;
+                    }
+                    files.add(file);
                 }
-                files.add(file);
             }
             return files.toArray(new File[files.size()]);
         }
@@ -2532,12 +2550,14 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             TreePath path = tree.getPathForRow(row);
 
             if (path != null) {
-                FileNode node = (FileNode) path.getLastPathComponent();
-                ((DirectoryTreeModel) tree.getModel()).nodeChanged(node);
-                if(!fileChooser.getFileSystemView().isFileSystem(node.getFile())) {
-                    return;
+                final Object lastPathComponent = path.getLastPathComponent();
+                if (lastPathComponent instanceof FileNode) {
+                    FileNode node = (FileNode) lastPathComponent;
+                    ((DirectoryTreeModel) tree.getModel()).nodeChanged(node);
+                    if(!fileChooser.getFileSystemView().isFileSystem(node.getFile())) {
+                        return;
+                    }
                 }
-
                 tree.setSelectionPath(path);
                 popupMenu.show(tree, x, y);
             }
@@ -2577,9 +2597,12 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         public void actionPerformed(ActionEvent e) {
             if (tree.isFocusOwner() && isSelectionKept(pathToRename)) {
                 if (e.getSource() == renameTimer) {
-                    FileNode node = (FileNode)tree.getLastSelectedPathComponent();
-                    if (node != null) {
-                        applyEdit(node);
+                    final Object lastSelectedPathComponent = tree.getLastSelectedPathComponent();
+                    if (lastSelectedPathComponent instanceof FileNode) {
+                        FileNode node = (FileNode)lastSelectedPathComponent;
+                        if (node != null) {
+                            applyEdit(node);
+                        }
                     }
                 }
             }
@@ -2656,19 +2679,21 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         @Override
         public void treeExpanded(TreeExpansionEvent evt) {
             TreePath path = evt.getPath();
-            FileNode node = (FileNode) path
-                    .getLastPathComponent();
-            if(!node.isLoaded()) {
-                expandNode(fileChooser, path);
-            } else {
-                // fixed #96954, to be able to add a new directory
-                // when the node has been already loaded
-                if(addNewDirectory) {
-                    addNewDirectory(path);
-                    addNewDirectory = false;
+            final Object lastPathComponent = path.getLastPathComponent();
+            if (lastPathComponent instanceof FileNode) {
+                FileNode node = (FileNode) lastPathComponent;
+                if(!node.isLoaded()) {
+                    expandNode(fileChooser, path);
+                } else {
+                    // fixed #96954, to be able to add a new directory
+                    // when the node has been already loaded
+                    if(addNewDirectory) {
+                        addNewDirectory(path);
+                        addNewDirectory = false;
+                    }
+                    // Fix for IZ#123815 : Cannot refresh the tree content
+                    refreshNode( path , node );
                 }
-                // Fix for IZ#123815 : Cannot refresh the tree content
-                refreshNode( path , node );
             }
         }
         @Override
@@ -2759,15 +2784,18 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             final TreePath path = tree.getSelectionPath();
 
             if(path == null) {
+                final Object root = tree.getModel().getRoot();
                 //fixed bz#249623
-                if (tree.getModel().getRoot() instanceof LoadingNode) {
+                if (root instanceof LoadingNode) {
                     //do nothing, just return
                     return;
                 }
                 // if no nodes are selected, get the root node
                 // fixed #96954, to be able to add a new directory
                 // in the current directory shown in the tree
-                addNewDirectory(new TreePath(model.getPathToRoot((FileNode)tree.getModel().getRoot())));
+                if (root instanceof FileNode) {
+                    addNewDirectory(new TreePath(model.getPathToRoot((FileNode)root)));
+                }
             }
 
             if(path != null) {
@@ -2885,23 +2913,26 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         @Override
         public void valueForPathChanged(TreePath path, Object newValue) {
             boolean refreshTree = false;
-            FileNode node = (FileNode)path.getLastPathComponent();
-            File f = node.getFile();
-            File newFile = getFileChooser().getFileSystemView().createFileObject(f.getParentFile(), (String)newValue);
+            final Object lastPathComponent = path.getLastPathComponent();
+            if (lastPathComponent instanceof FileNode) {
+                FileNode node = (FileNode)lastPathComponent;
+                File f = node.getFile();
+                File newFile = getFileChooser().getFileSystemView().createFileObject(f.getParentFile(), (String)newValue);
 
-            if(f.renameTo(newFile)) {
-                // fix bug #97521, #96960
-                if(tree.isExpanded(path)) {
-                    tree.collapsePath(path);
-                    refreshTree = true;
-                }
+                if(f.renameTo(newFile)) {
+                    // fix bug #97521, #96960
+                    if(tree.isExpanded(path)) {
+                        tree.collapsePath(path);
+                        refreshTree = true;
+                    }
 
-                node.setFile(newFile);
-                node.removeAllChildren();
+                    node.setFile(newFile);
+                    node.removeAllChildren();
 
-                ((DefaultTreeModel) tree.getModel()).nodeStructureChanged(node);
-                if(refreshTree) {
-                    tree.expandPath(path);
+                    ((DefaultTreeModel) tree.getModel()).nodeStructureChanged(node);
+                    if(refreshTree) {
+                        tree.expandPath(path);
+                    }
                 }
             }
         }
@@ -3526,6 +3557,16 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     }
 
 
+    private static File getLeafFile(TreePath path) {
+        if (path != null) {
+            Object lastPathComponent = path.getLastPathComponent();
+            if (lastPathComponent instanceof FileNode) {
+                return ((FileNode) lastPathComponent).getFile();
+            }
+        }
+        return null;
+    }
+    
     /* A file filter which accepts file patterns containing
      * the special wildcards *? on Windows and *?[] on Unix.
      */

@@ -45,12 +45,12 @@ package org.netbeans.modules.db.sql.analyzer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeSet;
 
 /**
  *
@@ -76,7 +76,7 @@ public class SelectStatement extends SQLStatement {
             return statementPath.get(0).getTablesClause();
         }
         Collections.reverse(statementPath);
-        Set<QualIdent> unaliasedTableNames = new HashSet<QualIdent>();
+        Set<QualIdent> unaliasedTableNames = new TreeSet<QualIdent>();
         Map<String, QualIdent> aliasedTableNames = new HashMap<String, QualIdent>();
         for (SelectStatement statement : statementPath) {
             TablesClause statementFromClause = statement.getTablesClause();

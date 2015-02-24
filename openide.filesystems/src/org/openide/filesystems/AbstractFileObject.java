@@ -197,6 +197,17 @@ final class AbstractFileObject extends AbstractFolder {
         return retVal;
     }
 
+    @Override
+    public String getMIMEType(String... withinMIMETypes) {
+        String retVal = getAbstractFileSystem().info.mimeType(getPath());
+
+        if (retVal == null) {
+            retVal = super.getMIMEType(withinMIMETypes);
+        }
+
+        return retVal;
+    }
+
     /* Get the size of the file.
     * @return the size of the file in bytes or zero if the file does not contain data (does not
     *  exist or is a folder).

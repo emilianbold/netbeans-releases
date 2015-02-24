@@ -289,6 +289,18 @@ public class ScriptsHandler {
         throw new OutOfScope(localPath, Arrays.toString(localPathPrefixes));
     }
     
+    public File[] getLocalRoots() {
+        if (localRoots == null) {
+            return new File[]{};
+        }
+        int l = localRoots.length;
+        File[] roots = new File[l];
+        for (int i = 0; i < l; i++) {
+            roots[i] = FileUtil.toFile(localRoots[i]);
+        }
+        return roots;
+    }
+    
     private static boolean isChildOf(String parent, String child) {
         if (!child.startsWith(parent)) {
             return false;

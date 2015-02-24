@@ -359,11 +359,14 @@ public class AstRenderer {
                     default:
                         renderNSP(token, currentNamespace, container, file);
                 }
-            }  catch (AstRendererException e) {
+            } catch (AstRendererException e) {
                 if (!SKIP_AST_RENDERER_EXCEPTIONS) {
                     // In MySQL related tests we see endless "empty function name" exceptions
                     DiagnosticExceptoins.register(e);
                 }
+            } catch (Throwable thr) {
+              CharSequence fileName = (file != null) ? file.getAbsolutePath() : "<unknown>"; // NOI18N
+              throw new RuntimeException("Exception in file " + fileName + ": " + thr.getMessage(), thr); // NOI18N
             }
         }
     }
@@ -1209,17 +1212,24 @@ public class AstRenderer {
                                 break;
                         }
                     }
-                } else if(firstChild.getType() == CPPTokenTypes.LITERAL_using || firstChild.getType() == CPPTokenTypes.LITERAL_template) {
+                } else if (firstChild.getType() == CPPTokenTypes.CSM_TYPE_ALIAS || 
+                            firstChild.getType() == CPPTokenTypes.LITERAL_using ||
+                            firstChild.getType() == CPPTokenTypes.LITERAL_template) {
                     AST classifier = null;
                     int arrayDepth = 0;
                     AST nameToken = null;
                     AST ptrOperator = null;
                     AST templateParams = null;
+                    AST typeAliasAst = ast;
                     CharSequence name = "";
                     
                     boolean typeof = false;
                     for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
+                            case CPPTokenTypes.CSM_TYPE_ALIAS:
+                                typeAliasAst = curr;
+                                curr = curr.getFirstChild(); // go deeper
+                                break;
                             case CPPTokenTypes.IDENT:
                                 // now token corresponds the name, since the case "struct S" is processed before
                                 nameToken = curr;
@@ -1231,13 +1241,10 @@ public class AstRenderer {
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN: {
                                 classifier = curr;
-                                TypeImpl typeImpl = null;
                                 List<CsmTemplateParameter> csmTemplateParams = renderTemplateParams(templateParams, scope);
-                                if (classifier != null) {
-                                    // Type of type alias could have similar syntax as declarations in function parameters
-                                    // (unnamed types are allowed as alias has name outside its type declaration)
-                                    typeImpl = TypeFactory.createType(classifier, null, file, null, ptrOperator, arrayDepth, null, scope, csmTemplateParams, true, true);
-                                }
+                                // Type of type alias could have similar syntax as declarations in function parameters
+                                // (unnamed types are allowed as alias has name outside its type declaration)
+                                TypeImpl typeImpl = TypeFactory.createType(classifier, null, file, null, ptrOperator, arrayDepth, null, scope, csmTemplateParams, true, true);
                                 if (typeImpl != null) {
                                     typeImpl.setTypeOfTypedef();
                                     createTypeAlias(results, ast, csmTemplateParams, file, scope, typeImpl, name);
@@ -1248,7 +1255,26 @@ public class AstRenderer {
                                 arrayDepth = 0;
                                 break;
                             }
-                                
+                            case CPPTokenTypes.LITERAL_class:
+                            case CPPTokenTypes.LITERAL_struct:
+                            case CPPTokenTypes.LITERAL_union: {
+                                TypeImpl typeImpl = null;
+                                AST next = curr.getNextSibling();
+                                if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                                    classifier = curr;
+                                    CsmClassForwardDeclaration cfdi = createForwardClassDeclaration(typeAliasAst, container, file, scope);
+                                    typeImpl = TypeFactory.createType(classifier, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
+                                }
+                                if (typeImpl != null) {
+                                    typeImpl.setTypeOfTypedef();
+                                    createTypeAlias(results, ast, null, file, scope, typeImpl, name);
+                                }
+                                ptrOperator = null;
+                                name = "";
+                                nameToken = null;
+                                arrayDepth = 0;                                
+                                break;
+                            }
                             case CPPTokenTypes.CSM_ENUM_DECLARATION:
                             case CPPTokenTypes.CSM_CLASS_DECLARATION: {
                                 // This is type alias to class definition

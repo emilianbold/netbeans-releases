@@ -89,7 +89,7 @@ static int refresh_sleep = 1;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 5
+#define FS_SERVER_MID_VERSION 6
 #define FS_SERVER_MINOR_VERSION 2
 
 typedef struct fs_entry {
@@ -97,9 +97,7 @@ typedef struct fs_entry {
     char* name;
     int /*short?*/ link_len;
     char* link;
-    unsigned int  uid;
-    unsigned int  gid;
-    unsigned int mode;
+    char file_type;
     long size;
     long long mtime;
     bool can_read : 1;
@@ -242,7 +240,7 @@ static const char* decode_##type_name (const char* text, type* result) { \
 }
 
 DECLARE_DECODE(int, int, 12)
-DECLARE_DECODE(unsigned int, uint, 12)
+//DECLARE_DECODE(unsigned int, uint, 12) unused so far
 DECLARE_DECODE(long, long, 20)
 DECLARE_DECODE(unsigned long, ulong, 20)
 DECLARE_DECODE(long long, long_long, 20)
@@ -368,9 +366,7 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
     } else {
         entry->link = "";
     }
-    entry->gid = entry2clone->gid;
-    entry->uid = entry2clone->uid;
-    entry->mode = entry2clone->mode;
+    entry->file_type = entry2clone->file_type;
     entry->size = entry2clone->size;
     entry->mtime = entry2clone->mtime;
     entry->can_read = entry2clone->can_read;
@@ -387,7 +383,7 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
  * from a line that is read from persistence
  * NB: modifies buf: can unescape and zero-terminate strings
  */
-static fs_entry *decode_entry_response(char* buf, int buf_size, int persistence_version) {
+static fs_entry *decode_entry_response(char* buf, int buf_size) {
 
     // format: 
     // Version 1: 
@@ -415,14 +411,8 @@ static fs_entry *decode_entry_response(char* buf, int buf_size, int persistence_
     p += tmp.name_len + 1;
     tmp.name_len = strlen(tmp.name);
 
-    p = decode_uint(p, &tmp.uid);
-    if (!p) { return NULL; }; // decode_int already printed error message
-
-    p = decode_uint(p, &tmp.gid);
-    if (!p) { return NULL; };
-
-    p = decode_uint(p, &tmp.mode);
-    if (!p) { return NULL; };
+    tmp.file_type = *p;
+    p += 2;
 
     p = decode_long(p, &tmp.size);
     if (!p) { return NULL; };
@@ -430,40 +420,38 @@ static fs_entry *decode_entry_response(char* buf, int buf_size, int persistence_
     p = decode_long_long(p, &tmp.mtime);
     if (!p) { return NULL; };
 
-    if (persistence_version > 1) {
-        // next segment is "rwx" for this user
-        if (*p == 'r') {
-            tmp.can_read = true;
-        } else if (*p == '-') {
-            tmp.can_read = false;
-        } else {
-            report_error("wrong can_read flag: %c\n", *p);
-            return NULL;
-        }
-        p++;
-        if (*p == 'w') {
-            tmp.can_write = true;
-        } else if (*p == '-') {
-            tmp.can_write = false;
-        } else {
-            report_error("wrong can_write flag: %c\n", *p);
-            return NULL;
-        }
-        p++;
-        if (*p == 'x') {
-            tmp.can_exec = true;
-        } else if (*p == '-') {
-            tmp.can_exec = false;
-        } else {
-            report_error("wrong can_exec flag: %c\n", *p);
-            return NULL;
-        }
-        p += 2;
-        p = decode_ulong(p, &tmp.st_dev);
-        if (!p) { return NULL; };
-        p = decode_ulong(p, &tmp.st_ino);
-        if (!p) { return NULL; };
+    // next segment is "rwx" for this user
+    if (*p == 'r') {
+        tmp.can_read = true;
+    } else if (*p == '-') {
+        tmp.can_read = false;
+    } else {
+        report_error("wrong can_read flag: %c\n", *p);
+        return NULL;
     }
+    p++;
+    if (*p == 'w') {
+        tmp.can_write = true;
+    } else if (*p == '-') {
+        tmp.can_write = false;
+    } else {
+        report_error("wrong can_write flag: %c\n", *p);
+        return NULL;
+    }
+    p++;
+    if (*p == 'x') {
+        tmp.can_exec = true;
+    } else if (*p == '-') {
+        tmp.can_exec = false;
+    } else {
+        report_error("wrong can_exec flag: %c\n", *p);
+        return NULL;
+    }
+    p += 2;
+    p = decode_ulong(p, &tmp.st_dev);
+    if (!p) { return NULL; };
+    p = decode_ulong(p, &tmp.st_ino);
+    if (!p) { return NULL; };
 
     p = decode_int(p, &tmp.link_len);
     if (!p) { return NULL; };
@@ -505,13 +493,16 @@ static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cac
         }
         return false;
     }
-
+    
     *persistence_version = 1;
     // in version 1 version string was not written into file
     size_t version_labe_len = strlen(persistence_version_label);
     if (strncmp(buf, persistence_version_label, version_labe_len) == 0) {
         if (!decode_int(buf + version_labe_len, persistence_version)) {
             report_error("error reading cache from %s for %s: wrong version format: %s\n", cache_path, path, buf);
+            return false;
+        }
+        if (*persistence_version != persistence_version_curr) {
             return false;
         }
         if (!fgets(buf, buf_size, cache_fp)) {
@@ -537,7 +528,7 @@ static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cac
             trace(TRACE_FINEST, "an empty one; continuing...");
             continue;
         }
-        fs_entry *entry = decode_entry_response(buf, buf_size, *persistence_version);
+        fs_entry *entry = decode_entry_response(buf, buf_size);
         if (entry) {
             array_add(entries, entry);
         } else {
@@ -578,17 +569,22 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     fs_entry tmp;
     tmp.name_len = strlen(name);
     tmp.name = name;
-    tmp.uid = stat_buf->st_uid;
-    tmp.gid = stat_buf->st_gid;
-    tmp.mode = stat_buf->st_mode;
+    tmp.file_type = mode_to_file_type_char(stat_buf->st_mode);
     tmp.size = stat_buf->st_size;
     tmp.mtime = get_mtime(stat_buf);
     tmp.st_dev = stat_buf->st_dev;
     tmp.st_ino = stat_buf->st_ino;
-    tmp.can_read = !access(abspath, R_OK);
-    tmp.can_write = !access(abspath, W_OK);
-    tmp.can_exec = !access(abspath, X_OK);
     bool is_link = S_ISLNK(stat_buf->st_mode);
+    if (is_link) {
+        // links themselves always has rwx (by definition)
+        tmp.can_read = true;
+        tmp.can_write = true;
+        tmp.can_exec = true;
+   } else {
+        tmp.can_read = !access(abspath, R_OK);
+        tmp.can_write = !access(abspath, W_OK);
+        tmp.can_exec = !access(abspath, X_OK);
+   }
     tmp.link_len = is_link ? strlen(link) : 0;
     tmp.link = is_link ? link : "";
     fs_entry* new_entry = create_fs_entry(&tmp);
@@ -656,7 +652,7 @@ static bool response_entry_create(buffer response_buf,
         snprintf(response_buf.data, response_buf.size, "%i %s %c %lu %lli %c%c%c %lu %lu %i %s\n",
                 utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
-                file_type_char(stat_buf.st_mode),
+                mode_to_file_type_char(stat_buf.st_mode),
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
                 can_read, can_write, can_exec,
@@ -667,7 +663,7 @@ static bool response_entry_create(buffer response_buf,
         return true;
     } else {
         err_set(errno, "error getting lstat for '%s': %s", abspath, err_to_string(errno));
-        report_error("error getting lstat for '%s': %s\n", abspath, err_get_message());
+        //report_error("error getting lstat for '%s': %s\n", abspath, err_get_message());
         return false;
     }
 }
@@ -851,7 +847,7 @@ static void response_stat(int request_id, const char* path) {
                 request_id,
                 utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
-                file_type_char(stat_buf.st_mode),
+                mode_to_file_type_char(stat_buf.st_mode),
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
                 can_read, can_write, can_exec,
@@ -863,7 +859,6 @@ static void response_stat(int request_id, const char* path) {
     }  else {
         int err_code = errno;
         const char* strerr = err_to_string(err_code);
-        report_error("error getting stat for '%s': %s\n", path, strerr);
         my_fprintf(STDOUT, "%c %i %i %s: %s\n", FS_RSP_ERROR, request_id, err_code, strerr, path);
         my_fflush(STDOUT);
     }
@@ -1051,7 +1046,6 @@ static void response_lstat(int request_id, const char* path) {
 //            fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
 //        }
     } else {
-        report_error("error formatting response for '%s'\n", path);
         //TODO: pass error message from response_entry_create
         my_fprintf(STDOUT, "%c %i %i %s\n", FS_RSP_ERROR, request_id, err_get_code(), err_get_message());
         my_fflush(STDOUT);
@@ -1137,7 +1131,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         return need_to_proceed();
     }
 
-    int persistence_version;    
+    int persistence_version = -1;
     bool success = read_entries_from_cache(&old_entries, el, path, &persistence_version);
     bool differs;
     if (success) {
@@ -1147,7 +1141,14 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         differs = false;
     } else {
         array_init(&new_entries, 4);
-        report_error("error refreshing %s: error reading cache\n", path);
+        if (persistence_version == -1 ||  persistence_version == persistence_version_curr) { 
+            // -1 means that there was error reading,
+            // version equals to current => there was an unexpected error => report
+            // version != current => just old cache version found => do not report
+            report_error("error refreshing %s: error reading cache\n", path);
+        } else {
+            trace(TRACE_FINEST, "invalid cache (incorrect version: %d) for %s\n", persistence_version, path);
+        }
         differs = true;
     }
 
@@ -1168,14 +1169,13 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
                 trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
             }
-            // names are same; check types (modes))
-            if (new_entry->mode != old_entry->mode) {
+            if (new_entry->file_type != old_entry->file_type) {
                 differs = true;
-                trace(TRACE_FINE, "refresh manager: modes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mode, old_entry->mode);
+                trace(TRACE_FINE, "refresh manager: file types differ for %s/%s: %c vs %c\n", path, new_entry->name, new_entry->file_type, old_entry->file_type);
                 break;
             }
             // if links, then check links
-            if (S_ISLNK(new_entry->mode)) {
+            if (new_entry->file_type == FILETYPE_LNK) {
                 if (new_entry->link_len != old_entry->link_len) {
                     differs = true;
                     trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
@@ -1188,17 +1188,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
                 }
             }
             // names, modes and link targets are same
-            if (new_entry->uid != old_entry->uid) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: uids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->uid, old_entry->uid);
-                break;
-            }
-            if (new_entry->gid != old_entry->gid) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: gids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->gid, old_entry->gid);
-                break;
-            }
-            if (S_ISREG(new_entry->mode)) {
+            if (new_entry->file_type == FILETYPE_REG) {
                 if (new_entry->size != old_entry->size) {
                     differs = true;
                     trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);

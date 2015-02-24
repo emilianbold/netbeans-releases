@@ -149,7 +149,7 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
         try {
             System.setProperty("org.netbeans.modules.subversion.deleteMissingFiles", "true");
             // delete externally
-            VCSFileProxySupport.delete(file);
+            VCSFileProxySupport.deleteExternally(file);
 
             // test
             assertFalse(file.exists());

@@ -8,7 +8,7 @@
            <public-packages/>
            <class-path-extension>
                <runtime-relative-path>org-eclipse-core-runtime-compatibility-auth.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.core.runtime.compatibility.auth_3.2.200.v20110110.jar</binary-origin>
+                <binary-origin>external/org.eclipse.core.runtime.compatibility.auth_3.2.200.v20110110_nosignature.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

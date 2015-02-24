@@ -82,6 +82,8 @@ pack_all_components()
     ant zip-cluster-config -Dcluster.config=standard -Dzip.name=$DIST_DIR/zip/$NAME-javaee.zip || exit 1
     ant zip-cluster-config -Dcluster.config=php -Dzip.name=$DIST_DIR/zip/$NAME-php.zip || exit 1
     ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST_DIR/zip/$NAME-cpp.zip || exit 1
+    
+    ln -s $NAME-php.zip $DIST_DIR/zip/$NAME-html.zip
 
     cd $NB_ALL/nbbuild/netbeans
 

@@ -94,7 +94,8 @@ public class RefreshTestCase extends RemoteFileTestBase {
             runScript("echo xxx > " + dir + '/' + file3);
             FileObject fo3 = dirFO.getFileObject(file3);
             assertNull("should be null now?!", fo3);
-            sw = new StopWatch("Refreshing " + rootFO, true);
+            int totalFileObjectsCount = rootFO.getFileSystem().getCachedFileObjectsCount();
+            sw = new StopWatch("Refreshing " + rootFO + " (" + totalFileObjectsCount + " file objects in FS)", true);
             rootFO.refresh();
             sw.stop(true);
             //sleep(2000);
@@ -109,55 +110,51 @@ public class RefreshTestCase extends RemoteFileTestBase {
     public static Test suite() {
         return RemoteApiTest.createSuite(RefreshTestCase.class);
     }
+    
+    /**
+     * NB: thread unsafe!
+     */
+    private static class StopWatch {
 
-    public static class StopWatch {
-        
         private long time;
         private long lastStart;
-        private boolean running;
         private final String text;
-        
+
         public StopWatch(String text) {
             this(text, false);
         }
-        
+
         public StopWatch(String text, boolean start) {
             time = 0;
             this.text = text;
-            if( start ) {
+            if (start) {
                 start();
             }
         }
-        
+
         public final void start() {
-            running = true;
             lastStart = System.currentTimeMillis();
         }
-        
+
         public long stop() {
             return stop(false);
         }
 
         public long stop(boolean report) {
-            running = false;
             time += System.currentTimeMillis() - lastStart;
             if (report) {
                 report();
             }
             return time;
         }
-        
+
         public long report() {
             System.err.println(' ' + text + ' ' + time + " ms");
             return time;
         }
-        
-        public boolean isRunning() {
-            return running;
-        }
-        
+
         public long getTime() {
             return time;
-        }        
+        }
     }    
 }

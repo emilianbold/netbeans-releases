@@ -332,6 +332,14 @@ import org.openide.util.Utilities;
         return PathUtils.getExePath(pid, exEnv);
     }
     
+    public String readlsof(long pid) {
+        ExitStatus status = ProcessUtils.execute(exEnv, "lsof", "-p", "" + pid, "-Fn"); //NOI18N
+        if (status.isOK()) {
+            return status.output.split("\n")[2].substring(1); //NOI18N
+        }
+        return ""; //NOI18N
+    }
+
     public String readDirLink(long pid) {
         return PathUtils.getCwdPath(pid, exEnv);
     }

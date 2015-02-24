@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,31 +53,33 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class ModuleLiteralTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testLiteral1",
+        "testLiteral2",
+        "testLiteral3",
+        "testLiteral4",
+        "testLiteral5",
+        "testLiteral6",
+        "testLiteralRef1",
+        "testLiteralRef2",
+        "testLiteralRef3",
+        "testLiteralRef4",
+        "testLiteralRef5",
+        "testLiteralRef6"
+    };
+
     public ModuleLiteralTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ModuleLiteralTest.class).addTest(
-                        "openProject",
-                        "testLiteral1",
-                        "testLiteral2",
-                        "testLiteral3",
-                        "testLiteral4",
-                        "testLiteral5",
-                        "testLiteral6",
-                        "testLiteralRef1",
-                        "testLiteralRef2",
-                        "testLiteralRef3",
-                        "testLiteralRef4",
-                        "testLiteralRef5",
-                        "testLiteralRef6"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(ModuleLiteralTest.class, tests);
     }
 
     public void openProject() throws Exception {
         startTest();
+        GeneralNodeJs.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleNode");
         evt.waitNoEvent(2000);

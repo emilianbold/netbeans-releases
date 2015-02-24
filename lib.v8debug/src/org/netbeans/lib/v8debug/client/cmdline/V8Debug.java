@@ -90,6 +90,7 @@ import org.netbeans.lib.v8debug.commands.V8Flags;
 import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
+import org.netbeans.lib.v8debug.events.CompileErrorEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
@@ -256,6 +257,13 @@ public class V8Debug {
                 return true;
             case "step":
             case "s":
+                int count = -1;
+                try {
+                    count = Integer.parseInt(args);
+                } catch (NumberFormatException nfex) {}
+                if (count >= 0) {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.in, count));
+                } else
                 switch (args) {
                     case "up":
                     case "out":
@@ -276,10 +284,26 @@ public class V8Debug {
                 return true;
             case "next":
             case "n":
-                cc.send(Continue.createRequest(requestSequence++, V8StepAction.next));
+                count = -1;
+                try {
+                    count = Integer.parseInt(args);
+                } catch (NumberFormatException nfex) {}
+                if (count >= 0) {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.next, count));
+                } else {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.next));
+                }
                 return true;
             case "out":
-                cc.send(Continue.createRequest(requestSequence++, V8StepAction.out));
+                count = -1;
+                try {
+                    count = Integer.parseInt(args);
+                } catch (NumberFormatException nfex) {}
+                if (count >= 0) {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.out, count));
+                } else {
+                    cc.send(Continue.createRequest(requestSequence++, V8StepAction.out));
+                }
                 return true;
             case "cont":
             case "c":
@@ -832,6 +856,13 @@ public class V8Debug {
             case AfterCompile:
                 AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
                 V8Script script = aceb.getScript();
+                synchronized (scriptsById) {
+                    scriptsById.put(script.getId(), script);
+                }
+                return false;
+            case CompileError:
+                CompileErrorEventBody ceeb = (CompileErrorEventBody) event.getBody();
+                script = ceeb.getScript();
                 synchronized (scriptsById) {
                     scriptsById.put(script.getId(), script);
                 }

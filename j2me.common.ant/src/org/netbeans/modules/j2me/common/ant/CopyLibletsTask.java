@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -80,6 +81,7 @@ public class CopyLibletsTask extends Task {
         }
         final String[] pathElements = this.runtimePath.list();
         final List<File> filesToCopy = new ArrayList<File>();
+        final Map<String, Boolean> libletsInProject = LibletUtils.loadLibletsInProject(getProject());
 
         for (String element : pathElements) {
             if (element.toLowerCase().endsWith(JAR_EXT)) {
@@ -87,6 +89,12 @@ public class CopyLibletsTask extends Task {
                 File jarFile = new File(element);
                 File jadFile = new File(jadFilePath);
                 if (jadFile.exists()) {
+                    final Map<Object, Object> manifestAttributes = LibletUtils.getJarManifestAttributes(element);
+                    if (libletsInProject.get(LibletUtils.getLibletDetails(manifestAttributes))) {
+                        // do not copy this LIBlet in dist/lib
+                        // it will be extracted into the application's JAR
+                        continue;
+                    }
                     filesToCopy.add(jarFile);
                     filesToCopy.add(jadFile);
                 }

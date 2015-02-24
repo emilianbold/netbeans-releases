@@ -75,7 +75,7 @@
     <loadresource property="glassfish.build.number">
           <url url="${glassfish.location.prefix}/latest/archive/bundles"/>
           <filterchain>
-	    <striplinebreaks/>
+            <striplinebreaks/>
             <tokenfilter>
               <replaceregex pattern="(.*)glassfish-4.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
@@ -91,6 +91,56 @@
     
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
+    <!-- Nested JRE Properties-->        
+    <property name="jre.builds.path" value="${jdk_builds_host}/${jre_builds_path}/latest/bundles/macosx-x64"/><!-- Change latest to fcs/b{proper buildnumber} -->
+    <!-- e.g. 1.8.0 - jre-8u31-macosx-x64.tar.gz -->
+    <loadresource property="jre.version.number">
+          <url url="${jre.builds.path}"/>
+          <filterchain>
+            <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)jre-([0-9]+)([u]?)([0-9]*)-(.*)" replace="\2" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    
+    <loadresource property="jre.is.update">
+          <url url="${jre.builds.path}"/>
+          <filterchain>
+            <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)jre-([0-9]+)([u]?)([0-9]*)-(.*)" replace="\3" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    
+    <loadresource property="jre.update.number.opt">
+          <url url="${jre.builds.path}"/>
+          <filterchain>
+            <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)jre-([0-9]+)([u]?)([0-9]*)-(.*)" replace="\4" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    <condition property="jre.update.number" value="${jre.update.number.opt}" else="0">
+        <equals arg1="${jre.is.update}" arg2="u"/>
+    </condition>
+    
+    <echo message="Nested JRE Metadata: Version: ${jre.version.number} Update: ${jre.update.number}" />
+    
+    <condition property="jre.archiv.filename" value="jre-${jre.version.number}-macosx-x64.tar.gz" else="jre-${jre.version.number}u${jre.update.number}-macosx-x64.tar.gz">
+        <equals arg1="${jre.update.number}" arg2="0"/>
+    </condition>
+    
+    <condition property="jre.version.string.long" value="1.${jre.version.number}.0" else="1.${jre.version.number}.0_${jre.update.number}">
+        <equals arg1="${jre.update.number}" arg2="0"/>
+    </condition>
+    
+    <!--condition property="jre.folder.name" value="jre1.${jre.version.number}.0.jre" else="jre1.${jre.version.number}.0_${jre.update.number}.jre">
+        <equals arg1="${jre.update.number}" arg2="0"/>
+    </condition-->       
+
     <!-- JDK Properties-->    
     <condition property="jdk_builds_path" value="${jdk7_builds_path}" else="${jdk8_builds_path}">
         <equals arg1="${build.jdk7}" arg2="1"/>
@@ -102,7 +152,7 @@
     <loadresource property="jdk.version.number">
           <url url="${jdk.builds.path}"/>
           <filterchain>
-	    <striplinebreaks/>
+            <striplinebreaks/>
             <tokenfilter>
               <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\2" flags="g"/>
             </tokenfilter>
@@ -112,7 +162,7 @@
     <loadresource property="is.update">
           <url url="${jdk.builds.path}"/>
           <filterchain>
-	    <striplinebreaks/>
+            <striplinebreaks/>
             <tokenfilter>
               <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\3" flags="g"/>
             </tokenfilter>
@@ -122,7 +172,7 @@
     <loadresource property="jdk.update.number.opt">
           <url url="${jdk.builds.path}"/>
           <filterchain>
-	    <striplinebreaks/>
+            <striplinebreaks/>
             <tokenfilter>
               <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\4" flags="g"/>
             </tokenfilter>
@@ -135,7 +185,7 @@
     <loadresource property="jdk.build.type">
           <url url="${jdk.builds.path}"/>
           <filterchain>
-	    <striplinebreaks/>
+            <striplinebreaks/>
             <tokenfilter>
               <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\5" flags="g"/>
             </tokenfilter>
@@ -149,7 +199,7 @@
     <loadresource property="jdk.build.number">
           <url url="${jdk.builds.path}"/>
           <filterchain>
-	    <striplinebreaks/>
+            <striplinebreaks/>
             <tokenfilter>
               <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\6" flags="g"/>
             </tokenfilter>
@@ -181,6 +231,6 @@
     <condition property="jdk.package.name" value="JDK\ ${jdk.version.number}"
                                            else="JDK\ ${jdk.version.number}\ Update\ ${jdk.update.number.long}">
         <equals arg1="${jdk.update.number}" arg2="0"/>
-    </condition>
+    </condition>        
 
 </project>

@@ -129,6 +129,19 @@ public class Subversion {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote"); //NOI18N
 
     private Result<? extends VCSHyperlinkProvider> hpResult;
+    
+    private static final List<String> allowableFolders;
+    static {
+        List<String> files = new ArrayList<String>();
+        try {
+            String allowable = System.getProperty("versioning.svn.allowableFolders", "/"); //NOI18N
+            files.addAll(Arrays.asList(allowable.split("\\;"))); //NOI18N
+            files.remove(""); //NOI18N
+        } catch (Exception e) {
+            LOG.log(Level.INFO, e.getMessage(), e);
+        }
+        allowableFolders = files;
+    }
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -464,6 +477,9 @@ public class Subversion {
         if (file.toFile() != null) {
             return null;
         }
+        if (!isAllowable(file)) {
+            return null;
+        }
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
         }
@@ -641,6 +657,22 @@ public class Subversion {
         List<VCSHyperlinkProvider> providersList = new ArrayList<>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
+    }
+
+    private boolean isAllowable(VCSFileProxy file) {
+        String path = file.getPath()+"/"; //NOI18N
+        for(String s : allowableFolders) {
+            if (s.endsWith("/")) { //NOI18N
+                if (path.startsWith(s)) {
+                    return true;
+                }
+            } else {
+                if (path.startsWith(s+"/")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 

@@ -840,7 +840,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     }
 
     private void incrementalSearch() {
-        if (getActualTextComponent() == null) {
+        if (getActualTextComponent() == null || getActualTextComponent().getCaret() == null) {
             return;
         }
         String incrementalSearchText = incSearchTextField.getText();

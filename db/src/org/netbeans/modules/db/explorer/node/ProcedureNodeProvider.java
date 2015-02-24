@@ -108,7 +108,7 @@ public class ProcedureNodeProvider extends NodeProvider {
 
         final List<Node> newList = new ArrayList<Node>();
 
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             try {
@@ -170,7 +170,7 @@ public class ProcedureNodeProvider extends NodeProvider {
         if (connection != null &&
                 DatabaseModule.IDENTIFIER_MYSQL.equalsIgnoreCase(connection.getDriverName())) {
             // MySQL
-            boolean connected = !connection.getConnector().isDisconnected();
+            boolean connected = connection.isConnected();
             MetadataModel metaDataModel = connection.getMetadataModel();
             if (connected && metaDataModel != null) {
                 try {
@@ -183,7 +183,7 @@ public class ProcedureNodeProvider extends NodeProvider {
                                 String query = "SELECT NAME, TYPE" // NOI18N
                                             + " FROM mysql.proc" // NOI18N
                                             + " WHERE TYPE = 'PROCEDURE' OR TYPE = 'FUNCTION'"; // NOI18N
-                                try(Statement stmt = connection.getConnection().createStatement();
+                                try(Statement stmt = connection.getJDBCConnection().createStatement();
                                     ResultSet rs = stmt.executeQuery(query)) {
                                     while(rs.next()) {
                                         // name of procedure
@@ -205,7 +205,7 @@ public class ProcedureNodeProvider extends NodeProvider {
                                 }
                                 String query2 = "SELECT TRIGGER_NAME" // NOI18N
                                             + " FROM information_schema.triggers"; // NOI18N
-                                try (Statement stmt = connection.getConnection().createStatement();
+                                try (Statement stmt = connection.getJDBCConnection().createStatement();
                                         ResultSet rs = stmt.executeQuery(query2)) {
                                     while (rs.next()) {
                                         // name of procedure
@@ -228,7 +228,7 @@ public class ProcedureNodeProvider extends NodeProvider {
         } else if (connection != null && connection.getDriverName() != null &&
                 connection.getDriverName().startsWith(DatabaseModule.IDENTIFIER_ORACLE)) {
             // Oracle
-            boolean connected = !connection.getConnector().isDisconnected();
+            boolean connected = connection.isConnected();
             MetadataModel metaDataModel = connection.getMetadataModel();
             if (schemaName == null) {
                 LOG.log(Level.INFO, "No schema for {0}", this);
@@ -247,7 +247,7 @@ public class ProcedureNodeProvider extends NodeProvider {
                                         + " FROM SYS.ALL_OBJECTS " // NOI18N
                                         + " WHERE OWNER='" + schemaEscaped + "' "// NOI18N
                                         + " AND ( OBJECT_TYPE = 'PROCEDURE' OR OBJECT_TYPE = 'TRIGGER' OR OBJECT_TYPE = 'FUNCTION' )";  // NOI18N
-                                try (Statement stmt = connection.getConnection().createStatement();
+                                try (Statement stmt = connection.getJDBCConnection().createStatement();
                                         ResultSet rs = stmt.executeQuery(query);) {
                                     while(rs.next()) {
                                         // name of procedure

@@ -46,7 +46,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
-import org.glassfish.tools.ide.utils.NetUtils;
+import org.netbeans.modules.glassfish.tooling.utils.NetUtils;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassFishSettings;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;

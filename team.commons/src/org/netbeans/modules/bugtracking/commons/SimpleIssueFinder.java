@@ -122,7 +122,11 @@ public class SimpleIssueFinder {
          * no matter what is their case.
          */
 
-        private static final String[] BUGWORDS = new String[] {"bug", "issue"}; //NOI18N
+        private static final String[] BUGWORDS = new String[] {"bug", "issue", // NOI18N
+                                                               // some people prefer to refer to issues by their type
+                                                               "defect", "feature", "task", "enhancement", // NOI18N
+                                                               // to typo is human
+                                                               "isseu" }; // NOI18N
         private static final String BUG_NUMBER_PREFIX = "duplicate of"; //NOI18N
         private static final String[] BUGNUM_PREFIX_PARTS;
 

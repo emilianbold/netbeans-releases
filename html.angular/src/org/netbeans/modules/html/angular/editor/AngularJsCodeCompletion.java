@@ -182,7 +182,7 @@ public class AngularJsCodeCompletion implements CompletionProvider {
                 URL url = controller.getDeclarationFile();
                 File file = new File(url.toString());
                 AngularJsElement element = new AngularJsElement(name, ElementKind.METHOD);
-                result.add(new AngularJsCompletionItem.AngularFOCompletionItem(element, anchor, FileUtil.toFileObject(file)));
+                result.add(new AngularJsCompletionItem.AngularFOCompletionItem(element, anchor, FileUtil.toFileObject(FileUtil.normalizeFile(file))));
             }
         }
         

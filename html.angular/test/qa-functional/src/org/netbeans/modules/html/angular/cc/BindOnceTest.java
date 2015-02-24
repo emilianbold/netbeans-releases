@@ -45,7 +45,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
@@ -55,17 +54,19 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  */
 public class BindOnceTest extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExpression2",
+        "testExpression12",
+        "testExpression14"
+    };
+
     public BindOnceTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BindOnceTest.class).addTest(
-                        "openProject",
-                        "testExpression2",
-                        "testExpression12",
-                        "testExpression14"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(BindOnceTest.class, tests);
     }
 
     public void openProject() throws Exception {

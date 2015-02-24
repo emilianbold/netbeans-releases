@@ -47,7 +47,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.glassfish.tools.ide.utils.StringPrefixTree;
+import org.netbeans.modules.glassfish.tooling.utils.StringPrefixTree;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;

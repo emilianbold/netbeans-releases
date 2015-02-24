@@ -81,7 +81,7 @@ public class ShowInDOMAction extends NodeAction {
         if (activatedNodes.length == 1) {
             Node selection = activatedNodes[0];
             UnusedBinding unusedBinding = selection.getLookup().lookup(UnusedBinding.class);
-            return (unusedBinding != null);
+            return (unusedBinding != null) && !unusedBinding.isRemoved();
         }
         return false;
     }

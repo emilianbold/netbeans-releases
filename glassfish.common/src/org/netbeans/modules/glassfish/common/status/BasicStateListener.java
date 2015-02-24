@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.glassfish.common.status;
 
-import org.glassfish.tools.ide.GlassFishStatusListener;
+import org.netbeans.modules.glassfish.tooling.GlassFishStatusListener;
 
 /**
  * Notification about server state check results containing common attribute

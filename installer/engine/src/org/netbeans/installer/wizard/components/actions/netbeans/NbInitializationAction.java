@@ -112,6 +112,10 @@ public class NbInitializationAction extends WizardAction {
                                 LogManager.log(e);
                             }
                         }
+                    } else if (product.getUid().equals("jre-nested")) {
+                        //SearchForJavaAction.addJavaLocation(product.getInstallationLocation());
+                        doSearch = false;
+                        break;
                     } else {
                         for (WizardComponent component : product.getLogic().getWizardComponents()) {
                             if (component instanceof SearchForJavaAction) {

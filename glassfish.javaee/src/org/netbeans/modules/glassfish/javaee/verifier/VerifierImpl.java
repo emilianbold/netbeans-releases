@@ -48,7 +48,7 @@ import java.io.File;
 import java.io.OutputStream;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
-import org.glassfish.tools.ide.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;

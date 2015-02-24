@@ -73,8 +73,8 @@ public class RefreshManager {
     /** one the task was scheduled, this should be true */
     private volatile long updateTaskScheduled = 0;
     
-    private final LinkedList<String> queue = new LinkedList<String>();
-    private final Set<String> set = new HashSet<String>();
+    private final LinkedList<String> queue = new LinkedList<>();
+    private final Set<String> set = new HashSet<>();
     private final Object queueLock = new Object();
 
     private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
@@ -110,10 +110,7 @@ public class RefreshManager {
                     } catch (ConnectException ex) {
                         clear();
                         break;
-                    } catch (InterruptedException ex) {
-                        RemoteLogger.finest(ex, fo);
-                        break;
-                    } catch (CancellationException ex) {
+                    } catch (InterruptedException | CancellationException ex) {
                         RemoteLogger.finest(ex, fo);
                         break;
                     } catch (IOException ex) {
@@ -184,7 +181,7 @@ public class RefreshManager {
     }
 
     private Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
-        Collection<RemoteFileObjectBase> result = new TreeSet<RemoteFileObjectBase>(new PathComparator(true));
+        Collection<RemoteFileObjectBase> result = new TreeSet<>(new PathComparator(true));
         for (RemoteFileObjectBase fo : fileObjects) {
             // Don't call isValid() or isFolder() - they might be SLOW!
             if (isDirectory(fo)) {
@@ -211,19 +208,19 @@ public class RefreshManager {
     }
     
     public void scheduleRefreshExistent(Collection<String> paths, boolean addExistingChildren) {
-        Collection<RemoteFileObjectBase> fileObjects = new ArrayList<RemoteFileObjectBase>(paths.size());
+        Collection<RemoteFileObjectBase> fileObjects = new ArrayList<>(paths.size());
         for (String path : paths) {
             RemoteFileObjectBase fo = factory.getCachedFileObject(path);
             if (fo != null) {
                 fileObjects.add(fo);
             }
         }
-            scheduleRefresh(fileObjects, addExistingChildren);
+        scheduleRefresh(fileObjects, addExistingChildren);
         }
        
     public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean addExistingChildren) {
         if (addExistingChildren) {
-            Collection<RemoteFileObjectBase> toRefresh = new TreeSet<RemoteFileObjectBase>(new PathComparator(false));
+            Collection<RemoteFileObjectBase> toRefresh = new TreeSet<>(new PathComparator(false));
             for (RemoteFileObjectBase fo : fileObjects) {
                 addExistingChildren(fo, toRefresh);
             }
@@ -233,6 +230,15 @@ public class RefreshManager {
         }
     }
     
+    public void removeFromRefresh(String path) {
+        synchronized (queueLock) {
+            if (set.contains(path)) {
+                set.remove(path);
+                queue.remove(path);
+            }
+        }
+    }
+
     private void addExistingChildren(RemoteFileObjectBase fo, Collection<RemoteFileObjectBase> bag) {
         if (isDirectory(fo)) {
             bag.add(fo);
@@ -264,6 +270,7 @@ public class RefreshManager {
         updateTaskScheduled = System.currentTimeMillis();
     }
 
+    @SuppressWarnings("SleepWhileInLoop")
     /*package*/ void testWaitLastRefreshFinished(long time) {
         if (updateTaskScheduled < time) {
             // sleep up to 10 seconds, awaking each 0.1 second and checking whether update was scheduled

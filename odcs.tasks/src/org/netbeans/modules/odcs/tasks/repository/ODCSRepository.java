@@ -65,6 +65,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
@@ -460,8 +462,9 @@ public class ODCSRepository implements PropertyChangeListener {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<>(PredefinedTaskQuery.class);
             if(!Boolean.getBoolean("odcs.tasks.noPredefinedQueries")) { // NOI18N
+                Collection<String> queriesToSkip = getQueriesToSkip();
                 for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-                    if(ptq == PredefinedTaskQuery.RECENT) {
+                    if(ptq == PredefinedTaskQuery.RECENT || queriesToSkip.contains(ptq.toString())) {
                         continue;
                     }
                     try {
@@ -490,6 +493,27 @@ public class ODCSRepository implements PropertyChangeListener {
         }
     }
 
+    private static Collection<String> getQueriesToSkip() {
+        try {
+            String prop = System.getProperty("odcs.tasks.queriesToSkip"); // NOI18N
+            if(prop == null || prop.trim().isEmpty()) {
+                return Collections.EMPTY_LIST;
+            }
+            StringTokenizer tk = new StringTokenizer(prop, ",");
+            Set<String> ret = new HashSet<>(PredefinedTaskQuery.values().length);
+            while(tk.hasMoreTokens()) {
+                String t = tk.nextToken().trim();
+                if(!t.isEmpty()) {
+                    ret.add(t);
+                }
+            }
+            return ret;
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
     public final ODCSQuery getPredefinedQuery (PredefinedTaskQuery ptq) {
         getQueries();
         synchronized (QUERIES_LOCK) {

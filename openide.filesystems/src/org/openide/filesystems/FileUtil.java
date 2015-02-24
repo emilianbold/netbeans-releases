@@ -1308,20 +1308,44 @@ public final class FileUtil extends Object {
     }
 
     /** Resolves MIME type. Registered resolvers are invoked and used to achieve this goal.
-     * Resolvers must subclass MIMEResolver.
+     * Resolvers must subclass MIMEResolver. By default it is possible for the
+     * method to return {@code content/unknown} instead of {@code null} - if
+     * you want to avoid such behavior, include <code>null</code> in the
+     * list of requested <code>withinMIMETypes</code> - in such case the
+     * return value is guaranteed to be one of the values in <code>withinMIMETypes</code>
+     * or <code>null</code>.
+     * <p>
+     *  Example: Check if some file is Java source file or text file:
+     * </p>
+     * <code>
+     *  FileUtil.getMIMEType(fo, null, "text/x-java", "text/plain") != null
+     * </code>
      * @param fo whose MIME type should be recognized
      * @param withinMIMETypes an array of MIME types. Only resolvers whose
      * {@link MIMEResolver#getMIMETypes} contain one or more of the requested
      * MIME types will be asked if they recognize the file. It is possible for
      * the resulting MIME type to not be a member of this list.
-     * @return the MIME type for the FileObject, or <code>null</code> if 
-     * the FileObject is unrecognized. It may return {@code content/unknown} instead of {@code null}.
-     * It is possible for the resulting MIME type to not be a member of given list.
+     * @return the MIME type for the FileObject, or <code>null</code> if
+     * the FileObject is unrecognized.
      * @since 7.13
      */
     public static String getMIMEType(FileObject fo, String... withinMIMETypes) {
         Parameters.notNull("withinMIMETypes", withinMIMETypes);  //NOI18N
-        return MIMESupport.findMIMEType(fo, withinMIMETypes);
+        String res = MIMESupport.findMIMEType(fo, withinMIMETypes);
+        if (res == null) {
+            return null;
+        }
+        boolean foundNull = false;
+        for(String t : withinMIMETypes) {
+            if (t == null) {
+                foundNull = true;
+                continue;
+            }
+            if (res.equals(t)) {
+                return t;
+            }
+        }
+        return foundNull ? null : res;
     }
     
     /** Registers specified extension to be recognized as specified MIME type.

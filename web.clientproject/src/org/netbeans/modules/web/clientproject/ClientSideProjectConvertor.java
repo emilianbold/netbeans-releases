@@ -161,9 +161,7 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             transientLkp.hide(
                 ConvertorClassPathProvider.class,
                 ConvertorFileEncodingQuery.class);
-            return ClientSideProjectGenerator.createProject(new CreateProjectProperties()
-                    .setProjectDir(projectDirectory)
-                    .setProjectName(displayName)
+            return ClientSideProjectGenerator.createProject(new CreateProjectProperties(projectDirectory, displayName)
                     .setSourceFolder("") // NOI18N
                     .setSiteRootFolder(detectSiteRoot())
                     .setAutoconfigured(true));
@@ -171,7 +169,9 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
 
         private String detectSiteRoot() {
             for (String dir : KNOWN_SITE_ROOTS) {
-                if (projectDirectory.getFileObject(dir) != null)  {
+                FileObject fo = projectDirectory.getFileObject(dir);
+                if (fo != null
+                        && fo.isFolder())  {
                     return dir;
                 }
             }

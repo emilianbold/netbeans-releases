@@ -997,12 +997,20 @@ public class JsFormatter implements Formatter {
         if (result == null
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
-                || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
                 || result.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
                 || result.getKind().isIndentationMarker()) {
             return false;
+        } else if (result.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
+            FormatToken nextNonWs = next;
+            while (nextNonWs != null
+                    && (nextNonWs.getKind() == FormatToken.Kind.WHITESPACE
+                    || nextNonWs.getKind() == FormatToken.Kind.EOL)) {
+                nextNonWs = nextNonWs.next();
+            }
+            return nextNonWs != null
+                    && nextNonWs.getKind() == FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT;
         }
 
         return !(JsTokenId.BRACKET_LEFT_CURLY == result.getId()
@@ -1132,6 +1140,9 @@ public class JsFormatter implements Formatter {
                 return codeStyle.wrapStatement;
             case AFTER_BLOCK_START:
                 // XXX option
+                if (isEmptyFunctionBlock(token)) {
+                    return CodeStyle.WrapStyle.WRAP_NEVER;
+                }
                 return CodeStyle.WrapStyle.WRAP_ALWAYS;
             case AFTER_CASE:
                 // XXX option
@@ -1430,6 +1441,25 @@ public class JsFormatter implements Formatter {
                 current = current.previous();
             }
             return false;
+        }
+        return false;
+    }
+
+    private static boolean isEmptyFunctionBlock(FormatToken token) {
+        if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
+            // now look back to find out what kind of block we are in
+            FormatToken prev = token.previous();
+            while (prev != null && (!prev.isVirtual() || prev.getKind().isIndentationMarker())) {
+                prev = prev.previous();
+            }
+            if (prev != null && prev.getKind() == FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_BRACE) {
+                // continue only in case of function
+                FormatToken current = token.next();
+                while (current != null && (current.isVirtual() || current.getKind() == FormatToken.Kind.WHITESPACE)) {
+                    current = current.next();
+                }
+                return current != null && current.getId() == JsTokenId.BRACKET_RIGHT_CURLY;
+            }
         }
         return false;
     }

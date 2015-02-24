@@ -155,6 +155,13 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("template_fun_spec.cc", 21, 26, "template_fun_spec.cc", 55, 1); // full spec. for pair<char,char>
         performTest("template_fun_spec.cc", 55, 26, "template_fun_spec.cc", 21, 1); // and back
     }
+    
+    public void testIZ144156_func_spec_tpl_params() throws Exception {
+        performTest("template_fun_spec.cc", 9, 16, "template_fun_spec.cc", 9, 10);
+        performTest("template_fun_spec.cc", 9, 36, "template_fun_spec.cc", 9, 10); 
+        performTest("template_fun_spec.cc", 35, 16, "template_fun_spec.cc", 35, 10);
+        performTest("template_fun_spec.cc", 35, 36, "template_fun_spec.cc", 35, 10); 
+    }
 
     public void testBug185045() throws Exception {
         // Bug 185045 - [code model] Incorrect hyperlink with template specialization function

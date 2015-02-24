@@ -114,6 +114,7 @@ public class ElementJavadoc {
     
 
     private final ClasspathInfo cpInfo;
+    private final FileObject fileObject;
     private final ElementHandle<? extends Element> handle;
     //private Doc doc;
     private volatile Future<String> content;
@@ -262,7 +263,9 @@ public class ElementJavadoc {
                 }
                 return ret[0];
             }
-            JavaSource js = fo != null ? JavaSource.forFileObject(fo) : JavaSource.create(cpInfo);
+            JavaSource js = fo != null ? JavaSource.forFileObject(fo)
+                    : fileObject != null ? JavaSource.forFileObject(fileObject)
+                    : JavaSource.create(cpInfo);
             if (js != null) {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController controller) throws IOException {
@@ -352,6 +355,7 @@ public class ElementJavadoc {
     private ElementJavadoc(CompilationInfo compilationInfo, Element element, final URL url, final Callable<Boolean> cancel) {
         Pair<Trees,ElementUtilities> context = Pair.of(compilationInfo.getTrees(), compilationInfo.getElementUtilities());
         this.cpInfo = compilationInfo.getClasspathInfo();
+        this.fileObject = compilationInfo.getFileObject();
         this.handle = element == null ? null : ElementHandle.create(element);
         this.cancel = cancel;
         Doc doc = context.second().javaDocFor(element);
@@ -381,8 +385,7 @@ public class ElementJavadoc {
             }
             this.content = prepareContent(content, doc,localized, page, cancel, true, context);
         } catch (JavadocHelper.RemoteJavadocException re) {
-            final FileObject fo = compilationInfo.getFileObject();
-            if (fo == null || JavaSource.forFileObject(fo) == null) {
+            if (fileObject == null || JavaSource.forFileObject(fileObject) == null) {
                 final StringBuilder sb = new StringBuilder(content);
                 if (sb.indexOf("<p>", sb.length() - 3) == sb.length() - 3) { //NOI18N
                     sb.delete(sb.length() - 3, sb.length());
@@ -396,7 +399,7 @@ public class ElementJavadoc {
             this.content = new FutureTask<String>(new Callable<String>(){
                 @Override
                 public String call() throws Exception {
-                    final JavaSourceUtil.Handle ch = JavaSourceUtil.createControllerHandle(fo, null);
+                    final JavaSourceUtil.Handle ch = JavaSourceUtil.createControllerHandle(fileObject, null);
                     final CompilationController c = (CompilationController) ch.getCompilationController();
                     c.toPhase(Phase.RESOLVED);
                     final Element element = handle.resolve(c);
@@ -431,6 +434,7 @@ public class ElementJavadoc {
         this.docURL = url;
         this.handle = null;
         this.cpInfo = null;
+        this.fileObject = null;
         this.cancel = cancel;
     }
 
@@ -440,6 +444,7 @@ public class ElementJavadoc {
         this.docURL = null;
         this.handle = null;
         this.cpInfo = null;
+        this.fileObject = null;
         this.cancel = cancel;
     }
 
@@ -699,7 +704,12 @@ public class ElementJavadoc {
                                     throwsInlineTags.put(entry.getKey(), tags);
                             }
                         }
-                        if (inlineTags.length > 0 || doc.tags().length > 0) {
+                        if (inlineTags.length > 0 ||
+                            doc.tags().length > 0 ||
+                            returnTags.length > 0 ||
+                            (paramTags != null && !paramTags.isEmpty()) ||
+                            !throwsTags.isEmpty() ||
+                            !throwsInlineTags.isEmpty()) {
                             sb.append(getDeprecatedTag(doc, ctx));
                             sb.append(inlineTags(doc, inlineTags, ctx));
                             sb.append("<p>"); //NOI18N

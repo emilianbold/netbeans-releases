@@ -265,7 +265,6 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         for (String name : props.stringPropertyNames()) {
             requestedPlugins.add(new CordovaPlugin(name, props.getProperty(name)));
         }
-        requestedPlugins.retainAll(getAll());
         return requestedPlugins;
     }
     private List<CordovaPlugin> getAll() throws IOException {

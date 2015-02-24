@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.createprojectapi;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -64,7 +65,8 @@ public final class ClientSideProjectGenerator {
 
     /**
      * Creates a new empty Web Client Side project according to the given {@link CreateProjectProperties}.
-     *
+     * <p>
+     * <b>Warning:</b> This method should not be called in the UI thread.
      * @param properties used for project setup
      * @return project
      * @throws IOException in case something went wrong
@@ -74,6 +76,9 @@ public final class ClientSideProjectGenerator {
     @NonNull
     public static Project createProject(@NonNull CreateProjectProperties properties) throws IOException {
         Parameters.notNull("properties", properties); // NOI18N
+        if (EventQueue.isDispatchThread()) {
+            throw new IllegalStateException("Cannot run in UI thread");
+        }
 
         CommonProjectHelper h = ClientSideProjectUtilities.setupProject(properties.getProjectDir(), properties.getProjectName());
 
@@ -100,11 +105,19 @@ public final class ClientSideProjectGenerator {
             ClientSideProjectUtilities.setPlatformProvider(project, platformProvider);
         }
         // autoconfigured?
+        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(clientSideProject);
         if (properties.isAutoconfigured()) {
-            ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(clientSideProject);
             projectProperties.setAutoconfigured(true);
-            projectProperties.save();
         }
+        String startFile = properties.getStartFile();
+        if (startFile != null) {
+            projectProperties.setStartFile(startFile);
+        }
+        String projectUrl = properties.getProjectUrl();
+        if (projectUrl != null) {
+            projectProperties.setProjectUrl(projectUrl);
+        }
+        projectProperties.save();
         return project;
     }
 

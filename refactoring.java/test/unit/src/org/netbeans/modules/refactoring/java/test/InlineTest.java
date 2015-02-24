@@ -71,6 +71,41 @@ public class InlineTest extends RefactoringTestBase {
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
+    public void test216817() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    String greet = \"\";\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        new A().foo(\"\");\n"
+                        + "    }\n"
+                        + "    private void foo(String msg) {\n"
+                        + "        System.out.println(msg + greet);\n"
+                        + "    }\n"
+                        + "    private class Inner {\n"
+                        + "        public void bar() {\n"
+                        + "            foo(\"\");\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 3, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    String greet = \"\";\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        System.out.println(\"\" + new A().greet);\n"
+                        + "    }\n"
+                        + "    private class Inner {\n"
+                        + "        public void bar() {\n"
+                        + "            System.out.println(\"\" + greet);\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void test242995() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

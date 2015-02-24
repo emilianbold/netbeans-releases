@@ -4677,7 +4677,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     return var != null ? Collections.singleton(var) : null;
                 case SWITCH:
                     SwitchTree sw = (SwitchTree) tree;
-                    if (sw.getExpression() != lastTree) {
+                    if (sw.getExpression() != lastTree && sw.getExpression().getKind() != Tree.Kind.ERRONEOUS) {
                         return null;
                     }
                     ret = new HashSet<>();

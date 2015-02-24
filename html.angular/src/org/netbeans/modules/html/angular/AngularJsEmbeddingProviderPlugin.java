@@ -344,7 +344,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             sb.append("$scope;\n");   //NOI18N
             embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
             sb = new StringBuilder();
-            if (!controllerName.isEmpty()) {
+            final int embeddingEndOffset = tokenSequence.offset() + 1 + controllerName.length();
+            if (!controllerName.isEmpty() && embeddingEndOffset <= snapshot.getText().length()) {
                 embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
                 sb.append(";");
             } else {

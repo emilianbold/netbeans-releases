@@ -43,7 +43,7 @@ package org.netbeans.modules.glassfish.cloud.data;
 
 import javax.enterprise.deploy.spi.Target;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 
 /**

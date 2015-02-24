@@ -102,6 +102,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         visibilityOrderList.putClientProperty(OPTION_ID, visibilityOrder);
         keepGASTogetherCheckBox.putClientProperty(OPTION_ID, keepGettersAndSettersTogether);
         sortMembersAlphaCheckBox.putClientProperty(OPTION_ID, sortMembersInGroups);
+        sortUsesDependenciesCheckBox.putClientProperty(OPTION_ID, sortUsesDependencies);
         insertionPointComboBox.putClientProperty(OPTION_ID, classMemberInsertionPoint);
     }
     
@@ -124,6 +125,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         visibilityOrderList.addListSelectionListener(this);
         enableVisibilityOrder();
         enableInsertionPoint();
+        enableDependencyOrder();
         otherLabel.setVisible(false);
         qualifyFieldAccessCheckBox.setVisible(false);
         addOverrideAnnortationCheckBox.setVisible(false);
@@ -169,6 +171,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         sortMembersAlphaCheckBox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
         insertionPointComboBox = new javax.swing.JComboBox();
+        sortUsesDependenciesCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_CodeGeneration")); // NOI18N
         setOpaque(false);
@@ -262,10 +265,20 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
 
         insertionPointComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        sortUsesDependenciesCheckBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(sortUsesDependenciesCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "FmtCodeGeneration.sortUsesDependenciesCheckBox.text")); // NOI18N
+        sortUsesDependenciesCheckBox.setEnabled(false);
+        sortUsesDependenciesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortUsesDependenciesCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSeparator3)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(otherLabel)
@@ -277,11 +290,17 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
                             .addComponent(parametersFinalCheckBox)
                             .addComponent(localVarsFinalCheckBox))))
                 .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(jSeparator3)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(memberOrderLabel)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(insertionPointLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(insertionPointComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(memberOrderLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sortByVisibilityCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(keepGASTogetherCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -292,15 +311,9 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
                             .addComponent(upButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(visDownButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(visUpButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(sortByVisibilityCheckBox)
-                    .addComponent(keepGASTogetherCheckBox)
-                    .addComponent(sortMembersAlphaCheckBox)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(insertionPointLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(insertionPointComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(sortMembersAlphaCheckBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(sortUsesDependenciesCheckBox, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jSeparator1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -340,8 +353,10 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(sortMembersAlphaCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(3, 3, 3)
+                .addComponent(sortUsesDependenciesCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(insertionPointLabel)
                     .addComponent(insertionPointComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -391,11 +406,21 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
 
     private void sortByVisibilityCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortByVisibilityCheckBoxActionPerformed
         enableVisibilityOrder();
+        enableDependencyOrder();
     }//GEN-LAST:event_sortByVisibilityCheckBoxActionPerformed
 
     private void sortMembersAlphaCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortMembersAlphaCheckBoxActionPerformed
         enableInsertionPoint();
+        enableDependencyOrder();
     }//GEN-LAST:event_sortMembersAlphaCheckBoxActionPerformed
+
+    private void sortUsesDependenciesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortUsesDependenciesCheckBoxActionPerformed
+    }//GEN-LAST:event_sortUsesDependenciesCheckBoxActionPerformed
+    
+    private void enableDependencyOrder() {
+        boolean b = sortByVisibilityCheckBox.isSelected()|| sortMembersAlphaCheckBox.isSelected();
+        sortUsesDependenciesCheckBox.setEnabled(b);
+    }
     
     private void enableMembersOrderButtons() {
         int idx = membersOrderList.getSelectedIndex();                
@@ -452,6 +477,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
     private javax.swing.JCheckBox qualifyFieldAccessCheckBox;
     private javax.swing.JCheckBox sortByVisibilityCheckBox;
     private javax.swing.JCheckBox sortMembersAlphaCheckBox;
+    private javax.swing.JCheckBox sortUsesDependenciesCheckBox;
     private javax.swing.JButton upButton;
     private javax.swing.JButton visDownButton;
     private javax.swing.JButton visUpButton;

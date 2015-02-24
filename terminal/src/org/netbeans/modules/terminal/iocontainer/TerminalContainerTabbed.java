@@ -50,19 +50,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.terminal.actions.ActionFactory;
+import org.netbeans.modules.terminal.actions.PinTabAction;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.InputLine;
 import org.openide.awt.MouseUtils;
 
 import org.openide.awt.TabbedPaneFactory;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -277,9 +273,12 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
 
 	@Override
 	protected void showPopup(MouseEvent e) {
+	    Terminal selected = (Terminal) getSelected();
+	    
 	    Action close = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
 	    Action setTitle = ActionFactory.forID(ActionFactory.SET_TITLE_ACTION_ID);
 	    Action pin = ActionFactory.forID(ActionFactory.PIN_TAB_ACTION_ID);
+	    pin.putValue("Name", PinTabAction.getMessage(selected.isPinned())); //NOI18N
 	    Action closeAll = new CloseAll();
 	    Action closeAllBut = new CloseAllButCurrent();
 		    

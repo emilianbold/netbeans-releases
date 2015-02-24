@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -79,7 +80,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = RemoteVcsSupportImplementation.class)
 public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
 
-    private static final Logger LOGGER = Logger.getLogger(RemoteVcsSupportImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger("remote.vcs.logger"); //NOI18N
 
     public RemoteVcsSupportImpl() {
     }
@@ -117,6 +118,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         } else {
             VCSFileProxy root = getRootFileProxy(proxy);
             try {
+                // TODO: make it more effective
                 return root.toFileObject().getFileSystem();
             } catch (FileStateInvalidException ex) {
                 throw new IllegalStateException(ex);
@@ -165,6 +167,17 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
             return Files.isSymbolicLink(path);
         } else {
             return RemoteVcsSupportUtil.isSymbolicLink(getFileSystem(proxy), proxy.getPath());
+        }
+    }
+
+    @Override
+    public String readSymbolicLinkPath(VCSFileProxy proxy) throws IOException {
+        File file = proxy.toFile();
+        if (file != null) {
+            Path path = file.toPath();
+            return Files.readSymbolicLink(path).toString();
+        } else {
+            return RemoteVcsSupportUtil.readSymbolicLinkPath(getFileSystem(proxy), proxy.getPath());
         }
     }
 
@@ -388,7 +401,6 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     @Override
     public VCSFileProxy fromString(String proxyString) {
         FileSystem fs = FileSystemProvider.urlToFileSystem(proxyString);
-        FileObject root = fs.getRoot();
         VCSFileProxy rootProxy = VCSFileProxy.createFileProxy(fs.getRoot());
         return VCSFileProxy.createFileProxy(rootProxy, proxyString);
     }
@@ -400,6 +412,16 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
             deleteRecursively(javaFile);
         } else {
             RemoteVcsSupportUtil.delete(getFileSystem(file), file.getPath());
+        }
+    }
+
+    @Override
+    public void deleteExternally(VCSFileProxy file) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            deleteRecursively(javaFile);
+        } else {
+            RemoteVcsSupportUtil.deleteExternally(getFileSystem(file), file.getPath());
         }
     }
 
@@ -439,4 +461,9 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     public void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
         os.writeUTF(fs.getRoot().toURI().toString());
     }
+
+    @Override
+    public void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException {
+        RemoteVcsSupportUtil.refreshFor(fs, paths);
+    }    
 }

@@ -752,7 +752,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             }
         }
         // selenium testing
-        if (testDirs != null) {
+        if (seleniumTestDirs != null) {
             // first, remove all current test dirs
             for (String property : project.getSeleniumRoots().getRootProperties()) {
                 projectProperties.remove(property);

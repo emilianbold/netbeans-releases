@@ -127,7 +127,7 @@ public class ProcedureNode extends BaseNode {
 
     @Override
     protected void initialize() {
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             try {
@@ -368,7 +368,7 @@ public class ProcedureNode extends BaseNode {
                         escapedName = getName().replace("'", "''");
                         query = "SELECT param_list, returns, body, db FROM mysql.proc WHERE name = '"
                                 + escapedName + "';"; // NOI18N
-                        try (Statement stat = connection.getConnection().createStatement();
+                        try (Statement stat = connection.getJDBCConnection().createStatement();
                                 ResultSet rs = stat.executeQuery(query);) {
 
                             while (rs.next()) {
@@ -408,7 +408,7 @@ public class ProcedureNode extends BaseNode {
                                 + " FROM information_schema.triggers WHERE TRIGGER_NAME = '"
                                 + escapedName + "';";  // NOI18N
 
-                        try (Statement stat = connection.getConnection().createStatement();
+                        try (Statement stat = connection.getJDBCConnection().createStatement();
                                 ResultSet rs = stat.executeQuery(query);) {
                             while (rs.next()) {
                                 String parent = rs.getString("TRIGGER_SCHEMA"); // NOI18N
@@ -458,7 +458,7 @@ public class ProcedureNode extends BaseNode {
                         escapedName = getName().replace("'", "''");
                         query = "SELECT param_list FROM mysql.proc WHERE name = '" // NOI18N
                                 + escapedName + "';"; // NOI18N
-                        try (Statement stat = connection.getConnection().createStatement();
+                        try (Statement stat = connection.getJDBCConnection().createStatement();
                                 ResultSet rs = stat.executeQuery(query);) {
                             while (rs.next()) {
                                 params = rs.getString("param_list"); // NOI18N
@@ -470,7 +470,7 @@ public class ProcedureNode extends BaseNode {
                         query = "SELECT ACTION_STATEMENT, EVENT_OBJECT_SCHEMA, EVENT_OBJECT_TABLE,"
                                 + " ACTION_TIMING, EVENT_MANIPULATION"
                                 + " FROM information_schema.triggers WHERE TRIGGER_NAME = '" + escapedName + "';";
-                        try (Statement stat = connection.getConnection().createStatement();
+                        try (Statement stat = connection.getJDBCConnection().createStatement();
                                 ResultSet rs = stat.executeQuery(query);) {
                             while (rs.next()) {
                                 String trigger_time = rs.getString("ACTION_TIMING"); // NOI18N
@@ -509,7 +509,7 @@ public class ProcedureNode extends BaseNode {
                     case Procedure:
                         escapedName = getName().replace("'", "''");
                         query = "SELECT body FROM mysql.proc WHERE name = '" + escapedName + "';"; // NOI18N
-                        try (Statement stat = connection.getConnection().createStatement();
+                        try (Statement stat = connection.getJDBCConnection().createStatement();
                                 ResultSet rs = stat.executeQuery(query);) {
                             while (rs.next()) {
                                 body = rs.getString("body"); // NOI18N
@@ -520,7 +520,7 @@ public class ProcedureNode extends BaseNode {
                         escapedName = getName().replace("'", "''");
                         query = "SELECT ACTION_STATEMENT FROM information_schema.triggers WHERE TRIGGER_NAME = '"  // NOI18N
                                 + escapedName + "';"; // NOI18N
-                        try (Statement stat = connection.getConnection().createStatement();
+                        try (Statement stat = connection.getJDBCConnection().createStatement();
                                 ResultSet rs = stat.executeQuery(query)) {
                             while (rs.next()) {
                                 body = rs.getString("ACTION_STATEMENT"); // NOI18N
@@ -653,7 +653,7 @@ public class ProcedureNode extends BaseNode {
                 String escapedName = getName().replace("'", "''");
                 String escapedSchemaName = schema.toUpperCase().replace("'", "''");
                 // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
-                try (Statement stat = connection.getConnection().createStatement()) {
+                try (Statement stat = connection.getJDBCConnection().createStatement()) {
                     // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
                     String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" // NOI18N
                             + escapedName + "' AND OWNER='" + escapedSchemaName // NOI18N

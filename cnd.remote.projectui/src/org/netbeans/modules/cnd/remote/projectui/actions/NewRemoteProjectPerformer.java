@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.remote.projectui.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -65,6 +64,7 @@ import org.netbeans.modules.cnd.remote.projectui.wizard.ide.ProjectUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
@@ -146,17 +146,6 @@ public class NewRemoteProjectPerformer extends RemoteActionPerformer {
                 Runnable createWorker = new Runnable() {
                     @Override
                     public void run() {
-                        // #75960 - test if any folder was created during the wizard and if yes and it's empty delete it
-                        Preferences prefs = NbPreferences.forModule(OpenProjectListSettings.class);
-                        String nbPrjDirPath = prefs.get(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER, null);
-                        prefs.remove(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER);
-                        if (nbPrjDirPath != null) {
-                            File prjDir = new File(nbPrjDirPath);
-                            if (prjDir.exists() && prjDir.isDirectory() && prjDir.listFiles() != null && prjDir.listFiles().length == 0) {
-                                prjDir.delete();
-                            }
-                        }
-
                         //#69618: the non-project cache may contain a project folder listed in newObjects:
                         ProjectManager.getDefault().clearNonProjectCache();
                         ProjectUtilities.WaitCursor.show();

@@ -93,7 +93,7 @@ public class IndexColumnNodeProvider extends NodeProvider {
     protected synchronized void initialize() {
         final List<Node> newList = new ArrayList<Node>();
 
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             try {

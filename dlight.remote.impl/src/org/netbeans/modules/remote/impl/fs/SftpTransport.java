@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,23 +83,26 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntry stat(String path) 
-            throws InterruptedException, ExecutionException {
+            throws ConnectException, InterruptedException, ExecutionException {
         return stat_or_lstat(path, false);
     }
 
     @Override
     protected DirEntry lstat(String path) 
-            throws InterruptedException, ExecutionException {
+            throws ConnectException, InterruptedException, ExecutionException {
         return stat_or_lstat(path, true);
     }
 
     private DirEntry stat_or_lstat(String path, boolean lstat) 
-            throws InterruptedException, ExecutionException {
+            throws ConnectException, InterruptedException, ExecutionException {
         
         Future<FileInfoProvider.StatInfo> stat = lstat ?
                 FileInfoProvider.lstat(execEnv, path) :
                 FileInfoProvider.stat(execEnv, path);
-        
+
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
+        }        
         return DirEntryImpl.create(stat.get(), execEnv);
     }
 
@@ -110,7 +114,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
     @Override
     protected DirEntryList copy(String from, String to, 
             Collection<IOException> subdirectoryExceptions) 
-            throws InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
         throw new UnsupportedOperationException();
     }
 
@@ -120,7 +124,8 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected MoveInfo move(String from, String to) throws InterruptedException, CancellationException, ExecutionException {
+    protected MoveInfo move(String from, String to) 
+            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
         Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(execEnv, from, to);
         f.get();
         String fromParent = PathUtilities.getDirName(from);
@@ -131,13 +136,17 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected DirEntryList readDirectory(String remotePath) throws InterruptedException, CancellationException, ExecutionException {
+    protected DirEntryList readDirectory(String remotePath)
+            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
         if (remotePath.length() == 0) {
             remotePath = "/"; //NOI18N
         } else  {
             if (!remotePath.startsWith("/")) { //NOI18N
                 throw new IllegalArgumentException("path should be absolute: " + remotePath); // NOI18N
             }
+        }
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
         }
         Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
         StatInfo[] infos;
@@ -164,6 +173,16 @@ public class SftpTransport extends RemoteFileSystemTransport {
     protected boolean needsClientSidePollingRefresh() {
         return true;        
     }
+
+    @Override
+    protected boolean canRefreshFast() {
+        return false;
+    }
+
+    @Override
+    protected void refreshFast(String path, boolean expected) {
+        throw new UnsupportedOperationException("fast refresh not supported for sftp transport"); //NOI18N
+    }
     
     @Override
     protected void registerDirectoryImpl(RemoteDirectory directory) {
@@ -185,6 +204,9 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntryList delete(String path, boolean directory) throws IOException {
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
+        }        
         StringWriter writer = new StringWriter();
         Future<Integer> task;
         if (directory) {
@@ -209,7 +231,11 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
-            throws IOException, InterruptedException, ExecutionException, InterruptedException {
+            throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
+
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
+        }
         
         CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
                 srcFile, execEnv, pathToUpload, pathToRename, -1, false, null);

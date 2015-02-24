@@ -70,6 +70,54 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testJavadocClassRef() throws Exception { // #250415 - Refactor Rename ... Class should rename Class in @see or @link Class#member javadoc
+        writeFilesAndWaitForScan(src,
+                new File("t/B.java", "package t;\n"
+                        + "/**\n"
+                        + " * Extends {@link A} with own main method\n"
+                        + " * implemented using the BaseClass {@link A#main main} method.\n"
+                        + " * \n"
+                        + " * @see A\n"
+                        + " */\n"
+                        + "public class B extends A {\n"
+                        + "  /**\n"
+                        + "   * Calls {@link A#main}.\n"
+                        + "   * @see A#main\n"
+                        + "   */\n"
+                        + "  public static void main(String[] parameters) {\n"
+                        + "    A.main(new B(), parameters);\n"
+                        + "  }\n"
+                        + "}"),
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static void main(A base, String[] parameters) {\n"
+                        + "    }\n"
+                        + "}"));
+        performRename(src.getFileObject("t/A.java"), -1, -1, "C", null, false);
+        verifyContent(src,
+                new File("t/B.java", "package t;\n"
+                        + "/**\n"
+                        + " * Extends {@link C} with own main method\n"
+                        + " * implemented using the BaseClass {@link C#main main} method.\n"
+                        + " * \n"
+                        + " * @see C\n"
+                        + " */\n"
+                        + "public class B extends C {\n"
+                        + "  /**\n"
+                        + "   * Calls {@link C#main}.\n"
+                        + "   * @see C#main\n"
+                        + "   */\n"
+                        + "  public static void main(String[] parameters) {\n"
+                        + "    C.main(new B(), parameters);\n"
+                        + "  }\n"
+                        + "}"),
+                new File("t/A.java", "package t;\n"
+                        + "public class C {\n"
+                        + "    public static void main(C base, String[] parameters) {\n"
+                        + "    }\n"
+                        + "}"));
+    }
+    
     public void test236868() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,

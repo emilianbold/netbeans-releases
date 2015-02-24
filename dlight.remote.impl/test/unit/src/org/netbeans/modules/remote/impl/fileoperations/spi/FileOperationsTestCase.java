@@ -324,6 +324,16 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         if (output.get().length()>0) {
             System.err.println(output.get());
         }
+//        String pathToRefresh = name;
+//        if (pathToRefresh.startsWith("/")) {
+//            String parent = PathUtilities.getDirName(pathToRefresh);
+//            if (parent != null) {
+//                pathToRefresh = parent;
+//            }
+//        } else {
+//            pathToRefresh = file.getPath();
+//        }
+//        RemoteVcsSupportUtil.refreshFor(fs, pathToRefresh);
     }
     
     private void copyAgent() {
@@ -344,43 +354,48 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
     }
     
     private void fileEquals(File ioFile, FileProxyO file, boolean skipName) {
-        if (!Utilities.isWindows()) {
-            assertEquals(message(ioFile, file, "exist"), ioFile.exists(), fileOperations.exists(file));
-            if (!skipName) {
-                assertEquals(ioFile.getName(), fileOperations.getName(file));
-            }
-            absPathEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
-            assertEquals(message(ioFile, file, "canWrite"), ioFile.canWrite(), fileOperations.canWrite(file));
-            assertEquals(message(ioFile, file, "isDirectory"), ioFile.isDirectory(), fileOperations.isDirectory(file));
-            assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
-            listEquals(message(ioFile, file, "list"), ioFile.list(), fileOperations.list(file));
-            absPathEquals(ioFile.getParent(), fileOperations.getDir(file));
-            String normalized = fileOperations.normalizeUnixPath(file);
-            absPathEquals(FileUtil.normalizePath(ioFile.getAbsolutePath()), normalized);
-            assertEquals(normalized, fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy(normalized)));
-            if (fileOperations.isDirectory(file)) {
-                File ioFile2 = new File(ioFile, "test/..");
-                ioFile2 = FileUtil.normalizeFile(ioFile2);
-                assertEquals(ioFile2, ioFile);
-                
-                FileProxyO file2 = FileOperationsProvider.toFileProxy(file.getPath()+"/test/..");
-                absPathEquals(ioFile2.getAbsolutePath(), fileOperations.normalizeUnixPath(file2));
-            }
-        }// else {
-            Map<String, Object> agentResults = runAgent(file.getPath());
-            assertNotNull(agentResults);
-            //if (runAgent != null) {
-                ioFile = new MyFile(user, agentResults);
+        try {
+            RemoteFileSystemManager.getInstance().getFileSystem(execEnv).setInsideVCS(true);
+            if (!Utilities.isWindows()) {
                 assertEquals(message(ioFile, file, "exist"), ioFile.exists(), fileOperations.exists(file));
-                assertEquals(ioFile.getName(), fileOperations.getName(file));
-                assertEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
+                if (!skipName) {
+                    assertEquals(ioFile.getName(), fileOperations.getName(file));
+                }
+                absPathEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
                 assertEquals(message(ioFile, file, "canWrite"), ioFile.canWrite(), fileOperations.canWrite(file));
                 assertEquals(message(ioFile, file, "isDirectory"), ioFile.isDirectory(), fileOperations.isDirectory(file));
                 assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
                 listEquals(message(ioFile, file, "list"), ioFile.list(), fileOperations.list(file));
-                assertEquals(ioFile.getParent(), fileOperations.getDir(file));
+                absPathEquals(ioFile.getParent(), fileOperations.getDir(file));
+                String normalized = fileOperations.normalizeUnixPath(file);
+                absPathEquals(FileUtil.normalizePath(ioFile.getAbsolutePath()), normalized);
+                assertEquals(normalized, fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy(normalized)));
+                if (fileOperations.isDirectory(file)) {
+                    File ioFile2 = new File(ioFile, "test/..");
+                    ioFile2 = FileUtil.normalizeFile(ioFile2);
+                    assertEquals(ioFile2, ioFile);
+
+                    FileProxyO file2 = FileOperationsProvider.toFileProxy(file.getPath() + "/test/..");
+                    absPathEquals(ioFile2.getAbsolutePath(), fileOperations.normalizeUnixPath(file2));
+                }
+            }// else {
+            Map<String, Object> agentResults = runAgent(file.getPath());
+            assertNotNull(agentResults);
+            //if (runAgent != null) {
+            ioFile = new MyFile(user, agentResults);
+            assertEquals(message(ioFile, file, "exist"), ioFile.exists(), fileOperations.exists(file));
+            assertEquals(ioFile.getName(), fileOperations.getName(file));
+            assertEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
+            assertEquals(message(ioFile, file, "canWrite"), ioFile.canWrite(), fileOperations.canWrite(file));
+            assertEquals(message(ioFile, file, "isDirectory"), ioFile.isDirectory(), fileOperations.isDirectory(file));
+            assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
+            listEquals(message(ioFile, file, "list"), ioFile.list(), fileOperations.list(file));
+            assertEquals(ioFile.getParent(), fileOperations.getDir(file));
             //}
-        //}
+            //}
+        } finally {
+            RemoteFileSystemManager.getInstance().getFileSystem(execEnv).setInsideVCS(false);
+        }
     }
 
     private String message(File ioFile, FileProxyO file, String method) {

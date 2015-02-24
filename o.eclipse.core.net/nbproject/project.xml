@@ -8,7 +8,7 @@
            <public-packages/>
            <class-path-extension>
                <runtime-relative-path>org-eclipse-core-net.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.core.net_1.2.100.I20110511-0800.jar</binary-origin>
+                <binary-origin>external/org.eclipse.core.net_1.2.100.I20110511-0800_nosignature.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

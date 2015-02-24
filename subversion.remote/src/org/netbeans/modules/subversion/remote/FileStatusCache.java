@@ -588,7 +588,7 @@ public class FileStatusCache {
             boolean symlink = false;
             try {
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
-                symlink = topmost != null && isSymlink(file, topmost);
+                symlink = topmost != null && isSymlink(file);
                 if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
                     SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                     status = SvnUtils.getSingleStatus(client, file);
@@ -956,7 +956,7 @@ public class FileStatusCache {
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(localFile);
                 if (fi.isDirectory() || topmost == null || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE
-                        && !isSymlink(localFile, topmost)) {
+                        && !isSymlink(localFile)) {
                     folderFiles.put(localFile, fi);
                 }
             }
@@ -1198,10 +1198,10 @@ public class FileStatusCache {
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
     }
 
-    private boolean isSymlink (VCSFileProxy file, VCSFileProxy root) {
+    private boolean isSymlink (VCSFileProxy file) {
         boolean symlink = false;
         if (EXCLUDE_SYMLINKS) {
-            symlink = VCSFileProxySupport.isSymlink(file, root);
+            symlink = VCSFileProxySupport.isSymlink(file);
         }
         return symlink;
     }

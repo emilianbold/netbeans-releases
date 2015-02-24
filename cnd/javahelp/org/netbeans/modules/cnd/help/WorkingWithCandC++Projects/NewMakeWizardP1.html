@@ -1,23 +1,41 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>New C/C++ Project With Existing Sources Wizard: Build Tool</title>
+<title>New C/C++ Project With Existing Sources Wizard: Pre-Build Action</title>
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </head>
 <body>
-<h2>New C/C++ Project With Existing Sources Wizard: Build Tool</h2>
+<h2>New C/C++ Project With Existing Sources Wizard: Pre-Build Action</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>The New C/C++ Project With Existing Sources wizard enables you to create a 
 project using an existing makefile. When you select the Custom mode, you must
 make selections to determine how the project is configured.</p>
-<p>In the Build Tool page, you specify whether you build
-your project using an existing makefile or using a makefile generated 
-by a configure script.
+<p>In the Pre-Build Action page, you can specify if you build
+    your project using a custom command or script, a non-default configure script,
+cmake, or qmake.
 </p>
+<p>If you build your project with a makefile or configure script that already is present, click Next
+to continue to the Build Actions page.</p>
+<p>If you want to specify a different build process, select the checkbox
+    <b>Pre-Build Step is Required</b> and make selections for the fields below.</p>
+<p>Note that if your project uses QMake or CMake, you must first install them separately because they
+are not included in the IDE.</p>
+<ul>
+    <li><b>Run in Folder.</b>Type or browse to the location of the working directory
+    where the pre-build command must be run. </li>
+    <li><b>Custom Command.</b>If you are using a custom script to build,
+        select this option and type the command that the IDE needs to run.  Use the same command syntax and arguments
+        you would use if running the command in a shell.        
+    </li>
+    <li><b>Predefined Command.</b> Select this option if you are using a non-default configure script,
+    or cmake or qmake.  Then select the type of script, and specify the script's location and arguments.</li>
+    </ul>
+<p>The Preview panel shows the command that the IDE will run based on your input.</p>
+<!--
 <ul>
 <li><b>Using an existing makefile.</b> If you build your project with an existing makefile, type the 
 path to the makefile in the Existing Makefile text field, or click 
@@ -45,7 +63,7 @@ wizard, deselect the Run 'configure' Script after Finish checkbox.
 </li>
 </ol>
 </li>
-</ul>
+</ul>-->
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>

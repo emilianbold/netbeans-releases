@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.web.inspect.webkit.knockout.unused;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
@@ -55,7 +59,7 @@ import org.openide.nodes.Node;
  */
 public class UnusedGroupNode extends AbstractNode {
     /** Name of the binding this node represents. */
-    private String bindingName;
+    private final String bindingName;
 
     /**
      * Creates a new {@code UnusedGroupNode}.
@@ -110,7 +114,7 @@ public class UnusedGroupNode extends AbstractNode {
          */
         UnusedGroupChildren(java.util.Map<Integer,UnusedBinding> unusedBindings) {
             this.unusedBindings = unusedBindings;
-            setKeys(unusedBindings.keySet());
+            setKeys(sortKeys(unusedBindings.keySet()));
         }
 
         /**
@@ -119,8 +123,28 @@ public class UnusedGroupNode extends AbstractNode {
          * @param unusedBindings unused binding information.
          */
         synchronized void update(java.util.Map<Integer,UnusedBinding> unusedBindings) {
+            for (Node node : getNodes()) {
+                UnusedBindingNode unusedBindingNode = (UnusedBindingNode)node;
+                UnusedBinding oldInfo = unusedBindingNode.getUnusedBinding();
+                UnusedBinding newInfo = unusedBindings.get(oldInfo.getId());
+                if (newInfo != null) {
+                    unusedBindingNode.setUnusedBinding(newInfo);
+                }
+            }
             this.unusedBindings = unusedBindings;
-            setKeys(unusedBindings.keySet());
+            setKeys(sortKeys(unusedBindings.keySet()));
+        }
+
+        /**
+         * Returns a list of the given keys sorted (by unused binding ID).
+         * 
+         * @param keys keys to sort.
+         * @return list of the given keys sorted (by unused binding ID).
+         */
+        private List<Integer> sortKeys(Collection<Integer> keys) {
+            List<Integer> list = new ArrayList<Integer>(keys);
+            Collections.sort(list);
+            return list;
         }
 
         @Override

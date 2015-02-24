@@ -46,10 +46,14 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.remotefs.versioning.spi.RemoteVcsSupportImplementation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 
 /**
@@ -98,6 +102,10 @@ public final class RemoteVcsSupport {
 
     public static boolean isSymlink(VCSFileProxy proxy) {
         return getImpl().isSymlink(proxy);
+    }
+    
+    static String readSymbolicLinkPath(VCSFileProxy file)  throws IOException {
+        return getImpl().readSymbolicLinkPath(file);
     }
 
     public static boolean canRead(VCSFileProxy proxy) {
@@ -172,8 +180,44 @@ public final class RemoteVcsSupport {
         getImpl().delete(file);
     }
 
+    static void deleteExternally(VCSFileProxy file) {
+        getImpl().deleteExternally(file);
+    }
+
     public static void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile) {
         getImpl().setLastModified(file, referenceFile);
+    }
+    
+    /**
+     * All proxies should belong to the SAME FILE SYSTEM.
+     * In other words, either have geFile() returning not null
+     * or getFileObject().getFileSystem() return thr same value.
+     */
+    public static void refreshFor(VCSFileProxy... proxies)  throws ConnectException, IOException {
+        if (proxies.length == 0) {
+            return;
+        }        
+        if (proxies[0].toFile() != null) {
+            File[] files = new File[proxies.length];
+            for (int i = 0; i < proxies.length; i++) {
+                final File f = proxies[i].toFile();
+                assert f != null;
+                files[i] = f;
+            }
+            FileUtil.refreshFor(files);
+        } else {
+            FileSystem fs = getFileSystem(proxies[0]);
+            String[] paths = new String[proxies.length];
+            for (int i = 0; i < proxies.length; i++) {
+                paths[i] = proxies[i].getPath();
+                assert getFileSystem(proxies[i]) == fs;
+            }
+            refreshFor(fs, paths);
+        }
+    }
+
+    public static void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException {
+        getImpl().refreshFor(fs, paths);
     }
 
     private static RemoteVcsSupportImplementation getImpl() {

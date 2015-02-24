@@ -65,6 +65,8 @@ public class UnusedBinding {
     private final String nodeId;
     /** Classes (value if the {@code class} attribute) of the owner of this binding. */
     private final String nodeClasses;
+    /** Determines whether the node was removed from the document. */
+    private final boolean nodeRemoved;
     /** Owning page. */
     private final WebKitPageModel page;
 
@@ -77,15 +79,17 @@ public class UnusedBinding {
      * @param nodeId ID of the owner of the binding.
      * @param nodeClasses classes (value of the {@code class} attribute)
      * of the owner of the binding.
+     * @param nodeRemoved determines whether the node was removed from the document.
      * @param page owning page.
      */
     public UnusedBinding(int id, String name, String nodeTagName, String nodeId,
-            String nodeClasses, WebKitPageModel page) {
+            String nodeClasses, boolean nodeRemoved, WebKitPageModel page) {
         this.id = id;
         this.name = name;
         this.nodeTagName = (nodeTagName == null) ? "" : nodeTagName; // NOI18N
         this.nodeId = nodeId;
         this.nodeClasses = nodeClasses;
+        this.nodeRemoved = nodeRemoved;
         this.page = page;
     }
 
@@ -108,6 +112,16 @@ public class UnusedBinding {
     }
 
     /**
+     * Determines whether the node was removed from the document.
+     * 
+     * @return {@code true} when the node is no longer in the document,
+     * returns {@code false} otherwise.
+     */
+    public boolean isRemoved() {
+        return nodeRemoved;
+    }
+
+    /**
      * Returns the owning page.
      * 
      * @return owning page.
@@ -123,12 +137,17 @@ public class UnusedBinding {
      */
     @NbBundle.Messages({
         "UnusedBindings.comment=comment",
+        "UnusedBindings.removedNode=<i>(removed)</i>"
     })
     public String getNodeDisplayName() {
         String selector = DOMNode.selector(
                 nodeTagName.isEmpty() ? Bundle.UnusedBindings_comment() : nodeId,
                 nodeClasses);
-        return DOMNode.htmlDisplayName(nodeTagName, selector);
+        String displayName = DOMNode.htmlDisplayName(nodeTagName, selector);
+        if (isRemoved()) {
+            displayName = displayName + " " + Bundle.UnusedBindings_removedNode(); // NOI18N
+        }
+        return displayName;
     }
 
     /**

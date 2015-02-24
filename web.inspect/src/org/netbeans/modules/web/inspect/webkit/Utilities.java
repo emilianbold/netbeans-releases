@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -471,9 +472,9 @@ public class Utilities {
      */
     public static Node findRule(Node root, Rule rule) {
         Rule candidate = root.getLookup().lookup(Rule.class);
-        if (candidate != null &&  rule.getId().equals(candidate.getId())
-                && rule.getSourceURL().equals(candidate.getSourceURL())
-                && rule.getSelector().equals(candidate.getSelector())) {
+        if (candidate != null && Objects.equals(rule.getId(), candidate.getId())
+                && Objects.equals(rule.getSourceURL(), candidate.getSourceURL())
+                && Objects.equals(rule.getSelector(), candidate.getSelector())) {
             return root;
         }
         for (Node node : root.getChildren().getNodes()) {

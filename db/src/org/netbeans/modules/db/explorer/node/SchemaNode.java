@@ -111,7 +111,7 @@ public class SchemaNode extends BaseNode {
     }
 
     private void setupNames() {
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         final MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             new SwingWorker() {
@@ -168,7 +168,7 @@ public class SchemaNode extends BaseNode {
         }
 
         if (schema != null) {
-            boolean isDefault = false;
+            boolean isDefault;
             String def = connection.getDefaultSchema();
             if (def != null) {
                 isDefault = def.equals(name);

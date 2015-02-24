@@ -386,12 +386,17 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         }
     }
 
-    protected void checkCodeModel(MakeProject makeProject) throws Exception {
+    protected CsmProject getCsmProject(MakeProject makeProject) throws Exception {
         NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
         assertNotNull("Null NativeProject", np);
         CsmModel model = CsmModelAccessor.getModel();
         ((ModelImpl) model).enableProject(np);
         CsmProject csmProject = model.getProject(makeProject);
+        return csmProject;
+    }
+    
+    protected void checkCodeModel(MakeProject makeProject) throws Exception {
+        CsmProject csmProject = getCsmProject(makeProject);
         assertNotNull("Null CsmProject", csmProject);
         csmProject.waitParse();
         checkIncludes(csmProject, true);

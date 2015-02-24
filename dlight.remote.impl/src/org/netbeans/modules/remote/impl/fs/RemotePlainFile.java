@@ -330,7 +330,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST) &&
                     ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment()) &&
                     !getCache().exists() &&  getOwnerFileObject().isMimeResolving()) {
-                DLightLibsCommonLogger.assertFalse(true, "Shouldn't come here in MIME resolved mode"); //NOI18N
+                new Exception("Shouldn't come here in MIME resolved mode " + this).printStackTrace(System.err); //NOI18N
             }
 
             RemoteFileSystemUtils.getCanonicalParent(this).ensureChildSync(this);
@@ -442,7 +442,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop, 
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, 
     boolean expected, RefreshMode refreshMode)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (refreshMode != RefreshMode.FROM_PARENT && Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N

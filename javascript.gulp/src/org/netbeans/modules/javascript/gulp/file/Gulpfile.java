@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.gulp.file;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
+import org.netbeans.modules.web.clientproject.api.json.JsonFile;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.ChangeSupport;
+import org.openide.util.WeakListeners;
 
 @MIMEResolver.Registration(displayName = "Gulpfile", resource = "../resources/gulpfile-resolver.xml", position = 122)
-public final class Gulpfile {
-
-    private static final Logger LOGGER = Logger.getLogger(Gulpfile.class.getName());
+public final class Gulpfile implements PropertyChangeListener {
 
     public static final String FILE_NAME = "gulpfile.js"; // NOI18N
 
-    private final FileObject directory;
-    private final FileChangeListener directoryListener = new DirectoryListener();
-    private final FileChangeListener gulpfileListener = new GulpfileListener();
+    final JsonFile gruntfile;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    // @GuardedBy("this")
-    private File gulpfile;
 
-
-    public Gulpfile(FileObject directory) {
+    private Gulpfile(FileObject directory) {
         assert directory != null;
-        assert directory.isFolder() : "Must be folder: " + directory;
-        this.directory = directory;
-        FileUtil.addFileChangeListener(directoryListener, FileUtil.toFile(directory));
+        gruntfile = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.all());
+    }
+
+    public static Gulpfile create(FileObject directory) {
+        Gulpfile gruntfile = new Gulpfile(directory);
+        gruntfile.gruntfile.addPropertyChangeListener(WeakListeners.propertyChange(gruntfile, gruntfile.gruntfile));
+        return gruntfile;
     }
 
     public boolean exists() {
-        return getGulpfile().isFile();
+        return gruntfile.exists();
     }
 
     public File getFile() {
-        return getGulpfile();
+        return gruntfile.getFile();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -93,72 +87,9 @@ public final class Gulpfile {
         changeSupport.removeChangeListener(listener);
     }
 
-    private synchronized File getGulpfile() {
-        if (gulpfile == null) {
-            gulpfile = new File(FileUtil.toFile(directory), FILE_NAME);
-            try {
-                FileUtil.addFileChangeListener(gulpfileListener, gulpfile);
-                LOGGER.log(Level.FINE, "Started listening to {0}", gulpfile);
-            } catch (IllegalArgumentException ex) {
-                // ignore, already listening
-                LOGGER.log(Level.FINE, "Already listening to {0}", gulpfile);
-            }
-        }
-        return gulpfile;
-    }
-
-    void reset(boolean newFile) {
-        if (newFile) {
-            synchronized (this) {
-                if (gulpfile != null) {
-                    try {
-                        FileUtil.removeFileChangeListener(gulpfileListener, gulpfile);
-                        LOGGER.log(Level.FINE, "Stopped listening to {0}", gulpfile);
-                    } catch (IllegalArgumentException ex) {
-                        // not listeneing yet, ignore
-                        LOGGER.log(Level.FINE, "Not listening yet to {0}", gulpfile);
-                    }
-                    gulpfile = null;
-                }
-            }
-        }
-        // fire change
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
         changeSupport.fireChange();
-    }
-
-    //~ Inner classes
-
-    private final class DirectoryListener extends FileChangeAdapter {
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            reset(true);
-        }
-
-    }
-
-    private final class GulpfileListener extends FileChangeAdapter {
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            reset(true);
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            reset(false);
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            reset(true);
-        }
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            reset(true);
-        }
-
     }
 
 }
