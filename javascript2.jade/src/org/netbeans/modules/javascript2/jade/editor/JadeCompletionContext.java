@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -58,7 +59,9 @@ public enum JadeCompletionContext {
     NONE, // There shouldn't be any code completion
     TAG,  // offer only html tags
     TAG_AND_KEYWORD, // tags and keywords
-    ATTRIBUTE;   // html attributes
+    ATTRIBUTE,    // html attributes
+    CSS_ID, 
+    CSS_CLASS;
         
     private static final List<Object[]> TAG_POSITON = Arrays.asList(
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
@@ -83,6 +86,18 @@ public enum JadeCompletionContext {
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE, JadeTokenId.EOL, JadeTokenId.WHITESPACE}    
     );
     
+    private static final List<Object[]> TAG_ID_POSITION = Arrays.asList(
+        new Object[]{JadeTokenId.CSS_ID},
+        new Object[]{JadeTokenId.TAG, JadeTokenId.TEXT},
+        new Object[]{JadeTokenId.CSS_CLASS, JadeTokenId.TEXT}
+    );
+    
+    private static final List<Object[]> CSS_CLASS_POSITION = Arrays.asList(
+        new Object[]{JadeTokenId.CSS_CLASS},
+        new Object[]{JadeTokenId.TAG, JadeTokenId.PLAIN_TEXT_DELIMITER},
+        new Object[]{JadeTokenId.CSS_ID, JadeTokenId.PLAIN_TEXT_DELIMITER},
+        new Object[]{JadeTokenId.CSS_CLASS, JadeTokenId.PLAIN_TEXT_DELIMITER}
+    );
     
     @NonNull
     public static JadeCompletionContext findCompletionContext(ParserResult info, int offset){
@@ -104,6 +119,10 @@ public enum JadeCompletionContext {
         Token<JadeTokenId> token = ts.token();
         JadeTokenId id = token.id();
         
+        if (!ts.movePrevious()) {
+            return TAG_AND_KEYWORD;
+        }
+        
         if (id == JadeTokenId.ATTRIBUTE) {
             return ATTRIBUTE;
         }
@@ -120,10 +139,25 @@ public enum JadeCompletionContext {
             return TAG;
         }
         
+        if (acceptTokenChains(ts, TAG_ID_POSITION, true)) {
+            if (id == JadeTokenId.TEXT) {
+                if ("#".equals(token.text().toString())) {
+                    return CSS_ID;
+                }
+            } else {
+                return CSS_ID;
+            }
+        }
         
-        
-        
-        
+        if (acceptTokenChains(ts, CSS_CLASS_POSITION, true)) {
+            if (id == JadeTokenId.TEXT) {
+                if (".".equals(token.text().toString())) {
+                    return CSS_CLASS;
+                }
+            } else {
+                return CSS_CLASS;
+            }
+        }
 //        if (acceptTokenChains(ts, ATTRIBUTE_POSITION_AFTER, true)) {
 //            return ATTRIBUTE;
 //        }

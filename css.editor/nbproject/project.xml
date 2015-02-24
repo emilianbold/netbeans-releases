@@ -406,14 +406,14 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.css.devtools</friend>
+                <friend>org.netbeans.modules.css.prep</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.javafx2.editor</friend>
                 <friend>org.netbeans.modules.javascript2.editor</friend>
+                <friend>org.netbeans.modules.javascript2.jade</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
-                <friend>org.netbeans.modules.css.prep</friend>
-                <package>org.netbeans.modules.css.editor.api</package>
                 <package>org.netbeans.modules.css.editor.module.spi</package>
                 <package>org.netbeans.modules.css.indexing.api</package>
                 <package>org.netbeans.modules.css.refactoring.api</package>
