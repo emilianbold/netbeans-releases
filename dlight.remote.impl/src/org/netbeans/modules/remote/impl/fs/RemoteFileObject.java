@@ -376,7 +376,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         FileStatistics.getInstance(fileSystem).logPath(getPath());
         if (!getImplementor().hasCache()) {
             if (isMimeResolving()) {
-                if (!MIME_SNIFFING) {
+                if (!MIME_SNIFFING || getSize() == 0) {
                     return new InputStream() {
                         @Override
                         public int read() throws IOException {
