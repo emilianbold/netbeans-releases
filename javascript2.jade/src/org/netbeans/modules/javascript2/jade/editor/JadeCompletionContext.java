@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.jade.editor;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
@@ -62,31 +63,36 @@ public enum JadeCompletionContext {
     ATTRIBUTE,    // html attributes
     CSS_ID, 
     CSS_CLASS;
-        
-    private static final List<Object[]> TAG_POSITON = Arrays.asList(
-        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
-        new Object[]{JadeTokenId.EOL, JadeTokenId.EOL},
-        new Object[]{JadeTokenId.EOL, JadeTokenId.TAG},
-        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE},    
-        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE, JadeTokenId.TAG},    
-        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON},    
-        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON},
-        new Object[]{JadeTokenId.TAG, JadeTokenId.WHITESPACE},
-        new Object[]{JadeTokenId.TAG, JadeTokenId.EOL},
-        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.TAG},
-        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE},
-        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE, JadeTokenId.TAG}
+    
+      
+    private static final List<Object[]> TAG_POSITION = Arrays.asList(
+        new Object[]{JadeTokenId.TAG},
+        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE}    
+//        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
+//        new Object[]{JadeTokenId.EOL, JadeTokenId.EOL},
+//        new Object[]{JadeTokenId.EOL, JadeTokenId.TAG},
+//        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE},    
+//        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE, JadeTokenId.TAG},    
+//        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON},    
+//        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON},
+//        new Object[]{JadeTokenId.TAG, JadeTokenId.WHITESPACE},
+//        new Object[]{JadeTokenId.TAG, JadeTokenId.EOL},
+//        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.TAG},
+//        
+//        new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE, JadeTokenId.TAG}
     );
+    
+    private static final List<JadeTokenId> WHITESPACES = Arrays.asList(JadeTokenId.WHITESPACE, JadeTokenId.EOL);
     
     private static final List<Object[]> ATTRIBUTE_POSITION = Arrays.asList(
         new Object[]{JadeTokenId.ATTRIBUTE},
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL},
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE}, 
-        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL, JadeTokenId.WHITESPACE},
-        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE, JadeTokenId.EOL, JadeTokenId.WHITESPACE}    
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL, JadeTokenId.WHITESPACE}
     );
     
-    private static final List<Object[]> TAG_ID_POSITION = Arrays.asList(
+    private static final List<Object[]> CSS_ID_POSITION = Arrays.asList(
         new Object[]{JadeTokenId.CSS_ID},
         new Object[]{JadeTokenId.TAG, JadeTokenId.TEXT},
         new Object[]{JadeTokenId.CSS_CLASS, JadeTokenId.TEXT}
@@ -112,64 +118,78 @@ public enum JadeCompletionContext {
         
         ts.move(offset);
         
-        if (!ts.movePrevious()) {
+        if (!ts.movePrevious() || !ts.moveNext()) {
             return TAG_AND_KEYWORD;
         }
         
         Token<JadeTokenId> token = ts.token();
         JadeTokenId id = token.id();
-        
-        if (!ts.movePrevious()) {
+        String text = null;
+        switch (id) {
+            case ATTRIBUTE: return ATTRIBUTE;
+            case TAG: return TAG;
+            case CSS_ID: return CSS_ID;
+            case CSS_CLASS: return CSS_CLASS;
+            case TEXT: text = token.text().toString(); break;
+        }
+        if (id.isKeyword()) {
             return TAG_AND_KEYWORD;
         }
         
-        if (id == JadeTokenId.ATTRIBUTE) {
-            return ATTRIBUTE;
-        }
-        
-        if (!ts.moveNext()){
-            return TAG_AND_KEYWORD;
-        }
-        
-        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, false)) {
-            return ATTRIBUTE;
-        }
-        
-        if (acceptTokenChains(ts, TAG_POSITON, false)) {
+        // check tag: ^ position
+        if (acceptTokenChains(ts, TAG_POSITION, true)) {
             return TAG;
         }
         
-        if (acceptTokenChains(ts, TAG_ID_POSITION, true)) {
-            if (id == JadeTokenId.TEXT) {
-                if ("#".equals(token.text().toString())) {
-                    return CSS_ID;
-                }
-            } else {
-                return CSS_ID;
-            }
-        }
-        
         if (acceptTokenChains(ts, CSS_CLASS_POSITION, true)) {
-            if (id == JadeTokenId.TEXT) {
-                if (".".equals(token.text().toString())) {
-                    return CSS_CLASS;
+            return CSS_CLASS;
+        }
+        if (acceptTokenChains(ts, CSS_ID_POSITION, true)) {
+            return CSS_ID;
+        }
+        
+        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, true)) {
+            return ATTRIBUTE;
+        }
+        
+        boolean isBeginOfLine = false;
+        if (ts.movePrevious()) {
+            token = ts.token();
+            id = token.id();
+            if (id == JadeTokenId.WHITESPACE && ts.movePrevious()) {
+                token = ts.token();
+                id = token.id();
+            }
+            if (id == JadeTokenId.EOL) {
+                isBeginOfLine = true;
+                if (text != null){
+                    if (JadeCodeCompletion.CSS_CLASS_PREFIX.equals(text)) {
+                        return CSS_CLASS;
+                    }
+                    if ( JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
+                        return CSS_ID;
+                    }
                 }
-            } else {
-                return CSS_CLASS;
             }
-        }
-//        if (acceptTokenChains(ts, ATTRIBUTE_POSITION_AFTER, true)) {
-//            return ATTRIBUTE;
-//        }
-        
-        
-        if (id == JadeTokenId.EOL && ts.movePrevious()) {
-            token = ts.token(); id = token.id();
-            if (id == JadeTokenId.TAG && !ts.movePrevious()) {
-                return TAG_AND_KEYWORD;
-            }
-        }
-        
+            while (ts.movePrevious()) {
+                token = ts.token();
+                id = token.id(); 
+                if (id == JadeTokenId.TAG) {
+                    if (isBeginOfLine) {
+                        return TAG;
+                    } else {
+                        return NONE;
+                    }
+                }
+                if (id == JadeTokenId.ATTRIBUTE || id == JadeTokenId.BRACKET_LEFT_PAREN) {
+                    return ATTRIBUTE;
+                }
+                
+                if (id != JadeTokenId.EOL && id != JadeTokenId.WHITESPACE && id != JadeTokenId.JAVASCRIPT) {
+                    return NONE;
+                }
+            }  
+        }         
         return NONE;
     }
     
