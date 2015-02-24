@@ -77,6 +77,11 @@ public class JadeCompletionItem implements CompletionProposal {
         return new JadeCompletionItem(request, element);
     }
     
+    public static CompletionProposal createCssItem(CompletionRequest request, String name) {
+        ElementHandle element = new SimpleElement(name, ElementKind.RULE);
+        return new JadeCompletionItem(request, element);
+    }
+    
     public JadeCompletionItem(CompletionRequest request, ElementHandle element) {
         this.request = request;
         this.element = element;
