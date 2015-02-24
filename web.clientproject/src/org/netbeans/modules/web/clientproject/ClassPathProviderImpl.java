@@ -104,6 +104,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                     if (ClientSideProjectConstants.PROJECT_SOURCE_FOLDER.equals(evt.getPropertyName())
                             || ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())
                             || ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())
+                            || ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER.equals(evt.getPropertyName())
                             || evt.getPropertyName().startsWith("file.reference.")) { // NOI18N
                         fireRootsChanged();
                     }

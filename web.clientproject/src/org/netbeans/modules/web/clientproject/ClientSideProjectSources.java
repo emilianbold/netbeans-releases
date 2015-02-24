@@ -42,24 +42,30 @@
 
 package org.netbeans.modules.web.clientproject;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.env.Values;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Mutex;
 
 /**
  *
  */
-public class ClientSideProjectSources implements Sources, ChangeListener {
-    
+public class ClientSideProjectSources implements Sources, ChangeListener, PropertyChangeListener {
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final ClientSideProject project;
     private final CommonProjectHelper helper;
     private final Values evaluator;
 
+    // @GuardedBy("this")
+    private boolean dirty;
     // @GuardedBy("this")
     private Sources delegate;
 
@@ -68,16 +74,32 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
+        this.evaluator.addPropertyChangeListener(this);
     }
-    
+
     @Override
-    public synchronized SourceGroup[] getSourceGroups(String type) {
-        assert Thread.holdsLock(this);
-        if (delegate == null) {
-            delegate = project.is.initSources(project, helper, evaluator);
-            delegate.addChangeListener(this);
-        }
-        return delegate.getSourceGroups(type);
+    public SourceGroup[] getSourceGroups(final String type) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
+            @Override
+            public SourceGroup[] run() {
+                Sources delegateCopy;
+                synchronized (ClientSideProjectSources.this) {
+                    assert Thread.holdsLock(ClientSideProjectSources.this);
+                    if (delegate == null) {
+                        delegate = project.is.initSources(project, helper, evaluator);
+                        delegate.addChangeListener(ClientSideProjectSources.this);
+                    }
+                    if (dirty) {
+                        delegate.removeChangeListener(ClientSideProjectSources.this);
+                        delegate = project.is.initSources(project, helper, evaluator);
+                        delegate.addChangeListener(ClientSideProjectSources.this);
+                        dirty = false;
+                    }
+                    delegateCopy = delegate;
+                }
+                return delegateCopy.getSourceGroups(type);
+            }
+        });
     }
 
     @Override
@@ -90,9 +112,27 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
         changeSupport.removeChangeListener(listener);
     }
 
+    private void fireChange() {
+        synchronized (this) {
+            dirty = true;
+        }
+        changeSupport.fireChange();
+    }
+
     @Override
     public void stateChanged(ChangeEvent e) {
-        changeSupport.fireChange();
+        fireChange();
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
+        if (ClientSideProjectConstants.PROJECT_SOURCE_FOLDER.equals(propertyName)
+                || ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(propertyName)
+                || ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(propertyName)
+                || ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER.equals(propertyName)) {
+            fireChange();
+        }
     }
 
 }
