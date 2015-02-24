@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.jade.editor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -94,8 +93,8 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
     
     private boolean caseSensitive;
     
-    private static String CSS_ID_PREFIX = "#";
-    private static String CSS_CLASS_PREFIX = ".";
+    protected final static String CSS_ID_PREFIX = "#";
+    protected final static String CSS_CLASS_PREFIX = ".";
     
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
