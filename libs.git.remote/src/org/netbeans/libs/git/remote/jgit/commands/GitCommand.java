@@ -138,17 +138,17 @@ public abstract class GitCommand {
         return gitFactory;
     }
 
-    public void addArgument(int command, CharSequence argument) {
+    public final void addArgument(int command, CharSequence argument) {
         args.get(command).add(argument);
     }
 
-    public void addFiles(int command, VCSFileProxy... files) {
+    public final void addFiles(int command, VCSFileProxy... files) {
          for(String s : Utils.getRelativePaths(getRepository().getLocation(), files)) {
             addArgument(command, s);
          }
     }
 
-    public String getExecutable() {
+    public final String getExecutable() {
         return "git"; //NOI18N
     }
         
@@ -160,7 +160,7 @@ public abstract class GitCommand {
         return ret;
     }	    
 
-    public String[] getCliArguments(int command) {
+    public final String[] getCliArguments(int command) {
         final List<CharSequence> commandArgs = args.get(command);
         final String[] res = new String[args.get(command).size()];
         for(int i = 0; i < commandArgs.size(); i++) {
@@ -169,7 +169,7 @@ public abstract class GitCommand {
         return res;
     }
     
-    protected String getCommandLine(int command) {
+    protected final String getCommandLine(int command) {
         StringBuilder sb = new StringBuilder(getExecutable()); //NOI18N
         for(CharSequence s : args.get(command)) {
             sb.append(" ").append(s); //NOI18N
@@ -198,17 +198,18 @@ public abstract class GitCommand {
     protected abstract class Runner {
         private final ProcessUtils.Canceler canceled;
         private final int command;
+        private final String cmd;
         
         protected Runner(ProcessUtils.Canceler canceled, int command) {
             this.canceled = canceled;
             this.command = command;
+            cmd = getCommandLine(command);
         }
         
         protected void runCLI() throws GitException {
             if(canceled.canceled()) {
                 return;
             }
-            String cmd = getCommandLine(command);
             ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
             String executable = getExecutable();
             String[] args = getCliArguments(command);

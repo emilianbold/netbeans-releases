@@ -144,7 +144,6 @@ public class StatusCommand extends StatusCommandBase {
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine(0);
         try {
             if (isRevision) {
                 final LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();

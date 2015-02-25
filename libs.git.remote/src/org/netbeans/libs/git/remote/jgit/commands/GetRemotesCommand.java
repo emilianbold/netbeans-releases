@@ -83,7 +83,6 @@ public class GetRemotesCommand extends GitCommand {
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine(0);
         try {
             remotes = new LinkedHashMap<>();
             new Runner(canceled, 0){

@@ -46,6 +46,7 @@ import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -55,31 +56,19 @@ public class StashSaveCommand extends GitCommand {
     private final boolean includeUntracked;
     private final String message;
     private GitRevisionInfo stash;
+    private final ProgressMonitor monitor;
 
     public StashSaveCommand (JGitRepository repository, GitClassFactory accessor,
             String message, boolean includeUntracked, ProgressMonitor monitor) {
         super(repository, accessor, monitor);
         this.message = message;
+        this.monitor = monitor;
         this.includeUntracked = includeUntracked;
     }
     
     @Override
-    protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            StashCreateCommand cmd = new Git(repository).stashCreate()
-//                    .setIncludeUntracked(includeUntracked)
-//                    .setWorkingDirectoryMessage(message);
-//            RevCommit commit = cmd.call();
-//            this.stash = getClassFactory().createRevisionInfo(commit, getRepository());
-//        } catch (GitAPIException ex) {
-//            throw new GitException(ex);
-//        }
-    }
-    
-    @Override
     protected void prepare() throws GitException {
+        setCommandsNumber(2);
         super.prepare();
         addArgument(0, "stash"); //NOI18N
         addArgument(0, "save"); //NOI18N
@@ -87,11 +76,50 @@ public class StashSaveCommand extends GitCommand {
             addArgument(0, "--include-untracked"); //NOI18N
         }
         addArgument(0, message);
+
+        addArgument(1, "log"); //NOI18N
+        addArgument(1, "--raw"); //NOI18N
+        addArgument(1, "--pretty=raw"); //NOI18N
+        addArgument(1, "-1"); //NOI18N
+        addArgument(1, "stash@{0}"); //NOI18N
     }
 
     public GitRevisionInfo getStashedCommit () {
         return stash;
     }
     
-}
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
 
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+            }.runCLI();
+            
+            final GitRevisionInfo.GitRevCommit status = new GitRevisionInfo.GitRevCommit();
+            new Runner(canceled, 1){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    CommitCommand.parseLog(output, status);
+                }
+            }.runCLI();
+            stash = getClassFactory().createRevisionInfo(status, getRepository());
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if(canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }        
+    }
+}

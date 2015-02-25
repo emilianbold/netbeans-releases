@@ -240,6 +240,8 @@ public class LogCommand extends GitCommand {
     static void parseLog(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
         //#git --no-pager log --name-status --no-walk 0254bffe448b1951af6edef531d80f8e629c575a"
         //commit 9c0e341a6a9197e2408862d2e6ff4b7635a01f9b (from 19f759b14972f669dc3eb203c06944e03365f6bc)
+        //Reflog: refs/stash@{0} (Alexander Simon <alexander.simon@oracle.com>)
+        //Reflog message: On master: stash
         //Merge: 1126f32 846626a
         //Author: Alexander Simon <alexander.simon@oracle.com>
         //Date:   Tue Feb 17 16:12:39 2015 +0300
@@ -248,6 +250,12 @@ public class LogCommand extends GitCommand {
         GitRevisionInfo.GitRevCommit status = new GitRevisionInfo.GitRevCommit();
         StringBuilder buf = new StringBuilder();
         for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("Reflog:")) {
+                continue;
+            }
+            if (line.startsWith("Reflog message:")) {
+                continue;
+            }
             if (line.startsWith("committer")) {
                 String s = line.substring(9).trim();
                 int i = s.indexOf(">");

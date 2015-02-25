@@ -42,12 +42,15 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.netbeans.libs.git.remote.GitClient.ResetType;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -101,125 +104,33 @@ public class ResetCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        RevCommit commit = Utils.findCommit(repository, revisionStr);
-//        try {
-//            boolean started = false;
-//            boolean finished = false;
-//            DirCache backup = repository.readDirCache();
-//            try {
-//                try {
-//                    DirCache cache = repository.lockDirCache();
-//                    started = true;
-//                    try {
-//                        if (!resetType.equals(ResetType.SOFT)) {
-//                            TreeWalk treeWalk = new TreeWalk(repository);
-//                            DirCacheBuilder builder = cache.builder();
-//                            if (!moveHead) {
-//                                Collection<String> relativePaths = Utils.getRelativePaths(getRepository().getLocation(), roots);
-//                                if (!relativePaths.isEmpty()) {
-//                                    treeWalk.setFilter(PathFilterGroup.createFromStrings(relativePaths));
-//                                }
-//                            }
-//                            treeWalk.setRecursive(true);
-//                            treeWalk.reset();
-//                            treeWalk.addTree(new DirCacheBuildIterator(builder));
-//                            treeWalk.addTree(commit.getTree());
-//                            List<VCSFileProxy> toDelete = new LinkedList<VCSFileProxy>();
-//                            String lastAddedPath = null;
-//                            while (treeWalk.next() && !monitor.isCanceled()) {
-//                                VCSFileProxy path = VCSFileProxy.createFileProxy(getRepository().getLocation(), treeWalk.getPathString());
-//                                int modeCache = treeWalk.getFileMode(0).getBits();
-//                                final int modeRev = treeWalk.getFileMode(1).getBits();
-//                                final ObjectId objIdRev = treeWalk.getObjectId(1);
-//                                final ObjectId objIdCache = treeWalk.getObjectId(0);
-//                                if (treeWalk.getPathString().equals(lastAddedPath)) {
-//                                    // skip conflicts
-//                                    continue;
-//                                } else {
-//                                    lastAddedPath = treeWalk.getPathString();
-//                                }
-//                                if (!recursively && !directChild(roots, getRepository().getLocation(), path)) {
-//                                    DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
-//                                    builder.add(e);
-//                                } else {
-//                                    if (modeRev == FileMode.MISSING.getBits()) {
-//                                        // remove from index
-//                                        listener.notifyFile(path, treeWalk.getPathString());
-//                                        toDelete.add(path);
-//                                    } else if (modeRev != FileMode.MISSING.getBits() && modeCache != FileMode.MISSING.getBits()
-//                                            // either not equal or the cache contains conflicts
-//                                            && (!objIdCache.equals(objIdRev) || treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry().getStage() != 0)
-//                                            || modeCache == FileMode.MISSING.getBits()) {
-//                                        // add entry
-//                                        listener.notifyFile(path, treeWalk.getPathString());
-//                                        DirCacheEntry e = new DirCacheEntry(treeWalk.getPathString());
-//                                        AbstractTreeIterator it = treeWalk.getTree(1, AbstractTreeIterator.class);
-//                                        e.setFileMode(it.getEntryFileMode());
-//                                        e.setLastModified(System.currentTimeMillis());
-//                                        e.setObjectId(it.getEntryObjectId());
-//                                        e.smudgeRacilyClean();
-//                                        builder.add(e);
-//                                    } else {
-//                                        DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
-//                                        builder.add(e);
-//                                    }
-//                                }
-//                            }
-//                            if (!monitor.isCanceled()) {
-//                                finished = true;
-//                                if (resetType.equals(ResetType.HARD)) {
-//                                    builder.finish();
-//                                    for (VCSFileProxy file : toDelete) {
-//                                        deleteFile(file, roots.length > 0 ? roots : new VCSFileProxy[] { getRepository().getLocation() });
-//                                    }
-//                                    try {
-//                                        new CheckoutIndex(getRepository(), cache, roots, true, listener, monitor, false).checkout();
-//                                    } finally {
-//                                        // checkout also updates index entries and corrects timestamps (and entry lengths), so write the cache after the checkout
-//                                        builder.commit();
-//                                    }
-//                                } else {
-//                                    builder.commit();
-//                                }
-//                                if (moveHead) {
-//                                    repository.writeMergeHeads(null);
-//                                    repository.writeMergeCommitMsg(null);
-//                                    repository.writeCherryPickHead(null);
-//                                    repository.writeRevertHead(null);
-//                                }
-//                            }
-//                        }
-//                        if (moveHead && !monitor.isCanceled()) {
-//                            RefUpdate u = repository.updateRef(Constants.HEAD);
-//                            u.setNewObjectId(commit);
-//                            if (u.forceUpdate() == RefUpdate.Result.LOCK_FAILURE) {
-//                                throw new GitException.RefUpdateException(MessageFormat.format(Utils.getBundle(ResetCommand.class).getString("MSG_Exception_CannotUpdateHead"), revisionStr), GitRefUpdateResult.valueOf(RefUpdate.Result.LOCK_FAILURE.name())); //NOI18N
-//                            }
-//                        }
-//                    } finally {
-//                        cache.unlock();
-//                    }
-//                } catch (IOException ex) {
-//                    throw new GitException(ex);
-//                }
-//            } finally {
-//                if (started && !finished) {
-//                    backup.lock();
-//                    try {
-//                        backup.write();
-//                    } finally {
-//                        backup.unlock();
-//                    }
-//                }
-//            }
-//        } catch (NoWorkTreeException ex) {
-//            throw new GitException(ex);
-//        } catch (CorruptObjectException ex) {
-//            throw new GitException(ex);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    //git --no-pager reset --hard ce353860899117174aa48fdd5a957aff33936771
+                    //HEAD is now at ce35386 commit
+                    //git --no-pager reset --mixed 9eafa84617adb5d35d0dc55a0dc7c73607cfda51
+                    //Unstaged changes after reset:
+                    //M	file1
+                    //git --no-pager reset --soft 153c22a9a301de1bb43639f6b811d18d7703e5e8
+                    //
+                }
+            }.runCLI();
+            
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if(canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }        
     }
 }
