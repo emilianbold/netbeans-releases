@@ -689,9 +689,10 @@ public class ClientSideProject implements Project {
             FileObject testsFolder = project.getTestsFolder(false);
             FileObject testsSeleniumFolder = project.getTestsSeleniumFolder(false);
 
-            boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
-            boolean hasBower = projectDirectory.getFileObject("bower.json") !=null;
-            boolean hasPackage = projectDirectory.getFileObject("package.json") !=null;
+            boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null; // NOI18N
+            boolean hasBower = projectDirectory.getFileObject("bower.json") != null; // NOI18N
+            boolean hasPackage = projectDirectory.getFileObject("package.json") != null; // NOI18N
+            boolean hasGulp = projectDirectory.getFileObject("gulpfile.js") != null; // NOI18N
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] {
                         browserId,
@@ -700,7 +701,22 @@ public class ClientSideProject implements Project {
                         hasGrunt ? "YES" : "NO", // NOI18N
                         hasBower ? "YES" : "NO", // NOI18N
                         hasPackage ? "YES" : "NO", // NOI18N
+                        hasGulp ? "YES" : "NO", // NOI18N
+                        testsSeleniumFolder != null && testsSeleniumFolder.getChildren().length > 0 ? "YES" : "NO", // NOI18N
+                        StringUtilities.implode(getPlatformProviderNames(), "|"), // NOI18N
                     });
+        }
+
+        private List<String> getPlatformProviderNames() {
+            List<PlatformProvider> platformProviders = project.getPlatformProviders();
+            if (platformProviders.isEmpty()) {
+                return Collections.emptyList();
+            }
+            List<String> names = new ArrayList<>(platformProviders.size());
+            for (PlatformProvider platformProvider : platformProviders) {
+                names.add(platformProvider.getIdentifier());
+            }
+            return names;
         }
 
         @Override

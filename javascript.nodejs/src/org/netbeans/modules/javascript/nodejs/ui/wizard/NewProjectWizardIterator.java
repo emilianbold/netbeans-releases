@@ -150,8 +150,6 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
 
         wizard.instantiate(files, handle, wizardDescriptor, project);
 
-        wizard.logUsage(wizardDescriptor, projectDirectory);
-
         handle.finish();
         return files;
     }
@@ -201,8 +199,6 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         String[] createSteps();
 
         void instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, Project project) throws IOException;
-
-        void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir);
 
         void uninitialize(WizardDescriptor wizardDescriptor);
 
@@ -284,11 +280,6 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
 
             // set node.js run config only for server-side node.js project (since project URL is not known)
             ProjectSetup.setupRun(project);
-        }
-
-        @Override
-        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir) {
-            // XXX
         }
 
         @Override
@@ -425,11 +416,6 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
 
             // tools
             CreateProjectUtils.instantiateTools(project, toolsWizard.first());
-        }
-
-        @Override
-        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir) {
-            // XXX
         }
 
         @Override

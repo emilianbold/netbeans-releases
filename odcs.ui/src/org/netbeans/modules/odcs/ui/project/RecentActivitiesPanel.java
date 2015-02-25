@@ -293,7 +293,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         chbScm.addActionListener(new ShowActionListener(ScmActivity.class));
         pnlShow.add(chbScm, gbc);
         
-        chbRss = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Commits"), Utils.Settings.isShowRss());
+        chbRss = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Rss"), Utils.Settings.isShowRss());
         chbRss.setOpaque(false);
         chbRss.addActionListener(new ShowActionListener(ScmActivity.class));
         pnlShow.add(chbRss, gbc);

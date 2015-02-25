@@ -72,6 +72,7 @@ import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.env.Env;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
@@ -312,6 +313,19 @@ public final class ClientSideProjectUtilities {
             logRecord.setParameters(params);
         }
         USG_LOGGER.log(logRecord);
+    }
+
+    public static void logUsageProjectCreate(boolean existing, @NullAllowed SiteTemplateImplementation siteTemplate, Boolean siteRootUnderProjectDir,
+            boolean isJsLibraryProject, @NullAllowed String platformProvider, boolean autoconfigured) {
+        logUsage(ClientSideProjectUtilities.class, "USG_PROJECT_HTML5_CREATE", new Object[] { // NOI18N
+            existing ? "EXISTING" : "NEW", // NOI18N
+            siteTemplate != null ? siteTemplate.getId() : "NONE", // NOI18N
+            "", // NOI18N
+            siteRootUnderProjectDir == null ? "" : (siteRootUnderProjectDir ? "YES" : "NO"), // NOI18N
+            isJsLibraryProject ? "YES" : "NO", // NOI18N
+            platformProvider != null ? platformProvider : "", // NOI18N
+            autoconfigured ? "YES" : "NO", // NOI18N
+        });
     }
 
     public static boolean hasErrors(ClientSideProject project) {
