@@ -106,7 +106,8 @@ public final class ClientSideProjectGenerator {
         }
         // autoconfigured?
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(clientSideProject);
-        if (properties.isAutoconfigured()) {
+        boolean autoconfigured = properties.isAutoconfigured();
+        if (autoconfigured) {
             projectProperties.setAutoconfigured(true);
         }
         String startFile = properties.getStartFile();
@@ -118,6 +119,10 @@ public final class ClientSideProjectGenerator {
             projectProperties.setProjectUrl(projectUrl);
         }
         projectProperties.save();
+        // usage logging
+        String siteRoot = properties.getSiteRootFolder();
+        ClientSideProjectUtilities.logUsageProjectCreate(autoconfigured, null, siteRoot == null ? null : !siteRoot.startsWith("../"), // NOI18N
+                siteRoot == null, platformProvider, autoconfigured);
         return project;
     }
 
