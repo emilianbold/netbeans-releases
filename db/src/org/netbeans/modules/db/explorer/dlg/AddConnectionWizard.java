@@ -55,7 +55,6 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.DatabaseModule;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -73,8 +72,7 @@ import org.openide.util.NbBundle;
  * @author Jiri Rechtacek
  */
 public class AddConnectionWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<AddConnectionWizard> {
-    
-    private String driverName;
+
     private String downloadFrom;
     private final Set<String> allPrivilegedFileNames = new HashSet<>();
     private String privilegedFileName;
@@ -82,11 +80,9 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private WizardDescriptor.Panel<AddConnectionWizard>[] panels;
     private int index;
     private ChoosingDriverPanel driverPanel;
-    private String pwd;
-    private String driverDN;
-    private String driverClass;
-    private String databaseUrl;
-    private String user;
+    private final String pwd;
+    private final String databaseUrl;
+    private final String user;
     private DatabaseConnection connection;
     private List<String> schemas = null;
     private String currentSchema;
@@ -94,12 +90,11 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private boolean increase = false;
     private WizardDescriptor wd;
 
-    private AddConnectionWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
-        assert driverName != null || (driverClass == null && databaseUrl == null && user== null)
-                : "Inconsistent state when driverName is null but other parameters "
-                + "(url?" + databaseUrl + ", class?" + driverClass
-                + ", user? " + (user == null) + " are not";
-        updateState(driverName, driverClass, databaseUrl, user, password);
+    private AddConnectionWizard(JDBCDriver driver, String databaseUrl, String user, String password) {
+        this.databaseUrl = databaseUrl;
+        this.user = user;
+        this.pwd = password;
+        updateState(driver);
     }
 
     @Override
@@ -107,12 +102,12 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public static void showWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
-        AddConnectionWizard wiz = new AddConnectionWizard(driverName, driverClass, databaseUrl, user, password);
-        wiz.openWizard();
+    public static DatabaseConnection showWizard(JDBCDriver driver, String databaseUrl, String user, String password) {
+        AddConnectionWizard wiz = new AddConnectionWizard(driver, databaseUrl, user, password);
+        return wiz.openWizard();
     }
     
-    private void openWizard() {
+    private DatabaseConnection openWizard() {
         wd = new WizardDescriptor(this, this);
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wd.setTitleFormat(new MessageFormat("{0}"));
@@ -135,6 +130,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 closeConnection();
             }
         }
+        return getDatabaseConnection();
     }
 
     public static interface Panel extends WizardDescriptor.Panel<AddConnectionWizard>{}
@@ -145,19 +141,17 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
      */
     private WizardDescriptor.Panel<AddConnectionWizard>[] getPanels() {
         if (panels == null) {
-            JDBCDriver drv = getDriver(driverName, driverClass);
-            if (drv != null) {
-                URL[] jars = drv.getURLs();
+            if (jdbcDriver != null) {
+                URL[] jars = jdbcDriver.getURLs();
                 if (jars != null && jars.length > 0) {
                         FileObject jarFO = URLMapper.findFileObject(jars[0]);
                         if (jarFO != null && jarFO.isValid()) {
                             this.allPrivilegedFileNames.add(jarFO.getNameExt());
-                            this.jdbcDriver = drv;
                             this.increase = true;
                         }
                 }
             }
-            driverPanel = new ChoosingDriverPanel(drv);
+            driverPanel = new ChoosingDriverPanel(jdbcDriver);
             panels = new Panel[] {
                 driverPanel,
                 new ConnectionPanel(),
@@ -175,21 +169,6 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
         return panels;
     }
 
-    private static JDBCDriver getDriver(String driverName, String driverClass) {
-        if (driverName == null) {
-            return null;
-        }
-        JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
-        if (drivers != null && drivers.length > 0) {
-            for (JDBCDriver drv : drivers) {
-                if (driverName.equals(drv.getName())) {
-                    return drv;
-                }
-            }
-        }
-        return null;
-    }
-    
     @Override
     public WizardDescriptor.Panel<AddConnectionWizard> current() {
         // init panels first
@@ -242,11 +221,10 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     }
 
     void setDriver(JDBCDriver driver) {
-        this.jdbcDriver = driver;
         if (driver == null) {
-            updateState(null, null, null, null, null);
+            updateState(null);
         } else {
-            updateState(driver.getName(), driver.getClassName(), null, null, null);
+            updateState(driver);
         }
     }
 
@@ -254,10 +232,6 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
         return this.jdbcDriver;
     }
 
-    String getDriverDisplayName() {
-        return driverDN;
-    }
-    
     String getDatabaseUrl() {
         return databaseUrl;
     }
@@ -316,26 +290,14 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
             try {
                 connection.disconnect();
             } catch (DatabaseException ex) {
-                } 
-                }
             }
+            connection = null;
+        }
+    }
 
-    private void updateState(String driverName, String driverClass, String databaseUrl, String user, String password) {
-        this.driverName = driverName;
-        this.driverClass = driverClass;
-        if (driverName != null) {
-            if (driverName.contains(DatabaseModule.IDENTIFIER_ORACLE)) {
-                if (driverName.contains(DatabaseModule.IDENTIFIER_ORACLE_OCI_DRIVER)) {
-                    this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverDisplayName"); // NOI18N
-                    this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverClass"); // NOI18N
-                    this.databaseUrl = databaseUrl != null ? databaseUrl : NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl"); // NOI18N
-                } else {
-                    this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName"); // NOI18N
-                    this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass"); // NOI18N
-                    this.databaseUrl = databaseUrl != null ? databaseUrl : NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDatabaseUrl"); // NOI18N
-                }
-                this.user = user != null ? user : NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser"); // NOI18N
-                this.pwd = password != null ? password : NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword"); // NOI18N
+    private void updateState(JDBCDriver driver) {
+        if (driver != null) {
+            if (driver.getName().contains(DatabaseModule.IDENTIFIER_ORACLE)) {
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from"); // NOI18N
                 this.allPrivilegedFileNames.clear();
                 this.privilegedFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name"); // NOI18N
@@ -343,12 +305,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 while (st.hasMoreTokens()) {
                     this.allPrivilegedFileNames.add(st.nextToken().trim());
                 }
-            } else if (driverName.contains(DatabaseModule.IDENTIFIER_MYSQL)) {
-                this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName"); // NOI18N
-                this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass"); // NOI18N
-                this.databaseUrl = databaseUrl != null ? databaseUrl : NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl"); // NOI18N
-                this.user = user == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser") : user; // NOI18N
-                this.pwd = password == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword") : password; // NOI18N
+            } else if (driver.getName().contains(DatabaseModule.IDENTIFIER_MYSQL)) {
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "mysql.from"); // NOI18N
                 this.allPrivilegedFileNames.clear();
                 this.privilegedFileName = NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name"); // NOI18N
@@ -358,15 +315,11 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 }
             } else {
                 // others
-                this.driverClass = driverClass;
-                this.databaseUrl = databaseUrl;
-                this.user = user;
-                this.pwd = password;
                 this.downloadFrom = null;
-                this.driverDN = null;
                 this.privilegedFileName = ""; // NOI18N
                 this.allPrivilegedFileNames.clear();
             }
+            this.jdbcDriver = driver;
         }
     }
 

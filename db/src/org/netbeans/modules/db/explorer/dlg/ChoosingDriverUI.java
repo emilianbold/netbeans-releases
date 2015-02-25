@@ -52,8 +52,6 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
-import org.netbeans.modules.db.util.DriverListUtil;
-import org.netbeans.modules.db.util.JdbcUrl;
 import org.openide.util.NbBundle;
 
 /**
@@ -112,9 +110,6 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 // any change?
                 if (! Arrays.equals(current.getURLs(), customizeDriverPanel.getDriverURLs())) {
                     JDBCDriver modified = JDBCDriver.create(current.getName(), current.getDisplayName(), current.getClassName(), customizeDriverPanel.getDriverURLs());
-                    for (JdbcUrl url : DriverListUtil.getJdbcUrls(current)) {
-                        url.setDriver(modified);
-                    }
                     try {
                         JDBCDriverManager.getDefault().removeDriver(current);
                         JDBCDriverManager.getDefault().addDriver(modified);

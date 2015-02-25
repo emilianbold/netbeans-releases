@@ -50,11 +50,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.net.MalformedURLException;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -73,7 +71,6 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
 import org.netbeans.modules.db.util.JdbcUrl;
 import org.netbeans.modules.db.util.PropertyEditorPanel;
@@ -85,18 +82,16 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
-
+    private static final Logger LOGGER = Logger.getLogger(NewConnectionPanel.class.getName());
+    
     private AddConnectionWizard wd;
-    // private Vector templates;
     private DatabaseConnection connection;
     private ProgressHandle progressHandle;
     private Window window;
     private boolean updatingUrl = false;
     private boolean updatingFields = false;
-    private final LinkedHashMap<String, UrlField> urlFields =
-            new LinkedHashMap<String, UrlField>();
-    private Set<String> knownConnectionNames = new HashSet<String>();
-    private static final Logger LOGGER = Logger.getLogger(NewConnectionPanel.class.getName());
+    private final LinkedHashMap<String, UrlField> urlFields = new LinkedHashMap<>();
+    
     private final ConnectionPanel wp;
     private Properties connectionProperties = new Properties();
 
@@ -148,11 +143,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             }
         };
         wd.addConnectionProgressListener(progressListener);
-
-        userField.setText(connection.getUser());
-
-        passwordField.setText(connection.getPassword());
-
+        
         String driver = connection.getDriver();
         String driverName = connection.getDriverName();
         if (driver != null && driverName != null) {
@@ -212,9 +203,26 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             }
         });
 
-        urlField.setVisible(true);
-
         setUrlField();
+        
+        JdbcUrl url = getSelectedJdbcUrl();
+        
+        if(wd.getUser() != null) {
+            userField.setText(connection.getUser());
+        } else if (url.getSampleUser() != null) {
+            userField.setText(url.getSampleUser());
+        }
+        if (wd.getPassword() != null) {
+            passwordField.setText(connection.getPassword());
+        } else if (url.getSamplePassword()!= null) {
+            passwordField.setText(url.getSamplePassword());
+        }
+        if (wd.getDatabaseUrl() != null) {
+            urlField.setText(wd.getDatabaseUrl());
+        } else if (url.getSampleUrl() != null) {
+            urlField.setText(url.getSampleUrl());
+        }
+        
         updateFieldsFromUrl();
         setUpFields();
         connectionProperties = connection.getConnectionProperties();
@@ -239,10 +247,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
         userField.getDocument().addDocumentListener(docListener);
         passwordField.getDocument().addDocumentListener(docListener);
-
-        for (DatabaseConnection existingConnection : ConnectionList.getDefault().getConnections()) {
-            knownConnectionNames.add(existingConnection.getDisplayName());
-        }
+        
     }
 
     public void setWindow(Window window) {
@@ -451,7 +456,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                             .addComponent(urlField, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(templateComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                            .addComponent(passwordCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(passwordCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
@@ -510,7 +515,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                 .addComponent(passwordCheckBox)
                 .addGap(26, 26, 26)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(bTestConnection)
+                    .addComponent(bTestConnection)
                     .addComponent(bConnectionProperties))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -540,7 +545,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             }
             else if (evt.getSource() == bConnectionProperties) {
                 NewConnectionPanel.this.bConnectionPropertiesActionPerformed(evt);
-        }
+            }
         }
 
         public void focusGained(java.awt.event.FocusEvent evt) {
@@ -585,7 +590,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
     private void templateComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_templateComboBoxItemStateChanged
         if (evt.getStateChange() == ItemEvent.SELECTED) {
-            Object item = templateComboBox.getSelectedItem();
+            Object item = evt.getItem();
             if (item != null && !(item instanceof JdbcUrl)) {
                 // This is an item indicating "Create a New Driver", and if
                 // we futz with the fields, then the ComboBox wants to make the
@@ -595,7 +600,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             }
 
             JdbcUrl jdbcurl = (JdbcUrl) item;
-
+            
             // Field entry mode doesn't make sense if this URL isn't parsed.  change the mode
             // now if appropriate
             if (!jdbcurl.isParseUrl()) {
@@ -709,8 +714,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                 entry.getValue().getLabel().setVisible(false);
             }
 
-            urlField.setVisible(true);
-
             checkValid();
             resize();
             return;
@@ -732,7 +735,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         }
 
         if (!jdbcurl.isParseUrl()) {
-            urlField.setVisible(true);
             setUrlField();
         }
 
