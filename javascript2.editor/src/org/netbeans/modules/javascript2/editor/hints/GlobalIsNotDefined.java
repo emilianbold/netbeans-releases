@@ -88,9 +88,11 @@ public class GlobalIsNotDefined extends JsAstRule {
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
         JsIndex jsIndex = JsIndex.get(fo);
+        Collection<String> jsHintGlobalDefinition = findJsHintGlobalDefinition(context.getJsParserResult().getSnapshot());
         for (JsObject variable : variables) {
             if(!variable.isDeclared() 
                     && !KNOWN_GLOBAL_OBJECTS.contains(variable.getName())
+                    && !jsHintGlobalDefinition.contains(variable.getName())
                     && (variable.getJSKind() == JsElement.Kind.VARIABLE
                     || variable.getJSKind() == JsElement.Kind.OBJECT)) {
                 String varName = variable.getName();
