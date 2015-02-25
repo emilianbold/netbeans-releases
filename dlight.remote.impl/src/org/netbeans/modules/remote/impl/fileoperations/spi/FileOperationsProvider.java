@@ -323,6 +323,10 @@ abstract public class FileOperationsProvider {
         }
 
         protected FileObject toFileObject(FileProxyO path) {
+            RemoteFileObjectBase cachedFileObject = fileSystem.getFactory().getCachedFileObject(path.getPath());
+            if (cachedFileObject != null && cachedFileObject.isValid()) {
+                return cachedFileObject.getOwnerFileObject();
+            }            
             FileObject root = getRoot();
             FileObject fo = root.getFileObject(path.getPath());
             if (fo == null && existsSafe(path)) {

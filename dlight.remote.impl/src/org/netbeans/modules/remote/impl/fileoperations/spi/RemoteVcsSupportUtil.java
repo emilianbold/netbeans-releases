@@ -248,7 +248,7 @@ public class RemoteVcsSupportUtil {
     private static FileObject getFileObject(FileSystem fileSystem, String path, AtomicBoolean refreshed) throws IOException {
         if (fileSystem instanceof RemoteFileSystem) {
             RemoteFileObjectBase cachedFileObject = ((RemoteFileSystem) fileSystem).getFactory().getCachedFileObject(path);
-            if (cachedFileObject != null) {
+            if (cachedFileObject != null && cachedFileObject.isValid()) {
                 return cachedFileObject.getOwnerFileObject();
             }
         }

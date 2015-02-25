@@ -259,8 +259,6 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
                 if (fo == null) {
                     throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
                 }
-            } else {
-                fo.refresh();
             }
             return getInputStream(fo, checkLock);
         }
