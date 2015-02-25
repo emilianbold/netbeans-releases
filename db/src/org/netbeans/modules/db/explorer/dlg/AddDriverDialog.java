@@ -770,9 +770,6 @@ public final class AddDriverDialog extends javax.swing.JPanel {
             // any change?
             if (current != null && ! Arrays.equals(current.getURLs(), dlgPanel.getDriverURLs())) {
                 JDBCDriver modified = JDBCDriver.create(current.getName(), displayName, drvClass, dlgPanel.getDriverURLs());
-                for (JdbcUrl url : DriverListUtil.getJdbcUrls(current)) {
-                    url.setDriver(modified);
-                }
                 try {
                     JDBCDriverManager.getDefault().removeDriver(current);
                     JDBCDriverManager.getDefault().addDriver(modified);
