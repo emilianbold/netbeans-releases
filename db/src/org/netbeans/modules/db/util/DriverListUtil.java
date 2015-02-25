@@ -59,32 +59,33 @@ public class DriverListUtil {
     private DriverListUtil() {
     }
     
-    
-    private static void add(JdbcUrl url) {
+    private static JdbcUrl add(String name, String type, String driverClassName, String urlTemplate) {
+        JdbcUrl url = new JdbcUrl(name, name, driverClassName, type, urlTemplate);
         templateUrls.add(url);
+        return url;
     }
     
-    private static void add(String name, String type, String driverClassName, String urlTemplate) {
-        templateUrls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate));
-    }
-    
-    private static void add(String name, String type, String driverClassName, String urlTemplate, boolean parseUrl) {
-        templateUrls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate, parseUrl));
+    private static JdbcUrl add(String name, String type, String driverClassName, String urlTemplate, boolean parseUrl) {
+        JdbcUrl url = new JdbcUrl(name, name, driverClassName, type, urlTemplate, parseUrl);
+        templateUrls.add(url);
+        return url;
     }
         
-    private  static void add(String name, String driverClassName, String urlTemplate) {
-        add(name, null, driverClassName, urlTemplate);
+    private  static JdbcUrl add(String name, String driverClassName, String urlTemplate) {
+        return add(name, null, driverClassName, urlTemplate);
     }
     
     /**
      * Do NOT use this version of add() (with parseUrl set to true) unless you have added a 
      * unit test to DriverListUtilTest for the driver, to make sure that it is parsed correctly.
      */
-    private static void add(String name, String driverClassName, String urlTemplate, boolean parseUrl) {
-        add(name, null, driverClassName, urlTemplate, parseUrl);
+    private static JdbcUrl add(String name, String driverClassName, String urlTemplate, boolean parseUrl) {
+        return add(name, null, driverClassName, urlTemplate, parseUrl);
     }
 
     static {
+        JdbcUrl url;
+        
         add("IBM DB2 (net)",
         "COM.ibm.db2.jdbc.net.DB2Driver",
         "jdbc:db2://<HOST>:<PORT>/<DB>");
@@ -241,41 +242,53 @@ public class DriverListUtil {
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         "jdbc:sqlserver://[<HOST>[\\<INSTANCE>][:<PORT>]][;databaseName=<DB>][;<ADDITIONAL>]", true);
         
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_MySQL"),
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_MySQL"),
                 "com.mysql.jdbc.Driver", 
                 "jdbc:mysql://[<HOST>[:<PORT>]][/<DB>][?<ADDITIONAL>]", true); // NOI18N
+        url.setSampleUrl("jdbc:mysql://localhost:3306/mysql?zeroDateTimeBehavior=convertToNull");
+        url.setSampleUser("root");
+        url.setSamplePassword("");
         
         add("MySQL (MM.MySQL driver)",
         "org.gjt.mm.mysql.Driver",
         "jdbc:mysql://<HOST>[:<PORT>]/<DB>");
         
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_SID"), "oracle.jdbc.OracleDriver",
                 "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
+        url.setSampleUrl("jdbc:oracle:thin:@localhost:1521:XE");
+        url.setSampleUser("hr");
+        url.setSamplePassword("hr");
         
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.OracleDriver",
                 "jdbc:oracle:thin:@//<HOST>[:<PORT>][/<SERVICE>][?<ADDITIONAL>]", true); // NOI18N
         
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleThin"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_TNSName"), "oracle.jdbc.OracleDriver",
                 "jdbc:oracle:thin:@<TNSNAME>[?<ADDITIONAL>]", true); // NOI18N
                 
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
                 "OCI8 " + NbBundle.getMessage(DriverListUtil.class, "TYPE_SID"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci8:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
+        url.setSampleUrl("jdbc:oracle:oci8:@localhost:1521:XE");
+        url.setSampleUser("hr");
+        url.setSamplePassword("hr");
         
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
                 "OCI8 " + NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci8:@//<HOST>[:<PORT>][/<SERVICE>][?<ADDITIONAL>]", true); // NOI18N
         
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_TNSName"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci:@<TNSNAME>[?<ADDITIONAL>]", true); // NOI18N
         
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_SID"), "oracle.jdbc.driver.OracleDriver",
                 "jdbc:oracle:oci:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
+        url.setSampleUrl("jdbc:oracle:oci:@localhost:1521:XE");
+        url.setSampleUser("hr");
+        url.setSamplePassword("hr");
         
         add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_OracleOCI"),
                 NbBundle.getMessage(DriverListUtil.class, "TYPE_Service"), "oracle.jdbc.driver.OracleDriver",
@@ -285,13 +298,16 @@ public class DriverListUtil {
         "com.ddtek.jdbc.oracle.OracleDriver",
         "jdbc:datadirect:oracle://<HOST>[:<PORT>];SID=<SID>");
         
-        add("PostgreSQL (v6.5 and earlier)",
-        "postgresql.Driver",
-        "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]");
+        url = add("PostgreSQL (v6.5 and earlier)",
+                "postgresql.Driver",
+                "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]");
         
-        add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_PostgreSQL"), // 7.0 and later
-        "org.postgresql.Driver",
-        "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]", true);
+        url = add(NbBundle.getMessage(DriverListUtil.class, "DRIVERNAME_PostgreSQL"), // 7.0 and later
+                "org.postgresql.Driver",
+                "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]", true);
+        url.setSampleUrl("jdbc:postgresql://localhost:5432/postgres");
+        url.setSampleUser("postgres");
+        url.setSamplePassword("");
         
         add("Quadcap Embeddable Database",
         "com.quadcap.jdbc.JdbcDriver",
