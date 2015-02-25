@@ -91,6 +91,7 @@ public class CompareCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        TreeWalk walk = new TreeWalk(repository);
 //        try {

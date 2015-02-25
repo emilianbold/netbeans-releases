@@ -70,6 +70,7 @@ public class SubmoduleInitializeCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        VCSFileProxy workTree = getRepository().getLocation();
 //        org.eclipse.jgit.api.SubmoduleInitCommand cmd = new Git(repository).submoduleInit();

@@ -68,6 +68,7 @@ public class MergeCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        org.eclipse.jgit.api.MergeCommand command = new Git(repository).merge();
 //        setFastForward(command);

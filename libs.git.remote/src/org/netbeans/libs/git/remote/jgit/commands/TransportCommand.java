@@ -158,6 +158,7 @@ abstract class TransportCommand extends GitCommand {
     
     @Override
     public final void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        SystemReader original = SystemReader.getInstance();
 //        String externalTool = original.getenv(PROP_ENV_GIT_SSH);
 //        boolean replace = externalTool != null;

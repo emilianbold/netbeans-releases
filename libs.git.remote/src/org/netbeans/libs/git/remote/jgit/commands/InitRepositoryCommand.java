@@ -80,6 +80,7 @@ public class InitRepositoryCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        try {
 //            if (!(workDir.exists() || VCSFileProxySupport.mkdirs(workDir))) {

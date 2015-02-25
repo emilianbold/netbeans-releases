@@ -247,4 +247,10 @@ public class GitException extends Exception {
             return branch;
         }
     }
+    
+    public static class UnsupportedCommandException extends GitException {
+        public UnsupportedCommandException () {
+            super("Command is not implemented yet");
+        }
+    }
 }

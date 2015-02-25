@@ -101,6 +101,7 @@ public class ResetCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        RevCommit commit = Utils.findCommit(repository, revisionStr);
 //        try {

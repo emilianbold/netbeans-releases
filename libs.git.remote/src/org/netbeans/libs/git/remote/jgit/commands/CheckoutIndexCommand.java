@@ -42,6 +42,7 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.GitException.UnsupportedCommandException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.FileListener;
@@ -69,6 +70,7 @@ public class CheckoutIndexCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
+        throw new UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        DirCache cache = null;
 //        try {

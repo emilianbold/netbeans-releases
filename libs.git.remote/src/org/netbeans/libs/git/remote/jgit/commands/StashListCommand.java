@@ -68,6 +68,7 @@ public class StashListCommand extends GitCommand {
     
     @Override
     protected void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        RevWalk fullWalk = new RevWalk(repository);
 //        try {
