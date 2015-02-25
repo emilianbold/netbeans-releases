@@ -528,10 +528,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @Override
         public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject sources, FileObject siteRoot) {
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
-            String libraryNames = null; // no js libs anymore
-            ClientSideProjectUtilities.logUsage(ClientSideProjectWizardIterator.class, "USG_PROJECT_HTML5_CREATE", // NOI18N
-                    new Object[] {"NEW", siteTemplate != null ? siteTemplate.getId() : "NONE", // NOI18N
-                        libraryNames == null ? "" : libraryNames, ""}); // NOI18N
+            ClientSideProjectUtilities.logUsageProjectCreate(false, siteTemplate, null, false, null, false);
         }
 
         @Override
@@ -643,9 +640,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject sources, FileObject siteRoot) {
-            ClientSideProjectUtilities.logUsage(ClientSideProjectWizardIterator.class, "USG_PROJECT_HTML5_CREATE", // NOI18N
-                    new Object[] {"EXISTING", "NONE", "", siteRoot != null // NOI18N
-                            ? (ClientSideProjectUtilities.isParentOrItself(projectDir, siteRoot) ? "YES" : "NO") : ""}); // NOI18N
+            boolean hasSiteRoot = siteRoot != null;
+            ClientSideProjectUtilities.logUsageProjectCreate(true, null,
+                    hasSiteRoot ? ClientSideProjectUtilities.isParentOrItself(projectDir, siteRoot) : null, !hasSiteRoot, null, false);
         }
 
         @Override
@@ -748,8 +745,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject sources, FileObject siteRoot) {
-            // XXX
-            LOGGER.warning("Not implemented yet");
+            ClientSideProjectUtilities.logUsageProjectCreate(false, null, null, true, null, false);
         }
 
         private FileObject createMainFile(FileObject sources) throws IOException {
