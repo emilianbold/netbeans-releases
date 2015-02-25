@@ -270,8 +270,12 @@ abstract public class FileOperationsProvider {
         }
         
         protected FileObject getRoot() {
-            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+            RemoteFileSystem fs = getFileSystem();
             return fs.getRoot();
+        }
+        
+        protected RemoteFileSystem getFileSystem() {
+            return RemoteFileSystemManager.getInstance().getFileSystem(env);
         }
         
         protected String getPath(FileProxyO file) {
@@ -423,7 +427,7 @@ abstract public class FileOperationsProvider {
         
         private RemoteFileObjectBase findExistingParent(String path) {
             while(true) {
-                RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
+                RemoteFileObject fo = getFileSystem().findResource(path);
                 if (fo != null) {
                     return fo.getImplementor();
                 }
