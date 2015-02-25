@@ -135,7 +135,7 @@ public final class JNASupport {
         }
     }
     
-    private static final String JNA_LIBRARY = "com.sun.jna.Library";
+    private static final String JNA_LIBRARY = "com.sun.jna.Library"; // NOI18N
     
     private static boolean isMethod(TreePath path) {
         return path != null &&
@@ -183,7 +183,7 @@ public final class JNASupport {
     }
     
     private JNASupport() {
-        throw new AssertionError("Not instantiable!");
+        throw new AssertionError("Not instantiable!"); // NOI18N
     }
 //</editor-fold>
 }

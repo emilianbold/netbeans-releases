@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.mixeddev.java;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
@@ -50,6 +51,8 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,7 +60,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
  */
 public abstract class AbstractJavaToCppHyperlinkProvider implements HyperlinkProviderExt {    
     
-    private static final String JAVA_HYPERLINK_PROVIDER = "JavaHyperlinkProvider";
+    private static final String JAVA_HYPERLINK_PROVIDER = "JavaHyperlinkProvider"; // NOI18N
     
     private static HyperlinkProviderExt delegate;        
     
@@ -104,19 +107,20 @@ public abstract class AbstractJavaToCppHyperlinkProvider implements HyperlinkPro
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
         String cppName = getCppName(doc, offset);
         if (cppName != null) {
-            return "<html><body>Search for <b>" + cppName + "</b></body></html>"; // NOI18N
+            String msg = NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.search_for_msg"); // NOI18N
+            return MessageFormat.format(msg, new Object[]{cppName});
         }
         HyperlinkProviderExt defaultProvider = getDelegate();
         if (defaultProvider != null) {
             return defaultProvider.getTooltipText(doc, offset, type);
         }
-        return "Cannot navigate here!"; //NOI18N
+        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.cannot_navigate_msg"); // NOI18N
     }    
     
     
     private synchronized HyperlinkProviderExt getDelegate() {
         if (delegate == null) {
-            MimePath mimePath = MimePath.parse("text/x-java");
+            MimePath mimePath = MimePath.parse("text/x-java");  // NOI18N
             Collection<? extends HyperlinkProviderExt> providers = MimeLookup.getLookup(mimePath).lookupAll(HyperlinkProviderExt.class);
             for(HyperlinkProviderExt provider : providers) {
                 if (provider.getClass().getName().endsWith(JAVA_HYPERLINK_PROVIDER)) {

@@ -133,7 +133,7 @@ public class GenerateProjectAction extends NodeAction {
         }
         WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wiz.setTitleFormat(new MessageFormat("{0}"));
+        wiz.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wiz.setTitle(NbBundle.getMessage(GenerateProjectAction.class, "Wizard.Name"));
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             try {

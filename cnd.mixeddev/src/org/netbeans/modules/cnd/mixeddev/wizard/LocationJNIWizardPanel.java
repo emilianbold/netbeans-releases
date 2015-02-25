@@ -72,7 +72,7 @@ public class LocationJNIWizardPanel implements WizardDescriptor.Panel<WizardDesc
     @Override
     public PanelProjectLocationVisual getComponent() {
         if (component == null) {
-            component = new PanelProjectLocationVisual(this, "CppJNILibrary", false);
+            component = new PanelProjectLocationVisual(this, "CppJNILibrary", false); // NOI18N
         }
         return component;
     }
