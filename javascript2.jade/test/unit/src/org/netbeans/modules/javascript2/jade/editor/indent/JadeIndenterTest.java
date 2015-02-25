@@ -105,6 +105,10 @@ public class JadeIndenterTest extends CslTestBase {
         testIndentInFile("testfiles/indent/commentUnbuffered01.jade");
     }
 
+    public void testIssue250699() throws Exception {
+        testIndentInFile("testfiles/indent/issue250699.jade");
+    }
+
     private void testIndentInFile(String file) throws Exception {
         testIndentInFile(file, null, 0);
     }
