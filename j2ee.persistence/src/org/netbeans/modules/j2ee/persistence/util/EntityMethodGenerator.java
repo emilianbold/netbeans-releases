@@ -122,7 +122,7 @@ public class EntityMethodGenerator {
             return "if (this." + fieldName + " != other." + fieldName + ") return false;"; // NOI18N
         }
         return "if ((this." + fieldName + " == null && other." + fieldName + " != null) || " + "(this." + fieldName +
-                " != null && !this." + fieldName + ".equals(other." + fieldName + ")) return false;"; // NOI18N
+                " != null && !this." + fieldName + ".equals(other." + fieldName + "))) return false;"; // NOI18N
     }
 
     public MethodTree createToStringMethod(String fqn, List<VariableTree> fields) {
