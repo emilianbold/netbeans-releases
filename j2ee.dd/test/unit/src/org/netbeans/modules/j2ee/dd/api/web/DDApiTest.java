@@ -281,7 +281,7 @@ public class DDApiTest extends NbTestCase {
                 line1 = line1.trim();
                 String line2 = reader2.readLine();
                 if (line2==null) {
-                    assertFile("Result different than golden file", pass, test, test.getParentFile());
+                    assertFile("Result different than golden file " + pass.getAbsolutePath() + " " + test.getAbsolutePath(), pass, test, test.getParentFile());
                 }
                 line2=line2.trim();
                 // description order can be changed so it must be compared differently
@@ -289,7 +289,7 @@ public class DDApiTest extends NbTestCase {
                     set1.add(line1);
                     set2.add(line2);
                 } else if (!line1.equals(line2)) {
-                    assertFile("Result different than golden file", pass, test, test.getParentFile());
+                    assertFile("Result different than golden file " + pass.getAbsolutePath() + " " + test.getAbsolutePath(), pass, test, test.getParentFile());
                 }
             }
             reader1.close();reader2.close();
