@@ -47,6 +47,7 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -69,35 +70,40 @@ public class CheckoutIndexCommand extends GitCommand {
     }
 
     @Override
-    protected void run() throws GitException {
-        throw new UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        DirCache cache = null;
-//        try {
-//            // cache must be locked because checkout index may modify its entries
-//            cache = repository.lockDirCache();
-//            DirCacheBuilder builder = cache.builder();
-//            if (cache.getEntryCount() > 0) {
-//                builder.keep(0, cache.getEntryCount());
-//            }
-//            builder.finish();
-//            new CheckoutIndex(getRepository(), cache, roots, recursively, listener, monitor, true).checkout();
-//            // cache must be saved to disk because checkout index may modify its entries
-//            builder.commit();
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        } finally {
-//            if (cache != null) {
-//                cache.unlock();
-//            }
-//        }
-    }
-
-    @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "checkout"); //NOI18N
         addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
     }
+
+    @Override
+    protected void run() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    System.err.println("");
+                }
+                
+            }.runCLI();
+
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
+    }
+
 }

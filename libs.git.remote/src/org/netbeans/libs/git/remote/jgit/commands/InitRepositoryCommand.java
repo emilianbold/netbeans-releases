@@ -45,9 +45,11 @@ package org.netbeans.libs.git.remote.jgit.commands;
 import java.text.MessageFormat;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
+import org.netbeans.libs.git.remote.jgit.JGitConfig;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -80,7 +82,35 @@ public class InitRepositoryCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        throw new GitException.UnsupportedCommandException();
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+                
+            }.runCLI();
+            
+            JGitConfig cfg = getRepository().getConfig();
+            cfg.setBoolean(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_BARE, false);
+            cfg.unset(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_AUTOCRLF);
+            cfg.save();
+
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
 //        Repository repository = getRepository().getRepository();
 //        try {
 //            if (!(workDir.exists() || VCSFileProxySupport.mkdirs(workDir))) {

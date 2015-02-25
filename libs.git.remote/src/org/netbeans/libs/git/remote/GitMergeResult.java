@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.remote;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +62,7 @@ public final class GitMergeResult {
     private final String newHead;
     private final String base;
     private final String[] mergedCommits;
+
 
     /**
      * The status the merge resulted in.
@@ -115,14 +117,14 @@ public final class GitMergeResult {
         }
     }
     
-    GitMergeResult (/*MergeResult result,*/ VCSFileProxy workDir) {
-        this.mergeStatus = MergeStatus.NOT_SUPPORTED;//parseMergeStatus(result.getMergeStatus());
+    GitMergeResult(MergeResultContainer mergeResult, VCSFileProxy workDir) {
+        this.mergeStatus = mergeResult.mergeStatus;
         this.workDir = workDir;
-        this.newHead = null;//result.getNewHead() == null ? null : result.getNewHead().getName();
-        this.base = null;//result.getBase() == null ? null : result.getBase().getName();
-        this.mergedCommits = new String[]{};//getMergedCommits(result);
-        this.conflicts = Collections.emptyList();//getConflicts(result);
-        this.failures = Collections.emptyList();//getFailures(result);
+        this.newHead = mergeResult.newHead;
+        this.base = mergeResult.base;
+        this.mergedCommits = mergeResult.mergedCommits == null ? new String[]{} : mergeResult.mergedCommits;
+        this.conflicts = mergeResult.conflicts;
+        this.failures = mergeResult.failures;
     }
     
     /**
@@ -219,4 +221,14 @@ public final class GitMergeResult {
 //        }
 //        return Collections.unmodifiableList(files);
 //    }
+    
+    public static final class MergeResultContainer {
+        public MergeStatus mergeStatus;
+        public VCSFileProxy workDir;
+        public List<VCSFileProxy> conflicts = new ArrayList<>();
+        public List<VCSFileProxy> failures  = new ArrayList<>();
+        public String newHead;
+        public String base;
+        public String[] mergedCommits;
+    }
 }

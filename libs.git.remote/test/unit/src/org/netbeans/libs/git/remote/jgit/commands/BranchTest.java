@@ -57,7 +57,9 @@ import org.netbeans.libs.git.remote.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.remote.jgit.JGitConfig;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -206,6 +208,7 @@ else    assertEqualsID(commitId, branch.getId());
     
     public void testListRemoteBranches () throws Exception {
         VCSFileProxy otherWT = VCSFileProxy.createFileProxy(workDir.getParentFile(), "repo2");
+        VCSFileProxySupport.mkdirs(otherWT);
         GitClient client = getClient(otherWT);
         client.init(NULL_PROGRESS_MONITOR);
         VCSFileProxy f = VCSFileProxy.createFileProxy(otherWT, "f");
@@ -246,6 +249,7 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
     
     public void testDeleteTrackedBranch () throws Exception {
         final VCSFileProxy otherWT = VCSFileProxy.createFileProxy(workDir.getParentFile(), "repo2");
+        VCSFileProxySupport.mkdirs(otherWT);
         GitClient client = getClient(otherWT);
         client.init(NULL_PROGRESS_MONITOR);
         VCSFileProxy f = VCSFileProxy.createFileProxy(otherWT, "f");
@@ -326,6 +330,7 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
     
     public void testDeleteRemoteBranch () throws Exception {
         final VCSFileProxy otherWT = VCSFileProxy.createFileProxy(workDir.getParentFile(), "repo2");
+        VCSFileProxySupport.mkdirs(otherWT);
         GitClient client = getClient(otherWT);
         client.init(NULL_PROGRESS_MONITOR);
         VCSFileProxy f = VCSFileProxy.createFileProxy(otherWT, "f");
@@ -347,6 +352,7 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
     
     public void testBranchTracking () throws Exception {
         final VCSFileProxy otherWT = VCSFileProxy.createFileProxy(workDir.getParentFile(), "repo2");
+        VCSFileProxySupport.mkdirs(otherWT);
         GitClient client = getClient(otherWT);
         client.init(NULL_PROGRESS_MONITOR);
         VCSFileProxy f = VCSFileProxy.createFileProxy(otherWT, "f");
@@ -406,6 +412,7 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
     
     public void testCreateInitialBranch () throws Exception {
         VCSFileProxy emptyRepo = VCSFileProxy.createFileProxy(workDir, "empty");
+        VCSFileProxySupport.mkdirs(emptyRepo);
         GitClient client = getClient(emptyRepo);
         client.init(NULL_PROGRESS_MONITOR);
         JGitConfig cfg = repository.getConfig();
