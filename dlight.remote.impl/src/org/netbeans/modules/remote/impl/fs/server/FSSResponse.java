@@ -126,7 +126,8 @@ import org.openide.util.NotImplementedException;
             Package pkg = getNextPackage(timeout);
             if (pkg == null) {
                 HangupEnvList.setHung(env);
-                final String errText = "Timeout: can't get package for " + env + ":" + requestPath + " in " + timeout + " ms"; // NOI18N
+                final String errText = "Timeout: can't get package at " + env + " for request #" + requestId + // NOI18N
+                        ' ' + requestKind.getChar() + ' ' + requestPath + " in " + timeout + " ms"; // NOI18N
                 FSSDispatcher.getInstance(env).testDump(System.err); //NOI18N
                 throw new IllegalStateException(errText); //NOI18N
             }
