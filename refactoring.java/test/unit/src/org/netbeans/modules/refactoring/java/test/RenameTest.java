@@ -70,6 +70,38 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testJavadocMethodRef() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "    }\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * Not {@link #bar}.\n"
+                + "     * @see #foo() we just call method foo()\n"
+                + "     */\n"
+                + "    public static void main() {\n"
+                + "        new A().foo();\n"
+                + "    }\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 1, -1, "fooBar", null, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void fooBar() {\n"
+                + "    }\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * Not {@link #bar}.\n"
+                + "     * @see #fooBar() we just call method foo()\n"
+                + "     */\n"
+                + "    public static void main() {\n"
+                + "        new A().fooBar();\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void testJavadocClassRef() throws Exception { // #250415 - Refactor Rename ... Class should rename Class in @see or @link Class#member javadoc
         writeFilesAndWaitForScan(src,
                 new File("t/B.java", "package t;\n"
