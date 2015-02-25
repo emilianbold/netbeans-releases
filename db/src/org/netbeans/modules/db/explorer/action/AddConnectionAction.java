@@ -60,7 +60,7 @@ public class AddConnectionAction extends BaseAction {
 
     @Override
     public void performAction(Node[] activatedNodes) {
-        new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(null, null);
+        new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(null, null, null, null);
     }
 
     @Override
