@@ -41,7 +41,6 @@
  */
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
@@ -52,7 +51,6 @@ import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -87,15 +85,6 @@ public class CommitCommand extends GitCommand {
     }
     
     @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
-    @Override
     protected void prepare() throws GitException {
         setCommandsNumber(2);
         super.prepare();
@@ -122,33 +111,71 @@ public class CommitCommand extends GitCommand {
         // place holder for revision
     }
 
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
-            GitRevCommit status = new GitRevCommit();
-            runner(canceled, 0, status, new Parser() {
+            final GitRevCommit status = new GitRevCommit();
+            
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output, GitRevCommit revision) {
-                    parseCommit(output, revision);
+                public void outputParser(String output) throws GitException {
+                    parseCommit(output, status);
                 }
-            });
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+            //TODO
+//            RepositoryState state = getRepository().getRepository().getRepositoryState();
+//            if (amend && !state.canAmend()) {
+//                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_CannotAmend"); //NOI18N
+//                monitor.preparationsFailed(errorMessage);
+//                throw new GitException(errorMessage);
+//            }
+//            if (RepositoryState.MERGING.equals(state) || RepositoryState.CHERRY_PICKING.equals(state)) {
+//                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_ConflictsInIndex"); //NOI18N
+//                monitor.preparationsFailed(errorMessage);
+//                throw new GitException(errorMessage);
+//            } else if ((RepositoryState.MERGING_RESOLVED.equals(state)
+//                    || RepositoryState.CHERRY_PICKING_RESOLVED.equals(state)) && roots.length > 0) {
+//                boolean fullWorkingTree = false;
+//                VCSFileProxy repositoryRoot = getRepository().getLocation();
+//                for (VCSFileProxy root : roots) {
+//                    if (root.equals(repositoryRoot)) {
+//                        fullWorkingTree = true;
+//                        break;
+//                    }
+//                }
+//                if (!fullWorkingTree) {
+//                    String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_PartialCommitAfterMerge"); //NOI18N
+//                    monitor.preparationsFailed(errorMessage);
+//                    throw new GitException(errorMessage);
+//                }
+//            } else if (!state.canCommit()) {
+//                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_NotAllowedInCurrentState"); //NOI18N
+//                monitor.preparationsFailed(errorMessage);
+//                throw new GitException(errorMessage);
+//            }
+                }
+                
+            }.runCLI();
+            
             if (status.revisionCode != null) {
                 addArgument(1, status.revisionCode);
             } else {
                 addArgument(1, GitConstants.HEAD);
             }
-            runner(canceled, 1, status, new Parser() {
+            new Runner(canceled, 1){
 
                 @Override
-                public void outputParser(String output, GitRevCommit revision) {
-                    parseLog(output, revision);
+                public void outputParser(String output) throws GitException {
+                    parseLog(output, status);
                 }
-            });
+            }.runCLI();
             if (canceled.canceled()) {
                 return;
             }
@@ -322,62 +349,5 @@ public class CommitCommand extends GitCommand {
             }
         }
         status.message = buf.toString();
-    }
-    
-    private void runner(ProcessUtils.Canceler canceled, int command, GitRevCommit list, Parser parser) throws GitException {
-        if(canceled.canceled()) {
-            return;
-        }
-        ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output, list);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error, list);
-        }
-    }
-    
-
-    private abstract class Parser {
-        public abstract void outputParser(String output, GitRevCommit revision);
-        public void errorParser(String error,GitRevCommit revision) throws GitException {
-            //TODO
-//            RepositoryState state = getRepository().getRepository().getRepositoryState();
-//            if (amend && !state.canAmend()) {
-//                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_CannotAmend"); //NOI18N
-//                monitor.preparationsFailed(errorMessage);
-//                throw new GitException(errorMessage);
-//            }
-//            if (RepositoryState.MERGING.equals(state) || RepositoryState.CHERRY_PICKING.equals(state)) {
-//                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_ConflictsInIndex"); //NOI18N
-//                monitor.preparationsFailed(errorMessage);
-//                throw new GitException(errorMessage);
-//            } else if ((RepositoryState.MERGING_RESOLVED.equals(state)
-//                    || RepositoryState.CHERRY_PICKING_RESOLVED.equals(state)) && roots.length > 0) {
-//                boolean fullWorkingTree = false;
-//                VCSFileProxy repositoryRoot = getRepository().getLocation();
-//                for (VCSFileProxy root : roots) {
-//                    if (root.equals(repositoryRoot)) {
-//                        fullWorkingTree = true;
-//                        break;
-//                    }
-//                }
-//                if (!fullWorkingTree) {
-//                    String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_PartialCommitAfterMerge"); //NOI18N
-//                    monitor.preparationsFailed(errorMessage);
-//                    throw new GitException(errorMessage);
-//                }
-//            } else if (!state.canCommit()) {
-//                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_NotAllowedInCurrentState"); //NOI18N
-//                monitor.preparationsFailed(errorMessage);
-//                throw new GitException(errorMessage);
-//            }
-        }
     }
 }

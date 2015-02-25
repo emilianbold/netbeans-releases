@@ -76,6 +76,7 @@ public class ExportDiffCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        DiffFormatter formatter = new DiffFormatter(out);
 //        formatter.setRepository(repository);

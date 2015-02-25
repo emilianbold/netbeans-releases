@@ -147,22 +147,22 @@ public class GetCommonAncestorTest extends AbstractGitTestCase {
         write(f1, "initial content");
         GitClient client = getClient(workDir);
         VCSFileProxy[] files = new VCSFileProxy[] { f1, f2, f3 };
-        client.add(files, NULL_PROGRESS_MONITOR);
-        GitRevisionInfo initial = client.commit(files, "initial commit", null, null, NULL_PROGRESS_MONITOR);
+        client.add(new VCSFileProxy[] {f1}, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo initial = client.commit(new VCSFileProxy[] {f1}, "initial commit", null, null, NULL_PROGRESS_MONITOR);
         
         client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
         
         // change on master
         write(f1, GitConstants.MASTER);
-        client.add(files, NULL_PROGRESS_MONITOR);
-        client.commit(files, "master commit", null, null, NULL_PROGRESS_MONITOR);
+        client.add(new VCSFileProxy[] {f1}, NULL_PROGRESS_MONITOR);
+        client.commit(new VCSFileProxy[] {f1}, "master commit", null, null, NULL_PROGRESS_MONITOR);
         GitRevisionInfo masterCommit = client.log("master", NULL_PROGRESS_MONITOR);
         
         // change on branch
         client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
         write(f2, BRANCH_NAME);
-        client.add(files, NULL_PROGRESS_MONITOR);
-        client.commit(files, "branch commit", null, null, NULL_PROGRESS_MONITOR);
+        client.add(new VCSFileProxy[] {f2}, NULL_PROGRESS_MONITOR);
+        client.commit(new VCSFileProxy[] {f2}, "branch commit", null, null, NULL_PROGRESS_MONITOR);
         GitRevisionInfo branchCommit = client.log(BRANCH_NAME, NULL_PROGRESS_MONITOR);
         
         // merge last master commit (not merge) into branch

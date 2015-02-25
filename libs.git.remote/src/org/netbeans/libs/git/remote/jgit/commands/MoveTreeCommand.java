@@ -75,6 +75,7 @@ abstract class MoveTreeCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        if (!keepSourceTree && !after) {
 //            rename();
 //        }

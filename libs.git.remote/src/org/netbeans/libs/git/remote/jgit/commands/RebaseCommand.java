@@ -69,6 +69,7 @@ public class RebaseCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        org.eclipse.jgit.api.RebaseCommand command = new Git(repository).rebase();
 //        if (operation == GitClient.RebaseOperationType.BEGIN) {

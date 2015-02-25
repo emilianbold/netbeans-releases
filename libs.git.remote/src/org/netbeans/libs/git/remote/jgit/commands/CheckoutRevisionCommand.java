@@ -46,6 +46,7 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -66,122 +67,39 @@ public class CheckoutRevisionCommand extends GitCommand {
         this.failOnConflict = failOnConflict;
     }
 
-    @Override
-    protected void run () throws GitException {
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            Ref headRef = repository.getRef(Constants.HEAD);
-//            if (headRef == null) {
-//                throw new GitException("Corrupted repository, missing HEAD file in .git folder.");
-//            }
-//            ObjectId headTree = null;
-//            try {
-//                headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
-//            } catch (GitException.MissingObjectException ex) { }
-//            Ref ref = repository.getRef(revision);
-//            if (ref != null && !ref.getName().startsWith(Constants.R_HEADS) && !ref.getName().startsWith(Constants.R_REMOTES)) {
-//                ref = null;
-//            }
-//            String fromName = headRef.getTarget().getName();
-//            if (fromName.startsWith(Constants.R_HEADS)) {
-//                fromName = fromName.substring(Constants.R_HEADS.length());
-//            }
-//            String refLogMessage = "checkout: moving from " + fromName; //NOI18N
-//
-//            cache = repository.lockDirCache();
-//            DirCacheCheckout dco = null;
-//            RevCommit commit;
-//            try {
-//                commit = Utils.findCommit(repository, revision);
-//                dco = headTree == null ? new DirCacheCheckout(repository, cache, commit.getTree()) : new DirCacheCheckout(repository, headTree, cache, commit.getTree());
-//                // JGit WA
-//                if (!failOnConflict) {
-//                    dco.preScanTwoTrees();
-//                    cacheContents(dco.getConflicts());
-//                    dco = headTree == null ? new DirCacheCheckout(repository, cache, commit.getTree()) : new DirCacheCheckout(repository, headTree, cache, commit.getTree());
-//                }
-//                // End of JGit WA
-//                dco.setFailOnConflict(failOnConflict);
-//                dco.checkout();
-//                cache.lock();
-//                
-//                VCSFileProxy workDir = getRepository().getLocation();
-//                for (String path : dco.getUpdated().keySet()) {
-//                    // work-around for submodule roots
-//                    DirCacheEntry e = cache.getEntry(path);
-//                    if (FileMode.GITLINK.equals(e.getRawMode())) {
-//                        VCSFileProxySupport.mkdirs(VCSFileProxy.createFileProxy(workDir, path));
-//                    }
-//                }
-//                
-//                notify(workDir, dco.getRemoved());
-//                notify(workDir, dco.getConflicts());
-//                notify(workDir, dco.getUpdated().keySet());
-//                // JGit WA
-//                if (!failOnConflict && dco.getConflicts().size() > 0) {
-//                    mergeConflicts(dco.getConflicts(), cache);
-//                }
-//                // End of JGit WA
-//            } catch (CheckoutConflictException ex) {
-//                List<String> conflicts = dco.getConflicts();
-//                throw new GitException.CheckoutConflictException(conflicts.toArray(new String[conflicts.size()]), ex);
-//            } finally {
-//                cache.unlock();
-//            }
-//            
-//            if (!monitor.isCanceled()) {
-//                String toName;
-//                boolean detach = true;
-//                if (ref == null) {
-//                    toName = commit.getName();
-//                } else {
-//                    toName = ref.getName();
-//                    if (toName.startsWith(Constants.R_HEADS)) {
-//                        detach = false;
-//                        toName = toName.substring(Constants.R_HEADS.length());
-//                    } else if (toName.startsWith(Constants.R_REMOTES)) {
-//                        toName = toName.substring(Constants.R_REMOTES.length());
-//                    }
-//                }
-//                RefUpdate refUpdate = repository.updateRef(Constants.HEAD, detach);
-//                refUpdate.setForceUpdate(false);
-//                
-//                refUpdate.setRefLogMessage(refLogMessage + " to " + toName, false); //NOI18N
-//                RefUpdate.Result updateResult;
-//                if (!detach)
-//                    updateResult = refUpdate.link(ref.getName());
-//                else {
-//                    refUpdate.setNewObjectId(commit);
-//                    updateResult = refUpdate.forceUpdate();
-//                }
-//
-//                boolean ok = false;
-//                switch (updateResult) {
-//                case NEW:
-//                        ok = true;
-//                        break;
-//                case NO_CHANGE:
-//                case FAST_FORWARD:
-//                case FORCED:
-//                        ok = true;
-//                        break;
-//                default:
-//                        break;
-//                }
-//
-//                if (!ok) {
-//                    throw new GitException("Unexpected result: " + updateResult.name());
-//                }
-//            }
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
-    }
     
     @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "checkout"); //NOI18N
         addArgument(0, revision);
+    }
+
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+                
+            }.runCLI();
+
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }
     }
 }

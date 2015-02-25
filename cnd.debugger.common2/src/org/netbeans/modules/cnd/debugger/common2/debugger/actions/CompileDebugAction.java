@@ -142,7 +142,7 @@ public class CompileDebugAction extends CompileRunActionBase {
                             tab.getOut().close();
                         }
                     });
-                    NativeDebuggerManager.get().debug(buildDir + "/" + executable, // NOI18N
+                    NativeDebuggerManager.get().debug(buildDir + "/" + executable, null, // NOI18N
                             configuration, ExecutionEnvironmentFactory.toUniqueID(execEnv), tab, handler, profile);
                 }
             });

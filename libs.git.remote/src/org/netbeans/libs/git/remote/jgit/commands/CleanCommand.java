@@ -75,6 +75,7 @@ public class CleanCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();        
 //        try {
 //            DirCache cache = null;

@@ -62,6 +62,7 @@ public class DeleteTagCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        Ref currentRef = repository.getTags().get(tagName);
 //        if (currentRef == null) {

@@ -47,7 +47,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitStatus;
@@ -57,7 +56,6 @@ import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.libs.git.remote.progress.StatusListener;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -88,15 +86,6 @@ public class StatusCommand extends StatusCommandBase {
             prepare();
         }
         return exists;
-    }
-
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
     }
 
     @Override
@@ -149,59 +138,68 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
 
-    private void runCLI () throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
             if (isRevision) {
-                LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();
-                runner(canceled, 0, list, new Parser() {
+                final LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();
+                new Runner(canceled, 0){
+
                     @Override
-                    public void outputParser(String output, Map<String, StatusLine> list) {
+                    public void outputParser(String output) throws GitException {
                         parseDiffOutput(output, 1, list);
                     }
-                });
-                runner(canceled, 1, list, new Parser() {
+                }.runCLI();
+                
+                new Runner(canceled, 1){
+
                     @Override
-                    public void outputParser(String output, Map<String, StatusLine> list) {
+                    public void outputParser(String output) throws GitException {
                         parseDiffOutput(output, 3, list);
                     }
-                });
-                runner(canceled, 2, list, new Parser() {
+                }.runCLI();
+
+                new Runner(canceled, 2){
+
                     @Override
-                    public void outputParser(String output, Map<String, StatusLine> list) {
+                    public void outputParser(String output) throws GitException {
                         parseStatusOutput(output, list, true);
                     }
-                });
-                runner(canceled, 3, list, new Parser() {
+                }.runCLI();
+
+                new Runner(canceled, 3){
+
                     @Override
-                    public void outputParser(String output, Map<String, StatusLine> list) {
+                    public void outputParser(String output) throws GitException {
                         parseLsOutput(output, list);
                     }
-                });
+                }.runCLI();
                 if (canceled.canceled()) {
                     return;
                 }
                 processOutput(list, canceled);
             } else {
-                LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();
-                runner(canceled, 0, list, new Parser() {
+                final LinkedHashMap<String, StatusLine> list = new LinkedHashMap<>();
+                new Runner(canceled, 0){
+
                     @Override
-                    public void outputParser(String output, Map<String, StatusLine> list) {
+                    public void outputParser(String output) throws GitException {
                         parseStatusOutput(output, list, false);
                     }
-                });
-                runner(canceled, 1, list, new Parser() {
+                }.runCLI();
+                new Runner(canceled, 1){
+
                     @Override
-                    public void outputParser(String output, Map<String, StatusLine> list) {
+                    public void outputParser(String output) throws GitException {
                         parseDiffOutput(output, 3, list);
                     }
 
                     @Override
-                    public void errorParser(String error, Map<String, StatusLine> list) {
+                    protected void errorParser(String error) throws GitException {
                         if (error.contains("fatal: bad revision 'HEAD'")) {
                             for (Map.Entry<String, StatusLine> e : list.entrySet()) {
                                 final char first = e.getValue().first;
@@ -211,13 +209,16 @@ public class StatusCommand extends StatusCommandBase {
                             }
                         }
                     }
-                });
-                runner(canceled, 2, list, new Parser() {
+
+                }.runCLI();
+
+                new Runner(canceled, 2){
+
                     @Override
-                    public void outputParser(String output, Map<String, StatusLine> list) {
+                    public void outputParser(String output) throws GitException {
                         parseLsOutput(output, list);
                     }
-                });
+                }.runCLI();
                 if (canceled.canceled()) {
                     return;
                 }
@@ -234,25 +235,6 @@ public class StatusCommand extends StatusCommandBase {
         }        
     }
 
-    private void runner(ProcessUtils.Canceler canceled, int command, Map<String, StatusLine> list, Parser parser) {
-        if(canceled.canceled()) {
-            return;
-        }
-        ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output, list);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error, list);
-        }
-    }
-    
     private void parseStatusOutput(String output, Map<String, StatusLine> list, boolean onlyIndexWC) {
         for (String line : output.split("\n")) { //NOI18N
             if (line.length() > 3) {
@@ -470,12 +452,6 @@ public class StatusCommand extends StatusCommandBase {
         @Override
         public String toString() {
             return ""+first+second+third+untracked;
-        }
-    }
-
-    private abstract class Parser {
-        public abstract void outputParser(String output, Map<String, StatusLine> list);
-        public void errorParser(String error, Map<String, StatusLine> list){
         }
     }
 }

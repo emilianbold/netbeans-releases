@@ -151,10 +151,14 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();
-        FileObject hg = rootFO.getFileObject("/usr/bin/hg");
+        final String hgPath = "/usr/bin/hg";
+        FileObject hg = rootFO.getFileObject(hgPath);
         if (hg == null || !hg.isValid()) {
             skipTest = true;
-            return;
+            //return;
+            // skipping does not work anyhow; now if hg is not found, test fail later with numeric NPEs
+            // so we'd better fail with correct message
+            throw new IllegalStateException(hgPath + " is absent on " + getTestExecutionEnvironment());
         }
         
         MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, MercurialVCS.class, FilesystemInterceptorProviderImpl.class});

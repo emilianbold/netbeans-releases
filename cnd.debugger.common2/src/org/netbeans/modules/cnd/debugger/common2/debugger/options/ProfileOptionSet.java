@@ -115,7 +115,8 @@ public class ProfileOptionSet extends OptionSetSupport {
         DebuggerOption.GDB_SOURCE_DIRS,
             
         DebuggerOption.DEBUG_COMMAND,
-        DebuggerOption.DEBUG_DIR
+        DebuggerOption.DEBUG_DIR,
+        DebuggerOption.SYMBOL_FILE
     };
 
 

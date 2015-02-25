@@ -42,7 +42,6 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.libs.git.remote.GitException;
@@ -53,7 +52,6 @@ import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -85,15 +83,6 @@ public class RemoveCommand extends GitCommand {
     }
     
     @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-    
-    @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "rm"); //NOI18N
@@ -106,20 +95,20 @@ public class RemoveCommand extends GitCommand {
     }
     
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
-            runner(canceled, 0, new Parser() {
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output) {
+                public void outputParser(String output) throws GitException {
                     parseRemoveOutput(output);
                 }
-            });
+            }.runCLI();
             
             //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
@@ -134,25 +123,6 @@ public class RemoveCommand extends GitCommand {
         }
     }
     
-    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) throws IOException, GitException.MissingObjectException {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {            
-            parser.errorParser(exitStatus.error);
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output);
-        }
-    }
-
     private void parseRemoveOutput(String output) {
         //rm 'folder1/file1'
         //rm 'folder1/file2'
@@ -177,10 +147,4 @@ public class RemoveCommand extends GitCommand {
         
     }
 
-    private abstract class Parser {
-        public abstract void outputParser(String output);
-        public void errorParser(String error) {
-        }
-    }
-    
 }

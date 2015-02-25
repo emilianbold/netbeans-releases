@@ -81,7 +81,7 @@ public abstract class GitClassFactory {
 
     public abstract GitFileInfo createFileInfo (VCSFileProxy file, String oldPath, GitFileInfo.Status status, VCSFileProxy originalFile, String originalPath);
     
-    //public abstract GitMergeResult createMergeResult (MergeResult mergeResult, VCSFileProxy workTree);
+    public abstract GitMergeResult createMergeResult (GitMergeResult.MergeResultContainer mergeResult, VCSFileProxy workTree);
 
     public abstract GitPullResult createPullResult (Map<String, GitTransportUpdate> fetchUpdates, GitMergeResult mergeResult);
 

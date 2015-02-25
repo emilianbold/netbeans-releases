@@ -138,10 +138,14 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(this.contentTitle);
-        out.writeInt(context.getRootFiles().size());
-        for(VCSFileProxy root : context.getRootFiles()) {
-            URI uri = VCSFileProxySupport.toURI(root);
-            out.writeObject(uri);
+        if (context != null) {
+            out.writeInt(context.getRootFiles().size());
+            for(VCSFileProxy root : context.getRootFiles()) {
+                URI uri = VCSFileProxySupport.toURI(root);
+                out.writeObject(uri);
+            }
+        } else {
+            out.writeInt(-1);
         }
     }
 
@@ -150,6 +154,9 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         super.readExternal(in);
         contentTitle = (String) in.readObject();
         int size = in.readInt();
+        if (size == -1) {
+            return;
+        }
         List<VCSFileProxy> rootFiles = new ArrayList<VCSFileProxy>(size);
         for(int i = 0; i < size; i++) {
             URI uri = (URI)in.readObject();

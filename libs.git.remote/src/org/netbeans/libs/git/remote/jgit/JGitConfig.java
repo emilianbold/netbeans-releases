@@ -67,6 +67,8 @@ public class JGitConfig {
     public static final String CONFIG_KEY_AUTOSETUPMERGE = "autosetupmerge";
     public static final String CONFIG_KEY_REMOTE = "remote";
     public static final String CONFIG_KEY_MERGE = "merge";
+    public static final String CONFIG_KEY_BARE = "bare";
+    public static final String CONFIG_KEY_FF = "ff";
     private static final String CONFIG_LOCATION = ".git/config";
     
     private final TreeMap<SectionKey, TreeMap<String,String>> map = new TreeMap<>();
@@ -219,6 +221,16 @@ public class JGitConfig {
         return Boolean.toString(true).equals(val);
     }
 
+    public void unset(String section, String subsection, String key) {
+        SectionKey storageKey = new SectionKey(section, subsection);
+        TreeMap<String, String> storage = map.get(storageKey);
+        if (storage != null) {
+            storage.remove(key);
+            if (storage.isEmpty()) {
+                map.remove(storageKey);
+            }
+        }
+    }
 
     public Collection<String> getSubsections(String section) {
         List<String> res = new ArrayList<>();
@@ -244,7 +256,6 @@ public class JGitConfig {
         }
         return res;
     }
-
 
     private static final class SectionKey implements Comparable<SectionKey>{
         private final String section;

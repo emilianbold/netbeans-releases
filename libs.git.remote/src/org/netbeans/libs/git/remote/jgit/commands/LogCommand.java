@@ -42,7 +42,6 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,7 +58,6 @@ import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.libs.git.remote.progress.RevisionInfoListener;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -103,15 +101,6 @@ public class LogCommand extends GitCommand {
         this.revisionPlaseHolder = null;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public GitRevisionInfo[] getRevisions () {
         return revisions.toArray(new GitRevisionInfo[revisions.size()]);
     }
@@ -125,12 +114,10 @@ public class LogCommand extends GitCommand {
         addArgument(0, "log"); //NOI18N
         addArgument(0, "--raw"); //NOI18N
         addArgument(0, "--pretty=raw"); //NOI18N
-        boolean isFollow = false;
         if (criteria != null && criteria.isFollow() && criteria.getFiles() != null && criteria.getFiles().length == 1) {
             // Options --follow and  --full-diff are not compatible.
             // Lets give preference to --full-diff. As result log will not tack renames.
             //addArgument(0, "--follow"); //NOI18N
-            isFollow = true;
         }
         if (criteria != null && !criteria.isIncludeMerges()) {
             addArgument(0, "--no-merges"); //NOI18N
@@ -197,36 +184,43 @@ public class LogCommand extends GitCommand {
         
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
-            LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses = new LinkedHashMap<String, GitRevisionInfo.GitRevCommit>();
-            runner(canceled, 0, statuses, new Parser() {
+            final LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses = new LinkedHashMap<String, GitRevisionInfo.GitRevCommit>();
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
+                public void outputParser(String output) throws GitException {
                     parseLog(output, statuses);
                 }
 
                 @Override
-                public void errorParser(String error) throws GitException.MissingObjectException {
+                protected void errorParser(String error) throws GitException {
                     for (String msg : error.split("\n")) { //NOI18N
                         if (msg.startsWith("fatal: Invalid object")) {
                             throw new GitException.MissingObjectException(GitConstants.HEAD ,GitObjectType.COMMIT);
                         }
                     }
                 }
-
-            });
+                
+            }.runCLI();
             for(Map.Entry<String, GitRevisionInfo.GitRevCommit> entry : statuses.entrySet()) {
                 if (fetchBranchInfo) {
                     revisionPlaseHolder.setContent(entry.getKey());
-                    Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
-                    runner2(canceled, 1, branches);
+                    final Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
+                    new Runner(canceled, 1){
+
+                        @Override
+                        public void outputParser(String output) throws GitException {
+                            ListBranchCommand.parseBranches(output, getClassFactory(), branches);
+                        }
+
+                    }.runCLI();
                     revisions.add(getClassFactory().createRevisionInfo(entry.getValue(), branches, getRepository()));
                 } else {
                     revisions.add(getClassFactory().createRevisionInfo(entry.getValue(), getRepository()));
@@ -243,48 +237,11 @@ public class LogCommand extends GitCommand {
         }
     }
     
-    private void runner(ProcessUtils.Canceler canceled, int command, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses, Parser parser) throws IOException, GitException.MissingObjectException {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {            
-            parser.errorParser(exitStatus.error);
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output, statuses);
-        }
-    }
-
-    private boolean runner2(ProcessUtils.Canceler canceled, int command, Map<String, GitBranch> branches) throws IOException, GitException.MissingObjectException {
-        if(canceled.canceled()) {
-            return false;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return false;
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {            
-            return false;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            ListBranchCommand.parseBranches(exitStatus.output, getClassFactory(), branches);
-        }
-        return true;
-    }
-
     static void parseLog(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
         //#git --no-pager log --name-status --no-walk 0254bffe448b1951af6edef531d80f8e629c575a"
         //commit 9c0e341a6a9197e2408862d2e6ff4b7635a01f9b (from 19f759b14972f669dc3eb203c06944e03365f6bc)
+        //Reflog: refs/stash@{0} (Alexander Simon <alexander.simon@oracle.com>)
+        //Reflog message: On master: stash
         //Merge: 1126f32 846626a
         //Author: Alexander Simon <alexander.simon@oracle.com>
         //Date:   Tue Feb 17 16:12:39 2015 +0300
@@ -293,6 +250,12 @@ public class LogCommand extends GitCommand {
         GitRevisionInfo.GitRevCommit status = new GitRevisionInfo.GitRevCommit();
         StringBuilder buf = new StringBuilder();
         for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("Reflog:")) {
+                continue;
+            }
+            if (line.startsWith("Reflog message:")) {
+                continue;
+            }
             if (line.startsWith("committer")) {
                 String s = line.substring(9).trim();
                 int i = s.indexOf(">");
@@ -371,13 +334,6 @@ public class LogCommand extends GitCommand {
         if (status.revisionCode != null) {
             status.message = buf.toString();
             statuses.put(status.revisionCode, status);
-        }
-    }
-                
-
-    private abstract class Parser {
-        public abstract void outputParser(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) throws IOException;
-        public void errorParser(String error) throws GitException.MissingObjectException {
         }
     }
 }

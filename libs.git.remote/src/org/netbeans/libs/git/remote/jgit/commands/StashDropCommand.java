@@ -45,6 +45,7 @@ import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -53,25 +54,14 @@ import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 public class StashDropCommand extends GitCommand {
     private final int stashIndex;
     private final boolean all;
+    private final ProgressMonitor monitor;
 
     public StashDropCommand (JGitRepository repository, GitClassFactory accessor,
             int stashIndex, boolean all, ProgressMonitor monitor) {
         super(repository, accessor, monitor);
         this.stashIndex = stashIndex;
+        this.monitor = monitor;
         this.all = all;
-    }
-    
-    @Override
-    protected void run () throws GitException {
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            new Git(repository).stashDrop()
-//                    .setAll(all)
-//                    .setStashRef(stashIndex)
-//                    .call();
-//        } catch (GitAPIException ex) {
-//            throw new GitException(ex);
-//        }
     }
     
     @Override
@@ -84,6 +74,31 @@ public class StashDropCommand extends GitCommand {
             addArgument(0, "drop"); //NOI18N
             addArgument(0, "stash@{"+stashIndex+"}");
         }
+    }
+
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+            }.runCLI();
+
+            //command.commandCompleted(exitStatus.exitCode);
+        } catch (Throwable t) {
+            if(canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            //command.commandFinished();
+        }        
     }
 }
 

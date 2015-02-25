@@ -177,7 +177,7 @@ public final class JavaContextSupport {
         }
 
         List<QualifiedNamePart> qualifiedName = getQualifiedName(mtdTreePath);
-        String simpleName = qualifiedName.size() > 0 ? qualifiedName.get(qualifiedName.size() - 1).getText().toString() : "<not_initialized>";
+        String simpleName = qualifiedName.size() > 0 ? qualifiedName.get(qualifiedName.size() - 1).getText().toString() : "<not_initialized>"; // NOI18N
 
         return new JavaMethodInfo(
             simpleName, 
@@ -218,7 +218,7 @@ public final class JavaContextSupport {
             }
 
             default:
-                return new JavaTypeInfo("<NOT_SUPPORTED_KIND_" + type.getKind() + ">", "<NOT_SUPPORTED_KIND_" + type.getKind() + ">", 0);
+                return new JavaTypeInfo("<NOT_SUPPORTED_KIND_" + type.getKind() + ">", "<NOT_SUPPORTED_KIND_" + type.getKind() + ">", 0); // NOI18N
         }        
     }
     
@@ -276,33 +276,33 @@ public final class JavaContextSupport {
     private static CharSequence convertKind(TypeKind kind) {
         switch (kind) {
             case BYTE:
-                return "byte";
+                return "byte"; // NOI18N
 
             case BOOLEAN:
-                return "boolean";
+                return "boolean"; // NOI18N
 
             case CHAR:
-                return "char";
+                return "char"; // NOI18N
 
             case FLOAT:       
-                return "float";
+                return "float"; // NOI18N
 
             case DOUBLE:
-                return "double";
+                return "double"; // NOI18N
                 
             case SHORT:
-                return "short";
+                return "short"; // NOI18N
 
             case INT:
-                return "int";
+                return "int"; // NOI18N
 
             case LONG:
-                return "long";
+                return "long"; // NOI18N
                 
             case VOID:
-                return "void";
+                return "void"; // NOI18N
         }
-        throw new UnsupportedOperationException("Unexpected type kind: " + kind);
+        throw new UnsupportedOperationException("Unexpected type kind: " + kind); // NOI18N
     }
             
     private static List<CharSequence> renderExpression(ExpressionTree expr) {

@@ -56,17 +56,17 @@ import org.openide.util.Pair;
  */
 public final class MixedDevUtils {
     
-    public static final String DOT = ".";
+    public static final String DOT = "."; // NOI18N
     
-    public static final String COMMA = ",";
+    public static final String COMMA = ","; // NOI18N
     
-    public static final String LPAREN = "(";
+    public static final String LPAREN = "("; // NOI18N
     
-    public static final String RPAREN = ")";
+    public static final String RPAREN = ")"; // NOI18N
     
-    public static final String SCOPE = "::";
+    public static final String SCOPE = "::"; // NOI18N
     
-    public static final String POINTER = "*";    
+    public static final String POINTER = "*"; // NOI18N
     
     public static String stringize(Collection<? extends CharSequence> collection, CharSequence separator) {
         boolean first = true;

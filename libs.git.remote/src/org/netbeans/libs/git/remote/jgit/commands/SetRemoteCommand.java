@@ -67,6 +67,7 @@ public class SetRemoteCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        StoredConfig config = repository.getConfig();
 //        boolean finished = false;

@@ -49,7 +49,6 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -75,38 +74,6 @@ public class CreateTagCommand extends GitCommand {
         this.signed = signed;
         this.forceUpdate = forceUpdate;
         revisionPlaseHolder = new Revision();
-    }
-    
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
-    protected void runKit () throws GitException {
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            RevObject obj = Utils.findObject(repository, taggedObject);
-//            TagCommand cmd = new Git(repository).tag();
-//            cmd.setName(tagName);
-//            cmd.setForceUpdate(forceUpdate);
-//            cmd.setObjectId(obj);
-//            cmd.setAnnotated(message != null && !message.isEmpty() || signed);
-//            if (cmd.isAnnotated()) {
-//                cmd.setMessage(message);
-//                cmd.setSigned(signed);
-//            }
-//            cmd.call();
-//            ListTagCommand tagCmd = new ListTagCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
-//            tagCmd.run();
-//            Map<String, GitTag> tags = tagCmd.getTags();
-//            tag = tags.get(tagName);
-//        } catch (JGitInternalException | GitAPIException ex) {
-//            throw new GitException(ex);
-//        }
     }
     
     public GitTag getTag () {
@@ -142,51 +109,56 @@ public class CreateTagCommand extends GitCommand {
         addArgument(2, revisionPlaseHolder);
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
-            TagContainer container = new TagContainer();
-            runner(canceled, 0, container, new Parser() {
+            final TagContainer container = new TagContainer();
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output, TagContainer container) {
+                public void outputParser(String output) throws GitException {
                 }
 
                 @Override
-                public void errorParser(String error) {
+                protected void errorParser(String error) throws GitException {
                     parseAddError(error);
                 }
-            });
-            runner(canceled, 1, container, new Parser() {
+                
+            }.runCLI();
+            
+            new Runner(canceled, 1){
 
                 @Override
-                public void outputParser(String output, TagContainer container) {
+                public void outputParser(String output) throws GitException {
                     parseShowRef(output, container);
                 }
 
                 @Override
-                public void errorParser(String error) {
+                protected void errorParser(String error) throws GitException {
                     parseAddError(error);
                 }
-            });
+                
+            }.runCLI();
+
             if (container.id != null) {
                 revisionPlaseHolder.setContent(container.id);
-                runner(canceled, 2, container, new Parser() {
+                new Runner(canceled, 2){
 
                     @Override
-                    public void outputParser(String output, TagContainer container) {
+                    public void outputParser(String output) throws GitException {
                         parseShowDetails(output, container);
                     }
 
                     @Override
-                    public void errorParser(String error) {
+                    protected void errorParser(String error) throws GitException {
                         parseAddError(error);
                     }
-                });
+
+                }.runCLI();
                 tag = getClassFactory().createTag(container);
             }
             
@@ -198,26 +170,6 @@ public class CreateTagCommand extends GitCommand {
             }
         } finally {
             //command.commandFinished();
-        }
-    }
-    
-    private void runner(ProcessUtils.Canceler canceled, int command, TagContainer container, Parser parser) {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output, container);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error);
         }
     }
     
@@ -303,9 +255,6 @@ public class CreateTagCommand extends GitCommand {
                 continue;
             }
         }
-        if (container.type == null) { 
-            System.err.println(output);
-        }
     }
     
     private void parseAddError(String error) {
@@ -314,12 +263,6 @@ public class CreateTagCommand extends GitCommand {
         //Use -f if you really want to add them.
         //fatal: no files added
         processMessages(error);
-    }
-    
-    abstract static class Parser {
-        public abstract void outputParser(String output, TagContainer container);
-        public void errorParser(String error){
-        }
     }
     
     private enum State {

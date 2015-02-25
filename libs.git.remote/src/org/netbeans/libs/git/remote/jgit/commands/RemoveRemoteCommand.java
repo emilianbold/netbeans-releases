@@ -61,6 +61,7 @@ public class RemoveRemoteCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        StoredConfig config = repository.getConfig();
 //        config.unsetSection(ConfigConstants.CONFIG_REMOTE_SECTION, remote);

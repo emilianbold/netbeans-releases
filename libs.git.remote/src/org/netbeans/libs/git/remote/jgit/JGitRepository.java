@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.remote.jgit;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 //import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.remote.GitException;
@@ -55,6 +56,7 @@ public final class JGitRepository {
     private final VCSFileProxy location;
     private final AtomicInteger counter = new AtomicInteger();
     private final JGitConfig config;
+    private final AtomicBoolean loaded = new AtomicBoolean(false);
 
     public JGitRepository (VCSFileProxy location) {
         this.location = location;
@@ -78,6 +80,12 @@ public final class JGitRepository {
     }
     
     public JGitConfig getConfig(){
-        return config;
+        synchronized(loaded) {
+            if (!loaded.get()) {
+                config.load();
+                loaded.set(true);
+            }
+            return config;
+        }
     }
 }

@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.CatalogDynamic;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Option;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Validity;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 public class DebuggerOption extends Option {
 
@@ -760,4 +761,11 @@ public class DebuggerOption extends Option {
 			    "", // deault value
 			    false, // is engine option
 			    Type.DIRECTORY, false);  //type , hasToolTip
+    
+    public static final DebuggerOption SYMBOL_FILE = 
+        new DebuggerOption( // NOI18N
+			    "symbol_file", // NOI18N //name
+                            MakeConfiguration.CND_OUTPUT_PATH_MACRO, // deault value
+			    false, // is engine option
+			    Type.FILE, false);  //type , hasToolTip
 }

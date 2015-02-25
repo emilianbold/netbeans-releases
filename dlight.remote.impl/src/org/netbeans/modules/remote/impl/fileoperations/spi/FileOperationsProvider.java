@@ -270,8 +270,12 @@ abstract public class FileOperationsProvider {
         }
         
         protected FileObject getRoot() {
-            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+            RemoteFileSystem fs = getFileSystem();
             return fs.getRoot();
+        }
+        
+        protected RemoteFileSystem getFileSystem() {
+            return RemoteFileSystemManager.getInstance().getFileSystem(env);
         }
         
         protected String getPath(FileProxyO file) {
@@ -319,6 +323,10 @@ abstract public class FileOperationsProvider {
         }
 
         protected FileObject toFileObject(FileProxyO path) {
+            RemoteFileObjectBase cachedFileObject = fileSystem.getFactory().getCachedFileObject(path.getPath());
+            if (cachedFileObject != null && cachedFileObject.isValid()) {
+                return cachedFileObject.getOwnerFileObject();
+            }            
             FileObject root = getRoot();
             FileObject fo = root.getFileObject(path.getPath());
             if (fo == null && existsSafe(path)) {
@@ -423,7 +431,7 @@ abstract public class FileOperationsProvider {
         
         private RemoteFileObjectBase findExistingParent(String path) {
             while(true) {
-                RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
+                RemoteFileObject fo = getFileSystem().findResource(path);
                 if (fo != null) {
                     return fo.getImplementor();
                 }

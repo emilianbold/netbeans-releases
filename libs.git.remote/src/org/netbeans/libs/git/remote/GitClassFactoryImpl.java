@@ -85,10 +85,10 @@ final class GitClassFactoryImpl extends GitClassFactory {
         return new GitFileInfo(file, oldPath, status, originalFile, originalPath);
     }
 
-//    @Override
-//    public GitMergeResult createMergeResult (MergeResult mergeResult, VCSFileProxy workTree) {
-//        return new GitMergeResult(mergeResult, workTree);
-//    }
+    @Override
+    public GitMergeResult createMergeResult (GitMergeResult.MergeResultContainer mergeResult, VCSFileProxy workTree) {
+        return new GitMergeResult(mergeResult, workTree);
+    }
 
     @Override
     public GitPullResult createPullResult (Map<String, GitTransportUpdate> fetchUpdates, GitMergeResult mergeResult) {

@@ -44,6 +44,7 @@ package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.remote.GitBranch;
@@ -52,7 +53,6 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -73,15 +73,6 @@ public class CreateBranchCommand extends GitCommand {
         this.monitor = monitor;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public GitBranch getBranch () {
         return branch;
     }
@@ -102,19 +93,57 @@ public class CreateBranchCommand extends GitCommand {
         addArgument(2, "--all"); //NOI18N
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
-            Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
-            boolean runner = runner(canceled, 0, branches);
-            if (!runner) {
-                runner(canceled, 1, branches);
+            final Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
+            final AtomicBoolean failed = new AtomicBoolean(false);
+            
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    ListBranchCommand.parseBranches(output, getClassFactory(), branches);
+                }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    if (error.contains("fatal: Cannot setup tracking information; starting point is not a branch.")) {
+                        failed.set(true);
+                    }
+                }
+                
+            }.runCLI();
+            if (!failed.get()) {
+                new Runner(canceled, 1) {
+
+                    @Override
+                    public void outputParser(String output) throws GitException {
+                        ListBranchCommand.parseBranches(output, getClassFactory(), branches);
+                    }
+
+                    @Override
+                    protected void errorParser(String error) throws GitException {
+                    }
+
+                }.runCLI();
             }
-            runner(canceled, 2, branches);
+            new Runner(canceled, 2) {
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    ListBranchCommand.parseBranches(output, getClassFactory(), branches);
+                }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                }
+
+            }.runCLI();
             branch = branches.get(branchName);
             if (branch == null) {
                 LOG.log(Level.WARNING, "Branch {0}/{1} probably created but not in the branch list: {2}",
@@ -131,27 +160,4 @@ public class CreateBranchCommand extends GitCommand {
             //command.commandFinished();
         }
     }
-    
-    private boolean runner(ProcessUtils.Canceler canceled, int command, Map<String, GitBranch> branches) {
-        if(canceled.canceled()) {
-            return true;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return true;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            ListBranchCommand.parseBranches(exitStatus.output, getClassFactory(), branches);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            if (exitStatus.error.contains("fatal: Cannot setup tracking information; starting point is not a branch.")) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
 }

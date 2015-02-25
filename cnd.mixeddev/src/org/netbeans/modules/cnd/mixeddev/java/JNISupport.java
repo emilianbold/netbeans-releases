@@ -103,7 +103,7 @@ public final class JNISupport {
         StringBuilder method = new StringBuilder();
         
         // Add method name
-        method.append(QN_PREFIX + "_").append(stringize(transform(methodInfo.getFullQualifiedName(), new QualNameToCppStringConverter()), "_"));
+        method.append(QN_PREFIX + "_").append(stringize(transform(methodInfo.getFullQualifiedName(), new QualNameToCppStringConverter()), "_")); // NOI18N
         
         if (methodInfo.isOverloaded()) {
             // Ambiguity!
@@ -123,49 +123,50 @@ public final class JNISupport {
     }
     
 //<editor-fold defaultstate="collapsed" desc="Implementation">    
-    private static final String QN_PREFIX = "Java";
+    private static final String QN_PREFIX = "Java"; // NOI18N
     
-    private static final String PARAMS_SIGNATURE_PREFIX = "__";
+    private static final String PARAMS_SIGNATURE_PREFIX = "__"; // NOI18N
     
-    private static final String JNIENV = "JNIEnv";
+    private static final String JNIENV = "JNIEnv";  // NOI18N
     
-    private static final String JOBJECT = "jobject";
+    private static final String JOBJECT = "jobject";    // NOI18N
     
-    private static final String NETSED_PREFIX = "00024"; // 0x00024 is '$' sign
+    // 0x00024 is '$' sign
+    private static final String NETSED_PREFIX = "00024"; // NOI18N 
     
     private static final List<String> IMPLICIT_PARAMS = Arrays.asList(JNIENV + POINTER, JOBJECT);
     
     private static final Map<String, String> javaToCppTypes = createMapping(
-        Pair.of("boolean", "jboolean"),
-        Pair.of("byte", "jbyte"),
-        Pair.of("char", "jchar"),
-        Pair.of("short", "jshort"),
-        Pair.of("int", "jint"),
-        Pair.of("long", "jlong"),
-        Pair.of("float", "jfloat"),
-        Pair.of("double", "jdouble"),
-        Pair.of("void", "void"),
-        Pair.of("String", "jstring"),
-        Pair.of("boolean[]", "jbooleanArray"),
-        Pair.of("byte[]", "jbyteArray"),
-        Pair.of("char[]", "jcharArray"),
-        Pair.of("short[]", "jshortArray"),
-        Pair.of("int[]", "jintArray"),
-        Pair.of("long[]", "jlongArray"),
-        Pair.of("float[]", "jfloatArray"),
-        Pair.of("double[]", "jdoubleArray")
+        Pair.of("boolean", "jboolean"), // NOI18N 
+        Pair.of("byte", "jbyte"), // NOI18N
+        Pair.of("char", "jchar"), // NOI18N
+        Pair.of("short", "jshort"), // NOI18N
+        Pair.of("int", "jint"), // NOI18N
+        Pair.of("long", "jlong"), // NOI18N
+        Pair.of("float", "jfloat"), // NOI18N
+        Pair.of("double", "jdouble"), // NOI18N
+        Pair.of("void", "void"), // NOI18N
+        Pair.of("String", "jstring"), // NOI18N
+        Pair.of("boolean[]", "jbooleanArray"), // NOI18N
+        Pair.of("byte[]", "jbyteArray"), // NOI18N
+        Pair.of("char[]", "jcharArray"), // NOI18N
+        Pair.of("short[]", "jshortArray"), // NOI18N
+        Pair.of("int[]", "jintArray"), // NOI18N
+        Pair.of("long[]", "jlongArray"), // NOI18N
+        Pair.of("float[]", "jfloatArray"), // NOI18N
+        Pair.of("double[]", "jdoubleArray") // NOI18N
     );
     
     private static final Map<String, String> javaToSignatures = createMapping(
-        Pair.of("boolean", "Z"),
-        Pair.of("byte", "B"),
-        Pair.of("char", "C"),
-        Pair.of("short", "S"),
-        Pair.of("int", "I"),
-        Pair.of("long", "J"),
-        Pair.of("float", "F"),
-        Pair.of("double", "D"),
-        Pair.of("void", "V")
+        Pair.of("boolean", "Z"), // NOI18N
+        Pair.of("byte", "B"), // NOI18N
+        Pair.of("char", "C"), // NOI18N
+        Pair.of("short", "S"), // NOI18N
+        Pair.of("int", "I"), // NOI18N
+        Pair.of("long", "J"), // NOI18N
+        Pair.of("float", "F"), // NOI18N
+        Pair.of("double", "D"), // NOI18N
+        Pair.of("void", "V") // NOI18N
     );
     
     private static String getCppType(JavaTypeInfo javaType) {
@@ -173,7 +174,7 @@ public final class JNISupport {
         if (javaToCppTypes.containsKey(typeName)) {
             return javaToCppTypes.get(typeName);
         }
-        return javaType.getArrayDepth() > 0 ? "jobjectArray" : "jobject";
+        return javaType.getArrayDepth() > 0 ? "jobjectArray" : "jobject"; // NOI18N
     }
     
     private static String getTypeSignature(JavaTypeInfo javaType) {
@@ -321,7 +322,7 @@ public final class JNISupport {
     }
     
     private JNISupport() {
-        throw new AssertionError("Not instantiable!");
+        throw new AssertionError("Not instantiable!"); // NOI18N
     }
 //</editor-fold>
 }

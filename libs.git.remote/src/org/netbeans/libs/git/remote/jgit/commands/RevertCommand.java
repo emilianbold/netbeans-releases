@@ -80,6 +80,7 @@ public class RevertCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
+        throw new GitException.UnsupportedCommandException();
 //        Repository repository = getRepository().getRepository();
 //        RevCommit revertedCommit = Utils.findCommit(repository, revisionStr);
 //        RevWalk revWalk = new RevWalk(repository);

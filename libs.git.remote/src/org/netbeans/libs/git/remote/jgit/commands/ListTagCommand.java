@@ -54,7 +54,6 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -76,42 +75,6 @@ public class ListTagCommand extends GitCommand {
         onlyTagName = tagName;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
-    protected void runKit () throws GitException {
-//        Repository repository = getRepository().getRepository();
-//        Map<String, Ref> tags = repository.getTags();
-//        allTags = new LinkedHashMap<String, GitTag>(tags.size());
-//        RevWalk walk = new RevWalk(repository);
-//        try {
-//            for (Map.Entry<String, Ref> e : tags.entrySet()) {
-//                GitTag tag;
-//                try {
-//                    tag = getClassFactory().createTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
-//                } catch (IncorrectObjectTypeException ex) {
-//                    tag = getClassFactory().createTag(e.getKey(),
-//                            getClassFactory().createRevisionInfo(walk.parseCommit(e.getValue().getLeaf().getObjectId()), getRepository()));
-//                }
-//                if (all || tag.getTaggedObjectType() == GitObjectType.COMMIT) {
-//                    allTags.put(tag.getTagName(), tag);
-//                }
-//            }
-//        } catch (MissingObjectException ex) {
-//            throw new GitException.MissingObjectException(ex.getObjectId().getName(), GitObjectType.TAG);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        } finally {
-//            walk.release();
-//        }
-    }
-
     public Map<String, GitTag> getTags () {
         return allTags;
     }
@@ -132,43 +95,46 @@ public class ListTagCommand extends GitCommand {
         addArgument(1, revisionPlaseHolder);
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
             allTags = new LinkedHashMap<>();
-            List<GitTag.TagContainer> list = new ArrayList<GitTag.TagContainer>();
-            runner(canceled, 0, list, new Parser() {
+            final List<GitTag.TagContainer> list = new ArrayList<GitTag.TagContainer>();
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output, List<GitTag.TagContainer> list) {
+                public void outputParser(String output) throws GitException {
                     parseTagOutput(output, list);
                 }
 
                 @Override
-                public void errorParser(String error) {
+                protected void errorParser(String error) throws GitException {
                     parseAddError(error);
                 }
-            });
+                
+            }.runCLI();
+            
             if (list.size() == 1) {
-                for (GitTag.TagContainer container : list) {
+                for (final GitTag.TagContainer container : list) {
                     if (container.id != null) {
                         revisionPlaseHolder.setContent(container.id);
-                        runner2(canceled, 1, container, new CreateTagCommand.Parser() {
+                        new Runner(canceled, 1){
 
                             @Override
-                            public void outputParser(String output, TagContainer container) {
+                            public void outputParser(String output) throws GitException {
                                 CreateTagCommand.parseShowDetails(output, container);
                             }
 
                             @Override
-                            public void errorParser(String error) {
+                            protected void errorParser(String error) throws GitException {
                                 parseAddError(error);
                             }
-                        });
+
+                        }.runCLI();
                         allTags.put(container.name, getClassFactory().createTag(container));
                     }
                 }
@@ -181,46 +147,6 @@ public class ListTagCommand extends GitCommand {
             }
         } finally {
             //command.commandFinished();
-        }
-    }
-    
-    private void runner(ProcessUtils.Canceler canceled, int command, List<GitTag.TagContainer> list, Parser parser) {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output, list);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error);
-        }
-    }
-    
-    private void runner2(ProcessUtils.Canceler canceled, int command, TagContainer container, CreateTagCommand.Parser parser) {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output, container);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error);
         }
     }
     
@@ -277,9 +203,4 @@ public class ListTagCommand extends GitCommand {
         processMessages(error);
     }
     
-    private abstract class Parser {
-        public abstract void outputParser(String output, List<GitTag.TagContainer> list);
-        public void errorParser(String error){
-        }
-    }
 }

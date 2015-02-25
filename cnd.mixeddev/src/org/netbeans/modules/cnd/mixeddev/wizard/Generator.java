@@ -149,17 +149,17 @@ public class Generator implements PropertyChangeListener {
         if (jp == null) {
             return NbBundle.getMessage(Generator.class, "Generator_NoJavaPlatform", pp.getClass()); //NOI18N
         }
-        final FileObject binFO = jp.findTool("javah");
+        final FileObject binFO = jp.findTool("javah"); // NOI18N
         File javah = FileUtil.toFile(binFO); //NOI18N
         if (javah == null) {
             return NbBundle.getMessage(Generator.class, "Generator_NoJavah", jp.getClass()); //NOI18N
         }
         String classNameRelPath = FileUtil.getRelativePath(sr, fileObject);
-        if (classNameRelPath.endsWith(".java")){
+        if (classNameRelPath.endsWith(".java")){ // NOI18N
             classNameRelPath = classNameRelPath.substring(0, classNameRelPath.length() - 5);
         }
-        File workingDir = new File(FileUtil.toFile(sr.getParent()), "build/classes");
-        File classNamePath = new File(workingDir, classNameRelPath+".class");
+        File workingDir = new File(FileUtil.toFile(sr.getParent()), "build/classes"); // NOI18N
+        File classNamePath = new File(workingDir, classNameRelPath+".class"); // NOI18N
         if (!classNamePath.exists()) {
             return NbBundle.getMessage(Generator.class, "Generator_NoCompiled", fileObject.getPath()); //NOI18N
         }
@@ -173,17 +173,17 @@ public class Generator implements PropertyChangeListener {
         javaProject = FileOwnerQuery.getOwner(sr);
         J2SEProjectPlatform pp = javaProject.getLookup().lookup(J2SEProjectPlatform.class);
         JavaPlatform jp = pp.getProjectPlatform();
-        final FileObject binFO = jp.findTool("javah");
+        final FileObject binFO = jp.findTool("javah"); // NOI18N
         File javah = FileUtil.toFile(binFO); //NOI18N
         String className = FileUtil.getRelativePath(sr, fileObject);
-        if (className.endsWith(".java")) {
+        if (className.endsWith(".java")) { // NOI18N
             className = className.substring(0, className.length() - 5).replace('/', '.').replace('\\', '.');
         }
 
-        File workingDir = new File(FileUtil.toFile(sr.getParent()), "build/classes");
+        File workingDir = new File(FileUtil.toFile(sr.getParent()), "build/classes"); // NOI18N
         List<String> args = new ArrayList<String>();
         args.add("-o"); // NOI18N
-        args.add(fileObject.getName() + ".h");
+        args.add(fileObject.getName() + ".h"); // NOI18N
         String argCP = "";
         boolean needed = false;
         if (sourceCP != null) {
@@ -216,8 +216,8 @@ public class Generator implements PropertyChangeListener {
             LOG.log(Level.WARNING, "javah failed {0}; args={1}", new Object[]{javahStatus, args});
             return false;
         }
-        header = FileUtil.toFileObject(new File(workingDir,fileObject.getName() + ".h"));
-        include = binFO.getParent().getParent().getFileObject("include");
+        header = FileUtil.toFileObject(new File(workingDir,fileObject.getName() + ".h")); // NOI18N
+        include = binFO.getParent().getParent().getFileObject("include"); // NOI18N
         return true;
     }
     
@@ -236,7 +236,7 @@ public class Generator implements PropertyChangeListener {
         String projectName = (String) WizardConstants.PROPERTY_NAME.get(wiz);
         String makefileName = (String) WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME.get(wiz);
         int conftype = MakeConfiguration.TYPE_DYNAMIC_LIB;
-        LibraryItem lib = new LibraryItem.OptionItem("-lstdc++");
+        LibraryItem lib = new LibraryItem.OptionItem("-lstdc++"); // NOI18N
         List<LibraryItem> libs = Arrays.asList(lib);
         MakeConfiguration debug = MakeConfiguration.createConfiguration(dirF, "Debug", conftype, null, hostUID, toolchain, defaultToolchain); // NOI18N
         debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);

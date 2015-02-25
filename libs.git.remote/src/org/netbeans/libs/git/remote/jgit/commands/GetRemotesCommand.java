@@ -42,7 +42,6 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,6 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -68,35 +66,6 @@ public class GetRemotesCommand extends GitCommand {
         this.monitor = monitor;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
-    protected void runKit () throws GitException {
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            List<RemoteConfig> configs = RemoteConfig.getAllRemoteConfigs(repository.getConfig());
-//            remotes = new HashMap<String, GitRemoteConfig>(configs.size());
-//            for (RemoteConfig remote : configs) {
-//                remotes.put(remote.getName(), getClassFactory().createRemoteConfig(remote));
-//            }
-//        } catch (IllegalArgumentException ex) {
-//            if (ex.getMessage().contains("Invalid wildcards")) {
-//                throw new GitException("Unsupported remote definition in " 
-//                        + VCSFileProxy.createFileProxy(getRepository().getMetadataLocation(), "config")
-//                        + ". Please fix the definition before using remotes.", ex);
-//            }
-//            throw ex;
-//        } catch (URISyntaxException ex) {
-//            throw new GitException(ex);
-//        }
-    }
-    
     public Map<String, GitRemoteConfig> getRemotes () {
         return remotes;
     }
@@ -108,26 +77,28 @@ public class GetRemotesCommand extends GitCommand {
         addArgument(0, "-v"); //NOI18N
     }
 
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
             remotes = new LinkedHashMap<>();
-            runner(canceled, 0, new Parser() {
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output) {
+                public void outputParser(String output) throws GitException {
                     parseRemoteOutput(output);
                 }
 
                 @Override
-                public void errorParser(String error) {
+                protected void errorParser(String error) throws GitException {
                     parseAddError(error);
                 }
-            });
+                
+            }.runCLI();
+
             //command.commandCompleted(exitStatus.exitCode);
         } catch (Throwable t) {
             if (canceled.canceled()) {
@@ -136,26 +107,6 @@ public class GetRemotesCommand extends GitCommand {
             }
         } finally {
             //command.commandFinished();
-        }
-    }
-    
-    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error);
         }
     }
     
@@ -191,12 +142,6 @@ public class GetRemotesCommand extends GitCommand {
     
     private void parseAddError(String error) {
         processMessages(error);
-    }
-    
-    private abstract class Parser {
-        public abstract void outputParser(String output);
-        public void errorParser(String error){
-        }
     }
     
     private static final class RemoteContainer {
