@@ -81,14 +81,7 @@ public final class LauncherExecutor {
                 LOG.info(status.error);
             }
         } else {
-            String out = value;
-
-            do {
-                value = out;
-                out = conf.expandMacros(value);
-            } while (!out.equals(value));
-
-            value = CndPathUtilities.expandAllMacroses(out, "${PROJECT_DIR}", conf.getProfile().getBaseDir()); //NOI18N
+            value = conf.expandMacros(value);
         }
         return value;
     }
@@ -216,29 +209,16 @@ public final class LauncherExecutor {
                 }
             }
             profile.setEnvironment(e);
-            String[] symbolFiles;   // SymbolFiles (now the single symbol file is only supported!!)
+            String executable = ""; //NOI18N
             if (launcher.getSymbolFiles() != null) {
-                symbolFiles = launcher.getSymbolFiles().split(","); //NOI18N
-            } else {
-                symbolFiles = new String[]{conf.getOutputValue()};
+                // SymbolFiles (now the single symbol file is only supported!!)
+                executable = launcher.getSymbolFiles().split(",")[0]; //NOI18N
+                
+                //expand macros if presented
+                executable = preprocessValueField(executable, conf);
             }
-            //executable: we will try to get linker output from laucnher
-            //if not defined will set to default value of the configuration
-            String executable = symbolFiles[0];
-            //expand macros if presented
-            executable = preprocessValueField(executable, conf);
-            // Copied from MakeConfiguration.getOutputValue()
-            if (conf.isLinkerConfiguration()) {
-                conf.getLinkerConfiguration().getOutput().setValue(executable);
-            } else if (conf.isArchiverConfiguration()) {
-                conf.getArchiverConfiguration().getOutput().setValue(executable);
-            } else if (conf.isMakefileConfiguration()) {
-                conf.getMakefileConfiguration().getOutput().setValue(executable);
-            } else if (conf.isQmakeConfiguration()) {
-            } else {
-                assert false;
-            }
-            Lookup context = Lookups.fixed(new ExecutionListenerImpl());
+            
+            Lookup context = Lookups.fixed(new ExecutionListenerImpl(), executable);
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                     project,
                     actionType,

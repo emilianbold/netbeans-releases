@@ -180,6 +180,7 @@ public class GdbProfile extends DbgProfile implements
         final FileSystem fileSystem = getConfiguration().getFileSystem();
         
         set.put(DebuggerOption.DEBUG_DIR.createNodeProp(this, baseDir, fileSystem));
+        set.put(DebuggerOption.SYMBOL_FILE.createNodeProp(this, baseDir, fileSystem));
         
 	set.put(DebuggerOption.GDB_INIT_FILE.createNodeProp(this, baseDir, fileSystem));
         set.put(DebuggerOption.GDB_SOURCE_DIRS.createNodeProp(this, baseDir, fileSystem));

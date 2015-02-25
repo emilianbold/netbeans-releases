@@ -123,6 +123,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 
     private void doExecute(final String executable, final NativeDebuggerManager dm, final InputOutput io) {
 	final Configuration configuration = pae.getConfiguration();
+        final String symbolFile = pae.getContext().lookup(String.class);
         final RunProfile profile;
         // The following is a hack to work around issues with dbxgui interaction with run profile.
         // We can't use the clone becasue of dbxgui and and we can't use the original because of on windows we want to use a modified PATH.
@@ -149,6 +150,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 		    dm.setAction(NativeDebuggerManager.RUN);
 		    dm.removeAction(NativeDebuggerManager.STEP);
 		    ndi = NativeDebuggerManager.get().debug(executable,
+                                                symbolFile,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
@@ -159,6 +161,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 		    dm.setAction(NativeDebuggerManager.STEP);
 		    dm.removeAction(NativeDebuggerManager.RUN);
 		    ndi = NativeDebuggerManager.get().debug(executable,
+                                                symbolFile,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,

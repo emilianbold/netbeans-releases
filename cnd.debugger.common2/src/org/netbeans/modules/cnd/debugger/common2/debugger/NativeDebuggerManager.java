@@ -130,6 +130,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
@@ -1185,7 +1186,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     /**
      * Start debugging by loading program.
      */
-    public NativeDebuggerInfo debug(String executable, Configuration configuration, String host,
+    public NativeDebuggerInfo debug(String executable, String symbolFile, Configuration configuration, String host,
             InputOutput io, DbgActionHandler dah, RunProfile profile) {
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(configuration));
         ndi.setTarget(executable);
@@ -1200,11 +1201,17 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
             ndi.setAction(this.getAction());
         }
         
+        DbgProfile dbgProfile = ndi.getDbgProfile();
         // override executable if needed
-        String debugExecutable = ndi.getDbgProfile().getExecutable();
+        String debugExecutable = dbgProfile.getExecutable();
         if (debugExecutable != null && !debugExecutable.isEmpty()) {
             ndi.setTarget(debugExecutable);
         }
+        if (symbolFile == null || symbolFile.isEmpty()) {
+            symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(dbgProfile.getOptions());
+            symbolFile = ((MakeConfiguration) configuration).expandMacros(symbolFile);
+        }
+        ndi.setSymbolFile(symbolFile);
 
         startDebugger(Start.NEW, ndi);
         return ndi;

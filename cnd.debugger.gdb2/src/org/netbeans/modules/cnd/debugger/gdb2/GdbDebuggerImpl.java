@@ -4186,7 +4186,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // load program
         }
         
-        String outputFile = ((MakeConfiguration)gdi.getConfiguration()).getAbsoluteOutputValue();
+        String outputFile = gdi.getSymbolFile();
         outputFile = localToRemote("symbol-file", outputFile); //NOI18N
         
         String tmp_cmd;
