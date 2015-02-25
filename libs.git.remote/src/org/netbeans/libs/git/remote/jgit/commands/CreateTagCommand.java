@@ -76,15 +76,6 @@ public class CreateTagCommand extends GitCommand {
         revisionPlaseHolder = new Revision();
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public GitTag getTag () {
         return tag;
     }
@@ -118,7 +109,8 @@ public class CreateTagCommand extends GitCommand {
         addArgument(2, revisionPlaseHolder);
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

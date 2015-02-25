@@ -68,15 +68,6 @@ public class GetCommonAncestorCommand extends GitCommand {
         revisionPlaseHolder = new Revision();
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public GitRevisionInfo getRevision () {
         return revision;
     }
@@ -96,7 +87,8 @@ public class GetCommonAncestorCommand extends GitCommand {
         addArgument(1, revisionPlaseHolder); //NOI18N
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

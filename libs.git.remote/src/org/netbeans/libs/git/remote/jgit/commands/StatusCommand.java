@@ -89,15 +89,6 @@ public class StatusCommand extends StatusCommandBase {
     }
 
     @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
-    @Override
     protected void prepare() throws GitException {
         if (isRevision) {
             setCommandsNumber(4);
@@ -147,7 +138,8 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
 
-    private void runCLI () throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

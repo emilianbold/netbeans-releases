@@ -71,14 +71,6 @@ public class BlameCommand extends GitCommand {
         this.revision = revision;
         this.monitor = monitor;
     }
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
 
     public GitBlameResult getResult () {
         return result;
@@ -96,7 +88,8 @@ public class BlameCommand extends GitCommand {
         addFiles(0, new VCSFileProxy[]{file});
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

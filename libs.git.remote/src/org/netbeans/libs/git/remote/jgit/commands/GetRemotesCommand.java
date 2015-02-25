@@ -66,35 +66,6 @@ public class GetRemotesCommand extends GitCommand {
         this.monitor = monitor;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
-    protected void runKit () throws GitException {
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            List<RemoteConfig> configs = RemoteConfig.getAllRemoteConfigs(repository.getConfig());
-//            remotes = new HashMap<String, GitRemoteConfig>(configs.size());
-//            for (RemoteConfig remote : configs) {
-//                remotes.put(remote.getName(), getClassFactory().createRemoteConfig(remote));
-//            }
-//        } catch (IllegalArgumentException ex) {
-//            if (ex.getMessage().contains("Invalid wildcards")) {
-//                throw new GitException("Unsupported remote definition in " 
-//                        + VCSFileProxy.createFileProxy(getRepository().getMetadataLocation(), "config")
-//                        + ". Please fix the definition before using remotes.", ex);
-//            }
-//            throw ex;
-//        } catch (URISyntaxException ex) {
-//            throw new GitException(ex);
-//        }
-    }
-    
     public Map<String, GitRemoteConfig> getRemotes () {
         return remotes;
     }
@@ -106,7 +77,8 @@ public class GetRemotesCommand extends GitCommand {
         addArgument(0, "-v"); //NOI18N
     }
 
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

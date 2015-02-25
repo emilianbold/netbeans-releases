@@ -69,15 +69,6 @@ public class AddCommand extends GitCommand {
     }
 
     @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
-    @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "add"); //NOI18N
@@ -97,7 +88,8 @@ public class AddCommand extends GitCommand {
         }
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

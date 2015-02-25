@@ -104,15 +104,6 @@ public class CatCommand extends GitCommand {
         return retval;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public boolean foundInRevision () {
         return found;
     }
@@ -135,7 +126,8 @@ public class CatCommand extends GitCommand {
         }
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

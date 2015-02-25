@@ -101,15 +101,6 @@ public class LogCommand extends GitCommand {
         this.revisionPlaseHolder = null;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public GitRevisionInfo[] getRevisions () {
         return revisions.toArray(new GitRevisionInfo[revisions.size()]);
     }
@@ -193,7 +184,8 @@ public class LogCommand extends GitCommand {
         
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

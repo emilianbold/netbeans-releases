@@ -75,15 +75,6 @@ public class ListTagCommand extends GitCommand {
         onlyTagName = tagName;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public Map<String, GitTag> getTags () {
         return allTags;
     }
@@ -104,7 +95,8 @@ public class ListTagCommand extends GitCommand {
         addArgument(1, revisionPlaseHolder);
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);

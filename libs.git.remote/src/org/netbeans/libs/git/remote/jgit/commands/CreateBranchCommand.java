@@ -73,15 +73,6 @@ public class CreateBranchCommand extends GitCommand {
         this.monitor = monitor;
     }
     
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public GitBranch getBranch () {
         return branch;
     }
@@ -102,7 +93,8 @@ public class CreateBranchCommand extends GitCommand {
         addArgument(2, "--all"); //NOI18N
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
