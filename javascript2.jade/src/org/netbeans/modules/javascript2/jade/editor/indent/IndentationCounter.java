@@ -85,6 +85,10 @@ public class IndentationCounter {
                 if (ts.token() == null) {
                     return Indentation.NONE;
                 }
+                while (ts.token().id() == JadeTokenId.EOL || ts.token().id() == JadeTokenId.WHITESPACE) {
+                    // find the last token on the current line before EOL or WS
+                    ts.movePrevious();
+                }
                 if (ts.token().id() == JadeTokenId.COMMENT || ts.token().id() == JadeTokenId.UNBUFFERED_COMMENT) {
                     final int firstNonWsIndex = LineDocumentUtils.getLineFirstNonWhitespace(doc, LineDocumentUtils.getLineStart(doc, caretOffset) - 1);
                     ts.move(firstNonWsIndex);
