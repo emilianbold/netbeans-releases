@@ -68,8 +68,8 @@ public class JdbcUrl extends HashMap<String, String> {
     // The static elements of the URL specification
     private ArrayList<String> staticComponents;
     
-    private HashSet<String> supportedTokens = new HashSet<String>();
-    private HashSet<String> requiredTokens = new HashSet<String>();
+    private HashSet<String> supportedTokens = new HashSet<>();
+    private HashSet<String> requiredTokens = new HashSet<>();
     private boolean parseUrl;
 
     public static final String TOKEN_DB = "<DB>";
@@ -85,23 +85,15 @@ public class JdbcUrl extends HashMap<String, String> {
     
     private static final String OPTIONAL_START = "[";
     private static final String OPTIONAL_END = "]";
-    
-    // A very common set of supported tokens for a URL, so let's
-    // predefine it
-    private static Set<String> DB_HOST_PORT_TOKEN_SET = new HashSet<String>();
-    
-    static {
-        DB_HOST_PORT_TOKEN_SET.add(TOKEN_DB);
-        DB_HOST_PORT_TOKEN_SET.add(TOKEN_HOST);
-        DB_HOST_PORT_TOKEN_SET.add(TOKEN_PORT);
-        DB_HOST_PORT_TOKEN_SET.add(TOKEN_ADDITIONAL);        
-    }
         
     private String name;
     private String displayName;
     private final String className;
     private String urlTemplate;
     private final String type;
+    private String sampleUser;
+    private String samplePassword;
+    private String sampleUrl;
         
     public JdbcUrl(String name, String displayName, String className, String type, String urlTemplate, boolean parseUrl) {
         this.name = name;
@@ -135,6 +127,9 @@ public class JdbcUrl extends HashMap<String, String> {
                 template.getClassName(),
                 template.getType(), template.getUrlTemplate(),
                 template.isParseUrl());
+        this.samplePassword = template.getSamplePassword();
+        this.sampleUser = template.getSampleUser();
+        this.sampleUrl = template.getSampleUrl();
         this.driver = driver;
     }
 
@@ -758,5 +753,28 @@ public class JdbcUrl extends HashMap<String, String> {
                 "',urlTemplate='" + urlTemplate + // NOI18N
                 "'parseUrl,=" + parseUrl + "]"; // NOI18N
     }
-    
+
+    public String getSampleUser() {
+        return sampleUser;
+    }
+
+    public String getSamplePassword() {
+        return samplePassword;
+    }
+
+    public String getSampleUrl() {
+        return sampleUrl;
+    }
+
+    void setSampleUser(String sampleUser) {
+        this.sampleUser = sampleUser;
+    }
+
+    void setSamplePassword(String samplePassword) {
+        this.samplePassword = samplePassword;
+    }
+
+    void setSampleUrl(String sampleUrl) {
+        this.sampleUrl = sampleUrl;
+    }
 }

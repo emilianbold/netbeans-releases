@@ -97,14 +97,6 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
             assert drv != null : "JDBCDriver driver cannot be null.";
             databaseConnection.setDriver(drv.getClassName());
             databaseConnection.setDriverName(drv.getName());
-            databaseConnection.setUser(pw.getUser());
-            databaseConnection.setPassword(pw.getPassword());
-            databaseConnection.setDatabase(pw.getDatabaseUrl());
-            try {
-                databaseConnection.setDefaultSchema(pw.getUser());
-            } catch (Exception x) {
-                Logger.getLogger(ConnectionPanel.class.getName()).log(Level.FINE, x.getLocalizedMessage(), x);
-            }
             databaseConnection.setRememberPassword(databaseConnection.getPassword() != null && ! databaseConnection.getPassword().isEmpty());
             component = new NewConnectionPanel(pw, this, drv.getClassName(), databaseConnection);
             oldDriver = drv;
