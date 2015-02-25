@@ -46,7 +46,6 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -91,16 +90,15 @@ public class DeleteBranchCommand extends GitCommand {
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
-            runner(canceled, 0, new Parser() {
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output) {
+                public void outputParser(String output) throws GitException {
                 }
 
                 @Override
-                public void errorParser(String error) throws GitException {
+                protected void errorParser(String error) throws GitException {
                     //error: The branch 'new_branch' is not fully merged.
                     //If you are sure you want to delete it, run 'git branch -D new_branch'.                    
                     //
@@ -113,7 +111,8 @@ public class DeleteBranchCommand extends GitCommand {
                         }
                     }
                 }
-            });
+                
+            }.runCLI();
             
             //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
@@ -128,28 +127,4 @@ public class DeleteBranchCommand extends GitCommand {
         }
     }
     
-    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) throws GitException {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error);
-        }
-    }
-    
-    private abstract class Parser {
-        public abstract void outputParser(String output);
-        public void errorParser(String error) throws GitException {
-        }
-    }    
 }

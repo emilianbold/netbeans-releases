@@ -54,7 +54,6 @@ import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -142,20 +141,23 @@ public class CatCommand extends GitCommand {
             monitor.setCancelDelegate(canceled);
         }
         found = false;
-        String cmd = getCommandLine();
         try {
-            runner(canceled, 0, new Parser() {
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output) throws IOException {
-                    found = true;
-                    for(int i = 0; i < output.length(); i++)  {
-                        os.write(output.charAt(i));
+                public void outputParser(String output) throws GitException {
+                    try {
+                        found = true;
+                        for(int i = 0; i < output.length(); i++)  {
+                            os.write(output.charAt(i));
+                        }
+                    } catch (Exception e) {
+                        throw new GitException(e);
                     }
                 }
 
                 @Override
-                public void errorParser(String error) throws GitException.MissingObjectException {
+                protected void errorParser(String error) throws GitException {
                     //fatal: Invalid object name 'HEAD'.
                     //fatal: Path 'removed' exists on disk, but not in 'HEAD'.
                     for (String msg : error.split("\n")) { //NOI18N
@@ -164,8 +166,9 @@ public class CatCommand extends GitCommand {
                         }
                     }
                 }
-            });
-            
+                
+            }.runCLI();
+
             //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
@@ -182,31 +185,6 @@ public class CatCommand extends GitCommand {
                 }
             }
             //command.commandFinished();
-        }
-    }
-    
-    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) throws IOException, GitException.MissingObjectException {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {            
-            parser.errorParser(exitStatus.error);
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output);
-        }
-    }
-
-    private abstract class Parser {
-        public abstract void outputParser(String output) throws IOException;
-        public void errorParser(String error) throws GitException.MissingObjectException {
         }
     }
 }

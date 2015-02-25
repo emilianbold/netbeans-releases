@@ -53,7 +53,6 @@ import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -102,23 +101,22 @@ public class BlameCommand extends GitCommand {
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
         try {
             final LinkedHashMap<String, GitBlameContent> content = new LinkedHashMap<String, GitBlameContent>();
             final AtomicBoolean failed = new AtomicBoolean(false);
-            runner(canceled, 0, content, new Parser() {
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output, LinkedHashMap<String, GitBlameContent> content) {
+                public void outputParser(String output) throws GitException {
                     parseBlameOutput(output, content);
                 }
 
                 @Override
-                public void errorParser(String error) {
+                protected void errorParser(String error) throws GitException {
                     failed.set(true);
-                    super.errorParser(error); //To change body of generated methods, choose Tools | Templates.
                 }
-            });
+                
+            }.runCLI();
             if (!failed.get()) {
                 result = getClassFactory().createBlameResult(file, content, getRepository());
             }
@@ -130,25 +128,6 @@ public class BlameCommand extends GitCommand {
             }
         } finally {
             //command.commandFinished();
-        }
-    }
-    
-    private void runner(ProcessUtils.Canceler canceled, int command, LinkedHashMap<String, GitBlameContent> content, Parser parser) {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output, content);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error);
         }
     }
     
@@ -260,12 +239,6 @@ public class BlameCommand extends GitCommand {
         }
     }
 
-    private abstract class Parser {
-        public abstract void outputParser(String output, LinkedHashMap<String, GitBlameContent> content);
-        public void errorParser(String error){
-        }
-    }
-    
     private enum State {revision, header, line};
     
 }

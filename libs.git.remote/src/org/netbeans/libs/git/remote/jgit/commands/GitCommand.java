@@ -50,12 +50,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -78,7 +81,7 @@ public abstract class GitCommand {
     public final void execute () throws GitException {
         if (prepareCommand()) {
             try {
-                monitor.started(getCommandLine());
+                monitor.started(getCommandLine(0));
                 try {
                     AccessController.doPrivileged(new PrivilegedExceptionAction<Void>() {
                         @Override
@@ -166,9 +169,9 @@ public abstract class GitCommand {
         return res;
     }
     
-    protected String getCommandLine() {
+    protected String getCommandLine(int command) {
         StringBuilder sb = new StringBuilder(getExecutable()); //NOI18N
-        for(CharSequence s : args.get(0)) {
+        for(CharSequence s : args.get(command)) {
             sb.append(" ").append(s); //NOI18N
         }
         return sb.toString();
@@ -191,6 +194,41 @@ public abstract class GitCommand {
     private static final String MSG_WARNING = "warning:"; //NOI18N
     private static final String MSG_ERROR = "error:"; //NOI18N
     private static final String MSG_FATAL = "fatal:"; //NOI18N
+    
+    protected abstract class Runner {
+        private final ProcessUtils.Canceler canceled;
+        private final int command;
+        
+        protected Runner(ProcessUtils.Canceler canceled, int command) {
+            this.canceled = canceled;
+            this.command = command;
+        }
+        
+        protected void runCLI() throws GitException {
+            if(canceled.canceled()) {
+                return;
+            }
+            String cmd = getCommandLine(command);
+            ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
+            String executable = getExecutable();
+            String[] args = getCliArguments(command);
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
+            if(canceled.canceled()) {
+                return;
+            }
+            if (exitStatus.output!= null && exitStatus.isOK()) {
+                outputParser(exitStatus.output);
+            }
+            if (exitStatus.error != null && !exitStatus.isOK()) {
+                errorParser(exitStatus.error);
+            }
+        }
+        
+        protected abstract void outputParser(String output) throws GitException;
+        
+        protected void errorParser(String error) throws GitException {
+        }
+    }
     
     protected static final class Revision implements CharSequence {
         private String currentRevision = "place-holder";

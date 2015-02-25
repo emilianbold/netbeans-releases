@@ -42,7 +42,6 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,6 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
@@ -113,21 +111,23 @@ public class GetRemotesCommand extends GitCommand {
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        String cmd = getCommandLine();
+        String cmd = getCommandLine(0);
         try {
             remotes = new LinkedHashMap<>();
-            runner(canceled, 0, new Parser() {
+            new Runner(canceled, 0){
 
                 @Override
-                public void outputParser(String output) {
+                public void outputParser(String output) throws GitException {
                     parseRemoteOutput(output);
                 }
 
                 @Override
-                public void errorParser(String error) {
+                protected void errorParser(String error) throws GitException {
                     parseAddError(error);
                 }
-            });
+                
+            }.runCLI();
+
             //command.commandCompleted(exitStatus.exitCode);
         } catch (Throwable t) {
             if (canceled.canceled()) {
@@ -136,26 +136,6 @@ public class GetRemotesCommand extends GitCommand {
             }
         } finally {
             //command.commandFinished();
-        }
-    }
-    
-    private void runner(ProcessUtils.Canceler canceled, int command, Parser parser) {
-        if(canceled.canceled()) {
-            return;
-        }
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
-        String executable = getExecutable();
-        String[] args = getCliArguments(command);
-        
-        ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
-        if(canceled.canceled()) {
-            return;
-        }
-        if (exitStatus.output!= null && exitStatus.isOK()) {
-            parser.outputParser(exitStatus.output);
-        }
-        if (exitStatus.error != null && !exitStatus.isOK()) {
-            parser.errorParser(exitStatus.error);
         }
     }
     
@@ -191,12 +171,6 @@ public class GetRemotesCommand extends GitCommand {
     
     private void parseAddError(String error) {
         processMessages(error);
-    }
-    
-    private abstract class Parser {
-        public abstract void outputParser(String output);
-        public void errorParser(String error){
-        }
     }
     
     private static final class RemoteContainer {
