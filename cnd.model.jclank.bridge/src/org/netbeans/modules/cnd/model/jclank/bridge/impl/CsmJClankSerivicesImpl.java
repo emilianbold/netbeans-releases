@@ -71,7 +71,7 @@ public final class CsmJClankSerivicesImpl {
         assert out != null;
         assert err != null;
         Collection<ClankCompilationDataBase> dbs = CsmJClankCompilationDB.convertProjects(projects);
-        ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
+        ClankRunSettings settings = new ClankRunSettings();
         settings.out = out;
         settings.err = err;
         settings.progress = handle;
@@ -101,6 +101,7 @@ public final class CsmJClankSerivicesImpl {
                 return cancelled.get();
             }
         };
+        settings.IncludeInfoCallbacks = new CollectIncludeInfoCallback(err);
         ClankPreprocessorServices.preprocess(dbs, settings);
     }
     
@@ -131,8 +132,23 @@ public final class CsmJClankSerivicesImpl {
         settings.PrettyPrintTokens = printTokens;
         settings.TraceClankStatistics = printStatistics;
         settings.TraceStatisticsOS = llvm_out;
+        settings.IncludeInfoCallbacks = new CollectIncludeInfoCallback(llvm_err);
         ClankCompilationDataBase db = CsmJClankCompilationDB.convertNativeFileItems(Collections.singletonList(nfi), nfi.getName());
         ClankPreprocessorServices.preprocess(Collections.singletonList(db), settings);
     }    
+
+    private static class CollectIncludeInfoCallback extends TrackIncludeInfoCallback {
+
+        public CollectIncludeInfoCallback(raw_ostream llvm_err) {
+            super(llvm_err);
+        }
+
+        @Override
+        public void onExit(IncludeFileInfo file) {
+            if (file.isFile()) {
+                
+            }
+        }
+    }
 
 }
