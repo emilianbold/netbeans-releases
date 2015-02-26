@@ -57,12 +57,12 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.base.input.InputProcessor;
-import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.api.extexecution.base.input.InputReader;
-import org.netbeans.api.extexecution.base.input.InputReaderTask;
-import org.netbeans.api.extexecution.base.input.InputReaders;
-import org.netbeans.api.extexecution.base.input.LineProcessor;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.InputReader;
+import org.netbeans.api.extexecution.input.InputReaderTask;
+import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.openide.windows.InputOutput;
@@ -86,8 +86,10 @@ public final class WildflyOutputSupport {
     private static final ExecutorService LOG_FILE_SERVICE = Executors.newCachedThreadPool();
 
     private static final Pattern JBOSS_7_STARTED_ML = Pattern.compile(".*JBoss AS 7(\\..*)* \\d+ms .*");
-    private static final Pattern WILDFLY_STARTED_ML = Pattern.compile(".*JBAS015874: WildFly 8(\\..*)* \"WildFly\" started in \\d+ms .*");
-    private static final Pattern WILDFLY_STARTING_ML = Pattern.compile(".*JBAS015899: WildFly 8(\\..*)* \"WildFly\" starting");
+    private static final Pattern WILDFLY_STARTED_ML = Pattern.compile(".*JBAS015874: WildFly 8(\\..*)* .* started in \\d+ms .*");
+    private static final Pattern WILDFLY_STARTING_ML = Pattern.compile(".*JBAS015899: WildFly 8(\\..*)* .* starting");
+    private static final Pattern WILDFLY9_STARTED_ML = Pattern.compile(".*WFLYSRV0050: WildFly Full 9(\\..*)* .* started in \\d+ms .*");
+    private static final Pattern WILDFLY9_STARTING_ML = Pattern.compile(".*WFLYSRV0049: WildFly Full 9(\\..*)* .* starting");
 
     private static final Pattern EAP6_STARTED_ML = Pattern.compile(".*JBAS015874: JBoss EAP 6\\.[0-9]?.[0-9]?\\.GA .* \\d+ms .*");
     private static final Pattern EAP6_STARTING_ML = Pattern.compile(".*JBAS015899: JBoss EAP 6\\.[0-9]?.[0-9]?\\.GA .*");
@@ -136,15 +138,14 @@ public final class WildflyOutputSupport {
         reset();
 
         ExecutionDescriptor descriptor = DESCRIPTOR.inputOutput(io);
-        descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
+        descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor(profiler)));
             }
-
         });
-        descriptor = descriptor.errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
+        descriptor = descriptor.errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -195,7 +196,7 @@ public final class WildflyOutputSupport {
         reset();
 
         InputReader reader = InputReaders.forFile(file, Charset.defaultCharset());
-        InputReaderTask localFileTask = InputReaderTask.newTask(reader, InputProcessors.printing(io.getOut()));
+        InputReaderTask localFileTask = InputReaderTask.newTask(reader, InputProcessors.printing(io.getOut(), false));
         LOG_FILE_SERVICE.submit(localFileTask);
         synchronized (this) {
             fileTask = localFileTask;
@@ -338,6 +339,7 @@ public final class WildflyOutputSupport {
                     || line.indexOf("Starting JBoss (Microcontainer)") > -1 // JBoss 5.0 message // NOI18N
                     || line.indexOf("Starting JBossAS") > -1
                     || WILDFLY_STARTING_ML.matcher(line).matches()
+                    || WILDFLY9_STARTING_ML.matcher(line).matches()
                     || EAP6_STARTING_ML.matcher(line).matches()) { // JBoss 6.0 message // NOI18N
                 LOGGER.log(Level.FINER, "STARTING message fired"); // NOI18N
                 //fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS")); // NOI18N
@@ -350,6 +352,7 @@ public final class WildflyOutputSupport {
                     || line.indexOf("started (with errors) in") > -1) // JBoss 7 with some errors (include wrong deployments) // NOI18N
                     || JBOSS_7_STARTED_ML.matcher(line).matches()
                     || WILDFLY_STARTED_ML.matcher(line).matches()
+                    || WILDFLY9_STARTED_ML.matcher(line).matches()
                     || EAP6_STARTED_ML.matcher(line).matches()) {
                 LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
 
