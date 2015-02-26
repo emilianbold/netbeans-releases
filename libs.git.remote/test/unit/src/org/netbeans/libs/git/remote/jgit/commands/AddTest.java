@@ -232,7 +232,13 @@ public class AddTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         Monitor m = new Monitor();
         client.addNotificationListener(m);
-        client.add(new VCSFileProxy[] { folder1, folder2 }, m);
+        try {
+            client.add(new VCSFileProxy[] { folder1, folder2 }, m);
+            fail();
+        } catch (GitException ex) {
+            // add do not allow ignored files
+        }
+        client.add(new VCSFileProxy[] { folder1 }, m);
         assertEquals(new HashSet<VCSFileProxy>(Arrays.asList(file1_2)), m.notifiedFiles);
         assertDirCacheSize(1);
         assertDirCacheEntry(Arrays.asList(file1_2));
@@ -378,7 +384,10 @@ public class AddTest extends AbstractGitTestCase {
         assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         // nested should be added as gitlink
+        if (StatusCommand.KIT)
         assertStatus(statuses, workDir, nested, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
+        else
+        assertStatus(statuses, workDir, nested, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false);
 //        DirCacheEntry e = repository.getRepository().readDirCache().getEntry("nested");
 //        assertEquals(FileMode.GITLINK, e.getFileMode());
 //        assertEquals(VCSFileProxySupport.length(nested), e.getLength());
