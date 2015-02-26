@@ -89,8 +89,6 @@ public class CheckoutRevisionCommand extends GitCommand {
                 }
                 
             }.runCLI();
-
-            //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -98,8 +96,6 @@ public class CheckoutRevisionCommand extends GitCommand {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
 }

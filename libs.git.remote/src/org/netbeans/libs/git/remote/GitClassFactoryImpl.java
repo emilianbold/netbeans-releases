@@ -81,8 +81,8 @@ final class GitClassFactoryImpl extends GitClassFactory {
     }
 
     @Override
-    public GitFileInfo createFileInfo (VCSFileProxy file, String oldPath, GitFileInfo.Status status, VCSFileProxy originalFile, String originalPath) {
-        return new GitFileInfo(file, oldPath, status, originalFile, originalPath);
+    public GitFileInfo createFileInfo (VCSFileProxy file, String relativePath, GitFileInfo.Status status, VCSFileProxy originalFile, String originalPath) {
+        return new GitFileInfo(file, relativePath, status, originalFile, originalPath);
     }
 
     @Override

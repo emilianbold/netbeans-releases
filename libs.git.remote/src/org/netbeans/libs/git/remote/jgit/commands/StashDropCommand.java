@@ -89,15 +89,13 @@ public class StashDropCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                 }
             }.runCLI();
-
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if(canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }        
     }
 }

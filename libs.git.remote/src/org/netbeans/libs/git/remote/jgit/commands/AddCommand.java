@@ -77,14 +77,7 @@ public class AddCommand extends GitCommand {
         if (roots.length == 0) {
             addArgument(0, ".");
         } else {
-            for (VCSFileProxy root : roots) {
-                String relativePath = Utils.getRelativePath(getRepository().getLocation(), root);
-                if (relativePath.isEmpty()) {
-                    addArgument(0, ".");
-                } else {
-                    addArgument(0, relativePath);
-                }
-            }
+            addExistingFiles(0, roots);
         }
     }
     
@@ -108,15 +101,13 @@ public class AddCommand extends GitCommand {
                 }
                 
             }.runCLI();
-            
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
     

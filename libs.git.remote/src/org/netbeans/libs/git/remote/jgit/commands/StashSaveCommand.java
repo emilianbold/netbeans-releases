@@ -111,15 +111,13 @@ public class StashSaveCommand extends GitCommand {
                 }
             }.runCLI();
             stash = getClassFactory().createRevisionInfo(status, getRepository());
-            
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if(canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }        
     }
 }

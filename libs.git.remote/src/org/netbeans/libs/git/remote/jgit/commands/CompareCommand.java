@@ -49,6 +49,7 @@ import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -60,6 +61,7 @@ public class CompareCommand extends GitCommand {
     private final VCSFileProxy[] roots;
     private final String revisionFirst;
     private final String revisionSecond;
+    private final ProgressMonitor monitor;
 
     public CompareCommand (JGitRepository repository, String revisionFirst, String revisionSecond, VCSFileProxy[] roots,
             GitClassFactory gitFactory, ProgressMonitor monitor) {
@@ -68,18 +70,9 @@ public class CompareCommand extends GitCommand {
         this.revisionFirst = revisionFirst;
         this.revisionSecond = revisionSecond;
         statuses = new LinkedHashMap<VCSFileProxy, GitRevisionInfo.GitFileInfo>();
+        this.monitor = monitor;
     }
     
-    @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "diff"); //NOI18N
-        addArgument(0, "--raw"); //NOI18N
-        addArgument(0, revisionFirst);
-        addArgument(0, revisionSecond);
-        addFiles(0, roots);
-    }
-
     @Override
     protected boolean prepareCommand () throws GitException {
         final boolean exists = getRepository().getMetadataLocation().exists();
@@ -88,39 +81,111 @@ public class CompareCommand extends GitCommand {
         }
         return exists;
     }
-
-    @Override
-    protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        TreeWalk walk = new TreeWalk(repository);
-//        try {
-//            walk.reset();
-//            walk.setRecursive(true);
-//            walk.addTree(Utils.findCommit(repository, revisionFirst).getTree());
-//            walk.addTree(Utils.findCommit(repository, revisionSecond).getTree());
-//            Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
-//            if (pathFilters.isEmpty()) {
-//                walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
-//            } else {
-//                walk.setFilter(AndTreeFilter.create(new TreeFilter[] { 
-//                    TreeFilter.ANY_DIFF,
-//                    PathFilter.ANY_DIFF,
-//                    PathFilterGroup.create(pathFilters)
-//                }));
-//            }
-//            List<GitRevisionInfo.GitFileInfo> infos = Utils.getDiffEntries(getRepository(), walk, getClassFactory());
-//            for (GitRevisionInfo.GitFileInfo info : infos) {
-//                statuses.put(info.getFile(), info);
-//            }
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        } finally {
-//            walk.release();
-//        }
-    }
-
+    
     public Map<VCSFileProxy, GitRevisionInfo.GitFileInfo> getFileDifferences () {
         return statuses;
     }
+
+    @Override
+    protected void prepare() throws GitException {
+        setCommandsNumber(2);
+        super.prepare();
+        addArgument(0, "diff"); //NOI18N
+        addArgument(0, "--raw"); //NOI18N
+        addArgument(0, "--no-renames"); //NOI18N
+        addArgument(0, revisionFirst);
+        addArgument(0, revisionSecond);
+        addArgument(0, "--"); //NOI18N
+        addFiles(0, roots);
+        addArgument(1, "diff"); //NOI18N
+        addArgument(1, "--raw"); //NOI18N
+        addArgument(1, "--find-renames"); //NOI18N
+        addArgument(1, revisionFirst);
+        addArgument(1, revisionSecond);
+        addArgument(1, "--"); //NOI18N
+        addFiles(1, roots);
+    }
+
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    parseDiffOutput(output, statuses);
+                }
+
+            }.runCLI();
+            boolean hasDeleted = false;
+            for(GitRevisionInfo.GitFileInfo info : statuses.values()) {
+                if (info.getStatus() == GitRevisionInfo.GitFileInfo.Status.REMOVED) {
+                    hasDeleted = true;
+                    break;
+                }
+            }
+            if (hasDeleted) {
+                new Runner(canceled, 1){
+
+                    @Override
+                    public void outputParser(String output) throws GitException {
+                        parseDiffOutput(output, statuses);
+                    }
+
+                }.runCLI();
+            }
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
+    }
+    
+    private void parseDiffOutput(String output, LinkedHashMap<VCSFileProxy, GitRevisionInfo.GitFileInfo> statuses) {
+        //:100644 100644 ee73c61... b1b7161... M	file
+        //
+        //:100644 000000 7a65a3d... 0000000... D	file
+        //:000000 100644 0000000... 7a65a3d... A	file2
+        //
+        //:100644 100644 7a65a3d... 7a65a3d... R100	file	file2
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith(":")) {
+                String[] s = line.split("\\s");
+                if (s.length == 6) {
+                    String file = s[s.length-1];
+                    String st = s[s.length-2].substring(0, 1);
+                    GitRevisionInfo.GitFileInfo.Status gitSt =  GitRevisionInfo.GitFileInfo.Status.UNKNOWN;
+                    if ("A".equals(st)) {
+                        gitSt =  GitRevisionInfo.GitFileInfo.Status.ADDED;
+                    } else if ("M".equals(st)) {
+                        gitSt =  GitRevisionInfo.GitFileInfo.Status.MODIFIED;
+                    } else if ("R".equals(st)) {
+                        gitSt =  GitRevisionInfo.GitFileInfo.Status.RENAMED;
+                    } else if ("C".equals(st)) {
+                        gitSt =  GitRevisionInfo.GitFileInfo.Status.COPIED;
+                    } else if ("D".equals(st)) {
+                        gitSt =  GitRevisionInfo.GitFileInfo.Status.REMOVED;
+                    }
+                    VCSFileProxy f = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
+                    statuses.put(f, getClassFactory().createFileInfo(f, file, gitSt, null, null));
+                } else if (s.length == 7) {
+                    String fileTo = s[s.length-1];
+                    String fileFrom = s[s.length-2];
+                    GitRevisionInfo.GitFileInfo.Status gitSt =  GitRevisionInfo.GitFileInfo.Status.RENAMED;
+                    VCSFileProxy f = VCSFileProxy.createFileProxy(getRepository().getLocation(), fileTo);
+                    VCSFileProxy fOld = VCSFileProxy.createFileProxy(getRepository().getLocation(), fileFrom);
+                    statuses.put(f, getClassFactory().createFileInfo(f, fileTo, gitSt, fOld, fileFrom));
+                }
+                continue;
+            }
+        }
+    }
+    
 }

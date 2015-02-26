@@ -819,7 +819,7 @@ else    assertNotNull(log[1].getBranches().get("newbranch"));
         client.commit(files, "short message\n\n\n", null, null, NULL_PROGRESS_MONITOR);
         assertEquals("short message", client.log(GitConstants.HEAD, NULL_PROGRESS_MONITOR).getShortMessage());
         
-        write(f, "m1");
+        write(f, "m2");
         add(f);
         client.commit(files, "short message\nbla\nbla\nbla", null, null, NULL_PROGRESS_MONITOR);
         assertEquals("short message", client.log(GitConstants.HEAD, NULL_PROGRESS_MONITOR).getShortMessage());

@@ -107,15 +107,13 @@ public class StashListCommand extends GitCommand {
             for(Map.Entry<String, GitRevisionInfo.GitRevCommit> entry : statuses.entrySet()) {
                 addRevision(getClassFactory().createRevisionInfo(entry.getValue(), getRepository()));
             }
-            
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if(canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }        
     }
     

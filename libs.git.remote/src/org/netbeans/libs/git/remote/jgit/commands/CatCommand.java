@@ -160,8 +160,6 @@ public class CatCommand extends GitCommand {
                 }
                 
             }.runCLI();
-
-            //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -176,7 +174,6 @@ public class CatCommand extends GitCommand {
                 } catch (IOException ex) {
                 }
             }
-            //command.commandFinished();
         }
     }
 }

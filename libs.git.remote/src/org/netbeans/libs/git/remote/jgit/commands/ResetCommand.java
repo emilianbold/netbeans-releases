@@ -98,6 +98,7 @@ public class ResetCommand extends GitCommand {
             addArgument(0, revisionStr);
         } else {
             addArgument(0, revisionStr);
+            addArgument(0, "--"); //NOI18N
             addFiles(0, roots);
         }
     }
@@ -121,16 +122,28 @@ public class ResetCommand extends GitCommand {
                     //git --no-pager reset --soft 153c22a9a301de1bb43639f6b811d18d7703e5e8
                     //
                 }
+
+                @Override
+                protected void outputErrorParser(String output, String error, int exitCode) throws GitException {
+                    // command can returns list unstaged and exit code 1.
+                    // errr is empty
+                }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    if (error.isEmpty()) {
+                        return;
+                    }
+                    super.errorParser(error); //To change body of generated methods, choose Tools | Templates.
+                }
             }.runCLI();
-            
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if(canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }        
     }
 }
