@@ -122,7 +122,8 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         }
         final FileObject projectDirFO = FileUtil.toFileObject(projectDir);
 
-        CreateProjectProperties props = new CreateProjectProperties(projectDirFO, name);
+        CreateProjectProperties props = new CreateProjectProperties(projectDirFO, name)
+                .setStartFile("index.html"); // NOI18N
 
         OnlineSiteTemplate siteTemplate = getSiteTemplate();
         if (siteTemplate != null) {
@@ -141,9 +142,12 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
 
         FileObject siteRoot = project.getProjectDirectory().getFileObject(props.getSiteRootFolder());
         assert siteRoot != null;
-        FileObject startFile = siteRoot.getFileObject(props.getStartFile());
+        String startFile = props.getStartFile();
         if (startFile != null) {
-            files.add(startFile);
+            FileObject startFileFo = siteRoot.getFileObject(startFile);
+            if (startFileFo != null) {
+                files.add(startFileFo);
+            }
         }
 
         File parent = projectDir.getParentFile();
