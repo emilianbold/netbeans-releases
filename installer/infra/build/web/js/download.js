@@ -254,7 +254,7 @@ function get_download_button(id, enabled, bit) {
     if(id!=='')
        var img = DOWNLOAD_IMG;
        if(bit.length>0) {
-           img=DOWNLOAD_IMG.replace(/\.gif/g,"_"+bit+"\.gif");
+           img=DOWNLOAD_IMG.replace(/download/g,"download_"+bit);
        }
        return '<a href="javascript: download(\'' + id + '\',\''+bit+'\')"     id="' + id + '_name"> ' + img + '</a>';
    } else {

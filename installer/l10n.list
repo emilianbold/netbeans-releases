@@ -22,8 +22,12 @@ installer/engine/branding/**/src/native/launcher/**/launcher.properties
 installer/infra/build/web/language.properties
 installer/infra/build/web/js/*_strings.js
 installer/infra/build/web/img/download.gif
+installer/infra/build/web/img/download_x86.gif
+installer/infra/build/web/img/download_x64.gif
 installer/infra/build/web/img/download_d.gif
 installer/infra/build/web/img/download_h.gif
+installer/infra/build/web/img/download_x86_h.gif
+installer/infra/build/web/img/download_x64_h.gif
 
 #i18n files for new native mac installer
 installer/mac/newbuild/Bundle.properties
