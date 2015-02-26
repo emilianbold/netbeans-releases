@@ -94,7 +94,7 @@ public class LoanApplicationTest extends TestCase implements TestSchemaReadWrite
     private void checkRead(Schema schema) throws Exception {
         String xpath = "/xs:schema/xs:element[@name='auto-loan-application']/xs:complexType/xs:sequence/xs:element[@name='loan-type']";
         SchemaComponent sc = new FindSchemaComponentFromDOM().findComponent(schema, xpath);
-        assertTrue("loan-type", sc instanceof LocalElement);
+        assertTrue("loan-type " + sc, sc instanceof LocalElement);
         LocalElement le = (LocalElement) sc;
         GlobalSimpleType gst = (GlobalSimpleType) le.getType().get();
         assertEquals("loan-type type name", "LoanType", gst.getName());
@@ -170,10 +170,10 @@ public class LoanApplicationTest extends TestCase implements TestSchemaReadWrite
     }
     
     public void testPrimitiveTypePrefix() throws Exception {
-        SchemaModelImpl model = (SchemaModelImpl) Util.loadSchemaModel("resources/Empty_loanApp.xsd");
+        SchemaModelImpl model = (SchemaModelImpl) Util.loadSchemaModel("resources/Empty_loanApp_prefix.xsd");
         Schema s = model.getSchema();
         SchemaComponentFactory factory = model.getFactory();
-        
+
         GlobalElement ge1 = model.getFactory().createGlobalElement();
         ge1.setName("auto-loan-application");
         ge1.setType(factory.createGlobalReference(
@@ -181,7 +181,7 @@ public class LoanApplicationTest extends TestCase implements TestSchemaReadWrite
         model.startTransaction();
         model.getSchema().addElement(ge1);
         model.endTransaction();
-        
+
         //Util.dumpToFile(model.getBaseDocument(), new File("c:/temp/test.xsd"));
         assertEquals("xs:string", ge1.getType().getRefString());
     }

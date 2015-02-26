@@ -49,7 +49,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
@@ -327,13 +329,14 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         addedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
         classIndex.removeClassIndexListener(listener);
-        SourceUtils.waitScanFinished(); // otherwise the PMO will initialize temporarily
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
+        Future<Void> f = helper.runJavaSourceTaskWhenScanFinished(new Callable<Void>() { // otherwise the PMO will initialize temporarily
+            public Void call() {
                 assertEquals(0, manager.getObjects().size());
                 assertFalse(manager.temporary);
+                return null;
             }
         });
+        f.get(EVENT_TIMEOUT, TimeUnit.SECONDS);
         // modifying the class to be an entity class
         final AtomicBoolean departmentChanged = new AtomicBoolean();
         final CountDownLatch changedLatch = new CountDownLatch(1);

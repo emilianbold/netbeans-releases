@@ -70,7 +70,19 @@ public class RootNodeTest extends NbTestCase {
         clearWorkDir();
     }
 
-
+    @Override
+    protected void tearDown() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Servers/Actions");
+        FileObject m = fo.getFileObject(MyAction.class.getName().replace('.', '-') + ".instance");
+        if (m != null) {
+            m.delete();
+        }
+        FileObject c = fo.getFileObject("A2.instance");
+        if (c != null) {
+            c.delete();
+        }
+        super.tearDown();
+    }
 
     public void testGetActions() throws Exception {
         RootNode rn = RootNode.getInstance();
@@ -112,6 +124,9 @@ public class RootNodeTest extends NbTestCase {
                     afo.setAttribute("instanceCreate", a);
                     afo.setAttribute("property-myprop", "true");
                     afo.setAttribute("position", 98);
+                    FileObject x = fo.createData(MyAction.class.getName().replace('.', '-') + ".instance");
+                    x.setAttribute("position", 37);
+                    MyAction a = MyAction.get(MyAction.class);
                 } catch (IOException ex) {
                     this.t = ex;
                 }
