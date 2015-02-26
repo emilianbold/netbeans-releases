@@ -257,6 +257,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         protected String getCurrentPluginVersion(){
             File extensionFile = InstalledFileLocator.getDefault().locate(
                     EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
+            if (extensionFile == null) {
+                Logger.getLogger(ChromeExtensionManager.class.getCanonicalName()).
+                    info("Could not find chrome extension in installation directory!"); // NOI18N
+                return null;
+            }
             String content = Utils.readZip( extensionFile, "manifest.json");    // NOI18N
             int index = content.indexOf(VERSION);
             if ( index == -1){
