@@ -348,7 +348,7 @@ public final class ResourceStringLoader {
                 invalid = new HashSet<>();
                 for (FileObject f : invalidate) {
                     Reference<Holder> ref = loaded.get(f);
-                    Holder h = ref.get();
+                    Holder h = ref != null ? ref.get() : null;
                     if (h == null) {
                         LOG.fine("Found expired holder for " + f);
                         loaded.remove(f);
