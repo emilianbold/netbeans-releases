@@ -128,15 +128,15 @@ public class LogCommand extends GitCommand {
         if (revision != null) {
             addArgument(0, "--no-walk"); //NOI18N
             addArgument(0, revision);
-        } else if (criteria.getRevisionTo() != null && criteria.getRevisionFrom() != null) {
+        } else if (criteria != null && criteria.getRevisionTo() != null && criteria.getRevisionFrom() != null) {
             if (criteria.getRevisionFrom().equals(criteria.getRevisionTo())) {
                 addArgument(0, criteria.getRevisionFrom());
             } else {
                 addArgument(0, criteria.getRevisionFrom()+"^.."+criteria.getRevisionTo());
             }
-        } else if (criteria.getRevisionTo() != null) {
+        } else if (criteria != null && criteria.getRevisionTo() != null) {
             addArgument(0, criteria.getRevisionTo());
-        } else if (criteria.getRevisionFrom() != null) {
+        } else if (criteria != null && criteria.getRevisionFrom() != null) {
             addArgument(0, criteria.getRevisionFrom()+"^..");
         } else {
             addArgument(0, "--all");
@@ -206,6 +206,7 @@ public class LogCommand extends GitCommand {
                             throw new GitException.MissingObjectException(GitConstants.HEAD ,GitObjectType.COMMIT);
                         }
                     }
+                    super.errorParser(error);
                 }
                 
             }.runCLI();
@@ -226,14 +227,13 @@ public class LogCommand extends GitCommand {
                     revisions.add(getClassFactory().createRevisionInfo(entry.getValue(), getRepository()));
                 }
             }
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
     

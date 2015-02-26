@@ -219,6 +219,8 @@ public abstract class GitCommand {
             }
             if (exitStatus.output!= null && exitStatus.isOK()) {
                 outputParser(exitStatus.output);
+            } else {
+                outputErrorParser(exitStatus.output, exitStatus.error, exitStatus.exitCode);
             }
             if (exitStatus.error != null && !exitStatus.isOK()) {
                 errorParser(exitStatus.error);
@@ -228,6 +230,10 @@ public abstract class GitCommand {
         protected abstract void outputParser(String output) throws GitException;
         
         protected void errorParser(String error) throws GitException {
+            throw new GitException("#"+cmd+"\n"+error);
+        }
+
+        protected void outputErrorParser(String output, String error, int exitCode) throws GitException {
         }
     }
     

@@ -118,18 +118,13 @@ public class CreateBranchCommand extends GitCommand {
                 }
                 
             }.runCLI();
-            if (!failed.get()) {
+            if (failed.get()) {
                 new Runner(canceled, 1) {
 
                     @Override
                     public void outputParser(String output) throws GitException {
                         ListBranchCommand.parseBranches(output, getClassFactory(), branches);
                     }
-
-                    @Override
-                    protected void errorParser(String error) throws GitException {
-                    }
-
                 }.runCLI();
             }
             new Runner(canceled, 2) {
@@ -138,26 +133,19 @@ public class CreateBranchCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                     ListBranchCommand.parseBranches(output, getClassFactory(), branches);
                 }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                }
-
             }.runCLI();
             branch = branches.get(branchName);
             if (branch == null) {
                 LOG.log(Level.WARNING, "Branch {0}/{1} probably created but not in the branch list: {2}",
                         new Object[] { branchName, branchName, branches.keySet() });
             }
-            
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
 }

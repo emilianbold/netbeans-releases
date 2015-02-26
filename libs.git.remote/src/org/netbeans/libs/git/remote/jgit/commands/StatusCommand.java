@@ -224,14 +224,13 @@ public class StatusCommand extends StatusCommandBase {
                 }
                 processOutput(list, canceled);
             }
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if(canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }        
     }
 

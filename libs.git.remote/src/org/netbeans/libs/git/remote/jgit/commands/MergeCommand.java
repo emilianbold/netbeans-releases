@@ -110,6 +110,7 @@ public class MergeCommand extends GitCommand {
         }
         try {
             final MergeResultContainer merge = new GitMergeResult.MergeResultContainer();
+            merge.mergeStatus = MergeStatus.NOT_SUPPORTED;
             new Runner(canceled, 0){
 
                 @Override
@@ -118,11 +119,14 @@ public class MergeCommand extends GitCommand {
                 }
 
                 @Override
+                protected void outputErrorParser(String output, String error, int exitCode) throws GitException {
+                    parseMergeOutput(output, merge);
+                }
+
+                @Override
                 protected void errorParser(String error) throws GitException {
                     parseMergeError(error, merge);
                 }
-                
-                
             }.runCLI();
             if (merge.mergeStatus == MergeStatus.MERGED) {
                 final GitRevisionInfo.GitRevCommit status = new GitRevisionInfo.GitRevCommit();
@@ -140,8 +144,6 @@ public class MergeCommand extends GitCommand {
             }
             
             result = getClassFactory().createMergeResult(merge, this.getRepository().getLocation());
-            
-            //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -149,40 +151,7 @@ public class MergeCommand extends GitCommand {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
-//        Repository repository = getRepository().getRepository();
-//        org.eclipse.jgit.api.MergeCommand command = new Git(repository).merge();
-//        setFastForward(command);
-//        Ref ref = null;
-//        try {
-//            ref = repository.getRef(revision);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
-//
-//        if (ref == null) {
-//            command.include(Utils.findCommit(repository, revision));
-//        } else {
-//            String msg = commitMessage;
-//            if (msg == null) {
-//                msg = Utils.getRefName(ref);
-//            }
-//            command.include(msg, ref.getTarget().getObjectId());
-//        }
-//        try {
-//            result = getClassFactory().createMergeResult(command.call(), getRepository().getLocation());
-//        } catch (org.eclipse.jgit.api.errors.CheckoutConflictException ex) {
-//            parseConflicts(ex);
-//        } catch (JGitInternalException ex) {
-//            if (ex.getCause() instanceof CheckoutConflictException) {
-//                parseConflicts(ex.getCause());
-//            }
-//            throw new GitException(ex);
-//        } catch (GitAPIException ex) {
-//            throw new GitException(ex);
-//        }
     }
     
     private void parseMergeOutput(String output, MergeResultContainer merge) {
@@ -205,8 +174,10 @@ public class MergeCommand extends GitCommand {
         //Merge made by the 'recursive' strategy.
         // file |    2 +-
         // 1 file changed, 1 insertion(+), 1 deletion(-)
-        merge.mergeStatus = MergeStatus.NOT_SUPPORTED;
-        System.err.println(output);
+        //
+        //Auto-merging f1
+        //CONFLICT (content): Merge conflict in f1
+        //Automatic merge failed; fix conflicts and then commit the result.
         for (String line : output.split("\n")) { //NOI18N
             if (line.startsWith("Updating ")) {
                 String s = line.substring(9).trim();
@@ -252,6 +223,10 @@ public class MergeCommand extends GitCommand {
                 merge.mergeStatus = MergeStatus.CONFLICTING;
                 continue;
             }
+            if (line.startsWith("CONFLICT")) {
+                merge.mergeStatus = MergeStatus.CONFLICTING;
+                continue;
+            }
         }
     }
     
@@ -261,14 +236,18 @@ public class MergeCommand extends GitCommand {
         //	file2
         //Please, commit your changes or stash them before you can merge.
         //Aborting        
-        merge.mergeStatus = MergeStatus.NOT_SUPPORTED;
-        System.err.println(output);
+        //
+        //"fatal: Not possible to fast-forward, aborting."
         for (String line : output.split("\n")) { //NOI18N
             if (line.startsWith("\t")) {
                 String file = line.substring(1).trim();
                 continue;
             }
             if (line.startsWith("Abort")) {
+                merge.mergeStatus = MergeStatus.ABORTED;
+                continue;
+            }
+            if (line.startsWith("fatal:") && line.contains("aborting")) {
                 merge.mergeStatus = MergeStatus.ABORTED;
                 continue;
             }

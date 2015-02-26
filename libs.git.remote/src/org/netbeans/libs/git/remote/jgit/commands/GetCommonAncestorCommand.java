@@ -95,14 +95,17 @@ public class GetCommonAncestorCommand extends GitCommand {
         }
         try {
             final GitRevCommit status = new GitRevCommit();
-            
-            new Runner(canceled, 0){
+            if (revisions.length != 1) {
+                new Runner(canceled, 0){
 
-                @Override
-                public void outputParser(String output) throws GitException {
-                    parseCommit(output, status);
-                }
-            }.runCLI();
+                    @Override
+                    public void outputParser(String output) throws GitException {
+                        parseCommit(output, status);
+                    }
+                }.runCLI();
+            } else {
+                status.revisionCode = revisions[0];
+            }
             
             if (status.revisionCode != null) {
                 revisionPlaseHolder.setContent(status.revisionCode);
@@ -118,8 +121,6 @@ public class GetCommonAncestorCommand extends GitCommand {
                 return;
             }
             revision = getClassFactory().createRevisionInfo(status, getRepository());
-            
-            //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -127,8 +128,6 @@ public class GetCommonAncestorCommand extends GitCommand {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
     

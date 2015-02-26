@@ -161,15 +161,13 @@ public class CreateTagCommand extends GitCommand {
                 }.runCLI();
                 tag = getClassFactory().createTag(container);
             }
-            
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
     

@@ -44,6 +44,7 @@ package org.netbeans.libs.git.remote;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.libs.git.remote.jgit.JGitConfig;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -169,22 +170,16 @@ public final class GitRepository {
      * @since 1.26
      */
     public FastForwardOption getDefaultFastForwardOption () throws GitException {
-//        JGitRepository repository = getRepository();
-//        repository.increaseClientUsage();
-//        try {
-//            MergeConfig cfg = MergeConfig.getConfigForCurrentBranch(repository.getRepository());
-//            MergeCommand.FastForwardMode mode = cfg.getFastForwardMode();
-//            switch (mode) {
-//                case FF_ONLY:
-//                    return FastForwardOption.FAST_FORWARD_ONLY;
-//                case NO_FF:
-//                    return FastForwardOption.NO_FAST_FORWARD;
-//                default:
-                    return FastForwardOption.FAST_FORWARD;
-//            }
-//        } finally {
-//            repository.decreaseClientUsage();
-//        }
+        JGitRepository repository = getRepository();
+        JGitConfig config = repository.getConfig();
+        config.load();
+        String string = config.getString(JGitConfig.CONFIG_KEY_MERGE, null, JGitConfig.CONFIG_KEY_FF);
+        if ("only".equals(string)) {
+            return FastForwardOption.FAST_FORWARD_ONLY;
+        } else if ("false".equals(string)) {
+            return FastForwardOption.NO_FAST_FORWARD;
+        }
+        return FastForwardOption.FAST_FORWARD;
     }
 
     private synchronized JGitRepository getRepository () {

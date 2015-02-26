@@ -99,8 +99,6 @@ public class InitRepositoryCommand extends GitCommand {
             cfg.setBoolean(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_BARE, false);
             cfg.unset(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_AUTOCRLF);
             cfg.save();
-
-            //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -108,24 +106,7 @@ public class InitRepositoryCommand extends GitCommand {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            if (!(workDir.exists() || VCSFileProxySupport.mkdirs(workDir))) {
-//                throw new GitException(MessageFormat.format(Utils.getBundle(InitRepositoryCommand.class).getString("MSG_Exception_CannotCreateFolder"), workDir.getPath())); //NOI18N
-//            }
-//            repository.create();
-//            StoredConfig cfg = repository.getConfig();
-//            cfg.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_BARE, false);
-//            cfg.unset(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF);
-//            cfg.save();
-//        } catch (IllegalStateException ex) {
-//            throw new GitException(ex);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
     }
     
     @Override
