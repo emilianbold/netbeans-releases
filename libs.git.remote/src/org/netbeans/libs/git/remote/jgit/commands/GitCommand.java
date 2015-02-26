@@ -148,6 +148,21 @@ public abstract class GitCommand {
          }
     }
 
+    public final void addExistingFiles(int command, VCSFileProxy... files) {
+        for (VCSFileProxy root : files) {
+            if (!root.exists()) {
+                //skip unexisting file
+                continue;
+            }
+            String relativePath = Utils.getRelativePath(getRepository().getLocation(), root);
+            if (relativePath.isEmpty()) {
+                addArgument(0, ".");
+            } else {
+                addArgument(0, relativePath);
+            }
+        }
+    }
+    
     public final String getExecutable() {
         return "git"; //NOI18N
     }

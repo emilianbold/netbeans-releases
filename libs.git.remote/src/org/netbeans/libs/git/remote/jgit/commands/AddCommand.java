@@ -77,18 +77,7 @@ public class AddCommand extends GitCommand {
         if (roots.length == 0) {
             addArgument(0, ".");
         } else {
-            for (VCSFileProxy root : roots) {
-                if (!root.exists()) {
-                    //skip unexisting file
-                    continue;
-                }
-                String relativePath = Utils.getRelativePath(getRepository().getLocation(), root);
-                if (relativePath.isEmpty()) {
-                    addArgument(0, ".");
-                } else {
-                    addArgument(0, relativePath);
-                }
-            }
+            addExistingFiles(0, roots);
         }
     }
     

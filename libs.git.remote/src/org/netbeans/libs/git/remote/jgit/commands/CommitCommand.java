@@ -104,19 +104,7 @@ public class CommitCommand extends GitCommand {
             //addArgument(0, "--commiter="+commiter.toString());
         }
         addArgument(0, "--"); //NOI18N
-        for (VCSFileProxy root : roots) {
-            if (!root.exists()) {
-                //skip unexisting file
-                continue;
-            }
-            String relativePath = Utils.getRelativePath(getRepository().getLocation(), root);
-            if (relativePath.isEmpty()) {
-                addArgument(0, ".");
-            } else {
-                addArgument(0, relativePath);
-            }
-        }
-        //addFiles(0, roots);
+        addExistingFiles(0, roots);
         
         addArgument(1, "log"); //NOI18N
         addArgument(1, "--raw"); //NOI18N
