@@ -104,11 +104,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
     static class ChromeExtensionManager extends AbstractBrowserExtensionManager {
 
-        private static final String LAST_USED = "\"last_used\":";               // NOI18N
-
         private static final String VERSION = "\"version\":";                   // NOI18N
-
-        private static final String STATE = "\"state\":";                       // NOI18N
 
         private static final String PLUGIN_PUBLIC_KEY =
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDgo89CrO8f/2srD2BGUP9+dG4I" +
@@ -164,8 +160,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 JSONObject extension = (JSONObject)e.getValue();
                 if (extension != null) {
                     String path = (String)extension.get("path");
-                    if (path != null && (path.indexOf("/extbrowser.chrome/plugins/chrome") != -1
-                            || path.indexOf("\\extbrowser.chrome\\plugins\\chrome") != -1))
+                    if (path != null && (path.contains("/extbrowser.chrome/plugins/chrome")
+                            || path.contains("\\extbrowser.chrome\\plugins\\chrome")))
                     {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
@@ -257,6 +253,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         protected String getCurrentPluginVersion(){
             File extensionFile = InstalledFileLocator.getDefault().locate(
                     EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
+            if (extensionFile == null) {
+                Logger.getLogger(ChromeExtensionManager.class.getCanonicalName()).
+                    info("Could not find chrome extension in installation directory!"); // NOI18N
+                return null;
+            }
             String content = Utils.readZip( extensionFile, "manifest.json");    // NOI18N
             int index = content.indexOf(VERSION);
             if ( index == -1){
@@ -365,7 +366,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 ExtensionManager.ExtensitionStatus currentStatus,
                 File extensionFile )
         {
-            String path = null;
+            String path;
             try {
                 path = extensionFile.getCanonicalPath();
             }
@@ -399,9 +400,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         return true;
                     }
                     ExtensitionStatus status = isInstalled();
-                    if ( status!= ExtensitionStatus.INSTALLED){
-                        continue;
-                    } else {
+                    if (status == ExtensitionStatus.INSTALLED){
                         return true;
                     }
                 } else {

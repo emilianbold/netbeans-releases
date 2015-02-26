@@ -429,8 +429,8 @@ public class FileStatusCache {
                     // trying to find a reasonable limit for uptodate files in cache
                     LOG.log(Level.WARNING, "Cache of uptodate files grows too quickly: {0}", upToDateFiles.size()); //NOI18N
                     MAX_COUNT_UPTODATE_FILES <<= 1;
-                    assert false;
-                } else {
+                    //assert false;
+                } //else {
                     // removing 1/8 eldest entries
                     Iterator<VCSFileProxy> it = upToDateFiles.iterator();
                     int toDelete = MAX_COUNT_UPTODATE_FILES >> 3;
@@ -438,7 +438,7 @@ public class FileStatusCache {
                         it.next();
                         it.remove();
                     }
-                }
+                //}
             }
         }
     }

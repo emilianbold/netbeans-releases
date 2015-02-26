@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -224,14 +225,13 @@ public class StatusCommand extends StatusCommandBase {
                 }
                 processOutput(list, canceled);
             }
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if(canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }        
     }
 
@@ -245,7 +245,7 @@ public class StatusCommand extends StatusCommandBase {
                 int i = line.indexOf("->");
                 if (i > 0) {
                     file = line.substring(2, i).trim();
-                    renamed = line.substring(i + 1).trim();
+                    renamed = line.substring(i + 2).trim();
                 } else {
                     file = line.substring(2).trim();
                 }
@@ -327,6 +327,16 @@ public class StatusCommand extends StatusCommandBase {
     }
     
     private void processOutput(LinkedHashMap<String, StatusLine> parseOutput, ProcessUtils.Canceler canceled) {
+        HashMap<String, GitStatus.GitDiffEntry> renamedEntry = new HashMap<>();
+        for(Map.Entry<String, StatusLine> entry : parseOutput.entrySet()) {
+            String file = entry.getKey();
+            StatusLine v = entry.getValue();
+            String renamed = v.to;
+            if (renamed != null) {
+                GitStatus.GitDiffEntry renamedDiff = new GitStatus.GitDiffEntry(GitStatus.GitChangeType.RENAME, file);
+                renamedEntry.put(renamed, renamedDiff);
+            }
+        }
         for(Map.Entry<String, StatusLine> entry : parseOutput.entrySet()) {
             String file = entry.getKey();
             StatusLine v = entry.getValue();
@@ -433,7 +443,7 @@ public class StatusCommand extends StatusCommandBase {
             long indexTimestamp = -1;
             GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath()+"/"+file, vcsFile,
                     statusHeadIndex, statusIndexWC, statusHeadWC,
-                    null, isFolder, null/*renamed*/, indexTimestamp);
+                    null, isFolder, renamedEntry.get(file), indexTimestamp);
             addStatus(vcsFile, status);
             //command.outputText(line);
         }

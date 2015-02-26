@@ -109,8 +109,6 @@ public class RemoveCommand extends GitCommand {
                     parseRemoveOutput(output);
                 }
             }.runCLI();
-            
-            //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -118,8 +116,6 @@ public class RemoveCommand extends GitCommand {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
     

@@ -48,6 +48,7 @@ import org.netbeans.libs.git.remote.GitRevisionInfo.GitRevCommit;
 import org.netbeans.libs.git.remote.GitUser;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
+import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -103,7 +104,8 @@ public class CommitCommand extends GitCommand {
             //addArgument(0, "--commiter="+commiter.toString());
         }
         addArgument(0, "--"); //NOI18N
-        addFiles(0, roots);
+        addExistingFiles(0, roots);
+        
         addArgument(1, "log"); //NOI18N
         addArgument(1, "--raw"); //NOI18N
         addArgument(1, "--pretty=raw"); //NOI18N
@@ -129,6 +131,10 @@ public class CommitCommand extends GitCommand {
 
                 @Override
                 protected void errorParser(String error) throws GitException {
+                    //if (error.contains("fatal: cannot do a partial commit during a merge.")) {
+                    //    throw new GitException(Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_ConflictsInIndex"));
+                    //}
+                    super.errorParser(error);
             //TODO
 //            RepositoryState state = getRepository().getRepository().getRepositoryState();
 //            if (amend && !state.canAmend()) {
@@ -180,8 +186,6 @@ public class CommitCommand extends GitCommand {
                 return;
             }
             revision = getClassFactory().createRevisionInfo(status, getRepository());
-            
-            //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -189,8 +193,6 @@ public class CommitCommand extends GitCommand {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
     

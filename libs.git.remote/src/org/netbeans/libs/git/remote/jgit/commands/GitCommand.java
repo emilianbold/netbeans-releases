@@ -148,6 +148,21 @@ public abstract class GitCommand {
          }
     }
 
+    public final void addExistingFiles(int command, VCSFileProxy... files) {
+        for (VCSFileProxy root : files) {
+            if (!root.exists()) {
+                //skip unexisting file
+                continue;
+            }
+            String relativePath = Utils.getRelativePath(getRepository().getLocation(), root);
+            if (relativePath.isEmpty()) {
+                addArgument(0, ".");
+            } else {
+                addArgument(0, relativePath);
+            }
+        }
+    }
+    
     public final String getExecutable() {
         return "git"; //NOI18N
     }
@@ -219,6 +234,8 @@ public abstract class GitCommand {
             }
             if (exitStatus.output!= null && exitStatus.isOK()) {
                 outputParser(exitStatus.output);
+            } else {
+                outputErrorParser(exitStatus.output, exitStatus.error, exitStatus.exitCode);
             }
             if (exitStatus.error != null && !exitStatus.isOK()) {
                 errorParser(exitStatus.error);
@@ -228,6 +245,10 @@ public abstract class GitCommand {
         protected abstract void outputParser(String output) throws GitException;
         
         protected void errorParser(String error) throws GitException {
+            throw new GitException("#"+cmd+"\n"+error);
+        }
+
+        protected void outputErrorParser(String output, String error, int exitCode) throws GitException {
         }
     }
     

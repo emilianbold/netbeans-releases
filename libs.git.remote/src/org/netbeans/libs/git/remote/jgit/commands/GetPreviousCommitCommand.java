@@ -112,6 +112,7 @@ public class GetPreviousCommitCommand extends GitCommand {
                             throw new GitException.MissingObjectException(GitConstants.HEAD ,GitObjectType.COMMIT);
                         }
                     }
+                    super.errorParser(error);
                 }
                 
             }.runCLI();
@@ -120,14 +121,13 @@ public class GetPreviousCommitCommand extends GitCommand {
                 iterator.next();
                 previousRevision = getClassFactory().createRevisionInfo(iterator.next(), getRepository());
             }
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
 }

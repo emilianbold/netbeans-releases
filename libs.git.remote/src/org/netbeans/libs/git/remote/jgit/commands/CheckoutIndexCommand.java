@@ -73,6 +73,7 @@ public class CheckoutIndexCommand extends GitCommand {
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "checkout"); //NOI18N
+        addArgument(0, "HEAD"); //NOI18N
         addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
     }
@@ -88,12 +89,9 @@ public class CheckoutIndexCommand extends GitCommand {
 
                 @Override
                 public void outputParser(String output) throws GitException {
-                    System.err.println("");
                 }
                 
             }.runCLI();
-
-            //command.commandCompleted(exitStatus.exitCode);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -101,8 +99,6 @@ public class CheckoutIndexCommand extends GitCommand {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
 

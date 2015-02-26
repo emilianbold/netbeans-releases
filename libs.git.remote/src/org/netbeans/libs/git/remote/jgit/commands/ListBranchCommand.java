@@ -69,15 +69,6 @@ public class ListBranchCommand extends GitCommand {
         this.monitor = monitor;
     }
 
-    @Override
-    protected void run () throws GitException {
-        if (KIT) {
-            //runKit();
-        } else {
-            runCLI();
-        }
-    }
-
     public Map<String, GitBranch> getBranches () {
         return branches;
     }
@@ -92,7 +83,8 @@ public class ListBranchCommand extends GitCommand {
         }
     }
     
-    private void runCLI() throws GitException {
+    @Override
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
@@ -105,17 +97,20 @@ public class ListBranchCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                     parseBranches(output, getClassFactory(), branches);
                 }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    throw new GitException("It seems the config file for repository at [" + ListBranchCommand.this.getRepository().getLocation().getPath() + "] is corrupted.\nEnsure it's valid.");
+                }
                 
             }.runCLI();
-            
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
 

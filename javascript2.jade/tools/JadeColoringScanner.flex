@@ -714,7 +714,7 @@ UnbufferedComment = "//-"
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
     {LineTerminator}                {   yybegin(AFTER_EOL);
                                         return JadeTokenId.EOL; }
-    {Identifier}                    {   return JadeTokenId.MIXIN_NAME; }
+    {HtmlIdentifier}                {   return JadeTokenId.MIXIN_NAME; }
     "("                             {   yybegin(MIXIN_ARGUMENTS); 
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
 }
@@ -733,7 +733,7 @@ UnbufferedComment = "//-"
 
 <AFTER_PLUS_MIXIN> {    
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
-    {Identifier}                    {   return JadeTokenId.MIXIN_NAME; }
+    {HtmlIdentifier}                    {   return JadeTokenId.MIXIN_NAME; }
     "("                             {   yybegin(MIXIN_CALL_ARGUMENT);
                                         parenBalance = 1; braceBalance = 0;
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}

@@ -42,34 +42,108 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.text.MessageFormat;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
  * @author ondra
  */
-public class CopyCommand extends MoveTreeCommand {
+public class CopyCommand extends GitCommand {
     private final VCSFileProxy source;
     private final VCSFileProxy target;
+    private final ProgressMonitor monitor;
+    private final FileListener listener;
 
     public CopyCommand (JGitRepository repository, GitClassFactory gitFactory, VCSFileProxy source, VCSFileProxy target, ProgressMonitor monitor, FileListener listener) {
-        super(repository, gitFactory, source, target, true, true, monitor, listener);
+        super(repository, gitFactory, monitor);
         this.source = source;
         this.target = target;
+        this.monitor = monitor;
+        this.listener = listener;
+    }
+    
+    @Override
+    protected boolean prepareCommand() throws GitException {
+        boolean retval = super.prepareCommand();
+        if (retval) {
+            VCSFileProxy workTree = getRepository().getLocation();
+            String relPathToSource = Utils.getRelativePath(workTree, source);
+            String relPathToTarget = Utils.getRelativePath(workTree, target);
+            if (relPathToSource.startsWith(relPathToTarget + "/")) { //NOI18N
+                monitor.preparationsFailed(MessageFormat.format(Utils.getBundle(CopyCommand.class).getString("MSG_Error_SourceFolderUnderTarget"), new Object[] { relPathToSource, relPathToTarget } )); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(CopyCommand.class).getString("MSG_Error_SourceFolderUnderTarget"), new Object[] { relPathToSource, relPathToTarget } )); //NOI18N
+            } else if (relPathToTarget.startsWith(relPathToSource + "/")) { //NOI18N
+                monitor.preparationsFailed(MessageFormat.format(Utils.getBundle(CopyCommand.class).getString("MSG_Error_TargetFolderUnderSource"), new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(CopyCommand.class).getString("MSG_Error_TargetFolderUnderSource"), new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
+            }
+        }
+        return retval;
     }
     
     @Override
     protected void prepare() throws GitException {
+        setCommandsNumber(2);
         super.prepare();
-        addArgument(0, "copy"); //NOI18N
-        addArgument(0, "--after"); //NOI18N
+        addArgument(0, "mv"); //NOI18N
+        addArgument(0, "--verbose"); //NOI18N
+        addArgument(0, "-f"); //NOI18N
         addArgument(0, Utils.getRelativePath(getRepository().getLocation(), source));
         addArgument(0, Utils.getRelativePath(getRepository().getLocation(), target));
+        
+        addArgument(1, "checkout"); //NOI18N
+        addArgument(1, "HEAD");
+        addArgument(1, "--");
+        addArgument(1, Utils.getRelativePath(getRepository().getLocation(), source));
+    }
+    
+    @Override
+    protected void run() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    parseMoveOutput(output);
+                }
+            }.runCLI();
+
+            new Runner(canceled, 1){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+                
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
+    }
+    
+    private void parseMoveOutput(String output) {
+        //Renaming file to folder/file
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("Renaming")) {
+                String[] s = line.split(" ");
+                String file = s[s.length-1];
+                listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), file), file);
+            }
+        }
     }
 }

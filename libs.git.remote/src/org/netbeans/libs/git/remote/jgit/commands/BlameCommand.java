@@ -113,14 +113,13 @@ public class BlameCommand extends GitCommand {
             if (!failed.get()) {
                 result = getClassFactory().createBlameResult(file, content, getRepository());
             }
-            //command.commandCompleted(exitStatus.exitCode);
+        } catch (GitException t) {
+            throw t;
         } catch (Throwable t) {
             if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        } finally {
-            //command.commandFinished();
         }
     }
     

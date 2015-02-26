@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,6 +73,7 @@ public class WildflyPluginProperties {
     private String installLocation;
     private String domainLocation;
     private String configLocation;
+    private Version serverVersion = WildflyPluginUtils.WILDFLY_8_0_0;
 
 
     public static WildflyPluginProperties getInstance(){
@@ -177,7 +179,7 @@ public class WildflyPluginProperties {
     }
 
     public int getAdminPort() {
-        if(this.installLocation == null || WildflyPluginUtils.WILDFLY_8_0_0.compareTo(WildflyPluginUtils.getServerVersion(new File(this.installLocation))) > 0){
+        if(this.installLocation == null || WildflyPluginUtils.WILDFLY_8_0_0.compareTo(serverVersion) > 0){
             return 9999;
         }
         return 9990;
@@ -190,6 +192,7 @@ public class WildflyPluginProperties {
         } else {
             this.installLocation = installLocation;
         }
+        this.serverVersion = WildflyPluginUtils.getServerVersion(new File(this.installLocation));
     }
 
     public String getInstallLocation() {
