@@ -130,7 +130,6 @@ class FilesystemInterceptor extends VCSInterceptor {
             @Override
             public void run() {
                 Git git = Git.getInstance();
-                git.clearAncestorCaches();
                 git.versionedFilesChanged();
                 VersioningSupport.versionedRootsChanged();
             }
