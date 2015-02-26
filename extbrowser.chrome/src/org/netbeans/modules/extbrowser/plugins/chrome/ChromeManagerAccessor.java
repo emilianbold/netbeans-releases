@@ -160,8 +160,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 JSONObject extension = (JSONObject)e.getValue();
                 if (extension != null) {
                     String path = (String)extension.get("path");
-                    if (path != null && (path.indexOf("/extbrowser.chrome/plugins/chrome") != -1
-                            || path.indexOf("\\extbrowser.chrome\\plugins\\chrome") != -1))
+                    if (path != null && (path.contains("/extbrowser.chrome/plugins/chrome")
+                            || path.contains("\\extbrowser.chrome\\plugins\\chrome")))
                     {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
