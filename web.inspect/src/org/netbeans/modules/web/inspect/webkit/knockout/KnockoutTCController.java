@@ -68,6 +68,8 @@ import org.openide.windows.WindowSystemListener;
 public class KnockoutTCController implements PropertyChangeListener {
     /** Default instance of this class. */
     private static final KnockoutTCController DEFAULT = new KnockoutTCController();
+    /** Request processor used by this class. */
+    private static final RequestProcessor RP = new RequestProcessor(KnockoutTCController.class.getName(), 5);
     /** Current {@code KnockoutChecker}. */
     KnockoutChecker currentChecker;
 
@@ -215,7 +217,7 @@ public class KnockoutTCController implements PropertyChangeListener {
             } else {
                 currentDelay *= 2;
             }
-            currentTask = RequestProcessor.getDefault().schedule(this, currentDelay, TimeUnit.SECONDS);
+            currentTask = RP.schedule(this, currentDelay, TimeUnit.SECONDS);
         }
 
         /**
