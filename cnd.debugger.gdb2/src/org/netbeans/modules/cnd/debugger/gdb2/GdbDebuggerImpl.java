@@ -957,7 +957,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         state().isCore = true;
                         stateChanged();
 			session().setSessionState(state());
-                        requestStack(null);
+                        
+                        MICommand cmd2 = new MiCommandImpl("-thread-list-ids") { // NOI18N
+
+                            @Override
+                            protected void onDone(MIRecord record) {
+                                currentThreadId = record.results().getConstValue(MI_CURRENT_THREAD);
+                                requestStack(null);
+                                finish();
+                            }
+                            
+                        };
+                        
+                        gdb.sendCommand(cmd2);
                         finish();
                     }
             };
