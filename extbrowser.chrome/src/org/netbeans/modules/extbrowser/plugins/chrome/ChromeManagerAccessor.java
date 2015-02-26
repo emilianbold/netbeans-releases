@@ -366,7 +366,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 ExtensionManager.ExtensitionStatus currentStatus,
                 File extensionFile )
         {
-            String path = null;
+            String path;
             try {
                 path = extensionFile.getCanonicalPath();
             }
