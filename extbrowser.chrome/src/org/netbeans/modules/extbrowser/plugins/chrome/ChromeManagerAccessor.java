@@ -104,11 +104,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
     static class ChromeExtensionManager extends AbstractBrowserExtensionManager {
 
-        private static final String LAST_USED = "\"last_used\":";               // NOI18N
-
         private static final String VERSION = "\"version\":";                   // NOI18N
-
-        private static final String STATE = "\"state\":";                       // NOI18N
 
         private static final String PLUGIN_PUBLIC_KEY =
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDgo89CrO8f/2srD2BGUP9+dG4I" +
