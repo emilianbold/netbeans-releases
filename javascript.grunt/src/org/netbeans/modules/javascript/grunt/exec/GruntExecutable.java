@@ -64,7 +64,6 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.GruntBuildTool;
-import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.options.GruntOptions;
 import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
@@ -262,7 +261,7 @@ public class GruntExecutable {
 
     }
 
-    private static final class GruntTasksLineConvertor implements LineConvertor {
+    static final class GruntTasksLineConvertor implements LineConvertor {
 
         private static final String AVAILABLE_TASKS = "Available tasks"; // NOI18N
         private static final String NO_TASKS = "(no tasks found)"; // NOI18N
@@ -270,6 +269,7 @@ public class GruntExecutable {
         final List<String> tasks = new ArrayList<>();
 
         private int state = 0;
+        private int spaceIndex = -1;
 
 
         @Override
@@ -284,11 +284,17 @@ public class GruntExecutable {
                     if (!StringUtilities.hasText(line)) {
                         state = 2;
                     } else if (NO_TASKS.equals(line.trim())) {
-                        tasks.add(GruntTasks.DEFAULT_TASK);
                         state = 2;
                     } else {
-                        List<String> parts = StringUtilities.explode(line.trim(), " "); // NOI18N
-                        tasks.add(parts.get(0));
+                        if (spaceIndex == -1) {
+                            String task = StringUtilities.explode(line.trim(), "  ").get(0); // NOI18N
+                            assert StringUtilities.hasText(task) : line;
+                            spaceIndex = line.indexOf(task) + task.length();
+                        }
+                        String task = line.substring(0, spaceIndex).trim();
+                        if (StringUtilities.hasText(task)) {
+                            tasks.add(task);
+                        }
                     }
                     break;
                 default:

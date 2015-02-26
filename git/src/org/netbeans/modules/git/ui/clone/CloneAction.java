@@ -216,6 +216,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                 GitClient client = getClient();
                                 setDisplayName(Bundle.MSG_Clone_progress_initializingRepository());
                                 client.init(getProgressMonitor());
+                                Git.getInstance().versionedFilesChanged();
                                 setDisplayName(Bundle.MSG_Clone_progress_fetchingCommits(), 1);
                                 Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, getProgressMonitor());
                                 log(updates);
@@ -248,9 +249,8 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                 
                                 if (!isCanceled()) {
                                     initSubmodules();
+                                    Git.getInstance().versionedFilesChanged();
                                 }
-                                
-                                Git.getInstance().versionedFilesChanged();                       
 
                                 if(scan && !isCanceled()) {
                                     setDisplayName(Bundle.MSG_Clone_progress_scanningForProjects(), 1);
