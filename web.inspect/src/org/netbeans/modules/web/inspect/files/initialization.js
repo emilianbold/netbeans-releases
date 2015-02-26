@@ -88,6 +88,9 @@ NetBeans.windowActive = true;
 // Determines whether getClientRects() returns incorrect values (see issue 236445)
 NetBeans.clientRectsBug = (navigator.userAgent.match(/(iPad|iPhone|iPod);.*CPU.*OS 7_\d/i) ? true : false); /* is iOS 7 */
 
+// Determines whether canvas.clearRect() should be avoided (see issue 236961)
+NetBeans.clearRectBug = navigator.appVersion.indexOf('JavaFX') !== -1 || navigator.userAgent.indexOf('JavaFX') !== -1;
+
 // Initializes/clears the next selection
 NetBeans.initNextSelection = function() {
     this.nextSelection = [];
@@ -313,7 +316,7 @@ NetBeans.paintGlassPane = function() {
         var ctx = canvas.getContext('2d'); 
         var width = window.innerWidth;
         var height = window.innerHeight;
-        if (ctx.canvas.width === width && ctx.canvas.height === height) {
+        if (ctx.canvas.width === width && ctx.canvas.height === height && !NetBeans.clearRectBug) {
             ctx.clearRect(0, 0, width, height);
         } else {
             ctx.canvas.width = width;
