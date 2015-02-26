@@ -117,24 +117,12 @@ public class CopyCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                     parseMoveOutput(output);
                 }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    System.err.println(error);
-                }
-                
             }.runCLI();
 
             new Runner(canceled, 1){
 
                 @Override
                 public void outputParser(String output) throws GitException {
-                    System.err.println(output);
-                }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    System.err.println(error);
                 }
                 
             }.runCLI();

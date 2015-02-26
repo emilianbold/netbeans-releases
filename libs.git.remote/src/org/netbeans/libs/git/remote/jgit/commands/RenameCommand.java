@@ -58,6 +58,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author ondra
  */
 public class RenameCommand extends GitCommand {
+    public static final boolean KIT = false;
 
     private final VCSFileProxy source;
     private final VCSFileProxy target;
@@ -78,6 +79,16 @@ public class RenameCommand extends GitCommand {
     protected boolean prepareCommand() throws GitException {
         boolean retval = super.prepareCommand();
         if (retval) {
+            VCSFileProxy workTree = getRepository().getLocation();
+            String relPathToSource = Utils.getRelativePath(workTree, source);
+            String relPathToTarget = Utils.getRelativePath(workTree, target);
+            if (relPathToSource.startsWith(relPathToTarget + "/")) { //NOI18N
+                monitor.preparationsFailed(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Error_SourceFolderUnderTarget"), new Object[] { relPathToSource, relPathToTarget } )); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Error_SourceFolderUnderTarget"), new Object[] { relPathToSource, relPathToTarget } )); //NOI18N
+            } else if (relPathToTarget.startsWith(relPathToSource + "/")) { //NOI18N
+                monitor.preparationsFailed(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Error_TargetFolderUnderSource"), new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Error_TargetFolderUnderSource"), new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
+            }
             if (source.equals(getRepository().getLocation())) {
                 throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_CannotMoveWT"), source.getPath())); //NOI18N
             }
@@ -97,11 +108,18 @@ public class RenameCommand extends GitCommand {
     
     @Override
     protected void prepare() throws GitException {
+        setCommandsNumber(2);
         super.prepare();
-        addArgument(0, "mv"); //NOI18N
-        addArgument(0, "--verbose"); //NOI18N
+        addArgument(0, "checkout"); //NOI18N
+        addArgument(0, "HEAD");
+        addArgument(0, "--");
         addArgument(0, Utils.getRelativePath(getRepository().getLocation(), source));
-        addArgument(0, Utils.getRelativePath(getRepository().getLocation(), target));
+
+        addArgument(1, "mv"); //NOI18N
+        addArgument(1, "--verbose"); //NOI18N
+        addArgument(1, "-f"); //NOI18N
+        addArgument(1, Utils.getRelativePath(getRepository().getLocation(), source));
+        addArgument(1, Utils.getRelativePath(getRepository().getLocation(), target));
     }
     
     @Override
@@ -113,17 +131,19 @@ public class RenameCommand extends GitCommand {
         try {
             if (!after) {
                 rename();
+                new Runner(canceled, 0){
+
+                    @Override
+                    public void outputParser(String output) throws GitException {
+                    }
+
+                }.runCLI();
             }
-            new Runner(canceled, 0){
+            new Runner(canceled, 1){
 
                 @Override
                 public void outputParser(String output) throws GitException {
                     parseMoveOutput(output);
-                }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    System.err.println(error);
                 }
                 
             }.runCLI();
