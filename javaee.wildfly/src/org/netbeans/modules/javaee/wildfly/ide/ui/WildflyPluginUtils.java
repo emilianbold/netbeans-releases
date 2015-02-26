@@ -46,15 +46,20 @@ package org.netbeans.modules.javaee.wildfly.ide.ui;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import static java.io.File.separatorChar;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -71,6 +76,8 @@ public class WildflyPluginUtils {
     public static final Version JBOSS_7_0_0 = new Version("7.0.0"); // NOI18N
 
     public static final Version EAP_6_3_0 = new Version("7.4.0"); // NOI18N
+
+    public static final Version EAP_6_4_0 = new Version("7.5.0"); // NOI18N
 
     public static final Version WILDFLY_8_0_0 = new Version("8.0.0"); // NOI18N
 
@@ -269,15 +276,17 @@ public class WildflyPluginUtils {
     public static Version getServerVersion(File serverPath) {
         assert serverPath != null : "Can't determine version with null server path"; // NOI18N
 
-        Version version = null;
-        File serverDir = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org/jboss/as/version/main");
-        File[] files = serverDir.listFiles(new VersionJarFileFilter());
-        if (files != null) {
-            for (File jarFile : files) {
-                if(jarFile.getName().startsWith("jboss-as-version")) {
-                    version = getVersion(jarFile);
-                    if (version != null) {
-                        break;
+        Version version = getProductVersion(serverPath);
+        if (version == null) {
+            File serverDir = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org/jboss/as/version/main");
+            File[] files = serverDir.listFiles(new VersionJarFileFilter());
+            if (files != null) {
+                for (File jarFile : files) {
+                    if (jarFile.getName().startsWith("jboss-as-version")) {
+                        version = getVersion(jarFile);
+                        if (version != null) {
+                            break;
+                        }
                     }
                 }
             }
@@ -286,6 +295,44 @@ public class WildflyPluginUtils {
             return WILDFLY_8_0_0;
         }
         return version;
+    }
+
+    /**
+     * Return the version of the server located at the given path. If the server
+     * version can't be determined returns <code>null</code>.
+     *
+     * @param serverPath path to the server directory
+     * @return specification version of the server using product.conf.
+     */
+    @CheckForNull
+    public static Version getProductVersion(File serverPath) {
+        assert serverPath != null : "Can't determine version with null server path"; // NOI18N
+        String productConf = getProductConf(serverPath);
+        if(productConf != null) {
+            try (FileReader reader = new FileReader(productConf)) {
+                Properties props = new Properties();
+                props.load(reader);
+                String slot = props.getProperty("slot");
+                if (slot != null) {
+                    File manifestFile = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org.jboss.as.product".replace('.', separatorChar) + separatorChar + slot + "META-INF" + separatorChar + "MANIFEST.MF");
+                    InputStream stream = new FileInputStream(manifestFile);
+                    Manifest manifest = new Manifest(stream);
+                    return new Version(manifest.getMainAttributes().getValue("JBoss-Product-Release-Version"));
+                }
+            } catch (Exception e) {
+                // Don't care
+            }
+        }
+        return null;
+    }
+
+    private static String getProductConf(File serverPath) {
+        final String defaultVal = serverPath.getAbsolutePath() + File.separatorChar + "bin" + File.separatorChar + "product.conf";
+        String env = System.getenv("JBOSS_PRODUCT_CONF");
+        if (env == null) {
+            env = defaultVal;
+        }
+        return env;
     }
 
     static class VersionJarFileFilter implements FilenameFilter {
@@ -307,17 +354,10 @@ public class WildflyPluginUtils {
             Attributes attributes = systemJar.getManifest().getMainAttributes();
             String version = attributes.getValue("Specification-Version"); // NOI18N
             if (version != null) {
-                Version result = new Version(version);
-                if("1".equals(result.getMajorNumber())) {
-                    result = new Version("9."+ result.getMinorNumber() + "." + result.getMicroNumber());
-                }
-                return result;
+                return new Version(version);
             }
             return null;
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        } catch (PropertyVetoException ex) {
+        } catch (IOException | PropertyVetoException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return null;
         }

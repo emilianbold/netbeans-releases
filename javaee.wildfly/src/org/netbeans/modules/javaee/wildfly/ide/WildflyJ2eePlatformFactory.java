@@ -450,6 +450,7 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
             return null;
         }
 
+        @Override
         public String getToolProperty(String toolName, String propertyName) {
             if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
                 if (J2eePlatform.TOOL_PROP_MAIN_CLASS.equals(propertyName)) {

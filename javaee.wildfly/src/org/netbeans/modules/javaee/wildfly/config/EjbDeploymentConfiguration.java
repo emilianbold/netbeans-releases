@@ -927,24 +927,6 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         });
     }
 
-    /**
-     * Add a new mail service reference to the message-driven beans without it.
-     *
-     * @param resRefName mail service reference name
-     * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
-     * which might need to add mail service reference specified by resRefName
-     */
-    private void addMsgDrvMailReference(final String resRefName, final Map beans)
-    throws ConfigurationException
-    {
-        modifyJboss(new JbossModifier() {
-           public void modify(Jboss modifiedJboss) {
-               String jndiName = MAIL_SERVICE_JNDI_NAME_JB4;
-               JBossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, beans, jndiName);
-           }
-        });
-    }
-
     public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {
 
         if (Double.parseDouble(j2eeModule.getModuleVersion()) > 2.1) {

@@ -97,7 +97,17 @@ public final class WildflyDatasourceManager implements DatasourceManager {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
         String deployDirPath = ip.getProperty(WildflyPluginProperties.PROPERTY_DEPLOY_DIR);
         deployDir = FileUtil.toFileObject(new File(deployDirPath));
-        configFile = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE)));
+        String configFilePath = ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE);
+        if(configFilePath != null) {
+            File config = new File(configFilePath);
+            if(config.exists()) {
+                configFile = FileUtil.toFileObject(config);
+            } else {
+                throw new IllegalArgumentException("No configuration file found: " + configFilePath);
+            }
+        } else {
+            throw new IllegalArgumentException("No configuration file configured: " + dm);
+        }
     }
 
     @Override
