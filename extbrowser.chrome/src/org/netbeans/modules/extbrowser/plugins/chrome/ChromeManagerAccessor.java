@@ -400,9 +400,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         return true;
                     }
                     ExtensitionStatus status = isInstalled();
-                    if ( status!= ExtensitionStatus.INSTALLED){
-                        continue;
-                    } else {
+                    if (status == ExtensitionStatus.INSTALLED){
                         return true;
                     }
                 } else {
