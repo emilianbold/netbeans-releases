@@ -78,7 +78,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * Server customizer support class. Provides default implementations of some 
+ * Server customizer support class. Provides default implementations of some
  * common server manager customizer panes.
  *
  * @author sherold
@@ -86,15 +86,15 @@ import org.openide.util.NbBundle;
  * @since 1.19
  */
 public final class CustomizerSupport {
-    
+
     private static final String CLASSPATH = J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH;
     private static final String SOURCES = J2eeLibraryTypeProvider.VOLUME_TYPE_SRC;
     private static final String JAVADOC = J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC;
-    
+
     /** Do not allow to create instances of this class */
     private CustomizerSupport() {
     }
-    
+
     /**
      * Creates non-editable customizer classes pane.
      *
@@ -110,12 +110,12 @@ public final class CustomizerSupport {
         }
         return new PathView(model, CLASSPATH, null);
     }
-    
+
     /**
      * Creates an editable customizer sources pane.
      *
      * @param model A model prepresenting the source path entries.
-     * @param currentDir Add sources file chooser current directory. Passing in 
+     * @param currentDir Add sources file chooser current directory. Passing in
      *                   a null represents the user's default directory.
      *
      * @return A Component representing the sources pane.
@@ -128,12 +128,12 @@ public final class CustomizerSupport {
         }
         return new PathView(model, SOURCES, currentDir);
     }
-    
+
     /**
      * Creates an editable customizer javadoc pane.
      *
      * @param model A model prepresenting the javadoc entries.
-     * @param currentDir Add javadoc file chooser current directory. Passing in 
+     * @param currentDir Add javadoc file chooser current directory. Passing in
      *                   a null represents the user's default directory.
      *
      * @return A Component representing the javadoc pane.
@@ -146,7 +146,7 @@ public final class CustomizerSupport {
         }
         return new PathView(model, JAVADOC, currentDir);
     }
-    
+
     /**
      * Creates an Ant-style path specification from the specified list of URLs.
      *
@@ -165,10 +165,10 @@ public final class CustomizerSupport {
         }
         return sb.toString();
     }
-    
+
     /**
-     * Splits an Ant-style path specification into the list of URLs.  Tokenizes on 
-     * <code>:</code> and <code>;</code>, paying attention to DOS-style components 
+     * Splits an Ant-style path specification into the list of URLs.  Tokenizes on
+     * <code>:</code> and <code>;</code>, paying attention to DOS-style components
      * such as <samp>C:\FOO</samp>. Also removes any empty components.
      *
      * @param path An Ant-style path (elements arbitrary) using DOS or Unix separators
@@ -238,7 +238,7 @@ public final class CustomizerSupport {
             }
             return l;
     }
-    
+
     /** Return string representation of the specified URL. */
     private static String urlToString(URL url) {
         if ("jar".equals(url.getProtocol())) { // NOI18N
@@ -259,7 +259,7 @@ public final class CustomizerSupport {
             return url.toExternalForm();
         }
     }
-    
+
     /**
      * Path list model, supports adding, removing and moving URL entries in the list.
      */
@@ -356,7 +356,7 @@ public final class CustomizerSupport {
 
         /**
          * Appends the URL representing the specified file to the end of the list.
-         * 
+         *
          * @return true if the URL was appended, false otherwise.
          */
         public boolean addPath(File f) {
@@ -370,7 +370,7 @@ public final class CustomizerSupport {
 
         /**
          * Appends the specified URL to the end of the list.
-         * 
+         *
          * @return true if the URL was appended, false otherwise.
          */
         public boolean addPath(URL url) {
@@ -397,11 +397,11 @@ public final class CustomizerSupport {
             return data;
         }
     }
-    
+
     // private helper classes -------------------------------------------------
-    
+
     private static class PathView extends JPanel {
-        
+
         private JList resources;
         private JButton addButton;
         private JButton addURLButton;
@@ -426,7 +426,7 @@ public final class CustomizerSupport {
             if (type.equals(CLASSPATH)) {
                 key = "TXT_Classes";       // NOI18N
                 mneKey = "MNE_Classes";    // NOI18N
-                ad = "AD_Classes";       // NOI18N                
+                ad = "AD_Classes";       // NOI18N
             } else if (type.equals(SOURCES)) {
                 key = "TXT_Sources";        // NOI18N
                 mneKey = "MNE_Sources";     // NOI18N
@@ -434,7 +434,7 @@ public final class CustomizerSupport {
             } else if (type.equals(JAVADOC)) {
                 key = "TXT_Javadoc";        // NOI18N
                 mneKey = "MNE_Javadoc";     // NOI18N
-                ad = "AD_Javadoc";          // NOI18N                
+                ad = "AD_Javadoc";          // NOI18N
             } else {
                 assert false : "Illegal type of panel"; //NOI18N
                 return;
@@ -458,7 +458,7 @@ public final class CustomizerSupport {
                     selectionChanged ();
                 }
             });
-            JScrollPane spane = new JScrollPane (this.resources);            
+            JScrollPane spane = new JScrollPane (this.resources);
             // set the preferred size so that the size won't be set according to
             // the longest row in the list by default
             spane.setPreferredSize(new java.awt.Dimension(200, 100));
@@ -578,7 +578,7 @@ public final class CustomizerSupport {
                 this.add (moveDownButton);
             }
         }
-        
+
 //        private void addURLElement() {
 //            JPanel p = new JPanel ();
 //            GridBagLayout lm = new GridBagLayout();
@@ -603,7 +603,7 @@ public final class CustomizerSupport {
 //            text.selectAll();
 //            label.setLabelFor(text);
 //            lm.setConstraints(text,c);
-//            p.add (text);            
+//            p.add (text);
 //            JButton[] options = new JButton[] {
 //                new JButton (NbBundle.getMessage(CustomizerSupport.class,"CTL_AddJavadocURLTitle")),
 //                new JButton (NbBundle.getMessage(CustomizerSupport.class,"CTL_Cancel"))
@@ -613,7 +613,7 @@ public final class CustomizerSupport {
 //            DialogDescriptor input = new DialogDescriptor (
 //                p,
 //                NbBundle.getMessage(CustomizerSupport.class,"CTL_AddJavadocURLTitle"),
-//                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);            
+//                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
 //            if (DialogDisplayer.getDefault().notify(input) == options[0]) {
 //                try {
 //                    String value = text.getText();
@@ -631,7 +631,7 @@ public final class CustomizerSupport {
 
         private void addPathElement () {
             JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+            chooser.setCurrentDirectory(null);
             chooser.setMultiSelectionEnabled (true);
             String title = null;
             String message = null;
@@ -745,7 +745,7 @@ public final class CustomizerSupport {
             this.moveDownButton.setEnabled(indices.length > 0 && indices[indices.length-1]<this.resources.getModel().getSize()-1);
         }
     }
-    
+
     private static class SimpleFileFilter extends FileFilter {
 
         private String description;
