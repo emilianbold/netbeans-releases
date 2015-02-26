@@ -73,6 +73,7 @@ public class CheckoutIndexCommand extends GitCommand {
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "checkout"); //NOI18N
+        addArgument(0, "HEAD"); //NOI18N
         addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
     }
