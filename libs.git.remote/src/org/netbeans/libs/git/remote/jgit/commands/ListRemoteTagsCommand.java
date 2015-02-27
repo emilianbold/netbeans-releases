@@ -42,30 +42,39 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.libs.git.remote.jgit.GitRef;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.jgit.Utils;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  * @author ondra
  */
-public class ListRemoteTagsCommand extends ListRemoteObjectsCommand {
+public class ListRemoteTagsCommand extends TransportCommand {
     private Map<String, String> remoteTags;
     private final String remoteUrl;
+    private Collection<GitRef> refs;
+    private final ProgressMonitor monitor;
 
     public ListRemoteTagsCommand (JGitRepository repository, GitClassFactory gitFactory, String remoteRepositoryUrl, ProgressMonitor monitor) {
         super(repository, gitFactory, remoteRepositoryUrl, monitor);
         this.remoteUrl = remoteRepositoryUrl;
+        this.monitor = monitor;
     }
 
-    @Override
-    protected void processRefs () {
+    private void processRefs () {
         remoteTags = new LinkedHashMap<String, String>();
-        remoteTags.putAll(Utils.refsToTags(getRefs()));
+        remoteTags.putAll(Utils.refsToTags(refs));
+    }
+    
+    public Map<String, String> getTags () {
+        return remoteTags;
     }
     
     @Override
@@ -76,8 +85,27 @@ public class ListRemoteTagsCommand extends ListRemoteObjectsCommand {
         addArgument(0, remoteUrl.toString());
     }
 
-    public Map<String, String> getTags () {
-        return remoteTags;
-    }
+    @Override
+    protected final void runTransportCommand () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
 
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+            }.runCLI();
+            processRefs();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
+    }
 }

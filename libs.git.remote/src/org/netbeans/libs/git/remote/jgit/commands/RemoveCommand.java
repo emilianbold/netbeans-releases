@@ -86,12 +86,14 @@ public class RemoveCommand extends GitCommand {
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "rm"); //NOI18N
+        addArgument(0, "--ignore-unmatch");
         addArgument(0, "-r"); //NOI18N
         if (cached) {
             addArgument(0, "--cached"); //NOI18N
         }
         addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
+        //addExistingFiles(0,roots);
     }
     
     
@@ -108,6 +110,12 @@ public class RemoveCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                     parseRemoveOutput(output);
                 }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    System.err.println(error);
+                }
+                
             }.runCLI();
         } catch (GitException t) {
             throw t;

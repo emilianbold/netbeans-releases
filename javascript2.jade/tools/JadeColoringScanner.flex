@@ -219,6 +219,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state MIXIN_ARGUMENTS
 %state AFTER_PLUS_MIXIN
 %state MIXIN_CALL_ARGUMENT
+%state AFTER_ATTRIBUTES
 
 /* base structural elements */
 AnyChar = (.|[\n])
@@ -370,6 +371,8 @@ UnbufferedComment = "//-"
     "#{"                            {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
                                     }
+    "&attributes"                   {   yybegin(AFTER_ATTRIBUTES);
+                                        return JadeTokenId.ATTRIBUTE; }
     .                               {   yybegin(TEXT_LINE); }
 }
 
@@ -434,6 +437,14 @@ UnbufferedComment = "//-"
     
 }
 
+<AFTER_ATTRIBUTES> {
+    "("                             {   parenBalance = 1;
+                                        lastReaded = bracketBalance = braceBalance = 0;
+                                        yybegin(JAVASCRIPT_VALUE);
+                                        return JadeTokenId.BRACKET_LEFT_PAREN; 
+                                    }
+    .                               {   return JadeTokenId.UNKNOWN;}
+}
 
 <AFTER_EACH>    {
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
@@ -463,7 +474,7 @@ UnbufferedComment = "//-"
 <JAVASCRIPT_VALUE> {
     \'                              {   yybegin(JS_SSTRING); }
     \"                              {   yybegin(JS_STRING); }
-    [\+\-\.&\*/%|]"="?              {   continueJS = true; lastReaded = tokenLength; }
+    [\+\-\.&\*/%|=!]"="?            {   continueJS = true; lastReaded = tokenLength; }
     "["                             {   braceBalance++; lastReaded = tokenLength; }
     "]"                             {   braceBalance--; lastReaded = tokenLength; }
     "{"                             {   bracketBalance++; lastReaded = tokenLength; }

@@ -98,7 +98,7 @@ public final class FileUtils {
 
     public static boolean isJavaScriptFile(FileObject file) {
         assert file != null;
-        return JAVASCRIPT_MIME_TYPE.equals(FileUtil.getMIMEType(file, JAVASCRIPT_MIME_TYPE));
+        return FileUtil.getMIMEType(file, JAVASCRIPT_MIME_TYPE, null) != null;
     }
 
     public static boolean isJavaScriptFile(File file) {

@@ -48,6 +48,7 @@ import org.netbeans.libs.git.remote.GitPushResult;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -69,81 +70,42 @@ public class PushCommand extends TransportCommand {
         this.fetchRefSpecs = fetchRefSpecifications;
     }
 
-    @Override
-    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
-//        List<RefSpec> specs = new ArrayList<RefSpec>(pushRefSpecs.size());
-//        for (String refSpec : pushRefSpecs) {
-//            // this may be extra strict. We do not allow force updates for branches,
-//            // but maybe we should leave that decision on the caller
-//            RefSpec sp = new RefSpec(refSpec);
-//            String source = sp.getSource();
-//            String dest = sp.getDestination();
-//            if (source != null && Transport.REFSPEC_TAGS.matchSource(source)
-//                    && dest != null && Transport.REFSPEC_TAGS.matchDestination(sp.getDestination())) {
-//                specs.add(sp);
-//            } else {
-//                specs.add(sp.setForceUpdate(false));
-//            }
-//        }
-//        // this will ensure that refs/remotes/abc/branch will be updated, too
-//        List<RefSpec> fetchSpecs = new ArrayList<RefSpec>(fetchRefSpecs == null ? 0 : fetchRefSpecs.size());
-//        for (String refSpec : fetchRefSpecs) {
-//            RefSpec sp = new RefSpec(refSpec);
-//            fetchSpecs.add(sp);
-//        }
-//        Transport transport = null;
-//        try {
-//            transport = openTransport(true);
-//            transport.setDryRun(false);
-//            transport.setPushThin(true);
-//            transport.setRemoveDeletedRefs(true);
-//            transport.setTagOpt(TagOpt.AUTO_FOLLOW);
-//            PushResult pushResult = transport.push(new DelegatingProgressMonitor(monitor), fetchSpecs.isEmpty() ? transport.findRemoteRefUpdatesFor(specs) : Transport.findRemoteRefUpdatesFor(getRepository().getRepository(), specs, fetchSpecs));
-//            Map<String, GitBranch> remoteBranches = Utils.refsToBranches(pushResult.getAdvertisedRefs(), Constants.R_HEADS, getClassFactory());
-//            processMessages(pushResult.getMessages());
-//            Map<String, GitTransportUpdate> remoteRepositoryUpdates = new HashMap<String, GitTransportUpdate>(pushResult.getRemoteUpdates().size());
-//            for (RemoteRefUpdate update : pushResult.getRemoteUpdates()) {
-//                GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update, remoteBranches);
-//                remoteRepositoryUpdates.put(upd.getRemoteName(), upd);
-//            }
-//            Map<String, GitTransportUpdate> localRepositoryUpdates = new HashMap<String, GitTransportUpdate>(pushResult.getTrackingRefUpdates().size());
-//            for (TrackingRefUpdate update : pushResult.getTrackingRefUpdates()) {
-//                GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update);
-//                localRepositoryUpdates.put(upd.getRemoteName(), upd);
-//            }
-//            result = getClassFactory().createPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
-//        } catch (NotSupportedException e) {
-//            throw new GitException(e.getMessage(), e);
-//        } catch (URISyntaxException e) {
-//            throw new GitException(e.getMessage(), e);
-//        } catch (TransportException e) {
-//            URIish uriish = null;
-//            try {
-//                uriish = getUriWithUsername(true);
-//            } catch (URISyntaxException ex) {
-//                throw new GitException(e.getMessage(), e);
-//            }
-//            handleException(e, uriish);
-//        } catch (IOException e) {
-//            throw new GitException(e.getMessage(), e);
-//        } finally {
-//            if (transport != null) {
-//                transport.close();
-//            }
-//        }
+    public GitPushResult getResult () {
+        return result;
     }
-    
+
     @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "push"); //NOI18N
+        addArgument(0, "-v"); //NOI18N
         addArgument(0, remote);
         for (String refSpec : pushRefSpecs) {
             addArgument(0, refSpec);
         }
     }
 
-    public GitPushResult getResult () {
-        return result;
+    @Override
+    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
     }
+    
 }

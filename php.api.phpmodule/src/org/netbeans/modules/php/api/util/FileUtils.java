@@ -111,7 +111,7 @@ public final class FileUtils {
      */
     public static boolean isPhpFile(FileObject file) {
         Parameters.notNull("file", file); // NOI18N
-        return PHP_MIME_TYPE.equals(FileUtil.getMIMEType(file, PHP_MIME_TYPE));
+        return FileUtil.getMIMEType(file, PHP_MIME_TYPE, null) != null;
     }
 
     /**

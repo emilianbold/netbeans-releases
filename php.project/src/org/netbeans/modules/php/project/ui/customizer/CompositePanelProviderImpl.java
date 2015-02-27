@@ -177,7 +177,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (TESTING_SELENIUM.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(TESTING_SELENIUM,
                     Bundle.CompositePanelProviderImpl_category_selenium_testing_title(),
-                    null, null);
+                    null);
         } else if (LICENSE.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     LICENSE,

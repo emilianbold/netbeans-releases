@@ -73,7 +73,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
@@ -244,7 +243,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
         String configName = selectedConfiguration.getDisplayName();
         String progressTitle = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_TestingConnection", configName);
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle);
+        ProgressHandle progressHandle = ProgressHandle.createHandle(progressTitle);
         RemoteClient client = new RemoteClient(remoteConfiguration);
         RemoteException exception = null;
         try {

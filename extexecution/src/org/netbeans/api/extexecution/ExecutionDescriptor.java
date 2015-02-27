@@ -454,11 +454,11 @@ public final class ExecutionDescriptor {
     @NonNull
     @CheckReturnValue
     public ExecutionDescriptor outProcessorFactory(@NullAllowed InputProcessorFactory2 outProcessorFactory) {
-        if (errProcessorFactory != null) {
+        if (this.outProcessorFactory != null) {
             LOGGER.log(Level.WARNING, "The factory will be ignored as legacy InputProcessorFactory is already defined");
         }
         DescriptorData data = new DescriptorData(this);
-        return new ExecutionDescriptor(data.outProcessorFactory(outProcessorFactory2));
+        return new ExecutionDescriptor(data.outProcessorFactory(outProcessorFactory));
     }
 
     InputProcessorFactory2 getOutProcessorFactory2() {
@@ -528,11 +528,11 @@ public final class ExecutionDescriptor {
     @NonNull
     @CheckReturnValue
     public ExecutionDescriptor errProcessorFactory(@NullAllowed InputProcessorFactory2 errProcessorFactory) {
-        if (errProcessorFactory != null) {
+        if (this.errProcessorFactory != null) {
             LOGGER.log(Level.WARNING, "The factory will be ignored as legacy InputProcessorFactory is already defined");
         }
         DescriptorData data = new DescriptorData(this);
-        return new ExecutionDescriptor(data.errProcessorFactory(errProcessorFactory2));
+        return new ExecutionDescriptor(data.errProcessorFactory(errProcessorFactory));
     }
 
     InputProcessorFactory2 getErrProcessorFactory2() {
@@ -937,7 +937,7 @@ public final class ExecutionDescriptor {
         }
         
         public DescriptorData outProcessorFactory(InputProcessorFactory2 outProcessorFactory) {
-            this.outProcessorFactory2 = outProcessorFactory2;
+            this.outProcessorFactory2 = outProcessorFactory;
             return this;
         }
 
@@ -947,7 +947,7 @@ public final class ExecutionDescriptor {
         }
         
         public DescriptorData errProcessorFactory(InputProcessorFactory2 errProcessorFactory) {
-            this.errProcessorFactory2 = errProcessorFactory2;
+            this.errProcessorFactory2 = errProcessorFactory;
             return this;
         }
 

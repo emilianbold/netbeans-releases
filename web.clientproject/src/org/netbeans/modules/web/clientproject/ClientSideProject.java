@@ -66,7 +66,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -366,7 +366,7 @@ public class ClientSideProject implements Project {
                         .forceUseOfDefaultWorkingDirectory(true)
                         .showOpenDialog();
                 if (folder != null) {
-                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
                         @Override
                         public void run() {
                             ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(ClientSideProject.this);
@@ -400,7 +400,7 @@ public class ClientSideProject implements Project {
                         .forceUseOfDefaultWorkingDirectory(true)
                         .showOpenDialog();
                 if (folder != null) {
-                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
                         @Override
                         public void run() {
                             ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(ClientSideProject.this);

@@ -52,7 +52,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
@@ -190,7 +189,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         RP.post(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteConfirmationPanel.class, "LBL_FetchingRemoteFilesProgress"));
+                ProgressHandle handle = ProgressHandle.createHandle(NbBundle.getMessage(RemoteConfirmationPanel.class, "LBL_FetchingRemoteFilesProgress"));
                 try {
                     handle.start();
 

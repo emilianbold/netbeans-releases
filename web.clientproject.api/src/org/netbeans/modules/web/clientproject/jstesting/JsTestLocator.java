@@ -103,7 +103,7 @@ public final class JsTestLocator implements TestLocator {
         if (getSourceGroupForSeleniumTests(project, fo) != null) {
             return false; // disabled for files under Selenium Tests Folder
         }
-        return JS_MIME_TYPE.equals(FileUtil.getMIMEType(fo, JS_MIME_TYPE));
+        return FileUtil.getMIMEType(fo, JS_MIME_TYPE, null) != null;
     }
 
     @Override
