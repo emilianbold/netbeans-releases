@@ -74,6 +74,8 @@ import org.openide.windows.TopComponent;
 @LanguageRegistration(mimeType="text/jade", useMultiview = true) //NOI18N
 public class JadeLanguage extends DefaultLanguageConfig {
 
+    private static String LINE_COMMENT_PREFIX = "//";
+    
     @MIMEResolver.ExtensionRegistration(
         extension={ "jade"},
         displayName="#JadeResolver",
@@ -135,6 +137,12 @@ public class JadeLanguage extends DefaultLanguageConfig {
         return true;
     }
 
+    @Override
+    public String getLineCommentPrefix() {
+        return LINE_COMMENT_PREFIX;
+    }
+
+    
     // This is a fake parser to get work some features like folding.
     private static class JadeParser extends Parser {
 
