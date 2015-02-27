@@ -410,16 +410,114 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         return null;
     }
     
+    /**
+     * Helper class, which performs related document inspection under doc readlock.
+     * Factored out from getLine method, because either the whole method would turn
+     * to one big Runnable (this class), or two Runnables would need to exchange
+     * data through final arrays which is awkward.,
+     */
+    class PosExtractor implements Runnable {
+        private final CompilationInfo info;
+        private int startOffset;
+        private int endOffset;
+        private final boolean rangePrepared;
+        private final StyledDocument sdoc;
+        private final DataObject dobj;
+        
+        private String text;
+        private int lineOffset;
+        private Position[] result = new Position[2];
+
+        public PosExtractor(CompilationInfo info, StyledDocument doc, int startOffset, int endOffset, DataObject dobj, boolean rangePrepared) {
+            this.info = info;
+            this.sdoc = doc;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.rangePrepared = rangePrepared;
+            this.dobj = dobj;
+        }
+        
+        private void findText() {
+            LineCookie lc = dobj.getCookie(LineCookie.class);
+            int lineNumber = NbDocument.findLineNumber(sdoc, info.getSnapshot().getOriginalOffset(startOffset));
+            lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
+
+            if (rangePrepared) {
+                return;
+            }
+            Line line = lc.getLineSet().getCurrent(lineNumber);
+            text = line.getText();
+
+            if (text == null) {
+                //#116560, (according to the javadoc, means the document is closed):
+                cancel();
+                return;
+            }
+        }
+        
+        private int state;
+        
+        public String getText() {
+            state = 0;
+            sdoc.render(this);
+            return text;
+        }
+        
+        public Position[] getResult(int startOffset, int endOffset) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            state = 1;
+            sdoc.render(this);
+            
+            return result;
+        }
+        
+        private void findResult() {
+            
+            if (isCanceled())
+                return;
+
+            int len = sdoc.getLength();
+
+            if (startOffset >= len || endOffset > len) {
+                if (!isCanceled() && ERR.isLoggable(ErrorManager.WARNING)) {
+                    ERR.log(ErrorManager.WARNING, "document changed, but not canceled?" );
+                    ERR.log(ErrorManager.WARNING, "len = " + len );
+                    ERR.log(ErrorManager.WARNING, "startOffset = " + startOffset );
+                    ERR.log(ErrorManager.WARNING, "endOffset = " + endOffset );
+                }
+                cancel();
+
+                return;
+            }
+
+            try {
+                result[0] = NbDocument.createPosition(sdoc, startOffset, Bias.Forward);
+                result[1] = NbDocument.createPosition(sdoc, endOffset, Bias.Backward);
+            } catch (BadLocationException e) {
+                ERR.notify(ErrorManager.ERROR, e);
+            }
+        }
+        
+        public void run() {
+            switch (state) {
+                case 0:
+                    findText();
+                    break;
+                case 1:
+                    findResult();
+                    break;
+            }
+        }
+        
+    }
+    
     private Position[] getLine(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
         StyledDocument sdoc = (StyledDocument) doc;
         DataObject dObj = (DataObject)doc.getProperty(doc.StreamDescriptionProperty );
         if (dObj == null)
             return new Position[] {null, null};
-        LineCookie lc = dObj.getCookie(LineCookie.class);
         int originalStartOffset = info.getSnapshot().getOriginalOffset(startOffset);
-        int lineNumber = NbDocument.findLineNumber(sdoc, originalStartOffset);
-        int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
-        Line line = lc.getLineSet().getCurrent(lineNumber);
         
         boolean rangePrepared = false;
 
@@ -481,17 +579,14 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 }
             }
         }
-
-        String text = null;
-
-        if (!rangePrepared) {
-            text =line.getText();
-
-            if (text == null) {
-                //#116560, (according to the javadoc, means the document is closed):
-                cancel();
-                return null;
-            }
+        
+        PosExtractor ex = new PosExtractor(info, sdoc, startOffset, endOffset, dObj, rangePrepared);
+        // getText also fetches lineOffset
+        final String text = ex.getText();
+        final int lineOffset = ex.lineOffset;
+        
+        if (isCanceled()) {
+            return null;
         }
 
         if (!rangePrepared && d.getCode().endsWith("proc.messager")) {
@@ -532,40 +627,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             ERR.log(ErrorManager.INFORMATIONAL, "startOffset = " + startOffset );
             ERR.log(ErrorManager.INFORMATIONAL, "endOffset = " + endOffset );
         }
-        
-        final int startOffsetFinal = startOffset;
-        final int endOffsetFinal = endOffset;
-        final Position[] result = new Position[2];
-        
-        doc.render(new Runnable() {
-            public void run() {
-                if (isCanceled())
-                    return;
-                
-                int len = doc.getLength();
-                
-                if (startOffsetFinal >= len || endOffsetFinal > len) {
-                    if (!isCanceled() && ERR.isLoggable(ErrorManager.WARNING)) {
-                        ERR.log(ErrorManager.WARNING, "document changed, but not canceled?" );
-                        ERR.log(ErrorManager.WARNING, "len = " + len );
-                        ERR.log(ErrorManager.WARNING, "startOffset = " + startOffsetFinal );
-                        ERR.log(ErrorManager.WARNING, "endOffset = " + endOffsetFinal );
-                    }
-                    cancel();
-                    
-                    return;
-                }
-                
-                try {
-                    result[0] = NbDocument.createPosition(doc, startOffsetFinal, Bias.Forward);
-                    result[1] = NbDocument.createPosition(doc, endOffsetFinal, Bias.Backward);
-                } catch (BadLocationException e) {
-                    ERR.notify(ErrorManager.ERROR, e);
-                }
-            }
-        });
-        
-        return result;
+        return ex.getResult(startOffset, endOffset);
     }
     
     private boolean cancel;

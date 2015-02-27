@@ -309,7 +309,15 @@ public class ElementJavadoc {
                                             }
                                         }
                                     }
-                                    ret[0] = new ElementJavadoc(controller, e, new URL(docURL, link), cancel);
+                                    URL u;
+                                    if (uri.isAbsolute()) {
+                                        u = new URL(link);
+                                    } else if (docURL != null) {
+                                        u = new URL(docURL, link);
+                                    } else {
+                                        return;
+                                    }
+                                    ret[0] = new ElementJavadoc(controller, e, u, cancel);
                                 } else {
                                     //external URL
                                     if( uri.isAbsolute() ) {
