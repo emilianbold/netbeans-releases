@@ -233,7 +233,15 @@ public abstract class GitCommand {
                 return;
             }
             if (exitStatus.output!= null && exitStatus.isOK()) {
-                outputParser(exitStatus.output);
+                if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
+                    if (exitStatus.output.isEmpty()) {
+                        outputParser(exitStatus.error);
+                    } else {
+                        outputParser(exitStatus.output+"\n"+exitStatus.error);
+                    }
+                } else {
+                    outputParser(exitStatus.output);
+                }
             } else {
                 outputErrorParser(exitStatus.output, exitStatus.error, exitStatus.exitCode);
             }

@@ -118,6 +118,10 @@ public class AbstractGitTestCase extends NbTestCase {
         return localRepository;
     }
 
+    protected JGitRepository getRemoteGitRepository () {
+        return new JGitRepository(repositoryLocation);
+    }
+
     protected void write(VCSFileProxy file, String str) throws IOException {
         OutputStreamWriter w = null;
         try {

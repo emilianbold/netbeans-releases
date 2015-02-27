@@ -55,7 +55,6 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.remote.GitBranch;
 import org.netbeans.libs.git.remote.GitConstants;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitRef;
 import org.netbeans.libs.git.remote.GitRevisionInfo;
 import org.netbeans.libs.git.remote.jgit.commands.ListBranchCommand;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;

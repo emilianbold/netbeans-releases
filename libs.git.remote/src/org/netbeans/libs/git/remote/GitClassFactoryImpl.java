@@ -166,6 +166,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
 //    public GitTransportUpdate createTransportUpdate (URIish urI, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches) {
 //        return new GitTransportUpdate(urI, update, remoteBranches);
 //    }
+    
+    @Override
+    public GitTransportUpdate createTransportUpdate (GitTransportUpdate.GitTransportUpdateContainer container) {
+        return new GitTransportUpdate(container);
+    }
 
     @Override
     public GitUser createUser (String name, String mail) {

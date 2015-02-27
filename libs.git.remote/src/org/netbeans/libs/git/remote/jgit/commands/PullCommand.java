@@ -42,16 +42,18 @@
 
 package org.netbeans.libs.git.remote.jgit.commands;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitFetchResult;
+import org.netbeans.libs.git.remote.jgit.GitFetchResult;
 import org.netbeans.libs.git.remote.GitMergeResult;
 import org.netbeans.libs.git.remote.GitPullResult;
 import org.netbeans.libs.git.remote.GitTransportUpdate;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -75,29 +77,43 @@ public class PullCommand extends TransportCommand {
         this.branchToMerge = branchToMerge;
     }
 
-    @Override
-    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
-//        FetchCommand fetch = new FetchCommand(getRepository(), getClassFactory(), remote, refSpecs, monitor);
-//        fetch.setCredentialsProvider(getCredentialsProvider());
-//        fetch.run();
-//        this.updates = fetch.getUpdates();
-//        MergeCommand merge = new MergeCommand(getRepository(), getClassFactory(), branchToMerge, null, monitor);
-//        merge.setCommitMessage("branch \'" + findRemoteBranchName() + "\' of " + fetch.getResult().getURI().setUser(null).setPass(null).toString());
-//        merge.run();
-//        this.mergeResult = merge.getResult();
+    public GitPullResult getResult () {
+        return getClassFactory().createPullResult(updates, mergeResult);
     }
-    
+
     @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "pull"); //NOI18N
+        addArgument(0, "-v"); //NOI18N
         addArgument(0, remote);
         for (String refSpec : refSpecs) {
             addArgument(0, refSpec);
         }
     }
 
-    public GitPullResult getResult () {
-        return getClassFactory().createPullResult(updates, mergeResult);
-    }
+    @Override
+    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            updates = new LinkedHashMap<>();
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
+    }    
 }

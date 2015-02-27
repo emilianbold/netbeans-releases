@@ -122,6 +122,8 @@ public abstract class GitClassFactory {
 
     //public abstract GitTransportUpdate createTransportUpdate (URIish urI, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches);
 
+    public abstract GitTransportUpdate createTransportUpdate (GitTransportUpdate.GitTransportUpdateContainer container);
+
     public abstract GitUser createUser (String name, String mail);
 
     public abstract void setBranchTracking (GitBranch branch, GitBranch trackedBranch);

@@ -48,6 +48,7 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 import org.netbeans.libs.git.remote.progress.StatusListener;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -72,55 +73,31 @@ public class ConflictCommand extends StatusCommandBase {
         super.prepare();
         addArgument(0, "show"); //NOI18N
         addArgument(0, "conflicts"); //NOI18N
+        addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
     }
 
     @Override
     protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            DirCache cache = repository.readDirCache();
-//            try {
-//                String workTreePath = repository.getWorkTree().getAbsolutePath();
-//                Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
-//                TreeWalk treeWalk = new TreeWalk(repository);
-//                if (!pathFilters.isEmpty()) {
-//                    treeWalk.setFilter(PathFilterGroup.create(pathFilters));
-//                }
-//                treeWalk.setRecursive(true);
-//                treeWalk.reset();
-//                // Index
-//                treeWalk.addTree(new DirCacheIterator(cache));
-//                String lastPath = null;
-//                GitStatus[] conflicts = new GitStatus[3];
-//                while (treeWalk.next() && !monitor.isCanceled()) {
-//                    String path = treeWalk.getPathString();
-//                    if (!path.equals(lastPath)) {
-//                        handleConflict(conflicts, workTreePath);
-//                    }
-//                    lastPath = path;
-//                    VCSFileProxy file = VCSFileProxy.createFileProxy(getRepository().getLocation(), path);
-//                    DirCacheIterator indexIterator = treeWalk.getTree(0, DirCacheIterator.class);
-//                    DirCacheEntry indexEntry = indexIterator != null ? indexIterator.getDirCacheEntry() : null;
-//                    int stage = indexEntry == null ? 0 : indexEntry.getStage();
-//                    long indexTS = indexEntry == null ? -1 : indexEntry.getLastModified();
-//
-//                    if (stage != 0) {
-//                        GitStatus status = getClassFactory().createStatus(true, path, workTreePath, file,
-//                                Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL,
-//                                null, false, null, indexTS);
-//                        conflicts[stage - 1] = status;
-//                    }
-//                }
-//                handleConflict(conflicts, workTreePath);
-//            } finally {
-//                cache.unlock();
-//            }
-//        } catch (CorruptObjectException ex) {
-//            throw new GitException(ex);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
     }
 }
