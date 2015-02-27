@@ -56,7 +56,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -74,7 +73,6 @@ import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -129,7 +127,7 @@ public final class PhpUnitTestCreatorProvider extends TestCreatorProvider {
         RUNNABLES.add(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(PhpUnitTestCreatorProvider.class, "LBL_CreatingTests"));
+                ProgressHandle handle = ProgressHandle.createHandle(NbBundle.getMessage(PhpUnitTestCreatorProvider.class, "LBL_CreatingTests"));
                 handle.start();
                 try {
                     LifecycleManager.getDefault().saveAll();

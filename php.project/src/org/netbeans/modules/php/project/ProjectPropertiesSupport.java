@@ -49,7 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
@@ -560,7 +560,7 @@ public final class ProjectPropertiesSupport {
 
     @NbBundle.Messages("ProjectPropertiesSupport.project.metadata.saving=Saving project metadata...")
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+        BaseProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
                 // XXX reference helper

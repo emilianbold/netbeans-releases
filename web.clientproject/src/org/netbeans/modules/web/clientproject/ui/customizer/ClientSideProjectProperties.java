@@ -301,7 +301,7 @@ public final class ClientSideProjectProperties {
 
     public AtomicReference<String> getRunAs() {
         if (runAs == null) {
-            runAs = new AtomicReference(getProjectProperty(ClientSideProjectConstants.PROJECT_RUN_AS, null));
+            runAs = new AtomicReference<>(getProjectProperty(ClientSideProjectConstants.PROJECT_RUN_AS, null));
         }
         return runAs;
     }

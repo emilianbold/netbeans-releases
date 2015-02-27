@@ -62,7 +62,7 @@ import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.bower.file.BowerJson;
@@ -346,7 +346,7 @@ public class BowerExecutable {
 
     }
 
-    private static final class StringBuilderInputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static final class StringBuilderInputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory2 {
         private final StringBuilder result = new StringBuilder();
 
         @Override
