@@ -697,6 +697,7 @@ public final class PhpExecutable {
             fullCommand.add(param);
             arguments.add(param);
         }
+        processBuilder.setArguments(arguments);
         if (workDir != null) {
             processBuilder.setWorkingDirectory(workDir.getAbsolutePath());
         }
