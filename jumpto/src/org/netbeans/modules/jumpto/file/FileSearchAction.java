@@ -220,7 +220,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             text = Utils.removeNonNeededWildCards(text);
         }
         else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
-            nameKind = QuerySupport.Kind.CAMEL_CASE;
+            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.CAMEL_CASE : QuerySupport.Kind.CASE_INSENSITIVE_CAMEL_CASE;
         }
         else {
             nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
