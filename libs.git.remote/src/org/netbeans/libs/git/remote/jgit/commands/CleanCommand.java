@@ -47,6 +47,7 @@ import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.FileListener;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -54,6 +55,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author Tomas Stupka
  */
 public class CleanCommand extends GitCommand {
+    public static final boolean KIT = false;
     private final VCSFileProxy[] roots;
     private final ProgressMonitor monitor;
     private final FileListener listener;
@@ -69,53 +71,49 @@ public class CleanCommand extends GitCommand {
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "clean"); //NOI18N
+        addArgument(0, "-f"); //NOI18N
         addArgument(0, "-d"); //NOI18N
         addFiles(0, roots);
     }
 
     @Override
     protected void run() throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();        
-//        try {
-//            DirCache cache = null;
-//            try {
-//                cache = repository.lockDirCache();
-//                TreeWalk treeWalk = new TreeWalk(repository);
-//                Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
-//                if (!pathFilters.isEmpty()) {
-//                    treeWalk.setFilter(PathFilterGroup.create(pathFilters));
-//                }
-//                treeWalk.setRecursive(false);
-//                treeWalk.setPostOrderTraversal(true);
-//                treeWalk.reset();
-//                                
-//                treeWalk.addTree(new FileTreeIterator(repository));
-//                while (treeWalk.next() && !monitor.isCanceled()) {
-//                    String path = treeWalk.getPathString();                    
-//                    WorkingTreeIterator f = treeWalk.getTree(0, WorkingTreeIterator.class);
-//                    if(f != null) { // file exists
-//                        if (!treeWalk.isPostChildren()) {
-//                            if (treeWalk.isSubtree()) {
-//                                treeWalk.enterSubtree();
-//                                continue;
-//                            } else {
-//                                deleteIfUnversioned(cache, path, f, getRepository(), treeWalk);
-//                            }
-//                        } else {
-//                            deleteIfUnversioned(cache, path, f, getRepository(), treeWalk);
-//                        }                        
-//                    }                    
-//                }
-//            } finally {
-//                if (cache != null ) {
-//                    cache.unlock();
-//                }
-//            }
-//        } catch (CorruptObjectException ex) {
-//            throw new GitException(ex);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    parseCleanOutput(output);
+                }
+                
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
+    }
+    
+    private void parseCleanOutput(String output) {
+        //Removing root/folder/nestedUnversionedFile
+        //Removing root/folder/nestedUnversionedFolder/
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("Removing")) {
+                String file = line.substring(8).trim();
+                if (file.endsWith("/")) {
+                    file = file.substring(0,file.length()-1);
+                }
+                listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), file), file);
+                continue;
+            }
+        }
+        
     }
 }
