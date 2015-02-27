@@ -42,7 +42,6 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitException.UnsupportedCommandException;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.FileListener;

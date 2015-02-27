@@ -69,6 +69,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -87,13 +89,17 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -307,11 +313,12 @@ public class AssignResultToVariable extends AbstractHint {
 
     private static final String VAR_TYPE_TAG = "varType";
 
-    static final class FixImpl implements Fix {
+    static final class FixImpl implements Fix, Runnable {
         
         private FileObject file;
         private Document doc;
         private TreePathHandle tph;
+        private Position pos;
         
         public FixImpl(FileObject file, Document doc, TreePathHandle tph) {
             this.file = file;
@@ -322,9 +329,27 @@ public class AssignResultToVariable extends AbstractHint {
         public String getText() {
             return NbBundle.getMessage(AssignResultToVariable.class, "FIX_AssignResultToVariable");
         }
+        
+        // invoke instant rename performer
+        public void run() {
+            if (pos == null) {
+                return;
+            }
+            try {
+                EditorCookie cook = DataObject.find(file).getLookup().lookup(EditorCookie.class);
+                JEditorPane[] arr = cook.getOpenedPanes();
+                if (arr == null) {
+                    return;
+                }
+                arr[0].setCaretPosition(pos.getOffset());
+                InstantRenamePerformer.invokeInstantRename(arr[0]);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         public ChangeInfo implement() {
-            try {
+           try {
                 final String[] name = new String[1];
                 ModificationResult result = JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy copy) throws Exception {
@@ -389,7 +414,7 @@ public class AssignResultToVariable extends AbstractHint {
 
                             if (m.find()) {
                                 int startPos = varTypeSpan[1] + m.start();
-                                info[0] = new ChangeInfo(doc.createPosition(startPos), doc.createPosition(startPos + name[0].length()));
+                                info[0] = new ChangeInfo(pos = doc.createPosition(startPos), doc.createPosition(startPos + name[0].length()));
                             } else {
                                 Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "Cannot find the name in: {0}", text.toString()); // NOI18N
                             }
@@ -398,6 +423,8 @@ public class AssignResultToVariable extends AbstractHint {
                         }
                     }
                 });
+                
+                SwingUtilities.invokeLater(this);
                 
                 return info[0];
             } catch (IOException e) {
