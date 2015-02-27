@@ -174,7 +174,7 @@ public enum JadeCompletionContext {
                 id = token.id(); 
                 if (id == JadeTokenId.TAG) {
                     if (isBeginOfLine) {
-                        return TAG;
+                        return TAG_AND_KEYWORD;
                     } else {
                         return NONE;
                     }
