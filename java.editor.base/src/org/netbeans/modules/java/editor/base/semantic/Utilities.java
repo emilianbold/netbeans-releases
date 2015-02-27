@@ -455,14 +455,15 @@ public class Utilities {
                 if (offset >= 0) {
                     return offset;
                 }
-            } 
-            List<? extends Tree> set = (List<? extends Tree>)o;
-            if (!set.isEmpty()) {
-                // assume that the compiler will fake a single item in otherwise empty list; it should not add a fake item after some real Tree items.
-                Tree t = set.get(set.size() - 1);
-                int offset = (int)pos.getEndPosition(cu, t);
-                if (offset >= 0) {
-                    return offset;
+            } else { 
+                List<? extends Tree> set = (List<? extends Tree>)o;
+                if (!set.isEmpty()) {
+                    // assume that the compiler will fake a single item in otherwise empty list; it should not add a fake item after some real Tree items.
+                    Tree t = set.get(set.size() - 1);
+                    int offset = (int)pos.getEndPosition(cu, t);
+                    if (offset >= 0) {
+                        return offset;
+                    }
                 }
             }
         }

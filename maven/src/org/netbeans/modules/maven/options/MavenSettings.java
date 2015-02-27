@@ -502,8 +502,12 @@ public final class MavenSettings  {
                     continue;
                 }
 
-                mavenEnvDirs.add(path.substring(0,
+                if(path.equals("/bin") || path.equals("bin")) {
+                    mavenEnvDirs.add(path);
+                } else {
+                    mavenEnvDirs.add(path.substring(0,
                         path.length() - "bin".length() - File.pathSeparator.length()));
+                }
             }
         }
 
