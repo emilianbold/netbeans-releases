@@ -1157,13 +1157,13 @@ public final class NetworkMonitorTopComponent extends TopComponent
                 sb.append(",\n");
             }
             if (value instanceof JSONObject) {
-                jsonPrettyPrintObject((JSONObject)value, sb, indent+4);
+                jsonPrettyPrintObject((JSONObject)value, sb, indent+2);
             } else if (value instanceof JSONArray) {
-                jsonPrettyPrintArray((JSONArray)value, sb, indent+4);
+                jsonPrettyPrintArray((JSONArray)value, sb, indent+2);
             } else if (value instanceof String) {
                 print(sb, "\""+((String)value).replace("\"", "\\\"")+"\"", indent+2);
             } else {
-                print(sb, value.toString(), indent+2);
+                print(sb, String.valueOf(value), indent+2);
             }
             first = false;
         }
