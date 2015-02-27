@@ -1,8 +1,8 @@
 [TAG_AND_KEYWORD]ul[TAG]
   li [NONE]Item A
-  [TAG]li [NONE]Item B
-  [TAG]li [NONE]Item C
-
+[TAG_AND_KEYWORD]  [TAG]li [NONE]Item B
+[TAG_AND_KEYWORD]  [TAG]li [NONE]Item C
+[TAG_AND_KEYWORD]
 [TAG]img
 
 a:[NONE] [TAG]img

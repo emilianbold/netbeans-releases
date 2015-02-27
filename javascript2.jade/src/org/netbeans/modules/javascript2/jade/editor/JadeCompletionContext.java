@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.jade.editor;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
@@ -50,7 +49,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
-import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -186,6 +184,9 @@ public enum JadeCompletionContext {
                 }
                 
                 if (id != JadeTokenId.EOL && id != JadeTokenId.WHITESPACE && id != JadeTokenId.JAVASCRIPT) {
+                    if (isBeginOfLine) {
+                        return TAG_AND_KEYWORD;
+                    }
                     return NONE;
                 }
             }  

@@ -1,0 +1,8 @@
+[TAG_AND_KEYWORD]doctype[NONE] html
+[TAG]html
+    title [NONE]TODO supply a title
+[TAG_AND_KEYWORD]    [TAG]body
+      [CSS_ID]#user
+[TAG_AND_KEYWORD]        [TAG]p [NONE]You're logged in as
+[TAG_AND_KEYWORD]          
+        [TAG]div
