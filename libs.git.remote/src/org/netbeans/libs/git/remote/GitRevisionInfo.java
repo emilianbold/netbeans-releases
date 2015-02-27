@@ -72,6 +72,7 @@ public final class GitRevisionInfo {
     private String autorTime;
     private String commiterTime;
     private String[] parents;
+    private String treeCode;
 
     GitRevisionInfo(GitRevCommit status, JGitRepository repository) {
         this(status, Collections.<String, GitBranch>emptyMap(), repository);
@@ -81,6 +82,7 @@ public final class GitRevisionInfo {
         this.branch = status.branch;
         this.branches = affectedBranches;
         this.revisionCode = status.revisionCode;
+        this.treeCode = status.treeCode;
         this.message = status.message;
         this.autorAndMail = status.autorAndMail;
         autorTime = status.autorTime;
@@ -104,6 +106,13 @@ public final class GitRevisionInfo {
         return revisionCode;
     }
 
+    /**
+     * @return id of the commit
+     */
+    public String getTree () {
+        return treeCode;
+    }
+    
     /**
      * @return the first line of the commit message.
      */

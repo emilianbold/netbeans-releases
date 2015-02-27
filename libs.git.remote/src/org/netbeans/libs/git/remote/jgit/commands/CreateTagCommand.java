@@ -123,11 +123,6 @@ public class CreateTagCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                 }
 
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    parseAddError(error);
-                }
-                
             }.runCLI();
             
             new Runner(canceled, 1){
@@ -248,6 +243,16 @@ public class CreateTagCommand extends GitCommand {
                 if (line.startsWith("commit")) {
                     container.type = GitObjectType.COMMIT;
                     container.objectId = line.substring(6).trim();
+                    break;
+                }
+                if (line.startsWith("tree")) {
+                    container.type = GitObjectType.TREE;
+                    container.objectId = line.substring(4).trim();
+                    break;
+                }
+                if (line.startsWith("tag")) {
+                    container.type = GitObjectType.TAG;
+                    container.objectId = line.substring(3).trim();
                     break;
                 }
                 continue;
