@@ -1613,7 +1613,7 @@ public class SvnUtils {
     private static Logger TY9_LOG = null;
     public static void logT9Y(String msg) {
         if(TY9_LOG == null) {
-            TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y"); //NOI18N
+            TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.t9y"); //NOI18N
         }
         TY9_LOG.log(Level.FINEST, msg);
     }

@@ -85,9 +85,11 @@ public class CreateBranchCommand extends GitCommand {
         addArgument(0, "--track"); //NOI18N
         addArgument(0, branchName);
         addArgument(0, revision);
+        
         addArgument(1, "branch"); //NOI18N
         addArgument(1, "--track"); //NOI18N
         addArgument(1, branchName);
+        
         addArgument(2, "branch"); //NOI18N
         addArgument(2, "-vv"); //NOI18N
         addArgument(2, "--all"); //NOI18N
@@ -107,7 +109,7 @@ public class CreateBranchCommand extends GitCommand {
 
                 @Override
                 public void outputParser(String output) throws GitException {
-                    ListBranchCommand.parseBranches(output, getClassFactory(), branches);
+                    parseTrackBranch(output, branches);
                 }
 
                 @Override
@@ -123,7 +125,7 @@ public class CreateBranchCommand extends GitCommand {
 
                     @Override
                     public void outputParser(String output) throws GitException {
-                        ListBranchCommand.parseBranches(output, getClassFactory(), branches);
+                        parseTrackBranch(output, branches);
                     }
                 }.runCLI();
             }
@@ -145,6 +147,20 @@ public class CreateBranchCommand extends GitCommand {
             if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
+            }
+        }
+    }
+    
+    private void parseTrackBranch(String output, Map<String, GitBranch> branches) {
+        //#git branch --track
+        //Branch master set up to track remote branch master from origin.
+        //
+        //Branch nova1 set up to track local branch master.
+        //
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("Branch")) {
+                String[] s = line.split("\\s+");
+                continue;
             }
         }
     }

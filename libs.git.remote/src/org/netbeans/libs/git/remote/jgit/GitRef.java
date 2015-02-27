@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.remote.jgit.commands;
-
-import java.util.Collection;
-import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitRef;
-import org.netbeans.libs.git.remote.jgit.GitClassFactory;
-import org.netbeans.libs.git.remote.jgit.JGitRepository;
-import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+package org.netbeans.libs.git.remote.jgit;
 
 /**
  *
- * @author ondra
+ * @author alsimon
  */
-abstract class ListRemoteObjectsCommand extends TransportCommand {
-    private Collection<GitRef> refs;
+public class GitRef implements Comparable<GitRef> {
+    private final String name;
+    private final String id;
     
-    public ListRemoteObjectsCommand (JGitRepository repository, GitClassFactory gitFactory, String remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, gitFactory, remoteRepositoryUrl, monitor);
+    public GitRef(String name, String id) {
+        this.name = name;
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public GitRef getLeaf() {
+        //TODO resolve links
+        return this;
+    }
+    
+    public String getObjectId() {
+        return id;
     }
 
     @Override
-    protected final void runTransportCommand () throws GitException {
-//        Transport t = null;
-//        FetchConnection conn = null;
-//        try {
-//            t = openTransport(false);
-//            conn = t.openFetch();
-//            refs = conn.getRefs();
-//        } catch (URISyntaxException ex) {
-//            throw new GitException(ex.getMessage(), ex);
-//        } catch (NotSupportedException ex) {
-//            throw new GitException(ex.getMessage(), ex);
-//        } catch (TransportException e) {
-//            URIish uriish = null;
-//            try {
-//                uriish = getUriWithUsername(false);
-//            } catch (URISyntaxException ex) {
-//                throw new GitException(ex.getMessage(), ex);
-//            }
-//            handleException(e, uriish);
-//        } finally {
-//            if (conn != null) {
-//                conn.close();
-//            }
-//            if (t != null) {
-//                t.close();
-//            }
-//        }
-//        processRefs();
-    }
-
-    protected abstract void processRefs ();
-    
-    protected final Collection<GitRef> getRefs () {
-        return refs;
+    public int compareTo(GitRef o) {
+        int i = name.compareTo(o.name);
+        if (i == 0) {
+            return id.compareTo(o.id);
+        }
+        return i;
     }
 }

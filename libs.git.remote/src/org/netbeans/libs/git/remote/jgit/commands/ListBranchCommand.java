@@ -89,8 +89,8 @@ public class ListBranchCommand extends GitCommand {
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
-        branches = new LinkedHashMap<String, GitBranch>();
         try {
+            branches = new LinkedHashMap<String, GitBranch>();
             new Runner(canceled, 0){
 
                 @Override

@@ -49,6 +49,7 @@ import org.netbeans.libs.git.remote.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -72,31 +73,26 @@ public class SubmoduleUpdateCommand extends TransportCommand {
 
     @Override
     protected void runTransportCommand () throws GitException {
-//        Repository repository = getRepository().getRepository();
-//        VCSFileProxy workTree = getRepository().getLocation();
-//        org.eclipse.jgit.api.SubmoduleUpdateCommand cmd = new Git(repository).submoduleUpdate();
-//        for (VCSFileProxy root : roots) {
-//            cmd.addPath(Utils.getRelativePath(workTree, root));
-//            try {
-//                cmd.setProgressMonitor(new DelegatingProgressMonitor(monitor));
-//                cmd.setCredentialsProvider(getCredentialsProvider());
-//                cmd.setTimeout(45);
-//                // if needed, transport can be set up using: cmd.setTransportConfigCallback();
-//                cmd.call();
-//            } catch (TransportException e) {
-//                URIish uriish = null;
-//                try {
-//                    uriish = getUriWithUsername(false);
-//                } catch (URISyntaxException ex) {
-//                    throw new GitException(e.getMessage(), e);
-//                }
-//                Utils.deleteRecursively(VCSFileProxy.createFileProxy(root, Constants.DOT_GIT));
-//                handleException(new org.eclipse.jgit.errors.TransportException(e.getMessage(), e), uriish);
-//            } catch (GitAPIException | JGitInternalException ex) {
-//                throw new GitException(ex);
-//            }
-//        }
-//        statusCmd.run();
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+            }.runCLI();
+            statusCmd.run();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
     }
     
     @Override

@@ -42,6 +42,7 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import static junit.framework.Assert.assertFalse;
 import org.netbeans.libs.git.remote.GitClient;
@@ -574,33 +575,21 @@ else    assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Stat
         Map<VCSFileProxy, GitStatus> conflicts = client.getConflicts(roots, NULL_PROGRESS_MONITOR);
         assertEquals(0, conflicts.size());
 
-//        DirCache cache = repository.getRepository().lockDirCache();
-//        try {
-//            DirCacheEntry e = cache.getEntry("f");
-//            DirCacheBuilder builder = cache.builder();
-//            DirCacheEntry toAdd = new DirCacheEntry("f", 1);
-//            toAdd.setFileMode(e.getFileMode());
-//            toAdd.setObjectId(e.getObjectId());
-//            builder.add(toAdd);
-//            toAdd = new DirCacheEntry("f", 2);
-//            toAdd.setFileMode(e.getFileMode());
-//            toAdd.setObjectId(e.getObjectId());
-//            builder.add(toAdd);
-//
-//            e = cache.getEntry("f2");
-//            toAdd = new DirCacheEntry("f2", 1);
-//            toAdd.setFileMode(e.getFileMode());
-//            toAdd.setObjectId(e.getObjectId());
-//            builder.add(toAdd);
-//            toAdd = new DirCacheEntry("f2", 2);
-//            toAdd.setFileMode(e.getFileMode());
-//            toAdd.setObjectId(e.getObjectId());
-//            builder.add(toAdd);
-//            builder.finish();
-//            builder.commit();
-//        } finally {
-//            cache.unlock();
-//        }
+        JGitRepository remoteGitRepository = getRemoteGitRepository();
+        VCSFileProxy remoteLocation = remoteGitRepository.getLocation();
+        VCSFileProxy rf = VCSFileProxy.createFileProxy(remoteLocation, "f");
+        //write(rf, "remote f");
+        VCSFileProxySupport.createNew(rf);
+        VCSFileProxy rf2 = VCSFileProxy.createFileProxy(remoteLocation, "f2");
+        //write(rf2, "remote f2");
+        VCSFileProxySupport.createNew(rf2);
+        VCSFileProxy[] rroots = new VCSFileProxy[] { rf, rf2 };
+        GitClient remote = getClient(remoteLocation);
+        remote.add(rroots, NULL_PROGRESS_MONITOR);
+        remote.commit(rroots, "init", null, null, NULL_PROGRESS_MONITOR);
+        client.fetch("origin", NULL_PROGRESS_MONITOR);
+        //client.pull(remoteLocation.getPath(), Arrays.asList(new String[] { "refs/heads/master:refs/remotes/origin/master" }), "master", NULL_PROGRESS_MONITOR);
+
         conflicts = client.getConflicts(new VCSFileProxy[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals(1, conflicts.size());
         conflicts = client.getConflicts(new VCSFileProxy[] { f2 }, NULL_PROGRESS_MONITOR);
