@@ -562,10 +562,15 @@ public class FileStatusCache {
                 File topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
                 symlink = topmost != null && isSymlink(file, topmost);
                 if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
-                    SvnClient client = Subversion.getInstance().getClient(false);
-                    status = SvnUtils.getSingleStatus(client, file);
-                    if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
+                    if (isParentIgnored(file)) {
+                        // increase performace and do not query files under ignored parent
                         status = null;
+                    } else {
+                        SvnClient client = Subversion.getInstance().getClient(false);
+                        status = SvnUtils.getSingleStatus(client, file);
+                        if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
+                            status = null;
+                        }
                     }
                 }
             } catch (SVNClientException e) {
@@ -657,6 +662,16 @@ public class FileStatusCache {
         }                       
         return fi;
     }    
+
+    private boolean isParentIgnored (File file) {
+        File parent = file.getParentFile();
+        if (parent != null) {
+            FileInformation parentInfo = getCachedStatus(parent);
+            return parentInfo != null && parentInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+        } else {
+            return false;
+        }
+    }
 
     public void patchRevision(File[] fileArray, Number revision) {        
         for (File file : fileArray) {            
@@ -866,7 +881,7 @@ public class FileStatusCache {
 
         ISVNStatus [] entries = null;
         try {
-            if (SvnUtils.isManaged(dir)) {                
+            if (SvnUtils.isManaged(dir) && !isParentIgnored(dir)) {                
                 SvnClient client = Subversion.getInstance().getClient(true);
                 entries = client.getStatus(dir, false, true); 
             }
@@ -1446,6 +1461,13 @@ public class FileStatusCache {
                     HashMap<File, FileLabelInfo> labels = new HashMap<File, FileLabelInfo>(filesToRefresh.size());
                     for (File file : filesToRefresh) {
                         try {
+                            FileInformation fi = master.getCachedStatus(file);
+                            if (fi != null && (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0
+                                    || master.isParentIgnored(file)) {
+                                // increase performace and do not query ignored files
+                                labels.put(file, FAKE_LABEL_INFO);
+                                continue;
+                            }
                             SvnClient client = Subversion.getInstance().getClient(false);
                             // get status for all files
                             ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, file);
@@ -1458,7 +1480,6 @@ public class FileStatusCache {
                             if (info.getLastChangedDate() != null) {
                                 lastDateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(info.getLastChangedDate());
                             }
-                            FileInformation fi = master.getCachedStatus(file);
                             if (mimeTypeFlag) {
                                 // call svn prop command only when really needed
                                 if (fi == null || (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0) {
