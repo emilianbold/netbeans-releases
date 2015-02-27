@@ -67,7 +67,11 @@ public final class GitTag {
             this.tagger = new GitUser("", "");
         }
         this.type = revTag.type;
-        this.lightWeight = false;
+        if (revTag.message == null) {
+            this.lightWeight = true;
+        } else {
+            this.lightWeight = false;
+        }
     }
 
     GitTag (String tagName, String rev, GitObjectType type) {
@@ -168,7 +172,7 @@ public final class GitTag {
         public String author;
         public String time;
         public String message;
-        public GitObjectType type;
+        public GitObjectType type = GitObjectType.UNKNOWN;
         public String objectId;
     }
     

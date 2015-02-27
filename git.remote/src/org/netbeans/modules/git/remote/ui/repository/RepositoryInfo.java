@@ -491,12 +491,12 @@ public class RepositoryInfo {
             for (Map.Entry<String, GitTag> e : oldTags.entrySet()) {
                 GitTag oldTag = e.getValue();
                 GitTag newTag = newTags.get(e.getKey());
-                if (!(oldTag.getMessage().equals(newTag.getMessage())
-                        && oldTag.getTagId().equals(newTag.getTagId())
+                if (!(/*oldTag.getMessage().equals(newTag.getMessage())
+                        &&*/ oldTag.getTagId().equals(newTag.getTagId())
                         && oldTag.getTagName().equals(newTag.getTagName())
                         && oldTag.getTaggedObjectId().equals(newTag.getTaggedObjectId())
-                        && oldTag.getTaggedObjectType().equals(newTag.getTaggedObjectType())
-                        && oldTag.getTagger().toString().equals(newTag.getTagger().toString()))) {
+                        /*&& oldTag.getTaggedObjectType().equals(newTag.getTaggedObjectType())
+                        && oldTag.getTagger().toString().equals(newTag.getTagger().toString())*/ )) {
                     retval = false;
                     break;
                 }
