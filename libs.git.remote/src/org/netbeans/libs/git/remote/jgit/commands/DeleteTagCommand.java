@@ -43,9 +43,11 @@ package org.netbeans.libs.git.remote.jgit.commands;
 
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRefUpdateResult;
+import org.netbeans.libs.git.remote.GitTag.TagContainer;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -54,38 +56,14 @@ import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 public class DeleteTagCommand extends GitCommand {
     private final String tagName;
     private GitRefUpdateResult result;
+    private final ProgressMonitor monitor;
 
     public DeleteTagCommand (JGitRepository repository, GitClassFactory gitFactory, String tagName, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.tagName = tagName;
+        this.monitor = monitor;
     }
 
-    @Override
-    protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        Ref currentRef = repository.getTags().get(tagName);
-//        if (currentRef == null) {
-//            throw new GitException.MissingObjectException(tagName, GitObjectType.TAG);
-//        }
-//        String fullName = currentRef.getName();
-//        try {
-//            RefUpdate update = repository.updateRef(fullName);
-//            update.setRefLogMessage("tag deleted", false);
-//            update.setForceUpdate(true);
-//            Result deleteResult = update.delete();
-//
-//            switch (deleteResult) {
-//                case IO_FAILURE:
-//                case LOCK_FAILURE:
-//                case REJECTED:
-//                    throw new GitException.RefUpdateException("Cannot delete tag " + tagName, GitRefUpdateResult.valueOf(deleteResult.name()));
-//            }
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
-//        
-    }
     
     @Override
     protected void prepare() throws GitException {
@@ -93,5 +71,66 @@ public class DeleteTagCommand extends GitCommand {
         addArgument(0, "tag"); //NOI18N
         addArgument(0, "-d"); //NOI18N
         addArgument(0, tagName);
+    }
+
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    parseTagOutput(output);
+                }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    //TODO:
+                    //switch (deleteResult) {
+                    //    case IO_FAILURE:
+                    //    case LOCK_FAILURE:
+                    //    case REJECTED:
+                    //        throw new GitException.RefUpdateException("Cannot delete tag " + tagName, GitRefUpdateResult.valueOf(deleteResult.name()));
+                    //}
+                    super.errorParser(error);
+                }
+                
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
+    }
+    
+    private void parseTagOutput(String output) {
+        //Deleted tag 'tag-name' (was 6e5965e)
+        //for (String line : output.split("\n")) { //NOI18N
+        //    if (line.startsWith("Deleted tag")) {
+        //        String s = line.substring(11).trim();
+        //        if (s.startsWith("'")) {
+        //            int i = s.indexOf('\'',1);
+        //            if (i > 0) {
+        //                String name = s.substring(1,i);
+        //                String[] a = s.split("\\s");
+        //                String rev = a[a.length-1];
+        //                if (rev.endsWith(")")) {
+        //                    rev = rev.substring(0, rev.length()-1);
+        //                }
+        //                TagContainer tagContainer = new TagContainer();
+        //                tagContainer.name = name;
+        //                tagContainer.objectId = rev;
+        //            }
+        //        }
+        //        continue;
+        //    }
+        //}
     }
 }
