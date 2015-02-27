@@ -62,7 +62,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
@@ -398,7 +397,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             if (!name.endsWith(".zip")) { //NOI18N
                 name += ".zip"; //NOI18N
             }
-            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.CreateSiteTemplate_info_templateCreating(name));
+            ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.CreateSiteTemplate_info_templateCreating(name));
             try {
                 progressHandle.start();
                 File f = new File(panel.comp.getTemplateFolder(), name);

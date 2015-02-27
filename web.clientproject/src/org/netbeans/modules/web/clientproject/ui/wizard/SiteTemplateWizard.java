@@ -61,7 +61,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
@@ -309,7 +308,7 @@ public class SiteTemplateWizard extends JPanel {
             templateName = siteTemplate.getName();
         }
         // prepare
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
+        ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
         progressHandle.start();
         try {
             for (;;) {
