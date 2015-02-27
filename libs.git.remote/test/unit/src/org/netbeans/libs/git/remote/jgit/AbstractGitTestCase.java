@@ -104,6 +104,11 @@ public class AbstractGitTestCase extends NbTestCase {
         VCSFileProxySupport.mkdirs(wc);
         initializeRepository();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        VCSFileProxySupport.delete(workDir);
+    }
     
     protected VCSFileProxy getWorkingDirectory () {
         return wc;
