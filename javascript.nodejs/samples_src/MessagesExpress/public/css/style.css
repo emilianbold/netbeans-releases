@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+/*
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,20 +38,49 @@ made subject to such option by the copyright holder.
 Contributor(s):
 
 Portions Copyrighted 2014 Sun Microsystems, Inc.
--->
-<project basedir="." default="netbeans" name="javascript.nodejs">
-    <description>Builds, tests, and runs the project org.netbeans.modules.javascript.nodejs</description>
-    <import file="../nbbuild/templates/projectized.xml"/>
+*/
 
-    <target name="jar" depends="zip-samples,projectized-common.jar"/>
+body {
+    background-color: #cdcdcd;
+    font-family: Helvetica, Arial, sans-serif;
+}
 
-    <target name="zip-samples">
-        <property name="samples" location="${build.classes.dir}/org/netbeans/modules/javascript/nodejs/samples"/>
-        <mkdir dir="${samples}"/>
-        <zip basedir="samples_src/ListDirectory" destfile="${samples}/ListDirectory.zip"/>
-        <zip basedir="samples_src/MessagesKnockout" destfile="${samples}/MessagesKnockout.zip"/>
-        <zip basedir="samples_src/MessagesAngular" destfile="${samples}/MessagesAngular.zip"/>
-        <zip basedir="samples_src/MessagesExpress" destfile="${samples}/MessagesExpress.zip"/>
-    </target>
+textarea {
+    font-size: 18px;
+    border-radius: 0;
+    line-height: 22px;
+    background-color: #fbfbfb;
+    padding: 13px 13px 13px 54px;
+    margin-bottom: 10px;
+    width: 70%;
+    box-sizing: border-box;
+    border: 3px solid rgba(0,0,0,0);
+}
 
-</project>
+textarea:focus {
+    border: 3px solid #3498db;
+}
+
+#container {
+    width: 50%;
+    margin: 0 auto;
+}
+
+button {
+    width: 30%;
+    border: #fbfbfb solid 2px;
+    cursor: pointer;
+    background-color: #3498db;
+    color: white;
+    font-size: 18px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+button:disabled {
+    background-color: #d1736d
+}
+
+td {
+    border-top: 1px solid black;
+}
