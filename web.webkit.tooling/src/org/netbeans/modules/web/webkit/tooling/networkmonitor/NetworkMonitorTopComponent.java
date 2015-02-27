@@ -119,8 +119,8 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private Model model;
     private static final RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
     private final InputOutput io;
-    private MyProvider ioProvider;
-    private UIUpdater updater;
+    private final MyProvider ioProvider;
+    private final UIUpdater updater;
     private boolean debuggingSession;
 
     NetworkMonitorTopComponent(Model m, boolean debuggingSession) {
@@ -144,8 +144,8 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
     private static class UIUpdater implements ActionListener {
 
-        private Timer t;
-        private NetworkMonitorTopComponent comp;
+        private final Timer t;
+        private final NetworkMonitorTopComponent comp;
         private ModelItem modelItem;
 
         public UIUpdater(NetworkMonitorTopComponent comp) {
@@ -669,7 +669,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         private String failureCause = null;
         private final BrowserFamilyId browserFamilyId;
         private final Project project;
-        private AtomicBoolean dataLoaded = new AtomicBoolean(false);
+        private final AtomicBoolean dataLoaded = new AtomicBoolean(false);
 
         public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest,
                 BrowserFamilyId browserFamilyId, Project project) {
