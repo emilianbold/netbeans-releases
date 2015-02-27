@@ -61,6 +61,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  */
 public class JGitConfig {
     public static final String CONFIG_CORE_SECTION = "core";
+    public static final String CONFIG_REMOTE_SECTION = "remote";    
     public static final String CONFIG_KEY_FILEMODE = "filemode";
     public static final String CONFIG_KEY_AUTOCRLF = "autocrlf";
     public static final String CONFIG_BRANCH_SECTION = "branch";

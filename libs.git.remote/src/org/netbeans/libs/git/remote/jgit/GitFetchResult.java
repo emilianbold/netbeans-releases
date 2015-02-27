@@ -39,12 +39,15 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.remote;
+package org.netbeans.libs.git.remote.jgit;
+
+import java.util.LinkedHashMap;
+import org.netbeans.libs.git.remote.GitTransportUpdate;
 
 /**
  *
  * @author alsimon
  */
 public class GitFetchResult {
-    
+    public LinkedHashMap<String, GitTransportUpdate.GitTransportUpdateContainer> result = new LinkedHashMap<String, GitTransportUpdate.GitTransportUpdateContainer>();
 }

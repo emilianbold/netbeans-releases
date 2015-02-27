@@ -45,6 +45,7 @@ package org.netbeans.libs.git.remote.jgit.commands;
 import org.netbeans.libs.git.remote.GitException;
 import org.netbeans.libs.git.remote.GitRemoteConfig;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
+import org.netbeans.libs.git.remote.jgit.JGitConfig;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
 
@@ -67,46 +68,25 @@ public class SetRemoteCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        StoredConfig config = repository.getConfig();
-//        boolean finished = false;
-//        try {
-//            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_URL);
-//            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSHURL);
-//            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_FETCH);
-//            config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSH);
-//            RemoteConfig cfg = new RemoteConfig(config, remote.getRemoteName());
-//            for (String uri : remote.getUris()) {
-//                cfg.addURI(new URIish(uri));
-//            }
-//            for (String uri : remote.getPushUris()) {
-//                cfg.addPushURI(new URIish(uri));
-//            }
-//            for (String spec : remote.getFetchRefSpecs()) {
-//                cfg.addFetchRefSpec(new RefSpec(spec));
-//            }
-//            for (String spec : remote.getPushRefSpecs()) {
-//                cfg.addPushRefSpec(new RefSpec(spec));
-//            }
-//            cfg.update(config);
-//            config.save();
-//            finished = true;
-//        } catch (Exception ex) {
-//            throw new GitException(ex);
-//        } finally {
-//            if (!finished) {
-//                try {
-//                    if (config instanceof FileBasedConfig) {
-//                        FileBasedConfig fileConfig = (FileBasedConfig) config;
-//                        fileConfig.clear();
-//                    }
-//                    config.load();
-//                } catch (Exception e) {
-//
-//                }
-//            }
-//        }
+        JGitConfig config = getRepository().getConfig();
+        config.load();
+        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_URL);
+        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSHURL);
+        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_FETCH);
+        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSH);
+        for (String uri : remote.getUris()) {
+            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_URL, uri);
+        }
+        for (String uri : remote.getPushUris()) {
+            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSHURL, uri);
+        }
+        for (String spec : remote.getFetchRefSpecs()) {
+            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_FETCH, spec);
+        }
+        for (String spec : remote.getPushRefSpecs()) {
+            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSH, spec);
+        }
+        config.save();
     }
     
     @Override

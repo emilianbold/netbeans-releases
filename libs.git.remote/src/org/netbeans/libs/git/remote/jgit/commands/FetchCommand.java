@@ -43,14 +43,17 @@
 package org.netbeans.libs.git.remote.jgit.commands;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitFetchResult;
+import org.netbeans.libs.git.remote.jgit.GitFetchResult;
 import org.netbeans.libs.git.remote.GitTransportUpdate;
+import org.netbeans.libs.git.remote.GitTransportUpdate.GitTransportUpdateContainer;
 import org.netbeans.libs.git.remote.jgit.GitClassFactory;
 import org.netbeans.libs.git.remote.jgit.JGitRepository;
 import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -75,61 +78,94 @@ public class FetchCommand extends TransportCommand {
         this.refSpecs = fetchRefSpecifications;
     }
 
-    @Override
-    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
-//        Repository repository = getRepository().getRepository();
-//        List<RefSpec> specs = new ArrayList<RefSpec>(refSpecs.size());
-//        for (String refSpec : refSpecs) {
-//            specs.add(new RefSpec(refSpec));
-//        }
-//        Transport transport = null;
-//        try {
-//            transport = openTransport(false);
-//            transport.setRemoveDeletedRefs(false); // cannot enable, see FetchTest.testDeleteStaleReferencesFails
-//            transport.setDryRun(false);
-//            transport.setFetchThin(true);
-//            transport.setTagOpt(TagOpt.FETCH_TAGS);
-//            result = transport.fetch(new DelegatingProgressMonitor(monitor), specs);
-//            processMessages(result.getMessages());
-//            updates = new HashMap<String, GitTransportUpdate>(result.getTrackingRefUpdates().size());
-//            for (TrackingRefUpdate update : result.getTrackingRefUpdates()) {
-//                GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update);
-//                updates.put(upd.getLocalName(), upd);
-//            }
-//        } catch (NotSupportedException e) {
-//            throw new GitException(e.getMessage(), e);
-//        } catch (URISyntaxException e) {
-//            throw new GitException(e.getMessage(), e);
-//        } catch (TransportException e) {
-//            URIish uriish = null;
-//            try {
-//                uriish = getUriWithUsername(false);
-//            } catch (URISyntaxException ex) {
-//                throw new GitException(e.getMessage(), e);
-//            }
-//            handleException(e, uriish);
-//        } finally {
-//            if (transport != null) {
-//                transport.close();
-//            }
-//        }
-    }
-    
-    @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "fetch"); //NOI18N
-        addArgument(0, remote);
-        for (String refSpec : refSpecs) {
-            addArgument(0, refSpec);
-        }
-    }
-
     public Map<String, GitTransportUpdate> getUpdates () {
         return Collections.unmodifiableMap(updates);
     }
     
     public GitFetchResult getResult () {
         return result;
+    }
+    
+    @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument(0, "fetch"); //NOI18N
+        addArgument(0, "-v"); //NOI18N
+        addArgument(0, remote);
+        for (String refSpec : refSpecs) {
+            addArgument(0, refSpec);
+        }
+    }
+
+    @Override
+    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            result = new GitFetchResult();
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    parseFetchOutput(output);
+                }
+
+            }.runCLI();
+            updates = new LinkedHashMap<>();
+            for(GitTransportUpdateContainer c : result.result.values()) {
+                updates.put(c.url, getClassFactory().createTransportUpdate(c));
+            }
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
+    }
+
+    private void parseFetchOutput(String output) {
+        //From /export1/home/alsimon/cnd-main/libs.git.remote/build/test/unit/work/o.n.l.g.r.j.c.B/dtb/repo2
+        //* [new branch]      master     -> origin/master
+        String url = null;
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("From")) {
+                String[] s = line.split("\\s");
+                url = s[s.length-1];
+                continue;
+            }
+            if (line.startsWith("*") || line.startsWith(" ")) {
+                GitTransportUpdateContainer details = new GitTransportUpdateContainer();
+                line = line.trim();
+                details.def = '*' == line.charAt(0);
+                if (details.def) {
+                    line = line.substring(1).trim();
+                }
+                int i = line.indexOf("->");
+                if (i > 0) {
+                    details.remoteBranch = line.substring(i+2).trim();
+                }
+                line = line.substring(0, i).trim();
+                if (line.startsWith("[new branch]")) {
+                    details.newBranch = "new branch";
+                    details.localBranch = line.substring(line.indexOf("]")+1).trim();
+                } else {
+                    String[] s = line.split("\\s+");
+                    if (s.length == 2) {
+                        details.newBranch = s[0];
+                        if (details.newBranch.startsWith("[") && details.newBranch.endsWith("]")) {
+                            details.newBranch = details.newBranch.substring(1,details.newBranch.length()-1);
+                        }
+                        details.localBranch = s[1];
+                    }
+                }
+                details.url = url;
+                result.result.put(url, details);
+                continue;
+            }
+        }
     }
 }

@@ -474,7 +474,7 @@ UnbufferedComment = "//-"
 <JAVASCRIPT_VALUE> {
     \'                              {   yybegin(JS_SSTRING); }
     \"                              {   yybegin(JS_STRING); }
-    [\+\-\.&\*/%|]"="?              {   continueJS = true; lastReaded = tokenLength; }
+    [\+\-\.&\*/%|=!]"="?            {   continueJS = true; lastReaded = tokenLength; }
     "["                             {   braceBalance++; lastReaded = tokenLength; }
     "]"                             {   braceBalance--; lastReaded = tokenLength; }
     "{"                             {   bracketBalance++; lastReaded = tokenLength; }

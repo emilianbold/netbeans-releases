@@ -100,6 +100,16 @@ public final class GitTransportUpdate {
         this.uri = null;//uri.toString();
         this.type = null;//getType(update.getRemoteName());
     }
+
+    GitTransportUpdate (GitTransportUpdateContainer container) {
+        this.localName = container.localBranch;
+        this.remoteName = container.remoteBranch;
+        this.oldObjectId = null;//getOldRevisionId(remoteBranches.get(remoteName));
+        this.newObjectId = null;//update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
+        this.result = null;//GitRefUpdateResult.valueOf(update.getStatus().name());
+        this.uri = container.url;
+        this.type = null;//getType(update.getRemoteName());
+    }
     
     /**
      * @return URI of a remote repository
@@ -190,5 +200,13 @@ public final class GitTransportUpdate {
 
     private String getOldRevisionId (GitBranch branch) {
         return branch == null ? null : branch.getId();
+    }
+    
+    public static class GitTransportUpdateContainer {
+        public boolean def;
+        public String newBranch;
+        public String localBranch;
+        public String remoteBranch;
+        public String url;
     }
 }

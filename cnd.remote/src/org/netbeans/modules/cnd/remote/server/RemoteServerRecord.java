@@ -133,7 +133,9 @@ public class RemoteServerRecord implements ServerRecord {
 
     @Override
     public String toString() {
-        return executionEnvironment.toString();
+        return executionEnvironment.toString() + ' ' + //NOI18N
+                (syncFactory == null ? "[null sync factory]" : syncFactory.getID()) + //NOI18N
+                ' ' + this.state; //NOI18N
     }
 
     @Override
