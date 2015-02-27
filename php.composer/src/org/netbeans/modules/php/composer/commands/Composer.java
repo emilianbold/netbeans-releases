@@ -52,12 +52,11 @@ import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
@@ -296,7 +295,7 @@ public final class Composer {
                 .frontWindow(false);
         // run
         return composer
-                .run(descriptor, new ExecutionDescriptor.InputProcessorFactory() {
+                .run(descriptor, new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
                     public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                         return new OutputProcessorImpl(new OutputParser() {
@@ -330,7 +329,7 @@ public final class Composer {
                 .frontWindow(false);
         // run
         return composer
-                .run(descriptor, new ExecutionDescriptor.InputProcessorFactory() {
+                .run(descriptor, new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
                     public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                         return new OutputProcessorImpl(new OutputParser() {

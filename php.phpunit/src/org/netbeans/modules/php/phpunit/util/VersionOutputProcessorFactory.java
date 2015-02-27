@@ -45,11 +45,11 @@ package org.netbeans.modules.php.phpunit.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 
-public class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+public class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
     private final Pattern versionPattern;
 

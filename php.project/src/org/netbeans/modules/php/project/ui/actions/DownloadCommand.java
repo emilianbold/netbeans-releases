@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
@@ -137,7 +136,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
     private static Set<TransferFile> prepareDownload(Set<TransferFile> transferFilesToDownload, FileObject sources, FileObject[] filesToDownload,
             PhpProject project, String projectName, boolean showDownloadDialog, RemoteClient remoteClient) {
         Set<TransferFile> forDownload = Collections.emptySet();
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+        ProgressHandle progressHandle = ProgressHandle.createHandle(
                 NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName), remoteClient);
         try {
             progressHandle.start();
@@ -171,7 +170,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         TransferInfo transferInfo = null;
         try {
             if (forDownload.size() > 0) {
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+                ProgressHandle progressHandle = ProgressHandle.createHandle(
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName), remoteClient);
                 DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor(progressHandle, forDownload);
                 remoteClient.setOperationMonitor(downloadOperationMonitor);

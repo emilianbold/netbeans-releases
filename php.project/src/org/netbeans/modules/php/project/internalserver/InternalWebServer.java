@@ -57,7 +57,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
@@ -139,7 +138,7 @@ public final class InternalWebServer implements PropertyChangeListener {
     @SuppressWarnings("SleepWhileHoldingLock")
     private static boolean ensureServerStopped(InternalWebServer instance) {
         assert !EventQueue.isDispatchThread();
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.InternalWebServer_stopping(instance.project.getName()));
+        ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.InternalWebServer_stopping(instance.project.getName()));
         try {
             progressHandle.start();
             // stop server

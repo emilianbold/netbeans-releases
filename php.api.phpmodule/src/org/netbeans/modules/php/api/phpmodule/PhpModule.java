@@ -152,40 +152,6 @@ public interface PhpModule extends Lookup.Provider {
      */
     void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
 
-    /**
-     * <b>Deprecated, use {@link #getTestDirectories()} or {@link #getTestDirectory(FileObject)}.
-     * This method will be removed after NB 8.0.</b>
-     * <p>
-     * Get the test directory for this PHP module.
-     * @return the test directory, can be <code>null</code> if not set yet
-     */
-    @Deprecated
-    @CheckForNull
-    FileObject getTestDirectory();
-
-    /**
-     * <b>Deprecated, {@link #getLookup() lookup} its {@link PhpModuleProperties.Factory factory} class.
-     * This method will be removed after NB 8.0.</b>
-     * <p>
-     * Get the current {@link PhpModuleProperties properties} of this PHP module.
-     * Please note that caller should not hold this properties because they can
-     * change very often (if user changes Run Configuration).
-     * @return the current {@link PhpModuleProperties properties}
-     */
-    @Deprecated
-    @NonNull
-    PhpModuleProperties getProperties();
-
-    /**
-     * <b>Deprecated, {@link #getLookup() lookup} {@link org.netbeans.spi.project.ui.CustomizerProvider2} class
-     * and use its methods. This method will be removed after NB 8.0.</b>
-     * <p>
-     * Open Project Properties dialog for this PHP module with the given category.
-     * @param category category to be preselected
-     */
-    @Deprecated
-    void openCustomizer(String category);
-
     //~ Factories
 
     /**

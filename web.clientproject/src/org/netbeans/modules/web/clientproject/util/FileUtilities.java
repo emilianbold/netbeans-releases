@@ -85,8 +85,7 @@ public final class FileUtilities {
      * @return {@code true} if the given file is an (X)HTML file, {@code false} otherwise
      */
     public static boolean isHtmlFile(FileObject file) {
-        String mimeType = FileUtil.getMIMEType(file, HTML_MIME_TYPE, XHTML_MIME_TYPE);
-        return HTML_MIME_TYPE.equals(mimeType) || XHTML_MIME_TYPE.equals(mimeType);
+        return FileUtil.getMIMEType(file, HTML_MIME_TYPE, XHTML_MIME_TYPE, null) != null;
     }
 
     /**
@@ -95,7 +94,7 @@ public final class FileUtilities {
      * @return {@code true} if the given file is a CSS file, {@code false} otherwise
      */
     public static boolean isCssFile(FileObject file) {
-        return CSS_MIME_TYPE.equals(FileUtil.getMIMEType(file, CSS_MIME_TYPE));
+        return FileUtil.getMIMEType(file, CSS_MIME_TYPE, null) != null;
     }
 
     /**
@@ -104,7 +103,7 @@ public final class FileUtilities {
      * @return {@code true} if the given file is a JavaScript file, {@code false} otherwise
      */
     public static boolean isJavaScriptFile(FileObject file) {
-        return JAVASCRIPT_MIME_TYPE.equals(FileUtil.getMIMEType(file, JAVASCRIPT_MIME_TYPE));
+        return FileUtil.getMIMEType(file, JAVASCRIPT_MIME_TYPE, null) != null;
     }
 
     /**

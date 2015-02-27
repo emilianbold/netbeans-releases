@@ -52,9 +52,9 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
@@ -423,7 +423,7 @@ public final class Atoum {
 
     //~ Inner classes
 
-    private static final class ParsingFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static final class ParsingFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
         private final TestSession testSession;
 

@@ -556,13 +556,13 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         // complete type
         CharSequence cs = JavadocCompletionUtils.getCharSequence(jdctx.doc, start, end);
         StringBuilder sb = new StringBuilder();
-        jdctx.anchorOffset = start;
         for (int i = caretOffset - start - 1; i >= 0; i--) {
             char c = cs.charAt(i);
             if (c == '#') {
                 // complete class member
                 String prefix = sb.toString();
                 int substitutionOffset = caretOffset - sb.length();
+                jdctx.anchorOffset = substitutionOffset;
                 ExpressionTree classReference = jdctx.javac.getTreeUtilities().getReferenceClass(tag);
                 if (classReference == null) {
                     if (kind == Kind.VALUE) {
@@ -588,6 +588,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 String prefix = sb.toString();
                 String fqn = cs.subSequence(0, i).toString();
                 int substitutionOffset = caretOffset - sb.length();
+                jdctx.anchorOffset = substitutionOffset;
                 if (kind == Kind.THROWS) {
                     completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
                 } else {
@@ -602,6 +603,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         String prefix = sb.toString();
         String fqn = null;
         int substitutionOffset = caretOffset - sb.length();
+        jdctx.anchorOffset = substitutionOffset;
         if (kind == Kind.THROWS) {
             completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
         } else {

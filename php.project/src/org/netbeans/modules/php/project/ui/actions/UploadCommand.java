@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
@@ -124,7 +123,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
 
     private Set<TransferFile> prepareUpload(FileObject sources, FileObject[] filesToUpload, FileObject[] preselectedFiles, RemoteClient remoteClient) {
         Set<TransferFile> forUpload = Collections.emptySet();
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
+        ProgressHandle progressHandle = ProgressHandle.createHandle(NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
         try {
             progressHandle.start();
             forUpload = remoteClient.prepareUpload(sources, filesToUpload);
@@ -166,7 +165,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         TransferInfo transferInfo = null;
         try {
             if (forUpload.size() > 0) {
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+                ProgressHandle progressHandle = ProgressHandle.createHandle(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
                 DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor(progressHandle, forUpload);
                 remoteClient.setOperationMonitor(uploadOperationMonitor);

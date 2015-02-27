@@ -54,9 +54,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.parsers.CodeSnifferReportParser;
@@ -273,7 +273,7 @@ public final class CodeSniffer {
 
     //~ Inner classes
 
-    static final class StandardsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    static final class StandardsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
         static final String LINE_START = "The installed coding standards are "; // NOI18N
 

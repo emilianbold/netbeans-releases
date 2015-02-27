@@ -57,7 +57,6 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -638,7 +637,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 if (localHandler != null) {
                     LOGGER.log(Level.FINE, "Processing LOCAL copying handler for project {0}", project.getName());
 
-                    ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_LocalSynchronization"));
+                    ProgressHandle progress = ProgressHandle.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_LocalSynchronization"));
                     progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
                     try {
                         progress.start();
@@ -678,7 +677,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 if (remoteHandler != null) {
                     LOGGER.log(Level.FINE, "Processing REMOTE copying handler for project {0}", project.getName());
 
-                    ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_RemoteSynchronization"));
+                    ProgressHandle progress = ProgressHandle.createHandle(NbBundle.getMessage(CopySupport.class, "LBL_RemoteSynchronization"));
                     progress.setInitialDelay(PROGRESS_INITIAL_DELAY);
                     try {
                         progress.start();
