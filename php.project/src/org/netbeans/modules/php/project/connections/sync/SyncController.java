@@ -61,7 +61,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -157,7 +156,7 @@ public final class SyncController implements Cancellable {
         } else {
             displayName = Bundle.SyncController_fetching_files(files.length);
         }
-        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(displayName, this);
+        final ProgressHandle progressHandle = ProgressHandle.createHandle(displayName, this);
         try {
             progressHandle.start();
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
