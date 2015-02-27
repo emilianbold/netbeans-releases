@@ -1,11 +1,11 @@
 [TAG_AND_KEYWORD]ul[TAG]
-  li [NONE]Item A
+[TAG_AND_KEYWORD]  [TAG]li [NONE]Item A
 [TAG_AND_KEYWORD]  [TAG]li [NONE]Item B
 [TAG_AND_KEYWORD]  [TAG]li [NONE]Item C
 [TAG_AND_KEYWORD]
 [TAG]img
-
-a:[NONE] [TAG]img
-
-foo/[NONE]
+[TAG_AND_KEYWORD]
+[TAG]a:[NONE] [TAG]img
+[TAG_AND_KEYWORD]
+[TAG]foo/[NONE]
 [TAG]foo([ATTRIBUTE]bar='baz'[NONE])/
