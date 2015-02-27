@@ -83,6 +83,38 @@ public class JadeCompletionContextTest extends JadeTestBase {
         checkCompletionContext("testfiles/ccContext/tag03.jade");
     }
     
+    public void testIssue250743() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue250743.jade");
+    }
+    
+    public void testIssue250742() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue250742.jade");
+    }
+    
+    public void testIssue250741() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue250741.jade");
+    }
+    
+    public void testIssue250739() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue250739.jade");
+    }
+    
+    public void testIssue250738() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue250738.jade");
+    }
+    
+    public void testIssue250734() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue250734.jade");
+    }
+    
+    public void testIssue250732() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue250732.jade");
+    }
+    
+    public void testIssue250731() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue250731.jade");
+    }
+    
     private void checkCompletionContext(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         final Snapshot snapshot = testSource.createSnapshot();
