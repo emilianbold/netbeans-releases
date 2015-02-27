@@ -97,7 +97,7 @@ public class ProgressPanel extends JPanel {
         assert syncInfo != null;
 
         summaryPanel = new SummaryPanel(syncInfo.upload, syncInfo.download, syncInfo.delete, syncInfo.noop);
-        progressHandle = ProgressHandleFactory.createHandle(Bundle.ProgressPanel_progress_title());
+        progressHandle = ProgressHandle.createHandle(Bundle.ProgressPanel_progress_title());
         // #211494
         progressMessageLabel = ProgressHandleFactory.createDetailLabelComponent(progressHandle);
         // set correct height of the component

@@ -116,7 +116,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
      * extension, {@code false} otherwise
      */
     public static boolean hasSmartyTemplateExtension(FileObject fo) {
-        return TplDataLoader.MIME_TYPE.equals(FileUtil.getMIMEType(fo, TplDataLoader.MIME_TYPE));
+        return FileUtil.getMIMEType(fo, TplDataLoader.MIME_TYPE, null) != null;
     }
 
     public static FileObject locate(PhpModule phpModule, String relativePath, boolean subdirs) {

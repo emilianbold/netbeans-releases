@@ -45,6 +45,7 @@ package org.netbeans.spi.java.hints;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -558,7 +559,8 @@ public class ErrorDescriptionFactory {
 
                     Tree top = path.getLeaf();
                     ModifiersTree modifiers = null;
-
+                    TreePath lambdaPath = null;
+                    
                     switch (top.getKind()) {
                         case ANNOTATION_TYPE:
                         case CLASS:
@@ -569,8 +571,17 @@ public class ErrorDescriptionFactory {
                         case METHOD:
                             modifiers = ((MethodTree) top).getModifiers();
                             break;
-                        case VARIABLE:
-                            modifiers = ((VariableTree) top).getModifiers();
+                        case VARIABLE: {
+                                if (path.getParentPath() != null && 
+                                    path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                                    // check if the variable is an implict parameter. If so, it must be turned into explicit
+                                    TreePath typePath = TreePath.getPath(path.getParentPath(), ((VariableTree)top).getType());
+                                    if (copy.getTreeUtilities().isSynthetic(typePath)) {
+                                        lambdaPath = path.getParentPath();
+                                    }
+                                }
+                                modifiers = ((VariableTree) top).getModifiers();
+                            }
                             break;
                         default: assert false : "Unhandled Tree.Kind";  // NOI18N
                     }
@@ -592,6 +603,17 @@ public class ErrorDescriptionFactory {
                                 Literal(keys[i]);
                     }
 
+                    if (lambdaPath != null) {
+                        LambdaExpressionTree let = (LambdaExpressionTree)lambdaPath.getLeaf();
+                        for (VariableTree var : let.getParameters()) {
+                            TreePath typePath = TreePath.getPath(lambdaPath, var.getType());
+                            if (copy.getTreeUtilities().isSynthetic(typePath)) {
+                                Tree imported = copy.getTreeMaker().Type(copy.getTrees().getTypeMirror(typePath));
+                                copy.rewrite(var.getType(), imported);
+                            }
+                        }
+                    }
+                    
                     ModifiersTree nueMods = GeneratorUtilities.get(copy).appendToAnnotationValue(modifiers, el, "value", keyLiterals);
 
                     copy.rewrite(modifiers, nueMods);

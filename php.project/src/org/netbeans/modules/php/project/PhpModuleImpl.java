@@ -62,7 +62,12 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Mysik
  */
 public class PhpModuleImpl implements PhpModule {
+
     private final PhpProject phpProject;
+
+    // @GuardedBy("this")
+    private Lookup lookup;
+
 
     public PhpModuleImpl(PhpProject phpProject) {
         assert phpProject != null;
@@ -104,29 +109,21 @@ public class PhpModuleImpl implements PhpModule {
     }
 
     @Override
-    public FileObject getTestDirectory() {
-        return getTestDirectory(null);
-    }
-
-    @Override
     public boolean isBroken() {
         return PhpProjectValidator.isFatallyBroken(phpProject);
     }
 
     @Override
-    public Lookup getLookup() {
-        // XXX cache it?
-        Lookup projectLookup = phpProject.getLookup();
-        return Lookups.fixed(
-                projectLookup.lookup(CustomizerProvider2.class),
-                projectLookup.lookup(org.netbeans.modules.php.api.queries.PhpVisibilityQuery.class),
-                new PhpModulePropertiesFactory(phpProject)
-        );
-    }
-
-    @Override
-    public PhpModuleProperties getProperties() {
-        return getLookup().lookup(PhpModuleProperties.Factory.class).getProperties();
+    public synchronized Lookup getLookup() {
+        if (lookup == null) {
+            Lookup projectLookup = phpProject.getLookup();
+            lookup = Lookups.fixed(
+                    projectLookup.lookup(CustomizerProvider2.class),
+                    projectLookup.lookup(org.netbeans.modules.php.api.queries.PhpVisibilityQuery.class),
+                    new PhpModulePropertiesFactory(phpProject)
+            );
+        }
+        return lookup;
     }
 
     @Override
@@ -144,11 +141,6 @@ public class PhpModuleImpl implements PhpModule {
         if (PROPERTY_FRAMEWORKS.equals(propertyChangeEvent.getPropertyName())) {
             phpProject.resetFrameworks();
         }
-    }
-
-    @Override
-    public void openCustomizer(String category) {
-        getLookup().lookup(CustomizerProvider2.class).showCustomizer(category, null);
     }
 
     //~ Inner classes

@@ -62,9 +62,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
@@ -763,7 +763,7 @@ public final class PhpUnit {
 
     }
 
-    private static final class TestGroupsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static final class TestGroupsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
         private final Pattern testGroupName = Pattern.compile("^\\s-\\s(.*)$"); // NOI18N
         private final List<String> testGroups = Collections.synchronizedList(new ArrayList<String>());

@@ -142,7 +142,7 @@ public final class HintsControllerImpl {
     static int[] computeLineSpan(Document doc, int lineNumber) throws BadLocationException {
         lineNumber = Math.min(lineNumber, NbDocument.findLineRootElement((StyledDocument) doc).getElementCount());
         
-        int lineStartOffset = NbDocument.findLineOffset((StyledDocument) doc, lineNumber - 1);
+        int lineStartOffset = NbDocument.findLineOffset((StyledDocument) doc, Math.max(0, lineNumber - 1));
         int lineEndOffset;
         
         if (doc instanceof BaseDocument) {

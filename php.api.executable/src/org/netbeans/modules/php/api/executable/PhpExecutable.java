@@ -72,12 +72,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.extexecution.base.ProcessBuilder;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -106,13 +105,14 @@ public final class PhpExecutable {
     private static final Project DUMMY_PROJECT = new DummyProject();
 
     /**
-     * The {@link InputProcessorFactory input processor factory} that strips any
+     * The {@link ExecutionDescriptor.InputProcessorFactory2 input processor factory} that strips any
      * <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape sequences</a>.
      * <p>
      * <b>In fact, it is not needed anymore since the Output window understands ANSI escape sequences.</b>
      * @see InputProcessors#ansiStripping(InputProcessor)
+     * @since 0.28
      */
-    public static final ExecutionDescriptor.InputProcessorFactory ANSI_STRIPPING_FACTORY = new ExecutionDescriptor.InputProcessorFactory() {
+    public static final ExecutionDescriptor.InputProcessorFactory2 ANSI_STRIPPING_FACTORY = new ExecutionDescriptor.InputProcessorFactory2() {
         @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             return InputProcessors.ansiStripping(defaultProcessor);
@@ -404,7 +404,7 @@ public final class PhpExecutable {
      * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
      * or {@code null} if the executable cannot be run
      * @see #run(ExecutionDescriptor)
-     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2)
      * @see ExecutionService#run()
      */
     @CheckForNull
@@ -415,8 +415,8 @@ public final class PhpExecutable {
     /**
      * Run this executable with the given execution descriptor.
      * <p>
-     * <b>WARNING:</b> If any {@link InputProcessorFactory output processor factory} should be used, use
-     * {@link PhpExecutable#run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)} instead.
+     * <b>WARNING:</b> If any {@link ExecutionDescriptor.InputProcessorFactory2 output processor factory} should be used, use
+     * {@link PhpExecutable#run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2)} instead.
      * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
      * or {@code null} if the executable cannot be run
      * @see #run()
@@ -425,7 +425,7 @@ public final class PhpExecutable {
      */
     @CheckForNull
     public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor) {
-        return run(executionDescriptor, null);
+        return run(executionDescriptor, (ExecutionDescriptor.InputProcessorFactory2) null);
     }
 
     /**
@@ -437,12 +437,12 @@ public final class PhpExecutable {
      * or {@code null} if the executable cannot be run
      * @see #run()
      * @see #run(ExecutionDescriptor)
-     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2)
      * @see ExecutionService#run()
-     * @since 0.2
+     * @since 0.28
      */
     @CheckForNull
-    public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
+    public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory) {
         Parameters.notNull("executionDescriptor", executionDescriptor); // NOI18N
         return runInternal(executionDescriptor, outProcessorFactory, false);
     }
@@ -454,7 +454,7 @@ public final class PhpExecutable {
      * @return exit code of the process or {@code null} if any error occured
      * @throws ExecutionException if any error occurs
      * @see #runAndWait(ExecutionDescriptor, String)
-     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)
+     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2, String)
      */
     @CheckForNull
     public Integer runAndWait(@NonNull String progressMessage) throws ExecutionException {
@@ -465,14 +465,14 @@ public final class PhpExecutable {
      * Run this executable with the given execution descriptor, <b>blocking but not blocking the UI thread</b>
      * (it displays progress dialog if it is running in it).
      * <p>
-     * <b>WARNING:</b> If any {@link InputProcessorFactory output processor factory} should be used, use
-     * {@link PhpExecutable#runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)} instead.
+     * <b>WARNING:</b> If any {@link ExecutionDescriptor.InputProcessorFactory2 output processor factory} should be used, use
+     * {@link PhpExecutable#runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2, String) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2, String)} instead.
      * @param executionDescriptor execution descriptor to be used
      * @param progressMessage message displayed if the task is running in the UI thread
      * @return exit code of the process or {@code null} if any error occured
      * @throws ExecutionException if any error occurs
      * @see #runAndWait(String)
-     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)
+     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2, String)
      */
     @CheckForNull
     public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NonNull String progressMessage) throws ExecutionException {
@@ -489,9 +489,10 @@ public final class PhpExecutable {
      * @throws ExecutionException if any error occurs
      * @see #runAndWait(String)
      * @see #runAndWait(ExecutionDescriptor, String)
+     * @since 0.28
      */
     @CheckForNull
-    public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory,
+    public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory,
             @NonNull final String progressMessage) throws ExecutionException {
         Parameters.notNull("progressMessage", progressMessage); // NOI18N
         final Future<Integer> result = run(executionDescriptor, outProcessorFactory);
@@ -505,7 +506,7 @@ public final class PhpExecutable {
                     // let's wait in EDT to avoid flashing dialogs
                     getResult(result, 90L);
                 } catch (TimeoutException ex) {
-                    ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                    BaseProgressUtils.showProgressDialogAndRun(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -531,7 +532,7 @@ public final class PhpExecutable {
      * @return exit code of the process or {@code null} if any error occured
      * @throws ExecutionException if any error occurs
      * @see #debug(FileObject, ExecutionDescriptor)
-     * @see #debug(FileObject, ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     * @see #debug(FileObject, ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2)
      */
     @CheckForNull
     public Integer debug(@NonNull FileObject startFile) throws ExecutionException {
@@ -546,7 +547,7 @@ public final class PhpExecutable {
      * @return exit code of the process or {@code null} if any error occured
      * @throws ExecutionException if any error occurs
      * @see #debug(FileObject)
-     * @see #debug(FileObject, ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     * @see #debug(FileObject, ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2)
      */
     @CheckForNull
     public Integer debug(@NonNull FileObject startFile, @NonNull ExecutionDescriptor executionDescriptor) throws ExecutionException {
@@ -563,18 +564,19 @@ public final class PhpExecutable {
      * @throws ExecutionException if any error occurs
      * @see #debug(FileObject)
      * @see #debug(FileObject, ExecutionDescriptor)
+     * @since 0.28
      */
     @NbBundle.Messages("PhpExecutable.debug.progress=Debugging...")
     @CheckForNull
     public Integer debug(@NonNull final FileObject startFile, @NonNull final ExecutionDescriptor executionDescriptor,
-            final @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) throws ExecutionException {
+            @NullAllowed final ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory) throws ExecutionException {
         if (!EventQueue.isDispatchThread()) {
             return debugInternal(startFile, executionDescriptor, outProcessorFactory);
         }
         // ui thread
         final AtomicReference<Integer> executionResult = new AtomicReference<>();
         final AtomicReference<ExecutionException> executionException = new AtomicReference<>();
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+        BaseProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -592,7 +594,7 @@ public final class PhpExecutable {
 
     @CheckForNull
     Integer debugInternal(@NonNull FileObject startFile, @NonNull ExecutionDescriptor executionDescriptor,
-            final @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) throws ExecutionException {
+            @NullAllowed final ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory) throws ExecutionException {
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Debugging cannot be called from the UI thread");
         }
@@ -656,7 +658,7 @@ public final class PhpExecutable {
     }
 
     @CheckForNull
-    private Future<Integer> runInternal(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory outProcessorFactory, boolean debug) {
+    private Future<Integer> runInternal(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory, boolean debug) {
         Parameters.notNull("executionDescriptor", executionDescriptor); // NOI18N
         String error;
         if (validationHandler == null) {
@@ -671,7 +673,7 @@ public final class PhpExecutable {
             }
             return null;
         }
-        ExternalProcessBuilder processBuilder = getProcessBuilder(debug);
+        ProcessBuilder processBuilder = getProcessBuilder(debug);
         if (processBuilder == null) {
             return null;
         }
@@ -680,34 +682,39 @@ public final class PhpExecutable {
     }
 
     @CheckForNull
-    private ExternalProcessBuilder getProcessBuilder(boolean debug) {
-        ExternalProcessBuilder processBuilder = createProcessBuilder();
-        if (processBuilder == null) {
+    private ProcessBuilder getProcessBuilder(boolean debug) {
+        Pair<ProcessBuilder, List<String>> processBuilderInfo = createProcessBuilder();
+        if (processBuilderInfo == null) {
             return null;
         }
+        ProcessBuilder processBuilder = processBuilderInfo.first();
+        List<String> arguments = processBuilderInfo.second();
         for (String param : parameters) {
             fullCommand.add(param);
-            processBuilder = processBuilder.addArgument(param);
+            arguments.add(param);
         }
         for (String param : additionalParameters) {
             fullCommand.add(param);
-            processBuilder = processBuilder.addArgument(param);
+            arguments.add(param);
         }
+        processBuilder.setArguments(arguments);
         if (workDir != null) {
-            processBuilder = processBuilder.workingDirectory(workDir);
+            processBuilder.setWorkingDirectory(workDir.getAbsolutePath());
         }
         for (Map.Entry<String, String> variable : environmentVariables.entrySet()) {
-            processBuilder = processBuilder.addEnvironmentVariable(variable.getKey(), variable.getValue());
+            processBuilder.getEnvironment().setVariable(variable.getKey(), variable.getValue());
         }
-        processBuilder = processBuilder.redirectErrorStream(redirectErrorStream);
+        processBuilder.setRedirectErrorStream(redirectErrorStream);
         if (debug
                 && !noDebugConfig) {
-            processBuilder = processBuilder.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + Lookup.getDefault().lookup(PhpOptions.class).getDebuggerSessionId()); // NOI18N
+            processBuilder.getEnvironment().setVariable("XDEBUG_CONFIG", "idekey=" + Lookup.getDefault().lookup(PhpOptions.class).getDebuggerSessionId()); // NOI18N
         }
         return processBuilder;
     }
 
-    private ExternalProcessBuilder createProcessBuilder() {
+    @CheckForNull
+    private Pair<ProcessBuilder, List<String>> createProcessBuilder() {
+        List<String> arguments = new ArrayList<>();
         fullCommand.clear();
         boolean useInterpreter = viaPhpInterpreter;
         if (viaAutodetection) {
@@ -721,7 +728,9 @@ public final class PhpExecutable {
         }
         if (!useInterpreter) {
             fullCommand.add(executable);
-            return new ExternalProcessBuilder(executable);
+            ProcessBuilder processBuilder = ProcessBuilder.getLocal();
+            processBuilder.setExecutable(executable);
+            return Pair.of(processBuilder, arguments);
         }
         PhpInterpreter phpInterpreter;
         try {
@@ -733,14 +742,15 @@ public final class PhpExecutable {
             return null;
         }
         fullCommand.add(phpInterpreter.getInterpreter());
-        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(phpInterpreter.getInterpreter());
+        ProcessBuilder processBuilder = ProcessBuilder.getLocal();
+        processBuilder.setExecutable(phpInterpreter.getInterpreter());
         for (String param : phpInterpreter.getParameters()) {
             fullCommand.add(param);
-            processBuilder = processBuilder.addArgument(param);
+            arguments.add(param);
         }
         fullCommand.add(executable);
-        processBuilder = processBuilder.addArgument(executable);
-        return processBuilder;
+        arguments.add(executable);
+        return Pair.of(processBuilder, arguments);
     }
 
     private String getDisplayName() {
@@ -782,15 +792,15 @@ public final class PhpExecutable {
         return null;
     }
 
-    private ExecutionDescriptor getExecutionDescriptor(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
-        final List<ExecutionDescriptor.InputProcessorFactory> inputProcessors = new CopyOnWriteArrayList<>();
+    private ExecutionDescriptor getExecutionDescriptor(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory) {
+        final List<ExecutionDescriptor.InputProcessorFactory2> inputProcessors = new CopyOnWriteArrayList<>();
         // colors
-        ExecutionDescriptor.InputProcessorFactory infoOutProcessorFactory = getInfoOutputProcessorFactory();
+        ExecutionDescriptor.InputProcessorFactory2 infoOutProcessorFactory = getInfoOutputProcessorFactory();
         if (infoOutProcessorFactory != null) {
             inputProcessors.add(infoOutProcessorFactory);
         }
         // file output
-        ExecutionDescriptor.InputProcessorFactory fileOutProcessorFactory = getFileOutputProcessorFactory();
+        ExecutionDescriptor.InputProcessorFactory2 fileOutProcessorFactory = getFileOutputProcessorFactory();
         if (fileOutProcessorFactory != null) {
             inputProcessors.add(fileOutProcessorFactory);
             if (fileOutputOnly) {
@@ -804,7 +814,7 @@ public final class PhpExecutable {
             inputProcessors.add(outProcessorFactory);
         }
         if (!inputProcessors.isEmpty()) {
-            executionDescriptor = executionDescriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            executionDescriptor = executionDescriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
                 @Override
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                     InputProcessor[] processors = new InputProcessor[inputProcessors.size()];
@@ -818,12 +828,12 @@ public final class PhpExecutable {
         return executionDescriptor;
     }
 
-    private ExecutionDescriptor.InputProcessorFactory getInfoOutputProcessorFactory() {
+    private ExecutionDescriptor.InputProcessorFactory2 getInfoOutputProcessorFactory() {
         if (noInfo) {
             // no info
             return null;
         }
-        return new ExecutionDescriptor.InputProcessorFactory() {
+        return new ExecutionDescriptor.InputProcessorFactory2() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.proxy(new InfoInputProcessor(defaultProcessor, fullCommand), defaultProcessor);
@@ -831,11 +841,11 @@ public final class PhpExecutable {
         };
     }
 
-    private ExecutionDescriptor.InputProcessorFactory getFileOutputProcessorFactory() {
+    private ExecutionDescriptor.InputProcessorFactory2 getFileOutputProcessorFactory() {
         if (fileOutput == null) {
             return null;
         }
-        return new ExecutionDescriptor.InputProcessorFactory() {
+        return new ExecutionDescriptor.InputProcessorFactory2() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return new RedirectOutputProcessor(fileOutput, outputCharset);

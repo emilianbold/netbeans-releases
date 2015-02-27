@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.project.connections.ftp;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
@@ -142,7 +142,7 @@ public class FtpConfigurationValidator {
             return lastProxy.second();
         }
         final AtomicBoolean hasProxy = new AtomicBoolean();
-        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+        BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
             @Override
             public void run() {
                 hasProxy.set(RemoteUtils.hasHttpProxy(host));

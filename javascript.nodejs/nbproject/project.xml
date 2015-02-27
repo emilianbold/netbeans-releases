@@ -93,6 +93,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.javascript.v8debug</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -176,7 +185,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.78</specification-version>
+                        <specification-version>1.85</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

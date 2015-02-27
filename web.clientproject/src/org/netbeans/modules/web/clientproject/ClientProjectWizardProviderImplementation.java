@@ -54,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class ClientProjectWizardProviderImplementation implements ClientProjectWizardProviderImpl{
 
     @Override
-    public WizardDescriptor.InstantiatingIterator newClientProjectWithExtender() {
+    public WizardDescriptor.InstantiatingIterator<WizardDescriptor> newClientProjectWithExtender() {
         return ClientSideProjectWizardIterator.newProjectWithExtender();
     }
     

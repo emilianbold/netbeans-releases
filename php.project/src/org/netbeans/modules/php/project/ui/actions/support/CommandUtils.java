@@ -91,8 +91,7 @@ public final class CommandUtils {
 
     public static boolean isPhpOrHtmlFile(FileObject file) {
         assert file != null;
-        String mimeType = FileUtil.getMIMEType(file, FileUtils.PHP_MIME_TYPE, HTML_MIME_TYPE);
-        return FileUtils.PHP_MIME_TYPE.equals(mimeType) || HTML_MIME_TYPE.equals(mimeType);
+        return FileUtil.getMIMEType(file, FileUtils.PHP_MIME_TYPE, HTML_MIME_TYPE, null) != null;
     }
 
     /** Return <code>true</code> if user wants to restart the current debug session. */

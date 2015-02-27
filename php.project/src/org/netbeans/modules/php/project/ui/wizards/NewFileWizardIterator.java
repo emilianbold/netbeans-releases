@@ -60,6 +60,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.templates.CreateDescriptor;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
@@ -70,7 +71,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
@@ -152,7 +152,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
 
     private Map<String, Object> getTemplateParams() {
         Map<String, Object> params = new HashMap<>();
-        params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+        params.put(CreateDescriptor.FREE_FILE_EXTENSION, true);
         params.put("namespace", wizard.getProperty(NewFileNamespacePanel.NAMESPACE)); // NOI18N
         return params;
     }

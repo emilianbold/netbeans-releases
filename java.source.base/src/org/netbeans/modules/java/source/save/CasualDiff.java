@@ -153,6 +153,7 @@ import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -327,6 +328,15 @@ public class CasualDiff {
                     }
                 }
                 break;
+            } else if (t.getKind() == Kind.LAMBDA_EXPRESSION) {
+                // special hack for lambda expressions: annotations should appear inline, rather than create newlines
+                for (Tree p : ((LambdaExpressionTree)t).getParameters()) {
+                    if (p == current) {
+                        td.parameterPrint = true;
+                        
+                    }
+                }
+                break;
             } else if (t.getKind() == Kind.VARIABLE) {
                 JCVariableDecl vt = (JCVariableDecl) t;
                 if ((vt.mods.flags & ENUM) != 0 && vt.init == current)
@@ -349,7 +359,7 @@ public class CasualDiff {
         }
 
         td.copyTo(lineStart, start, td.printer);
-        td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
+        td.diffTree(oldTreePath, newTree, new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
         if (!td.printer.reindentRegions.isEmpty()) {
             // must add region boundaries to tag2span, since the text may be reformatted.
@@ -4754,9 +4764,26 @@ public class CasualDiff {
     protected int diffTree(JCTree oldT, JCTree newT, int[] elementBounds) {
         return diffTree(oldT, newT, null, elementBounds);
     }
+    
+    /**
+     * Tracks current OLD node's path, so printout can be modified according to context
+     */
+    private @NullAllowed TreePath currentPath;
+    
+    int diffTree(TreePath oldPath, JCTree newT, int[] elementBounds) {
+        JCTree oldT = (JCTree)oldPath.getLeaf();
+        this.currentPath = oldPath;
+        JCTree parent = (JCTree)(oldPath.getParentPath() == null ? null : oldPath.getParentPath().getLeaf());
+        return diffTree(oldT, newT, parent, elementBounds);
+    }
 
     protected int diffTree(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
+        TreePath savePath = currentPath;
         Object t = tree2Tag.get(newT);
+        // on 1st entry, currentPath is already set to point to oldT
+        if (currentPath != null && currentPath.getLeaf() != oldT) {
+            currentPath = new TreePath(currentPath, oldT);
+        }
         int result;
         if (t != null) {
             int start = printer.toString().length();
@@ -4766,6 +4793,7 @@ public class CasualDiff {
         } else {
             result = diffTreeImpl(oldT, newT, parent, elementBounds);
         }
+        currentPath = savePath;
         return result;
     }
     
