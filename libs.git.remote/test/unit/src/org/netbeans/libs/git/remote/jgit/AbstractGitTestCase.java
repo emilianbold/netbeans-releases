@@ -188,6 +188,16 @@ public class AbstractGitTestCase extends NbTestCase {
     private void initializeRepository() throws Exception {
         runExternally(repositoryLocation, Arrays.asList("init"));
         runExternally(wc.getParentFile(), Arrays.asList("clone", repositoryLocation.getPath(), wc.getName()));
+
+        List<String> res = runExternally(wc.getParentFile(), Arrays.asList("config", "--global", "--get", "user.name"));
+        if (res.size() == 0 || res.get(0).isEmpty()) {
+            runExternally(wc.getParentFile(), Arrays.asList("config", "--global", "user.name", "Your Name"));
+        }
+        res = runExternally(wc.getParentFile(), Arrays.asList("config", "--global", "--get", "user.email"));
+        if (res.size() == 0 || res.get(0).isEmpty()) {
+            runExternally(wc.getParentFile(), Arrays.asList("config", "--global", "user.email", "you@example.com"));
+        }
+        
         localRepository = new JGitRepository(wc);
     }
 
