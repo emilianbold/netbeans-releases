@@ -98,19 +98,26 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Action;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.BoxLayout.X_AXIS;
+import javax.swing.KeyStroke;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import javax.swing.UIManager;
+import javax.swing.text.Keymap;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
+import org.openide.util.actions.CallbackSystemAction;
 
 /**
  *
@@ -496,6 +503,36 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
             tabbedPane.setPreferredSize(basePanel.getPreferredSize());
             add(tabbedPane);
             tabbedPane.addChangeListener(this);
+        }
+    }
+    
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        boolean ret = super.processKeyBinding(ks, e, condition, pressed);
+
+        // XXX #250546 Reason of overriding: to process global shortcut.
+        if ((JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT == condition) && (ret == false) && !e.isConsumed()) {
+
+            Keymap km = Lookup.getDefault().lookup(Keymap.class);
+            Action action = (km != null) ? km.getAction(ks) : null;
+
+            if (action == null) {
+                return false;
+            }
+
+            if (action instanceof CallbackSystemAction) {
+                CallbackSystemAction csAction = (CallbackSystemAction) action;
+                if (tabbedPane != null) {
+                    Action a = tabbedPane.getActionMap().get(csAction.getActionMapKey());
+                    if (a != null) {
+                        a.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, Utilities.keyToString(ks)));
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            return ret;
         }
     }
 
