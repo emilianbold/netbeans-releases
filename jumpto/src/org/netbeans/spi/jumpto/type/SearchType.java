@@ -81,6 +81,11 @@ public enum SearchType {
      */
     CAMEL_CASE,
 
+    /**
+     * A search using a case insensitive camel-case reduction of the type name
+     * @since 1.45
+     */
+    CASE_INSENSITIVE_CAMEL_CASE,
 
     /**
      * A search using a case-sensitive
