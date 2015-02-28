@@ -435,8 +435,9 @@ final class Worker implements Runnable {
         static SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {
             switch (searchType) {
                 case CAMEL_CASE:
-                case CASE_INSENSITIVE_CAMEL_CASE:
                     return org.netbeans.spi.jumpto.type.SearchType.CAMEL_CASE;
+                case CASE_INSENSITIVE_CAMEL_CASE:
+                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_CAMEL_CASE;
                 case CASE_INSENSITIVE_PREFIX:
                     return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_PREFIX;
                 case CASE_INSENSITIVE_REGEXP:
