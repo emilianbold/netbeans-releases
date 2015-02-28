@@ -863,14 +863,14 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                                 String revBase, revOther;
                                 if (isLocal()) {
                                     if (mode == Mode.INDEX_VS_WORKING_TREE) {
-                                        revBase = org.netbeans.libs.git.GitClient.INDEX;
-                                        revOther = org.netbeans.libs.git.GitClient.WORKING_TREE;
+                                        revBase = org.netbeans.libs.git.remote.GitClient.INDEX;
+                                        revOther = org.netbeans.libs.git.remote.GitClient.WORKING_TREE;
                                     } else if (mode == Mode.HEAD_VS_INDEX) {
                                         revBase = revisionLeft.getCommitId();
-                                        revOther = org.netbeans.libs.git.GitClient.INDEX;
+                                        revOther = org.netbeans.libs.git.remote.GitClient.INDEX;
                                     } else {
                                         revBase = revisionLeft.getCommitId();
-                                        revOther = org.netbeans.libs.git.GitClient.WORKING_TREE;
+                                        revOther = org.netbeans.libs.git.remote.GitClient.WORKING_TREE;
                                     }
                                 } else {
                                     revBase = revisionLeft.getCommitId();
