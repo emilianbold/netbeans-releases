@@ -118,22 +118,28 @@ public class ListTagCommand extends GitCommand {
                 
             }.runCLI();
             
-            for (final GitTag.TagContainer container : list) {
-                if (container.id != null) {
-                    revisionPlaseHolder.setContent(container.id);
-                    new Runner(canceled, 1){
+            if (list.size() == 1) {
+                for (final GitTag.TagContainer container : list) {
+                    if (container.id != null) {
+                        revisionPlaseHolder.setContent(container.id);
+                        new Runner(canceled, 1){
 
-                        @Override
-                        public void outputParser(String output) throws GitException {
-                            CreateTagCommand.parseShowDetails(output, container);
-                        }
+                            @Override
+                            public void outputParser(String output) throws GitException {
+                                CreateTagCommand.parseShowDetails(output, container);
+                            }
 
-                        @Override
-                        protected void errorParser(String error) throws GitException {
-                            parseAddError(error);
-                        }
+                            @Override
+                            protected void errorParser(String error) throws GitException {
+                                parseAddError(error);
+                            }
 
-                    }.runCLI();
+                        }.runCLI();
+                        allTags.put(container.name, getClassFactory().createTag(container));
+                    }
+                }
+            } else {
+                for (final GitTag.TagContainer container : list) {
                     allTags.put(container.name, getClassFactory().createTag(container));
                 }
             }
