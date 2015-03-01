@@ -52,7 +52,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.ui.repository.RevisionDialogController;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;

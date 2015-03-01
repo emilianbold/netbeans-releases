@@ -44,9 +44,9 @@ package org.netbeans.modules.git.remote.ui.fetch;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.remote.GitBranch;
-import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitRemoteConfig;
+import org.netbeans.modules.git.remote.cli.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitRemoteConfig;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.client.GitProgressSupport;
 import org.netbeans.modules.git.remote.ui.actions.MultipleRepositoryAction;

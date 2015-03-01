@@ -42,8 +42,8 @@
 package org.netbeans.modules.git.remote.ui.push;
 
 import java.text.MessageFormat;
-import org.netbeans.libs.git.remote.GitBranch;
-import org.netbeans.libs.git.remote.GitTag;
+import org.netbeans.modules.git.remote.cli.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitTag;
 import org.netbeans.modules.git.remote.options.AnnotationColorProvider;
 import org.netbeans.modules.git.remote.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.remote.ui.selectors.ItemSelector.Item;

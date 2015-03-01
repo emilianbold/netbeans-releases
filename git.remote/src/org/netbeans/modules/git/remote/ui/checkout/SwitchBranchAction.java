@@ -48,7 +48,7 @@ import java.util.AbstractMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.remote.ui.repository.RevisionDialogController;
 import org.netbeans.modules.git.remote.utils.GitUtils;

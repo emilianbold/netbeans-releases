@@ -49,7 +49,7 @@
 package org.netbeans.modules.git.remote.ui.reset;
 
 import javax.swing.JPanel;
-import org.netbeans.libs.git.remote.GitClient.ResetType;
+import org.netbeans.modules.git.remote.cli.GitClient.ResetType;
 import org.netbeans.modules.git.remote.ui.repository.RevisionDialog;
 
 /**

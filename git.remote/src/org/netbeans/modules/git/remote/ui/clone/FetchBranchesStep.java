@@ -49,7 +49,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.remote.ui.selectors.ItemSelector.Item;
 import org.netbeans.modules.git.remote.ui.wizards.AbstractWizardPanel;

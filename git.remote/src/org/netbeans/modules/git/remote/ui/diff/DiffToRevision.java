@@ -53,7 +53,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JList;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.ui.repository.Revision;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

@@ -44,7 +44,7 @@ package org.netbeans.modules.git.remote.ui.history;
 
 import java.awt.EventQueue;
 import java.util.List;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.remote.utils.GitUtils;

@@ -72,7 +72,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.libs.git.remote.GitURI;
+import org.netbeans.modules.git.remote.cli.GitURI;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.GitModuleConfig;
 import org.netbeans.modules.git.remote.ui.wizards.AbstractWizardPanel.Message;

@@ -49,7 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
-import org.netbeans.libs.git.remote.GitClient.ResetType;
+import org.netbeans.modules.git.remote.cli.GitClient.ResetType;
 import org.netbeans.modules.git.remote.ui.repository.RevisionDialogController;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;

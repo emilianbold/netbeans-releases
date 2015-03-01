@@ -62,13 +62,13 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.libs.git.remote.GitBranch;
-import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitRemoteConfig;
-import org.netbeans.libs.git.remote.GitSubmoduleStatus;
-import org.netbeans.libs.git.remote.GitTransportUpdate;
-import org.netbeans.libs.git.remote.GitTransportUpdate.Type;
-import org.netbeans.libs.git.remote.GitURI;
+import org.netbeans.modules.git.remote.cli.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitRemoteConfig;
+import org.netbeans.modules.git.remote.cli.GitSubmoduleStatus;
+import org.netbeans.modules.git.remote.cli.GitTransportUpdate;
+import org.netbeans.modules.git.remote.cli.GitTransportUpdate.Type;
+import org.netbeans.modules.git.remote.cli.GitURI;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.client.CredentialsCallback;
 import org.netbeans.modules.git.remote.client.GitClient;
@@ -247,7 +247,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                     setDisplayName(Bundle.MSG_Clone_progress_checkingoutBranch(branch.getName()), 1);
                                     client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
                                     client.checkoutRevision(branch.getName(), true, getProgressMonitor());
-                                    client.reset(branch.getName(), org.netbeans.libs.git.remote.GitClient.ResetType.HARD, getProgressMonitor());
+                                    client.reset(branch.getName(), org.netbeans.modules.git.remote.cli.GitClient.ResetType.HARD, getProgressMonitor());
                                 }
 
                                 setDisplayName(Bundle.MSG_Clone_progress_refreshingFiles(), 2);

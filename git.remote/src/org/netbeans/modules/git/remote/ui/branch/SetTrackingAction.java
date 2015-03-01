@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.git.remote.ui.branch;
 
-import org.netbeans.libs.git.remote.GitBranch;
-import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.modules.git.remote.cli.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.client.GitClient;
 import org.netbeans.modules.git.remote.client.GitClientExceptionHandler;
