@@ -67,12 +67,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="MySQL">
-            <!--folder name="Servers">
-                <file name="MySQLDatabaseServer.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.DatabaseServer"/>
-                </file>                
-            </folder-->
             <folder name="SampleProviders">
                 <file name="BaseProvider.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.BaseSampleProvider.getDefault"/>
@@ -97,12 +91,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.SXDEWebStackInstallation.getDefault"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
-                <!-- Not currently working correctly 
                 <file name="WindowsXAMPPInstallation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.WindowsXAMPPInstallation.getDefault"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
-                -->
                 <file name="WindowsStandaloneMultiInstallation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.WindowsStandaloneMultiInstallation.getDefault"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.MultiInstallation"/>
