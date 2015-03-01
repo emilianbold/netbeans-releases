@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
-import org.netbeans.libs.git.remote.GitURI;
+import org.netbeans.modules.git.remote.cli.GitURI;
 import org.netbeans.modules.git.remote.FileInformation.Mode;
 import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.remote.ui.repository.remote.ConnectionSettings;

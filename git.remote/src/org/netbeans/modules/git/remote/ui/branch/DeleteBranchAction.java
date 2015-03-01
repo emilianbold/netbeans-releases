@@ -44,8 +44,8 @@ package org.netbeans.modules.git.remote.ui.branch;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitException.NotMergedException;
+import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitException.NotMergedException;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.client.GitClient;
 import org.netbeans.modules.git.remote.client.GitClientExceptionHandler;

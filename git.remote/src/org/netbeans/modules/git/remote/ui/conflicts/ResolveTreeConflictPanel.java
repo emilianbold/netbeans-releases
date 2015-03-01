@@ -48,7 +48,7 @@
 
 package org.netbeans.modules.git.remote.ui.conflicts;
 
-import org.netbeans.libs.git.remote.GitConflictDescriptor.Type;
+import org.netbeans.modules.git.remote.cli.GitConflictDescriptor.Type;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 

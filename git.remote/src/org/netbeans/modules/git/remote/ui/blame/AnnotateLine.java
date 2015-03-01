@@ -44,9 +44,9 @@
 package org.netbeans.modules.git.remote.ui.blame;
 
 import java.util.logging.Level;
-import org.netbeans.libs.git.remote.GitLineDetails;
-import org.netbeans.libs.git.remote.GitRevisionInfo;
-import org.netbeans.libs.git.remote.GitUser;
+import org.netbeans.modules.git.remote.cli.GitLineDetails;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
+import org.netbeans.modules.git.remote.cli.GitUser;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 

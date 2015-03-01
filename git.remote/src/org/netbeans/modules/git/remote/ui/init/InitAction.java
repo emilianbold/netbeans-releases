@@ -52,7 +52,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.client.GitClient;
 import org.netbeans.modules.git.remote.client.GitClientExceptionHandler;

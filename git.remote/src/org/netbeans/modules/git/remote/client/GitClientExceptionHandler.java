@@ -44,7 +44,7 @@ package org.netbeans.modules.git.remote.client;
 
 import java.util.logging.Level;
 import javax.swing.JButton;
-import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.ui.repository.remote.RemoteRepository;
 import org.openide.DialogDisplayer;

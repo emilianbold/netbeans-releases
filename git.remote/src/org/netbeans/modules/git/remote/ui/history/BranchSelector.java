@@ -47,7 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import javax.swing.JButton;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.ui.repository.RevisionDialogController;
 import org.netbeans.modules.git.remote.ui.repository.SelectBranchPanel;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;

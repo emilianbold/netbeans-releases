@@ -54,7 +54,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.libs.git.remote.GitUser;
+import org.netbeans.modules.git.remote.cli.GitUser;
 import org.netbeans.modules.git.remote.GitModuleConfig;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import org.openide.util.NbBundle;
