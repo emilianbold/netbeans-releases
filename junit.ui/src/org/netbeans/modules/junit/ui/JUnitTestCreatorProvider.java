@@ -82,29 +82,21 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
         if (activatedFOs.length == 0) {
             return false;
         }
-        ArrayList<FileObject> fos = new ArrayList<FileObject>();
-        for(FileObject fo : activatedFOs) {
-            if(fo.isFolder()) {
-//                fos.addAll(Arrays.asList(fo.getChildren()));
-                fos.addAll(Collections.list(fo.getChildren(true)));
-            } else {
-                fos.add(fo);
-            }
-        }
         /*
          * In most cases, there is just one node selected - that is why
          * this case is handled in a special, more effective way
          * (no collections and iterators created).
          */
-        if (fos.size() == 1) {
-            FileObject fileObj = fos.get(0);
+        if (activatedFOs.length == 1) {
+            FileObject fileObj = activatedFOs[0];
             
             Project project;
             if ((fileObj != null)
                 && fileObj.isValid()
                 && ((project = FileOwnerQuery.getOwner(fileObj)) != null)
                 && (getSourceGroup(fileObj, project) != null)
-                && (JUnitTestUtil.isJavaFile(fileObj))) {
+                // selected FO might be folder or java file
+                && (fileObj.isFolder() || JUnitTestUtil.isJavaFile(fileObj))) {
 
                 JUnitPlugin plugin = JUnitTestUtil.getPluginForProject(project);
                 return JUnitTestUtil.canCreateTests(plugin,
@@ -115,10 +107,10 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
         }
 
         final Collection<FileObject> fileObjs
-                = new ArrayList<FileObject>(fos.size());
+                = new ArrayList<FileObject>(activatedFOs.length);
         Project theProject = null;
         boolean result = false;
-        for (FileObject fileObj : fos) {
+        for (FileObject fileObj : activatedFOs) {
             if ((fileObj == null) || !fileObj.isValid()) {
                 continue;
             }
@@ -136,7 +128,8 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
                 }
 
                 if ((getSourceGroup(fileObj, prj) != null)
-                        && (JUnitTestUtil.isJavaFile(fileObj))) {
+                        // selected FO might be folder or java file
+                        && (fileObj.isFolder() || JUnitTestUtil.isJavaFile(fileObj))) {
                     result = true;
                 }
             }
