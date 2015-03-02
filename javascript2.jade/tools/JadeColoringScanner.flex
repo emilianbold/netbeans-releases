@@ -65,6 +65,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     int lastReaded = 0;
     boolean continueJS = false;
     boolean inString = false;
+    int whereToGo = 0;
     
 
     public JadeColoringLexer(LexerRestartInfo info) {
@@ -370,6 +371,7 @@ UnbufferedComment = "//-"
                                     }
     "#{"                            {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
+                                        whereToGo = TEXT_LINE;
                                     }
     "&attributes"                   {   yybegin(AFTER_ATTRIBUTES);
                                         return JadeTokenId.ATTRIBUTE; }
@@ -395,6 +397,7 @@ UnbufferedComment = "//-"
     
     [#!]"{"                         {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
+                                        whereToGo = TEXT_LINE;
                                         if (tokenLength > 2) {
                                             return JadeTokenId.TEXT;
                                         }
@@ -587,7 +590,7 @@ UnbufferedComment = "//-"
                                                 return JadeTokenId.JAVASCRIPT;
                                             }
                                         } else if (braceBalance == -1) {
-                                            yybegin(TEXT_LINE);
+                                            yybegin(whereToGo);
                                             return JadeTokenId.EXPRESSION_DELIMITER_CLOSE; 
                                         }
                                     }
@@ -652,11 +655,17 @@ UnbufferedComment = "//-"
                                     }
 }
 <IN_PLAIN_TEXT_BLOCK> {
-    .*                              { }
+    [#!]"{"                         {   yypushback(2);
+                                        yybegin(JAVASCRIPT_EXPRESSION);
+                                        whereToGo = IN_PLAIN_TEXT_BLOCK;
+                                        if (tokenLength > 2) {
+                                            return JadeTokenId.TEXT;
+                                        }
+                                    }
     {LineTerminator}                {   yybegin(IN_PLAIN_TEXT_BLOCK_AFTER_EOL);
                                         eolPosition = tokenLength;
                                     }
-    
+    .                               { }
 }
 
 <IN_PLAIN_TEXT_BLOCK_AFTER_EOL> {
