@@ -231,7 +231,7 @@ nmstart	 =	[_a-z]|{nonascii}|{escape}
 nmchar	=	[_a-zA-Z0-9-]|{nonascii}|{escape}
 
 HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
-HtmlIdentifierPart = [-[:letter:][:digit:]]+
+HtmlIdentifierPart = [[:letter:][:digit:]]+[[:letter:][:digit:]\-]*
 HtmlIdentifier = {HtmlIdentifierPart}(:{HtmlIdentifierPart})*
 CssIdentifier = {nmstart}{nmchar}*
 LineTerminator = \r|\n|\r\n
