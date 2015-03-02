@@ -148,7 +148,5 @@ public class RemoveCommand extends GitCommand {
                 listener.notifyFile(parent, Utils.getRelativePath(getRepository().getLocation(), parent));
             }
         }
-        
     }
-
 }

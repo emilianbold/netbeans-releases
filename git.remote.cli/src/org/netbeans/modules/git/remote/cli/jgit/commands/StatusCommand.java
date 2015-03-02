@@ -276,6 +276,25 @@ public class StatusCommand extends StatusCommandBase {
                         status.untracked = first;
                     }
                 }
+                if (renamed != null) {
+                    StatusLine renamedToStatus = list.get(renamed);
+                    if (renamedToStatus == null) {
+                        renamedToStatus = new StatusLine();
+                        if (onlyIndexWC) {
+                            if (first == '?' || first == '!') {
+                                renamedToStatus.first = 'A';
+                                renamedToStatus.second = second;
+                            } else {
+                                renamedToStatus.second = second;
+                            }
+                        } else {
+                            renamedToStatus.first = 'A';
+                            renamedToStatus.second = second;
+                            renamedToStatus.to = null;
+                        }
+                        list.put(renamed, renamedToStatus);
+                    }                
+                }
             }
         }
     }
