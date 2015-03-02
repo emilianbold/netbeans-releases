@@ -80,7 +80,7 @@ public class StatusTest extends AbstractGitTestCase {
     }
 
     public void testMiscStatus () throws Exception {
-        write(VCSFileProxy.createFileProxy(workDir, ".gitignore"), "ignored");
+        write(VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME), "ignored");
         VCSFileProxy untracked = VCSFileProxy.createFileProxy(workDir, "untracked");
         write(untracked, "untracked");
         VCSFileProxy ignored = VCSFileProxy.createFileProxy(workDir, "ignored");
@@ -184,7 +184,7 @@ else    assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_R
     
     // diff WT against a commit other than HEAD
     public void testMiscStatusCommit () throws Exception {
-        write(VCSFileProxy.createFileProxy(workDir, ".gitignore"), "ignored");
+        write(VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME), "ignored");
         VCSFileProxy untracked = VCSFileProxy.createFileProxy(workDir, "untracked");
         write(untracked, "untracked");
         VCSFileProxy ignored = VCSFileProxy.createFileProxy(workDir, "ignored");
@@ -430,7 +430,7 @@ else    assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_R
         VCSFileProxySupport.mkdirs(subFolder2);
         VCSFileProxySupport.createNew(file6);
 
-        write(VCSFileProxy.createFileProxy(workDir, ".gitignore"), "folder\nfile1");
+        write(VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME), "folder\nfile1");
         write(VCSFileProxy.createFileProxy(folder2, ".gitignore"), "subfolder");
 
         Map<VCSFileProxy, GitStatus> statuses = getClient(workDir).getStatus(new VCSFileProxy[] { workDir }, NULL_PROGRESS_MONITOR);
@@ -498,7 +498,7 @@ else    assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Stat
         VCSFileProxySupport.mkdirs(folder2);
         VCSFileProxy file2 = VCSFileProxy.createFileProxy(folder2, "addedFile");
         VCSFileProxySupport.createNew(file2);
-        VCSFileProxy ignoreFile = VCSFileProxy.createFileProxy(workDir, ".gitignore");
+        VCSFileProxy ignoreFile = VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME);
         write(ignoreFile, "ignored*");
 
         add(file2);
@@ -753,7 +753,7 @@ else    assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.
         assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         
         client.ignore(new VCSFileProxy[] { link }, NULL_PROGRESS_MONITOR);
-        assertEquals("/boo/some_file", read(VCSFileProxy.createFileProxy(workDir, ".gitignore")));
+        assertEquals("/boo/some_file", read(VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME)));
         statuses = client.getStatus(new VCSFileProxy[] { link }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
     }
@@ -786,7 +786,7 @@ else    assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.
         assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         
         client.ignore(new VCSFileProxy[] { link }, NULL_PROGRESS_MONITOR);
-        assertEquals("/boo/some_dir/", read(VCSFileProxy.createFileProxy(workDir, ".gitignore")));
+        assertEquals("/boo/some_dir/", read(VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME)));
         statuses = client.getStatus(new VCSFileProxy[] { link }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
     }

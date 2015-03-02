@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.git.remote.cli.GitClient;
+import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitStatus;
 import org.netbeans.modules.git.remote.cli.jgit.AbstractGitTestCase;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
@@ -135,7 +136,7 @@ public class CleanTest extends AbstractGitTestCase {
     public void testCleanFileIgnored() throws Exception {
         VCSFileProxy file = VCSFileProxy.createFileProxy(workDir, "file");
         VCSFileProxySupport.createNew(file);
-        VCSFileProxy gitignore = VCSFileProxy.createFileProxy(workDir, ".gitignore");
+        VCSFileProxy gitignore = VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME);
         VCSFileProxySupport.createNew(gitignore);
         OutputStream fos = VCSFileProxySupport.getOutputStream(gitignore);
         fos.write(file.getName().getBytes());
@@ -155,7 +156,7 @@ public class CleanTest extends AbstractGitTestCase {
     public void testCleanFolderIgnored() throws Exception {
         VCSFileProxy folder = VCSFileProxy.createFileProxy(workDir, "folder");
         VCSFileProxySupport.createNew(folder);
-        VCSFileProxy gitignore = VCSFileProxy.createFileProxy(workDir, ".gitignore");
+        VCSFileProxy gitignore = VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME);
         VCSFileProxySupport.createNew(gitignore);
         OutputStream fos = VCSFileProxySupport.getOutputStream(gitignore);
         fos.write(folder.getName().getBytes());
@@ -185,7 +186,7 @@ public class CleanTest extends AbstractGitTestCase {
         VCSFileProxySupport.createNew(file111);
         VCSFileProxySupport.createNew(file11);
         
-        VCSFileProxy gitignore = VCSFileProxy.createFileProxy(workDir, ".gitignore");        
+        VCSFileProxy gitignore = VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME);        
         OutputStream fos = VCSFileProxySupport.getOutputStream(gitignore);
         fos.write(root.getName().getBytes());
         fos.flush();
@@ -344,7 +345,7 @@ else files = new VCSFileProxy[]{root};
         VCSFileProxy nestedUnversionedFolder = VCSFileProxy.createFileProxy(folder, "nestedUnversionedFolder");
         VCSFileProxySupport.mkdirs(nestedUnversionedFolder);
                 
-        VCSFileProxy gitignore = VCSFileProxy.createFileProxy(workDir, ".gitignore");        
+        VCSFileProxy gitignore = VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME);        
         OutputStream fos = VCSFileProxySupport.getOutputStream(gitignore);
         fos.write(ignoredFile.getName().getBytes());
         fos.write("\n".getBytes());
