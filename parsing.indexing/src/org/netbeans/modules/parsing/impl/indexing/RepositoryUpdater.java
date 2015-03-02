@@ -225,24 +225,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     }
 
     public void stop(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
-        boolean cancel = false;
-
         synchronized (this) {
-            if (state != State.STOPPED) {
-                state = State.STOPPED;
-                LOGGER.fine("Closing..."); //NOI18N
-
-                PathRegistry.getDefault().removePathRegistryListener(this);
-                rootsListeners.setListener(null, null);
-                activeDocProvider.removeActiveDocumentListener(this);
-                visibilitySupport.stop();
-                cancel = true;
+            if (state == State.STOPPED) {
+                throw new IllegalStateException();
             }
-        }
+            state = State.STOPPED;
+            LOGGER.fine("Closing..."); //NOI18N
 
-        if (cancel) {
-            worker.cancelAll(postCleanTask);
+            PathRegistry.getDefault().removePathRegistryListener(this);
+            rootsListeners.setListener(null, null);
+            activeDocProvider.removeActiveDocumentListener(this);
+            visibilitySupport.stop();
         }
+        worker.cancelAll(postCleanTask);
     }
 
     @SuppressWarnings("UseSpecificCatch")
@@ -5930,7 +5925,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
-        public void cancelAll(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
+        void cancelAll(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
             synchronized (todo) {
                 if (!allCancelled) {
                     // stop accepting new work and clean the queue
