@@ -42,14 +42,11 @@
 
 package org.netbeans.modules.git.remote.cli.jgit;
 
-import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Field;
-import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;

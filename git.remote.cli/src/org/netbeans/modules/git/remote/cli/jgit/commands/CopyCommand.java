@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
@@ -50,7 +51,9 @@ import org.netbeans.modules.git.remote.cli.jgit.Utils;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -83,25 +86,18 @@ public class CopyCommand extends GitCommand {
             } else if (relPathToTarget.startsWith(relPathToSource + "/")) { //NOI18N
                 monitor.preparationsFailed(MessageFormat.format(Utils.getBundle(CopyCommand.class).getString("MSG_Error_TargetFolderUnderSource"), new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
                 throw new GitException(MessageFormat.format(Utils.getBundle(CopyCommand.class).getString("MSG_Error_TargetFolderUnderSource"), new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
-            }
+            }       
         }
         return retval;
     }
     
     @Override
     protected void prepare() throws GitException {
-        setCommandsNumber(2);
         super.prepare();
-        addArgument(0, "mv"); //NOI18N
-        addArgument(0, "--verbose"); //NOI18N
-        addArgument(0, "-f"); //NOI18N
-        addArgument(0, Utils.getRelativePath(getRepository().getLocation(), source));
+        addArgument(0, "add"); //NOI18N
+        addArgument(0, "-v"); //NOI18N
+        addArgument(0, "--"); //NOI18N
         addArgument(0, Utils.getRelativePath(getRepository().getLocation(), target));
-        
-        addArgument(1, "checkout"); //NOI18N
-        addArgument(1, "HEAD");
-        addArgument(1, "--");
-        addArgument(1, Utils.getRelativePath(getRepository().getLocation(), source));
     }
     
     @Override
@@ -111,20 +107,19 @@ public class CopyCommand extends GitCommand {
             monitor.setCancelDelegate(canceled);
         }
         try {
+            copy();
             new Runner(canceled, 0){
 
                 @Override
                 public void outputParser(String output) throws GitException {
-                    parseMoveOutput(output);
+                    parseAddVerboseOutput(output);
                 }
-            }.runCLI();
-
-            new Runner(canceled, 1){
 
                 @Override
-                public void outputParser(String output) throws GitException {
+                protected void errorParser(String error) throws GitException {
+                    parseAddError(error);
                 }
-                
+
             }.runCLI();
         } catch (GitException t) {
             throw t;
@@ -136,14 +131,42 @@ public class CopyCommand extends GitCommand {
         }
     }
     
-    private void parseMoveOutput(String output) {
-        //Renaming file to folder/file
+     private void copy () throws GitException {
+        VCSFileProxy parentFile = target.getParentFile();
+        if (!parentFile.exists() && !VCSFileProxySupport.mkdirs(parentFile)) {
+            throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_CannotCreateFolder"), parentFile.getPath())); //NOI18N
+        }
+        try {
+            if (!target.exists()) {
+                if (!VCSFileProxySupport.copyFile(source, target)) {
+                    throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_CannotRenameTo"), source.getPath(), target.getPath())); //NOI18N
+                }
+            }
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+    }
+     
+    private void parseAddVerboseOutput(String output) {
+        //add 'folder1/subfolder/file1'
+        //add 'folder1/subfolder/file2'
         for (String line : output.split("\n")) { //NOI18N
-            if (line.startsWith("Renaming")) {
-                String[] s = line.split(" ");
-                String file = s[s.length-1];
-                listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), file), file);
+            if (line.startsWith("add")) {
+                String s = line.substring(3).trim();
+                if (s.startsWith("'") && s.endsWith("'")) {
+                    String file = s.substring(1,s.length()-1);
+                    listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), file), file);
+                }
+                continue;
             }
         }
+    }
+    
+    private void parseAddError(String error) {
+        //The following paths are ignored by one of your .gitignore files:
+        //folder2
+        //Use -f if you really want to add them.
+        //fatal: no files added
+        processMessages(error);
     }
 }
