@@ -41,6 +41,7 @@
  */
 package org.netbeans.spi.search;
 
+import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -66,7 +67,8 @@ public class SearchScopeDefinitionTest {
      */
     @Test
     public void testThreadSafe() throws InterruptedException {
-        final Semaphore s = new Semaphore(0);
+        final Semaphore semaphoreAddExtraListener = new Semaphore(0);
+        final Semaphore semaphoreContinueIterating = new Semaphore(0);
         final MySSDefinition mssd = new MySSDefinition();
 
         // Count notified listeners.
@@ -82,10 +84,12 @@ public class SearchScopeDefinitionTest {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     if (j == 0) {
-                        s.release(); // allow the new listener to be added
+                        // allow the new listener to be added
+                        semaphoreAddExtraListener.release();
                     } else if (j == 1) {
                         try {
-                            s.acquire(2); // wait until the new listener added
+                            // wait until the new listener added
+                            semaphoreContinueIterating.acquire();
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -102,7 +106,8 @@ public class SearchScopeDefinitionTest {
             @Override
             public void run() {
                 try {
-                    s.acquire(); // wait until listeners are iterated
+                    // wait until listeners are iterated
+                    semaphoreAddExtraListener.acquire();
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -111,7 +116,8 @@ public class SearchScopeDefinitionTest {
                     public void stateChanged(ChangeEvent e) {
                     }
                 });
-                s.release(2); // the iteration can continue
+                // the iteration can continue
+                semaphoreContinueIterating.release();
             }
         });
 
