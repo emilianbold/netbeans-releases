@@ -143,10 +143,14 @@ public final class PlatformUiSupport {
         Parameters.notNull("projectConfigurationNamespace", projectConfigurationNamespace); //NOI18N
         Parameters.notNull("sourceLevel", sourceLevel); //NOI18N
 
-        PlatformKey platformKey;
+        PlatformKey platformKey = null;
         if (platformName != null) {
-            platformKey = new PlatformKey(PlatformUiSupport.findPlatform(platformName));
-        } else {
+            final JavaPlatform platform = PlatformUiSupport.findPlatform(platformName);
+            if (platform != null) {
+                platformKey = new PlatformKey(platform);
+            }
+        }
+        if (platformKey == null) {
             platformKey = new PlatformKey(JavaPlatformManager.getDefault().getDefaultPlatform());
         }
         storePlatform(props, helper, projectConfigurationNamespace, platformKey, new SourceLevelKey(sourceLevel));

@@ -6,10 +6,9 @@
             <code-name-base>org.netbeans.modules.dlight.kit</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.git.remote</code-name-base>
+                    <code-name-base>org.netbeans.modules.git.remote.cli</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.0.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

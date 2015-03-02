@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.libs.git.remote.GitRemoteConfig;
+import org.netbeans.modules.git.remote.cli.GitRemoteConfig;
 import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 

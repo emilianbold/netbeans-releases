@@ -57,8 +57,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitRepository;
+import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitRepository;
 import org.netbeans.modules.git.remote.client.CredentialsCallback;
 import org.netbeans.modules.git.remote.client.GitClient;
 import org.netbeans.modules.git.remote.client.GitProgressSupport;
@@ -309,7 +309,9 @@ public final class Git {
 
     public VCSFileProxy getTopmostManagedAncestor (VCSFileProxy file) {
         if (file.toFile() != null) {
-            return null;
+            if (!"true".equals(System.getProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true"))) {
+                return null;
+            }
         }
         if (!isAllowable(file)) {
             return null;

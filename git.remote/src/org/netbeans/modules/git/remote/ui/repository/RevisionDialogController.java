@@ -65,7 +65,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.client.GitProgressSupport;
 import org.netbeans.modules.git.remote.utils.GitUtils;

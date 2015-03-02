@@ -43,7 +43,7 @@
 package org.netbeans.modules.git.remote;
 
 import java.awt.Color;
-import org.netbeans.libs.git.remote.GitRevisionInfo;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
 import org.netbeans.modules.git.remote.FileInformation.Status;
 import org.netbeans.modules.git.remote.GitFileNode.FileNodeInformation;
 import org.netbeans.modules.git.remote.options.AnnotationColorProvider;

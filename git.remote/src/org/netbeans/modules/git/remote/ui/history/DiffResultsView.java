@@ -58,7 +58,7 @@ import javax.swing.JSplitPane;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.netbeans.api.diff.DiffController;
-import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.client.GitProgressSupport;
 import org.netbeans.modules.git.remote.ui.diff.DiffStreamSource;
 import org.netbeans.modules.git.remote.utils.GitUtils;

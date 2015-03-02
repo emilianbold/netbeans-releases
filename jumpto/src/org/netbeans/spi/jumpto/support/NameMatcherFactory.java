@@ -121,7 +121,7 @@ public final class NameMatcherFactory {
 
 	private final Pattern pattern;
 
-	public CamelCaseNameMatcher(String name) {
+	public CamelCaseNameMatcher(String name, boolean caseSensitive) {
             if (name.length() == 0) {
                 throw new IllegalArgumentException ();
             }
@@ -136,7 +136,7 @@ public final class NameMatcherFactory {
                 patternString.append( index != -1 ?  "[\\p{Lower}\\p{Digit}_]*" : ".*"); // NOI18N
                 lastIndex = index;
             } while(index != -1);
-            pattern = Pattern.compile(patternString.toString());
+            pattern = Pattern.compile(patternString.toString(), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
 	}
         
         private static int findNextUpper(String text, int offset ) {
@@ -180,7 +180,9 @@ public final class NameMatcherFactory {
                 case CASE_INSENSITIVE_PREFIX:
                      return new CaseInsensitivePrefixNameMatcher(text);
                 case CAMEL_CASE:
-                    return new CamelCaseNameMatcher(text);
+                    return new CamelCaseNameMatcher(text, true);
+                case CASE_INSENSITIVE_CAMEL_CASE:
+                    return new CamelCaseNameMatcher(text, false);
                 default:
                     throw new IllegalArgumentException("Unsupported type: " + type);  //NOI18N
             }

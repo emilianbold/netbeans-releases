@@ -49,7 +49,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
-import org.netbeans.libs.git.remote.GitClient.DiffMode;
+import org.netbeans.modules.git.remote.cli.GitClient.DiffMode;
 import org.netbeans.modules.git.remote.FileInformation;
 import org.netbeans.modules.git.remote.FileInformation.Status;
 import org.netbeans.modules.git.remote.Git;

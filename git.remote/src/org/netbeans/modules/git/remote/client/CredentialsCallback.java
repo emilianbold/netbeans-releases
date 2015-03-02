@@ -42,7 +42,7 @@
 package org.netbeans.modules.git.remote.client;
 
 import java.util.Arrays;
-import org.netbeans.libs.git.remote.GitClientCallback;
+import org.netbeans.modules.git.remote.cli.GitClientCallback;
 import org.netbeans.modules.git.remote.GitModuleConfig;
 import org.netbeans.modules.git.remote.ui.repository.remote.ConnectionSettings;
 import org.openide.DialogDisplayer;

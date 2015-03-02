@@ -47,7 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.ui.repository.Revision;
 import org.netbeans.modules.git.remote.ui.repository.RevisionPicker;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;

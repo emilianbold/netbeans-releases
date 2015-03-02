@@ -52,35 +52,35 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.remote.GitBlameResult;
-import org.netbeans.libs.git.remote.GitBranch;
-import org.netbeans.libs.git.remote.GitCherryPickResult;
-import org.netbeans.libs.git.remote.GitClient.CherryPickOperation;
-import org.netbeans.libs.git.remote.GitClient.DiffMode;
-import org.netbeans.libs.git.remote.GitClient.RebaseOperationType;
-import org.netbeans.libs.git.remote.GitClient.ResetType;
-import org.netbeans.libs.git.remote.GitClientCallback;
-import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitMergeResult;
-import org.netbeans.libs.git.remote.GitPullResult;
-import org.netbeans.libs.git.remote.GitPushResult;
-import org.netbeans.libs.git.remote.GitRebaseResult;
-import org.netbeans.libs.git.remote.GitRefUpdateResult;
-import org.netbeans.libs.git.remote.GitRemoteConfig;
-import org.netbeans.libs.git.remote.GitRepository;
-import org.netbeans.libs.git.remote.GitRepository.FastForwardOption;
-import org.netbeans.libs.git.remote.GitRepositoryState;
-import org.netbeans.libs.git.remote.GitRevertResult;
-import org.netbeans.libs.git.remote.GitRevisionInfo;
-import org.netbeans.libs.git.remote.GitRevisionInfo.GitFileInfo;
-import org.netbeans.libs.git.remote.GitStatus;
-import org.netbeans.libs.git.remote.GitSubmoduleStatus;
-import org.netbeans.libs.git.remote.GitTag;
-import org.netbeans.libs.git.remote.GitTransportUpdate;
-import org.netbeans.libs.git.remote.GitUser;
-import org.netbeans.libs.git.remote.SearchCriteria;
-import org.netbeans.libs.git.remote.progress.NotificationListener;
-import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.git.remote.cli.GitBlameResult;
+import org.netbeans.modules.git.remote.cli.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitCherryPickResult;
+import org.netbeans.modules.git.remote.cli.GitClient.CherryPickOperation;
+import org.netbeans.modules.git.remote.cli.GitClient.DiffMode;
+import org.netbeans.modules.git.remote.cli.GitClient.RebaseOperationType;
+import org.netbeans.modules.git.remote.cli.GitClient.ResetType;
+import org.netbeans.modules.git.remote.cli.GitClientCallback;
+import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitMergeResult;
+import org.netbeans.modules.git.remote.cli.GitPullResult;
+import org.netbeans.modules.git.remote.cli.GitPushResult;
+import org.netbeans.modules.git.remote.cli.GitRebaseResult;
+import org.netbeans.modules.git.remote.cli.GitRefUpdateResult;
+import org.netbeans.modules.git.remote.cli.GitRemoteConfig;
+import org.netbeans.modules.git.remote.cli.GitRepository;
+import org.netbeans.modules.git.remote.cli.GitRepository.FastForwardOption;
+import org.netbeans.modules.git.remote.cli.GitRepositoryState;
+import org.netbeans.modules.git.remote.cli.GitRevertResult;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo.GitFileInfo;
+import org.netbeans.modules.git.remote.cli.GitStatus;
+import org.netbeans.modules.git.remote.cli.GitSubmoduleStatus;
+import org.netbeans.modules.git.remote.cli.GitTag;
+import org.netbeans.modules.git.remote.cli.GitTransportUpdate;
+import org.netbeans.modules.git.remote.cli.GitUser;
+import org.netbeans.modules.git.remote.cli.SearchCriteria;
+import org.netbeans.modules.git.remote.cli.progress.NotificationListener;
+import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.remote.utils.GitUtils;
@@ -95,11 +95,11 @@ import org.openide.util.RequestProcessor;
  */
 public final class GitClient {
     
-    private final org.netbeans.libs.git.remote.GitClient delegate;
+    private final org.netbeans.modules.git.remote.cli.GitClient delegate;
     private final GitProgressSupport progressSupport;
     private final boolean handleAuthenticationIssues;
     private static final int CLEANUP_TIME = 15000;
-    private static final List<org.netbeans.libs.git.remote.GitClient> unusedClients = new LinkedList<org.netbeans.libs.git.remote.GitClient>();
+    private static final List<org.netbeans.modules.git.remote.cli.GitClient> unusedClients = new LinkedList<org.netbeans.modules.git.remote.cli.GitClient>();
     private static final RequestProcessor.Task cleanTask = Git.getInstance().getRequestProcessor().create(new CleanTask());
     
     /**
@@ -877,12 +877,12 @@ public final class GitClient {
 
         @Override
         public void run () {
-            Set<org.netbeans.libs.git.remote.GitClient> toRelease;
+            Set<org.netbeans.modules.git.remote.cli.GitClient> toRelease;
             synchronized (unusedClients) {
-                toRelease = new HashSet<org.netbeans.libs.git.remote.GitClient>(unusedClients);
+                toRelease = new HashSet<org.netbeans.modules.git.remote.cli.GitClient>(unusedClients);
                 unusedClients.clear();
             }
-            for (org.netbeans.libs.git.remote.GitClient unusuedClient : toRelease) {
+            for (org.netbeans.modules.git.remote.cli.GitClient unusuedClient : toRelease) {
                 unusuedClient.release();
             }
         }

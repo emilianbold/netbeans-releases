@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.git.remote.client;
 
-import org.netbeans.libs.git.remote.progress.ProgressMonitor;
+import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 
 /**
  *

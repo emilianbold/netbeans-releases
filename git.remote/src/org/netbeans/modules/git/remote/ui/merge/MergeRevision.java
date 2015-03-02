@@ -46,7 +46,7 @@ import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
-import org.netbeans.libs.git.remote.GitRepository.FastForwardOption;
+import org.netbeans.modules.git.remote.cli.GitRepository.FastForwardOption;
 import org.netbeans.modules.git.remote.ui.repository.RevisionDialogController;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;

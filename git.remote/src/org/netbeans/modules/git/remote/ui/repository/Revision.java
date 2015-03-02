@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.git.remote.ui.repository;
 
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.openide.util.NbBundle;
 

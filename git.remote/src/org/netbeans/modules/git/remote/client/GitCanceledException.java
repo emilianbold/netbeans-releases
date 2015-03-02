@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.git.remote.client;
 
-import org.netbeans.libs.git.remote.GitException;
+import org.netbeans.modules.git.remote.cli.GitException;
 
 /**
  *

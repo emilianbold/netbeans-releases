@@ -95,11 +95,11 @@ import javax.swing.text.EditorKit;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.libs.git.remote.GitBranch;
-import org.netbeans.libs.git.remote.GitClient.DiffMode;
-import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitRevisionInfo;
-import org.netbeans.libs.git.remote.GitStatus;
+import org.netbeans.modules.git.remote.cli.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitClient.DiffMode;
+import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
+import org.netbeans.modules.git.remote.cli.GitStatus;
 import org.netbeans.modules.git.remote.FileInformation;
 import org.netbeans.modules.git.remote.FileInformation.Mode;
 import org.netbeans.modules.git.remote.FileInformation.Status;
@@ -863,14 +863,14 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                                 String revBase, revOther;
                                 if (isLocal()) {
                                     if (mode == Mode.INDEX_VS_WORKING_TREE) {
-                                        revBase = org.netbeans.libs.git.GitClient.INDEX;
-                                        revOther = org.netbeans.libs.git.GitClient.WORKING_TREE;
+                                        revBase = org.netbeans.modules.git.remote.cli.GitClient.INDEX;
+                                        revOther = org.netbeans.modules.git.remote.cli.GitClient.WORKING_TREE;
                                     } else if (mode == Mode.HEAD_VS_INDEX) {
                                         revBase = revisionLeft.getCommitId();
-                                        revOther = org.netbeans.libs.git.GitClient.INDEX;
+                                        revOther = org.netbeans.modules.git.remote.cli.GitClient.INDEX;
                                     } else {
                                         revBase = revisionLeft.getCommitId();
-                                        revOther = org.netbeans.libs.git.GitClient.WORKING_TREE;
+                                        revOther = org.netbeans.modules.git.remote.cli.GitClient.WORKING_TREE;
                                     }
                                 } else {
                                     revBase = revisionLeft.getCommitId();

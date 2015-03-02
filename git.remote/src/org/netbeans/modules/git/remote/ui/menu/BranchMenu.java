@@ -49,7 +49,7 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.libs.git.remote.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.Annotator;
 import org.netbeans.modules.git.remote.ui.branch.CherryPickAction;
 import org.netbeans.modules.git.remote.ui.branch.CreateBranchAction;

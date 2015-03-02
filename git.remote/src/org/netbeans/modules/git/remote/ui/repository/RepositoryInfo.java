@@ -62,12 +62,12 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.remote.GitBranch;
-import org.netbeans.libs.git.remote.GitException;
-import org.netbeans.libs.git.remote.GitRemoteConfig;
-import org.netbeans.libs.git.remote.GitRepositoryState;
-import org.netbeans.libs.git.remote.GitRevisionInfo;
-import org.netbeans.libs.git.remote.GitTag;
+import org.netbeans.modules.git.remote.cli.GitBranch;
+import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitRemoteConfig;
+import org.netbeans.modules.git.remote.cli.GitRepositoryState;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
+import org.netbeans.modules.git.remote.cli.GitTag;
 import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.client.GitClient;
 import org.netbeans.modules.git.remote.utils.GitUtils;
@@ -491,12 +491,12 @@ public class RepositoryInfo {
             for (Map.Entry<String, GitTag> e : oldTags.entrySet()) {
                 GitTag oldTag = e.getValue();
                 GitTag newTag = newTags.get(e.getKey());
-                if (!(oldTag.getMessage().equals(newTag.getMessage())
-                        && oldTag.getTagId().equals(newTag.getTagId())
+                if (!(/*oldTag.getMessage().equals(newTag.getMessage())
+                        &&*/ oldTag.getTagId().equals(newTag.getTagId())
                         && oldTag.getTagName().equals(newTag.getTagName())
                         && oldTag.getTaggedObjectId().equals(newTag.getTaggedObjectId())
-                        && oldTag.getTaggedObjectType().equals(newTag.getTaggedObjectType())
-                        && oldTag.getTagger().toString().equals(newTag.getTagger().toString()))) {
+                        /*&& oldTag.getTaggedObjectType().equals(newTag.getTaggedObjectType())
+                        && oldTag.getTagger().toString().equals(newTag.getTagger().toString())*/ )) {
                     retval = false;
                     break;
                 }

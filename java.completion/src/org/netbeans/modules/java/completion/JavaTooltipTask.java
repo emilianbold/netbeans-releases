@@ -220,7 +220,7 @@ public final class JavaTooltipTask extends BaseTask {
                     }
                     final Element el = trees.getElement(path);
                     final Scope scope = env.getScope();
-                    final boolean isAnonymous = nc.getClassBody() != null || el.getKind().isInterface() || el.getModifiers().contains(ABSTRACT);
+                    final boolean isAnonymous = nc.getClassBody() != null || (el != null && (el.getKind().isInterface() || el.getModifiers().contains(ABSTRACT)));
                     ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                         @Override
                         public boolean accept(Element e, TypeMirror t) {
