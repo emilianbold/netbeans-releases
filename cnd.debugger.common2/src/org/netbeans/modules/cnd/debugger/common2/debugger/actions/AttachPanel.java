@@ -918,7 +918,11 @@ public final class AttachPanel extends TopComponent {
         final public boolean isValid() {
 	    if (!ckMatch())
 		return false;
-
+            
+            if (isTableInfoShown()) {
+                return false;
+            }
+            
             if (loadedPID == null) {
                 int selectedRow = procTable.getSelectedRow();
                 if (selectedRow == -1) {
