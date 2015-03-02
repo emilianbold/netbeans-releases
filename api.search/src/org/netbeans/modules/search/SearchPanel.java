@@ -220,7 +220,7 @@ public class SearchPanel extends JPanel implements FocusListener,
      * presenter, that will be used instead of creating a new one.
      *
      */
-    private List<PresenterProxy> makePresenters(Presenter explicitPresenter) {
+    List<PresenterProxy> makePresenters(Presenter explicitPresenter) {
 
         List<PresenterProxy> presenterList = new LinkedList<PresenterProxy>();
         SearchProvider explicitProvider = explicitPresenter == null
@@ -228,7 +228,8 @@ public class SearchPanel extends JPanel implements FocusListener,
                 : explicitPresenter.getSearchProvider();
         for (SearchProvider p :
                 Lookup.getDefault().lookupAll(SearchProvider.class)) {
-            if ((!replacing || p.isReplaceSupported()) && p.isEnabled()) {
+            if ((!replacing || p.isReplaceSupported())
+                    && (p == explicitProvider || p.isEnabled())) {
                 if (explicitProvider == p) {
                     presenterList.add(new PresenterProxy(explicitProvider,
                             explicitPresenter));
@@ -499,6 +500,11 @@ public class SearchPanel extends JPanel implements FocusListener,
             panel.add(presenter.getForm());
             initChangeListener(presenter);
             panel.validate();
+        }
+
+        @Override
+        public String toString() {
+            return "Proxy presenter for " + getTitle();
         }
     }
 }

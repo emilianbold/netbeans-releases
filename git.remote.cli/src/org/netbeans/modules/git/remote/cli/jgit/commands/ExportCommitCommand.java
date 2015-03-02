@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.util.Date;
@@ -52,6 +53,7 @@ import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -74,68 +76,50 @@ public class ExportCommitCommand extends GitCommand {
     }
 
     @Override
-    protected void run() throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        RevCommit commit = Utils.findCommit(repository, revisionStr);
-//        if (commit.getParentCount() > 1) {
-//            throw new GitException("Unable to export a merge commit");
-//        }
-//        DiffFormatter formatter = null;
-//        try {
-//            out.write(Constants.encode(formatCommitInfo(commit)));
-//            formatter = new DiffFormatter(out);
-//            formatter.setRepository(repository);
-//            List<DiffEntry> diffEntries;
-//            if (commit.getParentCount() > 0) {
-//                formatter.setDetectRenames(true);
-//                diffEntries = formatter.scan(commit.getParent(0), commit);
-//            } else {
-//                TreeWalk walk = new TreeWalk(repository);
-//                walk.reset();
-//                walk.setRecursive(true);
-//                walk.addTree(new EmptyTreeIterator());
-//                walk.addTree(commit.getTree());
-//                walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
-//                diffEntries = DiffEntry.scan(walk);
-//            }
-//            for (DiffEntry ent : diffEntries) {
-//                if (monitor.isCanceled()) {
-//                    break;
-//                }
-//                listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), ent.getNewPath()), ent.getNewPath());
-//                formatter.format(ent);
-//            }
-//            formatter.flush();
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        } finally {
-//            if (formatter != null) {
-//                formatter.release();
-//            }
-//        }
-    }
-    
-    @Override
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "format-patch"); //NOI18N
         addArgument(0, "--no-stat"); //NOI18N
+        addArgument(0, "--stdout");
+        addArgument(0, "--keep-subject");
         addArgument(0, "-1"); //NOI18N
         addArgument(0, revisionStr);
     }
 
-    private String formatCommitInfo (GitRevCommit commit) {
-        GitRevisionInfo info = getClassFactory().createRevisionInfo(commit, getRepository());
-        StringBuilder sb = new StringBuilder();
-        sb.append("From ").append(info.getRevision()).append(" ").append("Mon Sep 17 00:00:00 2001").append(NL);
-        if (info.getAuthor() != null) {
-            sb.append("From: ").append(info.getAuthor().toString()).append(NL);
-        } else if (info.getCommitter() != null) {
-            sb.append("From: ").append(info.getAuthor().toString()).append(NL);
+    @Override
+    protected void run() throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
         }
-        sb.append("Date: ").append(DateFormat.getDateTimeInstance().format(new Date(info.getCommitTime()))).append(NL);
-        sb.append(NL).append(info.getFullMessage()).append(NL).append(NL);
-        return sb.toString();
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    try {
+                        for(int i = 0; i < output.length(); i++)  {
+                            out.write(output.charAt(i));
+                        }
+                    } catch (Exception e) {
+                        throw new GitException(e);
+                    }
+                }
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
     }
 }
