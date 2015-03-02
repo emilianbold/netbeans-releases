@@ -41,18 +41,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.derby.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.modules.derby.DerbyDatabasesImpl;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.test.TestBase;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -61,6 +66,7 @@ import org.openide.modules.InstalledFileLocator;
 public class DerbyDatabasesTest extends TestBase {
 
     private File systemHome;
+    private Lookup sampleDBLookup;
 
     public DerbyDatabasesTest(String testName) {
         super(testName);
@@ -73,6 +79,10 @@ public class DerbyDatabasesTest extends TestBase {
         systemHome.mkdirs();
 
         DerbyOptions.getDefault().setSystemHome(systemHome.getAbsolutePath());
+
+        SampleDatabaseLocator sdl = new SampleDatabaseLocator();
+
+        sampleDBLookup = new ProxyLookup(Lookup.getDefault(), Lookups.singleton(sdl));
     }
 
     public void testGetFirstFreeDatabaseName() throws Exception {
@@ -97,37 +107,54 @@ public class DerbyDatabasesTest extends TestBase {
     }
 
     public void testGetFirstIllegalCharacter() throws Exception {
-        assertEquals((int)File.separatorChar, DerbyDatabases.getFirstIllegalCharacter("a" + File.separatorChar + "b"));
-        assertEquals((int)'/', DerbyDatabases.getFirstIllegalCharacter("a/b"));
+        assertEquals((int) File.separatorChar, DerbyDatabases.getFirstIllegalCharacter("a"
+                + File.separatorChar + "b"));
+        assertEquals((int) '/', DerbyDatabases.getFirstIllegalCharacter("a/b"));
     }
 
     public void testExtractSampleDatabase() throws Exception {
-        setLookup(new Object[] { new SampleDatabaseLocator() });
+        Lookups.executeWith(sampleDBLookup, new Runnable() {
 
-        DerbyDatabasesImpl.getDefault().extractSampleDatabase("newdb");
-        File newDBDir = new File(systemHome, "newdb");
-        Set sampleDBFiles = new HashSet(Arrays.asList(newDBDir.list()));
+            @Override
+            public void run() {
+                try {
+                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("newdb");
+                    File newDBDir = new File(systemHome, "newdb");
+                    Set sampleDBFiles = new HashSet(Arrays.asList(newDBDir.list()));
 
-        assertEquals(3, sampleDBFiles.size());
-        assertTrue(sampleDBFiles.contains("log"));
-        assertTrue(sampleDBFiles.contains("seg0"));
-        assertTrue(sampleDBFiles.contains("service.properties"));
+                    assertEquals(3, sampleDBFiles.size());
+                    assertTrue(sampleDBFiles.contains("log"));
+                    assertTrue(sampleDBFiles.contains("seg0"));
+                    assertTrue(sampleDBFiles.contains("service.properties"));
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
     }
 
     public void testDatabaseNotExtractedToExistingDirectoryIssue80122() throws Exception {
-        setLookup(new Object[] { new SampleDatabaseLocator() });
+        Lookups.executeWith(sampleDBLookup, new Runnable() {
 
-        File sampleDir = new File(systemHome, "sample");
-        sampleDir.mkdirs();
+            @Override
+            public void run() {
+                try {
+                    File sampleDir = new File(systemHome, "sample");
+                    sampleDir.mkdirs();
 
-        assertEquals("There should be no files in the sample directory", 0, sampleDir.listFiles().length);
+                    assertEquals("There should be no files in the sample directory", 0, sampleDir.listFiles().length);
 
-        DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample");
+                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample");
 
-        assertEquals("Should not have extracted the sample database to an existing directory", 0, sampleDir.listFiles().length);
+                    assertEquals("Should not have extracted the sample database to an existing directory", 0, sampleDir.listFiles().length);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
     }
 
-    private static final class SampleDatabaseLocator extends InstalledFileLocator {
+    public static final class SampleDatabaseLocator extends InstalledFileLocator {
 
         public File directory;
 

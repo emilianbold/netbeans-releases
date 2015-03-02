@@ -41,39 +41,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.derby;
 
-package org.netbeans.modules.derby.test;
-
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.xml.sax.SAXException;
+import java.io.File;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.modules.derby.DerbyOptionsTest.InstalledFileLocatorImpl;
+import org.netbeans.modules.derby.test.TestBase;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Repository whose getDefaultFileSystem() returns a writeable FS containing
- * the layer of the Database Explorer module. It is put in the default lookup,
- * thus it is returned by Repository.getDefault().
- *
- * @author Andrei Badea
+ * Test was seperated from DerbyOptionsTest, as the test fail in combination.
+ * 
+ * @author abadea
  */
-public class RepositoryImpl extends Repository {
-    
-    private XMLFileSystem system;
-    
-    public RepositoryImpl() {
-        super(createDefFs());
+public class DerbyOptionsTest2 extends TestBase {
+
+    private File userdir;
+    private File externalDerby;
+
+    public DerbyOptionsTest2(String testName) {
+        super(testName);
     }
-    
-    private static FileSystem createDefFs() {
-        try
-        {
-            FileSystem writeFs = FileUtil.createMemoryFileSystem();
-            FileSystem layerFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/db/resources/mf-layer.xml"));
-            return new MultiFileSystem(new FileSystem[] { writeFs, layerFs });
-        } catch (SAXException e) {
-            return null;
-        }
+
+    @Override
+    public void setUp() throws Exception {
+        clearWorkDir();
+
+        userdir = new File(getWorkDir(), ".netbeans");
+        userdir.mkdirs();
+
+        // create a fake installation of an external derby database
+        externalDerby = new File(userdir, "derby");
+        createFakeDerbyInstallation(externalDerby);
     }
+
+    public void testDerbyLocationIsNotNullWhenBundledDerbyInstalled() throws Exception {
+        // create a fake bundled derby database installation
+        File bundledDerby = new File(userdir, DerbyOptions.INST_DIR);
+        createFakeDerbyInstallation(bundledDerby);
+
+        // assert the bundled derby is installed
+        Lookups.executeWith(Lookups.singleton(new InstalledFileLocatorImpl(userdir)),
+                new Runnable() {
+
+                    @Override
+                    public void run() {
+                        String derbyLocation = DerbyOptions.getDefaultInstallLocation();
+                        assertNotNull(derbyLocation);
+
+                        DerbyOptions.getDefault().setLocation(externalDerby.getAbsolutePath());
+                        assertFalse(DerbyOptions.getDefault().isLocationNull());
+
+                        DerbyOptions.getDefault().setLocation(""); // this should set the location to the one of the bundled derby
+                        assertFalse(DerbyOptions.getDefault().isLocationNull());
+                        assertEquals(DerbyOptions.getDefault().getLocation(), derbyLocation);
+                    }
+                });
+
+    }
+
 }
