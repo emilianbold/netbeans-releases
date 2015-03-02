@@ -43,6 +43,8 @@
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
 import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
@@ -108,18 +110,24 @@ public class RenameCommand extends GitCommand {
     
     @Override
     protected void prepare() throws GitException {
-        setCommandsNumber(2);
+        setCommandsNumber(3);
         super.prepare();
-        addArgument(0, "checkout"); //NOI18N
-        addArgument(0, "HEAD");
-        addArgument(0, "--");
+        addArgument(0, "mv"); //NOI18N
+        addArgument(0, "--verbose"); //NOI18N
+        addArgument(0, "-f"); //NOI18N
         addArgument(0, Utils.getRelativePath(getRepository().getLocation(), source));
+        addArgument(0, Utils.getRelativePath(getRepository().getLocation(), target));
 
-        addArgument(1, "mv"); //NOI18N
-        addArgument(1, "--verbose"); //NOI18N
-        addArgument(1, "-f"); //NOI18N
+        addArgument(1, "rm"); //NOI18N
+        addArgument(1, "--ignore-unmatch");
+        addArgument(1, "-r"); //NOI18N
+        addArgument(1, "--"); //NOI18N
         addArgument(1, Utils.getRelativePath(getRepository().getLocation(), source));
-        addArgument(1, Utils.getRelativePath(getRepository().getLocation(), target));
+
+        addArgument(2, "add"); //NOI18N
+        addArgument(2, "-v"); //NOI18N
+        addArgument(2, "--"); //NOI18N
+        addArgument(2, Utils.getRelativePath(getRepository().getLocation(), target));
     }
     
     @Override
@@ -135,18 +143,28 @@ public class RenameCommand extends GitCommand {
 
                     @Override
                     public void outputParser(String output) throws GitException {
+                        parseMoveOutput(output);
+                    }
+
+                }.runCLI();
+            } else {
+                new Runner(canceled, 1){
+
+                    @Override
+                    public void outputParser(String output) throws GitException {
+                        parseRemoveOutput(output);
+                    }
+
+                }.runCLI();
+                new Runner(canceled, 2){
+
+                    @Override
+                    public void outputParser(String output) throws GitException {
+                        parseAddVerboseOutput(output);
                     }
 
                 }.runCLI();
             }
-            new Runner(canceled, 1){
-
-                @Override
-                public void outputParser(String output) throws GitException {
-                    parseMoveOutput(output);
-                }
-                
-            }.runCLI();
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -162,9 +180,6 @@ public class RenameCommand extends GitCommand {
         if (!parentFile.exists() && !VCSFileProxySupport.mkdirs(parentFile)) {
             throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_CannotCreateFolder"), parentFile.getPath())); //NOI18N
         }
-        if (!VCSFileProxySupport.renameTo(source, target)) {
-            throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_CannotRenameTo"), source.getPath(), target.getPath())); //NOI18N
-        }
     }
 
     private void parseMoveOutput(String output) {
@@ -174,6 +189,44 @@ public class RenameCommand extends GitCommand {
                 String[] s = line.split(" ");
                 String file = s[s.length-1];
                 listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), file), file);
+            }
+        }
+    }
+
+    private void parseAddVerboseOutput(String output) {
+        //add 'folder1/subfolder/file1'
+        //add 'folder1/subfolder/file2'
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("add")) {
+                String s = line.substring(3).trim();
+                if (s.startsWith("'") && s.endsWith("'")) {
+                    String file = s.substring(1,s.length()-1);
+                    listener.notifyFile(VCSFileProxy.createFileProxy(getRepository().getLocation(), file), file);
+                }
+                continue;
+            }
+        }
+    }
+    
+    private void parseRemoveOutput(String output) {
+        //rm 'folder1/file1'
+        //rm 'folder1/file2'
+        //rm 'folder1/folder2/file3'
+        Set<VCSFileProxy> parents = new HashSet<VCSFileProxy>();
+        for (String line : output.split("\n")) { //NOI18N
+            line = line.trim();
+            if (line.startsWith("rm '") && line.endsWith("'")) {
+                String file = line.substring(4, line.length()-1);
+                VCSFileProxy path = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
+                if (file.indexOf('/') > 0) {
+                    parents.add(path.getParentFile());
+                }
+                listener.notifyFile(path, file);
+            }
+        }
+        for(VCSFileProxy parent : parents) {
+            if (!parent.exists()) {
+                listener.notifyFile(parent, Utils.getRelativePath(getRepository().getLocation(), parent));
             }
         }
     }
