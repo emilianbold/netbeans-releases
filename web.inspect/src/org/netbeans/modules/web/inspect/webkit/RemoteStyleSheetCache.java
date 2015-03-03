@@ -205,12 +205,14 @@ public class RemoteStyleSheetCache {
             this.fs = new DummyFileSystem(this);
         }
 
-        @Override
-        public String getName() {
+        /**
+         * Returns the name specified in the style-sheet meta-data.
+         * 
+         * @return name specified in the style-sheet meta-data or {@code null}.
+         */
+        private String getSpecifiedName() {
             String name = null;
-            if (body == null) {
-                name = ""; // NOI18N
-            } else {
+            if (body != null) {
                 List<Rule> rules = body.getRules();
                 if (rules.isEmpty()) {
                     StyleSheetHeader header = body.getHeader();
@@ -235,8 +237,31 @@ public class RemoteStyleSheetCache {
         }
 
         @Override
+        @NbBundle.Messages({
+            "RemoteStyleSheetCache.generatedStylesheet=Generated Style Sheet" // NOI18N
+        })
+        public String getName() {
+            String name = getSpecifiedName();
+            if (name == null || name.isEmpty()) {
+                name = Bundle.RemoteStyleSheetCache_generatedStylesheet();
+            }
+            return name;
+        }
+
+        @Override
         public String getExt() {
-            return "css"; // NOI18N
+            String name = getSpecifiedName();
+            return (name == null || name.isEmpty()) ? "" : "css"; // NOI18N
+        }
+
+        @Override
+        public String getMIMEType() {
+            return "text/css"; // NOI18N
+        }
+
+        @Override
+        public String getMIMEType(String... withinMIMETypes) {
+            return getMIMEType();
         }
 
         @Override
