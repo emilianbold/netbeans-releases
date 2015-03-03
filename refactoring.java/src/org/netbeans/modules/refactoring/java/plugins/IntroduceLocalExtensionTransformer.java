@@ -62,6 +62,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring.Equality;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,7 +87,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
     public IntroduceLocalExtensionTransformer(IntroduceLocalExtensionRefactoring refactoring) {
         this.refactoring = refactoring;
         this.initialized = false;
-        this.getterSetterMap = new HashMap<ElementHandle<Element>, String[]>();
+        this.getterSetterMap = new HashMap<>();
     }
 
     @Override
@@ -104,6 +105,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             TypeElement source = (TypeElement) refactoring.getRefactoringSource().lookup(TreePathHandle.class).getElementHandle().resolve(workingCopy);
 
             boolean noInterface = source.getKind() != ElementKind.INTERFACE;
+            boolean samePackage = packageName.contentEquals(workingCopy.getElements().getPackageOf(source).getQualifiedName());
             
             List<TypeParameterTree> newTypeParams = new ArrayList<>(source.getTypeParameters().size());
             transformTypeParameters(source, source.getTypeParameters(), make, genUtils, newTypeParams);
@@ -111,8 +113,22 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             List<Tree> implementsList = wrap ? addInterfaces(source) : Collections.EMPTY_LIST;
 
             // add members
-            List<Tree> members = new ArrayList<Tree>();
-            addConstructors(source, members);
+            List<Tree> members = new ArrayList<>();
+            Modifier needed;
+            if(wrap) {
+                if(samePackage) {
+                    needed = null;
+                } else {
+                    needed = Modifier.PUBLIC;
+                }
+            } else {
+                if(samePackage) {
+                    needed = null;
+                } else {
+                    needed = Modifier.PROTECTED;
+                }
+            }
+            addConstructors(source, members, needed);
 
             if (wrap && noInterface) {
                 Tree type = make.Type(source.asType());
@@ -122,6 +138,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             }
 
             if (wrap && noInterface) {
+                createWrap(source, fqn, members);
                 addMembers(source, genUtils, members);
                 createEquals(source, genUtils, members);
             }
@@ -197,7 +214,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         setterBody.append(longName).append(" = ").append(parName).append(";"); //NOI18N
         setterBody.append("}");//NOI18N
 
-        Set<Modifier> mods = new HashSet<Modifier>(useModifiers);
+        Set<Modifier> mods = new HashSet<>(useModifiers);
         if (staticMod) {
             mods.add(Modifier.STATIC);
         }
@@ -276,9 +293,41 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             }
         }
     }
+    
+    private String decapitalize(CharSequence name) {
+        return Character.toLowerCase(name.charAt(0)) + name.subSequence(1, name.length()).toString() + 's';
+    }
+    
+    private void createWrap(TypeElement source, String fqn, List<Tree> members) throws IllegalStateException {
+        Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL);
+        final String name = decapitalize(source.getSimpleName());
+        
+        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.QualIdent(source), null)); //NOI18N
+        String bodyText = preparePattern(workingCopy, source.asType(), WRAP_PATTERNS, name, source.getSimpleName().toString(), fqn); //NOI18N
+        SourcePositions[] positions = new SourcePositions[1];
+        StatementTree body = workingCopy.getTreeUtilities().parseStatement(bodyText, positions);
+        ModifiersTree modifiers = prepareModifiers(workingCopy, mods, make, false);
+
+        MethodTree wrap = make.Method(modifiers, "wrap", make.ArrayType(make.QualIdent(fqn)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), (BlockTree) body, null, true); //NOI18N
+        members.add(wrap);
+    }
+    
+    /*
+    LocalFieldExtension[] result = new LocalFieldExtension[fields.length];
+    for (int i = 0; i < fields.length; i++) {
+        result[i] = new LocalFieldExtension(fields[i]);
+    }
+    return result;
+    */
+    
+    /*
+    public static LocalFieldExtension[] wrap(Field[] fields) {
+        return Arrays.stream(fields).map((Field t) -> new LocalFieldExtension(t)).toArray(LocalFieldExtension[]::new);
+    }
+    */
 
     private void createEquals(TypeElement source, GeneratorUtilities genUtils, List<Tree> members) throws IllegalStateException {
-        List<Tree> newTypeParams = new LinkedList<Tree>();
+        List<Tree> newTypeParams = new LinkedList<>();
         for (TypeParameterElement typeParam : source.getTypeParameters()) {
             newTypeParams.add(make.Type(typeParam.asType()));
         }
@@ -334,7 +383,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                  *     return this.delegate.hashCode();
                  * }
                  */
-                List<StatementTree> statements = new LinkedList<StatementTree>();
+                List<StatementTree> statements = new LinkedList<>();
                 statements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "target", make.Type("Object"), make.Identifier("o")));
                 statements.add(
                         make.If(make.InstanceOf(make.Identifier("o"), newSimpleTypeTree), make.Block(Collections.singletonList(make.ExpressionStatement(
@@ -426,7 +475,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 DeclaredType declaredType = (DeclaredType) methodReturnTypeMirror;
                 List<? extends TypeMirror> returntypeArguments = declaredType.getTypeArguments();
 
-                List<ExpressionTree> returntypes = new LinkedList<ExpressionTree>();
+                List<ExpressionTree> returntypes = new LinkedList<>();
                 for (TypeMirror typeMirror : returntypeArguments) {
                     returntypes.add((ExpressionTree) make.Type(typeMirror));
                 }
@@ -492,8 +541,8 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
     }
 
     private List<Tree> addInterfaces(TypeElement source) {
-        List<Tree> implementsList = new ArrayList<Tree>();
-        Set<String> implemented = new HashSet<String>();
+        List<Tree> implementsList = new ArrayList<>();
+        Set<String> implemented = new HashSet<>();
         TypeElement typeElement = source;
         while (typeElement != null) {
             for (TypeMirror typeMirror : typeElement.getInterfaces()) {
@@ -501,7 +550,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 if (typeMirror.getKind() == TypeKind.DECLARED) {
                     DeclaredType declaredType = (DeclaredType) typeMirror;
                     List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
-                    List<Tree> newTypeParams = new LinkedList<Tree>();
+                    List<Tree> newTypeParams = new LinkedList<>();
                     for (TypeMirror typeParam : typeArguments) {
                         Element element = workingCopy.getTypes().asElement(typeParam);
                         if (source.equals(element)) {
@@ -549,7 +598,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         }
     }
 
-    private void addConstructors(final TypeElement origClass, List<Tree> members) {
+    private void addConstructors(final TypeElement origClass, List<Tree> members, Modifier needed) {
         final GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
 
         Tree type = make.Type(origClass.asType());
@@ -580,6 +629,15 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         final boolean isAbstract = origClass.getModifiers().contains(Modifier.ABSTRACT);
         if (!isAbstract) {
         for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
+            Set<Modifier> cMods = constr.getModifiers();
+            if(!cMods.contains(Modifier.PUBLIC)) {
+                if(cMods.contains(Modifier.PRIVATE)) continue;
+                if(needed != null) {
+                    if(!cMods.contains(needed)) {
+                        continue;
+                    }
+                }
+            }
             final List<? extends TypeParameterElement> typeParameters = constr.getTypeParameters();
             List<TypeParameterTree> newTypeParams = new ArrayList<>(typeParameters.size());
             transformTypeParameters(constr, typeParameters, make, genUtils, newTypeParams);
@@ -603,7 +661,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 newParams.add(var);
             }
             List<? extends TypeMirror> thrownTypes = constr.getThrownTypes();
-            List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
+            List<ExpressionTree> newThrownTypes = new ArrayList<>(thrownTypes.size());
             for (TypeMirror typeMirror : thrownTypes) {
                 Tree thrownType = make.Type(typeMirror);
                 newThrownTypes.add((ExpressionTree) thrownType);
@@ -720,25 +778,25 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         }
         TreePath currentPath = getCurrentPath();
         TypeMirror returnType = workingCopy.getTrees().getTypeMirror(currentPath);
+        boolean fromArray = false;
+        if (returnType != null && returnType.getKind() == TypeKind.ARRAY) {
+            ArrayType array = (ArrayType) returnType;
+            returnType = array.getComponentType();
+            fromArray = true;
+        }
         Element typeElement = workingCopy.getTypes().asElement(returnType);
 
         // TODO: Check if the method is in the scope, then skip it.
         if (p.equals(typeElement)) {
-            ExpressionTree methodSelect = node.getMethodSelect();
-            if (methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
-                MemberSelectTree selectTree = (MemberSelectTree) methodSelect;
-                TreePath methodSelectPath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), selectTree.getExpression());
-                TypeMirror methodSelectType = workingCopy.getTrees().getTypeMirror(methodSelectPath);
-                if (workingCopy.getTypes().isSameType(methodSelectType, returnType)) {
-                    return super.visitMethodInvocation(node, p);
-                }
+            if(willBeExtended(currentPath, node, returnType)) {
+                return super.visitMethodInvocation(node, p);
             }
             ExpressionTree ident;
 
             DeclaredType declaredType = (DeclaredType) returnType;
             List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
 
-            List<ExpressionTree> types = new LinkedList<ExpressionTree>();
+            List<ExpressionTree> types = new LinkedList<>();
             for (TypeMirror typeMirror : typeArguments) {
                 types.add((ExpressionTree) make.Type(typeMirror));
             }
@@ -747,11 +805,30 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 ident = (ExpressionTree) make.ParameterizedType(ident, types);
             }
 
-            NewClassTree newClass = make.NewClass(null, Collections.EMPTY_LIST, ident, Collections.singletonList(node), null);
+            Tree newClass;
+            if(fromArray) {
+                newClass = make.MethodInvocation(Collections.EMPTY_LIST, make.MemberSelect(ident, "wrap"), Collections.singletonList(node));
+            } else {
+                newClass = make.NewClass(null, Collections.EMPTY_LIST, ident, Collections.singletonList(node), null);
+            }
             rewrite(node, newClass);
         }
 
         return super.visitMethodInvocation(node, p);
+    }
+
+    private boolean willBeExtended(TreePath currentPath, MethodInvocationTree node, TypeMirror returnType) {
+        boolean skip = true;
+        ExpressionTree methodSelect = node.getMethodSelect();
+        if (methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+            MemberSelectTree selectTree = (MemberSelectTree) methodSelect;
+            Element el = workingCopy.getTrees().getElement(new TreePath(currentPath, selectTree));
+            ElementHandle handle = el == null ? null : ElementHandle.create(el);
+            if(handle != null && JavaRefactoringUtils.isFromLibrary(handle, workingCopy.getClasspathInfo())) {
+                skip = false;
+            }
+        }
+        return skip;
     }
 
     private void rewriteType(TreePath typePath, Element p, Tree typeTree) {
@@ -1083,35 +1160,46 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         STRING,
         OTHER;
     }
+    private static final Map<Acceptor, String> WRAP_PATTERNS;
     private static final Map<Acceptor, String> EQUALS_PATTERNS;
     private static final Map<Acceptor, String> HASH_CODE_PATTERNS;
 
     static {
-        EQUALS_PATTERNS = new LinkedHashMap<Acceptor, String>();
+        WRAP_PATTERNS = new LinkedHashMap<>();
+        
+        WRAP_PATTERNS.put(new SourceVersionAcceptor(SourceVersion.RELEASE_8), "{ return Arrays.stream({VAR0}).map(({VAR1} t) -> new {VAR2}(t)).toArray({VAR2}[]::new); }");
+        WRAP_PATTERNS.put(new SourceVersionAcceptor(SourceVersion.RELEASE_7),
+                  "{ {VAR2}[] result = new {VAR2}[{VAR0}.length];\n"
+                + "for (int i = 0; i < {VAR0}.length; i++) {\n"
+                + "    result[i] = new {VAR2}({VAR0}[i]);\n"
+                + "}\n"
+                + "return result; }");
+        
+        EQUALS_PATTERNS = new LinkedHashMap<>();
 
-        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.BOOLEAN, KindOfType.BYTE, KindOfType.SHORT, KindOfType.INT, KindOfType.LONG, KindOfType.CHAR), "this.{VAR} != other.{VAR}");
-        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.FLOAT), "java.lang.Float.floatToIntBits(this.{VAR}) != java.lang.Float.floatToIntBits(other.{VAR})");
-        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.DOUBLE), "java.lang.Double.doubleToLongBits(this.{VAR}) != java.lang.Double.doubleToLongBits(other.{VAR})");
-        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "this.{VAR} != other.{VAR}");
-        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "! java.util.Arrays.equals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "! java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "equals", SourceVersion.RELEASE_7), "! java.util.Objects.equals(this.{VAR}, other.{VAR})");
-        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
-        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.BOOLEAN, KindOfType.BYTE, KindOfType.SHORT, KindOfType.INT, KindOfType.LONG, KindOfType.CHAR), "this.{VAR0} != other.{VAR0}");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.FLOAT), "java.lang.Float.floatToIntBits(this.{VAR0}) != java.lang.Float.floatToIntBits(other.{VAR0})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.DOUBLE), "java.lang.Double.doubleToLongBits(this.{VAR0}) != java.lang.Double.doubleToLongBits(other.{VAR0})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "this.{VAR0} != other.{VAR0}");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "! java.util.Arrays.equals(this.{VAR0}, other.{VAR0}");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "! java.util.Arrays.deepEquals(this.{VAR0}, other.{VAR0}");
+        EQUALS_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "equals", SourceVersion.RELEASE_7), "! java.util.Objects.equals(this.{VAR0}, other.{VAR0})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR0} == null) ? (other.{VAR0} != null) : !this.{VAR0}.equals(other.{VAR0})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "this.{VAR0} != other.{VAR0} && (this.{VAR0} == null || !this.{VAR0}.equals(other.{VAR0}))");
 
-        HASH_CODE_PATTERNS = new LinkedHashMap<Acceptor, String>();
+        HASH_CODE_PATTERNS = new LinkedHashMap<>();
 
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.BYTE, KindOfType.SHORT, KindOfType.INT, KindOfType.CHAR), "this.{VAR}");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.LONG), "(int) (this.{VAR} ^ (this.{VAR} >>> 32))");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.FLOAT), "java.lang.Float.floatToIntBits(this.{VAR})");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.DOUBLE), "(int) (Double.doubleToLongBits(this.{VAR}) ^ (Double.doubleToLongBits(this.{VAR}) >>> 32))");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.BOOLEAN), "(this.{VAR} ? 1 : 0)");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "java.util.Arrays.hashCode(this.{VAR}");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "java.util.Arrays.deepHashCode(this.{VAR}");
-        HASH_CODE_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "hashCode", SourceVersion.RELEASE_7), "java.util.Objects.hashCode(this.{VAR})");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
-        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.BYTE, KindOfType.SHORT, KindOfType.INT, KindOfType.CHAR), "this.{VAR0}");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.LONG), "(int) (this.{VAR0} ^ (this.{VAR0} >>> 32))");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.FLOAT), "java.lang.Float.floatToIntBits(this.{VAR0})");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.DOUBLE), "(int) (Double.doubleToLongBits(this.{VAR0}) ^ (Double.doubleToLongBits(this.{VAR0}) >>> 32))");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.BOOLEAN), "(this.{VAR0} ? 1 : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "(this.{VAR0} != null ? this.{VAR0}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "java.util.Arrays.hashCode(this.{VAR0}");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "java.util.Arrays.deepHashCode(this.{VAR0}");
+        HASH_CODE_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "hashCode", SourceVersion.RELEASE_7), "java.util.Objects.hashCode(this.{VAR0})");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR0} != null ? this.{VAR0}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "(this.{VAR0} != null ? this.{VAR0}.hashCode() : 0)");
     }
 
     private MethodTree createEqualsMethod(WorkingCopy wc, DeclaredType type, Tree typeTree) {
@@ -1120,7 +1208,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         TypeElement objElement = wc.getElements().getTypeElement("java.lang.Object"); //NOI18N
         List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "obj", objElement != null ? make.Type(objElement.asType()) : make.Identifier("Object"), null)); //NOI18N
 
-        List<StatementTree> statements = new ArrayList<StatementTree>();
+        List<StatementTree> statements = new ArrayList<>();
         //if (obj == null) return false;
         statements.add(make.If(make.Binary(Tree.Kind.EQUAL_TO, make.Identifier("obj"), make.Identifier("null")), make.Return(make.Identifier("false")), null)); //NOI18N
         //if (getClass() != obj.getClass()) return false;
@@ -1135,7 +1223,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
         statements.add(make.Return(make.Identifier("true")));
         BlockTree body = make.Block(statements, false);
-        ModifiersTree modifiers = prepareModifiers(wc, mods, make);
+        ModifiersTree modifiers = prepareModifiers(wc, mods, make, true);
 
         return make.Method(modifiers, "equals", make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
     }
@@ -1154,7 +1242,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             startNumber = generatePrimeNumber(2, 10);
             multiplyNumber = generatePrimeNumber(10, 100);
         }
-        List<StatementTree> statements = new ArrayList<StatementTree>();
+        List<StatementTree> statements = new ArrayList<>();
         //int hash = <startNumber>;
         statements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "hash", make.PrimitiveType(TypeKind.INT), make.Literal(startNumber))); //NOI18N
 
@@ -1164,7 +1252,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
         statements.add(make.Return(make.Identifier("hash"))); //NOI18N
         BlockTree body = make.Block(statements, false);
-        ModifiersTree modifiers = prepareModifiers(wc, mods, make);
+        ModifiersTree modifiers = prepareModifiers(wc, mods, make, true);
 
         return make.Method(modifiers, "hashCode", make.PrimitiveType(TypeKind.INT), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
     }
@@ -1202,11 +1290,11 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         return proposed;
     }
 
-    private static ModifiersTree prepareModifiers(WorkingCopy wc, Set<Modifier> mods, TreeMaker make) {
+    private static ModifiersTree prepareModifiers(WorkingCopy wc, Set<Modifier> mods, TreeMaker make, boolean addOverride) {
 
-        List<AnnotationTree> annotations = new LinkedList<AnnotationTree>();
+        List<AnnotationTree> annotations = new LinkedList<>();
 
-        if (supportsOverride(wc)) {
+        if (addOverride && supportsOverride(wc)) {
             TypeElement override = wc.getElements().getTypeElement("java.lang.Override");
 
             if (override != null) {
@@ -1267,18 +1355,26 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         throw new IllegalStateException();
     }
 
-    private static ExpressionTree prepareExpression(WorkingCopy wc, Map<Acceptor, String> patterns, TypeMirror tm, String ve/*, Scope scope*/) {
-        String pattern = choosePattern(wc, tm, patterns);
-
-        assert pattern != null;
-
-        String conditionText = MapFormat.format(pattern, Collections.singletonMap("VAR", ve));
+    private static ExpressionTree prepareExpression(WorkingCopy wc, Map<Acceptor, String> patterns, TypeMirror tm, String... ve/*, Scope scope*/) {
+        String conditionText = preparePattern(wc, tm, patterns, ve);
         ExpressionTree exp = wc.getTreeUtilities().parseExpression(conditionText, new SourcePositions[1]);
 
         exp = GeneratorUtilities.get(wc).importFQNs(exp);
 //        wc.getTreeUtilities().attributeTree(exp, scope);
 
         return exp;
+    }
+
+    private static String preparePattern(WorkingCopy wc, TypeMirror tm, Map<Acceptor, String> patterns, String... ve) {
+        String pattern = choosePattern(wc, tm, patterns);
+        assert pattern != null;
+        Map<String, String> variables = new HashMap<>(ve.length);
+        for (int i = 0; i < ve.length; i++) {
+            String string = ve[i];
+            variables.put("VAR"+ i, string);
+        }
+        String conditionText = MapFormat.format(pattern, variables);
+        return conditionText;
     }
 
     private static interface Acceptor {
@@ -1304,25 +1400,38 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         }
     }
 
-    private static final class MethodExistsAcceptor implements Acceptor {
+    private static class SourceVersionAcceptor implements Acceptor {
+
+        private final SourceVersion minimalVersion;
+
+        public SourceVersionAcceptor(SourceVersion minimalVersion) {
+            this.minimalVersion = minimalVersion;
+        }
+
+        @Override
+        public boolean accept(CompilationInfo info, TypeMirror tm) {
+            return !(minimalVersion != null && minimalVersion.compareTo(info.getSourceVersion()) > 0);
+        }
+    }
+    
+    private static final class MethodExistsAcceptor extends SourceVersionAcceptor {
 
         private final String fqn;
         private final String methodName;
-        private final SourceVersion minimalVersion;
 
         public MethodExistsAcceptor(String fqn, String methodName) {
             this(fqn, methodName, null);
         }
 
         public MethodExistsAcceptor(String fqn, String methodName, SourceVersion minimalVersion) {
+            super(minimalVersion);
             this.fqn = fqn;
             this.methodName = methodName;
-            this.minimalVersion = minimalVersion;
         }
 
         @Override
         public boolean accept(CompilationInfo info, TypeMirror tm) {
-            if (minimalVersion != null && minimalVersion.compareTo(info.getSourceVersion()) > 0) {
+            if (!super.accept(info, tm)) {
                 return false;
             }
 
