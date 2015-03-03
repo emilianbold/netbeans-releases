@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.netbeans.modules.git.remote.cli.GitClient.ResetType;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
