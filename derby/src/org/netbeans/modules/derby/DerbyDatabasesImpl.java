@@ -71,8 +71,10 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -81,7 +83,7 @@ import org.openide.util.NbPreferences;
  *
  */
 public final class DerbyDatabasesImpl {
-
+    private static final Logger LOG = Logger.getLogger(DerbyDatabasesImpl.class.getName());
     private static final DerbyDatabasesImpl INSTANCE = new DerbyDatabasesImpl();
 
     private  Set<ChangeListener> changeListeners = new HashSet<ChangeListener> ();
@@ -343,6 +345,13 @@ public final class DerbyDatabasesImpl {
             return Collections.emptyList();
         }
         FileObject databaseHomeFO = FileUtil.toFileObject(databaseHomeFile);
+        try {
+            databaseHomeFO.getFileSystem().refresh(false);
+        } catch (FileStateInvalidException ex) {
+            // This should be part of the real filesystem - it is doubtful, that
+            // this case is ever reached - just log it
+            LOG.log(Level.FINE, "Failed to refresh filesystem", ex);
+        }
         Enumeration<? extends FileObject> children = databaseHomeFO.getChildren(false);
         List<String> res = new ArrayList<String>();
         while (children.hasMoreElements()) {

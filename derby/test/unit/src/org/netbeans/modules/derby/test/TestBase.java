@@ -47,12 +47,6 @@ package org.netbeans.modules.derby.test;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Common ancestor for all test classes.
@@ -61,54 +55,20 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class TestBase extends NbTestCase {
 
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals("Unable to set the default lookup!", Lkp.class, Lookup.getDefault().getClass());
-        
-        ((Lkp)Lookup.getDefault()).addFixed(new RepositoryImpl());
-        assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
-    }
-    
-    public static void setLookup(Object[] instance) {
-        ((Lkp)Lookup.getDefault()).setLookup(instance);
-    }
-    
     public TestBase(String name) {
         super(name);
     }
-    
+
     public static void createFakeDerbyInstallation(File location) throws IOException {
         if (!location.mkdirs()) {
-            throw new IOException("Could not create " + location.getAbsolutePath());
+            throw new IOException("Could not create "
+                    + location.getAbsolutePath());
         }
         File lib = new File(location, "lib");
         if (!lib.mkdir()) {
             throw new IOException("Could not create " + lib.getAbsolutePath());
         }
         new File(lib, "derby.jar").createNewFile();
-    }
-    
-    public static final class Lkp extends ProxyLookup {
-        
-        private InstanceContent fixed = new InstanceContent();
-        private Lookup fixedLookup = new AbstractLookup(fixed);
-        
-        public Lkp() {
-            setLookup(new Object[0]);
-        }
-        
-        void setLookup(Object[] instances) {
-            ClassLoader l = TestBase.class.getClassLoader();
-            setLookups(new Lookup[] {
-                Lookups.metaInfServices(l),
-                Lookups.singleton(l),
-                fixedLookup,
-                Lookups.fixed(instances),
-            });
-        }
-        
-        void addFixed(Object instance) {
-            fixed.add(instance);
-        }
+        new File(lib, "derbyclient.jar").createNewFile();
     }
 }
