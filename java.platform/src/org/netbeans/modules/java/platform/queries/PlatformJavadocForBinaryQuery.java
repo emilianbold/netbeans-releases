@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seplatform.platformdefinition;
+package org.netbeans.modules.java.platform.queries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -74,11 +74,12 @@ import org.openide.util.WeakListeners;
 
 /**
  * Implementation of Javadoc query for the platform.
+ * @author Tomas Zezula
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=150)
-public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryImplementation {
+public class PlatformJavadocForBinaryQuery implements JavadocForBinaryQueryImplementation {
 
-    private static final Logger LOG = Logger.getLogger(JavadocForBinaryQueryPlatformImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(PlatformJavadocForBinaryQuery.class.getName());
 
     private static final int STATE_ERROR = -1;
     private static final int STATE_START = 0;
@@ -92,7 +93,7 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
     private static final String NAME_IDNEX ="index-files";  //NOI18N
 
     /** Default constructor for lookup. */
-    public JavadocForBinaryQueryPlatformImpl() {
+    public PlatformJavadocForBinaryQuery() {
     }
     
     @Override
