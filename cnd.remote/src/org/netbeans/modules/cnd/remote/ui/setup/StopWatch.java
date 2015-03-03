@@ -41,47 +41,77 @@
  */
 package org.netbeans.modules.cnd.remote.ui.setup;
 
+import java.util.HashMap;
+import java.util.Map;
 /**
  *
  * @author vkvashin
  */
-public class StopWatch {
+public abstract class StopWatch {
     
-    private long time;
-    private final String text;
-    private static int nesting = 0;
-    private static final Object lock = new Object();
+    public abstract void stop();
 
-    public StopWatch(boolean trace, String textFormat, Object... arguments) {
-        if (trace) {
-            synchronized (lock) {
-                this.text = String.format(textFormat, arguments);
-                time = System.currentTimeMillis();
-                System.err.printf("[%d] %s%s: starting\n", System.currentTimeMillis(), indent(), text); //NOI18N
-                nesting++;
-            }
-        } else {
-            this.time = -1;
-            this.text = null;
+    /**
+     * Creates and starts a stopwatch
+     * @param enabled allows to avoid (1) too much code in client and (2) NPE
+     * @param category each output line starts from prefix; it also acts as 1-st part of key
+     * @param key key.toStrinbg() to be used as additional key (2-nd part of key)
+     * @param message is printed after prefix and additional key; also acts as 3-st part of key
+     * NB: indentation is done by (prefix + additionalKey)
+     * @return 
+     */
+    public static StopWatch createAndStart(boolean enabled, String category, Object key, String message, Object... arguments) {
+        if (!enabled) {
+            return DUMMY;
         }
+        StringBuilder text = new StringBuilder();
+        text.append(category).append(" [").append(key).append("]: "); //NOI18N
+        String indentKey = category + key;
+        int indent = indent(indentKey, +1);
+        for (int i = 0; i < indent; i++) {
+            text.append("    "); //NOI18N
+        }        
+        text.append(String.format(message, arguments));
+        return new Impl(text, indentKey);
     }
     
-    public void stop() {
-        if (time > 0) {
-            synchronized (lock) {
-                nesting--;
-                time = System.currentTimeMillis() - time;
-                System.err.printf("[%d] %s%s: finished in %s ms\n", System.currentTimeMillis(), indent(), text, time); //NOI18N
-            }
+    private static int indent(String indentKey, int delta) {
+        synchronized (lock) {
+            Integer indent = indents.get(indentKey);
+            indent = (indent == null) ? 0 : (indent + delta);
+            indents.put(indentKey, indent);
+            return indent;
         }
     }
-    
-    private String indent() {
-        assert Thread.holdsLock(lock);
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < nesting; i++) {
-            sb.append("    "); //NOI18N
+   
+    private static class Dummy extends StopWatch {
+        @Override
+        public void stop() {
+        }        
+    }
+    private static final StopWatch DUMMY = new Dummy();
+    private static final Object lock = new Object();
+    private static final Map<String, Integer> indents = new HashMap<>();
+    //private static final Map<String, Impl> instances = new HashMap<>();
+
+    private static class Impl extends StopWatch {
+
+        private long time;
+        private final CharSequence text;
+        private final String indentKey;
+
+        private Impl(CharSequence text, String indentKey) {
+            this.text = text;
+            this.indentKey = indentKey;
+            time = System.currentTimeMillis();
+            System.err.printf("[%d] %s starting...\n", System.currentTimeMillis(), text); //NOI18N
         }
-        return sb.toString();
+
+        @Override
+        public void stop() {
+            time = System.currentTimeMillis() - time;
+            System.err.printf("[%d] %s finished in %s ms\n", System.currentTimeMillis(), text, time); //NOI18N
+            indent(indentKey, -1);
+        }
     }
 }

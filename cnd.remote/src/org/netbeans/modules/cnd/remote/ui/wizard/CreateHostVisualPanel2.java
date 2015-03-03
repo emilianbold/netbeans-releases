@@ -56,6 +56,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -285,7 +287,7 @@ import org.openide.util.RequestProcessor;
                 phandle.start();
 
                 try {
-                    StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: hostValidator.validate [%s]", env);
+                    StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "hostValidator.validate"); //NOI18N
                     HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
                     if (hostValidator.validate(env, /*password, rememberPassword, */ new TextComponentWriter(tpOutput))) {
                         sw.stop();

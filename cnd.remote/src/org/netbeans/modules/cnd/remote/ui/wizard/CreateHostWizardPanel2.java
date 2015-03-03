@@ -45,6 +45,8 @@ import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
@@ -94,7 +96,7 @@ import org.openide.util.NbBundle;
         ExecutionEnvironment host = component.getHost();
         
         if (host == null || !host.equals(lastValidatedHost)) {
-            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: host validation  [%s]", host);
+            StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, host, "host validation"); //NOI18N
             validationTask = component.validateHost();
 
             try {

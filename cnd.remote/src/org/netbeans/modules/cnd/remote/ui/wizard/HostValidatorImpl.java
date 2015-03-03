@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -94,9 +96,7 @@ public class HostValidatorImpl implements HostValidator {
             message = String.format(message, env.toString());
             writer.printf("%s", message); // NOI18N
         } else {
-            //StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: record.resetOfflineState [%s]", env);
             record.resetOfflineState(); // this is a do-over
-            //sw.stop();
         }
         // move expensive operation out of EDT
 
@@ -108,7 +108,7 @@ public class HostValidatorImpl implements HostValidator {
 //            if (password != null && password.length > 0) {
 //                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
 //            }
-            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: connecting to [%s]", env);
+            StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "connecting"); //NOI18N
             ConnectionManager.getInstance().connectTo(env);
             sw.stop();
         } catch (InterruptedIOException ex) {
@@ -122,7 +122,7 @@ public class HostValidatorImpl implements HostValidator {
         if (!alreadyOnline) {
             writer.print(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
             writer.print(NbBundle.getMessage(getClass(), "CSM_ConfHost") + '\n');
-            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: record.init [%s]", env);
+            StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "record.init"); //NOI18N
             record.init(null);
             sw.stop();
         }
@@ -144,7 +144,7 @@ public class HostValidatorImpl implements HostValidator {
                 }
             };            
             final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
-            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: CompilerSetManager.initialize [%s]", env);
+            StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "CompilerSetManager.initialize"); //NOI18N
             csm.initialize(false, false, reporter);
             sw.stop();
             if (record.hasProblems()) {
@@ -158,9 +158,7 @@ public class HostValidatorImpl implements HostValidator {
 
                 @Override
                 public void run() {
-                    StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: finishInitialization [%s] (NB: in different thread!)", env);
                     csm.finishInitialization();
-                    sw.stop();
                 }
             };
             result = true;

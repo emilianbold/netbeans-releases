@@ -86,6 +86,7 @@ import org.openide.util.WeakListeners;
 public class RemoteServerList implements ServerListImplementation, ConnectionListener {
 
     public static final boolean TRACE_SETUP = Boolean.getBoolean("cnd.remote.trace.setup"); //NOI18N
+    public static final String TRACE_SETUP_PREFIX = "#HostSetup"; //NOI18N
     
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N

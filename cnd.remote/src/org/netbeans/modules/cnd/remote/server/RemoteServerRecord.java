@@ -54,6 +54,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
@@ -193,11 +195,9 @@ public class RemoteServerRecord implements ServerRecord {
         setState(State.INITIALIZING);
         RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
         if (!Boolean.getBoolean("cnd.remote.skip.setup")) {
-            //StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: needsSetupOrUpdate [%s]", executionEnvironment);
             final boolean needsSetupOrUpdate = rss.needsSetupOrUpdate();
-            //sw.stop();
             if (needsSetupOrUpdate) {
-                StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: rss.setup [%s]", executionEnvironment);
+                StopWatch sw =StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, executionEnvironment, "rss.setup"); //NOI18N
                 rss.setup();
                 sw.stop();
             }
@@ -222,7 +222,8 @@ public class RemoteServerRecord implements ServerRecord {
             }
         }
         if (initPathMap) {
-            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: init pathmap [%s]", executionEnvironment);
+            StopWatch sw; 
+            sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, executionEnvironment, "init pathmap"); //NOI18N
             RemotePathMap.getPathMap(getExecutionEnvironment()).initIfNeeded();
             sw.stop();
         }
