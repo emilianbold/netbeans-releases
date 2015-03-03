@@ -49,7 +49,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.datatransfer.ExTransferable;
@@ -111,11 +110,7 @@ public abstract class NodeTransfer extends Object {
         }
     }
 
-    /** message format to create and parse the mimetype
-    */
-    private static MessageFormat dndMimeType = new MessageFormat(
-            "application/x-java-openide-nodednd;class=org.openide.nodes.Node;mask={0}" // NOI18N
-        );
+    private static final String dndMimeType = "application/x-java-openide-nodednd;class=org.openide.nodes.Node;mask="; //NOI18N
 
     private NodeTransfer() {
     }
@@ -126,7 +121,7 @@ public abstract class NodeTransfer extends Object {
     private static DataFlavor createDndFlavor(int actions) {
         Exception ex;
         try {
-            return new DataFlavor(dndMimeType.format(new Object[] { new Integer(actions) }),
+            return new DataFlavor(dndMimeType + actions,
                     null, Node.class.getClassLoader());
         } catch (IllegalArgumentException iae) {
             ex = iae;
