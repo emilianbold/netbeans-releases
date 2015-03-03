@@ -127,7 +127,9 @@ public final class TestRunnerReporter {
         matcher = SESSION_START_PATTERN.matcher(line);
         if (matcher.find()) {
             // in "multi capability" mode session is started only once
-            if (multiCapabilities == 0 || (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) {
+            if (multiCapabilities == 0 || // capabilities is used
+                    (multiCapabilities > 0 && matcher.group("CAPABILITY") == null) || // multiCapabilities is used with only one browser
+                    (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) { // multiCapabilities is used with more than one browser
                 sessionStarted(line);
             }
             return showOutput ? line : null;
@@ -137,7 +139,9 @@ public final class TestRunnerReporter {
         if (matcher.find()) {
             handleTrouble();
             // in "multi capability" mode session is finished only once
-            if (multiCapabilities == 0 || (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == multiCapabilities)) {
+            if (multiCapabilities == 0 || // capabilities is used
+                    (multiCapabilities > 0 && matcher.group("CAPABILITY") == null) || // multiCapabilities is used with only one browser
+                    (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) { // multiCapabilities is used with more than one browser
                 sessionFinished(line);
             }
             return showOutput ? "" : null;
