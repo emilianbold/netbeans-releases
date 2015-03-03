@@ -94,11 +94,11 @@ public class RemoteServerRecord implements ServerRecord {
     private RemoteSyncFactory syncFactory;
     private boolean x11forwarding;
 //    private boolean x11forwardingPossible;
-    private PropertyChangeSupport pcs;
+    private final PropertyChangeSupport pcs;
 
-    HostInfo.OSFamily cachedOsFamily = null;
-    HostInfo.CpuFamily cachedCpuFamily = null;
-    String cachedOsVersion = null;
+    private HostInfo.OSFamily cachedOsFamily = null;
+    private HostInfo.CpuFamily cachedCpuFamily = null;
+    private String cachedOsVersion = null;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -452,7 +452,7 @@ public class RemoteServerRecord implements ServerRecord {
     private static final String SERVER_LIST_SEPARATOR = ","; //NOI18N
 
     /*package-local*/ static List<RemoteServerRecord> fromString(String slist) {
-        List<RemoteServerRecord> result = new ArrayList<RemoteServerRecord>();
+        List<RemoteServerRecord> result = new ArrayList<>();
 
         for (String serverString : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
             // there moght be to forms:
@@ -577,9 +577,7 @@ public class RemoteServerRecord implements ServerRecord {
                         }
                     }
                 }
-            } catch (IOException ex) {
-                // don't report
-            } catch (CancellationException ex) {
+            } catch (IOException | CancellationException ex) {
                 // don't report
             }
         }
