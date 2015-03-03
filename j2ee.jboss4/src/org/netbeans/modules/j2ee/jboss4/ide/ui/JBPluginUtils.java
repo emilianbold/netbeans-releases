@@ -62,8 +62,10 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.openide.filesystems.JarFileSystem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -110,7 +112,6 @@ public class JBPluginUtils {
     public static final String CLIENT = "client" + File.separator;
 
     public static final String COMMON = "common" + File.separator;
-
 
     // For JBoss 5.0 under JBOSS_ROOT_DIR/lib
     public static final String[] JBOSS5_CLIENT_LIST = {
@@ -590,6 +591,19 @@ public class JBPluginUtils {
         return 1099;
     }
 
+    public static int getJmxPortNumber(JBProperties jb, InstanceProperties ip) {
+        String strPort = ip.getProperty(JBPluginProperties.PROPERTY_JMX_PORT);
+        if (strPort == null || strPort.trim().isEmpty()) {
+            return getDefaultJmxPortNumber(jb.getServerVersion());
+        }
+        try {
+            return Integer.parseInt(strPort.trim());
+        } catch(NumberFormatException e) {
+            // pass through to default
+        }
+        return getDefaultJmxPortNumber(jb.getServerVersion());
+    }
+
     public static String getJnpPort(String domainDir) {
 
         String serviceXml = domainDir+File.separator+"conf"+File.separator+"jboss-service.xml"; //NOI18N
@@ -771,6 +785,14 @@ public class JBPluginUtils {
         @Override
         public boolean accept(File dir, String name) {
             return name.endsWith(".jar");
+        }
+    }
+
+    public static int getDefaultJmxPortNumber(Version version) {
+        if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0) {
+            return 9999;
+        } else {
+            return 1090;
         }
     }
 
