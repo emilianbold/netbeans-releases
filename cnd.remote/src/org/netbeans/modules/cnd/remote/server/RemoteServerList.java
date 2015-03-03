@@ -156,18 +156,22 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         Collection<RemoteServerRecord> recordsToNotify = new ArrayList<RemoteServerRecord>();
         for (RemoteServerRecord rec : items) {
             if (rec.getExecutionEnvironment().equals(env)) {
-                recordsToNotify.add(rec);
+                if (rec.needsValidationOnConnect()) {
+                    recordsToNotify.add(rec);
+                }
             }
         }
         // previously, it was done by RemoteFileSupport, but it is moved to dlight.remote
         if (recordsToNotify.isEmpty()) {
             // inlined RemoteServerListUI.revalidate
-            ServerRecord record = get(env);
-            if (record.isDeleted()) {
-                addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
-            } else if (!record.isOnline()) {
-                record.validate(true);
-            }            
+            RemoteServerRecord record = get(env);
+            if (record.needsValidationOnConnect()) {
+                if (record.isDeleted()) {
+                    addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
+                } else if (!record.isOnline()) {
+                    record.validate(true);
+                }            
+            }
         } else {
             for (RemoteServerRecord rec : recordsToNotify) {
                 rec.checkHostInfo();
@@ -186,7 +190,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
      * @return A RemoteServerRecord for env
      */
     @Override
-    public ServerRecord get(ExecutionEnvironment env) {
+    public RemoteServerRecord get(ExecutionEnvironment env) {
         return get(env, true);
     }
 

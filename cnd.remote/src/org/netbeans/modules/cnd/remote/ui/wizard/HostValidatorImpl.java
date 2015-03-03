@@ -87,9 +87,19 @@ public class HostValidatorImpl implements HostValidator {
     }
 
     @Override
-    public boolean validate(final ExecutionEnvironment env, /*char[] password, boolean rememberPassword,*/ final PrintWriter writer) {
-        boolean result = false;
+    public boolean validate(final ExecutionEnvironment env, final PrintWriter writer) {
         final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+        record.setNeedsValidationOnConnect(false);
+        try {
+            return validateImpl(record, writer);
+        } finally {
+            record.setNeedsValidationOnConnect(true);
+        }
+    }
+    
+    private boolean validateImpl(final RemoteServerRecord record, final PrintWriter writer) {
+        final ExecutionEnvironment env = record.getExecutionEnvironment();
+        boolean result = false;
         final boolean alreadyOnline = record.isOnline();
         if (alreadyOnline) {
             String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
@@ -111,12 +121,10 @@ public class HostValidatorImpl implements HostValidator {
             StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "connecting"); //NOI18N
             ConnectionManager.getInstance().connectTo(env);
             sw.stop();
-        } catch (InterruptedIOException ex) {
-            return false; // don't report InterruptedIOException
+        } catch (InterruptedIOException | CancellationException ex) {
+            return false; // don't report InterruptedIOException and CancellationException
         } catch (IOException ex) {
             writer.print("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
-            return false;
-        } catch (CancellationException ex) {
             return false;
         }
         if (!alreadyOnline) {

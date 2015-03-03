@@ -105,6 +105,7 @@ public class RemoteServerRecord implements ServerRecord {
     private HostInfo.CpuFamily cachedCpuFamily = null;
     private String cachedOsVersion = null;
     private final RequestProcessor requestProcessor = new RequestProcessor(getClass().getSimpleName(), 10); //NOI18N
+    private boolean needsValidationOnConnect = true;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -292,6 +293,18 @@ public class RemoteServerRecord implements ServerRecord {
     public String getStateAsText() {
         // TODO: not good to use object's toString as resource key
         return NbBundle.getMessage(RemoteServerRecord.class, state.toString());
+    }
+
+    public boolean needsValidationOnConnect() {
+        synchronized (stateLock) {
+            return needsValidationOnConnect;
+        }
+    }
+
+    public void setNeedsValidationOnConnect(boolean needsValidationOnConnect) {
+        synchronized (stateLock) {
+            this.needsValidationOnConnect = needsValidationOnConnect;
+        }
     }
 
     @Override
