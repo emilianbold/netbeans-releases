@@ -299,33 +299,23 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         return dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class);
     }
 
-    public static DataObject create(final JavaPlatform plat, final DataFolder f, final String idName) throws IOException {
-        W w = new W(plat, f, idName);
-        f.getPrimaryFile().getFileSystem().runAtomicAction(w);
-        try {
-            ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Void> () {
-                        public Void run () throws Exception {
-                            EditableProperties props = PropertyUtils.getGlobalProperties();
-                            generatePlatformProperties(plat, idName, props);
-                            PropertyUtils.putGlobalProperties (props);
-                            return null;
-                        }
-                    });
-        } catch (MutexException me) {
-            Exception originalException = me.getException();
-            if (originalException instanceof RuntimeException) {
-                throw (RuntimeException) originalException;
-            }
-            else if (originalException instanceof IOException) {
-                throw (IOException) originalException;
-            }
-            else
-            {
-                throw new IllegalStateException (); //Should never happen
+    @NonNull
+    public static String getFreeAntName (@NonNull final String name) {
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException ();
+        }
+        final FileObject platformsFolder = FileUtil.getConfigFile(PLATFORM_STOREGE);
+        String antName = PropertyUtils.getUsablePropertyName(name);
+        if (platformsFolder.getFileObject(antName,"xml") != null) { //NOI18N
+            String baseName = antName;
+            int index = 1;
+            antName = baseName + Integer.toString (index);
+            while (platformsFolder.getFileObject(antName,"xml") != null) {  //NOI18N
+                index ++;
+                antName = baseName + Integer.toString (index);
             }
         }
-        return w.holder;
+        return antName;
     }
 
     public static void generatePlatformProperties (JavaPlatform platform, String systemName, EditableProperties props) throws IOException {
@@ -375,6 +365,35 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     public static String createName (String platName, String propType) {
         return "platforms." + platName + "." + propType;        //NOI18N
+    }
+
+    private static DataObject create(final JavaPlatform plat, final DataFolder f, final String idName) throws IOException {
+        W w = new W(plat, f, idName);
+        f.getPrimaryFile().getFileSystem().runAtomicAction(w);
+        try {
+            ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction<Void> () {
+                        public Void run () throws Exception {
+                            EditableProperties props = PropertyUtils.getGlobalProperties();
+                            generatePlatformProperties(plat, idName, props);
+                            PropertyUtils.putGlobalProperties (props);
+                            return null;
+                        }
+                    });
+        } catch (MutexException me) {
+            Exception originalException = me.getException();
+            if (originalException instanceof RuntimeException) {
+                throw (RuntimeException) originalException;
+            }
+            else if (originalException instanceof IOException) {
+                throw (IOException) originalException;
+            }
+            else
+            {
+                throw new IllegalStateException (); //Should never happen
+            }
+        }
+        return w.holder;
     }
 
     private static String getCompilerType (JavaPlatform platform) {
