@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.modules.git.remote.cli.GitConflictDescriptor;
 import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitStatus;
@@ -460,9 +461,25 @@ public class StatusCommand extends StatusCommandBase {
             }
             VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), file);
             long indexTimestamp = -1;
+            GitConflictDescriptor conflict = null;
+            if (first == 'U' && second == 'U') { //unmerged, both modified
+                conflict = getClassFactory().createConflictDescriptor(GitConflictDescriptor.Type.BOTH_MODIFIED);
+            } else if (first == 'D' && second == 'U') { //unmerged, deleted by us
+                conflict = getClassFactory().createConflictDescriptor(GitConflictDescriptor.Type.DELETED_BY_US);
+            } else if (first == 'A' && second == 'U') { //unmerged, added by us
+                conflict = getClassFactory().createConflictDescriptor(GitConflictDescriptor.Type.ADDED_BY_US);
+            } else if (first == 'U' && second == 'D') { //unmerged, deleted by them
+                conflict = getClassFactory().createConflictDescriptor(GitConflictDescriptor.Type.DELETED_BY_THEM);
+            } else if (first == 'U' && second == 'A') { //unmerged, added by them
+                conflict = getClassFactory().createConflictDescriptor(GitConflictDescriptor.Type.ADDED_BY_THEM);
+            } else if (first == 'D' && second == 'D') { //unmerged, both deleted
+                conflict = getClassFactory().createConflictDescriptor(GitConflictDescriptor.Type.BOTH_DELETED);
+            } else if (first == 'A' && second == 'A') { //unmerged, both added
+                conflict = getClassFactory().createConflictDescriptor(GitConflictDescriptor.Type.BOTH_ADDED);
+            }
             GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath()+"/"+file, vcsFile,
                     statusHeadIndex, statusIndexWC, statusHeadWC,
-                    null, isFolder, renamedEntry.get(file), indexTimestamp);
+                    conflict, isFolder, renamedEntry.get(file), indexTimestamp);
             addStatus(vcsFile, status);
             //command.outputText(line);
         }

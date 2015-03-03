@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.git.remote.cli;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -58,6 +59,14 @@ public final class GitRebaseResult {
     private final List<VCSFileProxy> failures;
     private final String currentHead;
     private final String currentCommit;
+
+    GitRebaseResult(RebaseResultContainer rebaseResult) {
+        rebaseStatus = rebaseResult.rebaseStatus;
+        conflicts = rebaseResult.conflicts;
+        failures = rebaseResult.failures;
+        currentHead = rebaseResult.currentHead;
+        currentCommit = rebaseResult.currentCommit;
+    }
 
     /**
      * The status rebase resulted in.
@@ -149,18 +158,6 @@ public final class GitRebaseResult {
         public abstract boolean isSuccessful ();
     }
 
-    GitRebaseResult (/*RebaseResult result,*/ List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures, String currentHead) {
-        this.rebaseStatus = RebaseStatus.NOTHING_TO_COMMIT;//parseRebaseStatus(result.getStatus());
-        this.currentHead = currentHead;
-        //if (result.getCurrentCommit() == null) {
-            this.currentCommit = null;
-        //} else {
-        //    this.currentCommit = result.getCurrentCommit().getId().getName();
-        //}
-        this.conflicts = rebaseConflicts;
-        this.failures = failures;
-    }
-
     /**
      * @return result of the rebase.
      */
@@ -207,18 +204,11 @@ public final class GitRebaseResult {
         return failures;
     }
 
-//    private RebaseStatus parseRebaseStatus (RebaseResult.Status rebaseStatus) {
-//        switch (rebaseStatus) {
-//            case EDIT:
-//                return RebaseStatus.STOPPED;
-//            case UNCOMMITTED_CHANGES:
-//                return RebaseStatus.FAILED;
-//            case INTERACTIVE_PREPARED:
-//                return RebaseStatus.STOPPED;
-//            case STASH_APPLY_CONFLICTS:
-//                return RebaseStatus.CONFLICTS;
-//                
-//        }
-//        return GitRebaseResult.RebaseStatus.valueOf(rebaseStatus.name());
-//    }
+    public static final class RebaseResultContainer {
+        public RebaseStatus rebaseStatus;
+        public final List<VCSFileProxy> conflicts = new ArrayList<>();
+        public final List<VCSFileProxy> failures = new ArrayList<>();
+        public String currentHead;
+        public String currentCommit;
+    }
 }
