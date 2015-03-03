@@ -44,11 +44,7 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.DateFormat;
-import java.util.Date;
 import org.netbeans.modules.git.remote.cli.GitException;
-import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
-import org.netbeans.modules.git.remote.cli.GitRevisionInfo.GitRevCommit;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;

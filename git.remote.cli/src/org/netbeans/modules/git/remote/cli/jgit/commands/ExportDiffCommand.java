@@ -42,12 +42,16 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import org.netbeans.modules.git.remote.cli.GitClient;
+import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -75,8 +79,61 @@ public class ExportDiffCommand extends GitCommand {
     }
 
     @Override
+    protected void prepare() throws GitException {
+        super.prepare();
+        addArgument(0, "diff"); //NOI18N
+        if (GitConstants.HEAD.equals(firstCommit) && GitClient.INDEX.equals(secondCommit)) {
+            //HEAD_VS_INDEX
+            addArgument(0, "--cached"); //NOI18N
+        } else if (GitConstants.HEAD.equals(firstCommit) && GitClient.WORKING_TREE.equals(secondCommit)) {
+            //HEAD_VS_WORKINGTREE
+            addArgument(0, "HEAD"); //NOI18N
+        } else if (GitClient.INDEX.equals(firstCommit) && GitClient.WORKING_TREE.equals(secondCommit)) {
+            //INDEX_VS_WORKINGTREE
+        } else {
+            addArgument(0, firstCommit); //NOI18N
+            addArgument(0, secondCommit); //NOI18N
+        }
+        addArgument(0, "--"); //NOI18N
+        addFiles(0, roots);
+    }
+
+    @Override
     protected void run() throws GitException {
-        throw new GitException.UnsupportedCommandException();
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    try {
+                        for(int i = 0; i < output.length(); i++)  {
+                            out.write(output.charAt(i));
+                        }
+                    } catch (Exception e) {
+                        throw new GitException(e);
+                    }
+                }
+
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
 //        Repository repository = getRepository().getRepository();
 //        DiffFormatter formatter = new DiffFormatter(out);
 //        formatter.setRepository(repository);
@@ -126,10 +183,4 @@ public class ExportDiffCommand extends GitCommand {
 //        }
     }
 
-    @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "diff"); //NOI18N
-        addFiles(0, roots);
-    }
 }

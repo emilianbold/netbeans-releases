@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.git.remote.cli.GitClient;
+import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitStatus;
 import org.netbeans.modules.git.remote.cli.GitStatus.Status;
@@ -227,7 +228,7 @@ public class AddTest extends AbstractGitTestCase {
         VCSFileProxy file2_2 = VCSFileProxy.createFileProxy(folder2, "file2_2");
         write(file2_2, "file2_2");
 
-        write(VCSFileProxy.createFileProxy(workDir, ".gitignore"), "file1_1\nfolder2");
+        write(VCSFileProxy.createFileProxy(workDir, GitConstants.GITIGNORE_FILENAME), "file1_1\nfolder2");
 
         assertNullDirCacheEntry(Arrays.asList(file1_1, file2_1, file1_2, file2_2));
         GitClient client = getClient(workDir);

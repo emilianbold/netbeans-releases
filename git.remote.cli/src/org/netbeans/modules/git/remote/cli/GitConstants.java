@@ -54,5 +54,5 @@ public class GitConstants {
     public static final String MASTER = "master";
     public static final String CONFIG = "config";
     public static final String DOT_GIT = ".git";
-    
+    public static final String GITIGNORE_FILENAME = ".gitignore";
 }
