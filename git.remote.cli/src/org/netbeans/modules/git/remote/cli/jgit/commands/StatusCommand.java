@@ -236,7 +236,7 @@ public class StatusCommand extends StatusCommandBase {
         }        
     }
 
-    private void parseStatusOutput(String output, Map<String, StatusLine> list, boolean onlyIndexWC) {
+    static void parseStatusOutput(String output, Map<String, StatusLine> list, boolean onlyIndexWC) {
         for (String line : output.split("\n")) { //NOI18N
             if (line.length() > 3) {
                 char first = line.charAt(0);
@@ -485,7 +485,7 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
 
-    private static final class StatusLine {
+    static final class StatusLine {
         char first = ' ';
         char second = ' ';
         char third = ' ';

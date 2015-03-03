@@ -43,12 +43,16 @@
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -70,59 +74,49 @@ public class ListModifiedIndexEntriesCommand extends GitCommand {
         this.files = new HashSet<VCSFileProxy>();
     }
 
-    @Override
-    protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            DirCache cache = repository.readDirCache();
-//            try {
-//                String workTreePath = repository.getWorkTree().getAbsolutePath();
-//                Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getLocation(), roots);
-//                TreeWalk treeWalk = new TreeWalk(repository);
-//                if (!pathFilters.isEmpty()) {
-//                    treeWalk.setFilter(PathFilterGroup.create(pathFilters));
-//                }
-//                treeWalk.setRecursive(true);
-//                treeWalk.reset();
-//                ObjectId headId = repository.resolve(Constants.HEAD);
-//                if (headId != null) {
-//                    treeWalk.addTree(new RevWalk(repository).parseTree(headId));
-//                } else {
-//                    treeWalk.addTree(new EmptyTreeIterator());
-//                }
-//                // Index
-//                treeWalk.addTree(new DirCacheIterator(cache));
-//                final int T_HEAD = 0;
-//                final int T_INDEX = 1;
-//                while (treeWalk.next() && !monitor.isCanceled()) {
-//                    String path = treeWalk.getPathString();
-//                    VCSFileProxy file = VCSFileProxy.createFileProxy(getRepository().getLocation(), path);
-//                    int mHead = treeWalk.getRawMode(T_HEAD);
-//                    int mIndex = treeWalk.getRawMode(T_INDEX);
-//                    if (mHead != mIndex || !treeWalk.idEqual(T_HEAD, T_INDEX)) {
-//                        files.add(file);
-//                        listener.notifyFile(file, path);
-//                    }
-//                }
-//            } finally {
-//                cache.unlock();
-//            }
-//        } catch (CorruptObjectException ex) {
-//            throw new GitException(ex);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
-    }
     
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument(0, "status");
+        addArgument(0, "status"); //NOI18N
+        addArgument(0, "--short"); //NOI18N
+        addArgument(0, "--ignored"); //NOI18N
+        addArgument(0, "--untracked-files=normal"); //NOI18N
+        addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
     }
 
     public VCSFileProxy[] getFiles () {
         return files.toArray(new VCSFileProxy[files.size()]);
+    }
+
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            final LinkedHashMap<String, StatusCommand.StatusLine> list = new LinkedHashMap<>();
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    StatusCommand.parseStatusOutput(output, list, false);
+                }
+            }.runCLI();
+            for (Map.Entry<String, StatusCommand.StatusLine> e : list.entrySet()) {
+                if (e.getValue().first == 'M') {
+                    files.add(VCSFileProxy.createFileProxy(getRepository().getLocation(), e.getKey()));
+                }
+            }
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if(canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }        
     }
 }
