@@ -43,6 +43,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -50,7 +51,10 @@ import org.openide.util.NbBundle;
 
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.InlineAction", category = "Refactoring")
 @ActionRegistration(displayName = "#LBL_InlineAction", lazy = false)
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "InlineAction", position = 420)
+@ActionReferences({
+    @ActionReference(path = "Shortcuts", name = "OS-N"),
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions", name = "InlineAction", position = 420)
+})
 public class InlineAction extends JavaRefactoringGlobalAction {
 
     public InlineAction() {

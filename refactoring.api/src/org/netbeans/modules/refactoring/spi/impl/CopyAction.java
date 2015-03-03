@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.spi.impl;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -56,7 +57,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.refactoring.api.ui.CopyAction", category = "Refactoring")
 @ActionRegistration(displayName = "#LBL_CopyAction")
-@ActionReference(path = "Menu/Refactoring" , name = "CopyAction", position = 300)
+@ActionReferences({
+    @ActionReference(path = "Menu/Refactoring", name = "CopyAction", position = 300),
+    @ActionReference(path = "Shortcuts", name = "O-C")
+})
 public class CopyAction extends RefactoringGlobalAction {
 
     /**

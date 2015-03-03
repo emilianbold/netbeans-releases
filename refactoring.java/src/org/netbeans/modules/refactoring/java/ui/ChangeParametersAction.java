@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -59,7 +60,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.ChangeParametersAction", category = "Refactoring")
 @ActionRegistration(displayName = "#LBL_ChangeMethodSignatureAction", lazy = false)
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "CallHierarchyAction", position = 430)
+@ActionReferences({
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions", name = "CallHierarchyAction", position = 430),
+    @ActionReference(path = "Shortcuts", name = "OCS-C")
+})
 public class ChangeParametersAction extends JavaRefactoringGlobalAction {
     
     /** Creates a new instance of ChangeParametersAction

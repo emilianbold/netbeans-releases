@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -52,7 +53,10 @@ import org.openide.util.NbBundle;
 
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.EncapsulateFieldAction", category = "Refactoring")
 @ActionRegistration(displayName = "#LBL_EncapsulateFieldsAction", lazy = false)
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "EncapsulateFieldAction", position = 1800)
+@ActionReferences({
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions", name = "EncapsulateFieldAction", position = 1800),
+    @ActionReference(path = "Shortcuts", name = "OCS-E")
+})
 public final class EncapsulateFieldAction extends JavaRefactoringGlobalAction {
 
     public EncapsulateFieldAction() {

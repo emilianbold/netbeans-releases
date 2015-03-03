@@ -47,6 +47,7 @@ import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -57,7 +58,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderAction", category = "Refactoring")
 @ActionRegistration(displayName = "#LBL_ReplaceConstructorWithBuilderAction")
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ReplaceConstructorWithBuilderAction", position = 1825)
+@ActionReferences({
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ReplaceConstructorWithBuilderAction", position = 1825),
+    @ActionReference(path = "Shortcuts", name = "OCS-B")
+})
 public final class ReplaceConstructorWithBuilderAction extends JavaRefactoringGlobalAction {
 
     public ReplaceConstructorWithBuilderAction() {
