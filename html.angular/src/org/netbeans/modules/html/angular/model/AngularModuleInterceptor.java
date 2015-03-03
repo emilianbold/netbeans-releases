@@ -109,7 +109,8 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                     }
                     break;
                 case REFERENCE:
-                    functionName = ((List<String>)fArgument.getValue()).get(0);
+                    List<String> fArgumentValue = ((List<String>) fArgument.getValue());
+                    functionName = fArgumentValue.isEmpty() ? null : fArgumentValue.get(0);
                     functionOffset = fArgument.getOffset();
                     break;
                 case ANONYMOUS_OBJECT:

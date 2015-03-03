@@ -442,6 +442,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "obj", objElement != null ? make.Type(objElement.asType()) : make.Identifier("Object"), null)); //NOI18N
         
         List<StatementTree> statements = new ArrayList<>();
+        //if (this == obj) return true;
+        statements.add(make.If(make.Binary(Tree.Kind.EQUAL_TO, make.Identifier("this"), make.Identifier("obj")), make.Return(make.Identifier("true")), null)); //NOI18N
         //if (obj == null) return false;
         statements.add(make.If(make.Binary(Tree.Kind.EQUAL_TO, make.Identifier("obj"), make.Identifier("null")), make.Return(make.Identifier("false")), null)); //NOI18N
         //if (getClass() != obj.getClass()) return false;
@@ -449,10 +451,32 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                 make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("obj"), "getClass"), Collections.<ExpressionTree>emptyList())), make.Return(make.Identifier("false")), null)); //NOI18N
         //<this type> other = (<this type>) o;
         statements.add(make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), "other", make.Type(type), make.TypeCast(make.Type(type), make.Identifier("obj")))); //NOI18N
+        List<VariableElement> primitives = new ArrayList<>();
+        List<VariableElement> strings = new ArrayList<>();
+        List<VariableElement> others = new ArrayList<>();
         for (VariableElement ve : equalsFields) {
             TypeMirror tm = ve.asType();
+            if (tm != null && tm.getKind().isPrimitive()) {
+                primitives.add(ve);                
+            } else if (tm != null && tm.getKind() == TypeKind.DECLARED && ((TypeElement)((DeclaredType)tm).asElement()).getQualifiedName().contentEquals("java.lang.String")) { //NOI18N
+                strings.add(ve);
+            } else {
+                others.add(ve);
+            }            
+        }
+        for (VariableElement ve : primitives) {
+            TypeMirror tm = ve.asType();
             ExpressionTree condition = prepareExpression(wc, EQUALS_PATTERNS, tm, ve, scope);
-
+            statements.add(make.If(condition, make.Return(make.Identifier("false")), null)); //NOI18N
+        }
+        for (VariableElement ve : strings) {
+            TypeMirror tm = ve.asType();
+            ExpressionTree condition = prepareExpression(wc, EQUALS_PATTERNS, tm, ve, scope);
+            statements.add(make.If(condition, make.Return(make.Identifier("false")), null)); //NOI18N
+        }
+        for (VariableElement ve : others) {
+            TypeMirror tm = ve.asType();
+            ExpressionTree condition = prepareExpression(wc, EQUALS_PATTERNS, tm, ve, scope);
             statements.add(make.If(condition, make.Return(make.Identifier("false")), null)); //NOI18N
         }
         statements.add(make.Return(make.Identifier("true")));
