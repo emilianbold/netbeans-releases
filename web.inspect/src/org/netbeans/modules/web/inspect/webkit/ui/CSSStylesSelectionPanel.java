@@ -1003,6 +1003,9 @@ public class CSSStylesSelectionPanel extends JPanel {
         }
 
         @Override
+        @NbBundle.Messages({
+            "CSSStylesSelectionPanel.generatedStylesheet=Generated Style Sheet" // NOI18N
+        })
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JComponent component = (JComponent)super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus); // NOI18N
             JLabel htmlLabel = (JLabel)htmlRenderer.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus); // NOI18N
@@ -1041,6 +1044,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                             ruleLocation = rule.getSourceURL();
                         } else {
                             ruleLocation = fob.getNameExt();
+                        }
+                        if (ruleLocation.isEmpty()) {
+                            ruleLocation = Bundle.CSSStylesSelectionPanel_generatedStylesheet();
                         }
                         // Source line seems to be 0-based (i.e. is 0 for the first line).    
                         int sourceLine = rule.getSourceLine() + 1;
