@@ -289,6 +289,9 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "    }\n" +
                         "    @Override\n" +
                         "    public boolean equals(Object obj) {\n" +
+                        "        if (this == obj) {\n" +
+                        "            return true;\n" +
+                        "        }\n" +
                         "        if (obj == null) {\n" +
                         "            return false;\n" +
                         "        }\n" +
@@ -373,6 +376,9 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "    }\n" +
                         "    @Override\n" +
                         "    public boolean equals(Object obj) {\n" +
+                        "        if (this == obj) {\n" +
+                        "            return true;\n" +
+                        "        }\n" +
                         "        if (obj == null) {\n" +
                         "            return false;\n" +
                         "        }\n" +
@@ -383,15 +389,15 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "        if (this.b != other.b) {\n" +
                         "            return false;\n" +
                         "        }\n" +
+                        "        if ((this.s == null) ? (other.s != null) : !this.s.equals(other.s)) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
                         "        if (!Arrays.equals(this.x, other.x)) {\n" +
                         "            return false;\n" +
                         "        }\n" +
                         "        if (!Arrays.deepEquals(this.y, other.y)) {\n" +
                         "            return false;\n" +
                         "        }" +
-                        "        if ((this.s == null) ? (other.s != null) : !this.s.equals(other.s)) {\n" +
-                        "            return false;\n" +
-                        "        }\n" +
                         "        if (this.o != other.o && (this.o == null || !this.o.equals(other.o))) {\n" +
                         "            return false;\n" +
                         "        }\n" +
@@ -549,6 +555,9 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "    }\n" +
                         "    @Override\n" +
                         "    public boolean equals(Object obj) {\n" +
+                        "        if (this == obj) {\n" +
+                        "            return true;\n" +
+                        "        }\n" +
                         "        if (obj == null) {\n" +
                         "            return false;\n" +
                         "        }\n" +
@@ -639,6 +648,9 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "    }\n" +
                         "    @Override\n" +
                         "    public boolean equals(Object obj) {\n" +
+                        "        if (this == obj) {\n" +
+                        "            return true;\n" +
+                        "        }\n" +
                         "        if (obj == null) {\n" +
                         "            return false;\n" +
                         "        }\n" +
