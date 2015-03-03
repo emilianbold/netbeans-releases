@@ -55,6 +55,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -192,8 +193,13 @@ public class RemoteServerRecord implements ServerRecord {
         setState(State.INITIALIZING);
         RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
         if (!Boolean.getBoolean("cnd.remote.skip.setup")) {
-            if (rss.needsSetupOrUpdate()) {
+            //StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: needsSetupOrUpdate [%s]", executionEnvironment);
+            final boolean needsSetupOrUpdate = rss.needsSetupOrUpdate();
+            //sw.stop();
+            if (needsSetupOrUpdate) {
+                StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: rss.setup [%s]", executionEnvironment);
                 rss.setup();
+                sw.stop();
             }
         }
 //        if (ostate == State.UNINITIALIZED) {
@@ -216,7 +222,9 @@ public class RemoteServerRecord implements ServerRecord {
             }
         }
         if (initPathMap) {
+            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: init pathmap [%s]", executionEnvironment);
             RemotePathMap.getPathMap(getExecutionEnvironment()).initIfNeeded();
+            sw.stop();
         }
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);

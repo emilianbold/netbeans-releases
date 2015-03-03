@@ -51,6 +51,8 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -83,7 +85,7 @@ public class HostValidatorImpl implements HostValidator {
     }
 
     @Override
-    public boolean validate(ExecutionEnvironment env, /*char[] password, boolean rememberPassword,*/ final PrintWriter writer) {
+    public boolean validate(final ExecutionEnvironment env, /*char[] password, boolean rememberPassword,*/ final PrintWriter writer) {
         boolean result = false;
         final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         final boolean alreadyOnline = record.isOnline();
@@ -92,7 +94,9 @@ public class HostValidatorImpl implements HostValidator {
             message = String.format(message, env.toString());
             writer.printf("%s", message); // NOI18N
         } else {
+            //StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: record.resetOfflineState [%s]", env);
             record.resetOfflineState(); // this is a do-over
+            //sw.stop();
         }
         // move expensive operation out of EDT
 
@@ -104,7 +108,9 @@ public class HostValidatorImpl implements HostValidator {
 //            if (password != null && password.length > 0) {
 //                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
 //            }
+            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: connecting to [%s]", env);
             ConnectionManager.getInstance().connectTo(env);
+            sw.stop();
         } catch (InterruptedIOException ex) {
             return false; // don't report InterruptedIOException
         } catch (IOException ex) {
@@ -116,7 +122,9 @@ public class HostValidatorImpl implements HostValidator {
         if (!alreadyOnline) {
             writer.print(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
             writer.print(NbBundle.getMessage(getClass(), "CSM_ConfHost") + '\n');
+            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: record.init [%s]", env);
             record.init(null);
+            sw.stop();
         }
         if (record.isOnline()) {
             Writer reporter = new Writer() {
@@ -134,9 +142,11 @@ public class HostValidatorImpl implements HostValidator {
                 @Override
                 public void close() throws IOException {
                 }
-            };
+            };            
             final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
+            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: CompilerSetManager.initialize [%s]", env);
             csm.initialize(false, false, reporter);
+            sw.stop();
             if (record.hasProblems()) {
                 try {
                     reporter.append(record.getProblems());
@@ -148,7 +158,9 @@ public class HostValidatorImpl implements HostValidator {
 
                 @Override
                 public void run() {
+                    StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: finishInitialization [%s] (NB: in different thread!)", env);
                     csm.finishInitialization();
+                    sw.stop();
                 }
             };
             result = true;

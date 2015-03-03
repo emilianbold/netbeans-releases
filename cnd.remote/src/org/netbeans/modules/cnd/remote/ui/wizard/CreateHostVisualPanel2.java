@@ -55,6 +55,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -283,8 +285,10 @@ import org.openide.util.RequestProcessor;
                 phandle.start();
 
                 try {
+                    StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: hostValidator.validate [%s]", env);
                     HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
                     if (hostValidator.validate(env, /*password, rememberPassword, */ new TextComponentWriter(tpOutput))) {
+                        sw.stop();
                         hostFound = env;
                         runOnFinish = hostValidator.getRunOnFinish();
                         try { // let user see the log ;-)

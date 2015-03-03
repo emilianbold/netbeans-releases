@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -92,10 +94,12 @@ import org.openide.util.NbBundle;
         ExecutionEnvironment host = component.getHost();
         
         if (host == null || !host.equals(lastValidatedHost)) {
+            StopWatch sw = new StopWatch(RemoteServerList.TRACE_SETUP, "#HostSetup: host validation  [%s]", host);
             validationTask = component.validateHost();
 
             try {
                 validationTask.get();
+                sw.stop();
             } catch (InterruptedException ex) {
                 validationTask.cancel(true);
             } catch (Exception ex) {
