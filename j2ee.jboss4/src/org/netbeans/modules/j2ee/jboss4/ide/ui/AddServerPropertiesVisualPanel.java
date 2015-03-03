@@ -64,6 +64,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.util.NbBundle;
 
 
@@ -84,7 +85,9 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     private javax.swing.JLabel     hostLabel;
     private javax.swing.JTextField hostField;   
     private javax.swing.JLabel     portLabel;
-    private javax.swing.JTextField portField;   
+    private javax.swing.JTextField portField;
+    private javax.swing.JLabel     jmxPortLabel;
+    private javax.swing.JTextField jmxPortField;
     private javax.swing.JLabel     userLabel;
     private javax.swing.JTextField userField;    
     private javax.swing.JLabel     passwordLabel;
@@ -139,6 +142,10 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     public String getPort(){
         return portField.getText().trim();
     }
+
+    public String getJmxPort(){
+        return jmxPortField.getText().trim();
+    }
     
     public String getUser(){
         return userField.getText();
@@ -171,6 +178,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         DomainComboModel domainModel = (DomainComboModel) domainField.getModel();
         String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
         domainModel.setDomains(JBPluginUtils.getRegisteredDomains(serverLocation));
+        Version version = JBPluginUtils.getServerVersion(new File(serverLocation));
+        jmxPortField.setText(Integer.toString(JBPluginUtils.getDefaultJmxPortNumber(version)));
         domainChanged();
     }
             
@@ -262,6 +271,18 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         portField.addKeyListener(new SomeChangesListener());
 
         portLabel.setLabelFor(portField);
+
+        jmxPortLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(jmxPortLabel, NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_JmxPort")); // NOI18N
+
+        jmxPortField = new JTextField();
+        jmxPortField.setColumns(20);
+        jmxPortField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_JmxPort"));
+        jmxPortField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_JmxPort"));
+        //jmxPortField.setEditable(false);
+        jmxPortField.addKeyListener(new SomeChangesListener());
+
+        jmxPortLabel.setLabelFor(jmxPortField);
         
         userLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_User"));//NOI18N
         userField = new JTextField();
@@ -372,6 +393,21 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(portField, gridBagConstraints);
+
+        //-------------- port ---------------
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(jmxPortLabel, gridBagConstraints);
+
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        add(jmxPortField, gridBagConstraints);
         
         
         //-------------- User ---------------
@@ -383,7 +419,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
@@ -400,7 +436,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);

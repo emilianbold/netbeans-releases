@@ -165,6 +165,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
             initialProperties.put(JBPluginProperties.PROPERTY_ROOT_DIR, installLocation);
             initialProperties.put(JBPluginProperties.PROPERTY_HOST, host);
             initialProperties.put(JBPluginProperties.PROPERTY_PORT, port);
+            initialProperties.put(JBPluginProperties.PROPERTY_JMX_PORT, jmxPort);
 
             if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0) {
                 initialProperties.put(JBPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_6_JAVA_OPTS);
@@ -282,6 +283,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     
     private String host;
     private String port;
+    private String jmxPort;
     private String userName="";
     private String password="";
     private String server;
@@ -303,6 +305,10 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     
     public void setPort(String port){
         this.port = port.trim();
+    }
+
+    public void setJmxPort(String jmxPort){
+        this.jmxPort = jmxPort.trim();
     }
     
     public void setServer(String server){
