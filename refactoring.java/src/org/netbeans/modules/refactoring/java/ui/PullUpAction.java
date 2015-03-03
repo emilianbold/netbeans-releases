@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -56,7 +57,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.PullUpAction", category = "Refactoring")
 @ActionRegistration(displayName = "#LBL_PullUp_Action", lazy = false)
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "PullUpAction", position = 500)
+@ActionReferences({
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions", name = "PullUpAction", position = 500),
+    @ActionReference(path = "Shortcuts", name = "OCS-U")
+})
 public class PullUpAction extends JavaRefactoringGlobalAction {
 
     /**
