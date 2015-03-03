@@ -293,11 +293,6 @@ import org.openide.util.RequestProcessor;
                         sw.stop();
                         hostFound = env;
                         runOnFinish = hostValidator.getRunOnFinish();
-                        try { // let user see the log ;-)
-                            Thread.sleep(1500);
-                        } catch (InterruptedException ex) {
-                            // nothing
-                        }
                     }
                 } finally {
                     phandle.finish();
