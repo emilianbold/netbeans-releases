@@ -45,16 +45,21 @@
 package org.netbeans.modules.java.platform;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
@@ -62,16 +67,32 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 
 /**
  * Basic impl in case no other providers can be found.
  * @author Jesse Glick
+ * @author Tomas Zezula
  */
 public final class FallbackDefaultJavaPlatform extends JavaPlatform {
-    
+
+    private static final Logger LOG = Logger.getLogger(FallbackDefaultJavaPlatform.class.getName());
+    private static final Map<String,String> JAVADOC_URLS;
+    static {
+        final Map<String,String> m = new HashMap<>();
+        m.put("1.5", "https://docs.oracle.com/javase/1.5.0/docs/api/"); // NOI18N
+        m.put("1.6", "https://docs.oracle.com/javase/6/docs/api/"); // NOI18N
+        m.put("1.7", "https://docs.oracle.com/javase/7/docs/api/"); // NOI18N
+        m.put("1.8", "https://docs.oracle.com/javase/8/docs/api/"); // NOI18N
+        JAVADOC_URLS = Collections.unmodifiableMap(m);
+    }
+
     private static FallbackDefaultJavaPlatform instance;
+
+    private volatile List<URL> javadoc;
+    private volatile ClassPath src;
 
     private FallbackDefaultJavaPlatform() {
         setSystemProperties(NbCollections.checkedMapByFilter(System.getProperties(), String.class, String.class, false));
@@ -92,7 +113,7 @@ public final class FallbackDefaultJavaPlatform extends JavaPlatform {
         if (sbcp == null) {
             return null;
         }
-        List<URL> roots = new ArrayList<URL>();
+        List<URL> roots = new ArrayList<>();
         StringTokenizer tok = new StringTokenizer(sbcp, File.pathSeparator);
         while (tok.hasMoreTokens()) {
             File f = new File(tok.nextToken());
@@ -154,14 +175,72 @@ public final class FallbackDefaultJavaPlatform extends JavaPlatform {
 
     @Override
     public ClassPath getSourceFolders() {
-        return ClassPathSupport.createClassPath(new URL[0]);
+        ClassPath res = src;
+        if (res == null) {
+            res = src = ClassPathSupport.createClassPath(
+                getSources(getInstallFolders()));
+        }
+        return res;
     }
 
     @Override
     public List<URL> getJavadocFolders() {
-        return Collections.emptyList();
+        List<URL> res = javadoc;
+        if (res == null) {
+            final SpecificationVersion version = getSpecification().getVersion();
+            final URL root = toURL(JAVADOC_URLS.get(version.toString()));
+            res = javadoc = root == null ?
+                Collections.<URL>emptyList() :
+                Collections.<URL>singletonList(root);
+        }
+        return res;
     }
-    
+
+    @NonNull
+    private static FileObject[] getSources(@NonNull final Collection<? extends FileObject> installFolders) {
+        if (installFolders.isEmpty()) {
+            return new FileObject[0];
+        }
+        final FileObject installFolder = installFolders.iterator().next();
+        if (installFolder == null || !installFolder.isValid()) {
+            return new FileObject[0];
+        }
+        FileObject src = installFolder.getFileObject("src.zip");    //NOI18N
+        if (src == null) {
+            src = installFolder.getFileObject("src.jar");    //NOI18N
+        }
+        if (src == null || !src.canRead()) {
+            return new FileObject[0];
+        }
+        FileObject root = FileUtil.getArchiveRoot(src);
+        if (root == null) {
+            return new FileObject[0];
+        }
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            FileObject reloc = root.getFileObject("src");   //NOI18N
+            if (reloc != null) {
+                root = reloc;
+            }
+        }
+        return new FileObject[]{root};
+    }
+
+    @CheckForNull
+    private static URL toURL(@NullAllowed final String root) {
+        if (root == null) {
+            return null;
+        }
+        try {
+            return new URL (root);
+        } catch (MalformedURLException e) {
+            LOG.log(
+                Level.WARNING,
+                "Invalid Javadoc root: {0}",    //NOI18N
+                root);
+            return null;
+        }
+    }
+
     public static synchronized FallbackDefaultJavaPlatform getInstance() {
         if (instance == null) {
             instance = new FallbackDefaultJavaPlatform();
