@@ -211,7 +211,7 @@ class JBStartRunnable implements Runnable {
         }
 
         // get Java platform that will run the server
-        JavaPlatform platform = properties.getJavaPlatform();
+        JavaPlatform platform = getJavaPlatform(properties);
 
         if (startServer.getMode() == JBStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1) { // NOI18N
             // if in debug mode and the debug options not specified manually
