@@ -141,7 +141,7 @@ public class SchemaReadWriteTest extends TestCase implements TestReadWrite{
     }
     
     public void testWriteSchemaReference() throws Exception {
-        WSDLModel model = Util.loadWSDLModel(getTestResourcePath());
+        WSDLModel model = Util.loadWSDLModel(getTestResourcePath3());
         this.assertNotNull(model);
         Definitions d = model.getDefinitions();
         this.assertNotNull(d);
@@ -188,6 +188,10 @@ public class SchemaReadWriteTest extends TestCase implements TestReadWrite{
     }
     
     public String getTestResourcePath2(){
-       return "resources/emptyStockquote.xml"; 
+       return "resources/emptyStockquote.xml";
+    }
+
+    public String getTestResourcePath3(){
+       return "resources/stockquoteWrite.xml";
     }
 }
