@@ -1365,10 +1365,10 @@ abstract public class CsmCompletionQuery {
                 if (varType != null) {
                     varType = CsmCompletion.createType(
                         varType.getClassifier(), 
-                        oldType.getPointerDepth() + varType.getPointerDepth(), 
-                        Math.max(getReferenceValue(oldType), getReferenceValue(varType)), 
-                        oldType.getArrayDepth() + varType.getArrayDepth(), 
-                        oldType.isConst() | varType.isConst()
+                        varType.getPointerDepth(), 
+                        getReferenceValue(oldType), 
+                        varType.getArrayDepth(), 
+                        oldType.isConst() | (varType.isPointer() & varType.isConst())
                     );
                 }
             } else {
@@ -1434,19 +1434,19 @@ abstract public class CsmCompletionQuery {
                                         
                                         varType = CsmCompletion.createType(
                                                 varType.getClassifier(), 
-                                                oldType.getPointerDepth() + varType.getPointerDepth(), 
-                                                Math.max(getReferenceValue(oldType), getReferenceValue(varType)),
-                                                oldType.getArrayDepth() + varType.getArrayDepth(),
-                                                oldType.isConst() | varType.isConst()
+                                                varType.getPointerDepth(), 
+                                                getReferenceValue(oldType), 
+                                                varType.getArrayDepth(), 
+                                                oldType.isConst() | (varType.isPointer() & varType.isConst())
                                         );
                                     } else {
                                         // Iterations on array
                                         varType = CsmCompletion.createType(
                                                 varType.getClassifier(), 
-                                                oldType.getPointerDepth() + varType.getPointerDepth(), 
-                                                Math.max(getReferenceValue(oldType), getReferenceValue(varType)),
-                                                oldType.getArrayDepth() + (varType.getArrayDepth() - 1),
-                                                oldType.isConst() | varType.isConst()
+                                                varType.getPointerDepth(), 
+                                                getReferenceValue(oldType),
+                                                varType.getArrayDepth() - 1,
+                                                oldType.isConst() | (varType.isPointer() & varType.isConst())
                                         );
                                     }
                                 }
@@ -2523,6 +2523,9 @@ abstract public class CsmCompletionQuery {
                                 int ptrDepth = lastNestedType.getPointerDepth();
                                 if (ptrDepth > 0 && opKind == CsmFunction.OperatorKind.POINTER) {
                                     ptrDepth--;
+                                }
+                                if (opKind == CsmFunction.OperatorKind.ADDRESS) {
+                                    ptrDepth++;
                                 }
                                 
                                 lastType = CsmCompletion.createType(getClassifier(lastNestedType, contextFile, endOffset), ptrDepth, getReferenceValue(lastNestedType), lastNestedType.getArrayDepth(), lastNestedType.isConst());
