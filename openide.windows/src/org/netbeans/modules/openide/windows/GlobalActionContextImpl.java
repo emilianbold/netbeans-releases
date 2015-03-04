@@ -124,11 +124,13 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
                 Lookups.exclude (g.getLookup (), new Class[] { javax.swing.ActionMap.class }),
             };
             
+            Lookup originalLkp = g.getLookup();
             Lookup prev = temporary;
             try {
                 temporary = new ProxyLookup (arr);
-                Object q = org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
-                assert q == map : dumpActionMapInfo(map, q, prev, temporary);
+                Lookup actionsGlobalContext = Utilities.actionsGlobalContext();
+                Object q = actionsGlobalContext.lookup (javax.swing.ActionMap.class);
+                assert q == map : dumpActionMapInfo(map, q, prev, temporary, actionsGlobalContext, originalLkp);
                 if (focus != null) {
                     setFocusOwner(focus[0]);
                 }
@@ -140,12 +142,15 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
         }
     }
 
-    private static String dumpActionMapInfo(ActionMap map, Object q, Lookup prev, Lookup now) {
+    private static String dumpActionMapInfo(ActionMap map, Object q, Lookup prev, Lookup now,
+            Lookup globalContext, Lookup originalLkp) {
         StringBuilder sb = new StringBuilder();
         sb.append("We really get map from the lookup. Map: ").append(map) // NOI18N
             .append(" returned: ").append(q); // NOI18N
         sb.append("\nprev: ").append(prev == null ? "null prev" : prev.lookupAll(Object.class)); //NOI18N
         sb.append("\nnow : ").append(now == null ? "null now" : now.lookupAll(Object.class)); //NOI18N
+        sb.append("\nglobal ctx : ").append(globalContext == null ? "null" : globalContext.lookupAll(Object.class)); //NOI18N
+        sb.append("\noriginal lkp : ").append(originalLkp == null ? "null" : originalLkp.lookupAll(Object.class)); //NOI18N
         return sb.toString();
     }
     

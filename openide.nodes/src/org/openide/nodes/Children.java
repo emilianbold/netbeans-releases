@@ -832,9 +832,26 @@ public abstract class Children extends Object {
         @Override
         public boolean remove(final Node[] arr) {
             synchronized (COLLECTION_LOCK) {
-                if (!getCollection().removeAll(Arrays.asList(arr))) {
-                    // the collection was not changed
-                    return false;
+                final Collection<Node> collection = getCollection();
+                // fast check
+                boolean same = false;
+                if (collection.size() == arr.length) {
+                    same = true;
+                    int i = 0;
+                    for (Node n : collection) {
+                        if (n != arr[i++]) {
+                            same = false;
+                            break;
+                        }
+                    }
+                }
+                if (same) {
+                    collection.clear();
+                } else {
+                    if (!collection.removeAll(Arrays.asList(arr))) {
+                        // the collection was not changed
+                        return false;
+                    }
                 }
             }
 
@@ -842,7 +859,7 @@ public abstract class Children extends Object {
 
             return true;
         }
-
+        
         /** One entry that holds all the nodes in the collection
         * member called nodes.
         */

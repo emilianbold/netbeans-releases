@@ -480,21 +480,38 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if(CsmKindUtilities.isClass(inst) && inst.getTemplateDeclaration() instanceof ClassImpl) {
             final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();        
             boolean persistable = !mapping.keySet().isEmpty();
-            for (CsmTemplateParameter param : mapping.keySet()) {
-                CsmSpecializationParameter specParam = mapping.get(param);
-                if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
-                    if(!PersistentUtils.isPersistable(((CsmTypeBasedSpecializationParameter)specParam).getType())) {
+            if (persistable) {
+                for (CsmTemplateParameter param : mapping.keySet()) {
+                    CsmSpecializationParameter specParam = mapping.get(param);
+                    if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
+                        if (!PersistentUtils.isPersistable(((CsmTypeBasedSpecializationParameter)specParam).getType())) {
+                            persistable = false;
+                            break;
+                        } else if (!isScopePersistable(specParam.getScope())) {
+                            persistable = false;
+                            break;
+                        }
+                    } else {
                         persistable = false;
+                        break;
                     }
-                } else {
-                    persistable = false;
                 }
             }
-            if(persistable) {
+            if (persistable) {
                 return UIDUtilities.createInstantiationUID(inst);
             }
         }
         return new InstantiationSelfUID((Instantiation)inst);
+    }
+    
+    private static boolean isScopePersistable(CsmScope scope) {
+        if (scope != null) {
+            if (scope instanceof CsmIdentifiable) {
+                return UIDProviderIml.isPersistable(((CsmIdentifiable) scope).getUID());
+            }
+            return false;
+        }
+        return true; // null could be persisted
     }
     
     ////////////////////////////////////////////////////////////////////////////
