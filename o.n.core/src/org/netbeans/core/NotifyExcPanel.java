@@ -634,7 +634,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 flash = new ExceptionFlasher();
             } else {
                 flash.timer.restart();
-                flash.note.clear();
+                if (flash.note != null) {
+                    flash.note.clear();
+                }
             }
             JComponent detailsPanel = getDetailsPanel(summary);
             JComponent bubblePanel = getDetailsPanel(summary);
