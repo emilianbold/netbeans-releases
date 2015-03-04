@@ -54,13 +54,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.templates.CreateDescriptor;
 import org.netbeans.api.templates.CreateFromTemplateAttributes;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.Utilities;
 
 // copied from java.api.common
@@ -69,7 +71,7 @@ import org.openide.util.Utilities;
  *
  * @author Andrei Badea
  */
-class TemplateAttributesProviderImpl implements CreateFromTemplateAttributes {
+class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProvider {
 
     private static final Logger LOGGER = Logger.getLogger(TemplateAttributesProviderImpl.class.getName());
 
@@ -85,7 +87,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributes {
     }
 
     @Override
-    public Map<String, ?> attributesFor(CreateDescriptor desc) {
+    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
         Map<String, String> values = new HashMap<>();
         EditableProperties priv  = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -113,7 +115,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributes {
         if (license != null) {
             values.put("license", license); // NOI18N
         }
-        Charset charset = encodingQuery.getEncoding(desc.getTarget());
+        Charset charset = encodingQuery.getEncoding(target.getPrimaryFile());
         String encoding = (charset != null) ? charset.name() : null;
         if (encoding != null) {
             values.put("encoding", encoding); // NOI18N
