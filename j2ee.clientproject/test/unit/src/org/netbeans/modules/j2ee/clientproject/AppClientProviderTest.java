@@ -119,7 +119,9 @@ public class AppClientProviderTest extends NbTestCase {
         TestUtil.deleteRec(new File(new File(prjDirF, "src"), "conf"));
         
         Project project = (Project) ProjectSupport.openProject(prjDirF);
-        
+        assertNotNull("Project is null", project);
+        assertNotNull("Project lookup is null", project.getLookup());
+
         // ensure deployment descriptor file is returned
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         File someConfFile = provider.getJ2eeModule().getDeploymentConfigurationFile("does-not-matter.xml");

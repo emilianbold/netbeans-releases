@@ -497,6 +497,9 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                         if (file != null) {
                             try {
                                 Source source = Source.create(file);
+                                if (source == null) {
+                                    return;
+                                }
                                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                                     @Override
                                     public void run(ResultIterator resultIterator) throws Exception {

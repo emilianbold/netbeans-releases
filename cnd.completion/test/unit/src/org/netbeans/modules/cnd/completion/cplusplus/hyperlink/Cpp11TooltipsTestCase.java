@@ -81,11 +81,51 @@ public class Cpp11TooltipsTestCase extends TooltipsBaseTestCase {
         );
         performPlainTooltipTest("bug247751.cpp", 80, 15,
             "Variable mapElem\n" + 
-            "int *&"
+            "int *"
         );
         performPlainTooltipTest("bug247751.cpp", 82, 15,
             "Variable stringVar\n" + 
             "bug247751::std247751::string247751"
         );        
     }    
+    
+    public void testBug250845() throws Exception {
+        // Bug #250845 - Wrong deduced type shown for auto in some cases
+        performPlainTooltipTest("bug250845.cpp", 4, 14,
+            "Variable x\n" + 
+            "int"
+        );
+        performPlainTooltipTest("bug250845.cpp", 5, 14,
+            "Variable y\n" + 
+            "const int *"
+        );
+        performPlainTooltipTest("bug250845.cpp", 7, 14,
+            "Variable z\n" + 
+            "const int *"
+        );
+        performPlainTooltipTest("bug250845.cpp", 8, 15,
+            "Variable zz\n" + 
+            "const int *"
+        );
+        performPlainTooltipTest("bug250845.cpp", 9, 21,
+            "Variable zzz\n" + 
+            "const int *"
+        );
+        performPlainTooltipTest("bug250845.cpp", 12, 19,
+            "Variable elem\n" + 
+            "int"
+        );
+        performPlainTooltipTest("bug250845.cpp", 17, 19,
+            "Variable elem\n" + 
+            "const int *"
+        );
+        performPlainTooltipTest("bug250845.cpp", 24, 20,
+            "Variable elem\n" + 
+            "int *&"
+        );
+        performPlainTooltipTest("bug250845.cpp", 29, 26,
+            "Variable elem\n" + 
+            "const int &"
+        );
+    }
 }

@@ -43,10 +43,12 @@
 package org.netbeans.modules.git.remote.cli;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.git.remote.cli.jgit.JGitConfig;
 
 /**
  * Represents the <code>[remote]</code> area of a gitconfig file.
@@ -78,6 +80,30 @@ public final class GitRemoteConfig {
         this.pushSpecs = pushSpecs;
     }
 
+    public GitRemoteConfig (JGitConfig config, String remoteName) {
+        this.remoteName = remoteName;
+        uris = new ArrayList<>();
+        String s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.KEY_URL);
+        if (s != null) {
+            uris.add(s);
+        }
+        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.KEY_PUSHURL);
+        pushUris = new ArrayList<>();
+        if (s != null) {
+            pushUris.add(s);
+        }
+        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.KEY_FETCH);
+        fetchSpecs = new ArrayList<>();
+        if (s != null) {
+            fetchSpecs.add(s);
+        }
+        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.KEY_PUSH);
+        pushSpecs = new ArrayList<>();
+        if (s != null) {
+            pushSpecs.add(s);
+        }
+    }
+    
     /**
      * @return remote's name
      */

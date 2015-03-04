@@ -121,6 +121,10 @@ public final class TestRunnerReporter {
         }
         
         if(index == -1) {
+            if (trouble != null) { // stacktrace from javascript/selenium mocha runner
+                stackTrace.add(getStacktrace(line));
+                return showOutput ? line : null;
+            }
             return logMessage;
         }
         
@@ -178,7 +182,7 @@ public final class TestRunnerReporter {
             getManager().displayOutput(testSession, output2display, false);
             return output2display;
         }
-        if(trouble != null) {
+        if(trouble != null) { // stacktrace from selenium jasmine runner
             stackTrace.add(getStacktrace(line));
         }
         return showOutput ? line : null;

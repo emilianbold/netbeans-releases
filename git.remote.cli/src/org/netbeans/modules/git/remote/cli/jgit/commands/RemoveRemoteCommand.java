@@ -42,8 +42,12 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Set;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
+import org.netbeans.modules.git.remote.cli.jgit.JGitConfig;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 
@@ -61,22 +65,17 @@ public class RemoveRemoteCommand extends GitCommand {
 
     @Override
     protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        StoredConfig config = repository.getConfig();
-//        config.unsetSection(ConfigConstants.CONFIG_REMOTE_SECTION, remote);
-//        Set<String> subSections = config.getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION);
-//        for (String subSection : subSections) {
-//            if (remote.equals(config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_REMOTE))) {
-//                config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_REMOTE);
-//                config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, subSection, ConfigConstants.CONFIG_KEY_MERGE);
-//            }
-//        }
-//        try {
-//            config.save();
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
+        JGitConfig config = getRepository().getConfig();
+        config.load();
+        config.unsetSection(JGitConfig.CONFIG_REMOTE_SECTION, remote);
+        Collection<String> subSections = config.getSubsections(JGitConfig.CONFIG_BRANCH_SECTION);
+        for (String subSection : subSections) {
+            if (remote.equals(config.getString(JGitConfig.CONFIG_BRANCH_SECTION, subSection, JGitConfig.CONFIG_KEY_REMOTE))) {
+                config.unset(JGitConfig.CONFIG_BRANCH_SECTION, subSection, JGitConfig.CONFIG_KEY_REMOTE);
+                config.unset(JGitConfig.CONFIG_BRANCH_SECTION, subSection, JGitConfig.CONFIG_KEY_MERGE);
+            }
+        }
+        config.save();
     }
     
     @Override
@@ -84,6 +83,6 @@ public class RemoveRemoteCommand extends GitCommand {
         super.prepare();
         addArgument(0, "remote"); //NOI18N
         addArgument(0, "rm"); //NOI18N
-        addArgument(0, "remote"); //NOI18N
+        addArgument(0, remote); //NOI18N
     }
 }

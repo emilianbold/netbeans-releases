@@ -165,7 +165,7 @@ public class MochaRunner {
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
-            Connector.Properties props = createConnectorProperties(DEBUG_HOST, DEBUG_PORT, p);
+            Connector.Properties props = createConnectorProperties(DEBUG_HOST, DEBUG_PORT, p, isSelenium);
             try {
                 Connector.connect(props, new Runnable() {
                     @Override
@@ -250,23 +250,16 @@ public class MochaRunner {
         return builder.build();
     }
     
-    private static Connector.Properties createConnectorProperties(String host, int port, Project project) {
+    private static Connector.Properties createConnectorProperties(String host, int port, Project project, boolean isSelenium) {
         List<File> sourceRoots = getRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5);
         List<File> siteRoots = getRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
-        List<File> testRoots = getRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST);
+        List<File> testRoots = getRoots(project, isSelenium ? WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST_SELENIUM : WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST);
         List<String> localPaths = new ArrayList<>(sourceRoots.size());
         List<String> localPathsExclusionFilter = Collections.EMPTY_LIST;
+        sourceRoots.addAll(testRoots);
         for (File src : sourceRoots) {
             localPaths.add(src.getAbsolutePath());
             for (File site : siteRoots) {
-                if (isSubdirectoryOf(src, site)) {
-                    if (localPathsExclusionFilter.isEmpty()) {
-                        localPathsExclusionFilter = new ArrayList<>();
-                    }
-                    localPathsExclusionFilter.add(site.getAbsolutePath());
-                }
-            }
-            for (File site : testRoots) {
                 if (isSubdirectoryOf(src, site)) {
                     if (localPathsExclusionFilter.isEmpty()) {
                         localPathsExclusionFilter = new ArrayList<>();
