@@ -45,7 +45,6 @@
 package org.netbeans.modules.html;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,7 +52,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -61,50 +59,31 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
-import javax.xml.ws.handler.HandlerResolver;
-import junit.textui.TestRunner;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.palette.HtmlPaletteFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
-import org.openide.util.UserQuestionException;
 
 public class EncodingTest extends NbTestCase {
-    /** the fs to work on */
-    private LocalFileSystem fs;
     
     public EncodingTest(String name) {
         super(name);
     }
-    
-    /**/
-    protected void setUp() throws Exception {
-        Utils.setUp();
 
-        File f = File.createTempFile (this.getName (), "");
-        f.delete ();
-        f.mkdirs ();
-        
-        fs = new LocalFileSystem ();
-        fs.setRootDirectory(f);
+    @Override
+    protected void setUp() throws Exception {
+        // invoke the pallete factory in advance to prevent deadlock
+        HtmlPaletteFactory.getHtmlPalette();
+        Utils.setUp();
         
         // to help the loader to recognize our files
         FileUtil.setMIMEType("html", "text/html");
-        
-        Repository.getDefault ().addFileSystem(fs);
-    }
-    
-    protected void tearDown() throws Exception {
-        Repository.getDefault ().removeFileSystem(fs);
-        
-        fs.getRootDirectory().deleteOnExit ();
     }
     
     /** Loads an empty file.
@@ -168,7 +147,7 @@ public class EncodingTest extends NbTestCase {
         final Level origLevel = log.getLevel();
         log.setLevel(Level.FINEST);
         try {
-            FileObject data = FileUtil.createData (fs.getRoot (), "UTF8.html"); //NOI18N
+            FileObject data = FileUtil.createData (FileUtil.toFileObject(getWorkDir()), "UTF8.html"); //NOI18N
             copy("UTF8.html",data); //NOI18N
             handler.cached = null;
             read(data);
@@ -232,7 +211,7 @@ public class EncodingTest extends NbTestCase {
         InputStream is = getClass ().getResourceAsStream ("data/"+res);
         assertNotNull (res+" should exist", is);
         
-        FileObject data = FileUtil.createData (fs.getRoot (), res);
+        FileObject data = FileUtil.createData (FileUtil.toFileObject(getWorkDir()), res);
         FileLock lock = data.lock();
         OutputStream os = data.getOutputStream (lock);
         FileUtil.copy (is, os);
