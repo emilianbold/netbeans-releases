@@ -45,10 +45,10 @@
 [WHITESPACE(8):        ][TAG(1):p][WHITESPACE(1): ][TEXT(8):This is ][EXPRESSION_DELIMITER_OPEN(2):#{][JAVASCRIPT(17):msg.toUpperCase()][EXPRESSION_DELIMITER_CLOSE(1):}][EOL(1):\n]
 [WHITESPACE(8):        ][TAG(1):p][WHITESPACE(1): ][TEXT(8):This is ][EXPRESSION_DELIMITER_OPEN(2):#{][JAVASCRIPT(35):msg.toUpperCase() == 'aa' ? 1:'not'][EXPRESSION_DELIMITER_CLOSE(1):}][EOL(1):\n]
 [WHITESPACE(8):        ][TAG(1):p][PLAIN_TEXT_DELIMITER(1):.][EOL(1):\n]
-[WHITESPACE(284):          If you take a look at this page's source #[a(target="_blank", href="https://github.com/jadejs/jade/blob/master/docs/views/reference/interpolation.jade") on GitHub],
+[PLAIN_TEXT(276):          If you take a look at this page's source #[a(target="_blank", href="https://github.com/jadejs/jade/blob/master/docs/views/reference/interpolation.jade") on GitHub],
           you'll see several places where the tag interpolation operator is
           used, like so.
-        ][TAG(2):ul][EOL(1):\n]
+][WHITESPACE(8):        ][TAG(2):ul][EOL(1):\n]
 [WHITESPACE(12):            ][KEYWORD_EACH(4):each][WHITESPACE(1): ][JAVASCRIPT(3):val][WHITESPACE(1): ][KEYWORD_IN(2):in][WHITESPACE(1): ][JAVASCRIPT(15):[1, 2, 3, 4, 5]][EOL(1):\n]
 [WHITESPACE(16):                ][TAG(2):li][CODE_DELIMITER(1):=][WHITESPACE(1): ][JAVASCRIPT(3):val][EOL(1):\n]
 [WHITESPACE(8):        ][TAG(2):ul][EOL(1):\n]
@@ -80,9 +80,9 @@
 [WHITESPACE(12):            ][PLAIN_TEXT_DELIMITER(1):|][PLAIN_TEXT(34): It must always be on its own line][EOL(1):\n]
 [WHITESPACE(8):        ][TAG(1):p][WHITESPACE(1): ][TEXT(44):Plain text can include <strong>html</strong>][EOL(1):\n]
 [WHITESPACE(8):        ][TAG(6):script][PLAIN_TEXT_DELIMITER(1):.][EOL(1):\n]
-[WHITESPACE(127):          if (usingJade)
+[PLAIN_TEXT(119):          if (usingJade)
             console.log('you are awesome')
           else
             console.log('use jade')
-        ][TAG(1):a][OPERATOR_COLON(1)::][WHITESPACE(1): ][TAG(3):img][EOL(1):\n]
+][WHITESPACE(8):        ][TAG(1):a][OPERATOR_COLON(1)::][WHITESPACE(1): ][TAG(3):img][EOL(1):\n]
 [WHITESPACE(8):        ][TAG(3):img][OPERATOR_DIVISION(1):/]
