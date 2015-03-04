@@ -88,6 +88,7 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
         
         int from = -1;
         int len = 0;
+        Token<JadeTokenId> lastTag = null;
         while (ts.moveNext()) {
             Token<JadeTokenId> token = ts.token();
             if (token.id() == JadeTokenId.JAVASCRIPT) {
@@ -101,6 +102,21 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
                 }
                 from = -1;
                 len = 0;
+            }
+            if (token.id() == JadeTokenId.TAG) {
+                lastTag = token;
+            }
+            if (token.id() == JadeTokenId.PLAIN_TEXT_DELIMITER) {
+                // check whether there is not 
+                if ("script".equals(lastTag.text().toString().toLowerCase()) && ts.moveNext()) {
+                    token = ts.token();
+                    while (token.id() == JadeTokenId.EOL && ts.moveNext()) {
+                        token = ts.token();
+                    }
+                    if (token.id() == JadeTokenId.PLAIN_TEXT) {
+                        embeddings.add(snapshot.create(ts.offset(), token.length(), JS_MIME_TYPE));
+                    }
+                }
             }
         }
         if (from >= 0) {
