@@ -100,11 +100,10 @@ final class GitClassFactoryImpl extends GitClassFactory {
         return new GitPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
     }
 
-//    @Override
-//    public GitRebaseResult createRebaseResult (RebaseResult rebaseResult, List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures,
-//            String newHead) {
-//        return new GitRebaseResult(rebaseResult, rebaseConflicts, failures, newHead);
-//    }
+    @Override
+    public GitRebaseResult createRebaseResult (GitRebaseResult.RebaseResultContainer rebaseResult) {
+        return new GitRebaseResult(rebaseResult);
+    }
 
 //    @Override
 //    public GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig) {

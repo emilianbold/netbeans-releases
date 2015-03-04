@@ -42,11 +42,16 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitRevertResult;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -68,6 +73,10 @@ public class RevertCommand extends GitCommand {
         this.commit = commit;
     }
     
+    public GitRevertResult getResult () {
+        return result;
+    }
+
     @Override
     protected void prepare() throws GitException {
         super.prepare();
@@ -80,78 +89,100 @@ public class RevertCommand extends GitCommand {
 
     @Override
     protected void run() throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        RevCommit revertedCommit = Utils.findCommit(repository, revisionStr);
-//        RevWalk revWalk = new RevWalk(repository);
-//        DirCache dc = null;
-//        GitRevertResult NO_CHANGE_INSTANCE = getClassFactory().createRevertResult(GitRevertResult.Status.NO_CHANGE, null, null, null);
-//        try {
-//            Ref headRef = repository.getRef(Constants.HEAD);
-//            if (headRef == null) {
-//                throw new GitException.MissingObjectException(Constants.HEAD, GitObjectType.COMMIT);
-//            }
-//            RevCommit headCommit = revWalk.parseCommit(headRef.getObjectId());
-//            if (revertedCommit.getParentCount() != 1) {
-//                throw new GitException("Cannot revert a merge commit");
-//            }
-//            RevCommit srcParent = revertedCommit.getParent(0);
-//            revWalk.parseHeaders(srcParent);
-//
-//            ResolveMerger merger = (ResolveMerger) MergeStrategy.RECURSIVE.newMerger(repository);
-//            merger.setWorkingTreeIterator(new FileTreeIterator(repository));
-//            merger.setBase(revertedCommit.getTree());
-//            String commitMessage = message == null || message.isEmpty() 
-//                    ? "Revert \"" + revertedCommit.getShortMessage() + "\"" + "\n\n" + "This reverts commit " + revertedCommit.getId().getName() + "." //NOI18N
-//                    : message;
-//            if (merger.merge(headCommit, srcParent)) {
-//                if (AnyObjectId.equals(headCommit.getTree().getId(), merger.getResultTreeId())) {
-//                    result = NO_CHANGE_INSTANCE;
-//                } else {
-//                    DirCacheCheckout dco = new DirCacheCheckout(repository, headCommit.getTree(), dc = repository.lockDirCache(), merger.getResultTreeId());
-//                    dco.setFailOnConflict(true);
-//                    dco.checkout();
-//                    if (commit) {
-//                        RevCommit newHead = new Git(getRepository().getRepository()).commit().setMessage(commitMessage).call();
-//                        result = getClassFactory().createRevertResult(GitRevertResult.Status.REVERTED, getClassFactory().createRevisionInfo(newHead, getRepository()), null, null);
-//                    } else {
-//                        result = getClassFactory().createRevertResult(GitRevertResult.Status.REVERTED_IN_INDEX, null, null, null);
-//                    }
-//                }
-//            } else {
-//                if (merger.getFailingPaths() != null) {
-//                    result = getClassFactory().createRevertResult(GitRevertResult.Status.FAILED, null,
-//                            merger.getMergeResults() == null ? null : getFiles(getRepository().getLocation(), merger.getMergeResults().keySet()),
-//                            getFiles(getRepository().getLocation(), merger.getFailingPaths().keySet()));
-//                } else {
-//                    String mergeMessageWithConflicts = new MergeMessageFormatter().formatWithConflicts(commitMessage, merger.getUnmergedPaths());
-//                    repository.writeMergeCommitMsg(mergeMessageWithConflicts);
-//                    result = getClassFactory().createRevertResult(GitRevertResult.Status.CONFLICTING, null, 
-//                            merger.getMergeResults() == null ? null : getFiles(getRepository().getLocation(), merger.getMergeResults().keySet()),
-//                            null);
-//                }
-//            }
-//        } catch (JGitInternalException ex) {
-//            if (ex.getCause() instanceof CheckoutConflictException) {
-//                String[] lines = ex.getCause().getMessage().split("\n"); //NOI18N
-//                if (lines.length > 1) {
-//                    throw new GitException.CheckoutConflictException(Arrays.copyOfRange(lines, 1, lines.length), ex.getCause());
-//                }
-//            }
-//            throw new GitException(ex);
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        } catch (GitAPIException ex) {
-//            throw new GitException(ex);
-//        } finally {
-//            if (dc != null) {
-//                dc.unlock();
-//            }
-//            revWalk.release();
-//        }
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            final ResultContainer status = new ResultContainer();
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    parseRevertOutput(output, status);
+                }
+
+                @Override
+                protected void outputErrorParser(String output, String error, int exitCode) throws GitException {
+                    parseRevertOutputError(output, error, status);
+                }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    parseRevertError(error, status);
+                }
+
+            }.runCLI();
+            // (GitRevertResult.Status status, GitRevisionInfo createRevisionInfo, List<VCSFileProxy> conflicts, List<VCSFileProxy> failures);
+            GitRevisionInfo rev = getClassFactory().createRevisionInfo(status.revertCommit, getRepository());
+            result = getClassFactory().createRevertResult(status.status, rev, status.conflicts, status.failures);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
     }
 
-    public GitRevertResult getResult () {
-        return result;
+    private void parseRevertOutput(String output, ResultContainer status) {
+        //[master 7d5101f] Revert "modification"
+        //1 file changed, 1 insertion(+), 1 deletion(-)"
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("[") && line.indexOf(']')>0) {
+                if (line.contains("] Revert")) {
+                    status.status = GitRevertResult.Status.REVERTED;
+                }
+                String[] s = line.substring(1, line.indexOf(']')).trim().split(" ");
+                status.revertCommit.revisionCode = s[s.length-1];
+                continue;
+            }
+        }
+    }
+
+    private void parseRevertOutputError(String output, String error, ResultContainer status) {
+        //# On branch branch
+        //# Your branch is behind 'master' by 1 commit, and can be fast-forwarded.
+        //#
+        //nothing to commit (working directory clean)
+        if (output.contains("nothing to commit")) {
+            status.status = GitRevertResult.Status.NO_CHANGE;
+        }
+    }
+
+    private void parseRevertError(String error, ResultContainer status) {
+        //error: Your local changes to the following files would be overwritten by merge:
+        //	f
+        //Please, commit your changes or stash them before you can merge.
+        //Aborting
+        //====================
+        //error: could not revert 3169d24... modification
+        //hint: after resolving the conflicts, mark the corrected paths
+        //hint: with 'git add <paths>' or 'git rm <paths>'
+        //hint: and commit the result with 'git commit'
+        for (String line : error.split("\n")) { //NOI18N
+            if (line.startsWith("error: could not revert")) {
+                status.status = GitRevertResult.Status.CONFLICTING;
+                continue;
+            }
+            if (line.startsWith("Aborting")) {
+                status.status = GitRevertResult.Status.FAILED;
+                continue;
+            }
+            line = line.replace('\t', ' ');
+            if (line.startsWith(" ")) {
+                String file = line.trim();
+                status.failures.add(VCSFileProxy.createFileProxy(getRepository().getLocation(), file));
+                continue;
+            }
+        }
+    }
+    
+    private static final class ResultContainer {
+        private GitRevertResult.Status status;
+        private GitRevisionInfo.GitRevCommit revertCommit = new GitRevisionInfo.GitRevCommit();
+        private List<VCSFileProxy> conflicts = new ArrayList<>();
+        private List<VCSFileProxy> failures = new ArrayList<>();
     }
 }

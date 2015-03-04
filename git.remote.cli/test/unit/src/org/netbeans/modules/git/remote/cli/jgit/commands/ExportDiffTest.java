@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.git.remote.cli.GitClient;

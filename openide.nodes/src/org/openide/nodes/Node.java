@@ -1311,8 +1311,10 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             while (!set.isEmpty()) {
                 Node[] arr = set.toArray(new Node[set.size()]);
                 for (Node n : arr) {
-                    NodeLookup l = (NodeLookup) n.findDelegatingLookup();
-                    l.updateLookupAsCookiesAreChanged(null);
+                    Lookup l = n.findDelegatingLookup();
+                    if (l instanceof NodeLookup) {
+                        ((NodeLookup) l).updateLookupAsCookiesAreChanged(null);
+                    }
                 }
                 set.removeAll(Arrays.asList(arr));
             }
