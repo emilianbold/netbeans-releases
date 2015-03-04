@@ -62,11 +62,9 @@ import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
-import org.netbeans.modules.profiler.attach.AttachWizard;
 import org.netbeans.modules.profiler.nbimpl.NetBeansProfiler;
 import org.netbeans.modules.profiler.nbimpl.providers.JavaPlatformManagerImpl;
 import org.netbeans.modules.profiler.spi.JavaPlatformProvider;
-import org.netbeans.modules.profiler.ui.panels.PIDSelectPanel;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.modules.profiler.v2.ProfilerSession;
@@ -117,21 +115,9 @@ public class ProfilerLauncher {
             final ProfilingSettings pSettings = getProfilingSettings();
             
             if (isAttach()) {
-                AttachSettings aSettings = getAttachSettings();
-                if (aSettings == null && AttachWizard.isAvailable())
-                    aSettings = AttachWizard.getDefault().configure(aSettings);
-                if (aSettings == null) {
-                    return false; // cancelled by the user
-                } else {
-                    if (!aSettings.isRemote() && aSettings.isDynamic16()) {
-                        int pid = PIDSelectPanel.selectPID();
-                        if (pid == -1) return false; // cancelled by the user
-                        aSettings.setPid(pid);
-                    }
-                }
-                final AttachSettings _aSettings = aSettings;
+                final AttachSettings aSettings = getAttachSettings();
                 ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
-                    public void run() { profiler.attachToApp(pSettings, _aSettings); }
+                    public void run() { profiler.attachToApp(pSettings, aSettings); }
                 });
             } else {
                 String command = normalizedCommand(getContext());
