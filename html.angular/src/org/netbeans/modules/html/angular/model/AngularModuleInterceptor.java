@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.angular.model;
 
+import java.util.Arrays;
 import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,7 +69,11 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
 
     //private static Pattern PATTERN = Pattern.compile("angular\\.module(\\..*)*\\.controller");
     private final static Pattern PATTERN = Pattern.compile("(.)*\\.controller");
-    
+    private final static List<String> KNOWN_TYPES = Arrays.asList(
+            TypeUsage.ARRAY, TypeUsage.BOOLEAN, TypeUsage.FUNCTION, TypeUsage.NULL,
+            TypeUsage.NUMBER, TypeUsage.OBJECT, TypeUsage.REGEXP, TypeUsage.STRING,
+            TypeUsage.UNDEFINED, TypeUsage.UNRESOLVED);
+
     @Override
     public Pattern getNamePattern() {
         return PATTERN;
@@ -105,12 +110,44 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                             functionName = type.getType();
                             functionOffset = type.getOffset();
                             break;
+                        } else if (!KNOWN_TYPES.contains(type.getType())) {
+                            // e.g.: app.controller('MyCtrl', ['$scope', MyCtrl])
+                            // we have to find the referenced function (MyCtrl in this case)
+                            String parts[] = type.getType().split("\\."); //NOI18N
+                            JsObject property = globalObject;
+                            for (int i = 0; i < parts.length; i++) {
+                                property = property.getProperty(parts[i]);
+                                if (property == null) {
+                                    break;
+                                }
+                            }
+                            if (property != null) {
+                                // we have found the referenced function
+                                functionName = property.getFullyQualifiedName();
+                                functionOffset = property.getOffset();
+                            }
                         }
                     }
                     break;
                 case REFERENCE:
                     List<String> fArgumentValue = ((List<String>) fArgument.getValue());
                     functionName = fArgumentValue.isEmpty() ? null : fArgumentValue.get(0);
+                    if (functionName != null) {
+                        JsFunction func = (JsFunction) globalObject.getProperty(functionName);
+                        if (func == null) {
+                            // try to find it enclosed in IIFE
+                            JsFunction iife = (JsFunction) ModelUtils.findJsObject(globalObject, fArgument.getOffset());
+                            if (iife != null) {
+                                func = (JsFunction) iife.getProperty(functionName);
+                            }
+                        }
+                        if (func != null && !func.isAnonymous()) {
+                            // if function isn't anonymous, use the offset of
+                            // the function itself, not the argument's offset
+                            functionOffset = func.getOffset();
+                            break;
+                        }
+                    }
                     functionOffset = fArgument.getOffset();
                     break;
                 case ANONYMOUS_OBJECT:

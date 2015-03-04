@@ -102,6 +102,9 @@ public class EditCSSRulesAction extends AbstractAction {
             return;
         }
         Source source = Source.create(file);
+        if (source == null) {
+            return;
+        }
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
