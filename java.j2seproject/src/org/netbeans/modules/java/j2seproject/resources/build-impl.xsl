@@ -347,7 +347,12 @@ is divided into following sections:
                             </not>
                         </and>
                     </condition>
-                    <property name="javac.fork" value="${{jdkBug6558476}}"/>
+                    <condition property="javac.fork" else="false">
+                        <or>
+                            <istrue value="${{jdkBug6558476}}"/>
+                            <istrue value="${{javac.external.vm}}"/>
+                        </or>
+                    </condition>
                 </xsl:if>
                 <property name="jar.index" value="false"/>
                 <property name="jar.index.metainf" value="${{jar.index}}"/>

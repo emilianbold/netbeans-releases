@@ -725,7 +725,7 @@ public final class PlatformUiSupport {
                     public void run() {
                         inUpdate = true;
                         try {
-                            fireContentsChanged(this, -1, -1);
+                            fireContentsChanged(PlatformComboBoxModel.this, -1, -1);
                         } finally {
                             inUpdate = false;
                         }

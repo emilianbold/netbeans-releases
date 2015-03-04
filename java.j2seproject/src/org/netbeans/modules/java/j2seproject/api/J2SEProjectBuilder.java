@@ -532,6 +532,7 @@ public class J2SEProjectBuilder {
                     "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.archive.excludes") //NOI18N
                 },
                 false);
+        ep.setProperty(J2SEProjectProperties.JAVAC_EXTERNAL_VM, "true");    //NOI18N
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
