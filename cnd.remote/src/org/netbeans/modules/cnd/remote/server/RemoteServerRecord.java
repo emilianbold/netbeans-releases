@@ -48,13 +48,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
+import org.netbeans.modules.cnd.remote.support.ParallelWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -66,8 +72,10 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * The definition of a remote server and login. 
@@ -91,11 +99,13 @@ public class RemoteServerRecord implements ServerRecord {
     private RemoteSyncFactory syncFactory;
     private boolean x11forwarding;
 //    private boolean x11forwardingPossible;
-    private PropertyChangeSupport pcs;
+    private final PropertyChangeSupport pcs;
 
-    HostInfo.OSFamily cachedOsFamily = null;
-    HostInfo.CpuFamily cachedCpuFamily = null;
-    String cachedOsVersion = null;
+    private HostInfo.OSFamily cachedOsFamily = null;
+    private HostInfo.CpuFamily cachedCpuFamily = null;
+    private String cachedOsVersion = null;
+    private final RequestProcessor requestProcessor = new RequestProcessor(getClass().getSimpleName(), 10); //NOI18N
+    private boolean needsValidationOnConnect = true;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -189,35 +199,52 @@ public class RemoteServerRecord implements ServerRecord {
             return;
         }
         Object ostate = state;
-        setState(State.INITIALIZING);
-        RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
-        if (!Boolean.getBoolean("cnd.remote.skip.setup")) {
-            if (rss.needsSetupOrUpdate()) {
-                rss.setup();
-            }
-        }
+        setState(State.INITIALIZING);        
+        final RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
+        CountDownLatch latch = new CountDownLatch(2);
+        requestProcessor.post(new ParallelWorker("Updating remote binaries at " + getExecutionEnvironment(), latch) { //NOI18N
+            @Override
+            protected void runImpl() {
+                // We could do fast checks without posting a task to RP;
+                // but in fact it's always true; cheking outside => calculating the latch count
+                if (!Boolean.getBoolean("cnd.remote.skip.setup")) {                    
+                    final boolean needsSetupOrUpdate = rss.needsSetupOrUpdate();
+                    if (needsSetupOrUpdate) {
+                        StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, executionEnvironment, "rss.setup"); //NOI18N
+                        rss.setup();
+                        sw.stop();
+                    }
+                }
 //        if (ostate == State.UNINITIALIZED) {
 //            checkX11Forwarding();
 //        }
-        boolean initPathMap = false;
+            }
+        });
 
-        synchronized (stateLock) {
-            if (rss.isCancelled()) {
-                setState(State.CANCELLED);
-            } else if (rss.isFailed()) {
-                reason = rss.getReason();
-                setState(State.OFFLINE);
-            } else {
-                initPathMap = true;
+        requestProcessor.post(new ParallelWorker("Initializing path map at " + getExecutionEnvironment(), latch) { //NOI18N
+            @Override
+            protected void runImpl() {
+                StopWatch sw;
+                sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, executionEnvironment, "init pathmap"); //NOI18N
+                RemotePathMap.getPathMap(getExecutionEnvironment()).initIfNeeded();
+                sw.stop();
+            }
+        });
+        
+        try {
+            latch.await(10, TimeUnit.MINUTES);
+            synchronized (stateLock) {
                 setState(State.ONLINE);
                 if (rss.hasProblems()) {
                     problems = rss.getReason();
                 }
             }
+        } catch (InterruptedException ex) {
+            synchronized (stateLock) {
+                setState(State.CANCELLED);
+            }            
         }
-        if (initPathMap) {
-            RemotePathMap.getPathMap(getExecutionEnvironment()).initIfNeeded();
-        }
+
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
         }        
@@ -266,6 +293,18 @@ public class RemoteServerRecord implements ServerRecord {
     public String getStateAsText() {
         // TODO: not good to use object's toString as resource key
         return NbBundle.getMessage(RemoteServerRecord.class, state.toString());
+    }
+
+    public boolean needsValidationOnConnect() {
+        synchronized (stateLock) {
+            return needsValidationOnConnect;
+        }
+    }
+
+    public void setNeedsValidationOnConnect(boolean needsValidationOnConnect) {
+        synchronized (stateLock) {
+            this.needsValidationOnConnect = needsValidationOnConnect;
+        }
     }
 
     @Override
@@ -443,7 +482,7 @@ public class RemoteServerRecord implements ServerRecord {
     private static final String SERVER_LIST_SEPARATOR = ","; //NOI18N
 
     /*package-local*/ static List<RemoteServerRecord> fromString(String slist) {
-        List<RemoteServerRecord> result = new ArrayList<RemoteServerRecord>();
+        List<RemoteServerRecord> result = new ArrayList<>();
 
         for (String serverString : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
             // there moght be to forms:
@@ -568,9 +607,7 @@ public class RemoteServerRecord implements ServerRecord {
                         }
                     }
                 }
-            } catch (IOException ex) {
-                // don't report
-            } catch (CancellationException ex) {
+            } catch (IOException | CancellationException ex) {
                 // don't report
             }
         }

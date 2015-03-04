@@ -127,6 +127,13 @@ public class Utilities {
         ctl.revalidate(SourceEnvironment.getReparseDelay(false));
     }
     
+    public static void revalidate (@NonNull final FileObject fo) {
+        final Source source = SourceAccessor.getINSTANCE().get(fo);
+        if (source != null) {
+            revalidate(source);
+        }
+    }
+    
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {
         Parameters.notNull ("task", task);
         Parameters.notNull ("source", source);

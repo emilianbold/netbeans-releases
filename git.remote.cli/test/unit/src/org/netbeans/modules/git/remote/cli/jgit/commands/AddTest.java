@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
-import org.netbeans.modules.git.remote.cli.jgit.commands.StatusCommand;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;

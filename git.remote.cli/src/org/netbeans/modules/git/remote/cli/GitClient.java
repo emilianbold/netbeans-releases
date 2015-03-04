@@ -89,6 +89,7 @@ import org.netbeans.modules.git.remote.cli.jgit.commands.RemoveCommand;
 import org.netbeans.modules.git.remote.cli.jgit.commands.RemoveRemoteCommand;
 import org.netbeans.modules.git.remote.cli.jgit.commands.RenameCommand;
 import org.netbeans.modules.git.remote.cli.jgit.commands.ResetCommand;
+import org.netbeans.modules.git.remote.cli.jgit.commands.ResolveCommand;
 import org.netbeans.modules.git.remote.cli.jgit.commands.RevertCommand;
 import org.netbeans.modules.git.remote.cli.jgit.commands.SetRemoteCommand;
 import org.netbeans.modules.git.remote.cli.jgit.commands.SetUpstreamBranchCommand;
@@ -1325,6 +1326,13 @@ public final class GitClient {
         cmd.execute();
         return cmd.getStatuses();
     }
+
+    public GitRevisionInfo resolve(String name, ProgressMonitor monitor) throws GitException {
+        ResolveCommand cmd = new ResolveCommand(gitRepository, getClassFactory(), name, monitor);
+        cmd.execute();
+        return cmd.getResult();
+    }
+
 
     private GitClassFactory getClassFactory () {
         if (gitFactory == null) {

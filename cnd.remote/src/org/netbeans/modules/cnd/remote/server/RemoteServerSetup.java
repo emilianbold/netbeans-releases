@@ -80,8 +80,6 @@ public class RemoteServerSetup {
     private final Map<String, BinarySetupMapEntry> binarySetupMap;
     private final Map<ExecutionEnvironment, List<String>> updateMap;
     private final ExecutionEnvironment executionEnvironment;
-    private boolean cancelled;
-    private boolean failed;
     private boolean problems;
     private String reason;
     private String libDir;
@@ -113,13 +111,7 @@ public class RemoteServerSetup {
     /*package*/ boolean needsSetupOrUpdate() {
         List<String> updateList = new ArrayList<String>();
         updateMap.clear();
-        if (!isFailedOrCanceled()) {
-            updateList = getBinaryUpdates();
-        }
-        if (isFailedOrCanceled()) {
-            return false;
-        }
-
+        updateList = getBinaryUpdates();
         if (!updateList.isEmpty()) {
             updateMap.put(executionEnvironment, updateList);
             return true;
@@ -161,23 +153,21 @@ public class RemoteServerSetup {
         }
         if (! problematic.isEmpty()) {
             // construct error message
-            if (!failed) {
-                StringBuilder message = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Start", executionEnvironment));
-                StringBuilder consequences = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Consequences"));
-                for (Map.Entry<SetupProvider, List<BinarySetupMapEntry>> tmp : problematic.entrySet()) {
-                    List<File> files = new ArrayList<File>();
-                    for (BinarySetupMapEntry entry : tmp.getValue()) {
-                        files.add(entry.localFile);
-                        message.append('\n').append(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Line", 
-                                entry.localFile.getName(), CndPathUtilities.getDirName(entry.remotePath)));
-                    }
-                    consequences.append('\n');
-                    tmp.getKey().failed(files, consequences);
+            StringBuilder message = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Start", executionEnvironment));
+            StringBuilder consequences = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Consequences"));
+            for (Map.Entry<SetupProvider, List<BinarySetupMapEntry>> tmp : problematic.entrySet()) {
+                List<File> files = new ArrayList<File>();
+                for (BinarySetupMapEntry entry : tmp.getValue()) {
+                    files.add(entry.localFile);
+                    message.append('\n').append(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Line", 
+                            entry.localFile.getName(), CndPathUtilities.getDirName(entry.remotePath)));
                 }
-                message.append('\n');
-                message.append(consequences);
-                setProblems(message.toString());
+                consequences.append('\n');
+                tmp.getKey().failed(files, consequences);
             }
+            message.append('\n');
+            message.append(consequences);
+            setProblems(message.toString());
         }
     }
 
@@ -199,15 +189,6 @@ public class RemoteServerSetup {
         return reason;
     }
 
-    protected boolean isCancelled() {
-        return cancelled;
-    }
-
-    private void setFailed(String reason) {
-        this.failed = true;
-        this.reason = reason;
-    }
-    
     private void setProblems(String reason) {
         this.problems = true;
         this.reason = reason;
@@ -215,13 +196,5 @@ public class RemoteServerSetup {
     
     protected boolean hasProblems() {
         return problems;
-    }
-
-    protected boolean isFailed() {
-        return failed;
-    }
-
-    private boolean isFailedOrCanceled() {
-        return failed || cancelled;
     }
 }

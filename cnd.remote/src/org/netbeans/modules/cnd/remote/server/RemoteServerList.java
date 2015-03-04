@@ -85,6 +85,9 @@ import org.openide.util.WeakListeners;
 @org.openide.util.lookup.ServiceProvider(service = ServerListImplementation.class)
 public class RemoteServerList implements ServerListImplementation, ConnectionListener {
 
+    public static final boolean TRACE_SETUP = Boolean.getBoolean("cnd.remote.trace.setup"); //NOI18N
+    public static final String TRACE_SETUP_PREFIX = "#HostSetup"; //NOI18N
+    
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
     private static final String DEFAULT_RECORD = CND_REMOTE + ".defaultEnv"; // NOI18N
@@ -153,18 +156,22 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         Collection<RemoteServerRecord> recordsToNotify = new ArrayList<RemoteServerRecord>();
         for (RemoteServerRecord rec : items) {
             if (rec.getExecutionEnvironment().equals(env)) {
-                recordsToNotify.add(rec);
+                if (rec.needsValidationOnConnect()) {
+                    recordsToNotify.add(rec);
+                }
             }
         }
         // previously, it was done by RemoteFileSupport, but it is moved to dlight.remote
         if (recordsToNotify.isEmpty()) {
             // inlined RemoteServerListUI.revalidate
-            ServerRecord record = get(env);
-            if (record.isDeleted()) {
-                addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
-            } else if (!record.isOnline()) {
-                record.validate(true);
-            }            
+            RemoteServerRecord record = get(env);
+            if (record.needsValidationOnConnect()) {
+                if (record.isDeleted()) {
+                    addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
+                } else if (!record.isOnline()) {
+                    record.validate(true);
+                }            
+            }
         } else {
             for (RemoteServerRecord rec : recordsToNotify) {
                 rec.checkHostInfo();
@@ -183,7 +190,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
      * @return A RemoteServerRecord for env
      */
     @Override
-    public ServerRecord get(ExecutionEnvironment env) {
+    public RemoteServerRecord get(ExecutionEnvironment env) {
         return get(env, true);
     }
 
