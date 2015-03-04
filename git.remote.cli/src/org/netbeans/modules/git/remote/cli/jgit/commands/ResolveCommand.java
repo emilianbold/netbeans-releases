@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,111 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
-import org.netbeans.modules.git.remote.cli.GitClient.ResetType;
 import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
-import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
+ * @author alsimon
  */
-public class ResetCommand extends GitCommand {
+public class ResolveCommand  extends GitCommand {
 
-    private final VCSFileProxy[] roots;
-    private final FileListener listener;
+    private final String name;
+    private GitRevisionInfo result;
     private final ProgressMonitor monitor;
-    private final String revisionStr;
-    private final ResetType resetType;
-    private final boolean moveHead;
-    private final boolean recursively;
 
-    public ResetCommand (JGitRepository repository, GitClassFactory gitFactory, String revision, VCSFileProxy[] roots, boolean recursively, ProgressMonitor monitor, FileListener listener) {
+    public ResolveCommand (JGitRepository repository, GitClassFactory gitFactory, String name, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
-        this.roots = roots;
-        this.listener = listener;
+        this.name = name;
         this.monitor = monitor;
-        this.revisionStr = revision;
-        this.resetType = ResetType.MIXED;
-        this.recursively = recursively;
-        moveHead = false;
     }
 
-    public ResetCommand (JGitRepository repository, GitClassFactory gitFactory, String revision, ResetType resetType, ProgressMonitor monitor, FileListener listener) {
-        super(repository, gitFactory, monitor);
-        this.roots = new VCSFileProxy[0];
-        this.listener = listener;
-        this.monitor = monitor;
-        this.revisionStr = revision;
-        this.resetType = resetType;
-        recursively = true;
-        moveHead = true;
+    public GitRevisionInfo getResult () {
+        return result;
     }
     
     @Override
     protected void prepare() throws GitException {
         super.prepare();
-        addArgument(0, "reset"); //NOI18N
-        if (moveHead) {
-            addArgument(0, resetType.toString());
-            addArgument(0, revisionStr);
-        } else {
-            addArgument(0, revisionStr);
-            addArgument(0, "--"); //NOI18N
-            addFiles(0, roots);
-        }
+        addArgument(0, "show"); //NOI18N
+        addArgument(0, "--raw"); //NOI18N
+        addArgument(0, name);
     }
 
     @Override
-    protected void run() throws GitException {
+    protected void run () throws GitException {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         if (monitor != null) {
             monitor.setCancelDelegate(canceled);
         }
         try {
+            final GitRevisionInfo.GitRevCommit status = new GitRevisionInfo.GitRevCommit();
             new Runner(canceled, 0){
 
                 @Override
                 public void outputParser(String output) throws GitException {
-                    //git --no-pager reset --hard ce353860899117174aa48fdd5a957aff33936771
-                    //HEAD is now at ce35386 commit
-                    //git --no-pager reset --mixed 9eafa84617adb5d35d0dc55a0dc7c73607cfda51
-                    //Unstaged changes after reset:
-                    //M	file1
-                    //git --no-pager reset --soft 153c22a9a301de1bb43639f6b811d18d7703e5e8
-                    //
-                }
-
-                @Override
-                protected void outputErrorParser(String output, String error, int exitCode) throws GitException {
-                    // command can returns list unstaged and exit code 1.
-                    // errr is empty
-                }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    if (error.isEmpty()) {
-                        return;
-                    }
-                    super.errorParser(error); //To change body of generated methods, choose Tools | Templates.
+                    CommitCommand.parseLog(output, status);
                 }
             }.runCLI();
+            result = getClassFactory().createRevisionInfo(status, getRepository());
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
-            if(canceled.canceled()) {
+            if (canceled.canceled()) {
             } else {
                 throw new GitException(t);
             }
-        }        
+        }
     }
+    
 }

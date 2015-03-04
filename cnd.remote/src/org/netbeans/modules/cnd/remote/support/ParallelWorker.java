@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,61 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.support;
 
-package org.netbeans.modules.git.remote.cli.jgit;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-//import org.eclipse.jgit.lib.Repository;
-import org.netbeans.modules.git.remote.cli.GitException;
-import org.netbeans.modules.git.remote.cli.GitRepositoryState;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import java.util.concurrent.CountDownLatch;
 
 /**
  *
- * @author ondra
+ * @author vkvashin
  */
-public final class JGitRepository {
-    private final VCSFileProxy location;
-    private final AtomicInteger counter = new AtomicInteger();
-    private final JGitConfig config;
-    private final AtomicBoolean loaded = new AtomicBoolean(false);
-
-    public JGitRepository (VCSFileProxy location) {
-        this.location = location;
-        config = new JGitConfig(location);
-    }
-
-    public synchronized void increaseClientUsage () throws GitException {
-        counter.incrementAndGet();
-    }
-
-    public synchronized void decreaseClientUsage () {
-        counter.decrementAndGet();
-    }
-
-    public VCSFileProxy getLocation() {
-        return location;
-    }
-
-    public VCSFileProxy getMetadataLocation() {
-        return VCSFileProxy.createFileProxy(location, ".git");
-    }
-
-    public GitRepositoryState getRepositoryState() {
-        return null;
-    }
+public abstract class ParallelWorker implements Runnable {
     
-    public JGitConfig getConfig(){
-        synchronized(loaded) {
-            if (!loaded.get()) {
-                config.load();
-                loaded.set(true);
-            }
-            return config;
+    private final String name;
+    private final CountDownLatch latch;
+
+    public ParallelWorker(String name, CountDownLatch latch) {
+        this.name = name;
+        this.latch = latch;
+    }
+
+    @Override
+    public final void run() {
+        String oldName = Thread.currentThread().getName();
+        try {
+            Thread.currentThread().setName(getName());
+            runImpl();
+        } finally {
+            Thread.currentThread().setName(oldName);
+            latch.countDown();
         }
     }
 
+    public String getName() {
+        return name;
+    }
+
+    protected abstract void runImpl();
+    
 }

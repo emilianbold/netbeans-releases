@@ -52,7 +52,6 @@ import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *

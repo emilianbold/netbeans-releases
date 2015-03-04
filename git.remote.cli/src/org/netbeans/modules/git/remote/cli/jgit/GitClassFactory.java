@@ -52,6 +52,7 @@ import org.netbeans.modules.git.remote.cli.GitConflictDescriptor.Type;
 import org.netbeans.modules.git.remote.cli.GitMergeResult;
 import org.netbeans.modules.git.remote.cli.GitPullResult;
 import org.netbeans.modules.git.remote.cli.GitPushResult;
+import org.netbeans.modules.git.remote.cli.GitRebaseResult;
 import org.netbeans.modules.git.remote.cli.GitRevertResult;
 import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
 import org.netbeans.modules.git.remote.cli.GitRevisionInfo.GitFileInfo;
@@ -87,7 +88,7 @@ public abstract class GitClassFactory {
 
     public abstract GitPushResult createPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates);
     
-    //public abstract GitRebaseResult createRebaseResult (RebaseResult rebaseResult, List<VCSFileProxy> rebaseConflicts, List<VCSFileProxy> failures, String newHead);
+    public abstract GitRebaseResult createRebaseResult (GitRebaseResult.RebaseResultContainer rebaseResult);
 
     //public abstract GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig);
 

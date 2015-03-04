@@ -41,13 +41,20 @@
  */
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.git.remote.cli.GitCherryPickResult;
+import org.netbeans.modules.git.remote.cli.GitCherryPickResult.CherryPickStatus;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitMergeResult;
+import org.netbeans.modules.git.remote.cli.GitRevisionInfo;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -63,6 +70,7 @@ public class CherryPickCommand extends GitCommand {
     private static final String SEQUENCER = "sequencer";
     private static final String SEQUENCER_HEAD = "head";
     private static final String SEQUENCER_TODO = "todo";
+    private final Revision revisionPlaseHolder;
 
     public CherryPickCommand (JGitRepository repository, GitClassFactory gitFactory, String[] revisions,
             GitClient.CherryPickOperation operation, ProgressMonitor monitor, FileListener listener) {
@@ -71,85 +79,16 @@ public class CherryPickCommand extends GitCommand {
         this.operation = operation;
         this.monitor = monitor;
         this.listener = listener;
+        revisionPlaseHolder = new Revision();
     }
 
-    @Override
-    protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        ObjectId originalCommit = getOriginalCommit();
-//        ObjectId head = getHead();
-//        List<RebaseTodoLine> steps;
-//        try {
-//            switch (operation) {
-//                case BEGIN:
-//                    // initialize sequencer and cherry-pick steps if there are
-//                    // more commits to cherry-pick
-//                    steps = prepareCommand(head);
-//                    // apply the selected steps
-//                    applySteps(steps, false);
-//                    break;
-//                case ABORT:
-//                    // delete the sequencer and reset to the original head
-//                    if (repository.getRepositoryState() == RepositoryState.CHERRY_PICKING
-//                            || repository.getRepositoryState() == RepositoryState.CHERRY_PICKING_RESOLVED) {
-//                        if (originalCommit == null) {
-//                            // maybe the sequencer is not created in that case simply reset to HEAD
-//                            originalCommit = head;
-//                        }
-//                    }
-//                    Utils.deleteRecursively(getSequencerFolder());
-//                    if (originalCommit != null) {
-//                        ResetCommand reset = new ResetCommand(getRepository(), getClassFactory(),
-//                                originalCommit.name(), GitClient.ResetType.HARD, new DelegatingGitProgressMonitor(monitor), listener);
-//                        reset.execute();
-//                    }
-//                    result = createCustomResult(GitCherryPickResult.CherryPickStatus.ABORTED);
-//                    break;
-//                case QUIT:
-//                    // used to reset the sequencer only
-//                    Utils.deleteRecursively(getSequencerFolder());
-//                    switch (repository.getRepositoryState()) {
-//                        case CHERRY_PICKING:
-//                            // unresolved conflicts
-//                            result = createResult(CherryPickResult.CONFLICT);
-//                            break;
-//                        case CHERRY_PICKING_RESOLVED:
-//                            result = createCustomResult(GitCherryPickResult.CherryPickStatus.UNCOMMITTED);
-//                            break;
-//                        default:
-//                            result = createCustomResult(GitCherryPickResult.CherryPickStatus.OK);
-//                            break;
-//                    }
-//                    break;
-//                case CONTINUE:
-//                    switch (repository.getRepositoryState()) {
-//                        case CHERRY_PICKING:
-//                            // unresolved conflicts, cannot continue
-//                            result = createResult(CherryPickResult.CONFLICT);
-//                            break;
-//                        case CHERRY_PICKING_RESOLVED:
-//                            // cannot continue without manual commit
-//                            result = createCustomResult(GitCherryPickResult.CherryPickStatus.UNCOMMITTED);
-//                            break;
-//                        default:
-//                            // read steps from sequencer and apply them
-//                            // if sequencer is empty this will be a noop
-//                            steps = readTodoFile(getRepository());
-//                            applySteps(steps, true);
-//                            break;
-//                    }
-//                    break;
-//                default:
-//                    throw new IllegalStateException("Unexpected operation " + operation.name());
-//            }
-//        } catch (GitAPIException | IOException ex) {
-//            throw new GitException(ex);
-//        }
+    public GitCherryPickResult getResult () {
+        return result;
     }
     
     @Override
     protected void prepare() throws GitException {
+        setCommandsNumber(2);
         super.prepare();
         addArgument(0, "cherry-pick"); //NOI18N
         if (operation == GitClient.CherryPickOperation.BEGIN) {
@@ -159,10 +98,107 @@ public class CherryPickCommand extends GitCommand {
         } else {
             addArgument(0, operation.toString());
         }
+
+        addArgument(1, "log"); //NOI18N
+        addArgument(1, "--raw"); //NOI18N
+        addArgument(1, "--pretty=raw"); //NOI18N
+        addArgument(1, "-1"); //NOI18N
+        addArgument(1, revisionPlaseHolder); //NOI18N
+        
     }
 
-    public GitCherryPickResult getResult () {
-        return result;
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            final CherryPickedResultContainer cherry = new CherryPickedResultContainer();
+            cherry.mergeStatus = GitCherryPickResult.CherryPickStatus.OK;
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    parseCherryPickedOutput(output, cherry);
+                }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    parseCherryPickedError(error, cherry);
+                }
+            }.runCLI();
+            GitRevisionInfo revision = null;
+            if (cherry.currentHead != null) {
+                revisionPlaseHolder.setContent(cherry.currentHead);
+                final GitRevisionInfo.GitRevCommit status = new GitRevisionInfo.GitRevCommit();
+                new Runner(canceled, 1){
+
+                    @Override
+                    public void outputParser(String output) throws GitException {
+                        CommitCommand.parseLog(output, status);
+                    }
+                }.runCLI();
+                revision = getClassFactory().createRevisionInfo(status, getRepository());
+            }
+            result = getClassFactory().createCherryPickResult(cherry.mergeStatus, cherry.conflicts, cherry.failures, revision, cherry.cherryPickedCommits);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
+    }
+    private void parseCherryPickedOutput(String output, CherryPickedResultContainer merge) {
+        //[master d3e2d1f] on branch
+        //1 file changed, 1 insertion(+), 1 deletion(-)
+        merge.mergeStatus = CherryPickStatus.OK;
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("[") && line.indexOf(']')>0) {
+                String[] s = line.substring(1, line.indexOf(']')).trim().split(" ");
+                merge.currentHead = s[s.length-1];
+                continue;
+            }
+        }
+    }
+    
+    private void parseCherryPickedError(String output, CherryPickedResultContainer merge) {
+        //error: could not apply 45ccd20... on branch 2
+        //hint: after resolving the conflicts, mark the corrected paths
+        //hint: with 'git add <paths>' or 'git rm <paths>'
+        //hint: and commit the result with 'git commit'"
+        //=================
+        //"error: Your local changes to the following files would be overwritten by merge:
+        //	f
+        //Please, commit your changes or stash them before you can merge.
+        //Aborting"
+        merge.mergeStatus = CherryPickStatus.FAILED;
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("error: could not apply")) {
+                merge.mergeStatus = CherryPickStatus.FAILED;
+                String[] s = line.substring(22).trim().split(" ");
+                String rev = s[0];
+                if (rev.indexOf('.') > 0) {
+                    rev = rev.substring(0, rev.indexOf('.'));
+                }
+                merge.currentHead = rev;
+                continue;
+            }
+            if (line.startsWith("Aborting")) {
+                merge.mergeStatus = CherryPickStatus.FAILED;
+                continue;
+            }
+        }
+    }
+    
+    private static final class CherryPickedResultContainer {
+        public GitCherryPickResult.CherryPickStatus mergeStatus;
+        public List<VCSFileProxy> conflicts = new ArrayList<>();
+        public List<VCSFileProxy> failures  = new ArrayList<>();
+        public String currentHead;
+        public List<GitRevisionInfo> cherryPickedCommits = new ArrayList<>();
     }
 
 }

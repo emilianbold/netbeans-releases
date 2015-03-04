@@ -47,6 +47,7 @@ import org.netbeans.modules.git.remote.cli.GitRefUpdateResult;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -55,47 +56,18 @@ import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 public class UpdateRefCommand extends GitCommand {
     private final String revision;
     private final String refName;
+    private final ProgressMonitor monitor;
     private GitRefUpdateResult result;
 
     public UpdateRefCommand (JGitRepository repository, GitClassFactory gitFactory, String refName, String revision, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.refName = refName;
+        this.monitor = monitor;
         this.revision = revision;
     }
 
-    @Override
-    protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        try {
-//            
-//            Ref ref = repository.getRef(refName);
-//            if (ref == null || ref.isSymbolic()) {
-//                // currently unable to update symbolic references
-//                result = GitRefUpdateResult.valueOf(RefUpdate.Result.NOT_ATTEMPTED.name());
-//                return;
-//            }
-//            
-//            Ref newRef = repository.getRef(revision);
-//            String name;
-//            if (newRef == null) {
-//                ObjectId id = repository.resolve(revision);
-//                newRef = new ObjectIdRef.Unpeeled(Ref.Storage.LOOSE, id.name(),id.copy());
-//                name = newRef.getName();
-//            } else {
-//                name = revision;
-//            }
-//            
-//            RefUpdate u = repository.updateRef(ref.getName());
-//            u.setNewObjectId(newRef.isPeeled() ? newRef.getPeeledObjectId() : newRef.getObjectId());
-//            u.setRefLogMessage("merge " + name + ": Fast-forward", false); //NOI18N
-//            u.update();
-//            result = GitRefUpdateResult.valueOf((u.getResult() == null 
-//                ? RefUpdate.Result.NOT_ATTEMPTED
-//                : u.getResult()).name());
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
+    public GitRefUpdateResult getResult () {
+        return result;
     }
     
     @Override
@@ -104,10 +76,37 @@ public class UpdateRefCommand extends GitCommand {
         addArgument(0, "update-ref"); //NOI18N
         addArgument(0, refName);
         addArgument(0, revision);
+        
+        
     }
 
-    public GitRefUpdateResult getResult () {
-        return result;
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    result = GitRefUpdateResult.OK;
+                }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    result = GitRefUpdateResult.NOT_ATTEMPTED;
+                }
+                
+            }.runCLI();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if(canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }        
     }
-    
 }
