@@ -270,6 +270,8 @@ public final class NavigatorController implements LookupListener, PropertyChange
         for (NavigatorPanel navigatorPanel : currentPanels) {
             if (navigatorPanel instanceof LazyPanel) {
                 contains = ((LazyPanel) navigatorPanel).panelMatch(panel);
+            } else if (panel instanceof LazyPanel) {
+                contains = ((LazyPanel) panel).panelMatch(navigatorPanel);
             } else {
                 contains = navigatorPanel.equals(panel);
             }
@@ -284,7 +286,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
                 cacheLastSelPanel(panel);
                 return;
             } else {
-                throw new IllegalArgumentException(iaeText + panel);
+                throw new IllegalArgumentException(iaeText + panel + " - not part of " + currentPanels);
             }
         }
         NavigatorPanel oldPanel = navigatorTC.getSelectedPanel();
