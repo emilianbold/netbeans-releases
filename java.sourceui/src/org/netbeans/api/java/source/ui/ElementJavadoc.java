@@ -379,7 +379,7 @@ public class ElementJavadoc {
                     JavadocHelper.RemoteJavadocPolicy.SPECULATIVE,
                     cancel);
                 for (JavadocHelper.TextStream ts : pages) {
-                    localized |= isLocalized(ts.getLocation(), element);
+                    localized |= isLocalized(ts.getLocations(), element);
                     remote |= ts.isRemote();
                 }
                 if (remote && pages.size() > 1) {
@@ -458,7 +458,15 @@ public class ElementJavadoc {
 
     // Private section ---------------------------------------------------------
     
-    
+    private static boolean isLocalized(final List<? extends URL> docUrls, final Element element) {
+        for (URL docUrl : docUrls) {
+            if (isLocalized(docUrl, element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean isLocalized(final URL docURL, final Element element) {
         if (docURL == null) {
             return false;

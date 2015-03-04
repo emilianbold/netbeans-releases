@@ -163,7 +163,7 @@ public final class WebLogicDeployer {
                                 if (contextRoot != null) {
                                     URL url;
                                     if (publicAddress != null) {
-                                        url = new URL("http://" + publicAddress.getCanonicalHostName() + ":" + config.getPort() + contextRoot); // NOI18N
+                                        url = new URL("http://" + publicAddress.getHostAddress() + ":" + config.getPort() + contextRoot); // NOI18N
                                     } else {
                                         url = new URL("http://" + config.getHost() + ":" + config.getPort() + contextRoot); // NOI18N
                                     }
