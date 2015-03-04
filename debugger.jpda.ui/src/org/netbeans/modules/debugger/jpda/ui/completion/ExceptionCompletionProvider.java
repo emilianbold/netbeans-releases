@@ -44,6 +44,8 @@ package org.netbeans.modules.debugger.jpda.ui.completion;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
@@ -69,6 +71,8 @@ import org.openide.util.Exceptions;
 @MimeRegistration(mimeType = ExceptionClassNbDebugEditorKit.MIME_TYPE, service = CompletionProvider.class)
 public class ExceptionCompletionProvider implements CompletionProvider {
     
+    private static final Logger LOG = Logger.getLogger(ExceptionCompletionProvider.class.getName());
+    
     private static final Set<? extends SearchScopeType> scopeAll = Collections.singleton(new ClassSearchScopeType());
 
     @Override
@@ -88,11 +92,13 @@ public class ExceptionCompletionProvider implements CompletionProvider {
                     Exceptions.printStackTrace(ex);
                     text = "";
                 }
+                LOG.log(Level.FINE, "Completion query for ''{0}''", text);
                 Set<? extends SearchScopeType> scope = Collections.singleton(new ClassSearchScopeType(text));
                 int n = text.length();
                 ClasspathInfo cpi = ClassCompletionProvider.getClassPathInfo();
                 ClassIndex classIndex = cpi.getClassIndex();
                 Set<String> packageNames = classIndex.getPackageNames(text, false, scope);
+                LOG.log(Level.FINE, "  Have package names = {0}", packageNames);
                 Set<String> resultPackages = new HashSet<String>();
                 int lastTextDot = text.lastIndexOf('.');
                 for (String pn : packageNames) {
@@ -102,6 +108,7 @@ public class ExceptionCompletionProvider implements CompletionProvider {
                     if (!resultPackages.contains(pn)) {
                         resultSet.addItem(new ElementCompletionItem(pn, ElementKind.PACKAGE, caretOffset));
                         resultPackages.add(pn);
+                        LOG.log(Level.FINE, "  Adding package: ''{0}''", pn);
                     }
                 }
                 
@@ -111,6 +118,7 @@ public class ExceptionCompletionProvider implements CompletionProvider {
                 } else {
                     classFilter = text;
                 }
+                LOG.log(Level.FINE, "  Class filter = ''{0}''", classFilter);
                 
                 ElementHandle<TypeElement> throwable = null;
                 Set<ElementHandle<TypeElement>> throwableTypes = classIndex.getDeclaredTypes(
@@ -123,22 +131,26 @@ public class ExceptionCompletionProvider implements CompletionProvider {
                         break;
                     }
                 }
+                LOG.log(Level.FINE, "  Retrieved throwable: {0}", throwable);
                 if (throwable != null) {
                     Set<ElementHandle<TypeElement>> throwables = getAllImplementors(classIndex, throwable, scope);//classIndex.getElements(throwable, Collections.singleton(SearchKind.IMPLEMENTORS), scope);
+                    LOG.fine("  Collected all implementors.");
                     Set<String> resultClasses = new HashSet<String>();
                     for (ElementHandle<TypeElement> type : throwables) {
                         String className = type.getQualifiedName();
                         int packageDotIndex = -1;
                         if (lastTextDot > 0) {
                             className = className.substring(lastTextDot + 1);
-                            if (!className.startsWith(classFilter)) {
-                                continue;
-                            }
                         } else {
                             packageDotIndex = type.getBinaryName().lastIndexOf('.');
                             if (packageDotIndex > 0) {
                                 className = className.substring(packageDotIndex + 1);
                             }
+                        }
+                        if (className.length() < classFilter.length() ||
+                            !className.substring(0, classFilter.length()).equalsIgnoreCase(classFilter)) {
+                            
+                            continue;
                         }
                         int dot = className.indexOf('.');
                         if (dot > 0) className = className.substring(0, dot);
@@ -149,10 +161,12 @@ public class ExceptionCompletionProvider implements CompletionProvider {
                             }
                             resultSet.addItem(eci);
                             resultClasses.add(className);
+                            LOG.log(Level.FINE, "  Adding class name ''{0}''", className);
                         }
                     }
                     
                 }
+                LOG.fine("Completion result set finished.");
                 resultSet.finish();
             }
         }, component);
