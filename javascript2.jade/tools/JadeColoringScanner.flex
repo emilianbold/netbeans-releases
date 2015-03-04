@@ -675,7 +675,12 @@ UnbufferedComment = "//-"
                                             // the block has to have one more space than the tag
                                             yybegin(AFTER_EOL);
                                             indent = currentIndent;
-                                            return JadeTokenId.WHITESPACE;
+                                            if (tokenLength > currentIndent) {
+                                                yypushback(currentIndent);
+                                                return JadeTokenId.PLAIN_TEXT;
+                                            } else {
+                                                return JadeTokenId.WHITESPACE;
+                                            }
                                         }
                                         if (blockIndent < 0) {
                                             blockIndent = currentIndent;
