@@ -71,6 +71,19 @@ import org.openide.util.lookup.InstanceContent;
  */
 public final class FolderPathLookup extends AbstractLookup {
     
+    /**
+     * Attribute that points to the original file in datashadow. See RecognizedInstanceFiles
+     * in openide.filesystems.
+     */
+    private static final String ATTR_ORIGINAL_FILE = "originalFile"; // NOI18N
+    
+    /**
+     * Extension of DataShadows, keep in sync with RecognizedInstanceFiles in openide.filesystems
+     */
+    private static final String EXTENSION_SHADOW = "shadow"; // NOI18N
+    
+    private static final String ATTR_INSTANCE_OF = "instanceOf"; // NOI18N
+
     private static final Logger LOG = Logger.getLogger(FolderPathLookup.class.getName());
     
     private final InstanceContent content;
@@ -90,10 +103,28 @@ public final class FolderPathLookup extends AbstractLookup {
     private static final Map<FileObject,InstanceItem> fo2item = new HashMap(128);
     
     static InstanceItem getInstanceItem(FileObject fo, InstanceItem ignoreItem) {
+        FileObject real = fo;
+        if (EXTENSION_SHADOW.equals(fo.getExt())) {
+            Object originalFile = fo.getAttribute(ATTR_ORIGINAL_FILE);
+            if (originalFile instanceof String) {
+                FileObject r;
+                try {
+                    r = fo.getFileSystem().getRoot().getFileObject(originalFile.toString());
+                    if (r != null) {
+                        real = r;
+                    } else {
+                        LOG.warning("Dangling shadow found: " + fo.getPath() + " -> " + originalFile); // NOI18N
+                    }
+                } catch (FileStateInvalidException ex) {
+                    LOG.log(Level.WARNING, "Unexpected error accessing config file " + fo, ex); // NOI18N
+                }
+            }
+        }
         synchronized (fo2item) {
             InstanceItem item = fo2item.get(fo);
             if (item == null || item == ignoreItem) {
-                item = new InstanceItem(fo);
+                // resolve potential shadows:
+                item = new InstanceItem(real);
                 fo2item.put(fo, item);
             }
             return item;
@@ -244,7 +275,7 @@ public final class FolderPathLookup extends AbstractLookup {
             if (inst != null) {
                 return c.isInstance(inst);
             } else {
-                String instanceOf = (String) fo.getAttribute("instanceOf");
+                String instanceOf = (String) fo.getAttribute(ATTR_INSTANCE_OF);
                 if (instanceOf != null) {
                     for (String xface : instanceOf.split(",")) {
                         try {
