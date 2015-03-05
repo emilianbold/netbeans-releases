@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.modules.git.remote.cli.GitClient;
-import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitRemoteConfig;
 import org.netbeans.modules.git.remote.cli.jgit.AbstractGitTestCase;
 import org.netbeans.modules.git.remote.cli.jgit.JGitConfig;
@@ -94,7 +93,7 @@ public class RemotesTest extends AbstractGitTestCase {
         
         JGitConfig config = repository.getConfig();
         config.load();
-        assertEquals("+refs/heads/*:refs/remotes/origin/*", config.getString("remote", "origin", "fetch"));
+        assertEquals("+refs/heads/*:refs/remotes/origin/*", config.getString("remote", "origin", JGitConfig.CONFIG_KEY_FETCH));
         assertEquals("origin", config.getString("branch", "master", "remote"));
         assertEquals("refs/heads/master", config.getString("branch", "master", "merge"));
         assertEquals("origin", config.getString("branch", "nova", "remote"));

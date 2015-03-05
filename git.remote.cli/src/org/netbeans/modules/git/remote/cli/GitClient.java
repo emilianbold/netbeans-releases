@@ -853,7 +853,19 @@ public final class GitClient {
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
      */
     public void init (ProgressMonitor monitor) throws GitException {
-        InitRepositoryCommand cmd = new InitRepositoryCommand(gitRepository, getClassFactory(), monitor);
+        InitRepositoryCommand cmd = new InitRepositoryCommand(gitRepository, getClassFactory(), false, monitor);
+        cmd.execute();
+    }
+
+    /**
+     * Initializes an empty git repository in a folder specified in the constructor. The repository must not yet exist - meaning
+     * there cannot not be a <em>.git</em> folder in the given folder - however the folder itself may exist and contain any other source files
+     * (except for git repository metadata).
+     * @param monitor progress monitor
+     * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
+     */
+    public void initBare (ProgressMonitor monitor) throws GitException {
+        InitRepositoryCommand cmd = new InitRepositoryCommand(gitRepository, getClassFactory(), true, monitor);
         cmd.execute();
     }
 

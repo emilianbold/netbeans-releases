@@ -181,10 +181,10 @@ final class GitClassFactoryImpl extends GitClassFactory {
         branch.setTrackedBranch(trackedBranch);
     }
 
-//    @Override
-//    public GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, VCSFileProxy folder) {
-//        return new GitSubmoduleStatus(status, folder);
-//    }
+    @Override
+    public GitSubmoduleStatus createSubmoduleStatus (GitSubmoduleStatus.StatusType status, VCSFileProxy folder) {
+        return new GitSubmoduleStatus(status, folder);
+    }
 
     @Override
     public GitCherryPickResult createCherryPickResult (GitCherryPickResult.CherryPickStatus status,

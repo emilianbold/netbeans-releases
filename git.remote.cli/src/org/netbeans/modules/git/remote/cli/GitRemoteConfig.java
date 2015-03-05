@@ -83,21 +83,21 @@ public final class GitRemoteConfig {
     public GitRemoteConfig (JGitConfig config, String remoteName) {
         this.remoteName = remoteName;
         uris = new ArrayList<>();
-        String s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.KEY_URL);
+        String s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.CONFIG_KEY_URL);
         if (s != null) {
             uris.add(s);
         }
-        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.KEY_PUSHURL);
+        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.CONFIG_KEY_PUSHURL);
         pushUris = new ArrayList<>();
         if (s != null) {
             pushUris.add(s);
         }
-        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.KEY_FETCH);
+        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.CONFIG_KEY_FETCH);
         fetchSpecs = new ArrayList<>();
         if (s != null) {
             fetchSpecs.add(s);
         }
-        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.KEY_PUSH);
+        s = config.getString(JGitConfig.CONFIG_REMOTE_SECTION, remoteName, JGitConfig.CONFIG_KEY_PUSH);
         pushSpecs = new ArrayList<>();
         if (s != null) {
             pushSpecs.add(s);

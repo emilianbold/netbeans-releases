@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -81,7 +82,7 @@ public class ListRemoteTagsCommand extends TransportCommand {
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "ls-remote"); //NOI18N
-        addArgument(0, "--heads"); //NOI18N
+        addArgument(0, "--tags"); //NOI18N
         addArgument(0, remoteUrl.toString());
     }
 
@@ -92,10 +93,12 @@ public class ListRemoteTagsCommand extends TransportCommand {
             monitor.setCancelDelegate(canceled);
         }
         try {
+            refs = new ArrayList<>();
             new Runner(canceled, 0){
 
                 @Override
                 public void outputParser(String output) throws GitException {
+                    parseListRemoreTagsOutput(output);
                 }
             }.runCLI();
             processRefs();
@@ -108,4 +111,20 @@ public class ListRemoteTagsCommand extends TransportCommand {
             }
         }
     }
+    
+    private void parseListRemoreTagsOutput(String output) {
+        //d280c8ec1a4f776a3ac00767029b444143586410	refs/tags/my-tag
+        //88c25ec82dfe40c92f6ea2dbad77e5ddd1cb77e0	refs/tags/my-tag^{}
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.indexOf('^') < 0) {
+                String[] s = line.split("\\s");
+                if (s.length >= 2) {
+                    String revision = s[0];
+                    String name = s[1];
+                    refs.add(new GitRef(name, revision));
+                }
+            }
+        }
+    }
+    
 }
