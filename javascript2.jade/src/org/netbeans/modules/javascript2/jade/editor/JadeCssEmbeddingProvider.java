@@ -70,7 +70,7 @@ public class JadeCssEmbeddingProvider extends EmbeddingProvider {
     
     private static final Logger LOGGER = Logger.getLogger(JadeCssEmbeddingProvider.class.getName());
     private static final String CSS_MIME_TYPE = "text/css"; //NOI18N
-    
+    private static final String STYLE_TAG_NAME = "script";     // NOI18N
     
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
@@ -98,7 +98,7 @@ public class JadeCssEmbeddingProvider extends EmbeddingProvider {
             }
             if (token.id() == JadeTokenId.PLAIN_TEXT_DELIMITER) {
                 // check whether there is not 
-                if ("style".equals(lastTag.text().toString().toLowerCase()) && ts.moveNext()) {
+                if (STYLE_TAG_NAME.equals(lastTag.text().toString().toLowerCase()) && ts.moveNext()) {
                     token = ts.token();
                     while (token.id() == JadeTokenId.EOL && ts.moveNext()) {
                         token = ts.token();

@@ -168,6 +168,7 @@ public final class CdnjsLibraries {
         }
 
         private void fireChange() {
+            cdnjsLibrariesChildren.refreshLibraries();
             changeSupport.fireChange();
         }
 
@@ -226,8 +227,11 @@ public final class CdnjsLibraries {
         }
 
         public boolean hasLibraries() {
-            refreshLibraries();
-            return getNodesCount() > 0;
+            return LibraryPersistence.getDefault().loadLibraries(project).length > 0;
+        }
+
+        public void refreshLibraries() {
+            setKeys();
         }
 
         @Override
@@ -237,7 +241,7 @@ public final class CdnjsLibraries {
 
         @Override
         protected void addNotify() {
-            refreshLibraries();
+            setKeys();
         }
 
         @Override
@@ -245,7 +249,7 @@ public final class CdnjsLibraries {
             setKeys(Collections.<Library.Version>emptyList());
         }
 
-        private void refreshLibraries() {
+        private void setKeys() {
             Library.Version[] libraries = LibraryPersistence.getDefault().loadLibraries(project);
             if (libraries.length == 0) {
                 setKeys(Collections.<Library.Version>emptyList());
