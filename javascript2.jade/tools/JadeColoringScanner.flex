@@ -705,11 +705,17 @@ UnbufferedComment = "//-"
 }
 
 <IN_FILTER_BLOCK>   {
-    .*                              { }
+    [#!]"{"                         {   yypushback(2);
+                                        yybegin(JAVASCRIPT_EXPRESSION);
+                                        whereToGo = IN_FILTER_BLOCK;
+                                        if (tokenLength > 2) {
+                                            return JadeTokenId.FILTER_TEXT;
+                                        }
+                                    }
     {LineTerminator}                {   yybegin(IN_FILTER_BLOCK_AFTER_EOL);
                                         eolPosition = tokenLength;
                                     }
-    
+    .                               {}
 }
 
 <IN_FILTER_BLOCK_AFTER_EOL> {
