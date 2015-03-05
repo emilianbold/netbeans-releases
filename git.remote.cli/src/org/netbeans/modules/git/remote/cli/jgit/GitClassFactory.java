@@ -59,6 +59,7 @@ import org.netbeans.modules.git.remote.cli.GitRevisionInfo.GitFileInfo;
 import org.netbeans.modules.git.remote.cli.GitStatus;
 import org.netbeans.modules.git.remote.cli.GitStatus.GitDiffEntry;
 import org.netbeans.modules.git.remote.cli.GitStatus.Status;
+import org.netbeans.modules.git.remote.cli.GitSubmoduleStatus;
 import org.netbeans.modules.git.remote.cli.GitTag;
 import org.netbeans.modules.git.remote.cli.GitTransportUpdate;
 import org.netbeans.modules.git.remote.cli.GitUser;
@@ -111,7 +112,7 @@ public abstract class GitClassFactory {
                 GitConflictDescriptor conflictDescriptor, boolean folder, GitDiffEntry diffEntry,
                 long indexEntryTimestamp);
     
-    //public abstract GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, VCSFileProxy folder);
+    public abstract GitSubmoduleStatus createSubmoduleStatus (GitSubmoduleStatus.StatusType status, VCSFileProxy folder);
 
     public abstract GitTag createTag (GitTag.TagContainer revTag);
 

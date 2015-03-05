@@ -42,9 +42,13 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitPushResult;
+import org.netbeans.modules.git.remote.cli.GitRefUpdateResult;
+import org.netbeans.modules.git.remote.cli.GitTransportUpdate;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
@@ -78,9 +82,13 @@ public class PushCommand extends TransportCommand {
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "push"); //NOI18N
-        addArgument(0, "-v"); //NOI18N
+        addArgument(0, "--porcelain"); //NOI18N
+        addArgument(0, "--thin"); //NOI18N
         addArgument(0, remote);
         for (String refSpec : pushRefSpecs) {
+            addArgument(0, refSpec);
+        }
+        for (String refSpec : fetchRefSpecs) {
             addArgument(0, refSpec);
         }
     }
@@ -92,12 +100,23 @@ public class PushCommand extends TransportCommand {
             monitor.setCancelDelegate(canceled);
         }
         try {
+            final Map<String, GitTransportUpdate> remoteRepositoryUpdates = new LinkedHashMap<>();
+            final Map<String, GitTransportUpdate> localRepositoryUpdates = new LinkedHashMap<>();
+            
             new Runner(canceled, 0){
 
                 @Override
                 public void outputParser(String output) throws GitException {
+                    parsePushOutput(output, remoteRepositoryUpdates, localRepositoryUpdates);
                 }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    System.err.println(error);
+                }
+                
             }.runCLI();
+            result = getClassFactory().createPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
@@ -108,4 +127,89 @@ public class PushCommand extends TransportCommand {
         }
     }
     
+    private void parsePushOutput(String output, Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
+        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/testPushNewBranch/repo
+        //*	refs/heads/master:refs/heads/master	[new branch]
+        //Done
+        //===================
+        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/pdb/repo
+        //*	refs/heads/master:refs/heads/master	[new branch]
+        //*	refs/heads/master:refs/heads/newbranch	[new branch]
+        //Done
+        //===================
+        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/testPushChange/repo
+        // 	refs/heads/master:refs/heads/master	18edcc3..2d8bb8b
+        //Done
+        //===================
+        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/puir/repo
+        // 	refs/heads/master:refs/heads/master	0b40a64..f716255
+        //*	refs/heads/master:refs/remotes/origin/master	[new branch]
+        //Done
+        //===================
+        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/pdb/repo
+        //-	:refs/heads/newbranch	[deleted]
+        //Done
+        String url = null;
+        for (String line : output.split("\n")) { //NOI18N
+            if (line.startsWith("To")) {
+                String[] s = line.split("\\s");
+                url = s[s.length-1];
+                continue;
+            }
+            if (line.startsWith("Done")) {
+                continue;
+            }
+            GitTransportUpdate.GitTransportUpdateContainer details = new GitTransportUpdate.GitTransportUpdateContainer();
+            switch(line.charAt(0)) {
+                case ' ':
+                    //successfully pushed fast-forward
+                    details.status = GitRefUpdateResult.OK;
+                    break;
+                case '+':
+                    //successful forced update
+                    details.status = GitRefUpdateResult.OK;
+                    break;
+                case '-':
+                    //successfully deleted ref
+                    details.status = GitRefUpdateResult.OK;
+                    break;
+                case '*':
+                    //successfully pushed new ref
+                    details.status = GitRefUpdateResult.OK;
+                    break;
+                case '!':
+                    //ref that was rejected or failed to push
+                    details.status = GitRefUpdateResult.REJECTED;
+                    break;
+                case '=':
+                    //ref that was up to date and did not need pushing
+                    details.status = GitRefUpdateResult.UP_TO_DATE;
+                    break;
+                default:
+                    continue;
+            }
+            String[] s = line.split("\t");
+            String spec = s[1];
+            int i = spec.indexOf(':');
+            if (i >= 0) {
+                String local = spec.substring(0, i);
+                String remote = spec.substring(i+1);
+                if (local.indexOf('/')>0) {
+                    details.localBranch = local.substring(local.lastIndexOf('/')+1);
+                } else {
+                    if (!local.isEmpty()) {
+                        details.localBranch = local;
+                    }
+                }
+                if (remote.indexOf('/')>0) {
+                    details.remoteBranch = remote.substring(remote.lastIndexOf('/')+1);
+                } else {
+                    details.remoteBranch = remote;
+                }
+                details.url = url;
+                details.type = GitTransportUpdate.getType(remote);
+                remoteRepositoryUpdates.put(details.remoteBranch, getClassFactory().createTransportUpdate(details));
+            }
+        }
+    }
 }

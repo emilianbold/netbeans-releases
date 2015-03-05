@@ -70,11 +70,11 @@ public class JGitConfig {
     public static final String CONFIG_KEY_MERGE = "merge";
     public static final String CONFIG_KEY_BARE = "bare";
     public static final String CONFIG_KEY_FF = "ff";
+    public static final String CONFIG_KEY_URL = "url"; //NOI18N
+    public static final String CONFIG_KEY_PUSHURL = "pushurl"; //NOI18N
+    public static final String CONFIG_KEY_FETCH = "fetch"; //NOI18N
+    public static final String CONFIG_KEY_PUSH = "push"; //NOI18N
     private static final String CONFIG_LOCATION = ".git/config";
-    public static final String KEY_URL = "url"; //NOI18N
-    public static final String KEY_PUSHURL = "pushurl"; //NOI18N
-    public static final String KEY_FETCH = "fetch"; //NOI18N
-    public static final String KEY_PUSH = "push"; //NOI18N
     
     private final TreeMap<SectionKey, TreeMap<String,String>> map = new TreeMap<>();
     private final VCSFileProxy location;

@@ -84,7 +84,7 @@ public class SubmoduleUpdateCommand extends TransportCommand {
                 public void outputParser(String output) throws GitException {
                 }
             }.runCLI();
-            statusCmd.run();
+            statusCmd.execute();
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {

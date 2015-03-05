@@ -49,6 +49,7 @@ import org.netbeans.modules.git.remote.cli.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -59,32 +60,22 @@ public class SubmoduleInitializeCommand extends GitCommand {
     
     private final VCSFileProxy[] roots;
     private final SubmoduleStatusCommand statusCmd;
+    private final ProgressMonitor monitor;
 
     public SubmoduleInitializeCommand (JGitRepository repository, GitClassFactory classFactory,
             VCSFileProxy[] roots, ProgressMonitor monitor) {
         super(repository, classFactory, monitor);
         this.roots = roots;
+        this.monitor = monitor;
         this.statusCmd = new SubmoduleStatusCommand(repository,
                     getClassFactory(), roots, new DelegatingGitProgressMonitor(monitor));
     }
 
-    @Override
-    protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
-//        Repository repository = getRepository().getRepository();
-//        VCSFileProxy workTree = getRepository().getLocation();
-//        org.eclipse.jgit.api.SubmoduleInitCommand cmd = new Git(repository).submoduleInit();
-//        for (String path : Utils.getRelativePaths(workTree, roots)) {
-//            cmd.addPath(path);
-//        }
-//        try {
-//            cmd.call();
-//            statusCmd.run();
-//        } catch (GitAPIException | JGitInternalException ex) {
-//            throw new GitException(ex);
-//        }
-    }
     
+    public Map<VCSFileProxy, GitSubmoduleStatus> getStatuses () {
+        return statusCmd.getStatuses();
+    }
+
     @Override
     protected void prepare() throws GitException {
         super.prepare();
@@ -93,8 +84,33 @@ public class SubmoduleInitializeCommand extends GitCommand {
         addFiles(0, roots);
     }
 
-    public Map<VCSFileProxy, GitSubmoduleStatus> getStatuses () {
-        return statusCmd.getStatuses();
+    @Override
+    protected void run () throws GitException {
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    System.err.println(error);
+                }
+                
+            }.runCLI();
+            statusCmd.execute();
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if (canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }
     }
-    
 }

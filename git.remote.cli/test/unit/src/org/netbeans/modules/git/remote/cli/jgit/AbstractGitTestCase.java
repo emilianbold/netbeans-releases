@@ -184,7 +184,7 @@ public class AbstractGitTestCase extends NbTestCase {
 //    }
 
     private void initializeRepository() throws Exception {
-        runExternally(repositoryLocation, Arrays.asList("init"));
+        runExternally(repositoryLocation, Arrays.asList("init", "--bare"));
         runExternally(wc.getParentFile(), Arrays.asList("clone", repositoryLocation.getPath(), wc.getName()));
 
         List<String> res = runExternally(wc.getParentFile(), Arrays.asList("config", "--global", "--get", "user.name"));
