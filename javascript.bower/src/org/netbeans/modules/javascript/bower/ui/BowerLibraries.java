@@ -168,6 +168,7 @@ public final class BowerLibraries {
         }
 
         private void fireChange() {
+            bowerLibrariesChildren.refreshDependencies();
             changeSupport.fireChange();
         }
 
@@ -233,10 +234,12 @@ public final class BowerLibraries {
         }
 
         public boolean hasDependencies() {
-            refreshDependencies();
-            return getNodesCount() > 0;
+            return !bowerJson.getDependencies().isEmpty();
         }
 
+        public void refreshDependencies() {
+            setKeys();
+        }
 
         @Override
         protected Node[] createNodes(BowerLibraryInfo key) {
@@ -246,7 +249,7 @@ public final class BowerLibraries {
         @NbBundle.Messages("BowerLibrariesChildren.library.dev=dev")
         @Override
         protected void addNotify() {
-            refreshDependencies();
+            setKeys();
         }
 
         @Override
@@ -255,7 +258,7 @@ public final class BowerLibraries {
         }
 
 
-        private void refreshDependencies() {
+        private void setKeys() {
             BowerJson.BowerDependencies dependencies = bowerJson.getDependencies();
             if (dependencies.isEmpty()) {
                 setKeys(Collections.<BowerLibraryInfo>emptyList());

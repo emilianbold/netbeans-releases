@@ -46,6 +46,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -106,6 +108,12 @@ public class CSSUpdater {
     synchronized void start(WebKitDebugging webKit, Project project) {
         assert webKit !=null : "webKit allready assigned"; // NOI18N
         this.webKit = webKit;
+        InetAddress localhost = null;
+        try {
+            localhost = WebUtils.getLocalhostInetAddress();
+        } catch (IllegalStateException isex) {
+            Logger.getLogger(CSSUpdater.class.getName()).log(Level.INFO, null, isex);
+        }
         for (StyleSheetHeader header : webKit.getCSS().getAllStyleSheets()) {
             try {
                 //need to convert file:///
@@ -118,13 +126,11 @@ public class CSSUpdater {
                         fobToSheetMap.put(fob, header);
                     }
                 }
-                
+
                 //TODO: hack to workaround #221791
-                if (WebUtils.getLocalhostInetAddress().equals(InetAddress.getByName(url.getHost()))) {
+                if (localhost != null && localhost.equals(InetAddress.getByName(url.getHost()))) {
                     sheetsMap.put(new URL(url.toExternalForm().replace(url.getHost(), "localhost")).toString(), header); // NOI18N
                 }
-                
-                
             } catch (IOException ex) {
                 //ignore unknown sheets
             }
