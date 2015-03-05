@@ -213,7 +213,11 @@ public class ParsingErrorsFilter {
             @Override
             public void run() {
                 //refresh Action Items for this file
-                IndexingManager.getDefault().refreshIndexAndWait(fo.getParent().toURL(),
+                FileObject parent = fo.getParent();
+                while(!parent.isRoot()) {
+                    parent = parent.getParent();
+                }
+                IndexingManager.getDefault().refreshIndexAndWait(parent.toURL(),
                         Collections.singleton(fo.toURL()), true, false);
             }
         });
