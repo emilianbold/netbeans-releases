@@ -110,12 +110,6 @@ public class RemoveCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                     parseRemoveOutput(output);
                 }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    System.err.println(error);
-                }
-                
             }.runCLI();
         } catch (GitException t) {
             throw t;

@@ -59,10 +59,12 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 public class InitRepositoryCommand extends GitCommand {
     private final VCSFileProxy workDir;
     private final ProgressMonitor monitor;
+    private final boolean isBare;
 
-    public InitRepositoryCommand (JGitRepository repository, GitClassFactory gitFactory, ProgressMonitor monitor) {
+    public InitRepositoryCommand (JGitRepository repository, GitClassFactory gitFactory, boolean isBare, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.monitor = monitor;
+        this.isBare = isBare;
         this.workDir = getRepository().getLocation();
     }
 
@@ -113,6 +115,9 @@ public class InitRepositoryCommand extends GitCommand {
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "init"); //NOI18N
+        if (isBare) {
+            addArgument(0, "--bare"); //NOI18N
+        }
         addArgument(0, workDir.getPath());
     }
 }

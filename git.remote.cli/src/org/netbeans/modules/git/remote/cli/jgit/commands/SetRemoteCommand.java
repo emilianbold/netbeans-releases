@@ -56,11 +56,6 @@ import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 public class SetRemoteCommand extends GitCommand {
     private final GitRemoteConfig remote;
     
-    private static final String KEY_URL = "url"; //NOI18N
-    private static final String KEY_PUSHURL = "pushurl"; //NOI18N
-    private static final String KEY_FETCH = "fetch"; //NOI18N
-    private static final String KEY_PUSH = "push"; //NOI18N
-    
     public SetRemoteCommand (JGitRepository repository, GitClassFactory gitFactory, GitRemoteConfig remoteConfig, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.remote = remoteConfig;
@@ -70,21 +65,21 @@ public class SetRemoteCommand extends GitCommand {
     protected void run () throws GitException {
         JGitConfig config = getRepository().getConfig();
         config.load();
-        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_URL);
-        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSHURL);
-        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_FETCH);
-        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSH);
+        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), JGitConfig.CONFIG_KEY_URL);
+        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), JGitConfig.CONFIG_KEY_PUSHURL);
+        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), JGitConfig.CONFIG_KEY_FETCH);
+        config.unset(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), JGitConfig.CONFIG_KEY_PUSH);
         for (String uri : remote.getUris()) {
-            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_URL, uri);
+            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), JGitConfig.CONFIG_KEY_URL, uri);
         }
         for (String uri : remote.getPushUris()) {
-            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSHURL, uri);
+            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), JGitConfig.CONFIG_KEY_PUSHURL, uri);
         }
         for (String spec : remote.getFetchRefSpecs()) {
-            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_FETCH, spec);
+            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), JGitConfig.CONFIG_KEY_FETCH, spec);
         }
         for (String spec : remote.getPushRefSpecs()) {
-            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSH, spec);
+            config.setString(JGitConfig.CONFIG_REMOTE_SECTION, remote.getRemoteName(), JGitConfig.CONFIG_KEY_PUSH, spec);
         }
         config.save();
     }

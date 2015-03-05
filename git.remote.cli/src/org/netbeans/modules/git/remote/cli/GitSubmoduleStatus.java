@@ -85,6 +85,12 @@ public final class GitSubmoduleStatus {
         this.statusType = StatusType.UNINITIALIZED; //parseStatus(delegate.getType());
     }
 
+    GitSubmoduleStatus (StatusType status, VCSFileProxy folder) {
+        //this.delegate = delegate;
+        this.folder = folder;
+        this.statusType = status;
+    }
+
     /**
      * Returns status of the submodule
      *
