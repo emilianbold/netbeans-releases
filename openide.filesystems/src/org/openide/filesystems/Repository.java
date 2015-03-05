@@ -57,9 +57,11 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.Callable;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import static org.openide.filesystems.FileSystem.LOG;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -176,6 +178,49 @@ public class Repository implements Serializable {
         p.registerLayers(urls);
         return urls;
     }
+    
+    /**
+     * Allows subclasses to accept layer contributions from {@link Repository.LayerProvider}s.
+     * Layer XMLs will be collected from locations specified in manifests accessible by the 
+     * passed ClassLoader, including generated layers.
+     * Finally {@link LayerProvider}s will be consulted to append their
+     * URLs to the list. If the passed classloader is {@code null}, the classloader which
+     * loaded the Repository class will be used.
+     * @param layerUrls out: collection which receives the URLs.
+     * @throws IOException propagated if some I/O error occurs.
+     * 
+     * @since 9.5
+     */
+    protected static final void provideLayers(ClassLoader l, List<URL> layerUrls) throws IOException {
+        if (l == null) {
+            l = Repository.class.getClassLoader();
+        }
+        for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
+            InputStream is = manifest.openStream();
+            try {
+                Manifest mani = new Manifest(is);
+                String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
+                if (layerLoc != null) {
+                    URL layer = l.getResource(layerLoc);
+                    if (layer != null) {
+                        layerUrls.add(layer);
+                    } else {
+                        LOG.warning("No such layer: " + layerLoc);
+                    }
+                }
+            } finally {
+                is.close();
+            }
+        }
+        for (URL generatedLayer : NbCollections.iterable(l.getResources("META-INF/generated-layer.xml"))) { // NOI18N
+            layerUrls.add(generatedLayer);
+        }
+        for (LayerProvider p : Lookup.getDefault().lookupAll(LayerProvider.class)) {
+            List<URL> newURLs = new ArrayList<URL>();
+            p.registerLayers(newURLs);
+            layerUrls.addAll(newURLs);
+        }
+    }
 
     private static final class MainFS extends MultiFileSystem implements LookupListener {
         private static final Lookup.Result<FileSystem> ALL = Lookup.getDefault().lookupResult(FileSystem.class);
@@ -190,45 +235,13 @@ public class Repository implements Serializable {
         final void refreshLayers() {
             List<URL> layerUrls = new ArrayList<URL>();
             try {
-                provideLayer(layerUrls);
+                provideLayers(Thread.currentThread().getContextClassLoader(), layerUrls);
                 layers.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
                 LOG.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
             } catch (Exception x) {
                 LOG.log(Level.WARNING, "Setting layer URLs: " + layerUrls, x);
             }
             resultChanged(null); // run after add listener - see PN1 in #26338
-        }
-
-        private void provideLayer(List<URL> layerUrls) throws IOException {
-            ClassLoader l = Thread.currentThread().getContextClassLoader();
-            if (l == null) {
-                l = Repository.class.getClassLoader();
-            }
-            for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
-                InputStream is = manifest.openStream();
-                try {
-                    Manifest mani = new Manifest(is);
-                    String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-                    if (layerLoc != null) {
-                        URL layer = l.getResource(layerLoc);
-                        if (layer != null) {
-                            layerUrls.add(layer);
-                        } else {
-                            LOG.warning("No such layer: " + layerLoc);
-                        }
-                    }
-                } finally {
-                    is.close();
-                }
-            }
-            for (URL generatedLayer : NbCollections.iterable(l.getResources("META-INF/generated-layer.xml"))) { // NOI18N
-                layerUrls.add(generatedLayer);
-            }
-            for (LayerProvider p : Lookup.getDefault().lookupAll(LayerProvider.class)) {
-                List<URL> newURLs = new ArrayList<URL>();
-                p.registerLayers(newURLs);
-                layerUrls.addAll(newURLs);
-            }
         }
 
         private static FileSystem[] computeDelegates() {
@@ -344,41 +357,74 @@ public class Repository implements Serializable {
      * The instance is either taken as a result of
      * <CODE>org.openide.util.Lookup.getDefault ().lookup (Repository.class)</CODE>
      * or (if the lookup query returns null) a default instance is created.
-     *
+     * <p/>
+     * In a contextual environment, the method remembers the result of the default Lookup
+     * query, and will return the same instance as a system-wide Repository instance.
+     * Instances provided by <code>Lookup.getDefault().lookup(Repository.class)</code> may vary
+     * depending on the Lookup's implementation and context - be aware that multiple Repository
+     * instances may exist, possibly one for each contextual Lookup craeted.
+     * <p/>
+     * 
      * @return default repository for the system
+     * @since 9.5 support for multiple contexts
      */
     public static Repository getDefault() {
-        Lookup lkp = Lookup.getDefault();
+        final Lookup lkp = Lookup.getDefault();
 
         synchronized (Repository.class) {
             if (repository != null) {
                 return repository;
             }
         }
-        FileSystem[] previous = ADD_FS.get();
         try {
-            FileSystem[] addLater = new FileSystem[1];
-            ADD_FS.set(addLater);
-            Repository newRepo = lkp.lookup(Repository.class);
-            if (newRepo == null) {
-                // if not provided use default one
-                newRepo = new Repository(new MainFS());
-            }
-            synchronized (newRepo) {
-                if (addLater[0] instanceof FileSystem) {
-                    newRepo.addFileSystemImpl(addLater[0]);
+            Repository newRepo = delayFileSystemAttachImpl(new Callable<Repository>() {
+                public Repository call() throws Exception {
+                    Repository r = lkp.lookup(Repository.class);
+                    if (r == null) {
+                        // if not provided use default one
+                        r = new Repository(new MainFS());
+                    }
+                    return r;
                 }
-            }
+            });
             synchronized (Repository.class) {
                 if (repository == null) {
                     repository = newRepo;
                 }
                 return repository;
             }
-        } finally {
-            ADD_FS.set(previous);
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
         }
     }
+    
+    /**
+     * Provides a safe initialization for repository in a context Lookup.
+     * Because of delayed FS initialization guarded by {@link #ADD_FS}, it's not safe
+     * to directly lookup Repository.class in the default Lookup; if an instance does not
+     * exist yet and will be created within the lookup() call, it would obscure possible 
+     * existing ADD_FS value. In fact, the Repository instance <b>is usually instantiated twice</b>,
+     * because ctor initialization indirectly invokes Repository.getDefault(), resulting in another
+     * initialization.
+     * 
+     * @return Repository instance
+     */
+    /* package private */ static Repository getLocalRepository() {
+        Lookup lkp = Lookup.getDefault();
+        
+        LocalProvider lp = lkp.lookup(LocalProvider.class);
+        Repository repo = null;
+        if (lp != null) {
+            try {
+                repo = lp.getRepository();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return repo != null ? repo : getDefault();
+    }
+    
+    
     static synchronized void reset() {
         repository = null;
     }
@@ -920,6 +966,75 @@ public class Repository implements Serializable {
         /** @return the default pool */
         public Object readResolve() {
             return getDefault();
+        }
+    }
+    
+    private static Repository delayFileSystemAttachImpl(Callable<Repository> init) throws IOException {
+        FileSystem[] previous = ADD_FS.get();
+        try {
+            FileSystem[] addLater = new FileSystem[1];
+            ADD_FS.set(addLater);
+            Repository newRepo = init.call();
+            if (newRepo == null) {
+                return null;
+            }
+            synchronized (newRepo) {
+                if (addLater[0] instanceof FileSystem) {
+                    newRepo.addFileSystemImpl(addLater[0]);
+                }
+            }
+            return newRepo;
+        } catch (IOException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        } finally {
+            ADD_FS.set(previous);
+        }
+    }
+    
+    /**
+     * Provides local repositories, depending on the current execution environment.
+     * The caller may use {@link Lookup#executeWith} to temporarily modify the default
+     * Lookup contents and route Repository requests to a Repository private to some task. The
+     * {@code LocalProvider} is responsible for caching and lifecycle of the Repository instance;
+     * it can expire the Repository if the Provider's execution context terminates. Implementations
+     * must be prepared to handle requests for Repository already shutdown etc.
+     * <p/>
+     * @since 9.5
+     */
+    public static abstract class LocalProvider {
+        /**
+         * Returns the local repository instance. The method can return {@code null} to indicate
+         * the main Repository should be used. The method <b>must</b> return the very same instance
+         * of Repository for the whole duration of the execution context. It must return the same 
+         * Repository instance even after the execution context shuts down; the contents of Repository and
+         * its FileSystems may be limited in that case.
+         * <p/>
+         * Implementations must be reentrant (a call to {@link #getLocalRepository} can be made during 
+         * construction of the Repository instance) and must not recurse infinitely.
+         * 
+         * @return local repository instance.
+         */
+        public abstract Repository  getRepository() throws IOException;
+
+        /**
+         * Allows to delay attaching filesystems to the Repository. For backwards compatibility, the Repository
+         * constructor still takes the default FileSystem instance. However it is better to actually publish the
+         * FileSystem in the repository only after it is registered, and can be obtained using {@link #getDefault()} or
+         * {@link #getLocalRepository()}.
+         * <p/>
+         * This method wraps the Repository creation so that the default FileSystem is attached after the repository
+         * is fully constructed. The `init' callable must create a new Repository instance.
+         * This method will then add the default FS for newly created repository instances.
+         * 
+         * @param init Callable which produces a new Repository instance or {@code null} to abort creation
+         * @return new Repository instance or {@code null}, if no instance was created.
+         * @throws IOException if the Callable fails. All exceptions are wrapped into {@link IOException}.
+         */
+        protected final Repository delayFilesystemAttach(Callable<Repository> init) throws IOException {
+            // just a trampoline to the real implementation
+            return delayFileSystemAttachImpl(init);
         }
     }
 }

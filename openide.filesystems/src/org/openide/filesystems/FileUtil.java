@@ -2126,15 +2126,49 @@ public final class FileUtil extends Object {
      * If you wish to create the file/folder when it does not already exist,
      * start with {@link #getConfigRoot} and use {@link #createData(FileObject, String)}
      * or {@link #createFolder(FileObject, String)} methods.
+     * <p/>
+     * In environment with multiple contextual Lookups, the method may return different FileObject depending
+     * on what Lookup serves the executing thread. If the system-wide (user-independent) configuration
+     * is required instead, {@link #getSystemConfigFile} should be called instead. If an service instance is created based
+     * on the configuration, it is important to decide whether the service instance should live for each context
+     * independently (possibly with some private means of communication between instances/users) or all users
+     * should share the same instance. In the later case, {@link #getSystemConfigFile} must be used.
+     * 
      * @param path the path from the root of the NetBeans default (system, configuration)
      * filesystem delimited by '/' or empty string to get root folder.
      * @throws NullPointerException if the path is {@code null}
      * @return a {@code FileObject} for given path in the NetBeans default (system, configuration)
      * filesystem or {@code null} if does not exist
+     * 
      * @since org.openide.filesystems 7.19
+     * @since 9.5 support for multiuser environment
      */
     @SuppressWarnings("deprecation")
     public static FileObject getConfigFile(String path) {
+        Parameters.notNull("path", path);  //NOI18N
+        Repository repo = Repository.getLocalRepository();
+        return (repo != null ? repo : Repository.getDefault()).getDefaultFileSystem().findResource(path);
+    }
+   
+    /**
+     * Returns {@code FileObject} from the default filesystem, or {@code null} if the file does not exist.
+     * Unlike {@link #getConfigFile}, this call returns a FileObject from the system-wide configuration.
+     * Because default/config filesystem is used both for configuration and services, Lookup or service providers
+     * should use this method in preference to {@link #getConfigFile} to produce singleton services even
+     * in multiple context environment.
+     * <p/>
+     * With the default Lookup implementation, behaviour of {@code getSystemConfigFile} and {@link #getConfigFile}
+     * is identical.
+     * 
+     * @param path the path from the root of the NetBeans default (system, configuration)
+     * filesystem delimited by '/' or empty string to get root folder.
+     * @throws NullPointerException if the path is {@code null}
+     * @return a {@code FileObject} for given path in the NetBeans default (system, configuration)
+     * filesystem or {@code null} if does not exist
+     * @since 9.5
+     */
+    @SuppressWarnings("deprecation")
+    public static FileObject getSystemConfigFile(String path) {
         Parameters.notNull("path", path);  //NOI18N
         return Repository.getDefault().getDefaultFileSystem().findResource(path);
     }
@@ -2145,10 +2179,17 @@ public final class FileUtil extends Object {
      * Actions/Edit/org-openide-actions-CopyAction.instance
      * Services/Browsers/swing-browser.settings
      * </pre>
-     * @param filePath path to .instance or .settings file
+     * <p/>
+     * In multi-user setup, this method returns instance specific for the executing user.
+     * <b>Important<b>: it returns user-specific instance even though the object is configured in
+     * a XML layer, or system-wide configuration; still, the instance will be tied to the user-specific
+     * file as served by {@link #getConfigFile}.
+     * 
+     * @param path path to .instance or .settings file
      * @param type the requested type for given object
      * @return either null or instance of requrested type
      * @since 7.49 
+     * @since 9.5 support for multi-user environment
      */
     public static <T> T getConfigObject(String path, Class<T> type) {
         FileObject fo = getConfigFile(path);
@@ -2157,16 +2198,52 @@ public final class FileUtil extends Object {
         }
         return NamedServicesProvider.getConfigObject(path, type);
     }
+    
+    /**
+     * Finds a config object under the given path, in system-wide configuration.
+     * In the default implementation, this method works just as {@link #getConfigObject}. In
+     * multi-user setups, this method should return an instance <b>shared</b> between
+     * potential users; in a sense, it works as {@link #getConfigObject} prior version 9.5
+     * 
+     * @param path path to .instance or .settings file
+     * @param type the requested type for given object
+     * @return either null or instance of requrested type
+     * @since 9.5
+     */
+    public static <T> T getSystemConfigObject(String path, Class<T> type) {
+        FileObject fo = getSystemConfigFile(path);
+        if (fo == null || fo.isFolder()) {
+            return null;
+        }
+        return NamedServicesProvider.getConfigObject(path, type);
+    }
 
     /**
      * Returns the root of the NetBeans default (system, configuration)
-     * filesystem.
+     * filesystem. It returns configuration root using the current Repository, in the case
+     * that multiple Repository instances are created to support multiple execution contexts
+     * in the same JVM.
+     * 
      * @return a {@code FileObject} for the root of the NetBeans default (system, configuration)
      * filesystem
      * @since org.openide.filesystems 7.19
+     * @since 9.5 support for multiple local contexts
      */
     public static FileObject getConfigRoot() {
         return getConfigFile("");  //NOI18N
+    }
+    
+    /**
+     * Returns the root of the NetBeans default (system, configuration)
+     * filesystem. Unlike {@link #getConfigRoot}, this method always provides the 
+     * system-wide configuration root.
+     * 
+     * @return a {@code FileObject} for the root of the NetBeans default (system, configuration)
+     * filesystem
+     * @since 9.5
+     */
+    public static FileObject getSystemConfigRoot() {
+        return getSystemConfigFile("");
     }
 
     private static File wrapFileNoCanonicalize(File f) {

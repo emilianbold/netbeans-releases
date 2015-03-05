@@ -598,6 +598,32 @@ public class FileUtilTest extends NbTestCase {
             // OK
         }
     }
+    
+      public void testGetLocalConfigFile() throws IOException {
+            final FileSystem memFS = new MemoryFileSystem();
+            
+            // the local repo does not delegate to the default one, for simplicity.
+            MockLookup.setInstances(
+                  new Repository.LocalProvider() {
+                        @Override
+                        public Repository getRepository() throws IOException {
+                              return new Repository(memFS);
+                        }
+                  }
+            );
+            FileObject rootLFS = memFS.getRoot();
+            FileObject rootDFS = Repository.getDefault().getDefaultFileSystem().getRoot();
+            // folder1 is created by other test, stored in static MemoryFS variable.
+            assertNotNull("Sample FileObject not created.", rootDFS.createFolder("folder3").createFolder("folder4").createData("file.ext"));
+
+            rootLFS.createFolder("folderA").createFolder("folderB").createData("foo.bar");
+
+            assertNull("Global file is not visible as local config", FileUtil.getConfigFile("folder3"));
+            assertNull("Local file not visible in global repo", rootDFS.getFileObject("folderA"));
+            
+            assertNotNull("Configuration is found locally", FileUtil.getConfigFile("folderA"));
+            assertNotNull("Global configuration is accessible", FileUtil.getSystemConfigFile("folder3"));
+      }
 
     /** Tests that refreshAll runs just once in time (see #170556). */
     public void testRefreshConcurrency() throws Exception {
