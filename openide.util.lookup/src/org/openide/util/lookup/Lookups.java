@@ -285,10 +285,19 @@ public class Lookups {
      * of {@link Lookup#getDefault()} to here-in provided lookup. Useful in a
      * multi user environment where different users and their requests should
      * be associated with different content of default lookup.
+     * <p/>
+     * As a special case, {@code executeWith} will execute the Runnable with
+     * the system global lookup (the one effective during system bootstrap), when
+     * the passed {@code defaultLookup} parameter is {@code null}. This feature may
+     * be useful to switch from a specialized Lookup back to a default one for
+     * some limited processing, or when the caller needs to bypass potential
+     * execution-local content temporary effective in the default Lookup and
+     * work with system-wide services only.
      * 
      * @param defaultLookup the lookup to be come default while code is running
      * @param code the code to execute (synchronously) before the method returns
      * @since 8.30
+     * @since 8.31 can delegate to the system Lookup
      */
     public static void executeWith(Lookup defaultLookup, Runnable code) {
         if (!GlobalLookup.execute(defaultLookup, code)) {
