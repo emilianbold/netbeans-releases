@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
@@ -66,9 +69,55 @@ public class SetUpstreamBranchCommand extends GitCommand {
         this.monitor = monitor;
     }
 
+    public GitBranch getTrackingBranch () {
+        return branch;
+    }
+    
+    @Override
+    protected void prepare() throws GitException {
+        setCommandsNumber(2);
+        super.prepare();
+        addArgument(0, "branch"); //NOI18N
+        addArgument(0, "--set-upstream"); //NOI18N
+        addArgument(0, trackedBranchName);
+        addArgument(0, localBranchName);
+
+        addArgument(1, "branch"); //NOI18N
+        addArgument(1, "-vv"); //NOI18N
+        addArgument(1, "--all"); //NOI18N
+    }
+    
     @Override
     protected void run () throws GitException {
-        throw new GitException.UnsupportedCommandException();
+        ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+        if (monitor != null) {
+            monitor.setCancelDelegate(canceled);
+        }
+        try {
+            new Runner(canceled, 0){
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                }
+                
+            }.runCLI();
+            final Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
+            new Runner(canceled, 1) {
+
+                @Override
+                public void outputParser(String output) throws GitException {
+                    ListBranchCommand.parseBranches(output, getClassFactory(), branches);
+                }
+            }.runCLI();
+            branch = branches.get(localBranchName);
+        } catch (GitException t) {
+            throw t;
+        } catch (Throwable t) {
+            if(canceled.canceled()) {
+            } else {
+                throw new GitException(t);
+            }
+        }        
 //        Repository repository = getRepository().getRepository();
 //        
 //        try {
@@ -107,16 +156,4 @@ public class SetUpstreamBranchCommand extends GitCommand {
 //        branch = branches.get(localBranchName);
     }
     
-    @Override
-    protected void prepare() throws GitException {
-        super.prepare();
-        addArgument(0, "branch"); //NOI18N
-        addArgument(0, "--set-upstream-to"); //NOI18N
-        addArgument(0, trackedBranchName);
-        addArgument(0, localBranchName);
-    }
-    
-    public GitBranch getTrackingBranch () {
-        return branch;
-    }
 }
