@@ -2855,6 +2855,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     case PARAMETER:
                         return startsWith(env, e.getSimpleName().toString()) && 
                                     (method == e.getEnclosingElement() ||
+                                    e.getModifiers().contains(Modifier.FINAL) ||
                                     env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && eu.isEffectivelyFinal((VariableElement)e)
                                 || (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT
                                 || e.getEnclosingElement().getKind() == STATIC_INIT
