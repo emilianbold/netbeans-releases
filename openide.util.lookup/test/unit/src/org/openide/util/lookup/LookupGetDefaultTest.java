@@ -67,4 +67,29 @@ public class LookupGetDefaultTest extends NbTestCase {
         assertTrue("In my lookup code executed OK", ok[0]);
         assertEquals("Current lookup back to normal", prev, Lookup.getDefault());
     }
+
+
+    public void testCanAccessGlobalLookup() throws Exception {
+        final Lookup prev = Lookup.getDefault();
+        final Lookup my = new AbstractLookup();
+        final Thread myThread = Thread.currentThread();
+        final boolean[] ok = { false };
+        
+        Lookups.executeWith(my, new Runnable() {
+            @Override
+            public void run() {
+                assertSame("Default lookup has been changed", my, Lookup.getDefault());
+                assertSame("We are being executed in the same thread", myThread, Thread.currentThread());
+                ok[0] = true;
+                
+                Lookups.executeWith(null, new Runnable() {
+                   public void run() {
+                         assertSame("Running again with default Lookup", prev, Lookup.getDefault());
+                   }   
+                });
+            }
+        });
+        assertTrue("In my lookup code executed OK", ok[0]);
+        assertEquals("Current lookup back to normal", prev, Lookup.getDefault());
+    }
 }
