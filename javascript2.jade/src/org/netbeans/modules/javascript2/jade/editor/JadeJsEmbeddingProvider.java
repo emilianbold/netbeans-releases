@@ -68,6 +68,9 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
     private static final Logger LOGGER = Logger.getLogger(JadeJsEmbeddingProvider.class.getName());
     private static final String JS_MIME_TYPE = "text/javascript"; //NOI18N
     
+    private static final String ADD_EOL = ";\n"; //NOI18N
+    private static final String SCRIPT_TAG_NAME = "script";     // NOI18N
+    
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
@@ -99,7 +102,7 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
             } else {
                 if (from >= 0) {
                     embeddings.add(snapshot.create(from, len, JS_MIME_TYPE));
-                    embeddings.add(snapshot.create(";\n", JS_MIME_TYPE));
+                    embeddings.add(snapshot.create(ADD_EOL, JS_MIME_TYPE));
                 }
                 from = -1;
                 len = 0;
@@ -109,7 +112,7 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
             }
             if (token.id() == JadeTokenId.PLAIN_TEXT_DELIMITER) {
                 // check whether there is not 
-                if ("script".equals(lastTag.text().toString().toLowerCase()) && ts.moveNext()) {
+                if (SCRIPT_TAG_NAME.equals(lastTag.text().toString().toLowerCase()) && ts.moveNext()) {
                     token = ts.token();
                     while (token.id() == JadeTokenId.EOL && ts.moveNext()) {
                         token = ts.token();
