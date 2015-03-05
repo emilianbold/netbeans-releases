@@ -169,7 +169,7 @@ public class CommentHandlerService implements CommentHandler {
                         if (copied != null && !copied.add(c)) {
                             continue;
                         }
-                        to.addComment(copyToPos == null ? pos : copyToPos, c, true);
+                        to.addComment(copyToPos == null ? pos : copyToPos, c);
                     }
                 }
             }

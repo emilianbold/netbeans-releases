@@ -355,9 +355,8 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                         return;
                                 }
                                 if (!stats.isEmpty()) {
-                                    int i = 0;
                                     for (Comment comment : tu.getComments(tree, true)) {
-                                        tm.insertComment(stats.get(0), comment, i++, true);
+                                        tm.addComment(stats.get(0), comment, true);
                                     }
                                     if (trailingComments == null) {
                                         trailingComments = tu.getComments(tree, false);

@@ -470,6 +470,8 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             if (t.getKind() == Kind.ARRAY_TYPE) {
                 return false;//XXX #197584: C-like array are cannot be copied as old trees.
             }
+            CommentSet cs = commentHandler.getComments(t);
+            if (cs.hasChanges()) return false;
         }
         
         if (toPrint.size() > 1) {

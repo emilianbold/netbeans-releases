@@ -136,14 +136,24 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
     }
 
     /**
-     * Adds a comment. Comment is always appended at the end, except when the comment has been already added
-     * to the comment set at the same relative position. Duplicate additions are ignored.
+     * Adds a comment. Duplicate additions are ignored.
      * 
      * @param positioning relative positioning of the comment in the comment set
      * @param c the comment instance
      */
     public void addComment(RelativePosition positioning, Comment c) {
-        addComment(positioning, c, false);
+        addComment(positioning, c, -1);
+    }
+
+    /**
+     * Inserts a comment to the specified index. Duplicate additions are ignored.
+     * 
+     * @param positioning relative positioning of the comment in the comment set
+     * @param c the comment instance
+     * @param index -1 to add comment to the end or index at which the comment should be added
+     */
+    public void insertComment(RelativePosition positioning, Comment c, int index) {
+        addComment(positioning, c, index);
     }
     
     /**
@@ -165,9 +175,9 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
      * 
      * @param positioning relative positioning of the comment in the comment set
      * @param c the comment instance
-     * @param mergeExisting if true, the comment is sorted in. False will always append the comment.
+     * @param index
      */
-    public void addComment(RelativePosition positioning, Comment c, boolean mergeExisting) {
+    public void addComment(RelativePosition positioning, Comment c, int index) {
         Map<RelativePosition, List<Comment>> orig = null;
         if (trackFirstChange()) {
             orig = getOrigMap();
@@ -183,30 +193,28 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
         if (c.isNew()) {
             comments.add(c);
         } else {
-            int index = 0;
-            int npos = c.pos();
-            for (Comment o : comments) {
-                if (o.isNew()) {
-                    comments.add(c);
-                    break;
-                } else {
-                    int pos = o.pos();
-                    if (pos > npos) {
+            if (index < 0) {
+                index = 0;
+                int npos = c.pos();
+                for (Comment o : comments) {
+                    if (o.isNew()) {
+                        comments.add(c);
                         break;
-                    } else if (pos == npos) {
-                        if (c == o) {
-                            // the same comment is being copied again; ignore.
-                            return;
+                    } else {
+                        int pos = o.pos();
+                        if (pos > npos) {
+                            break;
+                        } else if (pos == npos) {
+                            if (c == o) {
+                                // the same comment is being copied again; ignore.
+                                return;
+                            }
                         }
                     }
+                    index++;
                 }
-                index++;
             }
-            if (mergeExisting) {
-                comments.add(index, c);
-            } else {
-                comments.add(c);
-            }
+            comments.add(index, c);
         }
         if (orig != null) {
             origMap = orig;
@@ -216,7 +224,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
 
     public void addComments(RelativePosition positioning, Iterable<? extends Comment> comments) {
         for (Comment c : comments) {
-            addComment(positioning, c, true);
+            addComment(positioning, c);
         }
     }
     
