@@ -171,6 +171,7 @@ public final class NpmLibraries {
         }
 
         private void fireChange() {
+            npmLibrariesChildren.refreshDependencies();
             changeSupport.fireChange();
         }
 
@@ -240,10 +241,12 @@ public final class NpmLibraries {
         }
 
         public boolean hasDependencies() {
-            refreshDependencies();
-            return getNodesCount() > 0;
+            return !packageJson.getDependencies().isEmpty();
         }
 
+        public void refreshDependencies() {
+            setKeys();
+        }
 
         @Override
         protected Node[] createNodes(NpmLibraryInfo key) {
@@ -257,7 +260,7 @@ public final class NpmLibraries {
         })
         @Override
         protected void addNotify() {
-            refreshDependencies();
+            setKeys();
         }
 
         @Override
@@ -266,7 +269,7 @@ public final class NpmLibraries {
         }
 
 
-        private void refreshDependencies() {
+        private void setKeys() {
             PackageJson.NpmDependencies dependencies = packageJson.getDependencies();
             if (dependencies.isEmpty()) {
                 setKeys(Collections.<NpmLibraryInfo>emptyList());
