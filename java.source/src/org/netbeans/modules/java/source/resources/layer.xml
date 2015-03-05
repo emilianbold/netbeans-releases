@@ -267,12 +267,4 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="OptionsExport">
-        <folder name="Formatting">
-            <file name="Java">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.java.source.resources.Bundle#Editor.Export.Formatting.Java.displayName"/>
-                <attr name="include" stringvalue="config/Editors/text/x-java/Preferences/org-netbeans-modules-editor-settings-CustomPreferences.xml"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>
