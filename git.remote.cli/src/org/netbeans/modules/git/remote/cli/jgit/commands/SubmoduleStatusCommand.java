@@ -95,12 +95,6 @@ public class SubmoduleStatusCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                     parseStatusOutput(output);
                 }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    System.err.println(error);
-                }
-                
             }.runCLI();
         } catch (GitException t) {
             throw t;

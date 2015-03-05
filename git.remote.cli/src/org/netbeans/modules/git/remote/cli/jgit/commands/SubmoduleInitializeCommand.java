@@ -96,12 +96,6 @@ public class SubmoduleInitializeCommand extends GitCommand {
                 @Override
                 public void outputParser(String output) throws GitException {
                 }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    System.err.println(error);
-                }
-                
             }.runCLI();
             statusCmd.execute();
         } catch (GitException t) {

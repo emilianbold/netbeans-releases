@@ -109,12 +109,6 @@ public class PushCommand extends TransportCommand {
                 public void outputParser(String output) throws GitException {
                     parsePushOutput(output, remoteRepositoryUpdates, localRepositoryUpdates);
                 }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    System.err.println(error);
-                }
-                
             }.runCLI();
             result = getClassFactory().createPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
         } catch (GitException t) {
