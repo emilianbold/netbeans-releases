@@ -48,12 +48,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +70,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -113,11 +116,15 @@ import org.openide.util.Union2;
 public class JavadocHelper {
 
     private static final Logger LOG = Logger.getLogger(JavadocHelper.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(JavadocHelper.class.getName(),1);
+    private static final RequestProcessor RP = new RequestProcessor(JavadocHelper.class.getName(),10);
+    private static final int DEFAULT_REMOTE_CONNECTION_TIMEOUT = 30;   //30s
     private static final int DEFAULT_REMOTE_FILE_CONTENT_CACHE_SIZE = 50;
     private static final int REMOTE_FILE_CONTENT_CACHE_SIZE = Integer.getInteger(
         "JavadocHelper.remoteCache.size",   //NOI18N
         DEFAULT_REMOTE_FILE_CONTENT_CACHE_SIZE);
+    private static final int REMOTE_CONNECTION_TIMEOUT = Integer.getInteger(
+        "JavadocHelper.remote.timeOut",   //NOI18N
+        DEFAULT_REMOTE_CONNECTION_TIMEOUT) * 1000;
 
     /**
      * Remote Javadoc handling policy.
@@ -393,7 +400,7 @@ public class JavadocHelper {
      * @return its input stream
      * @throws IOException for the usual reasons
      */
-    public static InputStream openStream(URL url) throws IOException {
+    private static InputStream openStream(URL url) throws IOException {
         if (url.getProtocol().equals("jar")) { // NOI18N
             FileObject f = URLMapper.findFileObject(url);
             if (f != null) {
@@ -403,7 +410,9 @@ public class JavadocHelper {
         if (isRemote(url)) {
             LOG.log(Level.FINE, "opening network stream: {0}", url);
         }
-        return url.openStream();
+        final URLConnection c = url.openConnection();
+        c.setConnectTimeout(REMOTE_CONNECTION_TIMEOUT);
+        return c.getInputStream();
     }
 
     /**
@@ -616,8 +625,16 @@ public class JavadocHelper {
                 } while (true);
             } catch (RemoteJavadocException rje) {
                 throw rje;
-            }catch (Exception e) {
-                LOG.log(Level.INFO, null, e);
+            } catch (Exception e) {
+                if (e instanceof InterruptedException ||
+                   (e instanceof ExecutionException && ((ExecutionException)e).getCause() instanceof InterruptedException)) {
+                    LOG.log(
+                        Level.INFO,
+                        "The HTTP Javadoc timeout expired ({0}s), to increase the timeout set the JavadocHelper.remote.timeOut property.",
+                        (REMOTE_CONNECTION_TIMEOUT/1000));
+                } else {
+                    LOG.log(Level.INFO, null, e);
+                }
             }
         }
         return Collections.emptyList();
@@ -630,7 +647,7 @@ public class JavadocHelper {
             @NonNull final String pkgName,
             @NonNull final String pageName,
             @NonNull final Collection<? extends CharSequence> fragment,
-            @NonNull final RemoteJavadocPolicy remoteJavadocPolicy) throws RemoteJavadocException {
+            @NonNull final RemoteJavadocPolicy remoteJavadocPolicy) throws RemoteJavadocException, InterruptedException {
         final List<TextStream> resList = new ArrayList<>();
         URL sourceRoot = null;
         Set<URL> binaries = new HashSet<URL>();
@@ -723,6 +740,8 @@ binRoots:   for (URL binary : binaries) {
                                 knownGoodRoots.add(rootS);
                                 LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);
                             }
+                        } catch (InterruptedIOException iioe) {
+                            throw new InterruptedException();
                         } catch (IOException x) {
                             LOG.log(Level.FINE, "invalid Javadoc stream at {0}: {1}", new Object[] {url, x});
                             continue;
