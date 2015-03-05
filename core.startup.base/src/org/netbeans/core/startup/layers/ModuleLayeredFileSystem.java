@@ -44,6 +44,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import org.netbeans.core.startup.base.LayerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -54,9 +55,6 @@ import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.startup.Main;
-import org.netbeans.core.startup.NbRepository;
-import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -88,7 +86,7 @@ implements LookupListener {
     private List<URL> urls;
     private List<URL> prevs;
     /** cache manager */
-    private LayerCacheManager manager;
+    private LayerFactory manager;
     /** writable layer */
     private final FileSystem writableLayer;
     /** cache layer */
@@ -97,22 +95,28 @@ implements LookupListener {
     private final FileSystem[] otherLayers;
     /** addLookup */
     private final boolean addLookupBefore;
+    
+    private final boolean user;
+    
+    ModuleLayeredFileSystem(FileSystem writableLayer, boolean userDir, FileSystem[] extras, LayerFactory factory) throws IOException {
+        this(writableLayer, userDir, extras, factory, factory.loadCache());
+    }
 
     /** Create layered filesystem based on a supplied writable layer.
      * @param userDir is this layer for modules from userdir or not?
      * @param writableLayer the writable layer to use, typically a LocalFileSystem
      * @param otherLayers some other layers to use, e.g. LocalFileSystem[]
      * @param cacheDir a directory in which to store a cache, or null for no caching
-     */
     ModuleLayeredFileSystem (FileSystem writableLayer, boolean userDir, FileSystem[] otherLayers, boolean mgr) throws IOException {
         this(writableLayer, userDir, otherLayers, LayerCacheManager.manager(mgr));
     }
     
-    private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr) throws IOException {
+    private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerFactory mgr) throws IOException {
         this(writableLayer, addLookup, otherLayers, mgr, mgr.loadCache());
     }
+     */
     
-    private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr, FileSystem cacheLayer) throws IOException {
+    private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerFactory mgr, FileSystem cacheLayer) throws IOException {
         super(
             appendLayers(
                 writableLayer, addLookup, otherLayers,
@@ -136,6 +140,8 @@ implements LookupListener {
 
         fsResult.addLookupListener(this);
         layerResult.addLookupListener(this);
+        
+        user = addLookup;
     }
     
     private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookupBefore, FileSystem[] fs2s, FileSystem fs3, boolean addClasspathLayers) {
@@ -242,14 +248,13 @@ implements LookupListener {
         }
         List<URL> orig = urls;
         if (this == ModuleLayeredFileSystem.getInstallationModuleLayer()) {
-            urls = ((NbRepository)NbRepository.getDefault()).additionalLayers(urls);
+            urls = manager.additionalLayers(urls);
         }
         if (this.urls != null && urls.equals(this.urls)) {
             err.fine("no-op");
             return;
         }
         
-        StartLog.logStart("setURLs"); // NOI18N
         if (this.urls == null && cacheLayer != null) {
             // start where the BinaryFS was used to initialize the content
         } else {
@@ -265,8 +270,6 @@ implements LookupListener {
         this.urls = urls;
         this.prevs = orig;
         firePropertyChange ("layers", null, null); // NOI18N
-        
-        StartLog.logEnd("setURLs"); // NOI18N
     }
     
     /** Adds few URLs.

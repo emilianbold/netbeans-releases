@@ -55,7 +55,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -85,7 +85,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
                         try {
                             flushSpi();
                         } catch (BackingStoreException ex) {
-                            ErrorManager.getDefault().notify(ex);
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }
@@ -94,7 +94,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
     },true);
     
     
-    static Preferences userRootImpl() {
+    public static Preferences userRootImpl() {
         if (USER_ROOT == null) {
             USER_ROOT = new NbPreferences.UserPreferences();
         }
@@ -102,7 +102,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
         return USER_ROOT;
     }
     
-    static Preferences systemRootImpl() {
+    public static Preferences systemRootImpl() {
         if (SYSTEM_ROOT == null) {
             SYSTEM_ROOT = new NbPreferences.SystemPreferences();
         }
@@ -267,7 +267,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
             try {
                 putAllProperties(fileStorage.load(), false);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return properties;
@@ -381,7 +381,8 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
 
         @Override
         protected NbPreferences.FileStorage getFileStorage(String absolutePath) {
-            return PropertiesStorage.instance(absolutePath());
+            // work with user files
+            return PropertiesStorage.instance(FileUtil.getConfigRoot(), absolutePath());
         }
     }
     
@@ -401,7 +402,8 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
 
         @Override
         protected NbPreferences.FileStorage getFileStorage(String absolutePath) {
-            return PropertiesStorage.instanceReadOnly(absolutePath());            
+            // work with system files
+            return PropertiesStorage.instanceReadOnly(FileUtil.getSystemConfigRoot(), absolutePath());            
         }
     }
     

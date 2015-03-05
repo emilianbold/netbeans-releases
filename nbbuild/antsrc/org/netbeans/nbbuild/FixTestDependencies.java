@@ -289,6 +289,7 @@ public class FixTestDependencies extends Task {
                          found = true;
                     } else if (token.endsWith("core/core.jar")) {
                         compileCNB.add("org.netbeans.core.startup");
+                        compileCNB.add("org.netbeans.core.startup.base");
                         found = true;
                     } else if (lastSlash != -1 && lastDot != -1 && lastSlash + 1< lastDot ) {
                         String codeBaseName = token.substring(lastSlash + 1, lastDot);

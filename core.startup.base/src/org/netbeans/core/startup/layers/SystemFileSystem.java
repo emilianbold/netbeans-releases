@@ -44,6 +44,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import org.netbeans.core.startup.base.LayerFactory;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +69,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.modules.PatchedPublic;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -196,10 +199,12 @@ implements FileChangeListener {
     * @return repository
     * @exception PropertyVetoException if something fails
     */
+    // note: PatchedPublic, used from core.startup, but should not be exposed as an API;
+    // possibly could be trampolined through some private packate as core.startup uses impl dependency
+    @PatchedPublic
     static SystemFileSystem create (File userDir, File homeDir, File[] extradirs)
     throws java.beans.PropertyVetoException, IOException {
         FileSystem user;
-        LocalFileSystem home;
 
         String customFSClass = System.getProperty("org.netbeans.core.systemfilesystem.custom"); // NOI18N
         if (customFSClass != null) {
@@ -227,26 +232,73 @@ implements FileChangeListener {
             }
         }
 
+        ModuleLayeredFileSystem homeFS;
+        
         if (homeDir == null || !homeDir.isDirectory()) {
-            home = null;
+            homeFS = null;
         } else {
-            home = new LocalFileSystemEx ();
-            home.setRootDirectory (homeDir);
-            home.setReadOnly (true);                        
+            homeFS =  createInstallHomeSystem(homeDir, extradirs, true, false).getUserLayer();
         }
+        FileSystem[] arr = new FileSystem[homeFS == null ? 1 : 2];
+        
+        LayerFactory.Provider f = Lookup.getDefault().lookup(LayerFactory.Provider.class);
+        arr[0] = new ModuleLayeredFileSystem(user, true, new FileSystem[0], f.create(false));
+        if (homeFS != null) {
+            arr[1] = homeFS;
+        }
+        return new SystemFileSystem (arr);
+    }
+    
+    /**
+     * Creates a layered filesystem for the NetBeans installation. The 'homeDir' must be writable,
+     * and will be used as a writable layer of the default filesystem. If `includeLookup' is set,
+     * the resulting FileSystem will contain entries from XML layers specified in manifests or generated,
+     * to provide configuration/data for Lookup implementations.
+     * 
+     * @param homeDir the writable area
+     * @param extradirs extra directories merged into the filesystem.
+     * @param readOnly creates the filesystem as read-only; useful for system-wide configuration which is not used
+     * itself, but only provides a base for user filesystems.
+     * @param includeLookup if true, layers are merged into the filesystem to provide Lookup definitions
+     * @return created Filesystem instance.
+     * @since 1.60
+     */
+    public static SystemFileSystem createInstallHomeSystem(File homeDir, File[] extradirs, boolean readOnly, boolean includeLookup) throws IOException, PropertyVetoException {
+        LayerFactory.Provider f = Lookup.getDefault().lookup(LayerFactory.Provider.class);
         LocalFileSystem[] extras = new LocalFileSystem[extradirs.length];
         for (int i = 0; i < extradirs.length; i++) {
             extras[i] = new LocalFileSystemEx();
             extras[i].setRootDirectory(extradirs[i]);
             extras[i].setReadOnly(true);
         }
-
-        FileSystem[] arr = new FileSystem[home == null ? 1 : 2];
-        arr[0] = new ModuleLayeredFileSystem(user, true, new FileSystem[0], false);
-        if (home != null) {
-            arr[1] = new ModuleLayeredFileSystem(home, false, extras, true);
-        }
-        return new SystemFileSystem (arr);
+        LocalFileSystem home = new LocalFileSystemEx ();
+        home.setRootDirectory (homeDir);
+        home.setReadOnly (readOnly);                        
+        FileSystem[] arr = new FileSystem[] {
+            new ModuleLayeredFileSystem(home, includeLookup, extras, f.create(true))
+        };
+        return new SystemFileSystem(arr);
+    }
+    
+    /**
+     * Creates user-level filesystem. The system is created as an user layer over a r/o base FileSystem (`base').
+     * @param userDir the writable area
+     * @param base the base filesystem, which MUST include Lookup entries
+     * @return the system filesystem customized for the user.
+     * 
+     * @throws IOException
+     * @throws PropertyVetoException 
+     * @since 1.60 
+     */
+    public static SystemFileSystem createUserFileSystem(File userDir, ModuleLayeredFileSystem base)  throws IOException, PropertyVetoException {
+        LayerFactory.Provider f = Lookup.getDefault().lookup(LayerFactory.Provider.class);
+        LocalFileSystem user = new LocalFileSystemEx ();
+        user.setRootDirectory (userDir);
+        FileSystem[] arr = new FileSystem[] {
+            new ModuleLayeredFileSystem(user, false, new FileSystem[0], f.create(false)),
+            base
+        };
+        return new SystemFileSystem(arr);
     }
 
     /** Notification that a file has migrated from one file system

@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;

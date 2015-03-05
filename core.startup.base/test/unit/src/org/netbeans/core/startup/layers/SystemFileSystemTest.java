@@ -59,6 +59,7 @@ import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.SetupHid;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;

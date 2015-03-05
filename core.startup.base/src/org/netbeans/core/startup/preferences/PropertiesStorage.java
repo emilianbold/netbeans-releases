@@ -74,8 +74,8 @@ import org.openide.util.Exceptions;
 class PropertiesStorage implements NbPreferences.FileStorage {
     private static final String USERROOT_PREFIX = "/Preferences";//NOI18N
     private static final String SYSTEMROOT_PREFIX = "/SystemPreferences";//NOI18N
-    private final static FileObject SFS_ROOT = FileUtil.getConfigRoot();
-    
+
+    protected final FileObject configRoot;
     private final String folderPath;
     private String filePath;
     private boolean isModified;
@@ -84,16 +84,16 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     
     /*test*/ static Runnable TEST_FILE_EVENT = null;
     
-    static NbPreferences.FileStorage instance(final String absolutePath) {
-        return new PropertiesStorage(absolutePath, true);
+    static NbPreferences.FileStorage instance(final FileObject configRoot, final String absolutePath) {
+        return new PropertiesStorage(configRoot, absolutePath, true);
     }
     
     FileObject preferencesRoot() throws IOException {
-        return FileUtil.createFolder(SFS_ROOT, USERROOT_PREFIX);
+        return FileUtil.createFolder(configRoot, USERROOT_PREFIX);
     }
     
-    static NbPreferences.FileStorage instanceReadOnly(final String absolutePath) {
-        return new PropertiesStorage(absolutePath, false) {
+    static NbPreferences.FileStorage instanceReadOnly(final FileObject configRoot, final String absolutePath) {
+        return new PropertiesStorage(configRoot, absolutePath, false) {
             public @Override boolean isReadOnly() {
                 return true;
             }
@@ -129,18 +129,19 @@ class PropertiesStorage implements NbPreferences.FileStorage {
             }
             
             @Override FileObject preferencesRoot() throws IOException {
-                return FileUtil.createFolder(SFS_ROOT, SYSTEMROOT_PREFIX);
+                return FileUtil.createFolder(configRoot, SYSTEMROOT_PREFIX);
             }
             
         };
     }
     
     /** Creates a new instance */
-    private PropertiesStorage(final String absolutePath, boolean userRoot) {
+    private PropertiesStorage(final FileObject configRoot, final String absolutePath, boolean userRoot) {
         StringBuilder sb = new StringBuilder();
         String prefix = (userRoot) ? USERROOT_PREFIX : SYSTEMROOT_PREFIX;
         sb.append(prefix).append(absolutePath);
         folderPath = sb.toString();
+        this.configRoot = configRoot;
     }
     
     public boolean isReadOnly() {
@@ -301,17 +302,17 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     }        
 
     protected FileObject toFolder()  {
-        return SFS_ROOT.getFileObject(folderPath());
+        return configRoot.getFileObject(folderPath());
     }
 
     protected  FileObject toPropertiesFile() {
-        return SFS_ROOT.getFileObject(filePath());
+        return configRoot.getFileObject(filePath());
     }
 
     protected FileObject toFolder(boolean create) throws IOException {
         FileObject retval = toFolder();
         if (retval == null && create) {
-            retval = FileUtil.createFolder(SFS_ROOT, folderPath);
+            retval = FileUtil.createFolder(configRoot, folderPath);
         }
         assert (retval == null && !create) || (retval != null && retval.isFolder());
         return retval;
@@ -321,24 +322,24 @@ class PropertiesStorage implements NbPreferences.FileStorage {
         FileObject retval = toPropertiesFile();
         if (retval == null && create) {
 	    // there might be inconsistency between the cache and the disk (#208227)
-	    SFS_ROOT.refresh();
+	    configRoot.refresh();
 	    // and try again
 	    retval = toPropertiesFile();
 	    if (retval == null) {
                 // let's see if the file exists on disk and a FileObject can be obtained for it
-                retval = FileUtil.toFileObject(FileUtil.normalizeFile(new File(FileUtil.toFile(SFS_ROOT), filePath())));
+                retval = FileUtil.toFileObject(FileUtil.normalizeFile(new File(FileUtil.toFile(configRoot), filePath())));
             }
 	    if (retval == null) {
 		// we really need to create the file
 		try {
-		    retval = FileUtil.createData(SFS_ROOT, filePath());
+		    retval = FileUtil.createData(configRoot, filePath());
 		} catch (SyncFailedException sfex) {
 		    // File could not be created as it already exists!!!
 		    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		    LOGGER.log(Level.WARNING, "File {0} seems to already exist in default filesystem {1}."
 			    + "\nCurrent date/time: {2}",
 			    new Object[]{filePath(),
-                                FileUtil.toFile(SFS_ROOT).getCanonicalPath(),
+                                FileUtil.toFile(configRoot).getCanonicalPath(),
 				dateFormat.format(Calendar.getInstance().getTime())});
 		}
 	    }
@@ -349,7 +350,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
 
     public void runAtomic(final Runnable run) {
         try {
-            SFS_ROOT.getFileSystem().runAtomicAction(new AtomicAction() {
+            configRoot.getFileSystem().runAtomicAction(new AtomicAction() {
                 public void run() throws IOException {
                     run.run();
                 }
@@ -407,7 +408,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
               }
 
           };
-             SFS_ROOT.getFileSystem().addFileChangeListener(FileUtil.weakFileChangeListener(fileChangeAdapter, SFS_ROOT.getFileSystem()));
+             configRoot.getFileSystem().addFileChangeListener(FileUtil.weakFileChangeListener(fileChangeAdapter, configRoot.getFileSystem()));
          } catch (FileStateInvalidException ex) {
              Exceptions.printStackTrace(ex);
          }
