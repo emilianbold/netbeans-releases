@@ -104,6 +104,9 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     public static final String FILE_DD = "application-client.xml";//NOI18N
 
+    // tests only
+    static boolean showMetaInfDialog = true;
+
     private final ResourceChangeReporter rcr = ResourceChangeReporterFactory.createResourceChangeReporter(new AppClientResourceChangeReporter());
 
     private final AppClientProject project;
@@ -141,7 +144,7 @@ public final class AppClientProvider extends J2eeModuleProvider
         FileObject metaInf = getFileObject(AppClientProjectProperties.META_INF);
         if (metaInf == null) {
             Profile version = project.getAPICar().getJ2eeProfile();
-            if (needConfigurationFolder(version)) {
+            if (showMetaInfDialog && needConfigurationFolder(version)) {
                 String relativePath = helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.META_INF);
                 String path = (relativePath != null ? helper.resolvePath(relativePath) : "");
                 showErrorMessage(NbBundle.getMessage(AppClientProvider.class, "MSG_MetaInfCorrupted", project.getName(), path));
