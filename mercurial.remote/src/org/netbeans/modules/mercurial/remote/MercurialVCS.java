@@ -49,13 +49,17 @@ import java.beans.PropertyChangeEvent;
 import java.net.URI;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.remotefs.versioning.api.RemoteFileSystemConnectionListener;
+import org.netbeans.modules.remotefs.versioning.api.RemoteFileSystemConnectionManager;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Extends framework <code>VersioningSystem</code> to Mercurial module functionality.
@@ -67,13 +71,14 @@ import org.netbeans.spi.queries.CollocationQueryImplementation2;
     menuLabel="#CTL_Mercurial_MainMenu", //NOI18N
     actionsCategory="MercurialRemote", //NOI18N
     metadataFolderNames=".hg") //NOI18N
-public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
+public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener, RemoteFileSystemConnectionListener {
     
     public MercurialVCS() {
         //putProperty(PROP_DISPLAY_NAME, getDisplayName()); // NOI18N
         //putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_MainMenu")); // NOI18N
         // moved to HgModuleConfig
         //HgModuleConfig.getDefault(root).getPreferences().addPreferenceChangeListener(this);
+        RemoteFileSystemConnectionManager.getInstance().addRemoteFileSystemConnectionListener(this);
         Mercurial.getInstance().register(this);        
     }
 
@@ -179,5 +184,15 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<VCSFileProxy>) null);
         }
+    }
+
+    @Override
+    public void connected(FileSystem fs) {
+        Mercurial.getInstance().clearAncestorCaches();
+        VersioningSupport.versionedRootsChanged();        
+    }
+
+    @Override
+    public void disconnected(FileSystem fs) {
     }
 }

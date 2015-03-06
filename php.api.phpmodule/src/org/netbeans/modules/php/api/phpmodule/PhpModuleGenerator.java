@@ -96,6 +96,7 @@ public interface PhpModuleGenerator {
         private volatile File projectDirectory;
         private volatile PhpVersion phpVersion;
         private volatile Charset charset;
+        private volatile boolean autoconfigured;
 
 
         /**
@@ -204,6 +205,28 @@ public interface PhpModuleGenerator {
         public CreateProperties setCharset(Charset charset) {
             Parameters.notNull("charset", charset); // NOI18N
             this.charset = charset;
+            return this;
+        }
+
+        /**
+         * Is project autoconfigured? If yes, project will show notification about it once opened
+         * for the first time in the IDE.
+         * @return {@code true} if project is autoconfigured, {@code false} otherwise
+         * @since 2.49
+         */
+        public boolean isAutoconfigured() {
+            return autoconfigured;
+        }
+
+        /**
+         * Set whether project is autoconfigured or not. If yes, project will show notification
+         * about it once opened for the first time in the IDE.
+         * @param autoconfigured {@code true} if project is autoconfigured, {@code false} otherwise
+         * @return self
+         * @since 2.49
+         */
+        public CreateProperties setAutoconfigured(boolean autoconfigured) {
+            this.autoconfigured = autoconfigured;
             return this;
         }
 

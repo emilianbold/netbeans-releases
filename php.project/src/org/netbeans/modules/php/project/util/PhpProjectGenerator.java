@@ -181,6 +181,7 @@ public final class PhpProjectGenerator {
                         EditableProperties sharedProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
+                        configureAutoconfigured(projectProperties, sharedProperties, privateProperties);
                         configureSources(helper, projectProperties, sharedProperties, privateProperties);
                         configureEncoding(projectProperties, sharedProperties, privateProperties);
                         configureTags(projectProperties, sharedProperties, privateProperties);
@@ -241,6 +242,13 @@ public final class PhpProjectGenerator {
             Exceptions.printStackTrace(e);
         }
         return helper;
+    }
+
+    private static void configureAutoconfigured(ProjectProperties projectProperties, EditableProperties sharedProperties, EditableProperties privateProperties) {
+        Boolean autoconfigured = projectProperties.getAutoconfigured();
+        if (autoconfigured != null) {
+            privateProperties.setProperty(PhpProjectProperties.AUTOCONFIGURED, Boolean.toString(autoconfigured));
+        }
     }
 
     private static void configureSources(AntProjectHelper helper, ProjectProperties projectProperties,
@@ -405,6 +413,7 @@ public final class PhpProjectGenerator {
         private Integer port;
         private String router;
         private Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders; // for USAGES only
+        private Boolean autoconfigured;
 
         public ProjectProperties() {
         }
@@ -429,6 +438,7 @@ public final class PhpProjectGenerator {
             port = properties.port;
             router = properties.router;
             frameworkExtenders = properties.frameworkExtenders;
+            autoconfigured = properties.autoconfigured;
         }
 
         public String getName() {
@@ -675,6 +685,16 @@ public final class PhpProjectGenerator {
             this.frameworkExtenders = frameworkExtenders;
             return this;
         }
+
+        public Boolean getAutoconfigured() {
+            return autoconfigured;
+        }
+
+        public ProjectProperties setAutoconfigured(Boolean autoconfigured) {
+            this.autoconfigured = autoconfigured;
+            return this;
+        }
+
     }
 
     public interface Monitor {

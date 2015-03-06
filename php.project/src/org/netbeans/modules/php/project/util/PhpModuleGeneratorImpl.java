@@ -89,6 +89,7 @@ public class PhpModuleGeneratorImpl implements PhpModuleGenerator {
         projectProperties.setSourcesDirectory(properties.getSourcesDirectory());
         projectProperties.setPhpVersion(properties.getPhpVersion());
         projectProperties.setCharset(properties.getCharset());
+        projectProperties.setAutoconfigured(properties.isAutoconfigured());
         // default props
         projectProperties.setUrl("http://localhost/"); // NOI18N
         return projectProperties;

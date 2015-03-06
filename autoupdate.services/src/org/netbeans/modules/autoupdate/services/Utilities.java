@@ -47,11 +47,22 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.Security;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXCertPathValidatorResult;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -142,15 +153,84 @@ public class Utilities {
     public static String verifyCertificates(Collection<Certificate> archiveCertificates, Collection<Certificate> trustedCertificates) {
         if (archiveCertificates == null) {
             return N_A;
-        }
-        if (! archiveCertificates.isEmpty()) {
-            Collection<Certificate> c = new HashSet<Certificate>(trustedCertificates);
+        }       
+        if (!archiveCertificates.isEmpty()) {
+            Collection<Certificate> c = new HashSet(trustedCertificates);
             c.retainAll(archiveCertificates);
-            if (! c.isEmpty()) {
-            //if (trustedCertificates.containsAll(archiveCertificates)) {
-                return TRUSTED;
+            if (c.isEmpty()) {
+                // need to check if archive is signed by Oracle certificate
+                PKIXCertPathValidatorResult validResult = null;
+                X509Certificate oracleCert = null;
+                X509Certificate trustCert = null;
+                Principal trustCertPrincipal = null;
+                
+                List<Certificate> certificates = new ArrayList(archiveCertificates);
+
+                int rounds = certificates.size();
+                while (!certificates.isEmpty() && rounds > 0) {
+                    X509Certificate cert = (X509Certificate) certificates.remove(0);                    
+
+                    if (oracleCert == null) {
+                        String certDNName = cert.getSubjectDN().getName();
+                        if (certDNName.contains("CN=\"Oracle America, Inc.\"")
+                                && (certDNName.contains("OU=Software Engineering") || certDNName.contains("OU=Code Signing Bureau"))) {
+                            oracleCert = cert;
+                            trustCertPrincipal = oracleCert.getIssuerDN();
+                            if (trustCertPrincipal == null) {
+                                return UNTRUSTED;
+                            }
+                        } else {
+                            certificates.add(cert);
+                            rounds--;
+                        }
+                    } else {                                                
+                        if (cert.getSubjectDN().equals(trustCertPrincipal)) {
+                            trustCert = cert;
+                            break;
+                        }
+                    }
+                }
+                
+                if (oracleCert == null || trustCert == null) {
+                    return UNTRUSTED;
+                }
+
+                try {
+                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                    List certList = new ArrayList();
+                    certList.add(oracleCert);
+                    CertPath cp = cf.generateCertPath(certList);
+                    TrustAnchor trustAnchor = new TrustAnchor(trustCert, null);
+                    PKIXParameters params = new PKIXParameters(Collections.singleton(trustAnchor));
+                    params.setRevocationEnabled(true);
+                    Security.setProperty("ocsp.enable", "true");
+                    System.setProperty("com.sun.security.enableCRLDP", "true"); // CRL fallback
+                    CertPathValidator cpv = CertPathValidator.getInstance("PKIX");
+                    validResult = (PKIXCertPathValidatorResult) cpv.validate(cp, params);
+                } catch (CertificateException | InvalidAlgorithmParameterException | NoSuchAlgorithmException ex) {
+                    // CertificateException - Should not get here - "X.509" is proper certificate type
+                    // InvalidAlgorithmParameterException - Should not get here - trustAnchor cannot be null -> collection cannot be empty
+                    // NoSuchAlgorithmException - Should not get here - "PKIX" is proper algorythm
+                    err.log(Level.SEVERE, "Certificate verification failed - " + ex.getMessage(), ex);
+                    return UNTRUSTED;
+                } catch (CertPathValidatorException ex) {
+                    // CertPath cannot be validated
+                    err.log(Level.WARNING, "Cannot validate certificate path - " + ex.getMessage(), ex);
+                    return UNTRUSTED;
+                } catch (SecurityException ex) {
+                    // When jar/nbm correctly signed, but content modified                    
+                    err.log(Level.SEVERE, "The content of the jar has been modified - " + ex.getMessage(), ex);
+                    return UNTRUSTED;
+                }
+                
+                if (validResult != null) {
+                    return TRUSTED;
+                } else {
+                    return UNTRUSTED;
+                }
             } else {
-                return UNTRUSTED;
+                // signed by trusted certificate stored in user's keystore od ide.ks
+                return TRUSTED;
             }
         }
         return UNSIGNED;
