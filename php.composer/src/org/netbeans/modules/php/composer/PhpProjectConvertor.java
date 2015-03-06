@@ -90,7 +90,12 @@ public final class PhpProjectConvertor implements ProjectConvertor {
         assert projectDirectory != null;
         FileObject file = projectDirectory.getFileObject(COMPOSER_JSON_FILENAME);
         assert file != null : projectDirectory;
-        String displayName = getDisplayName(file);
+        JSONObject content = getContent(file);
+        if (content == null) {
+            // #250960
+            return null;
+        }
+        String displayName = getDisplayName(content);
         if (!StringUtils.hasText(displayName)) {
             // should not happen often
             displayName = projectDirectory.getNameExt();
@@ -106,22 +111,33 @@ public final class PhpProjectConvertor implements ProjectConvertor {
     }
 
     @CheckForNull
-    private String getDisplayName(FileObject jsonFile) {
+    private JSONObject getContent(FileObject jsonFile) {
         assert jsonFile != null;
         JSONParser parser = new JSONParser();
         try (Reader reader = new BufferedReader(new InputStreamReader(jsonFile.getInputStream(), StandardCharsets.UTF_8))) {
-            JSONObject content = (JSONObject) parser.parse(reader);
-            Object name = content.get("name"); // NOI18N
-            if (name instanceof String) {
-                String fullName = (String) name;
-                String[] parts = fullName.split("/", 2); // NOI18N
-                if (parts.length == 2) {
-                    return parts[1];
-                }
-                return fullName;
+            Object content = parser.parse(reader);
+            if (content instanceof JSONObject) {
+                return (JSONObject) content;
             }
+            LOGGER.log(Level.INFO, "Unexpected content of composer.json: {0}", FileUtil.toFile(jsonFile));
+            return null;
         } catch (ParseException | IOException ex) {
             LOGGER.log(Level.INFO, jsonFile.getPath(), ex);
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private String getDisplayName(JSONObject content) {
+        assert content != null;
+        Object name = content.get("name"); // NOI18N
+        if (name instanceof String) {
+            String fullName = (String) name;
+            String[] parts = fullName.split("/", 2); // NOI18N
+            if (parts.length == 2) {
+                return parts[1];
+            }
+            return fullName;
         }
         return null;
     }
