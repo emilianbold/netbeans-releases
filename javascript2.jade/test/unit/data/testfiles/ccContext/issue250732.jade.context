@@ -8,5 +8,5 @@
 [TAG_AND_KEYWORD]    [CSS_CLASS].just
 [TAG_AND_KEYWORD]        [TAG]div[CSS_ID]#as
 [TAG_AND_KEYWORD]        //[NONE]
-         sdsds
-         
+[TAG_AND_KEYWORD]         [NONE]sdsds
+[TAG_AND_KEYWORD]         
