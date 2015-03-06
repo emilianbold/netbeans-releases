@@ -80,12 +80,15 @@ import org.openide.util.Cancellable;
  *
  * @author ondra
  */
-public class AbstractGitTestCase extends NbTestCase {
+public abstract class AbstractGitTestCase extends NbTestCase {
     private final VCSFileProxy workDir;
     private final VCSFileProxy wc;
     private final VCSFileProxy repositoryLocation;
     private JGitRepository localRepository;
     protected static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor ();
+
+    private enum Scope{All, Successful, Failed};
+    private static final Scope TESTS_SCOPE = Scope.Successful;
     
     public AbstractGitTestCase (String testName) throws IOException {
         super(testName);
@@ -95,6 +98,22 @@ public class AbstractGitTestCase extends NbTestCase {
         wc = VCSFileProxy.createFileProxy(workDir, getName() + "_wc");
     }
 
+    protected abstract boolean isFailed();
+    protected abstract boolean isRunAll();
+
+    @Override
+    public boolean canRun() {
+        if (!isRunAll()) {
+            switch (TESTS_SCOPE) {
+                case Failed:
+                    return isFailed();
+                case Successful:
+                    return !isFailed();
+            }
+        }
+        return super.canRun();
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();

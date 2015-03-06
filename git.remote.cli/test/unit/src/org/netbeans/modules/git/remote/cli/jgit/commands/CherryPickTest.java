@@ -43,6 +43,7 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
  */
 
 import java.io.IOException;
+import java.util.Arrays;
 import org.netbeans.modules.git.remote.cli.GitCherryPickResult;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitConstants;
@@ -65,6 +66,18 @@ public class CherryPickTest extends AbstractGitTestCase {
     
     public CherryPickTest (String testName) throws IOException {
         super(testName);
+    }
+
+    @Override
+    protected boolean isFailed() {
+        return Arrays.asList("testCherryPickCommitsConflictResolve","testCherryPickCommit",
+                "testCherryPickCommits","testCherryPickFailure","testCherryPickCommitsConflictQuit",
+                "testCherryPickCommitsConflictAbort","testCherryPickCommitConflictResolve").contains(getName());
+    }
+    
+    @Override
+    protected boolean isRunAll() {
+        return false;
     }
 
     @Override

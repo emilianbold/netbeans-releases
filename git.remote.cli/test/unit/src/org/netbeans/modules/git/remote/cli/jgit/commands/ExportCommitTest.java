@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Date;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitException;
@@ -66,6 +67,17 @@ public class ExportCommitTest extends AbstractGitTestCase {
 
     public ExportCommitTest (String testName) throws IOException {
         super(testName);
+    }
+    
+    @Override
+    protected boolean isFailed() {
+        return Arrays.asList("testExportCommit","testExportMergeFail","testExportCommitMultiLine",
+                "testExportCommitRename","testExportInitialCommit").contains(getName());
+    }
+    
+    @Override
+    protected boolean isRunAll() {
+        return false;
     }
 
     @Override

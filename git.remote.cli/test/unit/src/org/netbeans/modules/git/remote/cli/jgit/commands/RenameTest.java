@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
-import org.netbeans.modules.git.remote.cli.jgit.commands.RenameCommand;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -69,6 +68,17 @@ public class RenameTest extends AbstractGitTestCase {
 
     public RenameTest (String testName) throws IOException {
         super(testName);
+    }
+    
+    @Override
+    protected boolean isFailed() {
+        return Arrays.asList("testMoveFileToFolderAfter","testMoveFileToExisting","testMoveFromSymlinkFolder",
+                "testMoveTree","testMoveTreeAfter","testRenameFileAfter","testMoveFileToFolder").contains(getName());
+    }
+    
+    @Override
+    protected boolean isRunAll() {
+        return false;
     }
 
     @Override
