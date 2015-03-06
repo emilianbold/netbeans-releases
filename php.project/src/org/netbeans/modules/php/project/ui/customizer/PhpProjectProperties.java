@@ -135,6 +135,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String LICENSE_NAME = "project.license";
     public static final String LICENSE_PATH = "project.licensePath";
     public static final String TESTING_PROVIDERS = "testing.providers";
+    public static final String AUTOCONFIGURED = "autoconfigured";
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
     public static final String TESTING_PROVIDERS_SEPARATOR = ";"; // NOI18N
@@ -275,6 +276,8 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private String licensePathValue;
     private boolean licensePathChanged = false;
     private String changedLicensePathContent;
+
+    private volatile Boolean autoconfigured = null;
 
 
     public PhpProjectProperties(PhpProject project) {
@@ -594,6 +597,17 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         this.testingProviders = testingProviders;
     }
 
+    public boolean isAutoconfigured() {
+        if (autoconfigured == null) {
+            autoconfigured = Boolean.parseBoolean(ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(AUTOCONFIGURED));
+        }
+        return autoconfigured;
+    }
+
+    public void setAutoconfigured(boolean autoconfigured) {
+        this.autoconfigured = autoconfigured;
+    }
+
     public void save() {
         try {
             // store properties
@@ -813,6 +827,14 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
         if (testingProviders != null) {
             projectProperties.setProperty(TESTING_PROVIDERS, StringUtils.implode(testingProviders, TESTING_PROVIDERS_SEPARATOR));
+        }
+
+        if (autoconfigured != null) {
+            if (autoconfigured) {
+                privateProperties.put(AUTOCONFIGURED, Boolean.TRUE.toString());
+            } else {
+                privateProperties.remove(AUTOCONFIGURED);
+            }
         }
 
         // configs

@@ -161,7 +161,8 @@ public final class PhpProjectConvertor implements ProjectConvertor {
                     .setProjectDirectory(FileUtil.toFile(projectDirectory))
                     .setSourcesDirectory(FileUtil.toFile(detectSourceRoot()))
                     .setPhpVersion(PhpVersion.getDefault())
-                    .setCharset(StandardCharsets.UTF_8));
+                    .setCharset(StandardCharsets.UTF_8)
+                    .setAutoconfigured(true));
             Project project = FileOwnerQuery.getOwner(projectDirectory);
             assert project != null : projectDirectory;
             return project;

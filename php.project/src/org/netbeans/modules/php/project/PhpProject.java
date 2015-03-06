@@ -78,6 +78,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.search.SearchRoot;
@@ -145,6 +146,7 @@ import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -870,6 +872,9 @@ public final class PhpProject implements Project {
                 jsTestingProvider.projectOpened(PhpProject.this);
             }
 
+            // autoconfigured?
+            checkAutoconfigured();
+
             // #187060 - exception in projectOpened => project IS NOT opened (so move it at the end of the hook)
             getCopySupport().projectOpened();
 
@@ -925,6 +930,30 @@ public final class PhpProject implements Project {
             getSourceRoots().getRoots();
             getTestRoots().getRoots();
             getSeleniumRoots().getRoots();
+        }
+
+        @NbBundle.Messages({
+            "# {0} - project name",
+            "PhpOpenedHook.notification.autoconfigured.title=Project {0} automatically configured",
+            "PhpOpenedHook.notification.autoconfigured.details=Review and correct important project settings detected by the IDE.",
+        })
+        private void checkAutoconfigured() {
+            PhpProjectProperties projectProperties = new PhpProjectProperties(PhpProject.this);
+            if (projectProperties.isAutoconfigured()) {
+                NotificationDisplayer.getDefault().notify(
+                        Bundle.PhpOpenedHook_notification_autoconfigured_title(ProjectUtils.getInformation(PhpProject.this).getDisplayName()),
+                        NotificationDisplayer.Priority.LOW.getIcon(),
+                        Bundle.PhpOpenedHook_notification_autoconfigured_details(),
+                        new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                PhpProjectUtils.openCustomizer(PhpProject.this, CompositePanelProviderImpl.SOURCES);
+                            }
+                        },
+                        NotificationDisplayer.Priority.LOW);
+                projectProperties.setAutoconfigured(false);
+                projectProperties.save();
+            }
         }
 
     }
@@ -1009,11 +1038,11 @@ public final class PhpProject implements Project {
                         return false;
                     }
                 }
-                
+
                 if (fileObj == phpProject.getProjectDirectory()) { // "Run Selenium Tests" action should be active for the project node
                     return true;
                 }
-                
+
                 FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
                 if (sources == null || sources.equals(fileObj)) {
                     return false;
