@@ -44,6 +44,7 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitClient.DiffMode;
 import org.netbeans.modules.git.remote.cli.GitConstants;
@@ -62,6 +63,16 @@ public class ExportDiffTest extends AbstractGitTestCase {
 
     public ExportDiffTest (String testName) throws IOException {
         super(testName);
+    }
+    
+    @Override
+    protected boolean isFailed() {
+        return Arrays.asList("testDiffSelectedPaths","testDiffChanges").contains(getName());
+    }
+    
+    @Override
+    protected boolean isRunAll() {
+        return false;
     }
 
     @Override

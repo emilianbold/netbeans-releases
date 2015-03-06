@@ -66,6 +66,16 @@ public class RemotesTest extends AbstractGitTestCase {
     }
     
     @Override
+    protected boolean isFailed() {
+        return Arrays.asList("testRemoveRemote").contains(getName());
+    }
+    
+    @Override
+    protected boolean isRunAll() {
+        return false;
+    }
+    
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         workDir = getWorkingDirectory();

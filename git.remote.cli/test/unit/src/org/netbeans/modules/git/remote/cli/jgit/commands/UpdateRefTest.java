@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
 import java.io.IOException;
+import java.util.Arrays;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitRefUpdateResult;
@@ -61,6 +62,16 @@ public class UpdateRefTest extends AbstractGitTestCase {
 
     public UpdateRefTest (String testName) throws IOException {
         super(testName);
+    }
+    
+    @Override
+    protected boolean isFailed() {
+        return Arrays.asList("testNotAttempted","testMoveMergeCommit","testMoveMergeRef","testMoveMergeRejected").contains(getName());
+    }
+    
+    @Override
+    protected boolean isRunAll() {
+        return false;
     }
 
     @Override

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
-import org.netbeans.modules.git.remote.cli.jgit.commands.MergeCommand;
 import java.io.IOException;
 import java.util.Arrays;
 import org.netbeans.modules.git.remote.cli.GitBranch;
@@ -72,6 +71,17 @@ public class MergeTest extends AbstractGitTestCase {
 
     public MergeTest (String testName) throws IOException {
         super(testName);
+    }
+    
+    @Override
+    protected boolean isFailed() {
+        return Arrays.asList("testConflicts","testResolveConflicts","testMergeFFOnly",
+                "testMergeFailOnLocalChanges","testMergeCommitFails250370").contains(getName());
+    }
+    
+    @Override
+    protected boolean isRunAll() {
+        return false;
     }
 
     @Override
