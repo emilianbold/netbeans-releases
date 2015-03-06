@@ -258,7 +258,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
             }
         }
             
-        return Utils.immutize(fontsColorsMap, ATTR_MODULE_SUPPLIED);
+        return NbUtils.immutize(fontsColorsMap, ATTR_MODULE_SUPPLIED);
     }
     
     public boolean save(

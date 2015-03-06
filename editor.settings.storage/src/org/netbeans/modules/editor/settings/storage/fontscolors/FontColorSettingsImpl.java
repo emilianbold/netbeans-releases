@@ -179,7 +179,7 @@ public final class FontColorSettingsImpl extends FontColorSettingsFactory {
             }
             colorings.remove (profile);
         } else {
-            Map<String, AttributeSet> map = Utils.immutize(fontColors);
+            Map<String, AttributeSet> map = NbUtils.immutize(fontColors);
             
             if (!specialProfile) {
                 try {
@@ -213,7 +213,7 @@ public final class FontColorSettingsImpl extends FontColorSettingsFactory {
             if (fontColors == null) {
                 ess.delete(mimePath, profile, true);
             } else {
-                ess.save(mimePath, profile, true, Utils.immutize(fontColors));
+                ess.save(mimePath, profile, true, NbUtils.immutize(fontColors));
             }
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);

@@ -1431,6 +1431,10 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.openide.loaders" spec="7.61"/>
                 <module codenamebase="org.netbeans.api.templates" spec="1.0"/>
             </replace>
+            <replace codenamebase="org.netbeans.core.startup" addcompiletime="true">
+                <module codenamebase="org.netbeans.core.startup" release="1" spec="1.60"/>
+                <module codenamebase="org.netbeans.core.startup.base" spec="1.60"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>
