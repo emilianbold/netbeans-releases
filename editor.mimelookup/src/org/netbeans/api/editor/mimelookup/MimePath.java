@@ -522,18 +522,6 @@ public final class MimePath {
         }
     }
     
-    private static final Lookup systemLookup;
-    
-    static {
-        final Lookup[] lkp = new Lookup[1];
-        Lookups.executeWith(null, new Runnable() {
-            public void run() {
-                lkp[0] = Lookup.getDefault();
-            }
-        });
-        systemLookup = lkp[0];
-    }
-
     public @Override String toString() {
         return "MimePath[" + path + "]"; // NOI18N
     }
