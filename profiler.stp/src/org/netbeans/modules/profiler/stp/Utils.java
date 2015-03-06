@@ -102,7 +102,7 @@ public class Utils {
             attachSettings = new AttachSettings();
         }
 
-        return AttachWizard.getDefault().configure(attachSettings);
+        return AttachWizard.getDefault().configure(attachSettings, false);
 //        AttachWizard attachWizard = new AttachWizard();
 //        attachWizard.init(attachSettings);
 //
