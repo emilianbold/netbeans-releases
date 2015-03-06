@@ -56,6 +56,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.ProjectUtils;
@@ -573,6 +574,21 @@ public final class Utils {
     private static String browseSource(PhpProject project, String preselected, boolean selectDirectory) {
         FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
         assert rootFolder != null;
+        return browseFolder(project, rootFolder, preselected, selectDirectory);
+    }
+
+    /**
+     * Browse for a directory from sources of a project and return the relative path or <code>null</code> if nothing selected.
+     * @param project project to get sources from.
+     * @param preselected the preselected value, can be null.
+     * @return the relative path to folder or <code>null</code> if nothing selected.
+     */
+    @CheckForNull
+    public static String browseFolder(PhpProject project, FileObject folder, String preselected) {
+        return browseFolder(project, folder, preselected, true);
+    }
+
+    private static String browseFolder(PhpProject project, FileObject rootFolder, String preselected, boolean selectDirectory) {
         FileObject selected = BrowseFolders.showDialog(PhpVisibilityQuery.forProject(project), new FileObject[] {rootFolder},
                 selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {
