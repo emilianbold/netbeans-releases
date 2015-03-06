@@ -134,6 +134,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.settings.lib</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.49</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.structure</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
