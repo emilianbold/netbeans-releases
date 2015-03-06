@@ -44,6 +44,7 @@ package org.netbeans.modules.selenium2.webclient.protractor;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -57,6 +58,7 @@ import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -129,13 +131,17 @@ public class CustomizerProtractor extends javax.swing.JPanel {
             String userPath = System.getenv("PATH"); // NOI18N
             if(userPath != null) {
                 List<String> paths = Arrays.asList(userPath.split(File.pathSeparator));
-                final String execName = Utilities.isWindows() ? "protractor.cmd" : "protractor"; // NOI18N
+                final String execName = "protractor"; // NOI18N
                 for (String path : paths) {
                     File file = new File(path);
                     if (file.isFile()) {
                         if (path.endsWith(execName)) {
                             if (isProtractorExecValid(path)) { // protractor executable is globally installed and in user's PATH
-                                protractorExec = path;
+                                try {
+                                    protractorExec = file.getCanonicalPath();
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                                 break;
                             }
                         }
@@ -148,7 +154,20 @@ public class CustomizerProtractor extends javax.swing.JPanel {
                         });
                         if(list.length == 1) { // protractor executable is globally installed and the containing directory is in user's PATH
                             autoDiscovered = true;
-                            protractorExec = path.endsWith(File.separator) ? path + execName : path + File.separator + execName;
+                            if(Utilities.isWindows()) {
+                                // if C:\Users\name\AppData\Roaming\npm is in PATH
+                                // C:\Users\name\AppData\Roaming\npm\protractor(.cmd) are available
+                                // but both actually call C:\Users\name\AppData\Roaming\npm\node_modules\protractor\bin\protractor
+                                protractorExec = new File(path, "node_modules/protractor/bin/protractor").getAbsolutePath();
+                            } else {
+                                protractorExec = path.endsWith(File.separator) ? path + execName : path + File.separator + execName;
+                                File f = new File(protractorExec);
+                                try {
+                                    protractorExec = f.getCanonicalPath();
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
                             break;
                         }
                     }
