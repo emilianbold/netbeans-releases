@@ -60,10 +60,11 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
@@ -295,7 +296,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         long lastParsedTime = fileImpl.getLastParsedTime();
                         APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
                         if (apt != null) {
-                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
+                            Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
                             if (interrupter.cancelled()) {
                                 return out;
                             }
@@ -303,7 +304,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
                                 return Collections.<CsmReference>emptyList();
                             } else if (handlers.size() == 1) {
-                                APTPreprocHandler handler = handlers.iterator().next();
+                                PreprocHandler handler = handlers.iterator().next();
                                 State state = handler.getState();
                                 // ask for concurrent entry if absent
                                 APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
@@ -320,7 +321,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<>();
                                 TreeSet<CsmReference> result = new TreeSet<>(comparator);
-                                for (APTPreprocHandler handler : handlers) {
+                                for (PreprocHandler handler : handlers) {
                                     // ask for concurrent entry if absent
                                     State state = handler.getState();
                                     APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
@@ -432,7 +433,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     @Override
     public List<CsmInclude> getIncludeStack(CsmErrorDirective err) {
-        APTPreprocHandler.State state = null;
+        PreprocHandler.State state = null;
         if (err instanceof ErrorDirectiveImpl) {
             state = ((ErrorDirectiveImpl)err).getState();
         }
@@ -446,7 +447,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     
     @Override
     public List<CsmInclude> getIncludeStack(CsmFile file) {
-        APTPreprocHandler.State state = null;
+        PreprocHandler.State state = null;
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             // use stack from one of states (i.e. first)
@@ -456,7 +457,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return getIncludeStackImpl(state);
     }
     
-    private List<CsmInclude> getIncludeStackImpl(APTPreprocHandler.State state) {
+    private List<CsmInclude> getIncludeStackImpl(PreprocHandler.State state) {
         if (state == null) {
             return Collections.<CsmInclude>emptyList();
         }

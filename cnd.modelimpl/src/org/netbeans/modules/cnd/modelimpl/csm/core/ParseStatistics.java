@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
@@ -98,7 +98,7 @@ public class ParseStatistics {
         }
     }
 
-    public void fileParsed(FileImpl file, APTPreprocHandler preprocHandler) {
+    public void fileParsed(FileImpl file, PreprocHandler preprocHandler) {
         if (enabled) {
             synchronized(this) {
                 getEntry(file).cnt++;

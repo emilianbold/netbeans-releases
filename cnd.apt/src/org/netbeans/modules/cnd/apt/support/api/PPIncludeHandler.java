@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,11 +34,13 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.apt.support.api;
 
-package org.netbeans.modules.cnd.apt.support;
-
-import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.openide.filesystems.FileSystem;
 
@@ -52,37 +48,25 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Vladimir Voskresensky
  */
-public interface APTIncludeHandler extends PPIncludeHandler {
+public interface PPIncludeHandler {
+    public enum IncludeState {
+        Success,
+        Fail,
+        Recursive
+    }
+
     /*
-     * 
-     * notify about inclusion
-     * @param path included file absolute path
-     * @param aptNode #include directive
-     * @param resolvedDirIndex index of resolved directory in lists of include paths
-     * @return IncludeState.Recursive if inclusion is recursive and was prohibited
+     * save/restore state of handler
      */
-    public IncludeState pushInclude(FileSystem fs, CharSequence path, APTInclude aptNode, int resolvedDirIndex);
+    public State getState();
+    public void setState(State state);
     
-    /*
-     * notify about finished inclusion
-     */
-    public CharSequence popInclude();
+    /** immutable state object of include handler */    
+    public interface State {
+    };
     
     /**
-     * get resolver for path
+     * returns the first file where include stack started
      */
-    public APTIncludeResolver getResolver(FileSystem fs, CharSequence path);
-    
-    /**
-     * include stack entry
-     * - line where #include directive was
-     * - resolved #include directive as absolute included path
-     */
-    public interface IncludeInfo {
-        public FileSystem getFileSystem();
-        public CharSequence getIncludedPath();
-        public int getIncludeDirectiveLine();
-        public int getIncludeDirectiveOffset();
-        public int getIncludedDirIndex();
-    } 
+    public StartEntry getStartEntry();
 }

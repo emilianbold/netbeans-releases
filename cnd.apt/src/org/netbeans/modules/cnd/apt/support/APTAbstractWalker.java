@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -60,7 +61,7 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
@@ -78,11 +79,11 @@ public abstract class APTAbstractWalker extends APTWalker {
     private final FileSystem startFileSystem;
     private final APTFileCacheEntry cacheEntry;
     
-    protected APTAbstractWalker(APTFile apt, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, preprocHandler == null ? null: preprocHandler.getMacroMap());
+    protected APTAbstractWalker(APTFile apt, PreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        super(apt, preprocHandler == null ? null: ((APTPreprocHandler)preprocHandler).getMacroMap());
         this.startPath = apt.getPath();
         this.startFileSystem = apt.getFileSystem();
-        this.preprocHandler = preprocHandler;
+        this.preprocHandler = (APTPreprocHandler)preprocHandler;
         this.cacheEntry = cacheEntry;
     }
 

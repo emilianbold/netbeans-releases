@@ -45,7 +45,8 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Collection;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
@@ -266,10 +267,10 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest(base + ".cc");
         FileImpl fileImpl = findFile(base + ".h");
         assertNotNull(fileImpl);
-        Collection<APTPreprocHandler> handlers = fileImpl.getFileContainerOwnPreprocHandlersToDump();
+        Collection<PreprocHandler> handlers = fileImpl.getFileContainerOwnPreprocHandlersToDump();
         assertEquals(handlers.size(), 1);
         String macro = "MAC";
-        assertFalse(macro + " should be undefined!", handlers.iterator().next().getMacroMap().isDefined(macro));
+        assertFalse(macro + " should be undefined!", ((APTMacroCallback)handlers.iterator().next().getMacroMap()).isDefined(macro));
     }
 
     public void testIZ147574() throws Exception {

@@ -119,6 +119,7 @@
                 <package>org.netbeans.modules.cnd.apt.debug</package>
                 <package>org.netbeans.modules.cnd.apt.structure</package>
                 <package>org.netbeans.modules.cnd.apt.support</package>
+                <package>org.netbeans.modules.cnd.apt.support.api</package>
                 <package>org.netbeans.modules.cnd.apt.support.lang</package>
                 <package>org.netbeans.modules.cnd.apt.support.spi</package>
                 <package>org.netbeans.modules.cnd.apt.utils</package>

@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
@@ -101,12 +101,12 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     }
 
     @Override
-    public PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, APTPreprocHandler.State newState) {
+    public PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, PreprocHandler.State newState) {
         return csmFile.getCachedVisitedState(newState);
     }
 
     @Override
-    public void cacheVisitedState(FileImpl csmFile, APTPreprocHandler.State newState, APTPreprocHandler preprocHandler, FilePreprocessorConditionState pcState) {
+    public void cacheVisitedState(FileImpl csmFile, PreprocHandler.State newState, PreprocHandler preprocHandler, FilePreprocessorConditionState pcState) {
         csmFile.cacheVisitedState(newState, preprocHandler, pcState);
     }
         

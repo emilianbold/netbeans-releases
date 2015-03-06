@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -60,14 +60,14 @@ import org.openide.filesystems.FileSystem;
  */
 public final class ErrorDirectiveImpl extends OffsetableBase implements CsmErrorDirective {
     private final CharSequence msg;
-    private final APTPreprocHandler.State ppState;
-    private ErrorDirectiveImpl(CsmFile file, CharSequence text, CsmOffsetable offs, APTPreprocHandler.State ppState) {
+    private final PreprocHandler.State ppState;
+    private ErrorDirectiveImpl(CsmFile file, CharSequence text, CsmOffsetable offs, PreprocHandler.State ppState) {
         super(file, offs != null ? offs.getStartOffset() : 0, offs != null ? offs.getEndOffset() : 0);
         this.msg = DefaultCache.getManager().getString(text);
         this.ppState = ppState;
     }
 
-    public static ErrorDirectiveImpl create(CsmFile file, CharSequence msg, CsmOffsetable offs, APTPreprocHandler.State state) {
+    public static ErrorDirectiveImpl create(CsmFile file, CharSequence msg, CsmOffsetable offs, PreprocHandler.State state) {
         if (APTHandlersSupport.getIncludeStackDepth(state) > 0) {
             state = APTHandlersSupport.createCleanPreprocState(state);
         } else {
@@ -86,7 +86,7 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
         return msg;
     }
 
-    public APTPreprocHandler.State getState() {
+    public PreprocHandler.State getState() {
         return this.ppState;
     }
 

@@ -53,14 +53,16 @@ import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -73,19 +75,19 @@ public class APTHandlersSupportImpl {
     private APTHandlersSupportImpl() {
     }
 
-    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
-        return new APTPreprocHandlerImpl(macroMap, inclHandler, compileContext, lang, flavor);
+    public static APTPreprocHandler createPreprocHandler(PPMacroMap macroMap, PPIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
+        return new APTPreprocHandlerImpl((APTMacroMap)macroMap, (APTIncludeHandler)inclHandler, compileContext, lang, flavor);
     }
 
     public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
         return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file), false, CharSequences.empty(), CharSequences.empty());
     }
 
-    public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
+    public static void invalidatePreprocHandler(PreprocHandler preprocHandler) {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
 
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
+    public static PPIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
         // for now prepare IncludeDirEntry for "-include file" elements
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
         for (String file : includeFileEntries) {
@@ -103,15 +105,15 @@ public class APTHandlersSupportImpl {
         return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
     }
     
-    public static long getCompilationUnitCRC(APTPreprocHandler preprocHandler){
+    public static long getCompilationUnitCRC(PreprocHandler preprocHandler){
         if (preprocHandler instanceof APTPreprocHandlerImpl) {
             return ((APTPreprocHandlerImpl)preprocHandler).getCompilationUnitCRC();
         }
         return 0;
     }
 
-    public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
-        APTMacroMap fileMap = new APTFileMacroMap(sysMap, userMacros);
+    public static PPMacroMap createMacroMap(PPMacroMap sysMap, List<String> userMacros) {
+        APTMacroMap fileMap = new APTFileMacroMap((APTMacroMap)sysMap, userMacros);
         return fileMap;
     }
 
@@ -133,7 +135,7 @@ public class APTHandlersSupportImpl {
         }
     }
 
-    public static boolean isFirstLevel(APTIncludeHandler includeHandler) {
+    public static boolean isFirstLevel(PPIncludeHandler includeHandler) {
         if (includeHandler != null) {
             return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
         } else {
@@ -141,7 +143,7 @@ public class APTHandlersSupportImpl {
         }
     }
 
-    public static Collection<IncludeDirEntry> extractIncludeFileEntries(APTIncludeHandler includeHandler) {
+    public static Collection<IncludeDirEntry> extractIncludeFileEntries(PPIncludeHandler includeHandler) {
         Collection<IncludeDirEntry> out = new ArrayList<IncludeDirEntry>(0);
         if (includeHandler != null) {
             return ((APTIncludeHandlerImpl) includeHandler).getUserIncludeFilePaths();
@@ -168,7 +170,7 @@ public class APTHandlersSupportImpl {
         return 0;
     }
 
-    public static APTIncludeHandler.State extractIncludeState(APTPreprocHandler.State state) {
+    public static PPIncludeHandler.State extractIncludeState(APTPreprocHandler.State state) {
         assert state != null;
         return ((APTPreprocHandlerImpl.StateImpl) state).inclState;
     }

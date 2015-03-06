@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 
 /**
@@ -61,80 +64,80 @@ public class APTHandlersSupport {
 
     ////////////////////////////////////////////////////////////////////////////
     // factory methods for handlers
-    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
+    public static PreprocHandler createPreprocHandler(PPMacroMap macroMap, PPIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
         return APTHandlersSupportImpl.createPreprocHandler(macroMap, inclHandler, compileContext, lang, flavor);
     }
     
-    public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
+    public static PreprocHandler createEmptyPreprocHandler(StartEntry file) {
         return APTHandlersSupportImpl.createEmptyPreprocHandler(file);
     }
 
-    public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
+    public static void invalidatePreprocHandler(PreprocHandler preprocHandler) {
         APTHandlersSupportImpl.invalidatePreprocHandler(preprocHandler);
     }
  
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
+    public static PPIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
         return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths, includeFileEntries, fileSearch);
     }
 
-    public static long getCompilationUnitCRC(APTPreprocHandler preprocHandler){
+    public static long getCompilationUnitCRC(PreprocHandler preprocHandler){
         return APTHandlersSupportImpl.getCompilationUnitCRC(preprocHandler);
     }
 
-    public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
+    public static PPMacroMap createMacroMap(PPMacroMap sysMap, List<String> userMacros) {
         return APTHandlersSupportImpl.createMacroMap(sysMap, userMacros);
     }
 
-    public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
+    public static Map<CharSequence, APTMacro> extractMacroMap(PreprocHandler.State state){
         return APTHandlersSupportImpl.extractMacroMap(state);
     }
 
-    public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){
+    public static PPMacroMap.State extractMacroMapState(PreprocHandler.State state){
         return APTHandlersSupportImpl.extractMacroMapState(state);
     }
 
-    public static APTIncludeHandler.State extractIncludeState(APTPreprocHandler.State state) {
+    public static PPIncludeHandler.State extractIncludeState(PreprocHandler.State state) {
         return APTHandlersSupportImpl.extractIncludeState(state);
     }
     
-    public static APTPreprocHandler.StateKey getStateKey(APTPreprocHandler.State state){
+    public static PreprocHandler.StateKey getStateKey(PreprocHandler.State state){
         return APTHandlersSupportImpl.getStateKey(state);
     }
 
-    public static boolean isEmptyActiveMacroMap(APTPreprocHandler.State state) {
+    public static boolean isEmptyActiveMacroMap(PreprocHandler.State state) {
         return APTHandlersSupportImpl.isEmptyActiveMacroMap(state);
     }
 
-    public static int getMacroSize(APTPreprocHandler.State state) {
+    public static int getMacroSize(PreprocHandler.State state) {
         return APTHandlersSupportImpl.getMacroSize(state);
     }
 
-    public static int getIncludeStackDepth(APTPreprocHandler.State state) {
+    public static int getIncludeStackDepth(PreprocHandler.State state) {
         return APTHandlersSupportImpl.getIncludeStackDepth(state);
     }
     ////////////////////////////////////////////////////////////////////////////
     // help methods for preprocessor states
-//    public static APTPreprocHandler.State copyPreprocState(APTPreprocHandler.State orig) {
+//    public static PreprocHandler.State copyPreprocState(PreprocHandler.State orig) {
 //        return APTHandlersSupportImpl.copyPreprocState(orig);
 //    }
     
-    public static APTPreprocHandler.State createCleanPreprocState(APTPreprocHandler.State orig) {
+    public static PreprocHandler.State createCleanPreprocState(PreprocHandler.State orig) {
         return APTHandlersSupportImpl.createCleanPreprocState(orig);
     }
     
-    public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
+    public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(PreprocHandler.State state) {
         return APTHandlersSupportImpl.extractIncludeStack(state);
     }
     
-    public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
+    public static StartEntry extractStartEntry(PreprocHandler.State state) {
 	return APTHandlersSupportImpl.extractStartEntry(state);
     }
     
-    public static APTPreprocHandler.State createInvalidPreprocState(APTPreprocHandler.State orig) {
+    public static PreprocHandler.State createInvalidPreprocState(PreprocHandler.State orig) {
         return APTHandlersSupportImpl.createInvalidPreprocState(orig);
     }
 
-    public static boolean equalsIgnoreInvalid(APTPreprocHandler.State state1, APTPreprocHandler.State state2) {
+    public static boolean equalsIgnoreInvalid(PreprocHandler.State state1, PreprocHandler.State state2) {
         return APTHandlersSupportImpl.equalsIgnoreInvalid(state1, state2);
     }
 }

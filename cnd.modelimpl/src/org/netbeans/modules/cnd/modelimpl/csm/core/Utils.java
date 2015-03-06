@@ -78,8 +78,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -460,7 +460,7 @@ public class Utils {
         if (filePrj != null) {
             // use start file from one of states (i.e. first)
             CharSequence fileKey = FileContainer.getFileKey(fileImpl.getAbsolutePath(), false);
-            APTPreprocHandler.State state = filePrj.getFirstValidPreprocState(fileKey);
+            PreprocHandler.State state = filePrj.getFirstValidPreprocState(fileKey);
             if (state == null) {
                 return null;
             }
@@ -470,14 +470,14 @@ public class Utils {
         return out;
     }
 
-    public static FileImpl getStartFile(final APTPreprocHandler.State state) {
+    public static FileImpl getStartFile(final PreprocHandler.State state) {
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
         ProjectBase startProject = getStartProject(startEntry);
         FileImpl csmFile = startProject == null ? null : startProject.getFile(startEntry.getStartFile(), false);
         return csmFile;
     }
 
-    public static ProjectBase getStartProject(final APTPreprocHandler.State state) {
+    public static ProjectBase getStartProject(final PreprocHandler.State state) {
         return getStartProject(APTHandlersSupport.extractStartEntry(state));
     }
 

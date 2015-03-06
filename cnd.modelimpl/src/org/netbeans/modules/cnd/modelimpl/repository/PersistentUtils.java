@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.modelimpl.csm.NoType;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFunPtrImpl;
@@ -730,41 +730,41 @@ public class PersistentUtils {
     ////////////////////////////////////////////////////////////////////////////
     // support preprocessor states
 // Unused for the time being
-//    public static void writeStringToStateMap(Map<String, APTPreprocHandler.State> filesHandlers, DataOutput output) throws IOException {
+//    public static void writeStringToStateMap(Map<String, PreprocHandler.State> filesHandlers, DataOutput output) throws IOException {
 //        assert filesHandlers != null;
 //        int collSize = filesHandlers.size();
 //        output.writeInt(collSize);
 //
-//        for (Entry<String, APTPreprocHandler.State> entry: filesHandlers.entrySet()) {
+//        for (Entry<String, PreprocHandler.State> entry: filesHandlers.entrySet()) {
 //            assert entry != null;
 //            String key = entry.getKey();
 //            output.writeUTF(key);
 //            assert key != null;
-//            APTPreprocHandler.State state = entry.getValue();
+//            PreprocHandler.State state = entry.getValue();
 //            writePreprocState(state, output);
 //        }
 //    }
 
 // Unused for the time being
-//    public static void readStringToStateMap(Map<CharSequence, APTPreprocHandler.State> filesHandlers, DataInput input) throws IOException {
+//    public static void readStringToStateMap(Map<CharSequence, PreprocHandler.State> filesHandlers, DataInput input) throws IOException {
 //        assert filesHandlers != null;
 //        int collSize = input.readInt();
 //
 //        for (int i = 0; i < collSize; i++) {
 //            CharSequence key = FilePathCache.getString(input.readUTF());
 //            assert key != null;
-//            APTPreprocHandler.State state = readPreprocState(input);
+//            PreprocHandler.State state = readPreprocState(input);
 //            assert state != null;
 //            filesHandlers.put(key, state);
 //        }
 //    }
-    public static void writePreprocState(APTPreprocHandler.State state, RepositoryDataOutput output) throws IOException {
-        APTPreprocHandler.State cleanedState = APTHandlersSupport.createCleanPreprocState(state);
+    public static void writePreprocState(PreprocHandler.State state, RepositoryDataOutput output) throws IOException {
+        PreprocHandler.State cleanedState = APTHandlersSupport.createCleanPreprocState(state);
         APTSerializeUtils.writePreprocState(cleanedState, output);
     }
 
-    public static APTPreprocHandler.State readPreprocState(RepositoryDataInput input) throws IOException {
-        APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(input);
+    public static PreprocHandler.State readPreprocState(RepositoryDataInput input) throws IOException {
+        PreprocHandler.State state = APTSerializeUtils.readPreprocState(input);
         assert state.isCleaned();
         return state;
     }

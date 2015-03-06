@@ -83,8 +83,9 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -440,7 +441,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return code;
         }
         FileImpl fileImpl = (FileImpl) file;
-        APTPreprocHandler handler = ((FileImpl) file).getPreprocHandler(offset);
+        PreprocHandler handler = ((FileImpl) file).getPreprocHandler(offset);
         if (handler == null) {
             return code;
         }
@@ -467,7 +468,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code, fileImpl.getFileLanguage());
         if (ts != null) {
-            ts = new APTMacroExpandedStream(ts, handler.getMacroMap(), true);
+            ts = new APTMacroExpandedStream(ts, (APTMacroCallback)handler.getMacroMap(), true);
             
             // skip comments, see IZ 207378
             ts = new APTCommentsFilter(ts);
@@ -1564,7 +1565,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     private static class StopOnOffsetParseFileWalker extends APTParseFileWalker {
 
         private final int stopOffset;
-        public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, PreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
             super(base, apt, file, preprocHandler, false, null, cacheEntry);
             stopOffset = offset;
         }

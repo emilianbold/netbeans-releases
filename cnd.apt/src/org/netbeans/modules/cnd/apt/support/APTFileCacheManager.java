@@ -53,7 +53,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.State;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.State;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Parameters;
 

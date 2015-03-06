@@ -52,8 +52,8 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
@@ -72,7 +72,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
     private final boolean searchInterestedFile;
     
     /** Creates a new instance of APTRestorePreprocStateWalker */
-    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, LinkedList<IncludeInfo> inclStack, String interestedFile, APTFileCacheEntry cacheEntry) {
+    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, PreprocHandler preprocHandler, LinkedList<IncludeInfo> inclStack, String interestedFile, APTFileCacheEntry cacheEntry) {
         super(base, apt, file, preprocHandler, cacheEntry);
         this.searchInterestedFile = true;
         this.interestedFile = interestedFile;
@@ -114,7 +114,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                     // need to continue restoring in sub-#includes
                     APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(csmFile, false);
                     if (aptLight != null) {
-                        APTPreprocHandler preprocHandler = getPreprocHandler();
+                        PreprocHandler preprocHandler = getPreprocHandler();
                         // only ask for cached entry
                         APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler.getState(), null);
                         APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, cacheEntry){
@@ -136,7 +136,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 // usual gathering macro map without check on #include directives
                 APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(csmFile, false);
                 if (aptLight != null) {
-                    APTPreprocHandler preprocHandler = getPreprocHandler();
+                    PreprocHandler preprocHandler = getPreprocHandler();
                     // only ask for cached entry and visit with it #include directive
                     APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler.getState(), null);
                     APTWalker walker = new APTSelfWalker(aptLight, preprocHandler, cacheEntry) {

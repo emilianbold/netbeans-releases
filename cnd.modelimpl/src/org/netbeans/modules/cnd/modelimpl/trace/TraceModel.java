@@ -44,7 +44,7 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.text.NumberFormat;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
@@ -73,12 +73,13 @@ import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
+import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
@@ -221,16 +222,16 @@ public class TraceModel extends TraceModelBase {
 //    private boolean testFolding = false;
     private Map<String, Long> cacheTimes = new HashMap<>();
     private int lap = 0;
-    private final Map<CsmFile, APTPreprocHandler> states = new ConcurrentHashMap<>();
+    private final Map<CsmFile, PreprocHandler> states = new ConcurrentHashMap<>();
     public interface TestHook {
 
-        void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler);
+        void parsingFinished(CsmFile file, PreprocHandler preprocHandler);
     }
     
     TestHook hook = new TestHook() {
 
         @Override
-        public void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler) {
+        public void parsingFinished(CsmFile file, PreprocHandler preprocHandler) {
             states.put(file, preprocHandler);
         }
     };
@@ -776,7 +777,7 @@ public class TraceModel extends TraceModelBase {
     private final APTSystemStorage sysAPTData = APTSystemStorage.getInstance();
     private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
     
-    private APTIncludeHandler getIncludeHandler(FileObject fo) {
+    private PPIncludeHandler getIncludeHandler(FileObject fo) {
         FileSystem localFS = CndFileUtils.getLocalFileSystem();
         List<FSPath> systemIncludes = CndFileUtils.toFSPathList(localFS, getSystemIncludes());
         List<IncludeDirEntry> sysIncludes = sysAPTData.getIncludes(systemIncludes.toString(), systemIncludes); // NOI18N
@@ -802,19 +803,19 @@ public class TraceModel extends TraceModelBase {
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, Collections.<String>emptyList(), null);
     }
 
-    private APTMacroMap getMacroMap(FileObject fo) {
+    private PPMacroMap getMacroMap(FileObject fo) {
         //print("SystemIncludePaths: " + systemIncludePaths.toString() + "\n");
         //print("QuoteIncludePaths: " + quoteIncludePaths.toString() + "\n");
-        APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(fo), getMacros());
+        PPMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(fo), getMacros());
         return map;
     }
 
-//    private APTPreprocHandler getPreprocHandler(File file) {
-//	APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
+//    private PreprocHandler getPreprocHandler(File file) {
+//	PreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
 //	return preprocHandler;
 //    }
-    private APTMacroMap getSysMap(FileObject fo) {
-        APTMacroMap map = sysAPTData.getMacroMap("TraceModelSysMacros", getSysMacros()); // NOI18N
+    private PPMacroMap getSysMap(FileObject fo) {
+        PPMacroMap map = sysAPTData.getMacroMap("TraceModelSysMacros", getSysMacros()); // NOI18N
         return map;
     }
 
@@ -876,7 +877,7 @@ public class TraceModel extends TraceModelBase {
             time = System.currentTimeMillis();
             apt = APTDriver.findAPTLight(buffer);
         }
-        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(fo), getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
+        PreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(fo), getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         walker.visit();
         time = System.currentTimeMillis() - time;
@@ -911,12 +912,12 @@ public class TraceModel extends TraceModelBase {
             time = System.currentTimeMillis();
             apt = APTDriver.findAPT(buffer, getFileLanguage(fo), APTLanguageSupport.FLAVOR_UNKNOWN);
         }
-        APTMacroMap macroMap = getMacroMap(fo);
-        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
+        PPMacroMap macroMap = getMacroMap(fo);
+        PreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         TokenStream ts = walker.getTokenStream();
         if (expand) {
-            ts = new APTMacroExpandedStream(ts, macroMap, false);
+            ts = new APTMacroExpandedStream(ts, (APTMacroCallback)macroMap, false);
         }
         if (filter) {
             ts = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP).getFilteredStream(new APTCommentsFilter(ts));
@@ -1197,7 +1198,7 @@ public class TraceModel extends TraceModelBase {
             while (antiLoop++ < 100 && !states.containsKey(fileImpl)) {
                 sleep(100); // so that we don't run ahead of fileParsingFinished event
             }
-            APTPreprocHandler preprocHandler = states.get(fileImpl);
+            PreprocHandler preprocHandler = states.get(fileImpl);
             assert preprocHandler != null : "no handler was kept for " + fileImpl;
             dumpMacroMap(preprocHandler.getMacroMap());
         }
@@ -1336,7 +1337,7 @@ public class TraceModel extends TraceModelBase {
         visitor.visit(ast);
     }
 
-    private void dumpMacroMap(APTMacroMap macroMap) {
+    private void dumpMacroMap(PPMacroMap macroMap) {
         tracer.print("State of macro map:"); // NOI18N
         tracer.print(macroMap == null ? "empty macro map" : macroMap.toString()); // NOI18N
     }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,10 +51,11 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -162,7 +164,7 @@ public class APTConditionResolverTest {
     private static final class TestWalker extends APTAbstractWalker {
 
         public TestWalker(APTFile apt, APTMacroMap macros) {
-            super(apt, APTHandlersSupport.createPreprocHandler(macros, 
+            super(apt, APTHandlersSupportImpl.createPreprocHandler(macros, 
                     new APTIncludeHandlerImpl(createStartEntry(apt), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), null),
                     true, CharSequences.empty(), CharSequences.empty()), null);
         }
