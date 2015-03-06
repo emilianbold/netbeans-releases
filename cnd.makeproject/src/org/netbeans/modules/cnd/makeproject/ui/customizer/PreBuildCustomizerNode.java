@@ -66,6 +66,6 @@ public class PreBuildCustomizerNode extends CustomizerNode {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("ProjectPropsMake"); // NOI18N
+        return new HelpCtx("ProjectPropsPreBuild"); // NOI18N
     }
 }
