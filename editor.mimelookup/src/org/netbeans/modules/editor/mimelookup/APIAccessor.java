@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,77 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.editor.mimelookup;
 
-package org.netbeans.modules.editor.settings.storage.spi;
-
-import org.openide.util.Utilities;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author vita
+ * @author sdedic
  */
-public final class TypedValue {
-
-    private final String value;
-    private String javaType;
-    private String apiCategory; // the API stability
-
-    public TypedValue(String value, String javaType) {
-        this.value = value;
-        this.javaType = javaType;
-    }
-
-    public String getApiCategory() {
-        return apiCategory;
-    }
-
-    public void setApiCategory(String apiCategory) {
-        this.apiCategory = apiCategory;
-    }
-
-    public String getJavaType() {
-        return javaType;
-    }
-
-    public void setJavaType(String javaType) {
-        this.javaType = javaType;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public @Override boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+public abstract class APIAccessor {
+    private static APIAccessor INSTANCE;
+    
+    @SuppressWarnings("LeakingThisInConstructor")
+    protected APIAccessor() {
+        if (INSTANCE != null) {
+            throw new IllegalStateException();
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TypedValue other = (TypedValue) obj;
-        if (!Utilities.compareObjects(this.value, other.value)) {
-            return false;
-        }
-        if (!Utilities.compareObjects(this.javaType, other.javaType)) {
-            return false;
-        }
-        return true;
-    }
-
-    public @Override int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + (value != null ? value.hashCode() : 0);
-        hash = 37 * hash + (javaType != null ? javaType.hashCode() : 0);
-        return hash;
-    }
-
-    public @Override String toString() {
-        return super.toString() + "['" + value + "', " + javaType;
+        INSTANCE = this;
     }
     
-} // End of TypedValue class
+    public static APIAccessor get() {
+        return INSTANCE;
+    }
+    
+    public abstract Lookup cacheMimeLookup(MimePath path);
+}

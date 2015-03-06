@@ -60,8 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
-import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.netbeans.modules.editor.settings.storage.preferences.PreferencesStorage;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.openide.filesystems.FileObject;
@@ -70,7 +68,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -90,23 +88,27 @@ public final class SettingsType {
     public static Locator getLocator(StorageDescription sd) {
         assert sd != null : "The parameter sd can't be null"; //NOI18N
         
-        Locator locator;
-
-        if (ColoringStorage.ID.equals(sd.getId())) {
-            locator = new FontsColorsLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
-        } else if (KeyMapsStorage.ID.equals(sd.getId()) || PreferencesStorage.ID.equals(sd.getId())) {
-            locator = new LegacyTextBaseLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
-        } else {
-            locator = new DefaultLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
+        Collection<? extends LocatorFactory> locators = Lookup.getDefault().lookupAll(LocatorFactory.class);
+        for (LocatorFactory f : locators) {
+            Locator l = f.createLocator(sd);
+            if (l != null) {
+                return l;
+            }
         }
-
-        return locator;
+        if (PreferencesStorage.ID.equals(sd.getId())) {
+            return new PreferencesLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
+        }
+        return new DefaultLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
     }
     
     public static interface Locator {
         public void scan(FileObject baseFolder, String mimeType, String profileId, boolean fullScan, boolean scanModules, boolean scanUsers, boolean resolveLinks, Map<String, List<Object []>> results);
         public String getWritableFileName(String mimeType, String profileId, String fileId, boolean modulesFile);
         public boolean isUsingProfiles();
+    }
+    
+    public static interface LocatorFactory {
+        public Locator createLocator(StorageDescription sd);
     }
     
     // ------------------------------------------------------------------
@@ -183,10 +185,10 @@ public final class SettingsType {
     // Locators
     // ------------------------------------------------------------------
     
-    private static class DefaultLocator implements Locator {
+    public static class DefaultLocator implements Locator {
 
         protected static final String MODULE_FILES_FOLDER = "Defaults"; //NOI18N
-        protected static final String DEFAULT_PROFILE_NAME = EditorSettingsImpl.DEFAULT_PROFILE;
+        protected static final String DEFAULT_PROFILE_NAME = Utils.DEFAULT_PROFILE;
 
         private static final String WRITABLE_FILE_PREFIX = "org-netbeans-modules-editor-settings-Custom"; //NOI18N
         private static final String WRITABLE_FILE_SUFFIX = ".xml"; //NOI18N
@@ -316,7 +318,7 @@ public final class SettingsType {
             }
         }
 
-        private FileObject getMimeFolder(FileObject baseFolder, String mimeType) {
+        protected FileObject getMimeFolder(FileObject baseFolder, String mimeType) {
             return mimeType == null ? baseFolder : baseFolder.getFileObject(mimeType);
         }
 
@@ -460,9 +462,10 @@ public final class SettingsType {
             if (targetOs instanceof Boolean) {
                 return ((Boolean) targetOs).booleanValue();
             } else if (targetOs instanceof String) {
-                Field field = Utilities.class.getDeclaredField((String) targetOs);
+                // XXX FIXME - reflective access to Utilities
+                Field field = BaseUtilities.class.getDeclaredField((String) targetOs);
                 int targetOsMask = field.getInt(null);
-                int currentOsId = Utilities.getOperatingSystem();
+                int currentOsId = BaseUtilities.getOperatingSystem();
                 return (currentOsId & targetOsMask) != 0;
             } else {
                 return false;
@@ -607,106 +610,17 @@ public final class SettingsType {
             }
         }
     } // End of DefaultLocator class
-    
-    private static final class FontsColorsLocator extends DefaultLocator {
-        
-        private static final String [] M_LEGACY_FILE_NAMES = new String [] {
-            MODULE_FILES_FOLDER + "/defaultColoring.xml", // NOI18N
-            MODULE_FILES_FOLDER + "/coloring.xml", // NOI18N
-            MODULE_FILES_FOLDER + "/editorColoring.xml", // NOI18N
-        };
-        
-        private static final String [] U_LEGACY_FILE_NAMES = new String [] {
-            "defaultColoring.xml", // NOI18N
-            "coloring.xml", // NOI18N
-            "editorColoring.xml", // NOI18N
-        };
-        
-        public FontsColorsLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
-            super(settingTypeId, hasProfiles, mimeType, legacyFileName);
-        }
-        
-        @Override
-        protected void addModulesLegacyFiles(
-            FileObject mimeFolder,
-            String profileId,
-            boolean fullScan,
-            Map<String, List<Object []>> files
-        ) {
-            addFiles(mimeFolder, profileId, fullScan, M_LEGACY_FILE_NAMES, files, true);
-        }
 
-        @Override
-        protected void addUsersLegacyFiles(
-            FileObject mimeFolder,
-            String profileId,
-            boolean fullScan,
-            Map<String, List<Object []>> files
-        ) {
-            addFiles(mimeFolder, profileId, fullScan, U_LEGACY_FILE_NAMES, files, false);
-        }
-
-        private void addFiles(
-            FileObject mimeFolder,
-            String profileId,
-            boolean fullScan,
-            String [] filePaths,
-            Map<String, List<Object []>> files,
-            boolean moduleFiles
-        ) {
-            if (profileId == null) {
-                FileObject [] profileHomes = mimeFolder.getChildren();
-                for(FileObject f : profileHomes) {
-                    if (!f.isFolder()) {
-                        continue;
-                    }
-                    
-                    String id = f.getNameExt();
-                    addFiles(f, filePaths, fullScan, files, id, f, moduleFiles); //NOI18N
-                }
-            } else {
-                FileObject profileHome = mimeFolder.getFileObject(profileId);
-                if (profileHome != null && profileHome.isFolder()) {
-                    addFiles(profileHome, filePaths, fullScan, files, profileId, profileHome, moduleFiles);
-                }
-            }
-        }
+    private static final class PreferencesLocator extends DefaultLocator {
         
-        private void addFiles(FileObject folder, String [] filePaths, boolean fullScan, Map<String, List<Object []>> files, String profileId, FileObject profileHome, boolean moduleFiles) {
-            for(String filePath : filePaths) {
-                FileObject f = folder.getFileObject(filePath);
-                if (f != null) {
-                    List<Object []> pair = files.get(profileId);
-                    if (pair == null) {
-                        pair = new ArrayList<Object[]>();
-                        files.put(profileId, pair);
-                    }
-                    pair.add(new Object [] { profileHome, f, moduleFiles, null, true });
-
-                    if (LOG.isLoggable(Level.INFO)) {
-                        Utils.logOnce(LOG, Level.INFO, settingTypeId + " settings " + //NOI18N
-                            "should reside in '" + settingTypeId + "' subfolder, " + //NOI18N
-                            "see #90403 for details. Offending file '" + f.getPath() + "'", null); //NOI18N
-                    }
-                    
-                    if (!fullScan) {
-                        break;
-                    }
-                }
-            }
-        }
-    } // End of FontsColorsLocator class
-
-    private static final class LegacyTextBaseLocator extends DefaultLocator {
-        
-        public LegacyTextBaseLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
+        public PreferencesLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
             super(settingTypeId, hasProfiles, mimeType, legacyFileName);
         }
         
         @Override
         protected FileObject getLegacyMimeFolder(FileObject baseFolder, String mimeType) {
             if (mimeType == null || mimeType.length() == 0) {
-                return baseFolder.getFileObject(EditorSettingsImpl.TEXT_BASE_MIME_TYPE);
+                return baseFolder.getFileObject(Utils.TEXT_BASE_MIME_TYPE);
             } else {
                 return super.getMimeFolder(baseFolder, mimeType);
             }

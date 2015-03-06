@@ -48,7 +48,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -58,12 +61,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.spi.CustomInstanceFactory;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -205,6 +209,39 @@ public final class FolderPathLookup extends AbstractLookup {
 
     }
     
+    private static volatile Lookup.Result<CustomInstanceFactory> factories;
+    
+    private static Collection<? extends CustomInstanceFactory> getInstanceFactories() {
+        Lookup.Result<CustomInstanceFactory> v = factories;
+        if (v != null) {
+            return v.allInstances();
+        }
+        final Lookup.Result<CustomInstanceFactory> fr[] = new Lookup.Result[1];
+        // ensure the system - global Lookup is used
+        Lookups.executeWith(null, new Runnable() {
+            public void run() {
+                fr[0] = factories = Lookup.getDefault().lookupResult(CustomInstanceFactory.class);
+            }
+        });
+        return fr[0].allInstances();
+    }
+            
+    public static final <T> T createInstance(Class<T> type) throws InstantiationException, 
+            IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        T r = null;
+        for (CustomInstanceFactory fif : getInstanceFactories()) {
+            r = (T)fif.createInstance(type);
+            if (r != null) {
+                break;
+            }
+        }
+        if (r == null) {
+            Constructor<T> init = type.getDeclaredConstructor();
+            init.setAccessible(true);
+            r = init.newInstance();
+        }
+        return r;
+    }
 
     /**
      * Item referencing a file object and object instance that was created from it.
@@ -342,14 +379,8 @@ public final class FolderPathLookup extends AbstractLookup {
                     if (type == null) {
                         return null;
                     }
-                    if (SharedClassObject.class.isAssignableFrom(type)) {
-                        inst = SharedClassObject.findObject(type.asSubclass(SharedClassObject.class), true);
-                    } else {
-                        inst = type.newInstance();
-                    }
-                } catch (InstantiationException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalAccessException ex) {
+                    inst = createInstance(type);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -373,7 +404,7 @@ public final class FolderPathLookup extends AbstractLookup {
             // first of all try "instanceClass" property of the primary file
             Object attr = fo.getAttribute ("instanceClass");
             if (attr instanceof String) {
-                return Utilities.translate((String) attr);
+                return BaseUtilities.translate((String) attr);
             } else if (attr != null) {
                 LOG.warning(
                     "instanceClass was a " + attr.getClass().getName()); // NOI18N
@@ -411,7 +442,7 @@ public final class FolderPathLookup extends AbstractLookup {
             }
 
             name = name.replace ('-', '.');
-            name = Utilities.translate(name);
+            name = BaseUtilities.translate(name);
 
             return name;
         }
@@ -423,7 +454,7 @@ public final class FolderPathLookup extends AbstractLookup {
         private final class Ref extends WeakReference<Object> implements Runnable {
             
             Ref(Object inst) {
-                super(inst, Utilities.activeReferenceQueue());
+                super(inst, BaseUtilities.activeReferenceQueue());
             }
 
             @Override

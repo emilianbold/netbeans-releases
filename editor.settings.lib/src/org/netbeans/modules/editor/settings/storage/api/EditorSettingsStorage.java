@@ -45,16 +45,17 @@ package org.netbeans.modules.editor.settings.storage.api;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.settings.storage.ApiAccessor;
 import org.netbeans.modules.editor.settings.storage.SettingsType;
 import org.netbeans.modules.editor.settings.storage.StorageImpl;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -75,20 +76,9 @@ public final class EditorSettingsStorage <K extends Object, V extends Object> {
     
    @SuppressWarnings("unchecked")
     public static <K extends Object, V extends Object> EditorSettingsStorage<K, V> find(String settingsTypeId) {
-        synchronized (cache) {
-            EditorSettingsStorage<K, V> ess = null;
-            StorageDescription<K, V> sd = SettingsType.<K, V>find(settingsTypeId);
-            
-            if (sd != null) {
-                ess = cache.get(sd);
-                if (ess == null) {
-                    ess = new EditorSettingsStorage<K, V>(sd);
-                    cache.put(sd, ess);
-                }
-            }            
-            
-            return ess;
-        }
+        StorageDescription<K, V> sd = SettingsType.<K, V>find(settingsTypeId);
+        // must not cache in a static cache, cache can be found in [contextual] Lookup.
+        return Lookup.getDefault().lookup(StorageImpl.StorageCache.class).createStorage(sd);
     }
     
     public Map<K, V> load(MimePath mimePath, String profile, boolean defaults) throws IOException {
@@ -128,8 +118,6 @@ public final class EditorSettingsStorage <K extends Object, V extends Object> {
     // private implementation
     // ------------------------------------------
 
-    private static final Map<StorageDescription<?, ?>, EditorSettingsStorage> cache = new HashMap<StorageDescription<?, ?>, EditorSettingsStorage>();
-    
     private final PropertyChangeSupport PCS = new PropertyChangeSupport(this);
     private final StorageImpl<K, V> storageImpl;
     
@@ -138,6 +126,15 @@ public final class EditorSettingsStorage <K extends Object, V extends Object> {
             public Void call() {
                 PCS.firePropertyChange(PROP_DATA, null, null);
                 return null;
+            }
+        });
+    }
+    
+    static {
+        ApiAccessor.register(new ApiAccessor() {
+            @Override
+            public <K,V> EditorSettingsStorage<K,V> createSettingsStorage(StorageDescription<K, V> storageDescription) {
+                return new EditorSettingsStorage<>(storageDescription);
             }
         });
     }

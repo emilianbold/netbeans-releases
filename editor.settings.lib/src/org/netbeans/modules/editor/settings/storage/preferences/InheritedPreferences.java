@@ -43,14 +43,13 @@ package org.netbeans.modules.editor.settings.storage.preferences;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.editor.settings.storage.api.MemoryPreferences;
 import org.netbeans.modules.editor.settings.storage.api.OverridePreferences;
 import org.openide.util.WeakListeners;
 

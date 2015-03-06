@@ -53,11 +53,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.CharacterConversions;
+import org.netbeans.modules.editor.settings.storage.Utils;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
-import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -202,7 +202,7 @@ public final class PreferencesStorage implements StorageDescription<String, Type
                     // Read the value and localize it
                     String valueId = attributes.getValue(A_VALUE_ID);
                     if (valueId != null) {
-                        String localizedValue = StorageSupport.getLocalizingBundleMessage(
+                        String localizedValue = getLocalizingBundleMessage(
                                 getProcessedFile(), valueId, null);
                         if (localizedValue != null) {
                             value = localizedValue;
@@ -393,4 +393,9 @@ public final class PreferencesStorage implements StorageDescription<String, Type
             return doc;
         }
     } // End of Writer class
+
+    public static String getLocalizingBundleMessage(FileObject fo, String key, String defaultValue) {
+        return Utils.getLocalizedName(fo, key, defaultValue, false);
+    }
+
 }

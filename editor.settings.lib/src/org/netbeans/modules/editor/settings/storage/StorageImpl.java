@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
@@ -78,6 +79,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -748,6 +750,39 @@ public final class StorageImpl <K extends Object, V extends Object> {
                     + ", path=" + event.getFile().getPath(); //NOI18N
         }
     } // End of FilesystemTracker class
+    
+    /**
+     * Caching provider. Storage cache cannot be held in static variable, as they initialize
+     * with per-execution data.
+     */
+    public static interface StorageCache {
+        public <K,V> EditorSettingsStorage<K,V>    createStorage(StorageDescription<K,V> desc);
+    }
+    
+    /**
+     * Caching for individual EditorSettingStorages. Originally the cache was implemented in
+     * a static variable, but we need to cache the storage for each execution/user separately.
+     */
+    @ServiceProvider(service = StorageImpl.StorageCache.class)
+    public static final class StorageCacheImpl implements StorageImpl.StorageCache {
+        private final Map<StorageDescription<?, ?>, EditorSettingsStorage> cache = new HashMap<>();
 
+        @Override
+        public <K, V> EditorSettingsStorage<K, V> createStorage(StorageDescription<K, V> sd) {
+            synchronized (cache) {
+                EditorSettingsStorage<K, V> ess = null;
+                if (sd != null) {
+                    ess = cache.get(sd);
+                    if (ess == null) {
+                        ess = ApiAccessor.get().createSettingsStorage(sd);
+                        cache.put(sd, ess);
+                    }
+                }            
+
+                return ess;
+            }
+        }
+    
+    }
 }
 

@@ -47,8 +47,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
 import org.netbeans.modules.editor.settings.storage.SpiPackageAccessor;
+import org.netbeans.modules.editor.settings.storage.Utils;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -82,7 +82,7 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
             moduleFile = parent.getNameExt().contains("Default"); //NOI18N
             parent = parent.getParent();
             if (parent != null) {
-                defaultProfile = parent.getNameExt().contains(EditorSettingsImpl.DEFAULT_PROFILE);
+                defaultProfile = parent.getNameExt().contains(Utils.DEFAULT_PROFILE);
             }
         }
         this.isModuleFile = moduleFile;

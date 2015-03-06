@@ -49,7 +49,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -78,14 +77,8 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
     private static final String JAVATYPE_KEY_PREFIX = "nbeditor-javaType-for-legacy-setting_"; //NOI18N
     
     public static synchronized PreferencesImpl get(MimePath mimePath) {
-        PreferencesImpl prefs = INSTANCES.get(mimePath);
-        
-        if (prefs == null) {
-            prefs = new PreferencesImpl(mimePath.getPath());
-            INSTANCES.put(mimePath, prefs);
-        }
-        
-        return prefs;
+          // must not access static-variable cache directly.
+          return (PreferencesImpl)DEFAULT_FACTORY.createPreferences(mimePath);
     }
 
     // ---------------------------------------------------------------------
@@ -463,10 +456,15 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
     
     private Map<String, TypedValue> local = null;
     private Preferences inherited = null;
+    private final PreferencesFactory factory;
     
     private PreferencesImpl(String mimePath) {
-        super(null, EMPTY);
-        
+        this(DEFAULT_FACTORY, mimePath);
+    }
+    
+    public PreferencesImpl(PreferencesFactory factory, String mimePath) {
+        super (null, EMPTY);
+        this.factory = factory;
         this.mimePath = mimePath;
         this.storage = EditorSettingsStorage.<String, TypedValue>get(PreferencesStorage.ID);
         this.storage.addPropertyChangeListener(WeakListeners.propertyChange(storageTracker, this.storage));
@@ -488,9 +486,9 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         if (inherited == null && mimePath.length() > 0) {
             String type = MimePath.parse(mimePath).getInheritedType();
             if (type != null) {
-                inherited = get(MimePath.parse(type));
+                inherited = factory.createPreferences(MimePath.parse(type));
             } else {
-                inherited = get(MimePath.EMPTY);
+                inherited = factory.createPreferences(MimePath.EMPTY);
             }
             
             inherited.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, inherited));
@@ -530,5 +528,40 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         } else {
             assert false : "Can't fire preferenceChange event for null key or value, no enqueuePreferenceChangeEvent available"; //NOI18N
         }
+    }
+    
+    /**
+     * The default preferences factory. To be GC-compatible with older NB versions, preferences cache
+     * is kept in a static variable.
+     */
+    private static final PreferencesFactory DEFAULT_FACTORY = new PreferencesFactory() {
+        @Override
+        public Preferences createPreferences(MimePath mimePath) {
+            synchronized (INSTANCES) {
+                PreferencesImpl prefs = INSTANCES.get(mimePath);
+
+                if (prefs == null) {
+                    prefs = new PreferencesImpl(this, mimePath.getPath());
+                    INSTANCES.put(mimePath, prefs);
+                }
+                return prefs;
+            }
+        }
+    };
+    
+    /**
+     * Provides cahce for preferences for individual MIME paths. Preferences cannot be
+     * cached in a static variable, since they hold per-execution data which depends
+     * on the Lookup contents. The default PreferencesFactory is provided in the system Lookup
+     * and can be overriden in a specialized local Lookup.
+     */
+    public interface PreferencesFactory {
+          /**
+           * Creates or acquires Preferences instance for the given MIME path.
+           * 
+           * @param path mime path
+           * @return Preferences instance.
+           */
+          public Preferences createPreferences(MimePath path);
     }
 }
