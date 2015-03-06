@@ -48,11 +48,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.remotefs.versioning.api.RemoteFileSystemConnectionListener;
+import org.netbeans.modules.remotefs.versioning.api.RemoteFileSystemConnectionManager;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
@@ -72,7 +75,7 @@ import org.openide.util.NbBundle;
     menuLabel="#CTL_Subversion_MainMenu",  //NOI18N
     metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"},  //NOI18N
     actionsCategory="RemoteSubversion") //NOI18N
-public class SubversionVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener, PreferenceChangeListener {
+public class SubversionVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener, PreferenceChangeListener, RemoteFileSystemConnectionListener {
 
     /**
      * Fired when textual annotations and badges have changed. The NEW value is
@@ -83,6 +86,7 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
     private VCSVisibilityQuery visibilityQuery;
 
     public SubversionVCS() {
+        RemoteFileSystemConnectionManager.getInstance().addRemoteFileSystemConnectionListener(this);
         for(FileSystem fileSystem : VCSFileProxySupport.getConnectedFileSystems()) {
             SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
         }
@@ -223,4 +227,13 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
         }
     }
 
+    @Override
+    public void connected(FileSystem fs) {
+        Subversion.getInstance().versionedFilesChanged();
+        VersioningSupport.versionedRootsChanged();        
+    }
+
+    @Override
+    public void disconnected(FileSystem fs) {
+    }
 }

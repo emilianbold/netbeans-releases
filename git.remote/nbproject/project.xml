@@ -169,7 +169,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0.21</specification-version>
+                        <specification-version>1.0.37</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
