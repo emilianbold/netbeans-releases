@@ -372,6 +372,7 @@
 				<file title="NewStaticLibWizard.html"/>
 				<file title="ProjectPropsArchiverGeneral.html"/>
 				<file title="ProjectPropsBuild.html"/>
+				<file title="ProjectPropsCompile.html"/>
 				<file title="ProjectPropsCompilerGeneral.html"/>
 				<file title="ProjectPropsDebugging.html"/>
 				<file title="ProjectPropsFormatting.html"/>
@@ -380,6 +381,7 @@
 				<file title="ProjectPropsMake.html"/>
 				<file title="ProjectPropsPackaging.html"/>
 				<file title="ProjectPropsParser.html"/>
+				<file title="ProjectPropsPreBuild.html"/>
 				<file title="ProjectPropsQt.html"/>
 				<file title="ProjectPropsRequired.html"/>
 				<file title="ProjectPropsRunning.html"/>
