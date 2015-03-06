@@ -45,14 +45,9 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -63,8 +58,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 public final class FilePreprocessorConditionState {
     public static final FilePreprocessorConditionState PARSING = new FilePreprocessorConditionState("PARSING", new int[]{0, Integer.MAX_VALUE}); // NOI18N
-    private static final int ERROR_DIRECTIVE_MARKER = Integer.MAX_VALUE;
-    private static final int PRAGMA_ONCE_DIRECTIVE_MARKER = Integer.MAX_VALUE - 1;
+    public static final int ERROR_DIRECTIVE_MARKER = Integer.MAX_VALUE;
+    public static final int PRAGMA_ONCE_DIRECTIVE_MARKER = Integer.MAX_VALUE - 1;
 
     /** a SORTED array of blocks [start-end] for which conditionals were evaluated to false */
     private final int[] offsets;
@@ -233,179 +228,29 @@ public final class FilePreprocessorConditionState {
         }
         return offsets[offsets.length-1] == ERROR_DIRECTIVE_MARKER;
     }
-
-    public static final class Builder implements APTParseFileWalker.EvalCallback {
-
-        private final SortedSet<int[]> blocks = new TreeSet<>(COMPARATOR);
-        private final CharSequence name;
-        public Builder(CharSequence name) {
-            this.name = name;
+    
+    static FilePreprocessorConditionState build(CharSequence name, int[] offsets) {
+        // TODO: copy offsets?
+        FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(name, offsets);
+        if (CndUtils.isDebugMode()) {
+            checkConsistency(pcState);
         }
-
-        /*package*/final Builder addBlockImpl(int startDeadBlock, int endDeadBlock) {
-            assert endDeadBlock >= startDeadBlock : "incorrect offsets " + startDeadBlock + " and " + endDeadBlock; // NOI18N
-            if (endDeadBlock > startDeadBlock) {
-                blocks.add(new int[] { startDeadBlock, endDeadBlock });
-            }
-            return this;
-        }
-
-        private void addDeadBlock(APT startNode, APT endNode) {
-            if (startNode != null && endNode != null) {
-                int startDeadBlock = startNode.getEndOffset();
-                int endDeadBlock = endNode.getOffset() - 1;
-                addBlockImpl(startDeadBlock, endDeadBlock);
-            }
-        }
-        
-        /**
-         * Implements APTParseFileWalker.EvalCallback -
-         * adds offset of dead branch to offsets array
-         */        
-        @Override
-        public void onErrorDirective(APT apt) {
-            // on error directive we add special dead block
-            addBlockImpl(ERROR_DIRECTIVE_MARKER-apt.getToken().getOffset(), ERROR_DIRECTIVE_MARKER);
-        }
-
-        /**
-         * Implements APTParseFileWalker.EvalCallback - adds offset of dead
-         * branch to offsets array
-         */
-        @Override
-        public void onPragmaOnceDirective(APT apt) {
-            // on pragma once directive we add dead block from pragma till the end
-            addBlockImpl(apt.getToken().getOffset(), PRAGMA_ONCE_DIRECTIVE_MARKER);
-        }
-
-        /**
-         * Implements APTParseFileWalker.EvalCallback -
-         * adds offset of dead branch to offsets array
-         */
-        @Override
-        public void onEval(APT apt, boolean result) {
-            if (result) {
-                // if condition was evaluated as 'true' check if we
-                // need to mark siblings as dead blocks
-                APT start = apt.getNextSibling();
-                while (start != null) {
-                    APT end = start.getNextSibling();
-                    if (end != null) {
-                        switch (end.getType()) {
-                            case APT.Type.ELIF:
-                            case APT.Type.ELSE:
-                                addDeadBlock(start, end);
-                                // continue
-                                start = end;
-                                break;
-                            case APT.Type.ENDIF:
-                                addDeadBlock(start, end);
-                                // stop
-                                start = null;
-                                break;
-                            default:
-                                // stop
-                                start = null;
-                                break;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            } else {
-                // if condition was evaluated as 'false' mark it as dead block
-                APT end = apt.getNextSibling();
-                if (end != null) {
-                    switch (end.getType()) {
-                        case APT.Type.ELIF:
-                        case APT.Type.ELSE:
-                        case APT.Type.ENDIF:
-                            addDeadBlock(apt, end);
-                            break;
-                    }
-                }
-            }
-        }
-
-        public FilePreprocessorConditionState build() {
-            int size = 0;
-            for (int[] deadInterval : blocks) {
-                size++;
-                if (deadInterval[1] == ERROR_DIRECTIVE_MARKER) {
-                    break;
-                }
-            }
-            int[] offsets = new int[size*2];
-            int index = 0;
-            for (int[] deadInterval : blocks) {
-                offsets[index++] = deadInterval[0];
-                offsets[index++] = deadInterval[1];
-                if (deadInterval[1] == ERROR_DIRECTIVE_MARKER) {
-                    break;
-                }
-            }
-            return build(this.name, offsets);
-        }
-
-        private static void checkConsistency(FilePreprocessorConditionState pcState) {
-            // check consistency for ordering and absence of intersections
-            for (int i = 0; i < pcState.offsets.length; i++) {
-                if (i + 1 < pcState.offsets.length) {
-                    if (!(pcState.offsets[i] < pcState.offsets[i + 1])) {
-                        CndUtils.assertTrue(false, "inconsistent state " + pcState);  // NOI18N
-                    }
-                }
-            }
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            if (name != null) {
-                sb.append(name);
-            }
-            sb.append("[");//NOI18N
-            int i = 0;
-            for (int[] deadInterval : blocks) {
-                if (i++ > 0) {
-                    sb.append("][");//NOI18N
-                }
-                if (deadInterval[1] == ERROR_DIRECTIVE_MARKER) {
-                    sb.append(ERROR_DIRECTIVE_MARKER-deadInterval[0]);
-                    sb.append("#error");//NOI18N
-                } else if (deadInterval[1] == PRAGMA_ONCE_DIRECTIVE_MARKER) {
-                    sb.append(deadInterval[0]);
-                    sb.append("#pragma once");//NOI18N    
-                } else {
-                    sb.append(deadInterval[0]);
-                    sb.append("-");//NOI18N
-                    sb.append(deadInterval[1]);
-                }
-            }
-            sb.append("]");//NOI18N
-            return sb.toString();
-        }
-
-        private static final Comparator<int[]> COMPARATOR = new Comparator<int[]>() {
-            @Override
-            public int compare(int[] segment1, int[] segment2) {
-                return segment1[0] - segment2[0];
-            }
-        };
-
-        static FilePreprocessorConditionState build(CharSequence name, int[] offsets) {
-            // TODO: copy offsets?
-            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(name, offsets);
-            if (CndUtils.isDebugMode()) {
-                checkConsistency(pcState);
-            }
-            return pcState;
-        }
-
-        static int[] getDeadBlocks(FilePreprocessorConditionState pcState) {
-            // TODO: copy offsets?
-            return pcState.offsets;
-        }
-
+        return pcState;
     }
+
+    static int[] getDeadBlocks(FilePreprocessorConditionState pcState) {
+        // TODO: copy offsets?
+        return pcState.offsets;
+    }
+    
+    private static void checkConsistency(FilePreprocessorConditionState pcState) {
+        // check consistency for ordering and absence of intersections
+        for (int i = 0; i < pcState.offsets.length; i++) {
+            if (i + 1 < pcState.offsets.length) {
+                if (!(pcState.offsets[i] < pcState.offsets[i + 1])) {
+                    CndUtils.assertTrue(false, "inconsistent state " + pcState);  // NOI18N
+                }
+            }
+        }
+    }    
 }

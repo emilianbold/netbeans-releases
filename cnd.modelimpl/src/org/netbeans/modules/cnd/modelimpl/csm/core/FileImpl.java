@@ -124,6 +124,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTBasedPCStateBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTIndexingWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -1233,7 +1234,7 @@ public final class FileImpl implements CsmFile,
         PreprocHandler.State ppState = preprocHandler.getState();
         // ask for cache and pcBuilder as well
         AtomicReference<APTFileCacheEntry> cacheEntry = new AtomicReference<>(null);
-        AtomicReference<FilePreprocessorConditionState.Builder> pcBuilder = new AtomicReference<>(null);
+        AtomicReference<APTBasedPCStateBuilder> pcBuilder = new AtomicReference<>(null);
         TokenStream tokenStream = createParsingTokenStreamForHandler(preprocHandler, false, cacheEntry, pcBuilder);
         if (tokenStream == null) {
             return false;
@@ -1246,7 +1247,7 @@ public final class FileImpl implements CsmFile,
     }
     
     private TokenStream createParsingTokenStreamForHandler(PreprocHandler preprocHandler, boolean filtered, 
-            AtomicReference<APTFileCacheEntry> cacheOut, AtomicReference<FilePreprocessorConditionState.Builder> pcBuilderOut) {
+            AtomicReference<APTFileCacheEntry> cacheOut, AtomicReference<APTBasedPCStateBuilder> pcBuilderOut) {
         APTFile apt = getFileAPT(true);
         if (apt == null) {
             return null;
@@ -1261,7 +1262,7 @@ public final class FileImpl implements CsmFile,
                     "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
             return null;
         }
-        FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
+        APTBasedPCStateBuilder pcBuilder = new APTBasedPCStateBuilder(getAbsolutePath());
         if (pcBuilderOut != null) {
             pcBuilderOut.set(pcBuilder);
         }
@@ -1537,7 +1538,7 @@ public final class FileImpl implements CsmFile,
                 return null;
             }
             // We gather conditional state here as well, because sources are not included anywhere
-            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
+            APTBasedPCStateBuilder pcBuilder = new APTBasedPCStateBuilder(getAbsolutePath());
             // ask for concurrent entry if absent
             APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(ppState, Boolean.FALSE);
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, parseParams.triggerParsingActivity, pcBuilder,aptCacheEntry);

@@ -150,12 +150,12 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     
     @Override
     public FilePreprocessorConditionState createPCState(CharSequence file, int[] deadBlocks) {
-        return FilePreprocessorConditionState.Builder.build(file, deadBlocks);
+        return FilePreprocessorConditionState.build(file, deadBlocks);
     }
         
     @Override
     public int[] getPCStateDeadBlocks(FilePreprocessorConditionState pcState) {
-        return FilePreprocessorConditionState.Builder.getDeadBlocks(pcState);
+        return FilePreprocessorConditionState.getDeadBlocks(pcState);
     }
     
     ////////////////////////////////////////////////////////////////////////////

@@ -300,7 +300,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         private final FileIncludeInParams inParams;
         private final PreprocHandler.State ppState;
         private final FilePreprocessorConditionState pcState;
-        private final FilePreprocessorConditionState.Builder pcBuilder;
+        private final APTBasedPCStateBuilder pcBuilder;
         private final APTFileCacheEntry aptCacheEntry;        
 
         public FileIncludeOutParams(FileIncludeInParams inParams, PreprocHandler.State ppState, FilePreprocessorConditionState pcState, APTFileCacheEntry aptCacheEntry) {
@@ -308,12 +308,12 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             assert pcState != null;
         }
 
-        public FileIncludeOutParams(FileIncludeInParams inParams, PreprocHandler.State ppState, FilePreprocessorConditionState.Builder pcBuilder, APTFileCacheEntry aptCacheEntry) {
+        public FileIncludeOutParams(FileIncludeInParams inParams, PreprocHandler.State ppState, APTBasedPCStateBuilder pcBuilder, APTFileCacheEntry aptCacheEntry) {
             this(inParams, ppState, null, pcBuilder, aptCacheEntry);
             assert pcBuilder != null;
         }        
 
-        private FileIncludeOutParams(FileIncludeInParams inParams, PreprocHandler.State ppState, FilePreprocessorConditionState pcState, FilePreprocessorConditionState.Builder pcBuilder, APTFileCacheEntry aptCacheEntry) {
+        private FileIncludeOutParams(FileIncludeInParams inParams, PreprocHandler.State ppState, FilePreprocessorConditionState pcState, APTBasedPCStateBuilder pcBuilder, APTFileCacheEntry aptCacheEntry) {
             this.inParams = inParams;
             this.ppState = ppState;
             this.pcState = pcState;
@@ -338,7 +338,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             // ask for exclusive entry if absent
             APTFileCacheEntry aptCacheEntry = params.includedFile.getAPTCacheEntry(ppIncludeState, Boolean.TRUE);   
             // gather macro map from all includes and fill preprocessor conditions state
-            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(params.includedFile.getAbsolutePath());
+            APTBasedPCStateBuilder pcBuilder = new APTBasedPCStateBuilder(params.includedFile.getAbsolutePath());
             APTParseFileWalker walker = new APTParseFileWalker(params.startProject, aptFile, params.includedFile, params.preprocHandler, params.triggerParsingActivity, pcBuilder, aptCacheEntry);
             FileContent inclFileContent = params.includedFile.prepareIncludedFileParsingContent();
             walker.setFileContent(inclFileContent);
@@ -402,7 +402,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             }
 
             // gather macro map from all includes and fill preprocessor conditions state
-            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(params.includedFile.getAbsolutePath());
+            APTBasedPCStateBuilder pcBuilder = new APTBasedPCStateBuilder(params.includedFile.getAbsolutePath());
             // ask for exclusive entry if absent
             aptCacheEntry = params.includedFile.getAPTCacheEntry(newState, Boolean.TRUE);
             APTParseFileWalker walker = new APTParseFileWalker(params.startProject, aptLight, params.includedFile, params.preprocHandler, params.triggerParsingActivity, pcBuilder, aptCacheEntry);
