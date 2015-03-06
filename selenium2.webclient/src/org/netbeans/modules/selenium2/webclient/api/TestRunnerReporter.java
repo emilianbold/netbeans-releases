@@ -356,7 +356,10 @@ public final class TestRunnerReporter {
 
         // at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29
         // at notify (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:465:12)
-        static final Pattern FILE_LINE_PATTERN = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
+        // at C:\Users\toikonom\AppData\Local\Temp\AngularJSPhoneCat\node_modules\protractor\lib\protractor.js:1041:17
+        // at [object Object].webdriver.promise.ControlFlow.runInNewFrame_ (C:\Users\toikonom\AppData\Local\Temp\AngularJSPhoneCat\node_modules\protractor\node_modules\selenium-webdriver\lib\webdriver\promise.js:1539:20)
+        static final Pattern FILE_LINE_PATTERN_UNIX = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
+        static final Pattern FILE_LINE_PATTERN_WINDOWS = Pattern.compile("^" + CAPABILITY + "(.*)at (.*)(?<DRIVE>[a-zA-Z]:)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
 
         final Project project;
 
@@ -368,9 +371,18 @@ public final class TestRunnerReporter {
 
         @Override
         public Pair<File, int[]> parseLocation(String callStack, boolean underTestRoot) {
-            Matcher matcher = FILE_LINE_PATTERN.matcher(callStack.trim());
-            if (matcher.find()) {
-                File path = new File(matcher.group("FILE").replace('/', File.separatorChar)); // NOI18N
+            Matcher matcher = FILE_LINE_PATTERN_WINDOWS.matcher(callStack.trim());
+            boolean matchFound = matcher.find();
+            String drive = null;
+            if(matchFound) {
+                drive = matcher.group("DRIVE"); // NOI18N
+            } else {
+                matcher = FILE_LINE_PATTERN_UNIX.matcher(callStack.trim());
+                matchFound = matcher.find();
+            }
+            if (matchFound) {
+                String pathname = drive == null ? matcher.group("FILE") : drive.concat(matcher.group("FILE")); // NOI18N
+                File path = new File(pathname);
                 File file;
                 FileObject projectDir = project.getProjectDirectory();
                 if (path.isAbsolute()) {
