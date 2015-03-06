@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -58,6 +59,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -108,6 +110,7 @@ class ElementCompletionItem implements CompletionItem {
     private Set<Modifier> modifiers;
     private ExecutableElement executableElement;
     private String prefix;
+    private TypeElement typeElement;
     //private boolean isPackage;
     private int caretOffset;
     private ImageIcon icon;
@@ -150,6 +153,10 @@ class ElementCompletionItem implements CompletionItem {
     
     void setInsertPrefix(String prefix) {
         this.prefix = prefix;
+    }
+    
+    void setElement(TypeElement typeElement) {
+        this.typeElement = typeElement;
     }
     
     void setExecutableElement(ExecutableElement executableElement) {
@@ -301,10 +308,18 @@ class ElementCompletionItem implements CompletionItem {
             else dot++;
             doc.remove(dot, caretOffset - dot);
             caretOffset = dot;
-            String insertStr = ((prefix != null) ? prefix : "") + elementName;
-            doc.insertString(caretOffset, insertStr, null);
+            String insertStr;
+            int insertOffset = caretOffset;
+            if (typeElement != null) {
+                insertStr = ElementUtilities.getBinaryName(typeElement);
+                doc.remove(0, doc.getLength());
+                insertOffset = 0;
+            } else {
+                insertStr = ((prefix != null) ? prefix : "") + elementName;
+            }
+            doc.insertString(insertOffset, insertStr, null);
             if (elementKind == ElementKind.PACKAGE) {
-                doc.insertString(caretOffset + insertStr.length(), ".", null);
+                doc.insertString(insertOffset + insertStr.length(), ".", null);
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
