@@ -404,7 +404,7 @@ public class ElementJavadoc {
             }
             final StringBuilder contentFin = content;
             final boolean localizedFin = localized;
-            this.content = new FutureTask<String>(new Callable<String>(){
+            this.content = new FutureTask<>(new Callable<String>(){
                 @Override
                 public String call() throws Exception {
                     final JavaSourceUtil.Handle ch = JavaSourceUtil.createControllerHandle(fileObject, null);
