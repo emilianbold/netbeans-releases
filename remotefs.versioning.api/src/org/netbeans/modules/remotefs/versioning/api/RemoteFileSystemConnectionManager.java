@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
 public abstract class RemoteFileSystemConnectionManager {
     private static final DefaultRemoteFileSystemConnectionManager instance = new DefaultRemoteFileSystemConnectionManager();
     
-    public RemoteFileSystemConnectionManager getInstance() {
+    public static RemoteFileSystemConnectionManager getInstance() {
         return instance;
     }
 
