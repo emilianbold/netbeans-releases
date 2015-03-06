@@ -50,13 +50,17 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.remotefs.versioning.api.RemoteFileSystemConnectionListener;
+import org.netbeans.modules.remotefs.versioning.api.RemoteFileSystemConnectionManager;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -68,13 +72,14 @@ import org.netbeans.spi.queries.CollocationQueryImplementation2;
     metadataFolderNames={".git"}, 
     actionsCategory="GitRemote"
 )
-public class GitVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
+public class GitVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener, RemoteFileSystemConnectionListener {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.remote.GitVCS"); //NOI18N
 
     public GitVCS() {
         //putProperty(PROP_DISPLAY_NAME, getDisplayName()); 
         //putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(GitVCS.class, "CTL_Git_MainMenu")); // NOI18N
+        RemoteFileSystemConnectionManager.getInstance().addRemoteFileSystemConnectionListener(this);
         GitModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         Git.getInstance().registerGitVCS(this);
     }
@@ -168,4 +173,13 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener, 
         }
     }
 
+    @Override
+    public void connected(FileSystem fs) {
+        Git.getInstance().clearAncestorCaches();
+        VersioningSupport.versionedRootsChanged();        
+    }
+
+    @Override
+    public void disconnected(FileSystem fs) {
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.customizer;
+package org.netbeans.modules.remotefs.versioning.api;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CompileCustomizerNode extends CustomizerNode {
-
-    public CompileCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
-        super(name, displayName, children, lookup);
-    }
-
-    @Override
-    public Sheet[] getSheets(Configuration configuration) {
-        Sheet sheet = ((MakeConfiguration) configuration).getCompileConfiguration().getSheet();
-        return new Sheet[]{sheet};
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("ProjectPropsCompile"); // NOI18N
-    }
+public interface RemoteFileSystemConnectionListener {
+    
+    void connected(FileSystem fs);
+    
+    void disconnected(FileSystem fs);
 }
