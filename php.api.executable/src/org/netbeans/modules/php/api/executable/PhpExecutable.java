@@ -81,12 +81,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.PhpOptions;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -719,11 +721,23 @@ public final class PhpExecutable {
         boolean useInterpreter = viaPhpInterpreter;
         if (viaAutodetection) {
             String exec = executable.toLowerCase();
-            if (Utilities.isWindows()) {
-                useInterpreter = !exec.endsWith(".bat") // NOI18N
-                        && !exec.endsWith(".cmd"); // NOI18N
+            if (exec.endsWith(".phar")) { // NOI18N
+                useInterpreter = true;
             } else {
-                useInterpreter = !exec.endsWith(".sh"); // NOI18N
+                FileObject fo = FileUtil.toFileObject(new File(executable));
+                assert fo != null : executable;
+                if (FileUtils.isPhpFile(fo)) {
+                    useInterpreter = true;
+                } else if (Utilities.isWindows()) {
+                    if (exec.endsWith(".bat") // NOI18N
+                            || exec.endsWith(".cmd")) { // NOI18N
+                        useInterpreter = false;
+                    }
+                } else {
+                    if (exec.endsWith(".sh")) { // NOI18N
+                        useInterpreter = false;
+                    }
+                }
             }
         }
         if (!useInterpreter) {
