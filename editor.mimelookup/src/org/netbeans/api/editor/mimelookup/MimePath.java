@@ -55,7 +55,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.netbeans.modules.editor.mimelookup.APIAccessor;
+import org.netbeans.modules.editor.mimelookup.MimeLookupCacheSPI;
 import org.netbeans.modules.editor.mimelookup.MimePathLookup;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * The mime path is a concatenation of one or more mime types. The purpose of
@@ -328,7 +332,7 @@ public final class MimePath {
     /**
      * The lookup with objects registered for this mime path.
      */
-    private MimePathLookup lookup;
+    private Lookup lookup;
     
     /**
      * Synchronization lock for creation of the mime path lookup.
@@ -505,15 +509,19 @@ public final class MimePath {
      *
      * @return The mime path specific lookup.
      */
-    /* package */ MimePathLookup getLookup() {
+    /* package */ Lookup getLookup() {
+        return Lookup.getDefault().lookup(MimeLookupCacheSPI.class).getLookup(this);
+    }
+    
+    private Lookup getLookupImpl() {
         synchronized (LOOKUP_LOCK) {
             if (lookup == null) {
-                lookup = new MimePathLookup(this);
+                lookup = new MimePathLookup(this);  
             }
             return lookup;
         }
     }
-
+    
     public @Override String toString() {
         return "MimePath[" + path + "]"; // NOI18N
     }
@@ -704,4 +712,14 @@ public final class MimePath {
         return array;
     }
 
+    private static class AccessorImpl extends APIAccessor {
+        @Override
+        public Lookup cacheMimeLookup(MimePath path) {
+            return path.getLookupImpl();
+        }
+    }
+    
+    static {
+        new AccessorImpl();
+    }
 }

@@ -48,6 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import org.netbeans.core.startup.layers.LocalFileSystemEx;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 

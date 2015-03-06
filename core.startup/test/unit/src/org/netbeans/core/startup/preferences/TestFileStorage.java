@@ -45,6 +45,7 @@
 package org.netbeans.core.startup.preferences;
 
 import java.io.IOException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 
 /**
@@ -65,7 +66,7 @@ public class TestFileStorage extends NbPreferencesTest.TestBasicSetup {
     }
     
     protected NbPreferences.FileStorage getInstance() {
-        return PropertiesStorage.instance("/FileStorageTest/" + getName());//NOI18N);
+        return PropertiesStorage.instance(FileUtil.getSystemConfigRoot(), "/FileStorageTest/" + getName());//NOI18N);
     }
     
     public void testBasic() throws IOException {

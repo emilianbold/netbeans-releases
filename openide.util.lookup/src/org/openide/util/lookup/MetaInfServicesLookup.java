@@ -512,6 +512,13 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
                         if (o == null) {
                             o = SharedClassObjectBridge.newInstance(c);
+                            // if the instance was created during newInstance call
+                            // and returned, return always the 1st instance, so 
+                            // only a single instance is ever observable outside Lookup.
+                            Object other = CACHE.findInstance(c);
+                            if (other != null) {
+                                return object = other;
+                            }
                             CACHE.storeInstance(o);
                         }
 

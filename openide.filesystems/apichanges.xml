@@ -49,6 +49,20 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="repository.multiuser">
+            <api name="filesystems"/>
+            <summary>Support for multi-user environments</summary>
+            <version major="9" minor="5"/>
+            <date year="2015" month="2" day="25"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" modification="yes" semantic="compatible" binary="compatible"/>
+            <description>
+                To support multiple configurations (users, profiles, ...) executing in the same VM, multiple
+                Repositories can be created, one for each execution context. API has been added to acquire 
+                and SPI to create a local Repository which holds config filesystem for the execution thraed.
+            </description>
+            <class name="Repository" package="org.openide.filesystems"/>
+        </change>
         <change id="FileObject.symbolicLinks">
             <api name="filesystems"/>
             <summary>Support detection and reading of symbolic links.</summary>

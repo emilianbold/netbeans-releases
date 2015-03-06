@@ -57,7 +57,6 @@ import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -73,7 +72,7 @@ public class SwitchLookup extends Lookup {
 
     private final String LOCK = new String("SwitchLookup.LOCK"); //NOI18N
     
-    private Map<Class<?>,UpdatableProxyLookup> classLookups = new HashMap<Class<?>, UpdatableProxyLookup>();
+    private Map<Class<?>,Lookup> classLookups = new HashMap<Class<?>, Lookup>();
     private Map<List<String>,Lookup> pathsLookups = new HashMap<List<String>,Lookup>();
 
     public SwitchLookup(MimePath mimePath) {
@@ -92,15 +91,12 @@ public class SwitchLookup extends Lookup {
 
     private Lookup findLookup(Class<?> clazz) {
         synchronized (LOCK) {
-            UpdatableProxyLookup lookup = classLookups.get(clazz);
+            Lookup lookup = classLookups.get(clazz);
             if (lookup == null) {
                 // Create lookup
-                Lookup innerLookup = createLookup(clazz);
-                lookup = new UpdatableProxyLookup(innerLookup);
-                
+                lookup = createLookup(clazz);
                 classLookups.put(clazz, lookup);
             }
-
             return lookup;
         }
     }
@@ -191,23 +187,5 @@ public class SwitchLookup extends Lookup {
         }
         return Collections.singletonList(sb.toString());
     }
-    
-    /**
-     * An ordinary <code>ProxyLookup</code> except that it exposes the
-     * <code>setLookupEx</code> method.
-     */
-    private static final class UpdatableProxyLookup extends ProxyLookup {
-        public UpdatableProxyLookup() {
-            super();
-        }
-        
-        public UpdatableProxyLookup(Lookup... lookups) {
-            super(lookups);
-        }
-        
-        public void setLookupsEx(Lookup... lookups) {
-            setLookups(lookups);
-        }
-    } // End of UpdatableProxyLookup class
     
 }

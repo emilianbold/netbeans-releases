@@ -61,9 +61,14 @@ import org.openide.util.Lookup;
  */
 @MimeRegistration(mimeType = "text/x-java", service = ParserFactory.class)
 public class JavacParserFactory extends ParserFactory {
-
+    private static final Logger LOG = Logger.getLogger(JavacParserFactory.class.getName());
+    
     /** used by tests to ensure that all instances of parser were GCed */
     private static final Logger TIMER = Logger.getLogger("TIMER.JavacParser");
+
+    public JavacParserFactory() {
+        LOG.fine("JavacParserFactory created: " + this);
+    }
     
     @Override
     public JavacParser createParser(final Collection<Snapshot> snapshots) {

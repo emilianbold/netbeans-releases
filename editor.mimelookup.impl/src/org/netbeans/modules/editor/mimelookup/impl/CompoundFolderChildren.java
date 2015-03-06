@@ -116,7 +116,8 @@ public final class CompoundFolderChildren implements FileChangeListener {
             List<FileObject> folders = new ArrayList<FileObject>(prefixes.size());
             List<FileSystem> layers = new ArrayList<FileSystem>(prefixes.size());
             for (final String prefix : prefixes) {
-                FileObject layer = FileUtil.getConfigFile(prefix);
+                // use system-wide configuration, ignore execution-local specifics
+                FileObject layer = FileUtil.getSystemConfigFile(prefix);
                 if (layer != null && layer.isFolder()) {
                     folders.add(layer);
                     try {

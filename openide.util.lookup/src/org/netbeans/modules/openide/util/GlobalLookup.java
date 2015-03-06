@@ -46,10 +46,19 @@ import org.openide.util.Lookup;
 public class GlobalLookup {
     private static final ThreadLocal<Lookup> CURRENT = new ThreadLocal<Lookup>();
     
+    /**
+     * The true system Lookup, the main, holy and only.
+     */
+    private static volatile Lookup systemLookup;
+    
     private GlobalLookup() {
     }
 
+    @SuppressWarnings("AssignmentToMethodParameter")
     public static boolean execute(Lookup defaultLookup, Runnable r) {
+        if (defaultLookup == null) {
+            defaultLookup = systemLookup;
+        }
         Lookup prev = CURRENT.get();
         if (prev == defaultLookup) {
             return false;
@@ -65,5 +74,9 @@ public class GlobalLookup {
     
     public static Lookup current() {
         return CURRENT.get();
+    }
+    
+    public static void setSystemLookup(Lookup lkp) {
+        systemLookup = lkp;
     }
 }

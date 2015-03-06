@@ -56,6 +56,33 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="core.base.split">
+          <api name="bridge"/>
+          <summary>
+              Classes related to preferences and layered filesystems split into a
+              separate module.
+          </summary>
+          <version major="1" minor="60"/>
+          <date day="25" month="2" year="2015"/>
+          <author login="sdedic"/>
+          <compatibility addition="yes" binary="compatible" source="compatible"/>
+          <description>
+              <p>
+                  Layered filesystem impl and preferences was split off to core.startup.base module.
+                  A SPI was created in core.startup.base and implemented in core.startup for actual
+                  FileSystem creation.
+              </p>
+          </description>
+          <class name="LayerFactory" package="org.netbeans.core.startup.base" link="no"/>
+
+          <class name="ArchiveURLMapper" package="org.netbeans.core.startup.layers" link="no"/>
+          <class name="LocalFileSystemEx" package="org.netbeans.core.startup.layers" link="no"/>
+          <class name="ModuleLayeredFileSystem" package="org.netbeans.core.startup.layers" link="no"/>
+          <class name="NbinstURLMapper" package="org.netbeans.core.startup.layers" link="no"/>
+          <class name="NbinstURLStreamHandler" package="org.netbeans.core.startup.layers" link="no"/>
+          <class name="SystemFileSystem" package="org.netbeans.core.startup.layers" link="no"/>
+          
+      </change>
      <change id="control.all.resources.dat">
         <api name="exec-property"/>
         <summary>Control generation of all-resources.dat</summary>

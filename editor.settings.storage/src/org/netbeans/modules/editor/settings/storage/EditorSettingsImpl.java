@@ -385,7 +385,7 @@ public class EditorSettingsImpl extends EditorSettings {
             }
             highlightings.remove (profile);
         } else {
-            Map<String, AttributeSet> m = Utils.immutize(fontColors);
+            Map<String, AttributeSet> m = NbUtils.immutize(fontColors);
 
             // 3) save new values to disk
             if (!specialProfile) {
@@ -485,7 +485,7 @@ public class EditorSettingsImpl extends EditorSettings {
             }
             annotations.remove(profile);
         } else {
-            Map<String, AttributeSet> m = Utils.immutize(fontColors);
+            Map<String, AttributeSet> m = NbUtils.immutize(fontColors);
 
             // 3) save new values to disk
             if (!specialProfile) {
