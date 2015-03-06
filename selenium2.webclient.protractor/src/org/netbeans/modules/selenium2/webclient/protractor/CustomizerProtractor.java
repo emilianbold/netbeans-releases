@@ -152,7 +152,7 @@ public class CustomizerProtractor extends javax.swing.JPanel {
                                 return name.endsWith(execName);
                             }
                         });
-                        if(list.length == 1) { // protractor executable is globally installed and the containing directory is in user's PATH
+                        if(list != null && list.length == 1) { // protractor executable is globally installed and the containing directory is in user's PATH
                             autoDiscovered = true;
                             if(Utilities.isWindows()) {
                                 // if C:\Users\name\AppData\Roaming\npm is in PATH
