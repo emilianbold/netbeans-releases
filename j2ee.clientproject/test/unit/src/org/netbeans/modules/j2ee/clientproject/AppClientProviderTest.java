@@ -74,6 +74,7 @@ public class AppClientProviderTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        AppClientProvider.showMetaInfDialog = false;
         TestUtil.makeScratchDir(this);
 
         MockLookup.setLayersAndInstances();
@@ -87,17 +88,17 @@ public class AppClientProviderTest extends NbTestCase {
         Project project = (Project) ProjectSupport.openProject(f);
         // XXX should not cast a Project
         AntProjectHelper helper = ((AppClientProject) project).getAntProjectHelper();
-        
+
         // first ensure meta.inf exists
         String metaInf = helper.getStandardPropertyEvaluator().getProperty("meta.inf");
         assertTrue(metaInf.endsWith("conf"));
         FileObject metaInfFO =helper.resolveFileObject(metaInf);
         assertNotNull(metaInfFO);
-        
+
         // ensuer application-client.xml exists
         FileObject appXmlFO = metaInfFO.getFileObject(APPLICATION_CLIENT_XML);
         assertNotNull(appXmlFO);
-        
+
         // ensure deployment descriptor file is returned
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         assertEquals(FileUtil.toFile(metaInfFO.getFileObject(APPLICATION_CLIENT_XML)),
@@ -117,7 +118,8 @@ public class AppClientProviderTest extends NbTestCase {
         File prjDirOrigF = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
         File prjDirF = TestUtil.copyFolder(getWorkDir(), prjDirOrigF);
         TestUtil.deleteRec(new File(new File(prjDirF, "src"), "conf"));
-        
+        FileUtil.refreshFor(prjDirF);
+
         Project project = (Project) ProjectSupport.openProject(prjDirF);
         assertNotNull("Project is null", project);
         assertNotNull("Project lookup is null", project.getLookup());

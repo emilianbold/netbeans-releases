@@ -45,6 +45,7 @@ package org.netbeans.modules.xml.multiview.test.util;
 
 import java.io.*;
 import java.awt.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
@@ -57,11 +58,37 @@ import org.netbeans.modules.xml.multiview.test.bookmodel.Chapter;
 
 import javax.swing.*;
 import javax.swing.text.Document;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 
 public class Helper {
 
-    public static File getBookFile(File dataDir) {
-        return new File(dataDir, "sample.book");
+    public static File getBookFile(File dataDir, File workDir) throws IOException {
+        final File source = new File(dataDir, "sample.book");
+        final File target = new File(workDir, "sample.book");
+        if (target.exists()) {
+            return target;
+        }
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+
+            @Override
+            public void run() throws IOException {
+                BufferedInputStream is = new BufferedInputStream(new FileInputStream(source));
+                try {
+                    BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(target));
+                    try {
+                        FileUtil.copy(is, os);
+                    } finally {
+                        os.close();
+                    }
+                } finally {
+                    is.close();
+                }
+            }
+        });
+
+        FileUtil.refreshFor(target);
+        return target;
     }
 
     public static JTextField getChapterTitleTF(final BookDataObject dObj, Chapter chapter) {
@@ -112,15 +139,15 @@ public class Helper {
         if (SwingUtilities.isEventDispatchThread()) {
             return;
         }
-        final boolean[] finished = new boolean[]{false};
+        final AtomicBoolean finished = new AtomicBoolean();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                finished[0] = true;
+                finished.set(true);
             }
         });
         new StepIterator() {
             public boolean step() throws Exception {
-                return finished[0];
+                return finished.get();
             }
         };
     }
