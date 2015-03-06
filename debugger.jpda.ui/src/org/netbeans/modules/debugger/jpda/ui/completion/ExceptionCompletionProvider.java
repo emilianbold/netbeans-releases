@@ -41,13 +41,22 @@
  */
 package org.netbeans.modules.debugger.jpda.ui.completion;
 
+import com.sun.source.util.Trees;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -56,7 +65,12 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -84,118 +98,178 @@ public class ExceptionCompletionProvider implements CompletionProvider {
             
             @Override
             protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-                if (caretOffset < 0) caretOffset = 0;
-                String text;
                 try {
-                    text = doc.getText(0, caretOffset);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                    text = "";
-                }
-                LOG.log(Level.FINE, "Completion query for ''{0}''", text);
-                Set<? extends SearchScopeType> scope = Collections.singleton(new ClassSearchScopeType(text));
-                int n = text.length();
-                ClasspathInfo cpi = ClassCompletionProvider.getClassPathInfo();
-                ClassIndex classIndex = cpi.getClassIndex();
-                Set<String> packageNames = classIndex.getPackageNames(text, false, scope);
-                LOG.log(Level.FINE, "  Have package names = {0}", packageNames);
-                Set<String> resultPackages = new HashSet<String>();
-                int lastTextDot = text.lastIndexOf('.');
-                for (String pn : packageNames) {
-                    int dot = pn.indexOf('.', n);
-                    if (dot > 0) pn = pn.substring(0, dot);
-                    if (lastTextDot > 0) pn = pn.substring(lastTextDot + 1);
-                    if (!resultPackages.contains(pn)) {
-                        resultSet.addItem(new ElementCompletionItem(pn, ElementKind.PACKAGE, caretOffset));
-                        resultPackages.add(pn);
-                        LOG.log(Level.FINE, "  Adding package: ''{0}''", pn);
+                    if (caretOffset < 0) caretOffset = 0;
+                    String text;
+                    try {
+                        text = doc.getText(0, caretOffset);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                        text = "";
                     }
-                }
-                
-                String classFilter;
-                if (lastTextDot > 0) {
-                    classFilter = text.substring(lastTextDot + 1);
-                } else {
-                    classFilter = text;
-                }
-                LOG.log(Level.FINE, "  Class filter = ''{0}''", classFilter);
-                
-                ElementHandle<TypeElement> throwable = null;
-                Set<ElementHandle<TypeElement>> throwableTypes = classIndex.getDeclaredTypes(
-                        Throwable.class.getSimpleName(), ClassIndex.NameKind.PREFIX,
-                        Collections.singleton(new ClassSearchScopeType(Throwable.class.getPackage().getName()+".")));
-                for (ElementHandle<TypeElement> type : throwableTypes) {
-                    String className = type.getQualifiedName();
-                    if (className.equals(Throwable.class.getName())) {
-                        throwable = type;
-                        break;
+                    LOG.log(Level.FINE, "Completion query for ''{0}''", text);
+                    ClasspathInfo cpi = ClassCompletionProvider.getClassPathInfo();
+                    JavaSource jsrc = JavaSource.create(cpi);
+                    try {
+                        jsrc.runUserActionTask(new CompletionUserTask(resultSet, cpi, text, caretOffset), true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
+                } finally {
+                    LOG.fine("Completion result set finished.");
+                    resultSet.finish();
                 }
-                LOG.log(Level.FINE, "  Retrieved throwable: {0}", throwable);
-                if (throwable != null) {
-                    Set<ElementHandle<TypeElement>> throwables = getAllImplementors(classIndex, throwable, scope);//classIndex.getElements(throwable, Collections.singleton(SearchKind.IMPLEMENTORS), scope);
-                    LOG.fine("  Collected all implementors.");
-                    Set<String> resultClasses = new HashSet<String>();
-                    for (ElementHandle<TypeElement> type : throwables) {
-                        String className = type.getQualifiedName();
-                        int packageDotIndex = -1;
-                        if (lastTextDot > 0) {
-                            className = className.substring(lastTextDot + 1);
-                        } else {
-                            packageDotIndex = type.getBinaryName().lastIndexOf('.');
-                            if (packageDotIndex > 0) {
-                                className = className.substring(packageDotIndex + 1);
-                            }
-                        }
-                        if (className.length() < classFilter.length() ||
-                            !className.substring(0, classFilter.length()).equalsIgnoreCase(classFilter)) {
-                            
-                            continue;
-                        }
-                        int dot = className.indexOf('.');
-                        if (dot > 0) className = className.substring(0, dot);
-                        if (!resultClasses.contains(className)) {
-                            ElementCompletionItem eci = new ElementCompletionItem(className, type.getKind(), caretOffset);
-                            if (packageDotIndex > 0 && lastTextDot < 0) {
-                                eci.setInsertPrefix(type.getQualifiedName().substring(0, packageDotIndex + 1));
-                            }
-                            resultSet.addItem(eci);
-                            resultClasses.add(className);
-                            LOG.log(Level.FINE, "  Adding class name ''{0}''", className);
-                        }
-                    }
-                    
-                }
-                LOG.fine("Completion result set finished.");
-                resultSet.finish();
             }
         }, component);
     }
     
-    private static Set<ElementHandle<TypeElement>> getAllImplementors(
-            ClassIndex classIndex,
-            ElementHandle<TypeElement> elm,
-            Set<? extends SearchScopeType> scope) {
+    private static class CompletionUserTask implements Task<CompilationController> {//extends UserTask {
         
-        Set<ElementHandle<TypeElement>> impls = new HashSet<ElementHandle<TypeElement>>();
-        fillAllImplementors(classIndex, elm, scope, impls);
-        return impls;
+        private final CompletionResultSet resultSet;
+        private final ClasspathInfo cpi;
+        private final String prefix;
+        private final int lastPrefixDot;
+        private final int caretOffset;
+
+        private CompletionUserTask(CompletionResultSet resultSet, ClasspathInfo cpi, String prefix, int caretOffset) {
+            this.resultSet = resultSet;
+            this.cpi = cpi;
+            this.prefix = prefix;
+            this.lastPrefixDot = prefix.lastIndexOf('.');
+            this.caretOffset = caretOffset;
+        }
+
+        @Override
+        public void run(CompilationController cc) throws Exception {
+            LOG.log(Level.FINE, "  Running CompletionUserTask, compilation controller = {0}", cc);
+            cc.toPhase(Phase.RESOLVED);
+            TypeElement thr = cc.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+            LOG.log(Level.FINE, "  Filling results, throwable element = {0}", thr);
+            if (thr != null) {
+                DeclaredType type = cc.getTypes().getDeclaredType(thr);
+                LOG.log(Level.FINE, "  Filling results, throwable declared type = {0}", type);
+                if (type != null) {
+                    
+                    Set<? extends SearchScopeType> scope = Collections.singleton(new ClassSearchScopeType(prefix));
+                    int n = prefix.length();
+                    ClassIndex classIndex = cpi.getClassIndex();
+                    Set<String> packageNames = classIndex.getPackageNames(prefix, false, scope);
+                    LOG.log(Level.FINE, "  Have package names = {0}", packageNames);
+                    Set<String> resultPackages = new HashSet<>();
+                    Set<String> fullResultPackages = new HashSet<>();
+                    for (String pn : packageNames) {
+                        int dot = pn.indexOf('.', n);
+                        if (dot > 0) pn = pn.substring(0, dot);
+                        String fpn = pn;
+                        if (lastPrefixDot > 0) pn = pn.substring(lastPrefixDot + 1);
+                        if (!resultPackages.contains(pn)) {
+                            resultPackages.add(pn);
+                            fullResultPackages.add(fpn);
+                            LOG.log(Level.FINE, "  Considering package: ''{0}''", pn);
+                        }
+                    }
+                    
+                    List<DeclaredType> types = fillSubTypes(cc, type);
+                    if (lastPrefixDot > 0) {
+                        Set<String> classPackages = new HashSet<>(); // Packages containing a class
+                        for (DeclaredType dt : types) {
+                            TypeElement elem = (TypeElement) dt.asElement();
+                            
+                            String fqn = elem.getQualifiedName().toString();
+                            String className = fqn;
+                            className = className.substring(lastPrefixDot + 1);
+                            if (fqn.length() > n) {
+                                int dot = fqn.indexOf('.', n);
+                                if (dot > 0) {
+                                    String pn = fqn.substring(0, dot);
+                                    pn = pn.substring(lastPrefixDot + 1);
+                                    if (resultPackages.contains(pn)) {
+                                        classPackages.add(pn);
+                                    }
+                                }
+                                if (dot < 0 || !fullResultPackages.contains(fqn.substring(0, dot))) {
+                                    // Class in this package
+                                    LOG.log(Level.FINE, "  Adding class name ''{0}''", className);
+                                    ElementCompletionItem eci = new ElementCompletionItem(className, elem.getKind(), caretOffset);
+                                    eci.setElement(elem);
+                                    resultSet.addItem(eci);
+                                }
+                            }
+                        }
+                        for (String pn : classPackages) {
+                            resultSet.addItem(new ElementCompletionItem(pn, ElementKind.PACKAGE, caretOffset));
+                        }
+                    } else {
+                        for (DeclaredType dt : types) {
+                            TypeElement elem = (TypeElement) dt.asElement();
+                            String className = elem.getSimpleName().toString();
+                            LOG.log(Level.FINE, "  Adding class name ''{0}''", className);
+                            ElementCompletionItem eci = new ElementCompletionItem(className, elem.getKind(), caretOffset);
+                            eci.setElement(elem);
+                            resultSet.addItem(eci);
+                        }
+                        for (String pn : resultPackages) {
+                            resultSet.addItem(new ElementCompletionItem(pn, ElementKind.PACKAGE, caretOffset));
+                        }
+                    }
+                }
+            }
+        }
+        
+        private List<DeclaredType> fillSubTypes(CompilationController cc, DeclaredType dType) {
+            List<DeclaredType> subtypes = new ArrayList<>();
+            //Set<? extends SearchScopeType> scope = Collections.singleton(new ClassSearchScopeType(prefix));
+            Types types = cc.getTypes();
+            if (prefix != null && prefix.length() > 2 && lastPrefixDot < 0) {
+                //Trees trees = cc.getTrees();
+                ClassIndex.NameKind kind = ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
+                for (ElementHandle<TypeElement> handle : cpi.getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                    TypeElement te = handle.resolve(cc);
+                    if (te != null && /*trees.isAccessible(scope, te) &&*/ types.isSubtype(types.getDeclaredType(te), dType)) {
+                        subtypes.add(types.getDeclaredType(te));
+                    }
+                }
+            } else {
+                HashSet<TypeElement> elems = new HashSet<>();
+                LinkedList<DeclaredType> bases = new LinkedList<>();
+                bases.add(dType);
+                ClassIndex index = cpi.getClassIndex();
+                while (!bases.isEmpty()) {
+                    DeclaredType head = bases.remove();
+                    TypeElement elem = (TypeElement) head.asElement();
+                    if (!elems.add(elem)) {
+                        continue;
+                    }
+                    if (accept(elem)) {
+                        subtypes.add(head);
+                    }
+                    //List<? extends TypeMirror> tas = head.getTypeArguments();
+                    //boolean isRaw = !tas.iterator().hasNext();
+                    for (ElementHandle<TypeElement> eh : index.getElements(ElementHandle.create(elem), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                        TypeElement e = eh.resolve(cc);
+                        if (e != null) {
+                            DeclaredType dt = types.getDeclaredType(e);
+                            bases.add(dt);
+                        }
+                    }
+                }
+            }
+            return subtypes;
+        }
+        
+        private boolean accept(TypeElement elem) {
+            String className;
+            if (lastPrefixDot < 0) {
+                className = elem.getSimpleName().toString();
+            } else {
+                className = elem.getQualifiedName().toString();
+            }
+            return className.length() >= prefix.length() &&
+                   className.substring(0, prefix.length()).equalsIgnoreCase(prefix);
+        }
+
     }
     
-    private static void fillAllImplementors(
-            ClassIndex classIndex,
-            ElementHandle<TypeElement> elm,
-            Set<? extends SearchScopeType> scope,
-            Set<ElementHandle<TypeElement>> impls) {
-        
-        Set<ElementHandle<TypeElement>> impl = classIndex.getElements(elm, Collections.singleton(SearchKind.IMPLEMENTORS), scope);
-        impls.addAll(impl);
-        Set<ElementHandle<TypeElement>> allImpl = classIndex.getElements(elm, Collections.singleton(SearchKind.IMPLEMENTORS), scopeAll);
-        for (ElementHandle<TypeElement> eh : allImpl) {
-            fillAllImplementors(classIndex, eh, scope, impls);
-        }
-    }
-
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return COMPLETION_QUERY_TYPE;
