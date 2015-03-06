@@ -49,6 +49,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
@@ -76,13 +79,13 @@ import javax.swing.text.BadLocationException;
  */
 public class XmlMultiViewEditorTest extends NbTestCase {
     private DataLoader loader;
-    private BookDataObject bookDO;
 
     public XmlMultiViewEditorTest(String testName) {
         super(testName);
     }
 
     protected void setUp() throws Exception {
+        clearWorkDir();
         DataLoaderPool pool = DataLoaderPool.getDefault();
         assertNotNull (pool);
         loader = DataLoader.getLoader(BookDataLoader.class);
@@ -97,7 +100,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
     }
 
     public void testChangeModel() throws IOException {
-        initDataObject();
+        BookDataObject bookDO = initDataObject();
         try {
             Book book = bookDO.getBook();
             book.setAttributeValue("chapter", 0, "length", "110");
@@ -111,29 +114,53 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         cookie.save();
 
         // test to golden file
-        File original = Helper.getBookFile(getDataDir());
+        File original = Helper.getBookFile(getDataDir(), getWorkDir());
         assertTrue("File doesn't contain the text : <chapter length=\"110\">",
                     Helper.isTextInFile("<chapter length=\"110\">",original));
     }
 
-    public void testChangeModelInDesignView() throws IOException {
-        initDataObject();
+    public void testChangeModelInDesignView() throws IOException, InterruptedException {
+        final BookDataObject bookDO = initDataObject();
         try {
             bookDO.showElement(bookDO.getBook().getChapter()[1]);
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to open Chapter section", ex);
         }
-        Helper.waitForDispatchThread();
-        try {
-            JTextField titleTF = Helper.getChapterTitleTF(bookDO, bookDO.getBook().getChapter()[1]);
-            titleTF.requestFocus();
-            Helper.waitForDispatchThread();
-            javax.swing.text.Document doc = titleTF.getDocument();
-            doc.remove(0, doc.getLength());
-            doc.insertString(0, "The garden full of beans", null);
-        } catch (Exception ex) {
-            throw new AssertionFailedErrorException("Failed to set the title for Chapter: ", ex);
+        final CountDownLatch latch = new CountDownLatch(1);
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    final JTextField titleTF = Helper.getChapterTitleTF(bookDO, bookDO.getBook().getChapter()[1]);
+                    titleTF.requestFocus();
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            try {
+                                javax.swing.text.Document doc = titleTF.getDocument();
+                                doc.remove(0, doc.getLength());
+                                doc.insertString(0, "The garden full of beans", null);
+                            } catch (Exception ex) {
+                                throw new AssertionFailedErrorException("Failed to set the title for Chapter: ", ex);
+                            } finally {
+                                latch.countDown();
+                            }
+                        }
+                    });
+                } catch (Exception ex) {
+                    throw new AssertionFailedErrorException("Failed to set the title for Chapter: ", ex);
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
         }
+        latch.await(30, TimeUnit.SECONDS);
+
         // open XML View
         ((EditCookie) bookDO.getCookie(EditCookie.class)).edit();
         // handle consequent calls of SwingUtilities.invokeLater();
@@ -145,13 +172,13 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         cookie.save();
 
         // test to golden file
-        File original = Helper.getBookFile(getDataDir());
+        File original = Helper.getBookFile(getDataDir(), getWorkDir());
         assertTrue("File doesn't contain the text : <title lang=\"en\">The garden full of beans</title>",
                 Helper.isTextInFile("<title lang=\"en\">The garden full of beans</title>", original));
     }
 
     public void testExternalChange() throws IOException {
-        initDataObject();
+        BookDataObject bookDO = initDataObject();
         String golden = "ChangedChapterTitle.pass";
         FileObject fo = bookDO.getPrimaryFile();
         InputStream is = new FileInputStream(getGoldenFile(golden));
@@ -194,27 +221,27 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         DataLoaderPool.setPreferredLoader (fo, loader);
     }
 
-    private void initDataObject() throws IOException {
-        if (bookDO == null) {
-            File f = Helper.getBookFile(getDataDir());
-            FileObject fo = FileUtil.toFileObject(f);
-            assertNotNull(fo);
+    private BookDataObject initDataObject() throws IOException {
+        BookDataObject ret = null;
+        File f = Helper.getBookFile(getDataDir(), getWorkDir());
+        FileObject fo = FileUtil.toFileObject(f);
+        assertNotNull(fo);
 
-            doSetPreferredLoader(fo, loader);
-            DataObject dObj = DataObject.find(fo);
-            assertNotNull("Book DataObject not found", dObj);
-            assertEquals(BookDataObject.class, dObj.getClass());
+        doSetPreferredLoader(fo, loader);
+        DataObject dObj = DataObject.find(fo);
+        assertNotNull("Book DataObject not found", dObj);
+        assertEquals(BookDataObject.class, dObj.getClass());
 
-            bookDO = (BookDataObject) dObj;
-            ((EditCookie) bookDO.getCookie(EditCookie.class)).edit();
+        ret = (BookDataObject) dObj;
+        ((EditCookie) ret.getCookie(EditCookie.class)).edit();
 
-            // wait to open the document
-            Helper.waitForDispatchThread();
+        // wait to open the document
+        Helper.waitForDispatchThread();
 
-            XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) bookDO.getCookie(EditorCookie.class);
-            Document doc = Helper.getDocument(editor);
-            assertTrue("The document is empty :", doc == null || doc.getLength() > 0);
-        }
+        XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) ret.getCookie(EditorCookie.class);
+        Document doc = Helper.getDocument(editor);
+        assertTrue("The document is empty :", doc == null || doc.getLength() > 0);
+        return ret;
     }
 
     /**
@@ -222,7 +249,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
      *
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(XmlMultiViewEditorTest.class));
-    }
+//    public static void main(String[] args) {
+//        TestRunner.run(new NbTestSuite(XmlMultiViewEditorTest.class));
+//    }
 }

@@ -139,6 +139,8 @@ public class CustomPluginsPanel extends javax.swing.JPanel {
         fc.setMultiSelectionEnabled(true);
         
         if (fc.showDialog(fc, null) == JFileChooser.APPROVE_OPTION) {
+            // TODO iterate and check the jar files for the presence
+            // of findbugs.xml and messages.xml or use DetectorCollectionProvider
             for (File f : fc.getSelectedFiles()) {
                 ((DefaultListModel) pluginsList.getModel()).addElement(f.getAbsolutePath());
             }
