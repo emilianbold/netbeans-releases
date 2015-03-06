@@ -116,9 +116,10 @@ public enum JadeCompletionContext {
         
         ts.move(offset);
         
-        if (!ts.movePrevious() || !ts.moveNext()) {
+        if (!ts.movePrevious()) {
             return TAG_AND_KEYWORD;
         }
+        ts.moveNext();
         
         Token<JadeTokenId> token = ts.token();
         JadeTokenId id = token.id();
@@ -129,6 +130,35 @@ public enum JadeCompletionContext {
             case CSS_ID: return CSS_ID;
             case CSS_CLASS: return CSS_CLASS;
             case TEXT: text = token.text().toString(); break;
+            case COMMENT:
+                String commentText = token.text().toString();
+                int index = offset -  ts.offset() - 1;
+                int spaces = 0;
+                if (index > -1 && index < commentText.length()) {
+                    
+                    while (index > -1 && (commentText.charAt(index) == ' ' || commentText.charAt(index) == '\t')) {
+                        spaces++;
+                        index--;
+                    }
+                    if (index > -1) {
+                        char ch = commentText.charAt(index);
+                        if (ch == '\n') {
+                            if (spaces == 0) {
+                                return TAG_AND_KEYWORD;
+                            } else {
+                                if (ts.movePrevious() && ts.token().id() == JadeTokenId.COMMENT_DELIMITER && ts.movePrevious()) {
+                                    
+                                    token = ts.token();
+                                    id = token.id();
+                                    if (id == JadeTokenId.WHITESPACE && token.length() >= spaces) {
+                                        return TAG_AND_KEYWORD;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return NONE;
         }
         if (id.isKeyword()) {
             return TAG_AND_KEYWORD;
@@ -168,6 +198,8 @@ public enum JadeCompletionContext {
                         return CSS_ID;
                     }
                 }
+            } else if (id == JadeTokenId.COMMENT) {
+                return TAG_AND_KEYWORD;
             }
             while (ts.movePrevious()) {
                 token = ts.token();
