@@ -103,7 +103,7 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
                 if (from >= 0) {
                     embeddings.add(snapshot.create(from, len, JS_MIME_TYPE));
                     embeddings.add(snapshot.create(ADD_EOL, JS_MIME_TYPE));
-                }
+                } 
                 from = -1;
                 len = 0;
             }
@@ -125,6 +125,7 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
         }
         if (from >= 0) {
             embeddings.add(snapshot.create(from, len, JS_MIME_TYPE));
+            embeddings.add(snapshot.create(ADD_EOL, JS_MIME_TYPE));
         }
         if (embeddings.isEmpty()) {
             return Collections.emptyList();
