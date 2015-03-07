@@ -52,6 +52,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.netbeans.junit.*;
+import org.netbeans.modules.editor.mimelookup.SharedMimeLookupCache;
 import org.netbeans.modules.openide.util.NbMutexEventProvider;
 
 import org.openide.util.Mutex;
@@ -256,6 +257,7 @@ implements CloneableEditorSupport.Env {
             super (ic);
             ic.add (new DD ());
             ic.add (new NbMutexEventProvider());
+            ic.add (new SharedMimeLookupCache());
         }
     }
 

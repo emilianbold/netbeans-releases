@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import javax.swing.text.Document;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.mimelookup.SharedMimeLookupCache;
 import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.CloseCookie;
@@ -268,6 +269,7 @@ public class DataEditorReadOnlyTest extends NbTestCase {
             ic.add (new Pool ());
             ic.add (FileEncodingQueryImpl.getDefault());
             ic.add (new NbMutexEventProvider());
+            ic.add (new SharedMimeLookupCache());
         }
         
     } // end of Lkp
