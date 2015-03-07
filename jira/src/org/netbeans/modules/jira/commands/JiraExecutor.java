@@ -65,6 +65,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -108,6 +109,7 @@ public class JiraExecutor {
     }
     
     public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean ensureConfiguration, boolean checkVersion, boolean ensureCredentials) {
+        ClassLoader originalContextCL = null;
         try {
             try {
 
@@ -124,7 +126,8 @@ public class JiraExecutor {
                 if(ensureCredentials) {
                     repository.ensureCredentials();
                 }
-                
+                originalContextCL = setupContextClassLoader();
+
                 cmd.execute();
 
                 cmd.setFailed(false);
@@ -206,6 +209,31 @@ public class JiraExecutor {
             } else {
                 Jira.LOG.log(Level.SEVERE, null, re);
             }
+        } finally {
+            restoreContextClassLoader(originalContextCL);
+        }
+    }
+
+    // We need to set the NetBeans system classloader as the thread context
+    // classloader when running in JDeveloper (the Equinox' ContextFinder used
+    // in JDev does not work for loading xml parser classes if the entire thread
+    // call stack is from NetBeans modules and no OSGi bundles).
+    // Here is the only entry point we can do it (unfortunately not in JDev).
+    private static ClassLoader setupContextClassLoader() {
+        ClassLoader systemCL = Lookup.getDefault().lookup(ClassLoader.class);
+        if (systemCL != null) {
+            ClassLoader currentContextCL = Thread.currentThread().getContextClassLoader();
+            if (currentContextCL != null && currentContextCL != systemCL) {
+                Thread.currentThread().setContextClassLoader(systemCL);
+                return currentContextCL;
+            }
+        }
+        return null;
+    }
+
+    private static void restoreContextClassLoader(ClassLoader originalContextCL) {
+        if (originalContextCL != null) {
+            Thread.currentThread().setContextClassLoader(originalContextCL);
         }
     }
 
