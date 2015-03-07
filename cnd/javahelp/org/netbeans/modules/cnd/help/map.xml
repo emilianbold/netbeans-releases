@@ -397,4 +397,11 @@
 	<mapID target="NewBreakpoint" url="images/NewBreakpoint.png"/>
 	<mapID target="ProjectPropsPreBuild" url="WorkingWithCandC++Projects/ProjectPropsPreBuild.html"/>
 	<mapID target="ProjectPropsCompile" url="WorkingWithCandC++Projects/ProjectPropsCompile.html"/>
+	<mapID target="sendto-about" url="SendTo/sendto-about.html"/>
+	<mapID target="sendto-script" url="SendTo/sendto-script.html"/>
+	<mapID target="sendto-execute" url="SendTo/sendto-execute.html"/>
+	<mapID target="sendto-createmodify" url="SendTo/sendto-createmodify.html"/>
+	<mapID target="sendto-tab" url="SendTo/sendto-tab.html"/>
+	<mapID target="stop_script" url="images/stop_script.gif"/>
+	<mapID target="sendto-vscript" url="SendTo/sendto-vscript.html"/>
 </map>
