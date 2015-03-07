@@ -1098,7 +1098,7 @@ public class InstallSupportImpl {
             if (Utilities.TRUSTED.equals(res) || Utilities.N_A.equals(res)) {
                 trusted.add (impl);
                 signed.add (impl);
-            } else if (Utilities.UNTRUSTED.equals(res)) {
+            } else if (Utilities.SIGNATURE_VERIFIED.equals(res) || Utilities.SIGNATURE_UNVERIFIED.equals(res)) {
                 signed.add (impl);
             }
         } catch (IOException ioe) {
