@@ -1884,6 +1884,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-core-startup" />
         </condition>
 
+        <condition property="module" value="tmp/netbeans/core/core.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-core-startup-base" />
+        </condition>
+
         <condition property="module" value="tmp/netbeans/lib/org-openide-util-lookup.jar">
             <equals arg1="${code.name.base.dashes}" arg2="org-openide-util-lookup" />
         </condition>
