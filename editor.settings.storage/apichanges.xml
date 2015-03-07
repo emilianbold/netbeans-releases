@@ -108,6 +108,25 @@ is the proper place.
 
     <changes>
         <change>
+            <summary>Module split</summary>
+            <version major="1" minor="49"/>
+            <date day="6" month="3" year="2015"/>
+            <author login="sdedic"/>
+            <compatibility modification="yes" source="compatible" binary="compatible"/>
+            <description>
+                Basic infrastructure for settings separated to a library.
+            </description>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="OverridePreferences" link="no"/>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="MemoryPreferences" link="no"/>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="EditorSettingsStorage" link="no"/>
+            
+            <class package="org.netbeans.modules.editor.settings.storage.spi" name="StorageDescription" link="no"/>
+            <class package="org.netbeans.modules.editor.settings.storage.spi" name="StorageFilter" link="no"/>
+            <class package="org.netbeans.modules.editor.settings.storage.spi" name="StorageReader" link="no"/>
+            <class package="org.netbeans.modules.editor.settings.storage.spi" name="StorageWriter" link="no"/>
+            <class package="org.netbeans.modules.editor.settings.storage.spi" name="TypedValue" link="no"/>
+        </change>
+        <change>
             <summary>Implement profiles for annotations coloring</summary>
             <version major="1" minor="43"/>
             <date day="17" month="9" year="2013"/>
@@ -143,8 +162,8 @@ is the proper place.
                     object, that propagates changes to its (persistent) delegate upon flush(). 
                 </p>
             </description>
-            <class package="org.netbeans.modules.editor.settings.storage.api" name="OverridePreferences"/>
-            <class package="org.netbeans.modules.editor.settings.storage.api" name="MemoryPreferences"/>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="OverridePreferences" link="no"/>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="MemoryPreferences" link="no"/>
             <issue number="226111"/>
         </change>
         
