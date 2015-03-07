@@ -52,7 +52,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.netbeans.junit.*;
-import org.netbeans.modules.openide.util.NbMutexEventProvider;
 
 import org.openide.util.Mutex;
 import org.openide.util.Lookup;
@@ -93,7 +92,7 @@ implements CloneableEditorSupport.Env {
     }
     
     protected void setUp () {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.NetworkConnectionLostTest$Lkp");
+        MockServices.setServices(DD.class);
         
         ic = new InstanceContent ();
         support = new CES (this, new AbstractLookup (ic));
@@ -244,24 +243,9 @@ implements CloneableEditorSupport.Env {
         
     } // end of CES
     
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new DD ());
-            ic.add (new NbMutexEventProvider());
-        }
-    }
-
     /** Our own dialog displayer.
      */
-    private static final class DD extends org.openide.DialogDisplayer {
+    public static final class DD extends org.openide.DialogDisplayer {
         public static Object[] options;
         public static int toReturn = -1;
         

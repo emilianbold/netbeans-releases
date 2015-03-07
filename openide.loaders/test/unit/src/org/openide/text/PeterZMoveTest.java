@@ -48,10 +48,10 @@ package org.openide.text;
 
 import java.io.IOException;
 import javax.swing.text.Document;
+import org.netbeans.junit.MockServices;
 
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.EditCookie;
 
 import org.openide.cookies.OpenCookie;
@@ -80,15 +80,13 @@ public class PeterZMoveTest extends NbTestCase {
     FileObject fileObject;
     org.openide.filesystems.FileSystem fs;
     static PeterZMoveTest RUNNING;
-    static {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.PeterZMoveTest$Lkp");
-    }
     
     public PeterZMoveTest(String s) {
         super(s);
     }
     
     protected void setUp () throws Exception {
+        MockServices.setServices(Pool.class);
         RUNNING = this;
         
         fs = org.openide.filesystems.FileUtil.createMemoryFileSystem ();
@@ -190,22 +188,8 @@ public class PeterZMoveTest extends NbTestCase {
         }
         
     }
-
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            
-            ic.add (new Pool ());
-            ic.add (new NbMutexEventProvider());
-        }
-        
-    } // end of Lkp
     
-    private static final class Pool extends org.openide.loaders.DataLoaderPool {
+    public static final class Pool extends org.openide.loaders.DataLoaderPool {
         protected java.util.Enumeration loaders () {
             return org.openide.util.Enumerations.singleton(MyLoader.get ());
         }
