@@ -49,7 +49,6 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.*;
-import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
@@ -93,7 +92,7 @@ public class SimpleDESTest extends NbTestCase {
         
         RUNNING = this;
         
-        System.setProperty("org.openide.util.Lookup", "org.openide.text.SimpleDESTest$Lkp");
+        MockServices.setServices(DLP.class);
         super.setUp();
         
         LocalFileSystem l = new LocalFileSystem ();
@@ -195,21 +194,6 @@ public class SimpleDESTest extends NbTestCase {
         return obj.getCookie(EditorCookie.class);
     }
     
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new DLP ());
-            ic.add (new NbMutexEventProvider());
-        }
-    }
-    
     private static final class SL extends org.openide.loaders.UniFileLoader {
         public SL () {
             super (SO.class.getName ());
@@ -250,7 +234,7 @@ public class SimpleDESTest extends NbTestCase {
         }
     } // end of SO
 
-    private static final class DLP extends org.openide.loaders.DataLoaderPool {
+    public static final class DLP extends org.openide.loaders.DataLoaderPool {
         protected java.util.Enumeration loaders() {
             return java.util.Collections.enumeration(
                 java.util.Collections.singleton(

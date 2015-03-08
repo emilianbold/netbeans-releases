@@ -50,16 +50,14 @@ import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
-import javax.swing.JEditorPane;
 import javax.swing.text.StyledDocument;
 
 
 import junit.framework.AssertionFailedError;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.EditCookie;
 
@@ -75,9 +73,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
-import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.Lookup;
 
 
 /**
@@ -92,7 +87,6 @@ public class FileEncodingQueryDataEditorSupportTest extends NbTestCase {
     org.openide.filesystems.FileSystem fs;
     static FileEncodingQueryDataEditorSupportTest RUNNING;
     static {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.FileEncodingQueryDataEditorSupportTest$Lkp");
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     
@@ -107,6 +101,7 @@ public class FileEncodingQueryDataEditorSupportTest extends NbTestCase {
     
     @Override
     protected void setUp () throws Exception {
+        MockServices.setServices(Pool.class, FileEncodingQueryImpl.class);
         RUNNING = this;
         
         fs = org.openide.filesystems.FileUtil.createMemoryFileSystem ();
@@ -367,15 +362,15 @@ public class FileEncodingQueryDataEditorSupportTest extends NbTestCase {
         
     }
     
-    private static final class FileEncodingQueryImpl extends FileEncodingQueryImplementation {
+    public static final class FileEncodingQueryImpl extends FileEncodingQueryImplementation {
         
         private static FileEncodingQueryImpl instance;
         
         private FileObject file;
         private Exception who;
         
-        private FileEncodingQueryImpl () {
-            
+        public FileEncodingQueryImpl () {
+            instance = this;
         }
             
         public Charset getEncoding(FileObject file) {
@@ -424,23 +419,8 @@ public class FileEncodingQueryDataEditorSupportTest extends NbTestCase {
             }
         }
     }
-
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            
-            ic.add (new Pool ());
-            ic.add (FileEncodingQueryImpl.getDefault());
-            ic.add (new NbMutexEventProvider());
-        }
-        
-    } // end of Lkp
     
-    private static final class Pool extends org.openide.loaders.DataLoaderPool {
+    public static final class Pool extends org.openide.loaders.DataLoaderPool {
         protected java.util.Enumeration loaders () {
             return org.openide.util.Enumerations.singleton(MyLoader.get ());
         }
