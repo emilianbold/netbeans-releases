@@ -138,7 +138,7 @@ public class FixTestDependencies extends Task {
                 // test if project.xml contains test-deps
                 if (td && !testFix) {
                     // yes -> exit
-                    xml = fixOpenideUtil(xml);
+                    xml = fixOpenideUtil(fixCoreStartup(xml));
                     PrintStream ps = new PrintStream(projectXmlFile);
                     ps.print(xml);
                     ps.close();                  
@@ -231,7 +231,10 @@ public class FixTestDependencies extends Task {
                 resultXml.append(xml.substring(moduleDepEnd + 1, xml.length()));
                 if (!testFix) {
                    PrintStream ps = new PrintStream(projectXmlFile);
-                   ps.print(fixOpenideUtil(resultXml.toString()));
+                   ps.print(fixOpenideUtil(
+                           fixCoreStartup(
+                                   resultXml.toString()
+                           )));
                    ps.close();
                 } else {
                     System.out.println(resultXml);
@@ -465,6 +468,33 @@ public class FixTestDependencies extends Task {
             retLines.add(line);
         }
         return retLines;
+    }
+    
+    private String fixCoreStartup(String xml) {
+        Pattern l = Pattern.compile(
+                "^ *<test-dependency>[^/]*" +
+                "<code-name-base>org.netbeans.core.startup.base</code-name-base>", Pattern.MULTILINE);
+        if (l.matcher(xml).find()) {
+            return xml;
+        }
+
+        Pattern p = Pattern.compile(
+                "^ *<test-dependency>[^/]*" +
+                "<code-name-base>org.netbeans.core.startup</code-name-base>", Pattern.MULTILINE);
+
+        Matcher m = p.matcher(xml);
+        if (m.find()) {
+            final String txt = "</test-dependency>";
+            final int s = m.start();
+            int end = xml.indexOf(txt, s);
+            if (end == -1) {
+                throw new BuildException("No end of dependency " + xml);
+            }
+            final int e = end + txt.length();
+            String dep = xml.substring(s, e);
+            return xml.substring(0, s) + dep + '\n' + dep.replace("org.netbeans.core.startup", "org.netbeans.core.startup.base") + xml.substring(e);
+        }
+        return xml;
     }
 
     private String fixOpenideUtil(String xml) {

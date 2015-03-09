@@ -53,9 +53,9 @@ import java.util.HashSet;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -113,7 +113,7 @@ public class AnnotationProviderTest extends NbTestCase {
     private FileSystem fs;
     
     protected void setUp() throws Exception {
-        System.setProperty("org.openide.util.Lookup", "org.openide.text.AnnotationProviderTest$Lkp");
+        MockServices.setServices(MyPool.class, ConsistencyCheckProvider.class);
         
         clearWorkDir ();
         org.openide.filesystems.LocalFileSystem lfs = new org.openide.filesystems.LocalFileSystem ();
@@ -572,7 +572,7 @@ public class AnnotationProviderTest extends NbTestCase {
     } // TXTEditorSupport
 
     
-    private static class MyPool extends org.openide.loaders.DataLoaderPool {
+    public static class MyPool extends org.openide.loaders.DataLoaderPool {
         @Override
         protected Enumeration<? extends DataLoader> loaders() {
             return Collections.enumeration(Collections.singleton(
@@ -580,19 +580,5 @@ public class AnnotationProviderTest extends NbTestCase {
             ));
         }
         
-    }
-    
-    public static class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            
-            ic.add (new MyPool ());
-            ic.add (new ConsistencyCheckProvider ());
-            ic.add (new NbMutexEventProvider());
-        }
     }
 }
