@@ -122,6 +122,7 @@ public class ElementJavadoc {
     private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
     private int linkCounter = 0;
     private volatile URL docURL = null;
+    private volatile JavadocHelper.TextStream docPage = null;
     private volatile AbstractAction goToSource = null;
 
     /** Non-normative notes about the API. Usually used for examples. */
@@ -241,7 +242,7 @@ public class ElementJavadoc {
 
     @Override
     public String toString() {
-        return String.format("ElementJavadoc[url=%s, handle=%s]", docURL, handle);  //NOI18N
+        return String.format("ElementJavadoc[url=%s, handle=%s]", getURL(), handle);  //NOI18N
     }
 
     private ElementJavadoc resolveElement(
@@ -256,7 +257,7 @@ public class ElementJavadoc {
             if (cpInfo == null && fo == null) {
                 //link cannot be resolved by this element
                 try {
-                    URL u = docURL != null ? new URL(docURL, link) : new URL(link);
+                    URL u = getURL() != null ? new URL(getURL(), link) : new URL(link);
                     ret[0] = new ElementJavadoc(u, cancel);
                 } catch (MalformedURLException ex) {
                     // ignore
@@ -312,8 +313,8 @@ public class ElementJavadoc {
                                     URL u;
                                     if (uri.isAbsolute()) {
                                         u = new URL(link);
-                                    } else if (docURL != null) {
-                                        u = new URL(docURL, link);
+                                    } else if (getURL() != null) {
+                                        u = new URL(getURL(), link);
                                     } else {
                                         return;
                                     }
@@ -322,9 +323,9 @@ public class ElementJavadoc {
                                     //external URL
                                     if( uri.isAbsolute() ) {
                                         ret[0] = new ElementJavadoc( uri.toURL(), cancel );
-                                    } else if (docURL != null) {
+                                    } else if (getURL() != null) {
                                         try {
-                                            ret[0] = new ElementJavadoc(new URL(docURL, link), cancel);
+                                            ret[0] = new ElementJavadoc(new URL(getURL(), link), cancel);
                                         } catch (MalformedURLException ex) {
                                             // ignore
                                         }
@@ -370,7 +371,6 @@ public class ElementJavadoc {
         boolean localized = false;
         boolean remote = false;
         StringBuilder content = new StringBuilder();
-        JavadocHelper.TextStream page = null;
         try {
             //Optimisitic no http
             if (element != null) {
@@ -385,13 +385,15 @@ public class ElementJavadoc {
                 if (remote && pages.size() > 1) {
                     throw new JavadocHelper.RemoteJavadocException(null);
                 }
-                page = pages.isEmpty() ? null : pages.get(0);
-                docURL = page == null ? null : page.getLocation();
+                docPage = pages.isEmpty() ? null : pages.get(0);
+                if (!isRemote(docPage, null)) {
+                    docURL = docPage.getLocation();
+                }
                 if (!localized) {
                     assignSource(element, compilationInfo, url, content);
                 }
             }
-            this.content = prepareContent(content, doc,localized, page, cancel, true, context);
+            this.content = prepareContent(content, doc,localized, docPage, cancel, true, context);
         } catch (JavadocHelper.RemoteJavadocException re) {
             if (fileObject == null || JavaSource.forFileObject(fileObject) == null) {
                 final StringBuilder sb = new StringBuilder(content);
@@ -411,14 +413,14 @@ public class ElementJavadoc {
                     final CompilationController c = (CompilationController) ch.getCompilationController();
                     c.toPhase(Phase.RESOLVED);
                     final Element element = handle.resolve(c);
-                    JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element, true, cancel);
-                    docURL = page == null ? null : page.getLocation();
+                    docPage = JavadocHelper.getJavadoc(element, true, cancel);
+                    docURL = docPage == null ? null : docPage.getLocation();
                     if (!isLocalized(docURL, element)) {
                         assignSource(element, c, url, contentFin);
                     }
                     Pair<Trees,ElementUtilities> context = Pair.of(c.getTrees(), c.getElementUtilities());
                     Doc doc = context.second().javaDocFor(element);
-                    return prepareContent(contentFin, doc,localizedFin, page, cancel, false, context).get();
+                    return prepareContent(contentFin, doc,localizedFin, docPage, cancel, false, context).get();
                 }
             });
             RP.post(new Runnable() {
@@ -440,6 +442,7 @@ public class ElementJavadoc {
         assert url != null;
         this.content = null;
         this.docURL = url;
+        this.docPage = null;
         this.handle = null;
         this.cpInfo = null;
         this.fileObject = null;
@@ -450,6 +453,7 @@ public class ElementJavadoc {
         assert message != null;
         this.content = new Now(message);
         this.docURL = null;
+        this.docPage = null;
         this.handle = null;
         this.cpInfo = null;
         this.fileObject = null;
@@ -747,7 +751,7 @@ public class ElementJavadoc {
                 final Callable<String> call = new Callable<String>() {
                     @Override
                     public String call() throws Exception {
-                        String jdText = page != null ? HTMLJavadocParser.getJavadocText(page, false) : docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
+                        String jdText = page != null ? HTMLJavadocParser.getJavadocText(page, false) : getURL() != null ? HTMLJavadocParser.getJavadocText(getURL(), false) : null;
                         if (jdText != null) {
                             sb.append(jdText);
                         } else {
@@ -1515,10 +1519,13 @@ public class ElementJavadoc {
                         if (e != null) {
                             inheritedPage = JavadocHelper.getJavadoc(e, cancel);
                             if (inheritedPage != null) {
-                                docURL = inheritedPage.getLocation();
+                                docPage = inheritedPage;
+                                if (!stopByRemoteJdoc || !isRemote(docPage, null)) {
+                                    docURL = inheritedPage.getLocation();
+                                }
+                                if (!(isLocalized = isLocalized(docPage.getLocations(), e)))
+                                    ctx.first().getTree(e);
                             }
-                            if (!(isLocalized = isLocalized(docURL, e)))
-                                ctx.first().getTree(e);
                         }
                         if (!isLocalized) {
                             List<Tag> inheritedInlineTags = null;
@@ -1688,10 +1695,11 @@ public class ElementJavadoc {
                         if (e != null) {
                             inheritedPage = JavadocHelper.getJavadoc(e, cancel);
                             if (inheritedPage != null) {
+                                docPage = inheritedPage;
                                 docURL = inheritedPage.getLocation();
+                                if (!(isLocalized = isLocalized(docPage.getLocations(), e)))
+                                    ctx.first().getTree(e);
                             }
-                            if (!(isLocalized = isLocalized(docURL, e)))
-                                ctx.first().getTree(e);
                         }
                         if (!isLocalized) {
                             List<Tag> inheritedInlineTags = null;
@@ -1858,7 +1866,14 @@ public class ElementJavadoc {
     }
 
     private static boolean isRemote(final JavadocHelper.TextStream page, final URL url) {
-        return page != null ? page.getLocation().toString().startsWith("http") : url != null ? url.toString().startsWith("http") : false;
+        if (page != null) {
+            for (URL loc : page.getLocations()) {
+                if (loc.toString().startsWith("http")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return url != null ? url.toString().startsWith("http") : false;
     }
 
     private static final class Now implements Future<String> {
