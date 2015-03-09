@@ -84,6 +84,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
@@ -890,9 +891,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 platform.defaultJpaProvider = null;
             }
 
-            Set<WLServerLibrary> tmpNewLibraries =
-                    new WLServerLibrarySupport(platform.dm).getDeployedLibraries();
-            Set<WLServerLibrary> tmpOldLibraries = null;
+            Set<WLServerLibrary> tmpNewLibraries;
+            // #249289 - we need a fresh one as for deleted server there might
+            // not be any properties anymore; needs fix on higher level
+            if (InstanceProperties.getInstanceProperties(platform.dm.getUri()) != null) {
+                tmpNewLibraries = new WLServerLibrarySupport(platform.dm).getDeployedLibraries();
+            } else {
+                tmpNewLibraries = Collections.emptySet();
+            }
+
+            Set<WLServerLibrary> tmpOldLibraries;
             synchronized (this) {
                 tmpOldLibraries = new HashSet<WLServerLibrary>(oldLibraries);
                 oldLibraries = tmpNewLibraries;
