@@ -77,7 +77,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -93,7 +92,7 @@ import org.openide.xml.XMLUtil;
 
 /** Utility class for viewing Javadoc comments as HTML.
  *
- * @author Dusan Balek, Petr Hrebejk
+ * @author Dusan Balek, Petr Hrebejk, Tomas Zezula
  */
 public class ElementJavadoc {
 
@@ -421,21 +420,10 @@ public class ElementJavadoc {
                     return prepareContent(contentFin, doc,localizedFin, page, cancel, false, context).get();
                 }
             });
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    final ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(ElementJavadoc.class, "LBL_HTTPJavadocDownload"));
-                    progress.start();
-                    try {
-                        ((Runnable)ElementJavadoc.this.content).run();
-                    } finally {
-                        progress.finish();
-                    }
-                }
-            });
+            RP.post(asProgressRunnable((Runnable)this.content));
         }
     }
-    
+
     private ElementJavadoc(URL url, final Callable<Boolean> cancel) {
         assert url != null;
         this.content = null;
@@ -761,7 +749,7 @@ public class ElementJavadoc {
                 };
                 final FutureTask<String> task = new FutureTask<String>(call);
                 if (sync) {
-                    RP.post(task);
+                    RP.post(asProgressRunnable(task));
                 } else {
                     task.run();
                 }
@@ -1914,5 +1902,21 @@ public class ElementJavadoc {
         if (url != null) {
             docURL = url;
         }
+    }
+
+    @NonNull
+    private Runnable asProgressRunnable(@NonNull final Runnable r) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                final ProgressHandle progress = ProgressHandle.createHandle(NbBundle.getMessage(ElementJavadoc.class, "LBL_HTTPJavadocDownload"));
+                progress.start();
+                try {
+                    r.run();
+                } finally {
+                    progress.finish();
+                }
+            }
+        };
     }
 }
