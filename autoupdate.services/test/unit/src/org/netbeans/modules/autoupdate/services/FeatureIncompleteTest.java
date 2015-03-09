@@ -65,6 +65,7 @@ import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
@@ -91,8 +92,15 @@ public class FeatureIncompleteTest extends NbTestCase {
         this.clearWorkDir();
         TestUtils.setUserDir(getWorkDirPath());
         TestUtils.testInit();
-        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MyProvider.instance");
-        fo.setAttribute("instanceCreate", new MyProvider());
+        // Note: the FolderLookup could refresh in half-state, with just MyProvider.instance visible,
+        // so it will refuse to load classes from default package.
+        FileUtil.getConfigRoot().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
+            public void run() throws IOException {
+                FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MyProvider.instance");
+                fo.setAttribute("instanceCreate", new MyProvider());
+            }
+        });
         assert Lookup.getDefault().lookup(MyProvider.class) != null;
         /* XXX for some reason this does not work:
          MockLookup.setInstances(new MyProvider());
