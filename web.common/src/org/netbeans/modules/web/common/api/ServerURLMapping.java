@@ -45,6 +45,7 @@ package org.netbeans.modules.web.common.api;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URI;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
@@ -151,11 +152,12 @@ public final class ServerURLMapping {
         }
         if ("file".equals(serverURL.getProtocol())) { //NOI18N
             try {
-                if (serverURL.toURI().getQuery() != null) {
+                URI serverURI = serverURL.toURI();
+                if (serverURI.getQuery() != null || serverURI.getFragment() != null) {
                     // #236532 - strip down query part from the URL:
-                    serverURL = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true));
+                    serverURI = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true)).toURI();
                 }
-                File f = FileUtil.normalizeFile(Utilities.toFile(serverURL.toURI()));
+                File f = FileUtil.normalizeFile(Utilities.toFile(serverURI));
                 return FileUtil.toFileObject(f);
                 //FileObject fo = URLMapper.findFileObject(serverURL);
             } catch (URISyntaxException ex) {
