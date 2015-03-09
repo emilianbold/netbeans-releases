@@ -46,6 +46,7 @@
 
 #include "jvmlauncher.h"
 #include <cassert>
+#include <fstream>
 
 using namespace std;
 
@@ -135,24 +136,20 @@ bool JvmLauncher::getJavaPath(string &path) {
  * @return 
  */
 bool JvmLauncher::isPermSizeSupported() {
-    // Run "java -version" only if the version is unknown
+    // Read "release" file only if the version is unknown
     // unknown - it's when Java is specified in netbeans.conf
     // or by --jdkhome
     if (javaVersion.empty()) {
-        string cmd = "\"" + javaExePath + "\" -version 2>&1";
-        FILE* pipe = popen(cmd.c_str(), "r");
-        if (!pipe) return false;
-        char buffer[128];
-        std::string result = "";
-        while (!feof(pipe)) {
-            if(fgets(buffer, 128, pipe) != NULL)
-                    result += buffer;
-        }
-        pclose(pipe);
-        
-        if (result.size() > 17 ) {                    
-            return result.substr(14, 3) == "1.7";
-        }
+        string releaseFilePath = "\"" + javaPath + "\\release\"";
+        ifstream releaseFile(releaseFilePath.c_str());
+        if (releaseFile.is_open()) {
+            string line;
+            if (getline(releaseFile, line)) {
+                if (line.size() > 17) {
+                    return line.substr(14, 3) == "1.7";
+                }
+            }
+        }                
     } else {
         if (javaVersion.size() >= 3) {
             return javaVersion.substr(0, 3) == "1.7";
