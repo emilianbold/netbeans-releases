@@ -386,7 +386,7 @@ public class ElementJavadoc {
                     throw new JavadocHelper.RemoteJavadocException(null);
                 }
                 page = pages.isEmpty() ? null : pages.get(0);
-                docURL = page == null ? null : page.getLocation();
+                docURL = page == null ? null : page.getLocation(JavadocHelper.RemoteJavadocPolicy.EXCEPTION);
                 if (!localized) {
                     assignSource(element, compilationInfo, url, content);
                 }
