@@ -821,7 +821,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
         }
         if (localCompletionResult != null) {
-            CharSequence commonText = null;
+            CompletionItem item = layout.getSelectedCompletionItem();
+            CharSequence commonText = item.getInsertPrefix();
             int anchorOffset = -1;
 outer:      for (Iterator it = localCompletionResult.getResultSets().iterator(); it.hasNext();) {
                 CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
@@ -833,6 +834,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                         else
                             anchorOffset = resultSet.getAnchorOffset();
                     }
+                    boolean caseSensitive = CompletionSettings.getInstance(c).completionCaseSensitive();
                     for (Iterator itt = resultItems.iterator(); itt.hasNext();) {
                         CharSequence text = ((CompletionItem)itt.next()).getInsertPrefix();
                         if (text == null) {
@@ -843,10 +845,17 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                             commonText = text;
                         } else {
                             // Get the largest common part
-                            if (text.length() < commonText.length())
+                            if (text.length() < commonText.length()) {
                                 commonText = commonText.subSequence(0, text.length());
+                            }
                             for (int commonInd = 0; commonInd < commonText.length(); commonInd++) {
-                                if (text.charAt(commonInd) != commonText.charAt(commonInd)) {
+                                char textChar = text.charAt(commonInd);
+                                char commonTextChar = commonText.charAt(commonInd);
+                                if (!caseSensitive) {
+                                    textChar = Character.toLowerCase(textChar);
+                                    commonTextChar = Character.toLowerCase(commonTextChar);
+                                }
+                                if (textChar != commonTextChar) {
                                     if (commonInd == 0) {
                                         commonText = null;
                                         break outer; // no common text
@@ -882,7 +891,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     return;
                 }
             }
-            CompletionItem item = layout.getSelectedCompletionItem();
             if (item != null)
                 item.defaultAction(c);
         }
