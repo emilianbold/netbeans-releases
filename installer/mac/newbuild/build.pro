@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
+  Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
 
   Oracle and Java are registered trademarks of Oracle and/or its affiliates.
   Other names may be trademarks of their respective owners.
@@ -63,8 +63,8 @@
     <property name="nb.display.version.short" value="Dev"/>
 
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="8.0.15"/>
-    <property name="tomcat.id" value="8.0.15"/>
+    <property name="tomcat.version" value="8.0.20"/>
+    <property name="tomcat.id" value="8.0.20"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
