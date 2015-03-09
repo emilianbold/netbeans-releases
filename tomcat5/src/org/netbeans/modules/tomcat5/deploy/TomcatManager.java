@@ -463,40 +463,45 @@ public class TomcatManager implements DeploymentManager {
         return tomEEVersion;
     }
 
-    public synchronized void loadTomEEInfo() {
-        if (tomEEChecked) {
-            LOGGER.log(Level.INFO, "TomEE version {0}, type {1}", new Object[] {tomEEVersion, tomEEType});
-            return;
-        }
-        assert tomEEWarListener == null;
-
-        tomEEChecked = true;
-        tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome(), tp.getCatalinaBase());
-        tomEEType = tomEEVersion == null ? null : TomcatFactory.getTomEEType(tp.getCatalinaHome(), tp.getCatalinaBase());
-        if (tomEEVersion == null) {
-            tomEEWarListener = new TomEEWarListener(tp, new TomEEWarListener.RefreshHook() {
-
-                @Override
-                public void refresh(TomEEVersion version, TomEEType type) {
-                    synchronized (TomcatManager.this) {
-                        tomEEVersion = version;
-                        tomEEType = type;
-                    }
-                    getTomcatPlatform().notifyLibrariesChanged();
-                }
-            });
-            File listenFile;
-            if (tp.getCatalinaBase() != null) {
-                listenFile = new File(tp.getCatalinaBase(), "webapps"); // NOI18N
-            } else {
-                listenFile = new File(tp.getCatalinaHome(), "webapps"); // NOI18N
+    public void loadTomEEInfo() {
+        boolean fireListener = false;
+        synchronized (this) {
+            if (tomEEChecked) {
+                LOGGER.log(Level.INFO, "TomEE version {0}, type {1}", new Object[] {tomEEVersion, tomEEType});
+                return;
             }
+            assert tomEEWarListener == null;
 
-            FileUtil.addFileChangeListener(tomEEWarListener, listenFile);
+            tomEEChecked = true;
+            tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome(), tp.getCatalinaBase());
+            tomEEType = tomEEVersion == null ? null : TomcatFactory.getTomEEType(tp.getCatalinaHome(), tp.getCatalinaBase());
+            if (tomEEVersion == null) {
+                tomEEWarListener = new TomEEWarListener(tp, new TomEEWarListener.RefreshHook() {
+
+                    @Override
+                    public void refresh(TomEEVersion version, TomEEType type) {
+                        synchronized (TomcatManager.this) {
+                            tomEEVersion = version;
+                            tomEEType = type;
+                        }
+                        getTomcatPlatform().notifyLibrariesChanged();
+                    }
+                });
+                File listenFile;
+                if (tp.getCatalinaBase() != null) {
+                    listenFile = new File(tp.getCatalinaBase(), "webapps"); // NOI18N
+                } else {
+                    listenFile = new File(tp.getCatalinaHome(), "webapps"); // NOI18N
+                }
+
+                FileUtil.addFileChangeListener(tomEEWarListener, listenFile);
+                fireListener = true;
+            }
+            LOGGER.log(Level.INFO, "TomEE version {0}, type {1}", new Object[] {tomEEVersion, tomEEType});
+        }
+        if (fireListener) {
             tomEEWarListener.checkAndRefresh();
         }
-
-        LOGGER.log(Level.INFO, "TomEE version {0}, type {1}", new Object[] {tomEEVersion, tomEEType});
     }
 
 // --- DeploymentManager interface implementation ----------------------
