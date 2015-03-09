@@ -64,6 +64,7 @@ import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.openide.cookies.LineCookie;
@@ -552,8 +553,8 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
 
         FileObject fileObject = null;
-        if (filePath.startsWith("http:") || filePath.startsWith("https:")) {    // NOI18N
-            try {
+        try {
+            if (filePath.startsWith("http:") || filePath.startsWith("https:")) {    // NOI18N
                 URL url;
                 try {
                     url = new URI(filePath).toURL();
@@ -567,17 +568,22 @@ public class BrowserConsoleLogger implements Console.Listener {
                 if (fileObject == null) {
                     fileObject = RemoteFileCache.getRemoteFile(url);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            File file;
-            if (filePath.startsWith("file:/")) {                                // NOI18N
-                file = Utilities.toFile(URI.create(filePath));
             } else {
-                file = new File(filePath);
+                File file;
+                if (filePath.startsWith("file:/")) {                                // NOI18N
+                    URI uri = URI.create(filePath);
+                    if (uri.getQuery() != null || uri.getFragment() != null) {
+                        // Remove the query and/or fragment
+                        uri = WebUtils.stringToUrl(WebUtils.urlToString(new URL(filePath), true)).toURI();
+                    }
+                    file = Utilities.toFile(uri);
+                } else {
+                    file = new File(filePath);
+                }
+                fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
             }
-            fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        } catch (IOException | URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
         }
         if (fileObject == null) {
             LOG.log(Level.FINE, "Cannot resolve \"{0}\"", filePath);
