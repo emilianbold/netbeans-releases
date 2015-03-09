@@ -77,7 +77,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -93,7 +92,7 @@ import org.openide.xml.XMLUtil;
 
 /** Utility class for viewing Javadoc comments as HTML.
  *
- * @author Dusan Balek, Petr Hrebejk
+ * @author Dusan Balek, Petr Hrebejk, Tomas Zezula
  */
 public class ElementJavadoc {
 
@@ -386,9 +385,7 @@ public class ElementJavadoc {
                     throw new JavadocHelper.RemoteJavadocException(null);
                 }
                 docPage = pages.isEmpty() ? null : pages.get(0);
-                if (!isRemote(docPage, null)) {
-                    docURL = docPage.getLocation();
-                }
+                docURL = docPage == null ? null : docPage.getLocation(JavadocHelper.RemoteJavadocPolicy.EXCEPTION);
                 if (!localized) {
                     assignSource(element, compilationInfo, url, content);
                 }
@@ -423,21 +420,10 @@ public class ElementJavadoc {
                     return prepareContent(contentFin, doc,localizedFin, docPage, cancel, false, context).get();
                 }
             });
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    final ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(ElementJavadoc.class, "LBL_HTTPJavadocDownload"));
-                    progress.start();
-                    try {
-                        ((Runnable)ElementJavadoc.this.content).run();
-                    } finally {
-                        progress.finish();
-                    }
-                }
-            });
+            RP.post((Runnable)this.content);
         }
     }
-    
+
     private ElementJavadoc(URL url, final Callable<Boolean> cancel) {
         assert url != null;
         this.content = null;
