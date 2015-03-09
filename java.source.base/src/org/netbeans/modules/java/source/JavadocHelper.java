@@ -91,6 +91,7 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
+import org.netbeans.api.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -98,6 +99,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -106,6 +108,7 @@ import org.netbeans.modules.parsing.lucene.support.Convertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -364,7 +367,9 @@ public class JavadocHelper {
                     byte[] data = fileURI == null ? null : remoteFileContentCache.get(fileURI);
                     if (data == null) {
                         if (uncached == null) {
-                            uncached = JavadocHelper.openStream(getFirstLocation());
+                            uncached = JavadocHelper.openStream(
+                                getFirstLocation(),
+                                NbBundle.getMessage(JavadocHelper.class, "LBL_HTTPJavadocDownload"));
                         }
                         ByteArrayOutputStream baos = new ByteArrayOutputStream(20 * 1024); // typical size for Javadoc page?
                         FileUtil.copy(uncached, baos);
@@ -383,7 +388,7 @@ public class JavadocHelper {
                 return new ByteArrayInputStream(cache);
             } else {
                 if (uncached == null) {
-                    uncached = JavadocHelper.openStream(getFirstLocation());
+                    uncached = JavadocHelper.openStream(getFirstLocation(), null);
                 }
                 return uncached;
             }
@@ -424,19 +429,31 @@ public class JavadocHelper {
      * @return its input stream
      * @throws IOException for the usual reasons
      */
-    private static InputStream openStream(URL url) throws IOException {
-        if (url.getProtocol().equals("jar")) { // NOI18N
-            FileObject f = URLMapper.findFileObject(url);
-            if (f != null) {
-                return f.getInputStream();
+    @NonNull
+    private static InputStream openStream(@NonNull final URL url, @NullAllowed final String message) throws IOException {
+        ProgressHandle progress = null;
+        if (message != null) {
+            progress = ProgressHandle.createHandle(message);
+            progress.start();
+        }
+        try {
+            if (url.getProtocol().equals("jar")) { // NOI18N
+                FileObject f = URLMapper.findFileObject(url);
+                if (f != null) {
+                    return f.getInputStream();
+                }
+            }
+            if (isRemote(url)) {
+                LOG.log(Level.FINE, "opening network stream: {0}", url);
+            }
+            final URLConnection c = url.openConnection();
+            c.setConnectTimeout(REMOTE_CONNECTION_TIMEOUT);
+            return c.getInputStream();
+        } finally {
+            if (progress != null) {
+                progress.finish();
             }
         }
-        if (isRemote(url)) {
-            LOG.log(Level.FINE, "opening network stream: {0}", url);
-        }
-        final URLConnection c = url.openConnection();
-        c.setConnectTimeout(REMOTE_CONNECTION_TIMEOUT);
-        return c.getInputStream();
     }
 
     /**
@@ -755,7 +772,7 @@ binRoots:   for (URL binary : binaries) {
                         LOG.log(Level.FINE, "assumed valid Javadoc stream at {0}", url);
                     } else if (!speculative || !isRemote) {
                         try {
-                            is = openStream(url);
+                            is = openStream(url, NbBundle.getMessage(JavadocHelper.class, "LBL_HTTPJavadocDownload"));
                             if (useKnownGoodRoots) {
                                 knownGoodRoots.add(rootS);
                                 LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);

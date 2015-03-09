@@ -420,7 +420,7 @@ public class ElementJavadoc {
                     return prepareContent(contentFin, doc,localizedFin, page, cancel, false, context).get();
                 }
             });
-            RP.post(asProgressRunnable((Runnable)this.content));
+            RP.post((Runnable)this.content);
         }
     }
 
@@ -749,7 +749,7 @@ public class ElementJavadoc {
                 };
                 final FutureTask<String> task = new FutureTask<String>(call);
                 if (sync) {
-                    RP.post(asProgressRunnable(task));
+                    RP.post(task);
                 } else {
                     task.run();
                 }
@@ -1902,21 +1902,5 @@ public class ElementJavadoc {
         if (url != null) {
             docURL = url;
         }
-    }
-
-    @NonNull
-    private Runnable asProgressRunnable(@NonNull final Runnable r) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                final ProgressHandle progress = ProgressHandle.createHandle(NbBundle.getMessage(ElementJavadoc.class, "LBL_HTTPJavadocDownload"));
-                progress.start();
-                try {
-                    r.run();
-                } finally {
-                    progress.finish();
-                }
-            }
-        };
     }
 }
