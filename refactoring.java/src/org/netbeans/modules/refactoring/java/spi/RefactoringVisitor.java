@@ -150,7 +150,9 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
         } else {
             if (oldTree!=null) {
                 TreePath tp = workingCopy.getTrees().getPath(current.getCompilationUnit(), oldTree);
-                JavaRefactoringUtils.cacheTreePathInfo(tp, workingCopy);
+                if(tp != null) {
+                    JavaRefactoringUtils.cacheTreePathInfo(tp, workingCopy);
+                }
             }
         }
     }
@@ -184,7 +186,9 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
         } else {
             if (oldTree!=null) {
                 TreePath tp = workingCopy.getTrees().getPath(current.getCompilationUnit(), tree);
-                JavaRefactoringUtils.cacheTreePathInfo(tp, workingCopy);
+                if(tp != null) {
+                    JavaRefactoringUtils.cacheTreePathInfo(tp, workingCopy);
+                }
             }
         }
     }
