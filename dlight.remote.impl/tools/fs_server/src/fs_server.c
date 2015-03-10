@@ -273,6 +273,15 @@ static void clone_request(fs_request* dst, fs_request* src) {
     }
 }
 
+static int word_len(const char* p) {
+    int len = 0;
+    while (*p && ! isspace(*p)) {
+        p++;
+        len++;
+    }
+    return len;
+}
+
 /**
  * Decodes in-place fs_raw_request into fs_request
  */
@@ -283,7 +292,7 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
     int id;
     int path_len;
     const char* p;
-    if (*raw_request == FS_REQ_QUIT) {
+    if (*raw_request == FS_REQ_QUIT || *raw_request == FS_REQ_HELP) {
         id = 0;
         path_len = 0;
         p = "";
@@ -303,8 +312,11 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
                 return NULL;
             }
             if (!path_len && *raw_request != FS_REQ_QUIT) {
-                report_error("wrong (zero path) request: %s", raw_request);
-                return NULL;
+                path_len = word_len(p);
+                if (!path_len) {
+                    report_error("wrong (zero path) request: %s", raw_request);
+                    return NULL;
+                }
             }
         }
     }
@@ -330,6 +342,9 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
         p = decode_int(p, &path_len);
         if (p == NULL) {
             return NULL;
+        }
+        if (path_len == 0) {
+            path_len = word_len(p);
         }
         path_len = utf8_bytes_count(p, path_len);
         if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
@@ -1353,6 +1368,26 @@ static void response_refresh(fs_request* request) {
     refresh_cycle(request);
 }
 
+static void response_help() {
+    my_fprintf(STDOUT, "Help on request kinds\n");
+    #define help_req_kind(kind) my_fprintf(STDOUT, "%c - %s\n", kind, #kind)
+    help_req_kind(FS_REQ_LS);
+    help_req_kind(FS_REQ_RECURSIVE_LS);
+    help_req_kind(FS_REQ_STAT);
+    help_req_kind(FS_REQ_LSTAT);
+    help_req_kind(FS_REQ_COPY);
+    help_req_kind(FS_REQ_MOVE);
+    help_req_kind(FS_REQ_QUIT);
+    help_req_kind(FS_REQ_SLEEP);
+    help_req_kind(FS_REQ_ADD_WATCH);
+    help_req_kind(FS_REQ_REMOVE_WATCH);
+    help_req_kind(FS_REQ_REFRESH);
+    help_req_kind(FS_REQ_DELETE);
+    help_req_kind(FS_REQ_SERVER_INFO);
+    help_req_kind(FS_REQ_HELP);
+    #undef  help_req_kind
+}
+
 static void process_request(fs_request* request) {
     switch (request->kind) {
         case FS_REQ_DELETE:
@@ -1387,6 +1422,9 @@ static void process_request(fs_request* request) {
             break;
         case FS_REQ_MOVE:
             response_move(request);
+            break;
+        case FS_REQ_HELP:
+            response_help();
             break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);
