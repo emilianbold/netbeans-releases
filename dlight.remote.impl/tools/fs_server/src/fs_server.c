@@ -1106,6 +1106,71 @@ static int entry_comparator(const void *element1, const void *element2) {
     return res;
 }
 
+static bool entries_differ(fs_entry *new_entry, fs_entry *old_entry, int persistence_version, const char* path) {
+    if (new_entry->name_len != old_entry->name_len) {
+        trace(TRACE_FINE, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+        return true;
+    }
+    if (strcmp(new_entry->name, old_entry->name) != 0) {
+        trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+        return true;
+    }
+    if (new_entry->file_type != old_entry->file_type) {
+        trace(TRACE_FINE, "refresh manager: file types differ for %s/%s: %c vs %c\n", path, new_entry->name, new_entry->file_type, old_entry->file_type);
+        return true;
+    }
+    // if links, then check links
+    if (new_entry->file_type == FILETYPE_LNK) {
+        if (new_entry->link_len != old_entry->link_len) {
+            trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+            return true;
+        }
+        if (strcmp(new_entry->link, old_entry->link) != 0) {
+            trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+            return true;
+        }
+    }
+    // names, modes and link targets are same
+    if (new_entry->file_type == FILETYPE_REG) {
+        if (new_entry->size != old_entry->size) {
+            trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
+            return true;
+        }
+        if (new_entry->mtime != old_entry->mtime) {
+            trace(TRACE_FINE, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
+            return true;
+        }
+    }
+    if (persistence_version > 1) {
+        if (new_entry->can_read != old_entry->can_read) {
+            trace(TRACE_FINE, "refresh manager: can_read differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_read ? 'T' : 'F', old_entry->can_read ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->can_write != old_entry->can_write) {
+            trace(TRACE_FINE, "refresh manager: can_write differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_write ? 'T' : 'F', old_entry->can_write ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->can_exec != old_entry->can_exec) {
+            trace(TRACE_FINE, "refresh manager: can_exec differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_exec ? 'T' : 'F', old_entry->can_exec ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->st_dev != old_entry->st_dev) {
+            trace(TRACE_FINE, "refresh manager: st_dev differ for %s/%s: %lld vs %lld\n", path, new_entry->name,
+                    (long long) new_entry->st_dev, (long long) old_entry->st_dev);
+            return true;
+        }
+        if (new_entry->st_ino != old_entry->st_ino) {
+            trace(TRACE_FINE, "refresh manager: st_ino differ for %s/%s: %lld vs %lld\n", path, new_entry->name,
+                    (long long) new_entry->st_ino, (long long) old_entry->st_ino);
+            return true;
+        }
+    }
+    return false;
+}
+
 static bool refresh_visitor(const char* path, int index, dirtab_element* el, void *data) {
     fs_request *request = data;
     if (is_prohibited(path)) {
@@ -1174,78 +1239,9 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         for (int i = 0; i < new_entries.size; i++) {
             fs_entry *new_entry = array_get(&new_entries, i);
             fs_entry *old_entry = array_get(&old_entries, i);
-            if (new_entry->name_len != old_entry->name_len) {
+            if (entries_differ(new_entry, old_entry, persistence_version, path)) {
                 differs = true;
-                trace(TRACE_FINE, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
-            }
-            if (strcmp(new_entry->name, old_entry->name) != 0) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
-                break;
-            }
-            if (new_entry->file_type != old_entry->file_type) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: file types differ for %s/%s: %c vs %c\n", path, new_entry->name, new_entry->file_type, old_entry->file_type);
-                break;
-            }
-            // if links, then check links
-            if (new_entry->file_type == FILETYPE_LNK) {
-                if (new_entry->link_len != old_entry->link_len) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
-                    break;
-                }
-                if (strcmp(new_entry->link, old_entry->link) != 0) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
-                    break;
-                }
-            }
-            // names, modes and link targets are same
-            if (new_entry->file_type == FILETYPE_REG) {
-                if (new_entry->size != old_entry->size) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
-                    break;
-                }
-                if (new_entry->mtime != old_entry->mtime) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
-                    break;
-                }
-            }
-            if (persistence_version > 1) {
-                if (new_entry->can_read != old_entry->can_read) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: can_read differ for %s/%s: %c vs %c\n", path, new_entry->name, 
-                            new_entry->can_read ? 'T' : 'F', old_entry->can_read ? 'T' : 'F');
-                    break;
-                }
-                if (new_entry->can_write != old_entry->can_write) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: can_write differ for %s/%s: %c vs %c\n", path, new_entry->name, 
-                            new_entry->can_write ? 'T' : 'F', old_entry->can_write ? 'T' : 'F');
-                    break;
-                }
-                if (new_entry->can_exec != old_entry->can_exec) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: can_exec differ for %s/%s: %c vs %c\n", path, new_entry->name, 
-                            new_entry->can_exec ? 'T' : 'F', old_entry->can_exec ? 'T' : 'F');
-                    break;
-                }
-                if (new_entry->st_dev != old_entry->st_dev) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: st_dev differ for %s/%s: %lld vs %lld\n", path, new_entry->name, 
-                            (long long) new_entry->st_dev, (long long) old_entry->st_dev);
-                    break;
-                }
-                if (new_entry->st_ino != old_entry->st_ino) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: st_ino differ for %s/%s: %lld vs %lld\n", path, new_entry->name, 
-                            (long long) new_entry->st_ino, (long long) old_entry->st_ino);
-                    break;
-                }
             }
         }
     }
