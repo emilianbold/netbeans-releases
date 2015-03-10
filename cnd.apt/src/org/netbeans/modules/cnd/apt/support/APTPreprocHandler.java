@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 
 /**
@@ -55,5 +56,5 @@ public interface APTPreprocHandler extends PreprocHandler {
     @Override
     public APTMacroMap getMacroMap();
     @Override
-    public APTIncludeHandler getIncludeHandler();
+    public PPIncludeHandler getIncludeHandler();
 }

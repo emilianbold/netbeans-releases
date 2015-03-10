@@ -73,14 +73,14 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     private CharSequence flavor;
     private long cuCRC;
     private APTMacroMap macroMap;
-    private APTIncludeHandler inclHandler;
+    private PPIncludeHandler inclHandler;
     
     /**
      * @param compileContext determine whether state created for real parse-valid
      * context, i.e. source file has always correct state, but header itself has
      * not correct state until it was included into any source file (may be recursively)
      */
-    public APTPreprocHandlerImpl(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
+    public APTPreprocHandlerImpl(APTMacroMap macroMap, PPIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
         this.macroMap = macroMap;
         this.inclHandler = inclHandler;
         this.compileContext = compileContext;
@@ -97,7 +97,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     }
 
     @Override
-    public APTIncludeHandler getIncludeHandler() {
+    public PPIncludeHandler getIncludeHandler() {
         return inclHandler;
     }   
     

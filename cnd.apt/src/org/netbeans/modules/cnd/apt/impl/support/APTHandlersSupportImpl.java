@@ -75,11 +75,13 @@ public class APTHandlersSupportImpl {
     }
 
     public static APTPreprocHandler createPreprocHandler(PPMacroMap macroMap, PPIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
-        return new APTPreprocHandlerImpl((APTMacroMap)macroMap, (APTIncludeHandler)inclHandler, compileContext, lang, flavor);
+        return new APTPreprocHandlerImpl((APTMacroMap)macroMap, inclHandler, compileContext, lang, flavor);
     }
 
     public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
-        return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file), false, CharSequences.empty(), CharSequences.empty());
+        return new APTPreprocHandlerImpl(new APTFileMacroMap(), 
+                APTTraceFlags.USE_CLANK ? new ClankIncludeHandlerImpl(file) : new APTIncludeHandlerImpl(file), 
+                false, CharSequences.empty(), CharSequences.empty());
     }
 
     public static void invalidatePreprocHandler(PreprocHandler preprocHandler) {
@@ -92,16 +94,11 @@ public class APTHandlersSupportImpl {
         for (String file : includeFileEntries) {
             fileEntries.add(IncludeDirEntry.get(startFile.getFileSystem(), file));
         }
-//        SupportAPIAccessor accessor = SupportAPIAccessor.get();
-//        for (IncludeDirEntry includeDirEntry : userIncludePaths) {
-//            if (!accessor.isExistingDirectory(includeDirEntry)) {
-//                // check if this is file
-//                if (CndFileUtils.isExistingFile(includeDirEntry.getFileSystem(), includeDirEntry.getAsSharedCharSequence().toString())) {
-//                    fileEntries.add(includeDirEntry);
-//                }
-//            }
-//        }
-        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
+        if (APTTraceFlags.USE_CLANK) {
+            return new ClankIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
+        } else {
+            return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
+        }
     }
     
     public static long getCompilationUnitCRC(PreprocHandler preprocHandler){
@@ -135,6 +132,7 @@ public class APTHandlersSupportImpl {
     }
 
     public static boolean isFirstLevel(PPIncludeHandler includeHandler) {
+        assert !APTTraceFlags.USE_CLANK;
         if (includeHandler != null) {
             return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
         } else {
@@ -143,6 +141,7 @@ public class APTHandlersSupportImpl {
     }
 
     public static Collection<IncludeDirEntry> extractIncludeFileEntries(PPIncludeHandler includeHandler) {
+        assert !APTTraceFlags.USE_CLANK;
         Collection<IncludeDirEntry> out = new ArrayList<IncludeDirEntry>(0);
         if (includeHandler != null) {
             return ((APTIncludeHandlerImpl) includeHandler).getUserIncludeFilePaths();
@@ -176,6 +175,7 @@ public class APTHandlersSupportImpl {
     }
 
     public static int getIncludeStackDepth(APTPreprocHandler.State state) {
+        assert !APTTraceFlags.USE_CLANK;
         assert state != null;
         APTIncludeHandlerImpl.StateImpl incl = (APTIncludeHandlerImpl.StateImpl) ((APTPreprocHandlerImpl.StateImpl) state).inclState;
         return incl == null ? 0 : incl.getIncludeStackDepth();

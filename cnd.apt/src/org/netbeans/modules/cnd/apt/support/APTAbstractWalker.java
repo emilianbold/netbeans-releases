@@ -91,7 +91,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void preInit() {
         super.preInit();
         if (preprocHandler != null) {
-            APTIncludeHandler includeHandler = preprocHandler.getIncludeHandler();
+            APTIncludeHandler includeHandler = (APTIncludeHandler)preprocHandler.getIncludeHandler();
             if (APTHandlersSupportImpl.isFirstLevel(includeHandler)) {
                 // special handling of "-include file" feature of preprocessor
                 final Collection<IncludeDirEntry> extractIncludeFileEntries = APTHandlersSupportImpl.extractIncludeFileEntries(includeHandler);
@@ -257,7 +257,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     }
     
     protected APTIncludeHandler getIncludeHandler() {
-        return getPreprocHandler() == null ? null: getPreprocHandler().getIncludeHandler();
+        return (APTIncludeHandler)(getPreprocHandler() == null ? null: getPreprocHandler().getIncludeHandler());
     }   
 
     protected boolean needPPTokens() {

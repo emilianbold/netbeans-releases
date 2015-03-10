@@ -202,6 +202,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         private int hashCode = 0;
         
         protected StateImpl(APTIncludeHandlerImpl handler) {
+            assert !APTTraceFlags.USE_CLANK;
             this.systemIncludePaths = handler.systemIncludePaths;
             this.userIncludePaths = handler.userIncludePaths;
             this.userIncludeFilePaths = handler.userIncludeFilePaths;
@@ -215,6 +216,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
         
         private StateImpl(StateImpl other, boolean cleanState) {
+            assert !APTTraceFlags.USE_CLANK;
             // shared information
             this.startFile = other.startFile;
             

@@ -59,21 +59,17 @@ import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroMapSnapshot;
 import org.netbeans.modules.cnd.apt.impl.support.APTPreprocHandlerImpl;
+import org.netbeans.modules.cnd.apt.impl.support.ClankIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.CharSequences;
 
 /**
  * utilities for APT serialization
@@ -237,14 +233,24 @@ public class APTSerializeUtils {
         return state;
     }
 
-    public static void writeIncludeState(APTIncludeHandler.State state, RepositoryDataOutput output) throws IOException {
+    public static void writeIncludeState(PPIncludeHandler.State state, RepositoryDataOutput output) throws IOException {
         assert state != null;
-        assert state instanceof APTIncludeHandlerImpl.StateImpl;
-        ((APTIncludeHandlerImpl.StateImpl)state).write(output);
+        if (APTTraceFlags.USE_CLANK) {
+            assert state instanceof ClankIncludeHandlerImpl.StateImpl;
+            ((ClankIncludeHandlerImpl.StateImpl)state).write(output);
+        } else {
+            assert state instanceof APTIncludeHandlerImpl.StateImpl;
+            ((APTIncludeHandlerImpl.StateImpl)state).write(output);
+        }
     }
     
-    public static APTIncludeHandler.State readIncludeState(RepositoryDataInput input) throws IOException {
-        APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(input);
+    public static PPIncludeHandler.State readIncludeState(RepositoryDataInput input) throws IOException {
+        PPIncludeHandler.State state;
+        if (APTTraceFlags.USE_CLANK) {
+            state = new ClankIncludeHandlerImpl.StateImpl(input);
+        } else {
+            state = new APTIncludeHandlerImpl.StateImpl(input);
+        }
         return state;
     }    
 
