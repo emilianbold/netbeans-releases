@@ -665,12 +665,14 @@ class FilesystemInterceptor extends VCSInterceptor {
                 return;
             }
             VCSFileProxy repository = Git.getInstance().getRepositoryRoot(file);
-            VCSFileProxy gitFolder = GitUtils.getGitFolderForRoot(repository);
-            if (gitFolder != null) {
-                synchronized (events) {
-                    Events ev = events.get(gitFolder);
-                    if (ev != null) {
-                        ++ev.modifications;
+            if (repository != null) {
+                VCSFileProxy gitFolder = GitUtils.getGitFolderForRoot(repository);
+                if (gitFolder != null) {
+                    synchronized (events) {
+                        Events ev = events.get(gitFolder);
+                        if (ev != null) {
+                            ++ev.modifications;
+                        }
                     }
                 }
             }

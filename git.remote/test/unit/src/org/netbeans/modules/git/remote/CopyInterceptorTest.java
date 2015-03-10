@@ -70,9 +70,7 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("testCopyAddedFile2UnversionedFolder_FO","testCopyAddedFile2VersionedFolder_FO","testCopyVersionedFile2UnversionedFolder_FO",
-                "testCopyVersionedFolder2UnversionedFolder_FO","testCopyAddedFile2UnversionedFolder_DO",
-                "testCopyVersionedFile2UnversionedFolder_DO","testCopyVersionedFolder2UnversionedFolder_DO","testCopyAddedFile2VersionedFolder_DO").contains(getName());
+        return Arrays.asList("testCopyAddedFile2VersionedFolder_FO","testCopyAddedFile2VersionedFolder_DO").contains(getName());
     }
 
     @Override
