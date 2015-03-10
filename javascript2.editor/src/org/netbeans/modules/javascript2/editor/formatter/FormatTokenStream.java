@@ -240,6 +240,15 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         return current;
     }
 
+    @CheckForNull
+    public static FormatToken getPreviousNonVirtual(FormatToken token) {
+        FormatToken current = token.previous();
+        while (current != null && current.isVirtual()) {
+            current = current.previous();
+        }
+        return current;
+    }
+
     public FormatToken getToken(int offset) {
         return tokenPosition.get(offset);
     }
