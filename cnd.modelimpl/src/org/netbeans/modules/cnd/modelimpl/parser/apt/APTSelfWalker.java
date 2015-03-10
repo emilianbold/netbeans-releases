@@ -39,7 +39,7 @@ import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
-import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;

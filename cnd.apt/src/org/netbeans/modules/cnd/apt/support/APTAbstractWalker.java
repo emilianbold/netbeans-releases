@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
-import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;

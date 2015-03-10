@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
-import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;

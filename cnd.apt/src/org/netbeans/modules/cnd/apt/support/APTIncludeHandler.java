@@ -53,6 +53,12 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public interface APTIncludeHandler extends PPIncludeHandler {
+    public enum IncludeState {
+        Success,
+        Fail,
+        Recursive
+    }
+    
     /*
      * 
      * notify about inclusion
