@@ -371,12 +371,10 @@ public final class CompletionSupport implements DocumentListener {
                 List<CsmInstantiation> instantiations = CsmInstantiationProvider.getDefault().getInstantiatedTypeInstantiations(to);
                 // TODO: run this check only if resolving was started from macros and we should use context scope
                 to = CsmExpressionResolver.resolveMacroType(to, ctx.getContextScope(), instantiations, new ResolvedTypeInfoCollector(toInfo));
-                
-                if (to == null || CsmBaseUtilities.isUnresolved(to.getClassifier())) {
+                toCls = (to != null) ? to.getClassifier() : null;
+                if (toCls == null || CsmBaseUtilities.isUnresolved(toCls)) {
                     return false;
                 }
-                
-                toCls = to.getClassifier();
             } else {
                 return false;
             }
