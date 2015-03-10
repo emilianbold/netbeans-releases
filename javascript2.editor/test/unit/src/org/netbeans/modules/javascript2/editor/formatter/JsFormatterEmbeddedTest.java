@@ -129,5 +129,9 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/embeddedMultipleSections2.html", new IndentPrefs(4,4));
     }
 
+    public void testIssue225749() throws Exception {
+        reformatFileContents("testfiles/formatter/issue225749.html", new IndentPrefs(4,4));
+    }
+
     // XXX also see org.netbeans.modules.php.editor.js.JsFormatterEmbeddedTest
 }

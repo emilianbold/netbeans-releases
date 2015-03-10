@@ -69,6 +69,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 
 /**
@@ -425,6 +426,15 @@ public class JsFormatter implements Formatter {
         CodeStyle.BracePlacement bracePlacement = getBracePlacement(token, codeStyle);
         if (style == null && bracePlacement == CodeStyle.BracePlacement.PRESERVE_EXISTING) {
             return;
+        }
+
+        if (formatContext.isEmbedded() && token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+            // we are in the embedded code, check whether it is single-line embedding like
+            // <a href="#" onclick="edit(id); return false;">Edit</a>
+            if (isSingleLineEmbedding(token, formatContext.getDocument(), formatContext.getSnapshot())) {
+                // do not wrap line in case of the single-line embedding
+                return;
+            }
         }
 
         // search for token which will be present after eol
@@ -2297,6 +2307,32 @@ public class JsFormatter implements Formatter {
             }
         }
         return true;
+    }
+
+    private static boolean isSingleLineEmbedding(FormatToken token, Document doc, Snapshot snapshot) {
+        final FormatToken prevNonVirtual = FormatTokenStream.getPreviousNonVirtual(token);
+        if (prevNonVirtual != null) {
+            final int originalOffset = snapshot.getOriginalOffset(prevNonVirtual.getOffset());
+            final List<TokenSequence<?>> tokenSeqs = TokenHierarchy.get(doc)
+                    .embeddedTokenSequences(originalOffset, false);
+            final String snapshotMimePath = snapshot.getMimePath().getPath();
+            for (TokenSequence<?> ts : tokenSeqs) {
+                if (ts.languagePath().mimePath()
+                        .concat("/") //NOI18N
+                        .concat(snapshot.getMimeType()).equals(snapshotMimePath)) {
+                    ts.move(originalOffset);
+                    ts.moveNext();
+                    if (ts.token() != null) {
+                        final String tokenText = ts.token().text().toString();
+                        // if text of the token already contains newline char
+                        // it is not single-line embedding
+                        return !tokenText.contains("\n"); //NOI18N
+                    }
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
     static class Indentation {

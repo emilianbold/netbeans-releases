@@ -173,18 +173,18 @@ public final class ServerInstance {
     public boolean isDeployOnSaveSupported() throws InstanceRemovedException {
         final ServerRegistry registry = ServerRegistry.getInstance();
         // see comment at the beginning of the class
+        IncrementalDeployment incremental;
         synchronized (registry) {
             org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
-            IncrementalDeployment incremental;
+            
             try {
                 incremental = inst.getServer().getOptionalFactory().getIncrementalDeployment(inst.getDisconnectedDeploymentManager());
             } catch (DeploymentManagerCreationException ex) {
                 throw new RuntimeException(ex);
             }
-
-            // TODO missing condition on canFileDeploy - this would need started server
-            return incremental != null && incremental.isDeployOnSaveSupported();
         }
+        // TODO missing condition on canFileDeploy - this would need started server
+        return incremental != null && incremental.isDeployOnSaveSupported();
     }
 
     /**
