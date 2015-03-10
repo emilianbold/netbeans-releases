@@ -44,6 +44,8 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
@@ -53,7 +55,6 @@ import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -93,11 +94,15 @@ public class CopyCommand extends GitCommand {
     
     @Override
     protected void prepare() throws GitException {
+        setCommandsNumber(2);
         super.prepare();
-        addArgument(0, "add"); //NOI18N
-        addArgument(0, "-v"); //NOI18N
+        addArgument(0, "ls-files"); //NOI18N
         addArgument(0, "--"); //NOI18N
-        addArgument(0, Utils.getRelativePath(getRepository().getLocation(), target));
+        addArgument(0, Utils.getRelativePath(getRepository().getLocation(), source));
+        addArgument(1, "add"); //NOI18N
+        addArgument(1, "-v"); //NOI18N
+        addArgument(1, "--"); //NOI18N
+        //addArgument(1, Utils.getRelativePath(getRepository().getLocation(), target));
     }
     
     @Override
@@ -108,19 +113,42 @@ public class CopyCommand extends GitCommand {
         }
         try {
             copy();
+            final List<String>  list = new ArrayList<String>();
+            final String from = Utils.getRelativePath(getRepository().getLocation(), source);
+            final String to = Utils.getRelativePath(getRepository().getLocation(), target);
             new Runner(canceled, 0){
 
                 @Override
                 public void outputParser(String output) throws GitException {
-                    parseAddVerboseOutput(output);
+                    for (String line : output.split("\n")) { //NOI18N
+                        if (line.length() > 0) {
+                            String file = line.trim();
+                            if (file.startsWith(from)) {
+                                file = to+file.substring(from.length());
+                            }
+                            list.add(file);
+                        }
+                    }
                 }
-
-                @Override
-                protected void errorParser(String error) throws GitException {
-                    parseAddError(error);
-                }
-
             }.runCLI();
+            if (list.size() > 0) {
+                for (String file : list) {
+                    addArgument(1, file); //NOI18N
+                }
+                new Runner(canceled, 1){
+
+                    @Override
+                    public void outputParser(String output) throws GitException {
+                        parseAddVerboseOutput(output);
+                    }
+
+                    @Override
+                    protected void errorParser(String error) throws GitException {
+                        parseAddError(error);
+                    }
+
+                }.runCLI();
+            }
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
