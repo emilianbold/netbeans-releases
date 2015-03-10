@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTTokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 
@@ -73,7 +74,7 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     
     @Override
     public APTFile getFileAPT(FileImpl file, boolean full) {
-        return file.getFileAPT(full);
+        return APTTokenStreamProducer.getFileAPT(file, full);
     }
 
     @Override

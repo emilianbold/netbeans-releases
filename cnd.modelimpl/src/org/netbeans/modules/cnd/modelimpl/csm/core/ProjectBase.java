@@ -110,6 +110,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
@@ -3408,7 +3409,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     final APTFile getAPTLight(CsmFile csmFile) throws IOException {
         FileImpl fileImpl = (FileImpl) csmFile;
-        APTFile aptLight = fileImpl.getFileAPT(false);
+        APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(fileImpl, false);
         if (aptLight != null && APTUtils.LOG.isLoggable(Level.FINE)) {
             CharSequence guardMacro = aptLight.getGuardMacro();
             if (guardMacro.length() == 0 && !fileImpl.isSourceFile()) {

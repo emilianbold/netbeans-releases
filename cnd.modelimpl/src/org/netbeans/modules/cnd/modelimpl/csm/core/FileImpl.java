@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
@@ -100,7 +99,6 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -108,6 +106,7 @@ import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
@@ -132,8 +131,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
-import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
-import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -670,7 +667,7 @@ public final class FileImpl implements CsmFile,
                             }
                         }
                     }
-                    APTFile fullAPT = getFileAPT(true);
+                    APTFile fullAPT = CsmCorePackageAccessor.get().getFileAPT(this, true);
                     if (fullAPT == null) {
                         // probably file was removed
                         return;
@@ -951,32 +948,6 @@ public final class FileImpl implements CsmFile,
         return currentFileContent.getErrorCount();
     }
     
-    /*package*/APTFile getFileAPT(boolean full) {
-        APTFile fileAPT = null;
-        ChangedSegment changedSegment = null;
-        try {
-            if (full) {
-                fileAPT = APTDriver.findAPT(this.getBuffer(), getFileLanguage(), getFileLanguageFlavor());
-            } else {
-                fileAPT = APTDriver.findAPTLight(this.getBuffer());
-            }
-            if (getBuffer() instanceof FileBufferDoc) {
-                changedSegment = ((FileBufferDoc) getBuffer()).getLastChangedSegment();
-            }
-        } catch (FileNotFoundException ex) {
-            APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{getBuffer().getAbsolutePath()});// NOI18N
-        } catch (IOException ex) {
-            DiagnosticExceptoins.register(ex);
-        }
-        if (fileAPT != null && APTUtils.LOG.isLoggable(Level.FINE)) {
-            CharSequence guardMacro = fileAPT.getGuardMacro();
-            if (guardMacro.length() == 0 && !isSourceFile()) {
-                APTUtils.LOG.log(Level.FINE, "FileImpl: file {0} does not have guard", new Object[]{getBuffer().getAbsolutePath()});// NOI18N
-            }
-        }
-        return fileAPT;
-    }
-
     private void _reparse(ParseDescriptor parseParams) {
         parsingFileContentRef.get().set(parseParams.content);
         try {
@@ -1140,7 +1111,7 @@ public final class FileImpl implements CsmFile,
         if (handlers.isEmpty()) {
             return null;
         }
-        final APTFile fullAPT = getFileAPT(true);
+        final APTFile fullAPT = CsmCorePackageAccessor.get().getFileAPT(this, true);
         ParseDescriptor params = new ParseDescriptor(this, fullAPT, null, false, false, false);
         params.setLanguage(getFileLanguage());
         params.setLanguageFlavor(getFileLanguageFlavor());
@@ -1245,15 +1216,16 @@ public final class FileImpl implements CsmFile,
         List<APTToken> tokens = APTUtils.toList(tokenStream);
         // Only now we can create pcState
         FilePreprocessorConditionState pcState = pcBuilder.get().build();        
-        tsCache.cacheTokens(pcState, tokens, languageFilter);
         // remember walk info
         setAPTCacheEntry(ppState, cacheEntry.get(), false);
+        // cache collected tokens associaited with PCState
+        tsCache.cacheTokens(pcState, tokens, languageFilter);
         return true;
     }
     
     private TokenStream createParsingTokenStreamForHandler(PreprocHandler preprocHandler, boolean filtered, 
             AtomicReference<APTFileCacheEntry> cacheOut, AtomicReference<APTBasedPCStateBuilder> pcBuilderOut) {
-        APTFile apt = getFileAPT(true);
+        APTFile apt = CsmCorePackageAccessor.get().getFileAPT(this, true);
         if (apt == null) {
             return null;
         }                
@@ -2110,7 +2082,7 @@ public final class FileImpl implements CsmFile,
     }
     private CsmUID<CsmFile> uid = null;
     
-    CndTextIndexKey getTextIndexKey() {
+    public CndTextIndexKey getTextIndexKey() {
         return new CndTextIndexKey(getUnitId(), getFileId());
     }
     
