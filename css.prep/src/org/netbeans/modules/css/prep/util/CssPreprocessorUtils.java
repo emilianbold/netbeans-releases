@@ -164,22 +164,32 @@ public final class CssPreprocessorUtils {
 
     @CheckForNull
     public static FileObject getWebRoot(Project project, FileObject fileObject) {
-        return getProjectWebRootProvider(project).getWebRoot(fileObject);
+        ProjectWebRootProvider projectWebRootProvider = getProjectWebRootProvider(project);
+        if (projectWebRootProvider == null) {
+            return null;
+        }
+        return projectWebRootProvider.getWebRoot(fileObject);
     }
 
     @CheckForNull
     public static FileObject getWebRoot(Project project) {
-        Collection<FileObject> webRoots = getProjectWebRootProvider(project).getWebRoots();
+        ProjectWebRootProvider projectWebRootProvider = getProjectWebRootProvider(project);
+        if (projectWebRootProvider == null) {
+            return null;
+        }
+        Collection<FileObject> webRoots = projectWebRootProvider.getWebRoots();
         if (webRoots.isEmpty()) {
             return null;
         }
         return webRoots.iterator().next();
     }
 
+    @CheckForNull
     private static ProjectWebRootProvider getProjectWebRootProvider(Project project) {
         ProjectWebRootProvider projectWebRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
         if (projectWebRootProvider == null) {
-            throw new IllegalArgumentException("ProjectWebRootProvider must be found in project lookup: " + project.getClass().getName());
+            LOGGER.log(Level.INFO, "ProjectWebRootProvider should be found in project lookup of {0}", project.getClass().getName());
+            return null;
         }
         return projectWebRootProvider;
     }
