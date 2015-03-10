@@ -657,7 +657,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
 
             for (int i = 0; i < instanceFOs.length; i++) {
                 if (url.equals(instanceFOs[i].getAttribute(GlassfishModule.URL_ATTR))
-                        && !GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE.equals(instanceFOs[i].getName())) {
+                        && !instanceFOs[i].getName().startsWith(GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE)) {
                     instanceFO = instanceFOs[i];
                 }
             }

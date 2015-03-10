@@ -438,8 +438,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     // Persistence for server instances.
     // ------------------------------------------------------------------------
     private void loadServerInstances() {
-        FileObject installedInstance = null;
-        int savedj = -1;
+        List<FileObject> installedInstances = new LinkedList<>();
         for (int j = 0; j < instancesDirNames.length; j++) {
             FileObject dir
                     = ServerUtils.getRepositoryDir(instancesDirNames[j], false);
@@ -448,10 +447,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 if (instanceFOs != null && instanceFOs.length > 0) {
                     for (int i = 0; i < instanceFOs.length; i++) {
                         try {
-                            if (GLASSFISH_AUTOREGISTERED_INSTANCE
-                                    .equals(instanceFOs[i].getName())) {
-                                installedInstance = instanceFOs[i];
-                                savedj = j;
+                            if (instanceFOs[i].getName().startsWith(GLASSFISH_AUTOREGISTERED_INSTANCE)) {
+                                installedInstances.add(instanceFOs[i]);
                                 continue;
                             }
                             GlassfishInstance si = GlassfishInstance
@@ -470,12 +467,15 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 }
             }
         }
-        if (null != installedInstance
+        if (!installedInstances.isEmpty()
                 && null == NbPreferences.forModule(this.getClass())
                 .get(AUTOINSTANCECOPIED, null)) {
             try {
-                GlassfishInstance igi = GlassfishInstance.
-                        readInstanceFromFile(installedInstance, true);
+                for (FileObject installedInstance : installedInstances) {
+                    GlassfishInstance igi = GlassfishInstance.
+                            readInstanceFromFile(installedInstance, true);
+                    activeDisplayNames.add(igi.getDisplayName());
+                }
                 try {
                     NbPreferences.forModule(this.getClass())
                             .put(AUTOINSTANCECOPIED, "true"); // NOI18N
@@ -484,7 +484,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                     LOGGER.log(Level.INFO,
                             "auto-registered instance may reappear", ex); // NOI18N
                 }
-                activeDisplayNames.add(igi.getDisplayName());
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
@@ -512,8 +511,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                     String val = ServerUtils.getStringAttribute(
                             installedServers[i], GlassfishModule.URL_ATTR);
                     if(val != null && val.equals(url) &&
-                            !GLASSFISH_AUTOREGISTERED_INSTANCE
-                            .equals(installedServers[i].getName())) {
+                            !installedServers[i].getName().startsWith(GLASSFISH_AUTOREGISTERED_INSTANCE)) {
                         return installedServers[i];
                     }
                 }
