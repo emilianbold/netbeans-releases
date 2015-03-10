@@ -686,12 +686,13 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     || e.getKeyCode() == KeyEvent.VK_HOME || e.getKeyCode() == KeyEvent.VK_END) {
                 hideCompletion(false);                
             }
-            if (e.getKeyCode() == KeyEvent.VK_TAB && doc.getProperty(CT_HANDLER_DOC_PROPERTY) == null) {
+            if (e.getKeyCode() == KeyEvent.VK_TAB && e.getID() == KeyEvent.KEY_PRESSED) {
                 e.consume();
-                if (guardedPos) {
-                    Toolkit.getDefaultToolkit().beep();
-                } else if (compEditable && e.getID() == KeyEvent.KEY_PRESSED)
+                if (compEditable && !guardedPos) {
                     insertCommonPrefix();
+                } else {
+                    Toolkit.getDefaultToolkit().beep();
+                }
                 return;
             }
         }
