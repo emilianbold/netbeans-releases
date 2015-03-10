@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroCache;
 import org.netbeans.modules.cnd.apt.impl.support.SnapshotHolderCache;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 
@@ -60,7 +61,7 @@ import org.netbeans.modules.cnd.utils.FSPath;
  * @author Vladimir Voskresensky
  */
 public final class APTSystemStorage {
-    private final Map<String, APTMacroMap> allMacroMaps = new HashMap<String, APTMacroMap>();
+    private final Map<String, PPMacroMap> allMacroMaps = new HashMap<String, PPMacroMap>();
     private final APTIncludePathStorage includesStorage;
     private final static String baseNewName = "#SYSTEM MACRO MAP# "; // NOI18N
     private final static APTSystemStorage instance = new APTSystemStorage();
@@ -73,25 +74,9 @@ public final class APTSystemStorage {
         return instance;
     }
     
-    // it's preferable to use getMacroMap(String configID, List sysMacros)
-    public APTMacroMap getMacroMap(List<String> sysMacros) {
+    public PPMacroMap getMacroMap(String configID, List<String> sysMacros) {
         synchronized (allMacroMaps) {
-            // look for the equal map in values
-            APTMacroMap map = new APTSystemMacroMap(sysMacros);
-            for (Iterator<APTMacroMap> it = allMacroMaps.values().iterator(); it.hasNext();) {
-                APTMacroMap curMap = it.next();
-                if (map.equals(curMap)) {
-                    return curMap;
-                }
-            }
-            allMacroMaps.put(baseNewName+allMacroMaps.size(), map);        
-            return map;
-        }
-    }
-    
-    public APTMacroMap getMacroMap(String configID, List<String> sysMacros) {
-        synchronized (allMacroMaps) {
-            APTMacroMap map = allMacroMaps.get(configID);
+            PPMacroMap map = allMacroMaps.get(configID);
             if (map == null) {
                 // create new one and put in map
                 map = new APTSystemMacroMap(sysMacros);

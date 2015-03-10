@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
@@ -104,6 +105,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths,
                                     List<IncludeDirEntry> userIncludeFilePaths, APTFileSearch fileSearch) {
+        assert !APTTraceFlags.USE_CLANK;
         Parameters.notNull("startFile", startFile);
         this.startFile = startFile;
         this.systemIncludePaths = systemIncludePaths;

@@ -48,13 +48,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
@@ -151,12 +150,6 @@ public class APTHandlersSupportImpl {
         return out;
     }
 
-    public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
-        assert state != null;
-        APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        return macro.snap.getAll();
-    }
-
     public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){
         assert state != null;
         return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
@@ -182,18 +175,6 @@ public class APTHandlersSupportImpl {
         return macro.getStateKey(extractStartEntry == null ? null : extractStartEntry.getStartFileProject());
     }
 
-    public static boolean isEmptyActiveMacroMap(APTPreprocHandler.State state) {
-        assert state != null;
-        APTFileMacroMap.FileStateImpl macro = (FileStateImpl) ((APTPreprocHandlerImpl.StateImpl) state).macroState;
-        return macro.isEmptyActiveMacroMap();
-    }
-
-    public static int getMacroSize(APTPreprocHandler.State state) {
-        assert state != null;
-        APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        return macro.snap.getAll().size();
-    }
-
     public static int getIncludeStackDepth(APTPreprocHandler.State state) {
         assert state != null;
         APTIncludeHandlerImpl.StateImpl incl = (APTIncludeHandlerImpl.StateImpl) ((APTPreprocHandlerImpl.StateImpl) state).inclState;
@@ -207,7 +188,7 @@ public class APTHandlersSupportImpl {
         return inclStack == null ? new LinkedList<APTIncludeHandler.IncludeInfo>() : new LinkedList<APTIncludeHandler.IncludeInfo>(inclStack);
     }
 
-    public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
+    public static StartEntry extractStartEntry(PreprocHandler.State state) {
         return (state == null) ? null : extractStartEntry(((APTPreprocHandlerImpl.StateImpl)state).inclState);
     }
     
@@ -218,16 +199,25 @@ public class APTHandlersSupportImpl {
     ////////////////////////////////////////////////////////////////////////////
     // impl details
     
-    private static StartEntry extractStartEntry(APTIncludeHandler.State state) {
-	return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
+    private static StartEntry extractStartEntry(PPIncludeHandler.State state) {
+        if (APTTraceFlags.USE_CLANK) {
+            return (state == null) ? null : ((ClankIncludeHandlerImpl.StateImpl) state).getStartEntry();
+        } else {
+            return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
+        }
     }
     
     private static Collection<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
+        assert !APTTraceFlags.USE_CLANK;
         return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
     }
     
-    /*package*/ static APTIncludeHandler.State copyIncludeState(APTIncludeHandler.State inclState, boolean cleanState) {
-        return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
+    /*package*/ static PPIncludeHandler.State copyIncludeState(PPIncludeHandler.State inclState, boolean cleanState) {
+        if (APTTraceFlags.USE_CLANK) {
+            return inclState == null ? null : ((ClankIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
+        } else {
+            return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
+        }
     }
 
     /*package*/ static APTMacroMap.State createCleanMacroState(APTMacroMap.State macroState) {

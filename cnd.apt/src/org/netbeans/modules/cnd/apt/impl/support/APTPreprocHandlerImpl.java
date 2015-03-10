@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.repository.api.Repository;
@@ -180,7 +181,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         /*package*/ final CharSequence lang;
         /*package*/ final CharSequence flavor;
         /*package*/ final APTMacroMap.State macroState;
-        /*package*/ final APTIncludeHandler.State inclState;
+        /*package*/ final PPIncludeHandler.State inclState;
         private final byte attributes;
         private final long cuCRC;
         

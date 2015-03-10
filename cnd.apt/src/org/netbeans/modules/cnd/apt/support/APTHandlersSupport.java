@@ -87,29 +87,13 @@ public class APTHandlersSupport {
     public static PPMacroMap createMacroMap(PPMacroMap sysMap, List<String> userMacros) {
         return APTHandlersSupportImpl.createMacroMap(sysMap, userMacros);
     }
-
-    public static Map<CharSequence, APTMacro> extractMacroMap(PreprocHandler.State state){
-        return APTHandlersSupportImpl.extractMacroMap(state);
-    }
-
+    
     public static PPMacroMap.State extractMacroMapState(PreprocHandler.State state){
         return APTHandlersSupportImpl.extractMacroMapState(state);
-    }
-
-    public static PPIncludeHandler.State extractIncludeState(PreprocHandler.State state) {
-        return APTHandlersSupportImpl.extractIncludeState(state);
     }
     
     public static PreprocHandler.StateKey getStateKey(PreprocHandler.State state){
         return APTHandlersSupportImpl.getStateKey(state);
-    }
-
-    public static boolean isEmptyActiveMacroMap(PreprocHandler.State state) {
-        return APTHandlersSupportImpl.isEmptyActiveMacroMap(state);
-    }
-
-    public static int getMacroSize(PreprocHandler.State state) {
-        return APTHandlersSupportImpl.getMacroSize(state);
     }
 
     public static int getIncludeStackDepth(PreprocHandler.State state) {
