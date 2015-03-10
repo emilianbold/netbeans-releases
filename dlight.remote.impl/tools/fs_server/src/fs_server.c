@@ -1293,7 +1293,8 @@ static void refresh_cycle_impl(fs_request* request) {
 static void refresh_cycle(fs_request* request) {
 
     dirtab_flush(); // TODO: find the appropriate place
-    dirtab_element* el = dirtab_get_element(request->path);
+    const char* path = request ? request->path : "/";
+    dirtab_element* el = dirtab_get_element(path);
 
     // analyze and set refresh_state;
     dirtab_lock(el);
@@ -1301,43 +1302,43 @@ static void refresh_cycle(fs_request* request) {
     if (refresh_state == DRS_REFRESHING) {
         // already refreshing => set pending flag,
         // so the thread that refreshes will repeat once again
-        trace(TRACE_FINEST, "refresh[1] %s already refreshing: setting pending flag\n", request->path);
+        trace(TRACE_FINEST, "refresh[1] %s already refreshing: setting pending flag\n", path);
         dirtab_set_refresh_state(el, DRS_PENDING_REFRESH);
         dirtab_unlock(el);
         return;
     } else if (refresh_state == DRS_PENDING_REFRESH) {
         // nothing: the thread that refreshes will repeat once again
-        trace(TRACE_FINEST, "refresh[1] %s already pending: nothing to do\n", request->path);
+        trace(TRACE_FINEST, "refresh[1] %s already pending: nothing to do\n", path);
         dirtab_unlock(el);
         return;
     } else {
-        soft_assert(refresh_state == DRS_NONE, "unexpected refresh_state for %s : %d\n", request->path, refresh_state);
+        soft_assert(refresh_state == DRS_NONE, "unexpected refresh_state for %s : %d\n", path, refresh_state);
         dirtab_set_refresh_state(el, DRS_REFRESHING);
         dirtab_unlock(el);
     }
 
     while (true) {
-        trace(TRACE_FINEST, "refreshing %s...\n", request->path);
+        trace(TRACE_FINEST, "refreshing %s...\n", path);
         refresh_cycle_impl(request);
-        trace(TRACE_FINEST, "refreshing %s completed\n", request->path);
+        trace(TRACE_FINEST, "refreshing %s completed\n", path);
 
         dirtab_lock(el);
         dirtab_refresh_state refresh_state = dirtab_get_refresh_state(el);
         if (refresh_state == DRS_REFRESHING) {
             // no new refresh request has come => just exit
-            trace(TRACE_FINEST, "refresh[2] %s no new request => exiting\n", request->path);
+            trace(TRACE_FINEST, "refresh[2] %s no new request => exiting\n", path);
             dirtab_set_refresh_state(el, DRS_NONE);
             dirtab_unlock(el);
             return;
         } else if (refresh_state == DRS_PENDING_REFRESH) {
             // while we refreshed, new request has come
-            trace(TRACE_FINEST, "refresh[2] %s pending request => once more\n", request->path);
+            trace(TRACE_FINEST, "refresh[2] %s pending request => once more\n", path);
             dirtab_set_refresh_state(el, DRS_REFRESHING);
             dirtab_unlock(el);
             continue;
         } else {
             soft_assert(false, "unexpected refresh_state for %s : %d, should be either %d or %d\n",
-                    request->path, refresh_state, DRS_REFRESHING, DRS_PENDING_REFRESH);
+                    path, refresh_state, DRS_REFRESHING, DRS_PENDING_REFRESH);
             dirtab_unlock(el);
             return;
         }
