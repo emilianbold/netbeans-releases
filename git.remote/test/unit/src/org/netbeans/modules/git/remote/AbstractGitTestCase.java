@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import static junit.framework.Assert.assertNotNull;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitRepository;
@@ -60,8 +61,12 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -70,11 +75,29 @@ import org.openide.filesystems.FileUtil;
 public abstract class AbstractGitTestCase extends NbTestCase {
 
     protected VCSFileProxy repositoryLocation;
-    
     protected static final String NULL_OBJECT_ID = "0000000000000000000000000000000000000000";
+
+    private enum Scope{All, Successful, Failed};
+    private static final Scope TESTS_SCOPE = Scope.Successful;
 
     public AbstractGitTestCase (String name) {
         super(name);
+    }
+    
+    protected abstract boolean isFailed();
+    protected abstract boolean isRunAll();
+
+    @Override
+    public boolean canRun() {
+        if (!isRunAll()) {
+            switch (TESTS_SCOPE) {
+                case Failed:
+                    return isFailed();
+                case Successful:
+                    return !isFailed();
+            }
+        }
+        return super.canRun();
     }
 
     @Override
@@ -264,4 +287,138 @@ public abstract class AbstractGitTestCase extends NbTestCase {
             throw new Exception(executeInDir.error);
         }
     }
+    
+    protected void renameDO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
+        DataObject daoFrom = DataObject.find(from.toFileObject());
+        daoFrom.rename(to.getName());
+    }
+
+    protected void renameFO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
+        // ensure parent is known by filesystems
+        // otherwise no event will be thrown
+        FileObject parent = from.getParentFile().toFileObject();
+        FileObject foFrom = from.toFileObject();
+        FileLock lock = foFrom.lock();
+        try {
+            foFrom.rename(lock, to.getName(), null);
+        } finally {
+            lock.releaseLock();
+        }
+    }
+
+    protected void moveDO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
+        DataObject daoFrom = DataObject.find(from.toFileObject());
+        DataObject daoTarget = DataObject.find(to.getParentFile().toFileObject());
+        daoFrom.move((DataFolder) daoTarget);
+    }
+
+    protected void copyDO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
+        DataObject daoFrom = DataObject.find(from.toFileObject());
+        DataObject daoTarget = DataObject.find(to.getParentFile().toFileObject());
+        daoFrom.copy((DataFolder) daoTarget);
+    }
+
+    protected void moveFO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
+        FileObject foFrom = from.toFileObject();
+        assertNotNull(foFrom);
+        FileObject foTarget = to.getParentFile().toFileObject();
+        assertNotNull(foTarget);
+        FileLock lock = foFrom.lock();
+        try {
+            foFrom.move(lock, foTarget, to.getName(), null);
+        } finally {
+            lock.releaseLock();
+        }
+    }
+
+    protected void copyFO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
+        FileObject foFrom = from.toFileObject();
+        assertNotNull(foFrom);
+        FileObject foTarget = to.getParentFile().toFileObject();
+        assertNotNull(foTarget);
+        FileLock lock = foFrom.lock();
+        try {
+            foFrom.copy(foTarget, getName(to), getExt(to));
+        } finally {
+            lock.releaseLock();
+        }
+    }
+
+    protected void delete(VCSFileProxy file) throws IOException {
+        DataObject dao = DataObject.find(file.toFileObject());
+        dao.delete();
+    }
+    
+    protected void deleteFO (VCSFileProxy toDelete) throws DataObjectNotFoundException, IOException {
+        FileObject fo = toDelete.toFileObject();
+        assertNotNull(fo);
+        FileLock lock = fo.lock();
+        try {
+            fo.delete(lock);
+        } finally {
+            lock.releaseLock();
+        }
+    }
+
+    protected String getName(VCSFileProxy f) {
+        String ret = f.getName();
+        int idx = ret.lastIndexOf(".");
+        return idx > -1 ? ret.substring(0, idx) : ret;
+    }
+
+    protected String getExt(VCSFileProxy f) {
+        String ret = f.getName();
+        int idx = ret.lastIndexOf(".");
+        return idx > -1 ? ret.substring(idx) : null;
+    }
+    
+    protected class LogHandler extends Handler {
+        private VCSFileProxy fileToInitialize;
+        private boolean filesInitialized;
+        private final HashSet<VCSFileProxy> initializedFiles = new HashSet<VCSFileProxy>();
+
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().contains("GitFolderEventsHandler.initializeFiles: finished")) {
+                synchronized (this) {
+                    filesInitialized = true;
+                    notifyAll();
+                }
+            } else if (record.getMessage().contains("GitFolderEventsHandler.initializeFiles: ")) {
+                if (record.getParameters()[0].equals(fileToInitialize.getPath())) {
+                    synchronized (this) {
+                        initializedFiles.add(fileToInitialize);
+                        notifyAll();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        protected void setFilesToInitializeRoots (VCSFileProxy file) {
+            fileToInitialize = file;
+            initializedFiles.clear();
+            filesInitialized = false;
+        }
+
+        protected boolean waitForFilesToInitializeRoots() throws InterruptedException {
+            for (int i = 0; i < 20; ++i) {
+                synchronized (this) {
+                    if (filesInitialized && initializedFiles.contains(fileToInitialize)) {
+                        return true;
+                    }
+                    wait(500);
+                }
+            }
+            return false;
+        }
+    }
+
 }
