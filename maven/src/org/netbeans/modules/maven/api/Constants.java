@@ -134,6 +134,43 @@ public interface Constants {
      * </ul>
      */
     public static final String ACTION_PROPERTY_JPDALISTEN = "jpda.listen";
+    
+    /**
+     * When used as a property when executing maven, it will attach a debugger
+     * to the provided address.
+     * The transport used when attaching to that address is a socket attach be default,
+     * which expects the address to be in the form of &lt;host_name&gt;:&lt;port_number&gt;.
+     * A different transport can be defined by {@link #ACTION_PROPERTY_JPDAATTACH_TRANSPORT}.
+     * Possible value is also <code>true</code> in which case a free port
+     * is allocated and value of this property and properties 
+     * {@link #ACTION_PROPERTY_JPDAATTACH_ADDRESS} and
+     * {@link #ACTION_PROPERTY_JPDAATTACH_PORT} updated accordingly.
+     * @since 2.113
+     */
+    public static final String ACTION_PROPERTY_JPDAATTACH = "jpda.attach";
+    
+    /** If the {@link #ACTION_PROPERTY_JPDAATTACH} property is specified
+     * as <code>true</code> this property is then set to the address
+     * (usually <code>localhost</code>) to connect to.
+     * @since 2.113
+     */
+    public static final String ACTION_PROPERTY_JPDAATTACH_ADDRESS = "jpda.attach.address";
+    /** If the {@link #ACTION_PROPERTY_JPDAATTACH} property is specified
+     * as <code>true</code> this property is then set to an empty port the
+     * system will then connect to.
+     * 
+     * @since 2.113
+     */
+    public static final String ACTION_PROPERTY_JPDAATTACH_PORT = "jpda.attach.port";
+    
+    /**
+     * When used as a property when executing maven, it will use this transport
+     * when attaching to {@link #ACTION_PROPERTY_JPDAATTACH_ADDRESS} address.
+     * This property is meaningful only when {@link #ACTION_PROPERTY_JPDAATTACH_ADDRESS}
+     * is defined.
+     * @since 2.113
+     */
+    public static final String ACTION_PROPERTY_JPDAATTACH_TRANSPORT = "jpda.attach.transport";
 
     /**
      * Optional property, if defined the project type will attempt to redirect meaningful
