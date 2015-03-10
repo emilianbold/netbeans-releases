@@ -78,7 +78,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     protected static final String NULL_OBJECT_ID = "0000000000000000000000000000000000000000";
 
     private enum Scope{All, Successful, Failed};
-    private static final Scope TESTS_SCOPE = Scope.Failed;
+    private static final Scope TESTS_SCOPE = Scope.Successful;
 
     public AbstractGitTestCase (String name) {
         super(name);
