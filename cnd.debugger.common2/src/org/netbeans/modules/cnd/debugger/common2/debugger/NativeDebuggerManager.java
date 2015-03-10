@@ -1257,6 +1257,12 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         ndi.setHostName(dt.getHostName());
         ndi.setAction(ATTACH);
         ndi.setCaptureInfo(dt.getCaptureInfo());
+        
+        if (dt.getProjectMode() == DebugTarget.ProjectMode.OLD_PROJECT) {
+            String symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(ndi.getDbgProfile().getOptions());
+            symbolFile = ((MakeConfiguration) conf).expandMacros(symbolFile);
+            ndi.setTarget(symbolFile);
+        }
 
         if (isStandalone()) {
             startDebugger(getExistingDebugger(ndi), ndi);
