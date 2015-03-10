@@ -46,6 +46,7 @@ package org.netbeans.modules.db.dataview.output;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.CharConversionException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +58,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -267,18 +269,21 @@ public class DataView {
         return this.dataPage.get(i);
     }
 
-    DataViewPageContext addPageContext(final DataViewDBTable table) {
-        final DataViewPageContext pageContext = new DataViewPageContext(initialPageSize);
-        this.dataPage.add(pageContext);
-        Mutex.EVENT.writeAccess(new Mutex.Action<Object>() {
-            @Override
-            public Void run() {
-                pageContext.setTableMetaData(table);
-                pageContext.getModel().setColumns(table.getColumns().toArray(new DBColumn[0]));
-                return null;
-            }
-        });
-        return pageContext;
+    DataViewPageContext addPageContext(final DataViewDBTable table) throws InterruptedException {
+        try {
+            final DataViewPageContext pageContext = new DataViewPageContext(initialPageSize);
+            this.dataPage.add(pageContext);
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    pageContext.setTableMetaData(table);
+                    pageContext.getModel().setColumns(table.getColumns().toArray(new DBColumn[0]));
+                }
+            });
+            return pageContext;
+        } catch (InvocationTargetException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     DatabaseConnection getDatabaseConnection() {
@@ -304,7 +309,7 @@ public class DataView {
     }
 
     public void resetEditable() {
-        Mutex.EVENT.readAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
             @Override
             public void run() {
                 for (DataViewPageContext pageContext : dataPage) {
@@ -314,26 +319,9 @@ public class DataView {
         });
     }
 
-    public boolean isEditable() {
-        if(dataPage.isEmpty()) {
-            return false;
-        } else {
-            return Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
-                @Override
-                public Boolean run() {
-                    boolean editable = true;
-                    for (DataViewPageContext pageContext : dataPage) {
-                        editable &= pageContext.getModel().isEditable();
-                    }
-                    return editable;
-                }
-            });
-        }
-    }
-
     synchronized void disableButtons() {
         assert dataViewUI != null;
-        Mutex.EVENT.readAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
 
             @Override
             public void run() {
@@ -346,7 +334,7 @@ public class DataView {
     }
 
     synchronized void removeComponents() {
-        Mutex.EVENT.readAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
 
             @Override
             public void run() {
@@ -393,7 +381,7 @@ public class DataView {
 
     void resetToolbar(final boolean wasError) {
         assert dataViewUI != null;
-        Mutex.EVENT.readAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
 
             @Override
             public void run() {

@@ -62,9 +62,9 @@ import javax.swing.JEditorPane;
 
 import javax.swing.text.Document;
 import junit.framework.AssertionFailedError;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -103,7 +103,6 @@ public class DataEditorSupportTest extends NbTestCase {
     org.openide.filesystems.FileSystem fs;
     static DataEditorSupportTest RUNNING;
     static {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.DataEditorSupportTest$Lkp");
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     
@@ -118,6 +117,7 @@ public class DataEditorSupportTest extends NbTestCase {
 
     @Override
     protected void setUp () throws Exception {
+        MockServices.setServices(Pool.class);
         RUNNING = this;
         DataEditorSupport.TABNAMES_HTML = false;
         
@@ -704,23 +704,8 @@ public class DataEditorSupportTest extends NbTestCase {
             }
         }
     }
-
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            
-            ic.add (new Pool ());
-            ic.add (FileEncodingQueryImpl.getDefault());
-            ic.add (new NbMutexEventProvider());
-        }
-        
-    } // end of Lkp
     
-    private static final class Pool extends org.openide.loaders.DataLoaderPool {
+    public static final class Pool extends org.openide.loaders.DataLoaderPool {
         protected java.util.Enumeration loaders () {
             return org.openide.util.Enumerations.singleton(MyLoader.get ());
         }

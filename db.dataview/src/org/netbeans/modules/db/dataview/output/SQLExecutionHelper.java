@@ -73,6 +73,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -208,7 +209,10 @@ class SQLExecutionHelper {
                     DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
                     this.ex = sqlEx;
-                } catch (Exception e) {
+                } catch (InterruptedException ex) {
+                    // Expected when interrupted while waiting to get enter to
+                    // the swing EDT
+                } catch (RuntimeException e) {
                   LOGGER.log(Level.WARNING, null, e);
                 } finally {
                     DataViewUtils.closeResources(stmt);
@@ -353,27 +357,32 @@ class SQLExecutionHelper {
         final Exception finalCaught = caughtException;
 
         // refresh when required
-        Boolean needRequery = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
-            @Override
-            public Boolean run() {
-                if (finalCaught != null) {
-                    DialogDisplayer.getDefault().notifyLater(
-                            new NotifyDescriptor.Message(
-                                    finalCaught.getLocalizedMessage()));
+        Boolean needRequery;
+        try {
+            needRequery = Mutex.EVENT.writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                @Override
+                public Boolean run() {
+                    if (finalCaught != null) {
+                        DialogDisplayer.getDefault().notifyLater(
+                                new NotifyDescriptor.Message(
+                                        finalCaught.getLocalizedMessage()));
+                    }
+                    if (pageContext.getTotalRows() < 0) {
+                        pageContext.setTotalRows(0);
+                        pageContext.first();
+                    }
+                    pageContext.incrementRowSize(finalDone);
+                    return pageContext.refreshRequiredOnInsert();
                 }
-                if (pageContext.getTotalRows() < 0) {
-                    pageContext.setTotalRows(0);
-                    pageContext.first();
-                }
-                pageContext.incrementRowSize(finalDone);
-                return pageContext.refreshRequiredOnInsert();
-            }
-        });
+            });
+        } catch (MutexException ex) {
+            needRequery = true;
+        }
         
         if (needRequery) {
             SQLExecutionHelper.this.executeQuery();
         } else {
-            Mutex.EVENT.readAccess(new Runnable() {
+            Mutex.EVENT.writeAccess(new Runnable() {
                 @Override
                 public void run() {
                     synchronized (dataView) {
@@ -811,11 +820,10 @@ class SQLExecutionHelper {
             LOGGER.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
-            Mutex.EVENT.writeAccess(new Mutex.Action<Void>() {
+            Mutex.EVENT.writeAccess(new Runnable() {
                 @Override
-                public Void run() {
+                public void run() {
                     pageContext.getModel().setData(rows);
-                    return null;
                 }
             });
         }
