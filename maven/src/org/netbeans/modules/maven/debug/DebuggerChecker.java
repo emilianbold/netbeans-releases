@@ -44,6 +44,8 @@ package org.netbeans.modules.maven.debug;
 import com.sun.jdi.VMOutOfMemoryException;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,6 +58,7 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -196,6 +199,19 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 config.setProperty(MAVENSUREFIREDEBUG, null);
             }
         }
+        if ("true".equals(config.getProperties().get(Constants.ACTION_PROPERTY_JPDAATTACH))) { // NOI18N
+            try (ServerSocket ss = new ServerSocket()) {
+                ss.bind(null);
+                int port = ss.getLocalPort();
+                final InetAddress addr = ss.getInetAddress();
+                String address = addr.isAnyLocalAddress() ? "localhost" : addr.getHostAddress();
+                config.setProperty(Constants.ACTION_PROPERTY_JPDAATTACH, address + ":" + port);
+                config.setProperty(Constants.ACTION_PROPERTY_JPDAATTACH_ADDRESS, address);
+                config.setProperty(Constants.ACTION_PROPERTY_JPDAATTACH_PORT, "" + port);
+            } catch (IOException ex) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -293,6 +309,35 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 reload(config.getProject(), res.getInputOutput().getOut(), cname);
             } else {
                 res.getInputOutput().getErr().println("Missing jpda.stopclass property in action mapping definition. Cannot reload class.");
+            }
+        }
+        String attachToAddress = config.getProperties().get(Constants.ACTION_PROPERTY_JPDAATTACH);
+        if (attachToAddress != null && resultCode == 0) {
+            String transport = config.getProperties().get(Constants.ACTION_PROPERTY_JPDAATTACH_TRANSPORT);
+            try {
+                if (transport == null || "dt_socket".equals(transport)) {
+                    int colon = attachToAddress.indexOf(':');
+                    int port;
+                    try {
+                        port = Integer.parseInt(attachToAddress.substring(colon + 1));
+                    } catch (NumberFormatException ex) {
+                        LOGGER.log(Level.INFO, "Cannot parse " + attachToAddress.substring(colon + 1) + " as number", ex);
+                        return ;
+                    }
+                    String host;
+                    if (colon > 0) {
+                        host = attachToAddress.substring(0, colon);
+                    } else {
+                        host = "localhost";
+                    }
+                    JPDADebugger.attach(host, port, new Object[0]);
+                } else if ("dt_shmem".equals(transport)) {
+                    JPDADebugger.attach(attachToAddress, new Object[0]);
+                } else {
+                    LOGGER.log(Level.INFO, "Ignoring unknown transport '"+transport+"'");
+                }
+            } catch (DebuggerStartException ex) {
+                ex.printStackTrace(res.getInputOutput().getErr());
             }
         }
     }

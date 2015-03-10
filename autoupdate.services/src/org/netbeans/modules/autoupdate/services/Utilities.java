@@ -230,8 +230,9 @@ public class Utilities {
                         if (certDNName.contains("CN=\"Oracle America, Inc.\"")
                                 && (certDNName.contains("OU=Software Engineering") || certDNName.contains("OU=Code Signing Bureau"))) {
                             res = 2;
+                            break;
                         } else {
-                            res = res < 2 ? 1 : res;
+                            res = 1;
                         }                        
                     }
                 }

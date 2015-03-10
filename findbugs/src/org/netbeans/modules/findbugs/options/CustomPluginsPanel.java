@@ -46,6 +46,13 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import org.netbeans.api.progress.BaseProgressUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.modules.findbugs.DetectorCollectionProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -130,7 +137,11 @@ public class CustomPluginsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    @Messages("BTN_Select=Select")
+    @Messages({"BTN_Select=Select",
+        "MSG_Checking=Checking validity of the plugins",
+        "# {0} - the name of the file",
+        "MSG_Invalid_Plugin=The plugin \"{0}\" is not valid findbugs plugin.",
+        "MSG_Multiple_Invalid_Plugins=There are multiple invalid plugins in the selection."})
     private void addPluginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPluginActionPerformed
         JFileChooser fc = new JFileChooser();
         
@@ -139,10 +150,30 @@ public class CustomPluginsPanel extends javax.swing.JPanel {
         fc.setMultiSelectionEnabled(true);
         
         if (fc.showDialog(fc, null) == JFileChooser.APPROVE_OPTION) {
-            // TODO iterate and check the jar files for the presence
-            // of findbugs.xml and messages.xml or use DetectorCollectionProvider
+            final List<String> paths = new ArrayList<>();
             for (File f : fc.getSelectedFiles()) {
-                ((DefaultListModel) pluginsList.getModel()).addElement(f.getAbsolutePath());
+                paths.add(f.getAbsolutePath());
+            }
+            List<String> errors = BaseProgressUtils.showProgressDialogAndRun(new ProgressRunnable<List<String>>() {
+
+                @Override
+                public List<String> run(ProgressHandle handle) {
+                    return DetectorCollectionProvider.checkTemporaryCollection(paths);
+                }
+            }, Bundle.MSG_Checking(), false);
+
+            if (errors.isEmpty()) {
+                for (String path : paths) {
+                    ((DefaultListModel) pluginsList.getModel()).addElement(path);
+                }
+            } else {
+                if (errors.size() == 1) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            Bundle.MSG_Invalid_Plugin(errors.get(0)), NotifyDescriptor.ERROR_MESSAGE));
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            Bundle.MSG_Multiple_Invalid_Plugins(), NotifyDescriptor.ERROR_MESSAGE));
+                }
             }
         }
         enableDisable();
