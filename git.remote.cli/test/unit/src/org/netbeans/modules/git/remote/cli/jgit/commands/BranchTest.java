@@ -81,9 +81,7 @@ public class BranchTest extends AbstractGitTestCase {
     }
     
     @Override
-    protected boolean isRunAll() {
-        return false;
-    }
+    protected boolean isRunAll() {return false;}
 
     @Override
     protected void setUp() throws Exception {
