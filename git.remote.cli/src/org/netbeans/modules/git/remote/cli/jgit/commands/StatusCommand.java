@@ -54,9 +54,11 @@ import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitStatus;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
+import org.netbeans.modules.git.remote.cli.jgit.Utils;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.git.remote.cli.progress.StatusListener;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -346,7 +348,40 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
     
+    private void recursiveChild(VCSFileProxy folder, Map<String, VCSFileProxy> map) {
+        if (VCSFileProxy.createFileProxy(folder, ".git").exists()) {
+            return;
+        }
+        VCSFileProxy[] listFiles = folder.listFiles();
+        for(VCSFileProxy f : folder.listFiles()) {
+            if (!VCSFileProxySupport.isSymlink(f)) {
+                if (f.isDirectory()) {
+                    recursiveChild(f, map);
+                    map.put(Utils.getRelativePath(getRepository().getLocation(), f)+"/", f);
+                } else {
+                    map.put(Utils.getRelativePath(getRepository().getLocation(), f), f);
+                }
+            }
+        }
+    }
+    
     private void processOutput(LinkedHashMap<String, StatusLine> parseOutput, ProcessUtils.Canceler canceled) {
+        Map<String, VCSFileProxy> toAdd = new LinkedHashMap<>();
+        for(Map.Entry<String, StatusLine> entry : parseOutput.entrySet()) {
+            if (entry.getValue().first == '?' && entry.getValue().second == '?' &&  entry.getKey().endsWith("/")) {
+                VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), entry.getKey());
+                recursiveChild(vcsFile, toAdd);
+            }
+        }
+        for (Map.Entry<String, VCSFileProxy> entry : toAdd.entrySet()) {
+            if (!parseOutput.containsKey(entry.getKey())) {
+                StatusLine statusLine = new StatusLine();
+                statusLine.first = '?';
+                statusLine.second = '?';
+                statusLine.second = '?';
+                parseOutput.put(entry.getKey(), statusLine);
+            }
+        }
         HashMap<String, GitStatus.GitDiffEntry> renamedEntry = new HashMap<>();
         for(Map.Entry<String, StatusLine> entry : parseOutput.entrySet()) {
             String file = entry.getKey();

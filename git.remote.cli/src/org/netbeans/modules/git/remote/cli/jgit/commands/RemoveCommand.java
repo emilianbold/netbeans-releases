@@ -51,6 +51,7 @@ import org.netbeans.modules.git.remote.cli.jgit.Utils;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -111,6 +112,11 @@ public class RemoveCommand extends GitCommand {
                     parseRemoveOutput(output);
                 }
             }.runCLI();
+            if (!cached) {
+                for(VCSFileProxy root : roots) {
+                    VCSFileProxySupport.delete(root);
+                }
+            }
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
