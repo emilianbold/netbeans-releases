@@ -448,7 +448,7 @@ public class GoToSupport {
                 }
                 if (idx >= 0) {
                     result = result.substring(0, idx + 3);
-                    result += "<a href='***'>more...</a>"; //NOI18N
+                    result += ("<a href='***'>" + NbBundle.getMessage(GoToSupport.class, "LBL_More") + "</a>"); //NOI18N
                 }
                 idx = result.indexOf("<p id=\"not-found\">"); //NOI18N
                 if (idx >= 0) {

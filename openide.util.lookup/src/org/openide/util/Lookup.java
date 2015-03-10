@@ -127,9 +127,8 @@ public abstract class Lookup {
                 if (lkp != null) {
                     return lkp;
                 }
-            } else {
-                return defaultLookup;
             }
+            return defaultLookup;
         }
         LOG.log(Level.FINER, "About to initialize Lookup@{0}.getDefault() by {1}", 
             new Object[] { Lookup.class.getClassLoader(), Thread.currentThread() }
