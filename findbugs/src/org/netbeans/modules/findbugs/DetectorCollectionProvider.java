@@ -99,6 +99,24 @@ public class DetectorCollectionProvider {
         }
         return new DetectorFactoryCollection(plugins) { };
     }
+
+    public static List<String> checkTemporaryCollection(List<String> paths) {
+        clearRegisteredPlugins();
+
+        List<String> ret = new ArrayList<String>(paths.size());
+
+        for (String path : paths) {
+            try {
+                File f = new File(path);
+                PluginLoader.getPluginLoader(f.toURI().toURL(), DetectorFactory.class.getClassLoader(), false, true).loadPlugin();
+            } catch (MalformedURLException ex) {
+                ret.add(path);
+            } catch (PluginException ex) {
+                ret.add(path);
+            }
+        }
+        return ret;
+    }
     
     public static List<String> customPlugins() {
         List<String> plugins = new ArrayList<String>();
