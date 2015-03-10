@@ -99,6 +99,7 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
@@ -1240,7 +1241,11 @@ public final class FileImpl implements CsmFile,
             return false;
         }
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
-        tsCache.addNewPair(pcBuilder.get(), tokenStream, languageFilter);
+        // after the next call builder will be ready to create pc state
+        List<APTToken> tokens = APTUtils.toList(tokenStream);
+        // Only now we can create pcState
+        FilePreprocessorConditionState pcState = pcBuilder.get().build();        
+        tsCache.cacheTokens(pcState, tokens, languageFilter);
         // remember walk info
         setAPTCacheEntry(ppState, cacheEntry.get(), false);
         return true;

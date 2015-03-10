@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTBasedPCStateBuilder;
 
 /**
  *
@@ -74,11 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTBasedPCStateBuilder;
         return null;
     }
 
-    public final void addNewPair(APTBasedPCStateBuilder pcBuilder, TokenStream ts, APTLanguageFilter lang) {
-        // after the next call builder will be ready to create pc state
-        List<APTToken> tokens = APTUtils.toList(ts);
-        // Only now we can create pcState
-        FilePreprocessorConditionState pcState = pcBuilder.build();
+    public final void cacheTokens(FilePreprocessorConditionState pcState, List<APTToken> tokens, APTLanguageFilter lang) {
         TSData newData = new TSData(pcState, tokens, lang);
         cacheData.add(newData);
     }
