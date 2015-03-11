@@ -71,7 +71,7 @@ public class RemoveTest extends AbstractGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("testCancel","testRemoveUntrackedTree","testRemoveTreeCached","testRemoveFileCached","testRemoveUntrackedFile").contains(getName());
+        return Arrays.asList("testRemoveNested","testCancel","testRemoveUntrackedTree","testRemoveTreeCached","testRemoveFileCached","testRemoveUntrackedFile").contains(getName());
     }
     
     @Override

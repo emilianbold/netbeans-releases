@@ -91,6 +91,7 @@ public class CommitCommand extends GitCommand {
         super.prepare();
         addArgument(0, "commit"); //NOI18N
         addArgument(0, "--status"); //NOI18N
+        addArgument(0, "--allow-empty"); //NOI18N
         addArgument(0, "-m"); //NOI18N
         addArgument(0, message);
         if (amend) {
@@ -104,13 +105,26 @@ public class CommitCommand extends GitCommand {
             //addArgument(0, "--commiter="+commiter.toString());
         }
         addArgument(0, "--"); //NOI18N
-        addExistingFiles(0, roots);
+        addExistingFilesExceptRoot(0, roots);
         
         addArgument(1, "log"); //NOI18N
         addArgument(1, "--raw"); //NOI18N
         addArgument(1, "--pretty=raw"); //NOI18N
         addArgument(1, "-1"); //NOI18N
         // place holder for revision
+    }
+
+    private void addExistingFilesExceptRoot(int command, VCSFileProxy... files) {
+        for (VCSFileProxy root : files) {
+            if (!root.exists()) {
+                //skip unexisting file
+                continue;
+            }
+            String relativePath = Utils.getRelativePath(getRepository().getLocation(), root);
+            if (!relativePath.isEmpty()) {
+                addArgument(0, relativePath);
+            }
+        }
     }
 
     @Override
