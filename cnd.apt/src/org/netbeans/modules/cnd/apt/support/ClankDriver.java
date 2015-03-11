@@ -39,42 +39,23 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.parser.clank;
+package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.apt.support.ClankDriver;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public final class ClankTokenStreamProducer extends TokenStreamProducer {
+public final class ClankDriver {
 
-    private ClankTokenStreamProducer(FileImpl file, FileContent newFileContent) {
-        super(file, newFileContent);
-    }
-    
-    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean index) {
-        return new ClankTokenStreamProducer(file, newFileContent);
+    private ClankDriver() {
     }
 
-    @Override
-    public TokenStream getTokenStream(boolean triggerParsingActivity) {
-        PreprocHandler ppHandler = getCurrentPreprocHandler();
-        TokenStream tsFromClank = ClankDriver.getTokenStream(getMainFile().getBuffer(), ppHandler);
-        return tsFromClank;
-    }
-
-    @Override
-    public FilePreprocessorConditionState release() {
-        return CsmCorePackageAccessor.get().createPCState(getMainFile().getAbsolutePath(), new int[] {0, 10});
+    public static TokenStream getTokenStream(APTFileBuffer buffer, PreprocHandler ppHandler) {
+        return ClankDriverImpl.getTokenStream(buffer, ppHandler);
     }
     
 }
