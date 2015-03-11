@@ -63,12 +63,16 @@ public class CommentTokenFilter implements TokenFilter {
 
     private int state = BEFORE_FIRST_TOKEN_STATE;
 
-    private int lastTokenLine = -1;
+    private final String separator;
 
     // folds
     private CppFoldRecord initialCommentFold = null;
-    private List<CppFoldRecord> blockCommentFolds = new ArrayList<CppFoldRecord>();
-    private List<CppFoldRecord> lineCommentFolds = new ArrayList<CppFoldRecord>();
+    private final List<CppFoldRecord> blockCommentFolds = new ArrayList<CppFoldRecord>();
+    private final List<CppFoldRecord> lineCommentFolds = new ArrayList<CppFoldRecord>();
+
+    CommentTokenFilter(String separator) {
+        this.separator = separator;
+    }
 
     @Override
     public void visit(Token<CppTokenId> token) {
@@ -78,8 +82,9 @@ public class CommentTokenFilter implements TokenFilter {
         switch (token.id()) {
             case DOXYGEN_COMMENT:
             case BLOCK_COMMENT:
-                createBlockCommentsFold(token);
-                break;
+                if (isMultilineToken(token)) {
+                    createBlockCommentsFold(token);
+                }
             case DOXYGEN_LINE_COMMENT:
             case LINE_COMMENT:
 //                if (lastTokenLine != next.getLine()) {
@@ -175,5 +180,9 @@ public class CommentTokenFilter implements TokenFilter {
 
     private CppFoldRecord createFoldRecord(int folderKind, Token<CppTokenId> begin, Token<CppTokenId> end) {
         return new CppFoldRecord(folderKind, begin.offset(null), end.offset(null) + end.length());
+    }
+
+    private boolean isMultilineToken(Token token) {
+        return token.text().toString().contains(separator);
     }
 }

@@ -117,7 +117,7 @@ public class StatusCommand extends StatusCommandBase {
             addArgument(2, "status"); //NOI18N
             addArgument(2, "--short"); //NOI18N
             addArgument(2, "--ignored"); //NOI18N
-            addArgument(2, "--untracked-files=normal"); //NOI18N
+            addArgument(2, "--untracked-files=all"); //NOI18N
             addArgument(2, "--"); //NOI18N
             addFiles(2, roots);
             addArgument(3, "ls-files"); //NOI18N
@@ -127,7 +127,7 @@ public class StatusCommand extends StatusCommandBase {
             addArgument(0, "status"); //NOI18N
             addArgument(0, "--short"); //NOI18N
             addArgument(0, "--ignored"); //NOI18N
-            addArgument(0, "--untracked-files=normal"); //NOI18N
+            addArgument(0, "--untracked-files=all"); //NOI18N
             addArgument(0, "--"); //NOI18N
             addFiles(0, roots);
             addArgument(1, "diff"); //NOI18N
@@ -348,40 +348,7 @@ public class StatusCommand extends StatusCommandBase {
         }
     }
     
-    private void recursiveChild(VCSFileProxy folder, Map<String, VCSFileProxy> map) {
-        if (VCSFileProxy.createFileProxy(folder, ".git").exists()) {
-            return;
-        }
-        VCSFileProxy[] listFiles = folder.listFiles();
-        for(VCSFileProxy f : folder.listFiles()) {
-            if (!VCSFileProxySupport.isSymlink(f)) {
-                if (f.isDirectory()) {
-                    recursiveChild(f, map);
-                    map.put(Utils.getRelativePath(getRepository().getLocation(), f)+"/", f);
-                } else {
-                    map.put(Utils.getRelativePath(getRepository().getLocation(), f), f);
-                }
-            }
-        }
-    }
-    
     private void processOutput(LinkedHashMap<String, StatusLine> parseOutput, ProcessUtils.Canceler canceled) {
-        Map<String, VCSFileProxy> toAdd = new LinkedHashMap<>();
-        for(Map.Entry<String, StatusLine> entry : parseOutput.entrySet()) {
-            if (entry.getValue().first == '?' && entry.getValue().second == '?' &&  entry.getKey().endsWith("/")) {
-                VCSFileProxy vcsFile = VCSFileProxy.createFileProxy(getRepository().getLocation(), entry.getKey());
-                recursiveChild(vcsFile, toAdd);
-            }
-        }
-        for (Map.Entry<String, VCSFileProxy> entry : toAdd.entrySet()) {
-            if (!parseOutput.containsKey(entry.getKey())) {
-                StatusLine statusLine = new StatusLine();
-                statusLine.first = '?';
-                statusLine.second = '?';
-                statusLine.second = '?';
-                parseOutput.put(entry.getKey(), statusLine);
-            }
-        }
         HashMap<String, GitStatus.GitDiffEntry> renamedEntry = new HashMap<>();
         for(Map.Entry<String, StatusLine> entry : parseOutput.entrySet()) {
             String file = entry.getKey();

@@ -421,7 +421,7 @@ public final class VCSFileProxySupport {
                 Logger.getLogger(VCSFileProxySupport.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
             }
         }
-        refreshPairImpl(sourceDir, targetDir);
+        refreshImpl(targetDir);
     }
 
     public static boolean copyFile(VCSFileProxy from, VCSFileProxy to) throws IOException {
@@ -442,7 +442,7 @@ public final class VCSFileProxySupport {
                 }
             }
         }
-        refreshPairImpl(from, to);
+        refreshImpl(to);
         return true;
     }
     
