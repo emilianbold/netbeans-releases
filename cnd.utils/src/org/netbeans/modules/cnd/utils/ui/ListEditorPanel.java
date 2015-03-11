@@ -924,14 +924,16 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
 
         @Override
         /* package */ void addObjectAction() {
-            List<E> list = new ArrayList<E>();
             Collection<E> addMultipleAction = addSeveralAction();
-            for (E item : addMultipleAction) {
-                if (item != null) {
-                    list.add(item);
+            if (addMultipleAction != null) {
+                List<E> list = new ArrayList<E>();
+                for (E item : addMultipleAction) {
+                    if (item != null) {
+                        list.add(item);
+                    }
                 }
+                addObjectsAction(list);
             }
-            addObjectsAction(list);
         }
 
         public abstract Collection<E> addSeveralAction();
