@@ -91,6 +91,8 @@ public class RemoveCommand extends GitCommand {
         addArgument(0, "-r"); //NOI18N
         if (cached) {
             addArgument(0, "--cached"); //NOI18N
+        } else {
+            addArgument(0, "--force"); //NOI18N
         }
         addArgument(0, "--"); //NOI18N
         addFiles(0, roots);
@@ -111,6 +113,12 @@ public class RemoveCommand extends GitCommand {
                 public void outputParser(String output) throws GitException {
                     parseRemoveOutput(output);
                 }
+
+                @Override
+                protected void errorParser(String error) throws GitException {
+                    super.errorParser(error); //To change body of generated methods, choose Tools | Templates.
+                }
+                
             }.runCLI();
             if (!cached) {
                 for(VCSFileProxy root : roots) {
