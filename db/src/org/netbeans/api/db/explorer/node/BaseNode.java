@@ -53,7 +53,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.db.explorer.action.ActionRegistry;
 import org.netbeans.modules.db.explorer.node.NodeDataLookup;
 import org.netbeans.modules.db.explorer.node.NodePropertySupport;
 import org.netbeans.modules.db.explorer.node.NodeRegistry;
@@ -64,6 +63,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -127,7 +127,7 @@ public abstract class BaseNode extends AbstractNode {
     protected static final String INDEXPARTDESC = "IndexPartDescription"; // NOI18N
 
     private final NodeDataLookup dataLookup;
-    private final ActionRegistry actionRegistry;
+    private final String layerEntry;
     private final NodeRegistry nodeRegistry;
     private final ChildNodeFactory childNodeFactory;
     private final NodeProvider nodeProvider;
@@ -171,7 +171,7 @@ public abstract class BaseNode extends AbstractNode {
         super(children, lookup);
         dataLookup = lookup;
         childNodeFactory = factory;
-        actionRegistry = new ActionRegistry(layerEntry);
+        this.layerEntry = layerEntry;
         nodeRegistry = NodeRegistry.create(layerEntry, dataLookup);
         nodeProvider = provider;
     }
@@ -358,9 +358,9 @@ public abstract class BaseNode extends AbstractNode {
             return super.getActions(true);
         }
         
-        // get the actions from the registry
-        Collection<Action> actions = actionRegistry.getActions();
-        return actions.toArray (new Action[actions.size ()]);
+        return Utilities
+                .actionsForPath("Databases/Explorer/" + layerEntry + "/Actions")
+                .toArray(new Action[0]);
     }
     
     /**
