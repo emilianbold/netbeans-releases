@@ -230,14 +230,22 @@ public class ClientSideProject implements Project {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
-                    projectBrowserUsageLogger.reset();
-                    ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
-                    if (ebi != null) {
-                        ebi.deactivate();
-                    }
-                    projectEnhancedBrowserImpl = null;
-                    projectWebBrowser = null;
-                    projectBrowserProvider.activeBrowserHasChanged();
+                    // #249385 - 2 options here:
+                    //  (1) lock ordering: call getProjectWebBrowser() under read mutex, then synchronized
+                    //  (2) this method runs under write mutex, so replan it (more safe IMHO)
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            projectBrowserUsageLogger.reset();
+                            ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
+                            if (ebi != null) {
+                                ebi.deactivate();
+                            }
+                            projectEnhancedBrowserImpl = null;
+                            projectWebBrowser = null;
+                            projectBrowserProvider.activeBrowserHasChanged();
+                        }
+                    });
                 }
             }
         });
