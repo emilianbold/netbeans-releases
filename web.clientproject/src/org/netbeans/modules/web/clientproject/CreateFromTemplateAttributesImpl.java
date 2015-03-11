@@ -51,36 +51,32 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.templates.CreateDescriptor;
 import org.netbeans.api.templates.CreateFromTemplateAttributes;
 import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.CreateFromTemplateAttributesProvider;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.EditableProperties;
 import org.openide.util.Utilities;
 
 /**
  * Default implementation of {@link CreateFromTemplateAttributes}.
- *
- * @author Andrei Badea
  */
-class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProvider {
+class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
 
     private final CommonProjectHelper helper;
     private final FileEncodingQueryImplementation encodingQuery;
-    private static final Logger LOG = Logger.getLogger(TemplateAttributesProviderImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(CreateFromTemplateAttributesImpl.class.getName());
 
 
-    public TemplateAttributesProviderImpl(CommonProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
+    public CreateFromTemplateAttributesImpl(CommonProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
         super();
         this.helper = helper;
         this.encodingQuery = encodingQuery;
     }
 
     @Override
-    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+    public Map<String, ?> attributesFor(CreateDescriptor desc) {
         Map<String, String> values = new HashMap<>();
         EditableProperties priv  = helper.getProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties props = helper.getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -108,7 +104,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
         if (license != null) {
             values.put("license", license); // NOI18N
         }
-        Charset charset = encodingQuery.getEncoding(target.getPrimaryFile());
+        Charset charset = encodingQuery.getEncoding(desc.getTarget());
         String encoding = (charset != null) ? charset.name() : null;
         if (encoding != null) {
             values.put("encoding", encoding); // NOI18N
@@ -128,7 +124,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
             }
         } catch (Exception ex) {
             //not really important, just log.
-            Logger.getLogger(TemplateAttributesProviderImpl.class.getName()).log(Level.FINE, "", ex);
+            Logger.getLogger(CreateFromTemplateAttributesImpl.class.getName()).log(Level.FINE, "", ex);
         }
 
         if (values.isEmpty()) {
