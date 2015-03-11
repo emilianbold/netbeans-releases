@@ -50,14 +50,21 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ParserQueue;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.openide.util.Lookup;
 
@@ -66,15 +73,16 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public final class APTTokenStreamProducer extends TokenStreamProducer {
-    private final FileImpl file;
     private final APTFile fullAPT;
+    private PreprocHandler curPreprocHandler;
+    private APTBasedPCStateBuilder pcBuilder;
     
-    private APTTokenStreamProducer(FileImpl file, APTFile fullAPT) {
-        this.file = file;
+    private APTTokenStreamProducer(FileImpl file, FileContent newFileContent, APTFile fullAPT) {
+        super(file, newFileContent);
         this.fullAPT = fullAPT;
     }
 
-    public static TokenStreamProducer createImpl(FileImpl file, boolean index) {
+    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean index) {
         APTFile fullAPT = getFileAPT(file, true);
         if (fullAPT == null) {
             return null;
@@ -93,22 +101,42 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
                 aptIndexingWalker.index();
             }  
         }
-        return new APTTokenStreamProducer(file, fullAPT);
+        return new APTTokenStreamProducer(file, newFileContent, fullAPT);
     }
 
     @Override
-    public void prepare(PreprocHandler handler) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public TokenStream getTokenStream(boolean triggerParsingActivity) {
+        FileImpl fileImpl = getMainFile();
+        PreprocHandler preprocHandler = getCurrentPreprocHandler();
+        // use full APT for generating token stream
+        if (TraceFlags.TRACE_CACHE) {
+            System.err.println("CACHE: parsing using full APT for " + fileImpl.getAbsolutePath());
+        }        
+        // make real parse
+        PreprocHandler.State ppState = preprocHandler.getState();
+        ProjectBase startProject = Utils.getStartProject(ppState);
+        if (startProject == null) {
+            System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
+                    "\n while parsing file " + fileImpl.getAbsolutePath() + "\n of project " + fileImpl.getProject()); // NOI18N
+            return null;
+        }        
+        // We gather conditional state here as well, because sources are not included anywhere
+        pcBuilder = new APTBasedPCStateBuilder(fileImpl.getAbsolutePath());
+        // ask for concurrent entry if absent
+        APTFileCacheEntry aptCacheEntry = fileImpl.getAPTCacheEntry(ppState, Boolean.FALSE);
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, fullAPT, fileImpl, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
+        walker.setFileContent(getFileContent());
+        if (TraceFlags.DEBUG) {
+            System.err.println("doParse " + fileImpl.getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
+        }
 
-    @Override
-    public TokenStream getTokenStream() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TokenStream filteredTokenStream = walker.getFilteredTokenStream(fileImpl.getLanguageFilter(ppState));
+        return filteredTokenStream;
     }
 
     @Override
     public FilePreprocessorConditionState release() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return pcBuilder.build();
     }
     
     public static APTFile getFileAPT(FileImpl file, boolean full) {

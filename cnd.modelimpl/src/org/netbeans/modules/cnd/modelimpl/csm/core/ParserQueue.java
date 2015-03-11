@@ -278,8 +278,7 @@ public final class ParserQueue {
         return sb.toString();
     }
 
-    /*package*/
-    static String tracePreprocState(PreprocHandler.State ppState) {
+    public static String tracePreprocState(PreprocHandler.State ppState) {
         if (ppState == null) {
             return "null"; // NOI18N
         } else {

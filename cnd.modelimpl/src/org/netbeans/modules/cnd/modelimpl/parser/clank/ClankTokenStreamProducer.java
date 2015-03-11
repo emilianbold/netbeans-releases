@@ -42,9 +42,10 @@
 package org.netbeans.modules.cnd.modelimpl.parser.clank;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 
 /**
@@ -53,20 +54,16 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
  */
 public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
-    private ClankTokenStreamProducer() {
+    private ClankTokenStreamProducer(FileImpl file, FileContent newFileContent) {
+        super(file, newFileContent);
     }
     
-    public static TokenStreamProducer createImpl(FileImpl file, boolean index) {
+    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean index) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void prepare(PreprocHandler handler) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public TokenStream getTokenStream() {
+    public TokenStream getTokenStream(boolean triggerParsingActivity) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

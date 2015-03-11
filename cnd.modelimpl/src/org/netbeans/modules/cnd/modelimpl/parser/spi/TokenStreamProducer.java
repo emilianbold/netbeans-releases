@@ -44,8 +44,11 @@ package org.netbeans.modules.cnd.modelimpl.parser.spi;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTTokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducer;
 
@@ -54,18 +57,60 @@ import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducer;
  * @author Vladimir Voskresensky
  */
 public abstract class TokenStreamProducer {
-    public static TokenStreamProducer create(FileImpl file, boolean index) {
+    private PreprocHandler curPreprocHandler;
+    private String language = APTLanguageSupport.GNU_CPP;
+    private String languageFlavor = APTLanguageSupport.FLAVOR_UNKNOWN;
+    private final FileImpl fileImpl;
+    private final FileContent fileContent;
+
+    protected TokenStreamProducer(FileImpl fileImpl, FileContent newFileContent) {
+        assert fileImpl != null : "null file is not allowed";        
+        assert newFileContent != null : "null file content is not allowed";        
+        this.fileImpl = fileImpl;
+        this.fileContent = newFileContent;
+    }        
+    
+    public static TokenStreamProducer create(FileImpl file, boolean emptyFileContent, boolean index) {
+        FileContent newFileContent = FileContent.getHardReferenceBasedCopy(file.getCurrentFileContent(), emptyFileContent);
         if (APTTraceFlags.USE_CLANK) {
-            return ClankTokenStreamProducer.createImpl(file, index);
+            return ClankTokenStreamProducer.createImpl(file, newFileContent, index);
         } else {
-            return APTTokenStreamProducer.createImpl(file, index);
+            return APTTokenStreamProducer.createImpl(file, newFileContent, index);
         }
     }
     
-    public abstract void prepare(PreprocHandler handler);
-    
-    public abstract TokenStream getTokenStream();
+    public abstract TokenStream getTokenStream(boolean triggerParsingActivity);
     
     /** must be called when TS was completely consumed */
     public abstract FilePreprocessorConditionState release();
+
+    public void prepare(PreprocHandler handler, String language, String languageFlavor) {
+        assert handler != null : "null preprocHandler is not allowed";
+        curPreprocHandler = handler;
+        assert language != null : "null language is not allowed";
+        this.language = language;
+        assert languageFlavor != null : "null language flavor is not allowed";
+        this.languageFlavor = languageFlavor;
+    }
+    
+    public PreprocHandler getCurrentPreprocHandler() {
+        return curPreprocHandler;
+    }
+    
+    public String getLanguage() {
+        return language;
+    }        
+
+    public String getLanguageFlavor() {
+        return languageFlavor;
+    }
+
+    public FileImpl getMainFile() {
+        return fileImpl;
+    }    
+
+    public FileContent getFileContent() {
+        assert fileContent != null;
+        return fileContent;
+    }
 }

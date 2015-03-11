@@ -98,7 +98,7 @@ public class ParseStatistics {
         }
     }
 
-    public void fileParsed(FileImpl file, PreprocHandler preprocHandler) {
+    public void fileParsed(FileImpl file) {
         if (enabled) {
             synchronized(this) {
                 getEntry(file).cnt++;
