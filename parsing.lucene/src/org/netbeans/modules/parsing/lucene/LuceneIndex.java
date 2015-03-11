@@ -75,10 +75,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
-import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
@@ -116,18 +114,16 @@ import org.openide.util.RequestProcessor;
 //@NotTreadSafe
 public class LuceneIndex implements Index.Transactional, Index.WithTermFrequencies, Runnable {
 
-    private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N    
+    private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_DIR_TYPE = "java.index.dir";       //NOI18N
     private static final String DIR_TYPE_MMAP = "mmap";                 //NOI18N
     private static final String DIR_TYPE_NIO = "nio";                   //NOI18N
     private static final String DIR_TYPE_IO = "io";                     //NOI18N
-    private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;    
+    private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
     private static final CachePolicy cachePolicy = getCachePolicy();
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
-    
-    private static boolean disableLocks;
-    
-    private final DirCache dirCache;       
+
+    private final DirCache dirCache;
 
 
     public static LuceneIndex create (final File cacheRoot, final Analyzer analyzer) throws IOException {
@@ -690,7 +686,10 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     if (children != null) {
                         for (final File child : children) {
                             if (!child.delete()) {
-                                throw annotateException(new IOException("Cannot delete: " + child.getAbsolutePath()));  //NOI18N
+                                throw RecordOwnerLockFactory.annotateException(
+                                    new IOException("Cannot delete: " + child.getAbsolutePath()),
+                                    folder,
+                                    Thread.getAllStackTraces());  //NOI18N
                             }
                         }
                     }
@@ -916,9 +915,15 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     owner.modified();
                     ok = true;
                     return iw;
+                } catch (LockObtainFailedException lf) {
+                    //Already annotated
+                    throw lf;
                 } catch (IOException ioe) {
                     //Issue #149757 - logging
-                    throw annotateException (ioe);
+                    throw RecordOwnerLockFactory.annotateException (
+                        ioe,
+                        folder,
+                        null);
                 }
             } finally {
                 if (!ok) {
@@ -982,7 +987,10 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     if (validCache == null) {
                         return null;
                     } else {
-                        throw annotateException (ioe);
+                        throw RecordOwnerLockFactory.annotateException(
+                            ioe,
+                            folder,
+                            Thread.getAllStackTraces());
                     }
                 }
             }
@@ -1066,29 +1074,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 throw (IndexClosedException) new IndexClosedException().initCause(closeStackTrace);
             }
         }
-        
-        private IOException annotateException (final IOException ioe) {
-            final StringBuilder message = new StringBuilder();
-            File[] children = folder.listFiles();
-            if (children == null) {
-                message.append("Non existing index folder");    //NOI18N
-            } else {
-                message.append("Current Lucene version: ").     //NOI18N
-                        append(LucenePackage.get().getSpecificationVersion()).
-                        append('(').    //NOI18N
-                        append(LucenePackage.get().getImplementationVersion()).
-                        append(")\n");    //NOI18N
-                for (File c : children) {
-                    message.append(c.getName()).append(" f: ").append(c.isFile()).
-                    append(" r: ").append(c.canRead()).
-                    append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
-                }
-                message.append("threads: ").append(stackTraces(Thread.getAllStackTraces())).append("\n");   //NOI18N
-                message.append("lockFactory: ").append(lockFactory);    //NOI18N
-            }
-            return Exceptions.attachMessage(ioe, message.toString());
-        }
-        
+
         private static FSDirectory createFSDirectory (
                 final File indexFolder,
                 final LockFactory lockFactory) throws IOException {
@@ -1119,19 +1105,9 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 return false;
             }
         }
-        
-        private Map<String,String> stackTraces(final Map<Thread,StackTraceElement[]> traces) {
-            final Map<String,String> result = new HashMap<String, String>();
-            for (Map.Entry<Thread,StackTraceElement[]> entry : traces.entrySet()) {
-                result.put(
-                    entry.getKey().toString()+"("+entry.getKey().getId()+")",   //NOI18N
-                    Arrays.toString(entry.getValue()));
-            }
-            return result;
-        }
-                
+
         private static final class OwnerReference {
-            
+
             //@GuardedBy("this")
             private Pair<Thread,Pair<Long,Exception>> txThread;
             //@GuardedBy("this")
