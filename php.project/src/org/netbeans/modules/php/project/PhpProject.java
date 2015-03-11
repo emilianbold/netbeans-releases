@@ -762,7 +762,7 @@ public final class PhpProject implements Project {
                 PhpSharabilityQuery.create(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 new PhpProjectOperations(this) ,
                 phpProjectEncodingQueryImpl,
-                new TemplateAttributesProviderImpl(getHelper(), phpProjectEncodingQueryImpl),
+                new CreateFromTemplateAttributesImpl(getHelper(), phpProjectEncodingQueryImpl),
                 new PhpTemplates(),
                 new PhpSources(this, getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 getHelper(),

@@ -554,7 +554,7 @@ public class ClientSideProject implements Project {
                ProjectPropertiesProblemProvider.createForProject(this),
                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
-               new TemplateAttributesProviderImpl(projectHelper, fileEncodingQuery),
+               new CreateFromTemplateAttributesImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER),
                projectBrowserProvider,
