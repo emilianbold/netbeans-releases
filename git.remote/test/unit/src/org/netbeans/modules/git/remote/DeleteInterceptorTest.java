@@ -74,13 +74,11 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("testDeleteUnversionedFile","testDeleteNotVersionedFolder","testDeleteNotVersionedFileTree").contains(getName());
+        return Arrays.asList().contains(getName());
     }
 
     @Override
-    protected boolean isRunAll() {
-        return false;
-    }
+    protected boolean isRunAll() {return false;}
 
     @Override
     protected void setUp() throws Exception {

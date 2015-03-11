@@ -69,17 +69,14 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("testMoveFileTree_DO","testMoveA2B2C_FO","testMoveFileTree_FO","testMoveFileTree2Repos_DO","testMoveAddedFile2UnversionedFolder_DO",
+        return Arrays.asList("testMoveFileTree_DO","testMoveA2B2C_FO","testMoveFileTree_FO","testMoveAddedFile2UnversionedFolder_DO",
                 "testMoveVersionedFolder_DO","testMoveVersionedFile_FO","testMoveUnversionedFile_FO","testMoveUnversionedFolder_FO",
                 "testMoveAddedFile2UnversionedFolder_FO","testMoveA2B_CreateA_FO","testMoveVersionedFolder_FO","testMoveVersionedFile_DO",
-                "testMoveVersionedFolder2Repos_DO","testMoveVersionedFolder2Repos_FO","testMoveFileTree2Repos_FO",
                 "testMoveUnversionedFile_DO","testMoveUnversionedFolder_DO").contains(getName());
     }
 
     @Override
-    protected boolean isRunAll() {
-        return false;
-    }
+    protected boolean isRunAll() {return false;}
 
     @Override
     protected void setUp() throws Exception {

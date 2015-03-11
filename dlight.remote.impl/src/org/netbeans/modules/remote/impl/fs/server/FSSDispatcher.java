@@ -247,7 +247,7 @@ import org.openide.util.RequestProcessor;
                         synchronized (responseLock) {
                             FSSResponse response = responses.get(respId);
                             if (response == null) {
-                                RemoteLogger.info("skipping {0} response #{1}: {2}",
+                                RemoteLogger.fine("skipping {0} response #{1}: {2}",
                                         traceName, respId, line);
                             } else {
                                 response.addPackage(FSSResponseKind.fromChar(respKind), line);

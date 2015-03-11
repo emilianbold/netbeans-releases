@@ -69,13 +69,11 @@ public class CopyTest extends AbstractGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("testCopyTree","testCopyFileToExisting").contains(getName());
+        return Arrays.asList("testCopyFileToExisting").contains(getName());
     }
     
     @Override
-    protected boolean isRunAll() {
-        return false;
-    }
+    protected boolean isRunAll() {return false;}
 
     @Override
     protected void setUp() throws Exception {
