@@ -42,10 +42,11 @@
 package org.netbeans.modules.cnd.modelimpl.parser.clank;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 
 /**
@@ -59,17 +60,17 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
     
     public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean index) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new ClankTokenStreamProducer(file, newFileContent);
     }
 
     @Override
     public TokenStream getTokenStream(boolean triggerParsingActivity) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return APTUtils.EMPTY_STREAM;
     }
 
     @Override
     public FilePreprocessorConditionState release() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return CsmCorePackageAccessor.get().createPCState(getMainFile().getAbsolutePath(), new int[] {0, 10});
     }
     
 }
