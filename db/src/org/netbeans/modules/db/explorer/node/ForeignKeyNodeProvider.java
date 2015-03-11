@@ -86,7 +86,7 @@ public class ForeignKeyNodeProvider extends NodeProvider {
 
     @SuppressWarnings("unchecked")
     private ForeignKeyNodeProvider(Lookup lookup) {
-        super(lookup, new ForeignKeyComparator());
+        super(lookup, foreignKeyComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         tableHandle = getLookup().lookup(MetadataElementHandle.class);
     }
@@ -132,12 +132,10 @@ public class ForeignKeyNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class ForeignKeyComparator implements Comparator<Node> {
-
+    private static final Comparator<Node> foreignKeyComparator = new Comparator<Node>() {
         @Override
-        public int compare(Node model1, Node model2) {
+        public int compare(Node model1, Node model2 ) {
             return model1.getDisplayName().compareTo(model2.getDisplayName());
         }
-
-    }
+    };
 }

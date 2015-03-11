@@ -73,6 +73,7 @@ public class ProcedureParamNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public ProcedureParamNodeProvider createInstance(Lookup lookup) {
                 ProcedureParamNodeProvider provider = new ProcedureParamNodeProvider(lookup);
                 return provider;
@@ -84,20 +85,21 @@ public class ProcedureParamNodeProvider extends NodeProvider {
     private final MetadataElementHandle<Procedure> handle;
 
     private ProcedureParamNodeProvider(Lookup lookup) {
-        super(lookup, new ParameterComparator());
+        super(lookup, parameterComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         handle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     @Override
     protected synchronized void initialize() {
-        final List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<>();
         boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             Procedure procedure = handle.resolve(metaData);
                             if (procedure == null) {
@@ -145,8 +147,8 @@ public class ProcedureParamNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class ParameterComparator implements Comparator<Node> {
-
+    private static final Comparator<Node> parameterComparator = new Comparator<Node>() {
+        @Override
         public int compare(Node node1, Node node2) {
             int p1;
             if (node1 instanceof ReturnValueNode) {
@@ -173,6 +175,6 @@ public class ProcedureParamNodeProvider extends NodeProvider {
             return result;
         }
 
-    }
+    };
 
 }
