@@ -68,10 +68,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("testRenameA2B2C_FO","testRenameA2B2C_DO","testRenameFileTree_DO","testRenameA2B2A_FO","testRenameFileTree_FO",
-                "testRenameVersionedFile_DO","testRenameUnversionedFile_DO","testRenameUnversionedFolder_DO","testRenameVersionedFolder_DO",
-                "testRenameVersionedFile_FO","testRenameUnversionedFile_FO","testRenameUnversionedFolder_FO",
-                "testRenameA2B_CreateA_FO","testRenameVersionedFolder_FO").contains(getName());
+        return Arrays.asList("testRenameA2B2A_FO",
+                "testRenameUnversionedFile_DO","testRenameUnversionedFolder_DO",
+                "testRenameUnversionedFile_FO","testRenameUnversionedFolder_FO").contains(getName());
     }
 
     @Override
