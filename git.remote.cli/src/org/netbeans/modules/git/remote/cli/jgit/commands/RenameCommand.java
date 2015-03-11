@@ -45,6 +45,7 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
@@ -139,6 +140,7 @@ public class RenameCommand extends GitCommand {
         try {
             if (!after) {
                 rename();
+                final AtomicBoolean isError = new AtomicBoolean(false);
                 new Runner(canceled, 0){
 
                     @Override
@@ -146,7 +148,16 @@ public class RenameCommand extends GitCommand {
                         parseMoveOutput(output);
                     }
 
+                    @Override
+                    protected void errorParser(String error) throws GitException {
+                        isError.set(true);
+                    }
+
                 }.runCLI();
+                if (isError.get()) {
+                    VCSFileProxySupport.renameTo(source, target);
+                    listener.notifyFile(target, Utils.getRelativePath(getRepository().getLocation(), target));
+                }
             } else {
                 new Runner(canceled, 1){
 
