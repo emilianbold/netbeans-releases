@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -156,9 +157,15 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
 	Checksum checksum = new Adler32();
 	updateCrc(checksum, lang.toString());
 	updateCrc(checksum, flavor.toString());
-	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getSystemIncludePaths(), unitId);
-	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludePaths(), unitId);
-	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludeFilePaths(), unitId);
+        if (APTTraceFlags.USE_CLANK) {
+            updateCrcByFSPaths(checksum, ((ClankIncludeHandlerImpl)inclHandler).getSystemIncludePaths(), unitId);
+            updateCrcByFSPaths(checksum, ((ClankIncludeHandlerImpl)inclHandler).getUserIncludePaths(), unitId);
+            updateCrcByFSPaths(checksum, ((ClankIncludeHandlerImpl)inclHandler).getUserIncludeFilePaths(), unitId);
+        } else {
+            updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getSystemIncludePaths(), unitId);
+            updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludePaths(), unitId);
+            updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludeFilePaths(), unitId);
+        }
         long value = checksum.getValue();
         value += APTHandlersSupportImpl.getCompilationUnitCRC(macroMap);        
 	return value;
