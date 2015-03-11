@@ -66,17 +66,15 @@ import org.openide.util.Utilities;
 // copied from java.api.common
 /**
  * Default implementation of {@link CreateFromTemplateAttributes}.
- *
- * @author Andrei Badea
  */
-class TemplateAttributesProviderImpl implements CreateFromTemplateAttributes {
+class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
 
-    private static final Logger LOGGER = Logger.getLogger(TemplateAttributesProviderImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CreateFromTemplateAttributesImpl.class.getName());
 
     private final AntProjectHelper helper;
     private final FileEncodingQueryImplementation encodingQuery;
 
-    public TemplateAttributesProviderImpl(AntProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
+    public CreateFromTemplateAttributesImpl(AntProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
         assert helper != null;
         assert encodingQuery != null;
 

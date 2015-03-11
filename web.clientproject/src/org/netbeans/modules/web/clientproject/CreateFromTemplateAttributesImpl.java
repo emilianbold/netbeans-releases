@@ -61,17 +61,15 @@ import org.openide.util.Utilities;
 
 /**
  * Default implementation of {@link CreateFromTemplateAttributes}.
- *
- * @author Andrei Badea
  */
-class TemplateAttributesProviderImpl implements CreateFromTemplateAttributes {
+class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
 
     private final CommonProjectHelper helper;
     private final FileEncodingQueryImplementation encodingQuery;
-    private static final Logger LOG = Logger.getLogger(TemplateAttributesProviderImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(CreateFromTemplateAttributesImpl.class.getName());
 
 
-    public TemplateAttributesProviderImpl(CommonProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
+    public CreateFromTemplateAttributesImpl(CommonProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
         super();
         this.helper = helper;
         this.encodingQuery = encodingQuery;
@@ -126,7 +124,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributes {
             }
         } catch (Exception ex) {
             //not really important, just log.
-            Logger.getLogger(TemplateAttributesProviderImpl.class.getName()).log(Level.FINE, "", ex);
+            Logger.getLogger(CreateFromTemplateAttributesImpl.class.getName()).log(Level.FINE, "", ex);
         }
 
         if (values.isEmpty()) {
