@@ -512,7 +512,7 @@ public class StatusCommand extends StatusCommandBase {
             } else if (first == 'A' && second == 'A') { //unmerged, both added
                 conflict = getClassFactory().createConflictDescriptor(GitConflictDescriptor.Type.BOTH_ADDED);
             }
-            GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath()+"/"+file, vcsFile,
+            GitStatus status = getClassFactory().createStatus(tracked, file, getRepository().getLocation().getPath(), vcsFile,
                     statusHeadIndex, statusIndexWC, statusHeadWC,
                     conflict, isFolder, renamedEntry.get(file), indexTimestamp);
             addStatus(vcsFile, status);
