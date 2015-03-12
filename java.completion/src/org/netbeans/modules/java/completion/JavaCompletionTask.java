@@ -4147,7 +4147,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         final Trees trees = controller.getTrees();
         final ElementUtilities eu = controller.getElementUtilities();
         final TypeElement te = (TypeElement) trees.getElement(clsPath);
-        if (te == null) {
+        if (te == null || te.getKind() == ElementKind.ANNOTATION_TYPE) {
             return;
         }
         final String prefix = env.getPrefix();
