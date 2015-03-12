@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.remote;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -50,8 +51,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import static junit.framework.Assert.assertNotNull;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitRepository;
@@ -59,6 +62,8 @@ import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
+import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileLock;
@@ -72,16 +77,22 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author ondra
  */
-public abstract class AbstractGitTestCase extends NbTestCase {
+public abstract class AbstractLocalGitTestCase extends NbTestCase {
 
     protected VCSFileProxy repositoryLocation;
     protected static final String NULL_OBJECT_ID = "0000000000000000000000000000000000000000";
+    protected StatusRefreshLogHandler refreshHandler;
 
     private enum Scope{All, Successful, Failed};
     private static final Scope TESTS_SCOPE = Scope.Successful;
+    private boolean skipTest = false;
 
-    public AbstractGitTestCase (String name) {
+    public AbstractLocalGitTestCase (String name) {
         super(name);
+        String gitPath = "/usr/bin/git";
+        if (!new File(gitPath).exists()) {
+            skipTest = true;
+        }
     }
     
     protected abstract boolean isFailed();
@@ -89,6 +100,9 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     @Override
     public boolean canRun() {
+        if (skipTest) {
+            return false;
+        }
         if (!isRunAll()) {
             switch (TESTS_SCOPE) {
                 case Failed:
@@ -113,6 +127,19 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         getClient(repositoryLocation).init(GitUtils.NULL_PROGRESS_MONITOR);
         VCSFileProxy repositoryMetadata = VCSFileProxy.createFileProxy(repositoryLocation, ".git");
         assertTrue(repositoryMetadata.exists());
+        MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
+        System.setProperty("versioning.git.handleExternalEvents", "false");
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
+        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
+        Git.STATUS_LOG.setLevel(Level.ALL);
+        refreshHandler = new StatusRefreshLogHandler(repositoryLocation);
+        Git.STATUS_LOG.addHandler(refreshHandler);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Git.STATUS_LOG.removeHandler(refreshHandler);
+        super.tearDown();
     }
     
     protected VCSFileProxy getRepositoryLocation() {
