@@ -432,7 +432,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             }
             if (rwl.tryWriteLock()) {
                 // setInsideVCS() is inside
-                return new DelegateOutputStream(interceptor, orig, this);
+                return new DelegateOutputStream(interceptor, orig);
             } else {
                 throw new FileAlreadyLockedException("Cannot write to locked file: " + this);  //NOI18N
             }
@@ -457,13 +457,23 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         return FileType.fromChar(fileTypeChar);
     }
 
+    private void updateStatAndSendEvents(DirEntry dirEntry) {
+        getParent().updateStat(this, dirEntry);
+        FileEvent ev = new FileEvent(getOwnerFileObject(), getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
+        getOwnerFileObject().fireFileChangedEvent(getListeners(), ev);
+        RemoteDirectory parent = getParent();
+        if (parent != null) {
+            ev = new FileEvent(parent.getOwnerFileObject(), getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
+            parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);
+        }
+    }
+
     private class DelegateOutputStream extends OutputStream {
 
         private final FileOutputStream delegate;
         private boolean closed;
-        private final RemotePlainFile file;
 
-        public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor, RemoteFileObjectBase orig, RemotePlainFile file) throws IOException {
+        public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor, RemoteFileObjectBase orig) throws IOException {
             if (interceptor != null) {
                 try {
                     getFileSystem().setInsideVCS(true);
@@ -472,8 +482,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                     getFileSystem().setInsideVCS(false);
                 }
             }
-            this.file = file;
-            delegate = new FileOutputStream(file.getCache());
+            delegate = new FileOutputStream(RemotePlainFile.this.getCache());
         }
 
         @Override
@@ -493,45 +502,38 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             }
             try {
                 delegate.close();
-                file.setPendingRemoteDelivery(true);
+                RemotePlainFile.this.setPendingRemoteDelivery(true);
 
                 String pathToRename, pathToUpload;
 
-                if (file.getParent().canWrite()) {
+                if (RemotePlainFile.this.getParent().canWrite()) {
                     // that's what emacs does:
-                    pathToRename = file.getPath();
+                    pathToRename = RemotePlainFile.this.getPath();
                     pathToUpload = PathUtilities.getDirName(pathToRename) +
                             "/#" + PathUtilities.getBaseName(pathToRename) + "#"; //NOI18N
                 } else {
-                    ExecutionEnvironment env = file.getExecutionEnvironment();
+                    ExecutionEnvironment env = RemotePlainFile.this.getExecutionEnvironment();
                     if (!ConnectionManager.getInstance().isConnectedTo(env)) {
                         throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
                     }
                     pathToRename = null;
-                    pathToUpload = file.getPath(); //NOI18N
+                    pathToUpload = RemotePlainFile.this.getPath(); //NOI18N
                 }
                 try {
                     DirEntry dirEntry = RemoteFileSystemTransport.uploadAndRename(
-                            file.getExecutionEnvironment(), file.getCache(), pathToUpload, pathToRename);                    
-                    file.getParent().updateStat(file, dirEntry);
-                    FileEvent ev = new FileEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
-                    file.getOwnerFileObject().fireFileChangedEvent(file.getListeners(), ev);
-                    RemoteDirectory parent = file.getParent();
-                    if (parent != null) {
-                        ev = new FileEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
-                        parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);
-                    }                
+                            RemotePlainFile.this.getExecutionEnvironment(), RemotePlainFile.this.getCache(), pathToUpload, pathToRename);                    
+                    updateStatAndSendEvents(dirEntry);
                 } catch (InterruptedException ex) {
                     throw newIOException(ex);
                 } catch (ExecutionException ex) {
                     //Exceptions.printStackTrace(ex); // should never be the case - the task is done
-                    if (!ConnectionManager.getInstance().isConnectedTo(file.getExecutionEnvironment())) {
-                        file.getFileSystem().addPendingFile(file);
+                    if (!ConnectionManager.getInstance().isConnectedTo(RemotePlainFile.this.getExecutionEnvironment())) {
+                        RemotePlainFile.this.getFileSystem().addPendingFile(RemotePlainFile.this);
                         throw RemoteExceptions.createConnectException(ex.getMessage());
                     } else {
                         if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                             throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemotePlainFile.class, 
-                                    "EXC_DoesNotExist", file.getDisplayName())); //NOI18N
+                                    "EXC_DoesNotExist", RemotePlainFile.this.getDisplayName())); //NOI18N
                         } else if (ex.getCause() instanceof IOException) {
                             throw (IOException) ex.getCause();
                         } else {
@@ -541,13 +543,13 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 }
                 closed = true;
             } finally {
-                file.rwl.writeUnlock();
+                RemotePlainFile.this.rwl.writeUnlock();
             }
         }
 
         private IOException newIOException(Exception cause) {
             return RemoteExceptions.createIOException(NbBundle.getMessage(RemotePlainFile.class,
-                    "EXC_ErrorUploading", file.getCache().getAbsolutePath(), file.getExecutionEnvironment(), // NOI18N
+                    "EXC_ErrorUploading", RemotePlainFile.this.getCache().getAbsolutePath(), RemotePlainFile.this.getExecutionEnvironment(), // NOI18N
                     cause.getMessage()), cause);
         }
 

@@ -1009,6 +1009,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     /*package */void updateStat(RemotePlainFile fo, DirEntry entry) {
         RemoteLogger.assertTrue(fo.getNameExt().equals(entry.getName()));
+        RemoteLogger.assertTrue(fo.getParent() == this);
         RemoteLogger.assertFalse(entry.isDirectory());
         RemoteLogger.assertFalse(entry.isLink());
         Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
