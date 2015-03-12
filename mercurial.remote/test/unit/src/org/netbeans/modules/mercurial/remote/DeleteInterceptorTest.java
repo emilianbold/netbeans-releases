@@ -75,6 +75,9 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void fullScanLimitedOnVisibleRoots () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy repo = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), String.valueOf(System.currentTimeMillis()));
         VCSFileProxySupport.mkdir(repo);
         VCSFileProxy folderA = VCSFileProxy.createFileProxy(repo, "folderA");
@@ -140,6 +143,9 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void deleteFile_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file1");
         commit(folder);
@@ -151,6 +157,9 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void deleteFileDO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file1");
         commit(folder);
@@ -162,6 +171,9 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void deleteFolder_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file1 = createFile(folder, "file1");
         VCSFileProxy file2 = createFile(folder, "file2");
@@ -176,6 +188,9 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void deleteFolder_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file1 = createFile(folder, "file1");
         VCSFileProxy file2 = createFile(folder, "file2");

@@ -80,6 +80,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void getAttributeRefreh() throws HgException, IOException {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
 
@@ -93,6 +96,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void getAttributeWrong() throws HgException, IOException {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
 
@@ -103,6 +109,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void getAttributeNotCloned() throws HgException, IOException {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
 
@@ -113,6 +122,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void getAttributeClonedRoot() throws HgException, IOException {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
 
@@ -126,6 +138,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void getAttributeCloned() throws HgException, IOException {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
 
@@ -139,6 +154,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void getAttributeClonedOnlyPush() throws HgException, IOException {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
 
@@ -158,6 +176,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void getAttributeClonedPull() throws HgException, IOException {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
 
@@ -175,6 +196,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void getAttributeClonedPullWithCredentials() throws HgException, IOException {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
 
@@ -194,6 +218,9 @@ public class AttributeInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void isModifiedAttributeFile () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // file is outside of versioned space, attribute should be unknown
         VCSFileProxy file = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), "testIsModifiedAttributeFile.txt");
         VCSFileProxySupport.createNew(file);
