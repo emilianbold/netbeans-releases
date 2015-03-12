@@ -72,6 +72,8 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import sun.org.mozilla.javascript.internal.ast.NewExpression;
+import sun.plugin.cache.OldCacheEntry;
 
 /**
  *
@@ -443,11 +445,40 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
     @Override
     public void refreshImpl(boolean recursive, Set<String> antiLoop, 
-    boolean expected, RefreshMode refreshMode)
+            boolean expected, RefreshMode refreshMode)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (refreshMode != RefreshMode.FROM_PARENT && Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N
             long time = System.currentTimeMillis();
-            getParent().refreshImpl(false, antiLoop, expected, refreshMode);
+            final DirEntry newEntry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), getPath());
+            final DirEntry oldEntry = getParent().getDirEntry(getNameExt());
+            boolean refreshParent = false;
+            boolean updateStat = false;
+            if (oldEntry == null || !oldEntry.isValid()) {
+                refreshParent = true;
+            } else {
+                // oldEntry != null && oldEntry.isValid
+                assert newEntry.getName().equals(oldEntry.getName());
+                if (oldEntry.isSameType(newEntry)) {
+                   if (!newEntry.isSameLastModified(oldEntry)) {
+                       updateStat = true;
+                   } else if (newEntry.getSize() != oldEntry.getSize()) {
+                       updateStat = true;
+                   } else if (!newEntry.isSameAccess(oldEntry)) {
+                       updateStat = true;
+                   } else if (newEntry.getDevice() != oldEntry.getDevice()) {
+                       updateStat = true;
+                   } else if (newEntry.getINode()!= oldEntry.getINode()) {
+                       updateStat = true;
+                   }
+                } else {
+                    refreshParent = true;
+                }
+            }
+            if (refreshParent) {
+                getParent().refreshImpl(false, antiLoop, expected, refreshMode);            
+            } else if (updateStat) {
+                updateStatAndSendEvents(newEntry);
+            }
             RemoteLogger.getInstance().log(Level.FINE, "Refreshing {0} took {1} ms", new Object[] { getPath(), System.currentTimeMillis() - time });
         }
     }

@@ -1007,6 +1007,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
+    /*package */ DirEntry getDirEntry(String childName) {
+        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        if (trace) {trace("waiting for lock");} // NOI18N
+        writeLock.lock();
+        try {
+            DirectoryStorage storage = getExistingDirectoryStorage();
+            if (storage == DirectoryStorage.EMPTY) {
+                return null;
+            }
+            return storage.getValidEntry(childName);
+        } finally {
+            writeLock.unlock();
+        }        
+    }
+
     /*package */void updateStat(RemotePlainFile fo, DirEntry entry) {
         RemoteLogger.assertTrue(fo.getNameExt().equals(entry.getName()));
         RemoteLogger.assertTrue(fo.getParent() == this);
