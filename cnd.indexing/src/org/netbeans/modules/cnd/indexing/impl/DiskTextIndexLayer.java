@@ -158,7 +158,7 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
     }    
 
     @Override
-    public void unitRemoved(int unitId) {
+    public synchronized void unitRemoved(int unitId) {
          if (unitId < 0) {
             return;
         }
@@ -172,6 +172,7 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
             for (String pk : keys) {
                 index.removeDocument(pk);
             }
+            index.store(false);
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         } catch (InterruptedException ex) {
