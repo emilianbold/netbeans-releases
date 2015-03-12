@@ -77,7 +77,8 @@ public class ListBranchCommand extends GitCommand {
     protected void prepare() throws GitException {
         super.prepare();
         addArgument(0, "branch"); //NOI18N
-        addArgument(0, "-vv"); //NOI18N
+        addArgument(0, "-v"); //NOI18N
+        addArgument(0, "-v"); //NOI18N
         if (all) {
             addArgument(0, "--all"); //NOI18N
         }
