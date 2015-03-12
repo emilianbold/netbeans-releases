@@ -59,7 +59,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.CreateDescriptor;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -211,6 +213,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
             return null;
         }
         if (!(project instanceof PhpProject)) {
+            // XXX check convertor project
             LOGGER.log(Level.WARNING, "PHP project expected but found {0}", project.getClass().getName());
             return null;
         }
@@ -338,6 +341,11 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
 
                 groups = PhpProjectUtils.getSourceGroups(project);
             }
+        }
+        // fallback (e.g. convertor project)
+        if (groups.length == 0) {
+            // XXX check convertor project?
+            groups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
         }
         final BottomPanel bottomPanelForPhpProject = getBottomPanelForPhpProject();
         Templates.SimpleTargetChooserBuilder targetChooserBuilder = Templates.buildSimpleTargetChooser(project, groups);
