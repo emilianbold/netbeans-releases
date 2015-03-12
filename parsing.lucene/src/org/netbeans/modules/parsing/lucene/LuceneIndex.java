@@ -884,17 +884,13 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                         @NonNull
                         public IndexWriter call() throws IOException {
                             final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_35, analyzer);
-                            //The posix::fsync(int) is very slow on Linux ext3,
+                            //Linux: The posix::fsync(int) is very slow on Linux ext3,
                             //minimize number of files sync is done on.
                             //http://netbeans.org/bugzilla/show_bug.cgi?id=208224
-                            final boolean alwaysCFS = BaseUtilities.getOperatingSystem() == BaseUtilities.OS_LINUX;
-                            if (alwaysCFS) {
-                                //TieredMergePolicy has better performance:
-                                //http://blog.mikemccandless.com/2011/02/visualizing-lucenes-segment-merges.html
-                                final TieredMergePolicy mergePolicy = new TieredMergePolicy();
-                                mergePolicy.setNoCFSRatio(1.0);
-                                iwc.setMergePolicy(mergePolicy);
-                            }
+                            //All OS: The CFS is better for SSD disks.
+                            final TieredMergePolicy mergePolicy = new TieredMergePolicy();
+                            mergePolicy.setNoCFSRatio(1.0);
+                            iwc.setMergePolicy(mergePolicy);
                             return new FlushIndexWriter (fsDir, iwc);
                         }
                     });
