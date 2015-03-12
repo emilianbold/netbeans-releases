@@ -98,7 +98,7 @@ public class JadeCssEmbeddingProvider extends EmbeddingProvider {
             }
             if (token.id() == JadeTokenId.PLAIN_TEXT_DELIMITER) {
                 // check whether there is not 
-                if (STYLE_TAG_NAME.equals(lastTag.text().toString().toLowerCase()) && ts.moveNext()) {
+                if (lastTag != null && STYLE_TAG_NAME.equals(lastTag.text().toString().toLowerCase()) && ts.moveNext()) {
                     token = ts.token();
                     while (token.id() == JadeTokenId.EOL && ts.moveNext()) {
                         token = ts.token();
