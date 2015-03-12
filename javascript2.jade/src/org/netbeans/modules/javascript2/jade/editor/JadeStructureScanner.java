@@ -72,9 +72,9 @@ public class JadeStructureScanner implements StructureScanner {
         Map<String, List<OffsetRange>> folds = new HashMap<>();
         TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
         TokenSequence<JadeTokenId> ts = th.tokenSequence(JadeTokenId.jadeLanguage());
-//        List<FoldingItem> stack = new ArrayList<FoldingItem>();
+
         List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
-//        List<JsStructureScanner.FoldingItem> stack = new ArrayList<JsStructureScanner.FoldingItem>();
+
         ts.moveStart();
         Token<JadeTokenId> token;
         JadeTokenId id;
@@ -123,12 +123,12 @@ public class JadeStructureScanner implements StructureScanner {
                     FoldingItem item2 = stack.get(j);
                     if (item1.indent >= item2.indent) {
                         foldCreated = true;
-                        appendFold(folds, item1.type.code(), item1.tagEnd, item2.tagStart - item2.indent - 1);
+                        appendFold(info, folds, item1.type.code(), item1.tagEnd, item2.tagStart - item2.indent - 1);
                         break;
                     }
                 }
                 if (!foldCreated) {
-                    appendFold(folds, FoldType.TAG.code(), item1.tagEnd, ts.offset() + ts.token().length());
+                    appendFold(info, folds, FoldType.TAG.code(), item1.tagEnd, ts.offset() + ts.token().length());
                 }
             }
             
@@ -136,9 +136,11 @@ public class JadeStructureScanner implements StructureScanner {
         return folds;
     }
 
-    private void appendFold(Map<String, List<OffsetRange>> folds, String kind, int startOffset, int endOffset) {
+    private void appendFold(ParserResult info, Map<String, List<OffsetRange>> folds, String kind, int startOffset, int endOffset) {
         if (startOffset >= 0 && endOffset >= startOffset) {
-            getRanges(folds, kind).add(new OffsetRange(startOffset, endOffset));
+            if (info.getSnapshot().getText().subSequence(startOffset, endOffset).toString().indexOf('\n') > -1) {
+                getRanges(folds, kind).add(new OffsetRange(startOffset, endOffset));
+            }   
         }
     }
     
