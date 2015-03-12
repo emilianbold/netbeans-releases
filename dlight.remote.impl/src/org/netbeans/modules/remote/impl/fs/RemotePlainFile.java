@@ -477,6 +477,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             if (refreshParent) {
                 getParent().refreshImpl(false, antiLoop, expected, refreshMode);            
             } else if (updateStat) {
+                getCache().delete();
                 updateStatAndSendEvents(newEntry);
             }
             RemoteLogger.getInstance().log(Level.FINE, "Refreshing {0} took {1} ms", new Object[] { getPath(), System.currentTimeMillis() - time });
