@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.git.remote;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,12 +56,19 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import org.netbeans.junit.NbTestSuite;
+import junit.framework.Test;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.remote.cli.GitClient;
-import org.netbeans.modules.git.remote.cli.GitRepository;
 import org.netbeans.modules.git.remote.cli.GitException;
+import org.netbeans.modules.git.remote.cli.GitRepository;
 import org.netbeans.modules.git.remote.utils.GitUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ClassForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
@@ -75,10 +84,9 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author ondra
+ * @author Alexander Simon
  */
-public abstract class AbstractLocalGitTestCase extends NbTestCase {
-
+public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
     protected VCSFileProxy repositoryLocation;
     protected static final String NULL_OBJECT_ID = "0000000000000000000000000000000000000000";
     protected StatusRefreshLogHandler refreshHandler;
@@ -86,12 +94,56 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
     private enum Scope{All, Successful, Failed};
     private static final Scope TESTS_SCOPE = Scope.Successful;
     private boolean skipTest = false;
+    protected final String testName;
+    private VCSFileProxy dataRootDir;
 
-    public AbstractLocalGitTestCase (String name) {
-        super(name);
-        String gitPath = "/usr/bin/git";
-        if (!new File(gitPath).exists()) {
-            skipTest = true;
+    public AbstractRemoteGitTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
+        this.testName = testName;
+    }
+    
+    protected static final void addTest(NbTestSuite suite, Class<? extends NativeExecutionBaseTestCase> testClass, String testName)  {
+        try {
+            Method test = testClass.getDeclaredMethod(testName);
+            if (test == null) {
+                System.err.println("Not found test "+testClass.getName()+"."+testName);
+                return;
+            }
+            ClassForAllEnvironments forAllEnvAnnotation = testClass.getAnnotation(ClassForAllEnvironments.class);
+            String envSection = forAllEnvAnnotation.section();
+            if (envSection == null || envSection.length() == 0) {
+                envSection = "remote.platforms";
+            }
+            Constructor forAllEnvConstructor = null;
+            for(Constructor constructor : testClass.getConstructors()) {
+                Class[] parameterTypes = constructor.getParameterTypes();
+                if (parameterTypes.length == 2 && 
+                    parameterTypes[0].equals(String.class) &&
+                    parameterTypes[1].equals(ExecutionEnvironment.class)) {
+                    forAllEnvConstructor = constructor;
+                }
+            }
+            if (forAllEnvConstructor==null) {
+                System.err.println("Not found constructor "+testClass.getName()+"(String, ExecutionEnvironment)");
+            }
+            String[] platforms = NativeExecutionTestSupport.getPlatforms(envSection, suite);
+            for (String platform : platforms) {
+                suite.addTest((Test) forAllEnvConstructor.newInstance(testName, NativeExecutionTestSupport.getTestExecutionEnvironment(platform)));
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InstantiationException ex) {
+            ex.printStackTrace(System.err);
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace(System.err);
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace(System.err);
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace(System.err);
+        } catch (SecurityException ex) {
+            ex.printStackTrace(System.err);
         }
     }
     
@@ -100,9 +152,6 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
 
     @Override
     public boolean canRun() {
-        if (skipTest) {
-            return false;
-        }
         if (!isRunAll()) {
             switch (TESTS_SCOPE) {
                 case Failed:
@@ -114,33 +163,70 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
         return super.canRun();
     }
 
+    protected boolean skipTest() {
+        return skipTest;
+    }
+
     @Override
     protected void setUp() throws Exception {
-        VCSFileProxy workDir = VCSFileProxy.createFileProxy(getWorkDir());
-        VCSFileProxy userdir = VCSFileProxy.createFileProxy(workDir.getParentFile(), "userdir");
-        VCSFileProxySupport.mkdirs(userdir);
-        System.setProperty("netbeans.user", userdir.getPath());
         super.setUp();
-        repositoryLocation = VCSFileProxy.createFileProxy(workDir, "work");
+        final String gitPath = "/usr/bin/git";
+        FileObject git = rootFO.getFileObject(gitPath);
+        if (git == null || !git.isValid()) {
+            skipTest = true;
+            return;
+        }
+        String remoteDir = mkTempAndRefreshParent(true);
+        org.netbeans.modules.nativeexecution.api.util.ProcessUtils.execute(execEnv, "umask", "0002");
+        FileObject remoteDirFO = rootFO.getFileObject(remoteDir);
+        remoteDirFO = remoteDirFO.createFolder("remoteGit");
+        remoteDir = remoteDirFO.getPath();
+        System.err.println("Created test folder "+remoteDir);
+        //
+        dataRootDir = VCSFileProxy.createFileProxy(remoteDirFO);
+        VersioningSupport.refreshFor(new VCSFileProxy[]{dataRootDir});
+
+        //VCSFileProxy userdir = VCSFileProxy.createFileProxy(workDir.getParentFile(), "userdir");
+        //VCSFileProxySupport.mkdirs(userdir);
+        //System.setProperty("netbeans.user", userdir.getPath());
+        
+        repositoryLocation = VCSFileProxy.createFileProxy(dataRootDir, "work");
         clearWorkDir();
         VCSFileProxySupport.mkdirs(repositoryLocation);
         getClient(repositoryLocation).init(GitUtils.NULL_PROGRESS_MONITOR);
         VCSFileProxy repositoryMetadata = VCSFileProxy.createFileProxy(repositoryLocation, ".git");
         assertTrue(repositoryMetadata.exists());
+        initUser();
         MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
         System.setProperty("versioning.git.handleExternalEvents", "false");
         System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
-        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
         Git.STATUS_LOG.setLevel(Level.ALL);
         refreshHandler = new StatusRefreshLogHandler(repositoryLocation);
         Git.STATUS_LOG.addHandler(refreshHandler);
     }
+    
+    private void initUser() throws Exception{
+        List<String> res = runExternally(repositoryLocation.getParentFile(), Arrays.asList("config", "--global", "--get", "user.name"));
+        if (res.size() == 0 || res.get(0).isEmpty()) {
+            runExternally(repositoryLocation.getParentFile(), Arrays.asList("config", "--global", "user.name", "Your Name"));
+        }
+        res = runExternally(repositoryLocation.getParentFile(), Arrays.asList("config", "--global", "--get", "user.email"));
+        if (res.size() == 0 || res.get(0).isEmpty()) {
+            runExternally(repositoryLocation.getParentFile(), Arrays.asList("config", "--global", "user.email", "you@example.com"));
+        }
+    }
 
     @Override
     protected void tearDown() throws Exception {
-        Git.STATUS_LOG.removeHandler(refreshHandler);
-        Git.shutDown();
+        if (!skipTest) {
+            Git.STATUS_LOG.removeHandler(refreshHandler);
+            Git.shutDown();
+        }
         super.tearDown();
+        if (skipTest) {
+            return;
+        }
+        VCSFileProxySupport.deleteExternally(dataRootDir.getParentFile());
     }
     
     protected VCSFileProxy getRepositoryLocation() {
@@ -305,7 +391,7 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
 
     }
 
-    protected final void runExternally (VCSFileProxy workdir, List<String> command) throws Exception {
+    protected final List<String> runExternally (VCSFileProxy workdir, List<String> command) throws Exception {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         String[] args = command.toArray(new String[command.size()]);
         org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(workdir);
@@ -314,6 +400,7 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
         if (!executeInDir.error.isEmpty()) {
             throw new Exception(executeInDir.error);
         }
+        return Arrays.asList(executeInDir.output.split("\n"));
     }
     
     protected void renameDO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {

@@ -117,6 +117,13 @@ public final class Git {
         return instance;
     }
 
+    static synchronized void shutDown() {
+        if (instance != null) {
+            instance.interceptor.shutdownMonitor.cancel();
+            instance = null;
+        }
+    }
+    
     private void init() {
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator();
