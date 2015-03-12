@@ -100,6 +100,7 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.java.source.base.Bundle;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -369,7 +370,7 @@ public class JavadocHelper {
                         if (uncached == null) {
                             uncached = JavadocHelper.openStream(
                                 getFirstLocation(),
-                                NbBundle.getMessage(JavadocHelper.class, "LBL_HTTPJavadocDownload"));
+                                Bundle.LBL_HTTPJavadocDownload());
                         }
                         ByteArrayOutputStream baos = new ByteArrayOutputStream(20 * 1024); // typical size for Javadoc page?
                         FileUtil.copy(uncached, baos);
@@ -772,7 +773,7 @@ binRoots:   for (URL binary : binaries) {
                         LOG.log(Level.FINE, "assumed valid Javadoc stream at {0}", url);
                     } else if (!speculative || !isRemote) {
                         try {
-                            is = openStream(url, NbBundle.getMessage(JavadocHelper.class, "LBL_HTTPJavadocDownload"));
+                            is = openStream(url, Bundle.LBL_HTTPJavadocDownload());
                             if (useKnownGoodRoots) {
                                 knownGoodRoots.add(rootS);
                                 LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);
