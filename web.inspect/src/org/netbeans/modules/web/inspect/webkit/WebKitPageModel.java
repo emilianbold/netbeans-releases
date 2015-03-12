@@ -59,18 +59,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
-import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
+import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -563,6 +567,7 @@ public class WebKitPageModel extends PageModel {
         if (domNode == null) {
             domNode = new DOMNode(this, node);
             nodes.put(nodeId, domNode);
+            checkPageSize();
         }
         boolean updateChildren = false;
         List<Node> subNodes = node.getChildren();
@@ -608,6 +613,41 @@ public class WebKitPageModel extends PageModel {
             domNode.updateChildren(node);
         }
         return domNode;
+    }
+
+    /** Maximum number of elements in a page for safe inspection. */
+    private static final int MAX_NODES = 100000;
+    /** Determines whether a warning about the size of the page was shown. */
+    private boolean pageSizeWarningShown = false;
+    
+    /**
+     * Checks if the current information that we have about the inspected
+     * page is too large to continue with the page inspection safely.
+     */
+    @NbBundle.Messages({
+        "WebKitPageModel.pageSizeWarningTitle=Page Too Large",
+        "WebKitPageModel.pageSizeWarningMessage="
+                + "The page is too large to inspect it in NetBeans safely. "
+                + "You may run out of memory if you continue with the inspection. "
+                + "Do you what to close this page and stop its inspection?"
+    })
+    private void checkPageSize() {
+        if (!pageSizeWarningShown && nodes.size() > MAX_NODES) {
+            pageSizeWarningShown = true;
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                    Bundle.WebKitPageModel_pageSizeWarningMessage(),
+                    Bundle.WebKitPageModel_pageSizeWarningTitle(),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE
+            );
+            DialogDisplayer.getDefault().notify(descriptor);
+            if (descriptor.getValue() == NotifyDescriptor.YES_OPTION) {
+                EnhancedBrowser browser = pageContext.lookup(EnhancedBrowser.class);
+                if (browser != null) {
+                    browser.close(true);
+                }
+            }
+        }
     }
 
     /**
