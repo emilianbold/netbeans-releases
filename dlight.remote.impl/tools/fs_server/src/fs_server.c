@@ -273,6 +273,15 @@ static void clone_request(fs_request* dst, fs_request* src) {
     }
 }
 
+static int word_len(const char* p) {
+    int len = 0;
+    while (*p && ! isspace(*p)) {
+        p++;
+        len++;
+    }
+    return len;
+}
+
 /**
  * Decodes in-place fs_raw_request into fs_request
  */
@@ -283,7 +292,7 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
     int id;
     int path_len;
     const char* p;
-    if (*raw_request == FS_REQ_QUIT) {
+    if (*raw_request == FS_REQ_QUIT || *raw_request == FS_REQ_HELP) {
         id = 0;
         path_len = 0;
         p = "";
@@ -303,8 +312,11 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
                 return NULL;
             }
             if (!path_len && *raw_request != FS_REQ_QUIT) {
-                report_error("wrong (zero path) request: %s", raw_request);
-                return NULL;
+                path_len = word_len(p);
+                if (!path_len) {
+                    report_error("wrong (zero path) request: %s", raw_request);
+                    return NULL;
+                }
             }
         }
     }
@@ -330,6 +342,9 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
         p = decode_int(p, &path_len);
         if (p == NULL) {
             return NULL;
+        }
+        if (path_len == 0) {
+            path_len = word_len(p);
         }
         path_len = utf8_bytes_count(p, path_len);
         if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
@@ -1091,6 +1106,71 @@ static int entry_comparator(const void *element1, const void *element2) {
     return res;
 }
 
+static bool entries_differ(fs_entry *new_entry, fs_entry *old_entry, int persistence_version, const char* path) {
+    if (new_entry->name_len != old_entry->name_len) {
+        trace(TRACE_FINE, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+        return true;
+    }
+    if (strcmp(new_entry->name, old_entry->name) != 0) {
+        trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+        return true;
+    }
+    if (new_entry->file_type != old_entry->file_type) {
+        trace(TRACE_FINE, "refresh manager: file types differ for %s/%s: %c vs %c\n", path, new_entry->name, new_entry->file_type, old_entry->file_type);
+        return true;
+    }
+    // if links, then check links
+    if (new_entry->file_type == FILETYPE_LNK) {
+        if (new_entry->link_len != old_entry->link_len) {
+            trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+            return true;
+        }
+        if (strcmp(new_entry->link, old_entry->link) != 0) {
+            trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+            return true;
+        }
+    }
+    // names, modes and link targets are same
+    if (new_entry->file_type == FILETYPE_REG) {
+        if (new_entry->size != old_entry->size) {
+            trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
+            return true;
+        }
+        if (new_entry->mtime != old_entry->mtime) {
+            trace(TRACE_FINE, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
+            return true;
+        }
+    }
+    if (persistence_version > 1) {
+        if (new_entry->can_read != old_entry->can_read) {
+            trace(TRACE_FINE, "refresh manager: can_read differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_read ? 'T' : 'F', old_entry->can_read ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->can_write != old_entry->can_write) {
+            trace(TRACE_FINE, "refresh manager: can_write differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_write ? 'T' : 'F', old_entry->can_write ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->can_exec != old_entry->can_exec) {
+            trace(TRACE_FINE, "refresh manager: can_exec differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_exec ? 'T' : 'F', old_entry->can_exec ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->st_dev != old_entry->st_dev) {
+            trace(TRACE_FINE, "refresh manager: st_dev differ for %s/%s: %lld vs %lld\n", path, new_entry->name,
+                    (long long) new_entry->st_dev, (long long) old_entry->st_dev);
+            return true;
+        }
+        if (new_entry->st_ino != old_entry->st_ino) {
+            trace(TRACE_FINE, "refresh manager: st_ino differ for %s/%s: %lld vs %lld\n", path, new_entry->name,
+                    (long long) new_entry->st_ino, (long long) old_entry->st_ino);
+            return true;
+        }
+    }
+    return false;
+}
+
 static bool refresh_visitor(const char* path, int index, dirtab_element* el, void *data) {
     fs_request *request = data;
     if (is_prohibited(path)) {
@@ -1159,78 +1239,9 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         for (int i = 0; i < new_entries.size; i++) {
             fs_entry *new_entry = array_get(&new_entries, i);
             fs_entry *old_entry = array_get(&old_entries, i);
-            if (new_entry->name_len != old_entry->name_len) {
+            if (entries_differ(new_entry, old_entry, persistence_version, path)) {
                 differs = true;
-                trace(TRACE_FINE, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
-            }
-            if (strcmp(new_entry->name, old_entry->name) != 0) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
-                break;
-            }
-            if (new_entry->file_type != old_entry->file_type) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: file types differ for %s/%s: %c vs %c\n", path, new_entry->name, new_entry->file_type, old_entry->file_type);
-                break;
-            }
-            // if links, then check links
-            if (new_entry->file_type == FILETYPE_LNK) {
-                if (new_entry->link_len != old_entry->link_len) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
-                    break;
-                }
-                if (strcmp(new_entry->link, old_entry->link) != 0) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
-                    break;
-                }
-            }
-            // names, modes and link targets are same
-            if (new_entry->file_type == FILETYPE_REG) {
-                if (new_entry->size != old_entry->size) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
-                    break;
-                }
-                if (new_entry->mtime != old_entry->mtime) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
-                    break;
-                }
-            }
-            if (persistence_version > 1) {
-                if (new_entry->can_read != old_entry->can_read) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: can_read differ for %s/%s: %c vs %c\n", path, new_entry->name, 
-                            new_entry->can_read ? 'T' : 'F', old_entry->can_read ? 'T' : 'F');
-                    break;
-                }
-                if (new_entry->can_write != old_entry->can_write) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: can_write differ for %s/%s: %c vs %c\n", path, new_entry->name, 
-                            new_entry->can_write ? 'T' : 'F', old_entry->can_write ? 'T' : 'F');
-                    break;
-                }
-                if (new_entry->can_exec != old_entry->can_exec) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: can_exec differ for %s/%s: %c vs %c\n", path, new_entry->name, 
-                            new_entry->can_exec ? 'T' : 'F', old_entry->can_exec ? 'T' : 'F');
-                    break;
-                }
-                if (new_entry->st_dev != old_entry->st_dev) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: st_dev differ for %s/%s: %lld vs %lld\n", path, new_entry->name, 
-                            (long long) new_entry->st_dev, (long long) old_entry->st_dev);
-                    break;
-                }
-                if (new_entry->st_ino != old_entry->st_ino) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: st_ino differ for %s/%s: %lld vs %lld\n", path, new_entry->name, 
-                            (long long) new_entry->st_ino, (long long) old_entry->st_ino);
-                    break;
-                }
             }
         }
     }
@@ -1278,7 +1289,8 @@ static void refresh_cycle_impl(fs_request* request) {
 static void refresh_cycle(fs_request* request) {
 
     dirtab_flush(); // TODO: find the appropriate place
-    dirtab_element* el = dirtab_get_element(request->path);
+    const char* path = request ? request->path : "/";
+    dirtab_element* el = dirtab_get_element(path);
 
     // analyze and set refresh_state;
     dirtab_lock(el);
@@ -1286,43 +1298,43 @@ static void refresh_cycle(fs_request* request) {
     if (refresh_state == DRS_REFRESHING) {
         // already refreshing => set pending flag,
         // so the thread that refreshes will repeat once again
-        trace(TRACE_FINEST, "refresh[1] %s already refreshing: setting pending flag\n", request->path);
+        trace(TRACE_FINEST, "refresh[1] %s already refreshing: setting pending flag\n", path);
         dirtab_set_refresh_state(el, DRS_PENDING_REFRESH);
         dirtab_unlock(el);
         return;
     } else if (refresh_state == DRS_PENDING_REFRESH) {
         // nothing: the thread that refreshes will repeat once again
-        trace(TRACE_FINEST, "refresh[1] %s already pending: nothing to do\n", request->path);
+        trace(TRACE_FINEST, "refresh[1] %s already pending: nothing to do\n", path);
         dirtab_unlock(el);
         return;
     } else {
-        soft_assert(refresh_state == DRS_NONE, "unexpected refresh_state for %s : %d\n", request->path, refresh_state);
+        soft_assert(refresh_state == DRS_NONE, "unexpected refresh_state for %s : %d\n", path, refresh_state);
         dirtab_set_refresh_state(el, DRS_REFRESHING);
         dirtab_unlock(el);
     }
 
     while (true) {
-        trace(TRACE_FINEST, "refreshing %s...\n", request->path);
+        trace(TRACE_FINEST, "refreshing %s...\n", path);
         refresh_cycle_impl(request);
-        trace(TRACE_FINEST, "refreshing %s completed\n", request->path);
+        trace(TRACE_FINEST, "refreshing %s completed\n", path);
 
         dirtab_lock(el);
         dirtab_refresh_state refresh_state = dirtab_get_refresh_state(el);
         if (refresh_state == DRS_REFRESHING) {
             // no new refresh request has come => just exit
-            trace(TRACE_FINEST, "refresh[2] %s no new request => exiting\n", request->path);
+            trace(TRACE_FINEST, "refresh[2] %s no new request => exiting\n", path);
             dirtab_set_refresh_state(el, DRS_NONE);
             dirtab_unlock(el);
             return;
         } else if (refresh_state == DRS_PENDING_REFRESH) {
             // while we refreshed, new request has come
-            trace(TRACE_FINEST, "refresh[2] %s pending request => once more\n", request->path);
+            trace(TRACE_FINEST, "refresh[2] %s pending request => once more\n", path);
             dirtab_set_refresh_state(el, DRS_REFRESHING);
             dirtab_unlock(el);
             continue;
         } else {
             soft_assert(false, "unexpected refresh_state for %s : %d, should be either %d or %d\n",
-                    request->path, refresh_state, DRS_REFRESHING, DRS_PENDING_REFRESH);
+                    path, refresh_state, DRS_REFRESHING, DRS_PENDING_REFRESH);
             dirtab_unlock(el);
             return;
         }
@@ -1351,6 +1363,26 @@ static void *refresh_loop(void *data) {
 
 static void response_refresh(fs_request* request) {
     refresh_cycle(request);
+}
+
+static void response_help() {
+    my_fprintf(STDOUT, "Help on request kinds\n");
+    #define help_req_kind(kind) my_fprintf(STDOUT, "%c - %s\n", kind, #kind)
+    help_req_kind(FS_REQ_LS);
+    help_req_kind(FS_REQ_RECURSIVE_LS);
+    help_req_kind(FS_REQ_STAT);
+    help_req_kind(FS_REQ_LSTAT);
+    help_req_kind(FS_REQ_COPY);
+    help_req_kind(FS_REQ_MOVE);
+    help_req_kind(FS_REQ_QUIT);
+    help_req_kind(FS_REQ_SLEEP);
+    help_req_kind(FS_REQ_ADD_WATCH);
+    help_req_kind(FS_REQ_REMOVE_WATCH);
+    help_req_kind(FS_REQ_REFRESH);
+    help_req_kind(FS_REQ_DELETE);
+    help_req_kind(FS_REQ_SERVER_INFO);
+    help_req_kind(FS_REQ_HELP);
+    #undef  help_req_kind
 }
 
 static void process_request(fs_request* request) {
@@ -1387,6 +1419,9 @@ static void process_request(fs_request* request) {
             break;
         case FS_REQ_MOVE:
             response_move(request);
+            break;
+        case FS_REQ_HELP:
+            response_help();
             break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);
@@ -1690,7 +1725,7 @@ static void startup() {
 
 static void *killer(void *data) {
     pthread_t victim;
-    victim = (pthread_t) data;
+    victim = *((pthread_t*) data);
     sleep(2);
     //pthread_kill(victim, SIGKILL);
     pthread_kill(victim, SIGTERM);
@@ -1706,7 +1741,9 @@ static void shutdown() {
     }
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     pthread_t killer_thread;
-    pthread_create(&killer_thread, NULL, killer, (void*) pthread_self());
+    static pthread_t self; // we need to pass a pointer => can't use auto
+    self = pthread_self();
+    pthread_create(&killer_thread, NULL, killer, &self);
 
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     // NB: we aren't joining refresh thread; it's safe

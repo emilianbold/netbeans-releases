@@ -63,6 +63,13 @@ public enum JadeCompletionContext {
     CSS_CLASS;
     
       
+    private static final List<Object[]> KEYWORD_POSITION = Arrays.asList(
+        new Object[]{JadeTokenId.EOL},    
+        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE},
+        new Object[]{JadeTokenId.EOL, JadeTokenId.TAG},
+        new Object[]{JadeTokenId.EOL, JadeTokenId.WHITESPACE, JadeTokenId.TAG}
+    );
+    
     private static final List<Object[]> TAG_POSITION = Arrays.asList(
         new Object[]{JadeTokenId.TAG},
         new Object[]{JadeTokenId.TAG, JadeTokenId.OPERATOR_COLON, JadeTokenId.WHITESPACE}    
@@ -106,6 +113,7 @@ public enum JadeCompletionContext {
     @NonNull
     public static JadeCompletionContext findCompletionContext(ParserResult info, int offset){
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+        boolean isEOF = false;
         if (th == null) {
             return NONE;
         }
@@ -123,6 +131,7 @@ public enum JadeCompletionContext {
             if (ts.token() != null && ts.token().id() == JadeTokenId.EOL) {
                 return TAG_AND_KEYWORD;
             }
+            isEOF = true;
         }
         
         Token<JadeTokenId> token = ts.token();
@@ -130,7 +139,11 @@ public enum JadeCompletionContext {
         String text = null;
         switch (id) {
             case ATTRIBUTE: return ATTRIBUTE;
-            case TAG: return TAG;
+            case TAG: 
+                if (acceptTokenChains(ts, KEYWORD_POSITION, false)) {
+                    return TAG_AND_KEYWORD;
+                }
+                return TAG;
             case CSS_ID: return CSS_ID;
             case CSS_CLASS: return CSS_CLASS;
             case TEXT: text = token.text().toString(); break;
@@ -168,6 +181,14 @@ public enum JadeCompletionContext {
             return TAG_AND_KEYWORD;
         }
         
+        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, true)) {
+            return ATTRIBUTE;
+        }
+        
+        if (acceptTokenChains(ts, KEYWORD_POSITION, !isEOF)) {
+            return TAG_AND_KEYWORD;
+        }
+        
         // check tag: ^ position
         if (acceptTokenChains(ts, TAG_POSITION, true)) {
             return TAG;
@@ -179,11 +200,7 @@ public enum JadeCompletionContext {
         if (acceptTokenChains(ts, CSS_ID_POSITION, true)) {
             return CSS_ID;
         }
-        
-        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, true)) {
-            return ATTRIBUTE;
-        }
-        
+
         boolean isBeginOfLine = false;
         if (ts.movePrevious()) {
             token = ts.token();

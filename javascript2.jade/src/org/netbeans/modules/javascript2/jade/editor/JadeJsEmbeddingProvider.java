@@ -68,7 +68,8 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
     private static final Logger LOGGER = Logger.getLogger(JadeJsEmbeddingProvider.class.getName());
     private static final String JS_MIME_TYPE = "text/javascript"; //NOI18N
     
-    private static final String ADD_EOL = ";\n"; //NOI18N
+    private static final String SEMICOLON_EOL = ";\n"; //NOI18N
+    private static final String EOL = "\n"; //NOI18N
     private static final String SCRIPT_TAG_NAME = "script";     // NOI18N
     
     @Override
@@ -102,7 +103,7 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
             } else {
                 if (from >= 0) {
                     embeddings.add(snapshot.create(from, len, JS_MIME_TYPE));
-                    embeddings.add(snapshot.create(ADD_EOL, JS_MIME_TYPE));
+                    addNewLine(snapshot, embeddings, from + len - 1);
                 } 
                 from = -1;
                 len = 0;
@@ -125,7 +126,7 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
         }
         if (from >= 0) {
             embeddings.add(snapshot.create(from, len, JS_MIME_TYPE));
-            embeddings.add(snapshot.create(ADD_EOL, JS_MIME_TYPE));
+            addNewLine(snapshot, embeddings, from + len - 1);
         }
         if (embeddings.isEmpty()) {
             return Collections.emptyList();
@@ -133,6 +134,22 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
         return Collections.singletonList(Embedding.create(embeddings));
     }
 
+    private void addNewLine(Snapshot snapshot, List<Embedding> embeddings, int origOffset) {
+        CharSequence text = snapshot.getText();
+        int offset = origOffset;
+        while (offset > 0 && Character.isWhitespace(text.charAt(offset))) {
+            offset--;
+        }
+        if (offset > 0 ) {
+            char ch = text.charAt(offset);
+            if (ch == '{' || ch == '}' || ch == '[') {
+                embeddings.add(snapshot.create(EOL, JS_MIME_TYPE));
+            } else {
+                embeddings.add(snapshot.create(SEMICOLON_EOL, JS_MIME_TYPE));
+            }
+        }
+    }
+    
     @Override
     public int getPriority() {
         return 202;

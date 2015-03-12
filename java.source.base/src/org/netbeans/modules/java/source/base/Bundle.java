@@ -39,40 +39,23 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.jade.editor;
+package org.netbeans.modules.java.source.base;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Pisl
+ * @author Tomas Zezula
  */
-public class JadeStructureScannerTest extends JadeTestBase {
-    
-    public JadeStructureScannerTest(String testName) {
-        super(testName);
+public final class Bundle {
+
+    private Bundle() {
+        throw new IllegalStateException("No instance allowed"); //NOI18N
     }
-    
-    @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
-    }
-    
-    public void testComment01() throws Exception {
-        checkFolds("testfiles/folding/comment01.jade");
-    }
-    
-    public void testBlock01() throws Exception {
-        checkFolds("testfiles/folding/block01.jade");
-    }
-    
-    public void testIssue250570() throws Exception {
-        checkFolds("testfiles/folding/issue250570.jade");
-    }
-    
-    public void testIssue250490() throws Exception {
-        checkFolds("testfiles/folding/issue250490.jade");
+
+    @NonNull
+    public static String LBL_HTTPJavadocDownload() {
+        return NbBundle.getMessage(Bundle.class, "LBL_HTTPJavadocDownload");
     }
 }

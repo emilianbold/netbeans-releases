@@ -76,8 +76,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -93,7 +91,7 @@ import org.openide.xml.XMLUtil;
 
 /** Utility class for viewing Javadoc comments as HTML.
  *
- * @author Dusan Balek, Petr Hrebejk
+ * @author Dusan Balek, Petr Hrebejk, Tomas Zezula
  */
 public class ElementJavadoc {
 
@@ -241,7 +239,7 @@ public class ElementJavadoc {
 
     @Override
     public String toString() {
-        return String.format("ElementJavadoc[url=%s, handle=%s]", docURL, handle);  //NOI18N
+        return String.format("ElementJavadoc[url=%s, handle=%s]", getURL(), handle);  //NOI18N
     }
 
     private ElementJavadoc resolveElement(
@@ -256,7 +254,7 @@ public class ElementJavadoc {
             if (cpInfo == null && fo == null) {
                 //link cannot be resolved by this element
                 try {
-                    URL u = docURL != null ? new URL(docURL, link) : new URL(link);
+                    URL u = getURL() != null ? new URL(getURL(), link) : new URL(link);
                     ret[0] = new ElementJavadoc(u, cancel);
                 } catch (MalformedURLException ex) {
                     // ignore
@@ -312,8 +310,8 @@ public class ElementJavadoc {
                                     URL u;
                                     if (uri.isAbsolute()) {
                                         u = new URL(link);
-                                    } else if (docURL != null) {
-                                        u = new URL(docURL, link);
+                                    } else if (getURL() != null) {
+                                        u = new URL(getURL(), link);
                                     } else {
                                         return;
                                     }
@@ -322,9 +320,9 @@ public class ElementJavadoc {
                                     //external URL
                                     if( uri.isAbsolute() ) {
                                         ret[0] = new ElementJavadoc( uri.toURL(), cancel );
-                                    } else if (docURL != null) {
+                                    } else if (getURL() != null) {
                                         try {
-                                            ret[0] = new ElementJavadoc(new URL(docURL, link), cancel);
+                                            ret[0] = new ElementJavadoc(new URL(getURL(), link), cancel);
                                         } catch (MalformedURLException ex) {
                                             // ignore
                                         }
@@ -368,30 +366,23 @@ public class ElementJavadoc {
         this.cancel = cancel;
         Doc doc = context.second().javaDocFor(element);
         boolean localized = false;
-        boolean remote = false;
         StringBuilder content = new StringBuilder();
-        JavadocHelper.TextStream page = null;
         try {
             //Optimisitic no http
+            List<JavadocHelper.TextStream> pages = Collections.emptyList();
             if (element != null) {
-                List<JavadocHelper.TextStream> pages = JavadocHelper.getJavadoc(
+                pages = JavadocHelper.getJavadoc(
                     element,
                     JavadocHelper.RemoteJavadocPolicy.SPECULATIVE,
                     cancel);
                 for (JavadocHelper.TextStream ts : pages) {
                     localized |= isLocalized(ts.getLocations(), element);
-                    remote |= ts.isRemote();
                 }
-                if (remote && pages.size() > 1) {
-                    throw new JavadocHelper.RemoteJavadocException(null);
-                }
-                page = pages.isEmpty() ? null : pages.get(0);
-                docURL = page == null ? null : page.getLocation();
                 if (!localized) {
                     assignSource(element, compilationInfo, url, content);
                 }
             }
-            this.content = prepareContent(content, doc,localized, page, cancel, true, context);
+            this.content = prepareContent(content, doc,localized, pages, cancel, true, context);
         } catch (JavadocHelper.RemoteJavadocException re) {
             if (fileObject == null || JavaSource.forFileObject(fileObject) == null) {
                 final StringBuilder sb = new StringBuilder(content);
@@ -411,31 +402,20 @@ public class ElementJavadoc {
                     final CompilationController c = (CompilationController) ch.getCompilationController();
                     c.toPhase(Phase.RESOLVED);
                     final Element element = handle.resolve(c);
-                    JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element, true, cancel);
-                    docURL = page == null ? null : page.getLocation();
+                    List<JavadocHelper.TextStream> docPages = JavadocHelper.getJavadoc(element, JavadocHelper.RemoteJavadocPolicy.USE, cancel);
+                    docURL = docPages.isEmpty() ? null : docPages.get(0).getLocation();
                     if (!isLocalized(docURL, element)) {
                         assignSource(element, c, url, contentFin);
                     }
                     Pair<Trees,ElementUtilities> context = Pair.of(c.getTrees(), c.getElementUtilities());
                     Doc doc = context.second().javaDocFor(element);
-                    return prepareContent(contentFin, doc,localizedFin, page, cancel, false, context).get();
+                    return prepareContent(contentFin, doc,localizedFin, docPages, cancel, false, context).get();
                 }
             });
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    final ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(ElementJavadoc.class, "LBL_HTTPJavadocDownload"));
-                    progress.start();
-                    try {
-                        ((Runnable)ElementJavadoc.this.content).run();
-                    } finally {
-                        progress.finish();
-                    }
-                }
-            });
+            RP.post((Runnable)this.content);
         }
     }
-    
+
     private ElementJavadoc(URL url, final Callable<Boolean> cancel) {
         assert url != null;
         this.content = null;
@@ -512,9 +492,10 @@ public class ElementJavadoc {
             final StringBuilder header,
             final Doc doc,
             final boolean useJavadoc,
-            final JavadocHelper.TextStream page,
+            final List<? extends JavadocHelper.TextStream> pages,
             final Callable<Boolean> cancel,
-            final boolean sync, Pair<Trees,ElementUtilities> ctx) throws JavadocHelper.RemoteJavadocException {
+            final boolean sync,
+            final Pair<Trees,ElementUtilities> ctx) throws JavadocHelper.RemoteJavadocException {
 
         try {
             final StringBuilder sb = new StringBuilder(header);
@@ -636,11 +617,12 @@ public class ElementJavadoc {
                                 inheritedReturnTags != null && inheritedReturnTags.isEmpty() ||
                                 paramPos != null && !paramPos.isEmpty() ||
                                 throwsTypes != null && !throwsTypes.isEmpty()) {
-                                String s = inheritedDocFor(mdoc, mdoc.containingClass(), inheritedTags, inheritedReturnTags,
+                                Pair<String,JavadocHelper.TextStream> s = inheritedDocFor(mdoc, mdoc.containingClass(), inheritedTags, inheritedReturnTags,
                                 paramPos, inheritedParamTags, inheritedParamInlineTags,
                                 throwsTypes, inheritedThrowsTags, inheritedThrowsInlineTags, cancel, sync, ctx);
                                 if (s != null) {
-                                    sb.append(s);
+                                    sb.append(s.first());
+                                    computeDocURL(Collections.singletonList(s.second()), sync, cancel);
                                     return new Now(sb.toString());
                                 }
                         }
@@ -731,6 +713,7 @@ public class ElementJavadoc {
                             sb.append("<p>"); //NOI18N
                             sb.append(getMethodTags(mdoc, returnTags, paramTags,
                                     throwsTags, throwsInlineTags, ctx));
+                            computeDocURL(pages, sync, cancel);
                             return new Now(sb.toString());
                         }
                     } else {
@@ -739,6 +722,7 @@ public class ElementJavadoc {
                             sb.append(inlineTags(doc, inlineTags, ctx));
                             sb.append("<p>"); //NOI18N
                             sb.append(getTags(doc, ctx));
+                            computeDocURL(pages, sync, cancel);
                             return new Now(sb.toString());
                         }
                     }
@@ -747,7 +731,9 @@ public class ElementJavadoc {
                 final Callable<String> call = new Callable<String>() {
                     @Override
                     public String call() throws Exception {
-                        String jdText = page != null ? HTMLJavadocParser.getJavadocText(page, false) : docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
+                        JavadocHelper.TextStream page = pages.isEmpty() ? null : pages.get(0);
+                        docURL = page == null ? null : page.getLocation();
+                        String jdText = page != null ? HTMLJavadocParser.getJavadocText(page, false) : getURL() != null ? HTMLJavadocParser.getJavadocText(getURL(), false) : null;
                         if (jdText != null) {
                             sb.append(jdText);
                         } else {
@@ -771,10 +757,63 @@ public class ElementJavadoc {
                 sb.delete(sb.length() - 3, sb.length());
             }
             sb.append(noJavadocFound()); //NOI18N
+            computeDocURL(pages, sync, cancel);
             return new Now (sb.toString());
         } finally {
-            if (page != null)
+            for (JavadocHelper.TextStream page : pages) {
                 page.close();
+            }
+        }
+    }
+
+    private void computeDocURL(
+        final List<? extends JavadocHelper.TextStream> pages,
+        final boolean sync,
+        final Callable<Boolean> cancel) {
+        class ComputeURL implements Callable<Void> {
+
+            private final boolean remote;
+
+            private ComputeURL(@NonNull final boolean remote) {
+                this.remote = remote;
+            }
+
+            @Override
+            public Void call() throws Exception {
+                if (cancel == null || cancel.call() != Boolean.TRUE) {
+                    if (!remote && pages.size() > 1) {
+                        throw new JavadocHelper.RemoteJavadocException(null);
+                    }
+                    for (JavadocHelper.TextStream page : pages) {
+                        final URL loc = page.getLocation(
+                            remote ?
+                                JavadocHelper.RemoteJavadocPolicy.USE :
+                                JavadocHelper.RemoteJavadocPolicy.EXCEPTION);
+                        if (loc != null) {
+                            docURL = loc;
+                            break;
+                        }
+                    }
+                }
+                return null;
+            }
+        };
+        if (docURL == null) {
+            if (sync) {
+                try {
+                    new ComputeURL(false).call();
+                } catch (JavadocHelper.RemoteJavadocException e) {
+                    RP.submit(new ComputeURL(true));
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            } else {
+                try {
+                    new ComputeURL(true).call();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
         }
     }
 
@@ -1501,26 +1540,33 @@ public class ElementJavadoc {
         return text.length();
     }
     
-    private String inheritedDocFor(MethodDoc mdoc, ClassDoc cdoc, List<Tag> inlineTags, List<Tag> returnTags,
+    private Pair<String,JavadocHelper.TextStream> inheritedDocFor(MethodDoc mdoc, ClassDoc cdoc, List<Tag> inlineTags, List<Tag> returnTags,
             Set<Integer> paramPos, Map<Integer, ParamTag> paramTags, Map<Integer, List<Tag>> paramInlineTags,
             Set<String> throwsTypes, Map<String, ThrowsTag> throwsTags, Map<String, List<Tag>> throwsInlineTags,
             Callable<Boolean> cancel, boolean stopByRemoteJdoc, Pair<Trees,ElementUtilities> ctx) throws JavadocHelper.RemoteJavadocException {
-        JavadocHelper.TextStream inheritedPage = null;
+        List<? extends JavadocHelper.TextStream> inheritedPages = Collections.emptyList();
         try {
+            boolean isLocalized = false;
+            boolean isRemote = false;
+            boolean hasSources = false;
             for (ClassDoc ifaceDoc : cdoc.interfaces()) {
                 for (MethodDoc methodDoc : ifaceDoc.methods(false)) {
                     if (mdoc.overrides(methodDoc)) {
                         Element e = ctx.second().elementFor(methodDoc);
-                        boolean isLocalized = false;
                         if (e != null) {
-                            inheritedPage = JavadocHelper.getJavadoc(e, cancel);
-                            if (inheritedPage != null) {
-                                docURL = inheritedPage.getLocation();
+                            inheritedPages = JavadocHelper.getJavadoc(e, JavadocHelper.RemoteJavadocPolicy.SPECULATIVE, cancel);
+                            if (!inheritedPages.isEmpty()) {
+                                for (JavadocHelper.TextStream ts : inheritedPages) {
+                                    isLocalized |= isLocalized(ts.getLocations(), e);
+                                    isRemote |= isRemote(ts, docURL);
+                                }
+                                if (!isLocalized) {
+                                    ctx.first().getTree(e);
+                                }
                             }
-                            if (!(isLocalized = isLocalized(docURL, e)))
-                                ctx.first().getTree(e);
                         }
                         if (!isLocalized) {
+                            hasSources = mdoc.position() != null;
                             List<Tag> inheritedInlineTags = null;
                             if (inlineTags != null && inlineTags.isEmpty()) {
                                 for (Tag tag : methodDoc.inlineTags()) {
@@ -1657,41 +1703,50 @@ public class ElementJavadoc {
                         (throwsTypes == null || throwsTypes.isEmpty()))
                     return null;
             }
-            if (stopByRemoteJdoc && inheritedPage != null && isRemote(inheritedPage, docURL)) {
-                throw new JavadocHelper.RemoteJavadocException(null);
+            if (!hasSources) {
+                if (stopByRemoteJdoc && isRemote && !inheritedPages.isEmpty()) {
+                    throw new JavadocHelper.RemoteJavadocException(null);
+                }
+                for (JavadocHelper.TextStream inheritedPage : inheritedPages) {
+                    String jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : null;
+                    if (jdText != null) {
+                        return Pair.of(jdText, inheritedPage);
+                    }
+                }
             }
-            String jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : null;
-            if (jdText != null)
-                return jdText;
             for (ClassDoc ifaceDoc : cdoc.interfaces()) {
-                jdText = inheritedDocFor(mdoc, ifaceDoc, inlineTags, returnTags,
+                Pair<String,JavadocHelper.TextStream> jdText = inheritedDocFor(mdoc, ifaceDoc, inlineTags, returnTags,
                         paramPos, paramTags, paramInlineTags,
                         throwsTypes, throwsTags, throwsInlineTags, cancel, stopByRemoteJdoc, ctx);
-                if (jdText != null)
+                if (jdText != null) {
                     return jdText;
+                }
                 if ((inlineTags == null || !inlineTags.isEmpty()) &&
                         (returnTags == null || !returnTags.isEmpty()) && 
                         (paramPos == null || paramPos.isEmpty()) &&
                         (throwsTypes == null || throwsTypes.isEmpty()))
                     return null;
             }
-            if (inheritedPage != null) {
+            for (JavadocHelper.TextStream inheritedPage : inheritedPages) {
                 inheritedPage.close();
-                inheritedPage = null;
             }
+            inheritedPages = Collections.emptyList();
             ClassDoc superclass = cdoc.superclass();
+            isLocalized = false;
+            isRemote = false;
             if (superclass != null) { //NOI18N
                 for (MethodDoc methodDoc : superclass.methods(false)) {
                     if (mdoc.overrides(methodDoc)) {
                         Element e = ctx.second().elementFor(methodDoc);
-                        boolean isLocalized = false;
                         if (e != null) {
-                            inheritedPage = JavadocHelper.getJavadoc(e, cancel);
-                            if (inheritedPage != null) {
-                                docURL = inheritedPage.getLocation();
+                            inheritedPages = JavadocHelper.getJavadoc(e, JavadocHelper.RemoteJavadocPolicy.SPECULATIVE, cancel);
+                            for (JavadocHelper.TextStream ts : inheritedPages) {
+                                isLocalized |= isLocalized(ts.getLocations(), e);
+                                isRemote |= isRemote(ts, docURL);
                             }
-                            if (!(isLocalized = isLocalized(docURL, e)))
+                            if (!isLocalized) {
                                 ctx.first().getTree(e);
+                            }
                         }
                         if (!isLocalized) {
                             List<Tag> inheritedInlineTags = null;
@@ -1829,11 +1884,16 @@ public class ElementJavadoc {
                         returnTags != null && returnTags.isEmpty() ||
                         paramPos != null && !paramPos.isEmpty() ||
                         throwsTypes != null && !throwsTypes.isEmpty()) {
-                    if (stopByRemoteJdoc && inheritedPage != null && isRemote(inheritedPage,docURL)) {
+                    if (stopByRemoteJdoc && isRemote && !inheritedPages.isEmpty()) {
                         throw new JavadocHelper.RemoteJavadocException(null);
                     }
-                    jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : null;
-                    return jdText != null ? jdText : inheritedDocFor(mdoc, superclass, inlineTags,
+                    for (JavadocHelper.TextStream inheritedPage : inheritedPages) {
+                        String jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : null;
+                        if (jdText != null) {
+                            return Pair.of(jdText,inheritedPage);
+                        }
+                    }
+                    return inheritedDocFor(mdoc, superclass, inlineTags,
                             returnTags, paramPos, paramTags,
                             paramInlineTags, throwsTypes,
                             throwsTags, throwsInlineTags, cancel, stopByRemoteJdoc, ctx);
@@ -1841,8 +1901,9 @@ public class ElementJavadoc {
             }
             return null;
         } finally {
-            if (inheritedPage != null)
+            for (JavadocHelper.TextStream inheritedPage : inheritedPages) {
                 inheritedPage.close();
+            }
         }
     }
     
@@ -1858,7 +1919,14 @@ public class ElementJavadoc {
     }
 
     private static boolean isRemote(final JavadocHelper.TextStream page, final URL url) {
-        return page != null ? page.getLocation().toString().startsWith("http") : url != null ? url.toString().startsWith("http") : false;
+        if (page != null) {
+            for (URL loc : page.getLocations()) {
+                if (loc.toString().startsWith("http")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return url != null ? url.toString().startsWith("http") : false;
     }
 
     private static final class Now implements Future<String> {

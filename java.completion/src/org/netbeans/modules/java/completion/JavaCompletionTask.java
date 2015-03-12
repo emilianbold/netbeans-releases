@@ -1766,6 +1766,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     break;
                 case LPAREN:
                 case COMMA:
+                case RPAREN:
                     prefix = env.getPrefix();
                     if (prefix == null || prefix.length() == 0) {
                         addConstructorArguments(env, nc);
@@ -2794,7 +2795,11 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     break;
                 case METHOD:
                     ExecutableType et = (ExecutableType) asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                    results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, enclClass.asType()), smartTypes), env.assignToVarPos(), false));
+                    if (e.getEnclosingElement() != enclClass && conflictsWithLocal(e.getSimpleName(), enclClass, locals)) {
+                        results.add(itemFactory.createStaticMemberItem(env.getController(), (DeclaredType)e.getEnclosingElement().asType(), e, et, false, anchorOffset, elements.isDeprecated(e), env.addSemicolon()));
+                    } else {
+                        results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, enclClass.asType()), smartTypes), env.assignToVarPos(), false));
+                    }
                     break;
             }
         }
@@ -4142,7 +4147,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         final Trees trees = controller.getTrees();
         final ElementUtilities eu = controller.getElementUtilities();
         final TypeElement te = (TypeElement) trees.getElement(clsPath);
-        if (te == null) {
+        if (te == null || te.getKind() == ElementKind.ANNOTATION_TYPE) {
             return;
         }
         final String prefix = env.getPrefix();
@@ -5242,6 +5247,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+    
+    private boolean conflictsWithLocal(Name name, TypeElement enclClass, Iterable<? extends Element> locals) {
+        for (ExecutableElement local : ElementFilter.methodsIn(locals)) {
+            if (local.getEnclosingElement() == enclClass && name.contentEquals(local.getSimpleName())) {
+                return true;
             }
         }
         return false;

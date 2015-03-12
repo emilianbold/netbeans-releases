@@ -54,6 +54,7 @@ import java.util.Map;
 
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.JTextComponent;
@@ -102,7 +103,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                 return ret;
             }
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (typeElement == null) {
+            if (typeElement == null || typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
                 return ret;
             }
             ElementUtilities eu = controller.getElementUtilities();

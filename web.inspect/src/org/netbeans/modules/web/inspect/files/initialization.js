@@ -462,10 +462,10 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             // Label
             var oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = 1;
-            var text = highlightedElement.tagName.toLowerCase();
+            var line1 = highlightedElement.tagName.toLowerCase();
             var id = highlightedElement.id;
             if (id !== '') {
-                text += '#' + id;
+                line1 += '#' + id;
             }
             var classList = highlightedElement.classList;
             if (classList.length !== 0) {
@@ -473,31 +473,34 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
                     var clazz = classList[k];
                     // Do not show the class that simulates hovering
                     if (clazz !== NetBeans.CLASS_HOVER) {
-                        text += '.' + clazz;
+                        line1 += '.' + clazz;
                     }
                 }
             }
-            var text = ' ' + text + ' ' + borderRect.width + 'px \xD7 ' + borderRect.height + 'px ';
+            var line2 = borderRect.width + 'px \xD7 ' + borderRect.height + 'px';
 
             if (highlightedElement.classList.contains('oj-col')) {
                 var parentElement = highlightedElement.parentElement;
                 if (parentElement.classList.contains('oj-row')) {
                     var parentRect = parentElement.getBoundingClientRect();
                     var columns = Math.round(12*borderRect.width/parentRect.width);
-                    text += "(" + columns + " column" + ((columns === 1) ? "" : "s") + ") ";
+                    line2 += '(' + columns + ' column' + ((columns === 1) ? '' : 's') + ')';
                 }
             }
 
-            var width = ctx.measureText(text).width;
+            var width1 = ctx.measureText(line1).width;
+            var width2 = ctx.measureText(line2).width;
+            var width = 6 + ((width1 < width2) ? width2 : width1);
             var x = marginRect.left;
             var y = marginRect.top + marginRect.height + 2*fontSize;
 
             ctx.strokeStyle = '#000000';
-            ctx.strokeRect(x, y-1.5*fontSize, width, 2*fontSize);
+            ctx.strokeRect(x, y-1.2*fontSize, width, 3.2*fontSize);
             ctx.fillStyle = '#FFFF88';
-            ctx.fillRect(x, y-1.5*fontSize, width, 2*fontSize);
+            ctx.fillRect(x, y-1.2*fontSize, width, 3.2*fontSize);
             ctx.fillStyle = '#000000';
-            ctx.fillText(text, x, y);
+            ctx.fillText(line1, x+3, y);
+            ctx.fillText(line2, x+3, y+1.6*fontSize);
             ctx.globalAlpha = oldAlpha;
 
             ctx.stroke();
