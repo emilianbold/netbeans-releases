@@ -160,6 +160,7 @@ public final class ImportantFiles {
 
         @Override
         public void stateChanged(ChangeEvent e) {
+            importantFilesChildren.refreshImportantFiles();
             fireChange();
         }
 
@@ -224,8 +225,11 @@ public final class ImportantFiles {
         }
 
         public boolean hasImportantFiles() {
-            refreshImportantFiles();
-            return getNodesCount() > 0;
+            return !getImportantFiles().isEmpty();
+        }
+
+        private void refreshImportantFiles() {
+            setKeys();
         }
 
         @Override
@@ -241,7 +245,7 @@ public final class ImportantFiles {
 
         @Override
         protected void addNotify() {
-            refreshImportantFiles();
+            setKeys();
         }
 
         @Override
@@ -249,13 +253,18 @@ public final class ImportantFiles {
             setKeys(Collections.<ImportantFilesImplementation.FileInfo>emptyList());
         }
 
-        private void refreshImportantFiles() {
+        private void setKeys() {
+            List<ImportantFilesImplementation.FileInfo> importantFiles = getImportantFiles();
+            Collections.sort(importantFiles, new FileInfoComparator());
+            setKeys(importantFiles);
+        }
+
+        private List<ImportantFilesImplementation.FileInfo> getImportantFiles() {
             List<ImportantFilesImplementation.FileInfo> importantFiles = new ArrayList<>();
             for (ImportantFilesImplementation provider : lookupResult.allInstances()) {
                 importantFiles.addAll(provider.getFiles());
             }
-            Collections.sort(importantFiles, new FileInfoComparator());
-            setKeys(importantFiles);
+            return importantFiles;
         }
 
     }
