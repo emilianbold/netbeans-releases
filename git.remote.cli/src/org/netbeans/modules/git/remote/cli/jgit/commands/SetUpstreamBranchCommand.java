@@ -83,7 +83,8 @@ public class SetUpstreamBranchCommand extends GitCommand {
         addArgument(0, localBranchName);
 
         addArgument(1, "branch"); //NOI18N
-        addArgument(1, "-vv"); //NOI18N
+        addArgument(1, "-v"); //NOI18N
+        addArgument(1, "-v"); //NOI18N
         addArgument(1, "--all"); //NOI18N
     }
     
