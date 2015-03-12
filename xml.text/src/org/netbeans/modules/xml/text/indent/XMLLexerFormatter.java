@@ -96,7 +96,7 @@ public class XMLLexerFormatter {
     public void reformat(Context context, final int startOffset, final int endOffset)
             throws BadLocationException {
         final BaseDocument doc = (BaseDocument) context.document();
-        doc.render(new Runnable() {
+        doc.runAtomic(new Runnable() {
 
             public void run() {
                 doReformat(doc, startOffset, endOffset);
