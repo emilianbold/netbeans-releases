@@ -42,20 +42,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.modules.cnd.apt.impl.support.clank;
 
-import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
-import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import java.util.List;
 
 /**
- * composition of include handler and macro map for parsing file phase
+ *
  * @author Vladimir Voskresensky
  */
-public interface APTPreprocHandler extends PreprocHandler {
-
-    @Override
-    public PPMacroMap getMacroMap();
-    @Override
-    public PPIncludeHandler getIncludeHandler();
+public class ClankSystemMacroMap extends ClankMacroMap {
+    
+    protected ClankSystemMacroMap(long crc) {
+        super(crc);
+    }
+    
+    public ClankSystemMacroMap(List<String> macros) {
+        super(macros);
+    }
 }

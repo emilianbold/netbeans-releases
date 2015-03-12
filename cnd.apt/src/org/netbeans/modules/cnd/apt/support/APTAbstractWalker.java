@@ -80,7 +80,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     private final APTFileCacheEntry cacheEntry;
     
     protected APTAbstractWalker(APTFile apt, PreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, preprocHandler == null ? null: ((APTPreprocHandler)preprocHandler).getMacroMap());
+        super(apt, preprocHandler == null ? null: (APTMacroMap)preprocHandler.getMacroMap());
         this.startPath = apt.getPath();
         this.startFileSystem = apt.getFileSystem();
         this.preprocHandler = (APTPreprocHandler)preprocHandler;

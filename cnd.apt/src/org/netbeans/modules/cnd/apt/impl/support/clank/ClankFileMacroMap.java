@@ -42,20 +42,84 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.modules.cnd.apt.impl.support.clank;
 
-import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
-import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
- * composition of include handler and macro map for parsing file phase
+ *
  * @author Vladimir Voskresensky
  */
-public interface APTPreprocHandler extends PreprocHandler {
+public class ClankFileMacroMap extends ClankMacroMap {
+    
+    private ClankSystemMacroMap sysMacros;
+
+    public ClankFileMacroMap() {
+        super(0);
+    }
+    
+    public ClankFileMacroMap(ClankSystemMacroMap sysMacroMap, List<String> userMacros) {
+        super(userMacros);
+        this.sysMacros = sysMacroMap;
+    }
+    
+    @Override
+    public long getCompilationUnitCRC() {
+        if (sysMacros == null) {
+            return super.getCompilationUnitCRC();
+        }
+        return super.getCompilationUnitCRC() ^ sysMacros.getCompilationUnitCRC();
+    }
 
     @Override
-    public PPMacroMap getMacroMap();
+    public State getState() {
+        return new FileStateImpl(this);
+    }
+
     @Override
-    public PPIncludeHandler getIncludeHandler();
+    public void setState(State state) {
+        ((FileStateImpl)state).restoreTo(this);
+    }
+
+    Collection<String> getSystemMacroDefinitions() {
+        return (sysMacros == null) ? Collections.<String>emptyList() : this.sysMacros.getMacros();
+    }
+
+    Collection<String> getUserMacroDefinitions() {
+        return this.getMacros();
+    }
+
+    public static final class FileStateImpl extends StateImpl {
+        private final ClankSystemMacroMap sysMacros;
+
+        private FileStateImpl(ClankFileMacroMap macroMap) {
+            super(macroMap);
+            this.sysMacros = macroMap.sysMacros;
+        }
+        
+        ////////////////////////////////////////////////////////////////////////
+        // persistence support
+
+        @Override
+        public void write(RepositoryDataOutput output) throws IOException {
+            super.write(output);
+            // TODO
+        }
+
+        public FileStateImpl(RepositoryDataInput input) throws IOException {
+            super(input);
+            // TODO
+            this.sysMacros = null;
+        }        
+
+        protected void restoreTo(ClankFileMacroMap macroMap) {
+            super.restoreTo(macroMap);
+            macroMap.sysMacros = this.sysMacros;
+        }
+    }
 }

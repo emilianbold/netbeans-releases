@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Lookup;
 
 /**
@@ -105,7 +106,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(boolean triggerParsingActivity) {
+    public TokenStream getTokenStream(boolean triggerParsingActivity, Interrupter interrupter) {
         FileImpl fileImpl = getMainFile();
         PreprocHandler preprocHandler = getCurrentPreprocHandler();
         // use full APT for generating token stream

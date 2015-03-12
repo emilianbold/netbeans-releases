@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankIncludeHandlerImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -51,6 +52,9 @@ import java.util.List;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankSystemMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
@@ -75,11 +79,12 @@ public class APTHandlersSupportImpl {
     }
 
     public static APTPreprocHandler createPreprocHandler(PPMacroMap macroMap, PPIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
-        return new APTPreprocHandlerImpl((APTMacroMap)macroMap, inclHandler, compileContext, lang, flavor);
+        return new APTPreprocHandlerImpl(macroMap, inclHandler, compileContext, lang, flavor);
     }
 
     public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
-        return new APTPreprocHandlerImpl(new APTFileMacroMap(), 
+        return new APTPreprocHandlerImpl(
+                APTTraceFlags.USE_CLANK ? new ClankFileMacroMap() : new APTFileMacroMap(), 
                 APTTraceFlags.USE_CLANK ? new ClankIncludeHandlerImpl(file) : new APTIncludeHandlerImpl(file), 
                 false, CharSequences.empty(), CharSequences.empty());
     }
@@ -109,7 +114,12 @@ public class APTHandlersSupportImpl {
     }
 
     public static PPMacroMap createMacroMap(PPMacroMap sysMap, List<String> userMacros) {
-        APTMacroMap fileMap = new APTFileMacroMap((APTMacroMap)sysMap, userMacros);
+        PPMacroMap fileMap;
+        if (APTTraceFlags.USE_CLANK) {
+            fileMap = new ClankFileMacroMap((ClankSystemMacroMap)sysMap, userMacros);
+        } else {
+            fileMap = new APTFileMacroMap((APTMacroMap)sysMap, userMacros);
+        }
         return fileMap;
     }
 
@@ -154,10 +164,12 @@ public class APTHandlersSupportImpl {
         return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
     }
 
-    public static long getCompilationUnitCRC(APTMacroMap map){
+    public static long getCompilationUnitCRC(PPMacroMap map){
         assert map != null;
         if (map instanceof APTFileMacroMap) {
             return ((APTFileMacroMap)map).getCompilationUnitCRC();
+        } else if (map instanceof ClankFileMacroMap) {
+            return ((ClankFileMacroMap)map).getCompilationUnitCRC();
         }
         return 0;
     }
@@ -223,7 +235,11 @@ public class APTHandlersSupportImpl {
     /*package*/ static APTMacroMap.State createCleanMacroState(APTMacroMap.State macroState) {
         APTMacroMap.State out = null;
         if (macroState != null) {
-            out = ((APTBaseMacroMap.StateImpl)macroState).copyCleaned();
+            if (APTTraceFlags.USE_CLANK) {
+                out = ((ClankMacroMap.StateImpl)macroState).copyCleaned();
+            } else {
+                out = ((APTBaseMacroMap.StateImpl)macroState).copyCleaned();
+            }
         }
         return out;
     }

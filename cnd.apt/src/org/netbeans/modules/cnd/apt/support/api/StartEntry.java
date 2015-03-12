@@ -76,7 +76,7 @@ public final class StartEntry implements SelfPersistent {
         return fileSystem;
     }
 
-    public CharSequence getStartFile(){
+    public CharSequence getStartFile() {
         return startFile;
     }
 

@@ -43,13 +43,15 @@ package org.netbeans.modules.cnd.modelimpl.parser.clank;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
+import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -66,10 +68,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(boolean triggerParsingActivity) {
+    public TokenStream getTokenStream(boolean triggerParsingActivity, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
-        TokenStream tsFromClank = ClankDriver.getTokenStream(getMainFile().getBuffer(), ppHandler);
-        return tsFromClank;
+        ClankPreprocessorCallback callback = new MyClankPreprocessorCallback();
+        FileImpl fileImpl = getMainFile();
+        TokenStream tsFromClank = ClankDriver.getTokenStream(fileImpl.getBuffer(), ppHandler, callback, interrupter);
+        APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppHandler.getState());
+        TokenStream filteredTokenStream = languageFilter.getFilteredStream(tsFromClank);
+        return filteredTokenStream;
     }
 
     @Override
@@ -77,4 +83,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         return CsmCorePackageAccessor.get().createPCState(getMainFile().getAbsolutePath(), new int[] {0, 10});
     }
     
+    private static final class MyClankPreprocessorCallback implements ClankPreprocessorCallback {
+        
+    }
 }

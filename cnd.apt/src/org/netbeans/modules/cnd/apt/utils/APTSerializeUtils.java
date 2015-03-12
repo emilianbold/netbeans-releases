@@ -59,13 +59,15 @@ import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroMapSnapshot;
 import org.netbeans.modules.cnd.apt.impl.support.APTPreprocHandlerImpl;
-import org.netbeans.modules.cnd.apt.impl.support.ClankIncludeHandlerImpl;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -209,23 +211,29 @@ public class APTSerializeUtils {
         return null;
     }
     
-    public static void writeMacroMapState(APTMacroMap.State state, RepositoryDataOutput output) throws IOException {
+    public static void writeMacroMapState(PPMacroMap.State state, RepositoryDataOutput output) throws IOException {
         assert state != null;
         if (state instanceof APTFileMacroMap.FileStateImpl) {
             output.writeShort(MACRO_MAP_FILE_STATE_IMPL);
             ((APTFileMacroMap.FileStateImpl)state).write(output);
+        } else if (state instanceof ClankFileMacroMap.FileStateImpl) {
+            output.writeShort(CLANK_MACRO_MAP_FILE_STATE_IMPL);
+            ((ClankFileMacroMap.FileStateImpl)state).write(output);
         } else {
+            assert !APTTraceFlags.USE_CLANK;
             assert state instanceof APTBaseMacroMap.StateImpl;
             output.writeShort(MACRO_MAP_STATE_IMPL);
             ((APTBaseMacroMap.StateImpl)state).write(output);
         }
     }
     
-    public static APTMacroMap.State readMacroMapState(RepositoryDataInput input) throws IOException {
+    public static PPMacroMap.State readMacroMapState(RepositoryDataInput input) throws IOException {
         short handler = input.readShort();
-        APTMacroMap.State state;
+        PPMacroMap.State state;
         if (handler == MACRO_MAP_FILE_STATE_IMPL) {
             state = new APTFileMacroMap.FileStateImpl(input);
+        } else if (handler == CLANK_MACRO_MAP_FILE_STATE_IMPL) {
+            state = new ClankFileMacroMap.FileStateImpl(input);
         } else {
             assert handler == MACRO_MAP_STATE_IMPL;
             state = new APTBaseMacroMap.StateImpl(input);
@@ -324,7 +332,8 @@ public class APTSerializeUtils {
     
     private static final short NULL_POINTER               = -1;
     private static final short MACRO_MAP_STATE_IMPL       = 1;
-    private static final short MACRO_MAP_FILE_STATE_IMPL  = MACRO_MAP_STATE_IMPL + 1;
+    private static final short CLANK_MACRO_MAP_FILE_STATE_IMPL  = MACRO_MAP_STATE_IMPL + 1;
+    private static final short MACRO_MAP_FILE_STATE_IMPL  = CLANK_MACRO_MAP_FILE_STATE_IMPL + 1;
     private static final short PREPROC_STATE_STATE_IMPL   = MACRO_MAP_FILE_STATE_IMPL + 1;
     private static final short MACRO_MAP_SNAPSHOT         = PREPROC_STATE_STATE_IMPL + 1;
     private static final short UNDEFINED_MACRO            = MACRO_MAP_SNAPSHOT + 1;

@@ -42,12 +42,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.impl.support;
+package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.clang.lex.Token;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
@@ -69,11 +70,15 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     private List<IncludeDirEntry> userIncludePaths;
     private List<IncludeDirEntry> userIncludeFilePaths;
 
-    private int inclStackIndex = 0;
     private StartEntry startFile;
     private final APTFileSearch fileSearch;
+    private static final Token[] NO_TOKENS = new Token[0];
     
-    /*package*/ ClankIncludeHandlerImpl(StartEntry startFile) {
+    private int inclStackIndex = -1;
+    private Token[] tokens = NO_TOKENS;
+    private int nrTokens = -1;
+
+    public  ClankIncludeHandlerImpl(StartEntry startFile) {
         this(startFile, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), startFile.getFileSearch());
     }
     
@@ -116,16 +121,38 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return new StateImpl(this);
     }
 
-    /*package*/List<IncludeDirEntry> getUserIncludeFilePaths() {
+    public List<IncludeDirEntry> getUserIncludeFilePaths() {
         return Collections.unmodifiableList(userIncludeFilePaths);
     }
 
-    /*package*/List<IncludeDirEntry> getUserIncludePaths() {
+    public List<IncludeDirEntry> getUserIncludePaths() {
         return Collections.unmodifiableList(userIncludePaths);
     }
 
-    /*package*/List<IncludeDirEntry> getSystemIncludePaths() {
+    public List<IncludeDirEntry> getSystemIncludePaths() {
         return Collections.unmodifiableList(systemIncludePaths);
+    }
+
+    public Token[] getTokens() {
+        if (tokens == NO_TOKENS) {
+            return null;
+        } else {
+            return tokens;
+        }
+    }
+
+    public int getNrTokens() {
+        return nrTokens;
+    }
+    
+    void setTokens(Token[] tokens, int nrTokens) {
+        if (tokens == null) {
+            this.tokens = NO_TOKENS;
+            this.nrTokens = 0;
+        } else {
+            this.tokens = tokens;
+            this.nrTokens = nrTokens;
+        }
     }
     
     /** immutable state object of include handler */
@@ -140,6 +167,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         private final StartEntry   startFile;
 
         private final int inclStackIndex;
+        private final Token[] tokens;
+        private final int nrTokens;
         private int hashCode = 0;
         
         protected StateImpl(ClankIncludeHandlerImpl handler) {
@@ -149,6 +178,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             this.startFile = handler.startFile;
 
             this.inclStackIndex = handler.inclStackIndex;
+            this.tokens = handler.tokens;
+            this.nrTokens = handler.nrTokens;
         }
         
         private StateImpl(StateImpl other, boolean cleanState) {
@@ -157,6 +188,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             
             // state object is immutable => safe to share stacks
             this.inclStackIndex = other.inclStackIndex;
+            this.tokens = other.tokens;
+            this.nrTokens = other.nrTokens;
 	    
             if (cleanState) {
                 this.systemIncludePaths = CLEANED_MARKER;
@@ -176,6 +209,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             handler.startFile = this.startFile;
             
             handler.inclStackIndex = this.inclStackIndex;
+            handler.tokens = this.tokens;
+            handler.nrTokens = this.nrTokens;
             // do not restore include info if state is cleaned
             if (!isCleaned()) {
                 // TODO: put tokens into handler
@@ -252,10 +287,12 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
                 userIncludeFilePaths.add(i, path);
             }
             
-            inclStackIndex = input.readInt();            
+            inclStackIndex = input.readInt();
+            nrTokens = 0;
+            tokens = NO_TOKENS;
         }        
 	
-	/* package */ final StartEntry getStartEntry() {
+	public final StartEntry getStartEntry() {
 	    return startFile;
 	}
 
@@ -281,23 +318,23 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             return hash;
         }
         
-        /*package*/ boolean isCleaned() {
+        public  boolean isCleaned() {
             return this.userIncludeFilePaths == CLEANED_MARKER; // was created as clean state
         }
         
-        /*package*/ ClankIncludeHandlerImpl.State copy(boolean cleanState) {
+        public  ClankIncludeHandlerImpl.State copy(boolean cleanState) {
             return new StateImpl(this, cleanState);
         }
         
-        /*package*/ List<IncludeDirEntry> getSysIncludePaths() {
+        public  List<IncludeDirEntry> getSysIncludePaths() {
             return this.systemIncludePaths;
         }
         
-        /*package*/ List<IncludeDirEntry> getUserIncludePaths() {
+        public  List<IncludeDirEntry> getUserIncludePaths() {
             return this.userIncludePaths;
         }        
 
-        /*package*/ List<IncludeDirEntry> getUserIncludeFilePaths() {
+        public  List<IncludeDirEntry> getUserIncludeFilePaths() {
             return this.userIncludeFilePaths;
         }
     }

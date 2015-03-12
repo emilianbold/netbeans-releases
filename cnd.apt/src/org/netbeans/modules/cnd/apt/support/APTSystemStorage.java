@@ -49,9 +49,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroCache;
 import org.netbeans.modules.cnd.apt.impl.support.SnapshotHolderCache;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankSystemMacroMap;
 import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -79,7 +81,11 @@ public final class APTSystemStorage {
             PPMacroMap map = allMacroMaps.get(configID);
             if (map == null) {
                 // create new one and put in map
-                map = new APTSystemMacroMap(sysMacros);
+                if (APTTraceFlags.USE_CLANK) {
+                    map = new ClankSystemMacroMap(sysMacros);
+                } else {
+                    map = new APTSystemMacroMap(sysMacros);
+                }
                 allMacroMaps.put(configID, map);
                 if (APTUtils.LOG.isLoggable(Level.FINE)) {
                     APTUtils.LOG.log(Level.FINE,

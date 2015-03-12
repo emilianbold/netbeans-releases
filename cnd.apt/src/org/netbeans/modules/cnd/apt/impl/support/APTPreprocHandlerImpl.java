@@ -44,24 +44,23 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankIncludeHandlerImpl;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.CharSequences;
 
 /**
  * composition of include handler and macro map for parsing file phase
@@ -73,7 +72,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     private CharSequence lang;
     private CharSequence flavor;
     private long cuCRC;
-    private APTMacroMap macroMap;
+    private PPMacroMap macroMap;
     private PPIncludeHandler inclHandler;
     
     /**
@@ -81,7 +80,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
      * context, i.e. source file has always correct state, but header itself has
      * not correct state until it was included into any source file (may be recursively)
      */
-    public APTPreprocHandlerImpl(APTMacroMap macroMap, PPIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
+    public APTPreprocHandlerImpl(PPMacroMap macroMap, PPIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
         this.macroMap = macroMap;
         this.inclHandler = inclHandler;
         this.compileContext = compileContext;
@@ -93,7 +92,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     }
     
     @Override
-    public APTMacroMap getMacroMap() {
+    public PPMacroMap getMacroMap() {
         return macroMap;
     }
 
@@ -157,17 +156,19 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
 	Checksum checksum = new Adler32();
 	updateCrc(checksum, lang.toString());
 	updateCrc(checksum, flavor.toString());
-        if (APTTraceFlags.USE_CLANK) {
+        if (inclHandler instanceof ClankIncludeHandlerImpl) {
+            assert APTTraceFlags.USE_CLANK;
             updateCrcByFSPaths(checksum, ((ClankIncludeHandlerImpl)inclHandler).getSystemIncludePaths(), unitId);
             updateCrcByFSPaths(checksum, ((ClankIncludeHandlerImpl)inclHandler).getUserIncludePaths(), unitId);
             updateCrcByFSPaths(checksum, ((ClankIncludeHandlerImpl)inclHandler).getUserIncludeFilePaths(), unitId);
         } else {
+            assert inclHandler instanceof APTIncludeHandlerImpl : "unexpected class " + inclHandler.getClass();
             updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getSystemIncludePaths(), unitId);
             updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludePaths(), unitId);
             updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludeFilePaths(), unitId);
         }
         long value = checksum.getValue();
-        value += APTHandlersSupportImpl.getCompilationUnitCRC(macroMap);        
+        value += APTHandlersSupportImpl.getCompilationUnitCRC(macroMap);
 	return value;
         
     }
@@ -187,7 +188,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     public final static class StateImpl implements State {
         /*package*/ final CharSequence lang;
         /*package*/ final CharSequence flavor;
-        /*package*/ final APTMacroMap.State macroState;
+        /*package*/ final PPMacroMap.State macroState;
         /*package*/ final PPIncludeHandler.State inclState;
         private final byte attributes;
         private final long cuCRC;

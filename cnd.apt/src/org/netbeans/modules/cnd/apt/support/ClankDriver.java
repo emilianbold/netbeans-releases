@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.support;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -54,8 +55,13 @@ public final class ClankDriver {
     private ClankDriver() {
     }
 
-    public static TokenStream getTokenStream(APTFileBuffer buffer, PreprocHandler ppHandler) {
-        return ClankDriverImpl.getTokenStream(buffer, ppHandler);
+    public static TokenStream getTokenStream(APTFileBuffer buffer, 
+            PreprocHandler ppHandler, 
+            ClankPreprocessorCallback callback, Interrupter interrupter) {
+        return ClankDriverImpl.getTokenStream(buffer, ppHandler, callback, interrupter);
     }
     
+    public interface ClankPreprocessorCallback {
+
+    }
 }

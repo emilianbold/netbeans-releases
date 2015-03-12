@@ -330,6 +330,13 @@ public final class FileImpl implements CsmFile,
 
     private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
 
+    private final Interrupter interrupter = new Interrupter() {
+        @Override
+        public boolean cancelled() {
+            return !isValid();
+        }
+    };
+    
     private long lastParsed = Long.MIN_VALUE;
     private long lastParsedBufferCRC;
     private long lastParsedCompilationUnitCRC;
@@ -1471,7 +1478,7 @@ public final class FileImpl implements CsmFile,
                         "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
                 return null;
             }            
-            TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(parseParams.triggerParsingActivity);
+            TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(parseParams.triggerParsingActivity, interrupter);
             if (filteredTokenStream == null) {
                 System.err.println(" null token stream for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                         "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
@@ -1793,7 +1800,7 @@ public final class FileImpl implements CsmFile,
         if (disposed) {
             return false;
         }
-        CsmProject project = _getProject(false);
+        ProjectBase project = _getProject(false);
         return project != null && project.isValid();
     }
 

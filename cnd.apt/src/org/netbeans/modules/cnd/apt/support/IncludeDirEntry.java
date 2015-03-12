@@ -182,7 +182,7 @@ public final class IncludeDirEntry {
         return isFramework;
     }
 
-    /*package*/ boolean isExistingDirectory() {
+    public boolean isExistingDirectory() {
         Boolean val = exists;
         if (val == null) {
             val = CndFileUtils.isExistingDirectory(fileSystem, getPath());

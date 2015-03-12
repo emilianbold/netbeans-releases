@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionStat
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTTokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducer;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -79,7 +80,7 @@ public abstract class TokenStreamProducer {
         }
     }
     
-    public abstract TokenStream getTokenStream(boolean triggerParsingActivity);
+    public abstract TokenStream getTokenStream(boolean triggerParsingActivity, Interrupter interrupter);
     
     /** must be called when TS was completely consumed */
     public abstract FilePreprocessorConditionState release();
