@@ -1725,7 +1725,7 @@ static void startup() {
 
 static void *killer(void *data) {
     pthread_t victim;
-    victim = (pthread_t) data;
+    victim = *((pthread_t*) data);
     sleep(2);
     //pthread_kill(victim, SIGKILL);
     pthread_kill(victim, SIGTERM);
@@ -1741,7 +1741,9 @@ static void shutdown() {
     }
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     pthread_t killer_thread;
-    pthread_create(&killer_thread, NULL, killer, (void*) pthread_self());
+    static pthread_t self; // we need to pass a pointer => can't use auto
+    self = pthread_self();
+    pthread_create(&killer_thread, NULL, killer, &self);
 
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     // NB: we aren't joining refresh thread; it's safe
