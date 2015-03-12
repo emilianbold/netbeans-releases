@@ -271,12 +271,16 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             
             newInnerClass = refactorInnerClass(newInnerClass);
             
+            TreePath outerPath = workingCopy.getTrees().getPath(outer);
+            
             if (outerouter.getKind() == ElementKind.PACKAGE) {
                 FileObject sourceRoot=ClassPath.getClassPath(workingCopy.getFileObject(), ClassPath.SOURCE).findOwnerRoot(workingCopy.getFileObject());
                 ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
                 ClassTree newOuter = make.removeClassMember(outerTree, innerClass);
                 rewrite(outerTree, newOuter);
-                JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
+                if(outerPath != null) {
+                    JavaRefactoringUtils.cacheTreePathInfo(outerPath, workingCopy);
+                }
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
                 String relativePath = RefactoringUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java"; // NOI18N
                 CompilationUnitTree newCompilation = JavaPluginUtils.createCompilationUnit(sourceRoot, relativePath, newInnerClass, workingCopy, make);
@@ -291,7 +295,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 ClassTree newOuter = make.removeClassMember(outerTree, innerClass);
                 ClassTree newOuterOuter = GeneratorUtilities.get(workingCopy).insertClassMember(outerouterTree, newInnerClass);
                 rewrite(outerTree, newOuter);
-                JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
+                if(outerPath != null) {
+                    JavaRefactoringUtils.cacheTreePathInfo(outerPath, workingCopy);
+                }
                 rewrite(outerouterTree, newOuterOuter);
                 return newOuterOuter;
             }

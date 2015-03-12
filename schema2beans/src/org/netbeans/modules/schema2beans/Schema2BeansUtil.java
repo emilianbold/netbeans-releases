@@ -157,7 +157,7 @@ public class Schema2BeansUtil {
         NodeList childNodes = node.getChildNodes();
         List children = relevantNodes(childNodes);
         Document document = getOwnerDocument(node);
-        for (int i = childNodes.getLength() - 1; i >= 0; i--) {
+        for (int i = childNodes.getLength() - 1; i >= 0; i--) {//remove all comments and break lines from current document node
             Node childNode = childNodes.item(i);
             if (!isRelevantNode(childNode)) {
                 node.removeChild(childNode);
@@ -178,6 +178,30 @@ public class Schema2BeansUtil {
                     foundBean = null;
                     foundChild = null;
                 }
+                mergeChildNodes(node, foundChild, foundBean, currentChild, patternChild, nodeMap, document, patternBean, children);
+            } else {
+                mergeChildNodes(node, null, null, currentChild, patternChild, nodeMap, document, null, children);
+            }
+        }
+    }
+    
+    /**
+     * Merge child nodes
+     * 
+     * @param node     current node base webapp
+     * @param childNode child node if exist
+     * @param foundBean child bean
+     * @param currentChild current child node
+     * @param patternChild current pattern child
+     * @param nodeMap node map
+     * @param document document
+     * @param patternBean pattern bean
+     * @param children list relevant childs current node base webapp
+     */
+    private static void mergeChildNodes(Node node, Node childNode, BaseBean foundBean, 
+            Node currentChild, Node patternChild, Map nodeMap, Document document, 
+            BaseBean patternBean, List children) {
+        Node foundChild = childNode;
                 if (foundChild == null) {
                     foundChild = takeEqualNode(children, patternChild);
                 }
@@ -188,7 +212,7 @@ public class Schema2BeansUtil {
                     }
                     if (foundBean != null) {
                         mergeBeans(nodeMap, foundBean, patternBean);
-                    } else if (isRelevantNode(foundChild)) {
+            } else if (isRelevantNode(foundChild) && foundChild.getChildNodes().getLength() != 0) {
                         mergeNode(nodeMap, foundChild, patternChild);
                     } else {
                         foundChild.setNodeValue(patternChild.getNodeValue());
@@ -197,12 +221,7 @@ public class Schema2BeansUtil {
                     Node child = document.importNode(patternChild, true);
                     node.insertBefore(child, currentChild);
                 }
-            } else {
-                Node child = document.importNode(patternChild, true);
-                node.insertBefore(child, currentChild);
             }
-        }
-    }
 
     /**
      * Merge "unsupported" attributes of a node

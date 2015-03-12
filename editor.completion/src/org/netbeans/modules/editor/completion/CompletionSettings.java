@@ -107,6 +107,10 @@ public final class CompletionSettings {
     public boolean completionInstantSubstitution() {
         return preferences.getBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, true);
     }
+
+    public boolean completionCaseSensitive() {
+        return preferences.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, true);
+    }
     
     // -----------------------------------------------------------------------
     // private implementation
