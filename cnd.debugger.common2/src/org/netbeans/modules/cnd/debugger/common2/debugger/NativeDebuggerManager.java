@@ -133,6 +133,7 @@ import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -1210,6 +1211,11 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (symbolFile == null || symbolFile.isEmpty()) {
             symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(dbgProfile.getOptions());
             symbolFile = ((MakeConfiguration) configuration).expandMacros(symbolFile);
+            if (!CndPathUtilities.isPathAbsolute(symbolFile)) {
+                symbolFile = ((MakeConfiguration) configuration).getBaseDir() + "/" + symbolFile; // NOI18N
+                symbolFile = CndPathUtilities.normalizeSlashes(symbolFile);
+                symbolFile = CndPathUtilities.normalizeUnixPath(symbolFile);
+            }
         }
         ndi.setSymbolFile(symbolFile);
 
@@ -1261,6 +1267,11 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (dt.getProjectMode() == DebugTarget.ProjectMode.OLD_PROJECT) {
             String symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(ndi.getDbgProfile().getOptions());
             symbolFile = ((MakeConfiguration) conf).expandMacros(symbolFile);
+            if (!CndPathUtilities.isPathAbsolute(symbolFile)) {
+                symbolFile = ((MakeConfiguration) conf).getBaseDir() + "/" + symbolFile; // NOI18N
+                symbolFile = CndPathUtilities.normalizeSlashes(symbolFile);
+                symbolFile = CndPathUtilities.normalizeUnixPath(symbolFile);
+            }
             ndi.setTarget(symbolFile);
         }
 
