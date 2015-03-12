@@ -68,6 +68,7 @@ public class DriverNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public DriverNodeProvider createInstance(Lookup lookup) {
                 return new DriverNodeProvider(lookup);
             }
@@ -75,11 +76,12 @@ public class DriverNodeProvider extends NodeProvider {
     }
 
     private DriverNodeProvider(Lookup lookup) {
-        super(lookup, new DriverComparator());
+        super(lookup, driverComparator);
         
         JDBCDriverManager mgr = JDBCDriverManager.getDefault();
         mgr.addDriverListener(
             new JDBCDriverListener() {
+                @Override
                 public void driversChanged() {
                     initialize();
                 }
@@ -87,8 +89,9 @@ public class DriverNodeProvider extends NodeProvider {
         );
     }
     
+    @Override
     protected synchronized void initialize() {
-        List<Node> newList = new ArrayList<Node>();
+        List<Node> newList = new ArrayList<>();
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
         for (JDBCDriver driver : drivers) {
             Collection<Node> matches = getNodes(driver);
@@ -104,11 +107,10 @@ public class DriverNodeProvider extends NodeProvider {
         setNodes(newList);
     }
     
-    static class DriverComparator implements Comparator<Node> {
-
+    private static final Comparator<Node> driverComparator = new Comparator<Node>() {
+        @Override
         public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
         }
-        
-    }
+    };
 }

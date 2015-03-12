@@ -132,7 +132,7 @@ public class ConnectionNodeProvider extends NodeProvider {
     private final ConnectionList connectionList;
     
     private ConnectionNodeProvider(Lookup lookup) {
-        super(lookup, new ConnectionComparator());
+        super(lookup, connectionNodeComparator);
         connectionList = getLookup().lookup(ConnectionList.class);
     }
     
@@ -180,11 +180,10 @@ public class ConnectionNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    private static class ConnectionComparator implements Comparator<Node> {
+    private static final Comparator<Node> connectionNodeComparator = new Comparator<Node>() {
         @Override
         public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
         }
-        
-    }
+    };
 }

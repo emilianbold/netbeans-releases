@@ -103,7 +103,7 @@ public class TableNodeProvider extends NodeProvider {
 
     @SuppressWarnings("unchecked")
     private TableNodeProvider(Lookup lookup, boolean system) {
-        super(lookup, new TableComparator());
+        super(lookup, tableComparator);
         this.system = system;
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
@@ -153,12 +153,12 @@ public class TableNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class TableComparator implements Comparator<Node> {
+    private static final Comparator<Node> tableComparator = new Comparator<Node>() {
 
         @Override
         public int compare(Node node1, Node node2) {
             return node1.getDisplayName().compareTo(node2.getDisplayName());
         }
 
-    }
+    };
 }

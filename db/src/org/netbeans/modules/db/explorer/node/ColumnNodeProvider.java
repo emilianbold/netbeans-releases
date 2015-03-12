@@ -74,6 +74,7 @@ public class ColumnNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public ColumnNodeProvider createInstance(Lookup lookup) {
                 ColumnNodeProvider provider = new ColumnNodeProvider(lookup);
                 return provider;
@@ -85,20 +86,21 @@ public class ColumnNodeProvider extends NodeProvider {
     private final MetadataElementHandle handle;
 
     private ColumnNodeProvider(Lookup lookup) {
-        super(lookup, new ColumnComparator());
+        super(lookup, columnComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         handle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     @Override
     protected synchronized void initialize() {
-        final List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<>();
         boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             try { 
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             Collection<Column> columns;
                             try {
@@ -139,8 +141,8 @@ public class ColumnNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class ColumnComparator implements Comparator<Node> {
-
+    private static final Comparator<Node> columnComparator = new Comparator<Node>() {
+        @Override
         public int compare(Node node1, Node node2) {
             ColumnNode n1 = (ColumnNode)node1;
             ColumnNode n2 = (ColumnNode)node2;
@@ -150,6 +152,5 @@ public class ColumnNodeProvider extends NodeProvider {
             }
             return result;
         }
-
-    }
+    };
 }

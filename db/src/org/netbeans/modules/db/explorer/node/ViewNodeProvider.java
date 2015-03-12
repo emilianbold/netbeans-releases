@@ -86,7 +86,7 @@ public class ViewNodeProvider extends NodeProvider {
 
     @SuppressWarnings("unchecked")
     private ViewNodeProvider(Lookup lookup) {
-        super(lookup, new ViewComparator());
+        super(lookup, viewComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
@@ -94,7 +94,7 @@ public class ViewNodeProvider extends NodeProvider {
     @Override
     protected synchronized void initialize() {
         
-        final List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<>();
 
         boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
@@ -132,12 +132,12 @@ public class ViewNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class ViewComparator implements Comparator<Node> {
+    private static final Comparator<Node> viewComparator = new Comparator<Node>() {
 
         @Override
         public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareTo(model2.getDisplayName());
         }
 
-    }
+    };
 }

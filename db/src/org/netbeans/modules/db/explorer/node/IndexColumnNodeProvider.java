@@ -73,6 +73,7 @@ public class IndexColumnNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public IndexColumnNodeProvider createInstance(Lookup lookup) {
                 IndexColumnNodeProvider provider = new IndexColumnNodeProvider(lookup);
                 return provider;
@@ -84,14 +85,14 @@ public class IndexColumnNodeProvider extends NodeProvider {
     private final MetadataElementHandle<Index> handle;
 
     private IndexColumnNodeProvider(Lookup lookup) {
-        super(lookup, new ColumnComparator());
+        super(lookup, columnComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         handle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     @Override
     protected synchronized void initialize() {
-        final List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<>();
 
         boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
@@ -99,6 +100,7 @@ public class IndexColumnNodeProvider extends NodeProvider {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             Index index = handle.resolve(metaData);
                             if (index != null) {
@@ -128,8 +130,9 @@ public class IndexColumnNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class ColumnComparator implements Comparator<Node> {
 
+    private static final Comparator<Node> columnComparator = new Comparator<Node>() {
+        @Override
         public int compare(Node node1, Node node2) {
             IndexColumnNode n1 = (IndexColumnNode)node1;
             IndexColumnNode n2 = (IndexColumnNode)node2;
@@ -140,5 +143,5 @@ public class IndexColumnNodeProvider extends NodeProvider {
             return result;
         }
 
-    }
+    };
 }

@@ -71,17 +71,18 @@ public class DriverListNodeProvider extends NodeProvider {
 
     @SuppressWarnings("LeakingThisInConstructor")
     private DriverListNodeProvider(Lookup lookup) {
-        super(lookup, new Comparator<Node>() {
-
-            @Override
-            public int compare(Node o1, Node o2) {
-                return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
-            }
-        });
+        super(lookup, driverListComparator);
         addNode(DriverListNode.create(new NodeDataLookup(), this));
     }
 
     @Override
     protected synchronized void initialize() {
     }
+    
+    private static final Comparator<Node> driverListComparator = new Comparator<Node>() {
+        @Override
+        public int compare(Node o1, Node o2) {
+            return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+        }
+    };
 }
