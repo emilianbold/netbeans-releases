@@ -73,6 +73,9 @@ public class MoveInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void moveFileToIgnoredFolder_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // prepare
         VCSFileProxy folder = createFolder("ignoredFolder");
         HgUtils.addIgnored(folder.getParentFile(), new VCSFileProxy[] { folder });
@@ -92,6 +95,9 @@ public class MoveInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void moveFileToIgnoredFolder_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // prepare
         VCSFileProxy folder = createFolder("ignoredFolder");
         HgUtils.addIgnored(folder.getParentFile(), new VCSFileProxy[] { folder });
@@ -111,6 +117,9 @@ public class MoveInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void renameFileChangeCase_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // prepare
         VCSFileProxy fromFile = createFile("file");
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(getWorkTreeDir(), "FILE");
@@ -132,6 +141,9 @@ public class MoveInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void renameFileChangeCase_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // prepare
         VCSFileProxy fromFile = createFile("file");
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(getWorkTreeDir(), "FILE");
@@ -153,6 +165,9 @@ public class MoveInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void renameFolderChangeCase_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // prepare
         VCSFileProxy fromFolder = createFolder("folder");
         VCSFileProxy fromFile = createFile(fromFolder, "file");
@@ -177,6 +192,9 @@ public class MoveInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void renameFolderChangeCase_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // prepare
         VCSFileProxy fromFolder = createFolder("folder");
         VCSFileProxy fromFile = createFile(fromFolder, "file");

@@ -48,26 +48,20 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.git.remote.FileInformation.Status;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
-import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author ondra
  */
-public class FilesystemInterceptorTest extends AbstractGitTestCase {
+public class FilesystemLocalInterceptorTest extends AbstractLocalGitTestCase {
 
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
-    private StatusRefreshLogHandler h;
 
-    public FilesystemInterceptorTest(String name) {
+    public FilesystemLocalInterceptorTest(String name) {
         super(name);
     }
     
@@ -78,27 +72,6 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
     @Override
     protected boolean isRunAll() {return false;}
-
-    @Override
-    protected void setUp() throws Exception {
-        if (Utilities.isWindows()) {
-            throw new UnsupportedOperationException("Unsupported platform");
-        }
-        super.setUp();
-        MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
-        System.setProperty("versioning.git.handleExternalEvents", "false");
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
-        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
-        Git.STATUS_LOG.setLevel(Level.ALL);
-        h = new StatusRefreshLogHandler(repositoryLocation);
-        Git.STATUS_LOG.addHandler(h);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        Git.STATUS_LOG.removeHandler(h);
-        super.tearDown();
-    }
 
     public void testSeenRootsLogin () throws Exception {
         VCSFileProxy folderA = VCSFileProxy.createFileProxy(repositoryLocation, "folderA");
@@ -213,19 +186,19 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     public void testModifyVersionedFile () throws Exception {
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(repositoryLocation, "file");
-        h.setFilesToRefresh(Collections.singleton(file));
+        refreshHandler.setFilesToRefresh(Collections.singleton(file));
         VCSFileProxySupport.createNew(file);
         add();
         commit();
         FileObject fo = file.normalizeFile().toFileObject();
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(file).getStatus());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
-        h.setFilesToRefresh(Collections.singleton(file));
+        refreshHandler.setFilesToRefresh(Collections.singleton(file));
         PrintWriter pw = new PrintWriter(fo.getOutputStream());
         pw.println("hello new file");
         pw.close();
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertEquals(EnumSet.of(Status.MODIFIED_HEAD_WORKING_TREE, Status.MODIFIED_INDEX_WORKING_TREE), getCache().getStatus(file).getStatus());

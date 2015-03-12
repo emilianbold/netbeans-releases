@@ -45,26 +45,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.git.remote.FileInformation.Status;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
-import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author ondra
  */
-public class CopyInterceptorTest extends AbstractGitTestCase {
+public class CopyLocalInterceptorTest extends AbstractLocalGitTestCase {
 
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
-    private StatusRefreshLogHandler h;
 
-    public CopyInterceptorTest(String name) {
+    public CopyLocalInterceptorTest(String name) {
         super(name);
     }
     
@@ -75,27 +69,6 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
 
     @Override
     protected boolean isRunAll() {return false;}
-
-    @Override
-    protected void setUp() throws Exception {
-        if (Utilities.isWindows()) {
-            throw new UnsupportedOperationException("Unsupported platform");
-        }
-        super.setUp();
-        MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
-        System.setProperty("versioning.git.handleExternalEvents", "false");
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
-        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
-        Git.STATUS_LOG.setLevel(Level.ALL);
-        h = new StatusRefreshLogHandler(repositoryLocation);
-        Git.STATUS_LOG.addHandler(h);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        Git.STATUS_LOG.removeHandler(h);
-        super.tearDown();
-    }
 
     public void testCopyVersionedFile_DO() throws Exception {
         // init
@@ -108,9 +81,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFile));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFile));
         copyDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -134,9 +107,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFile));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFile));
         copyDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -159,9 +132,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFolder));
 
         // test
@@ -266,9 +239,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // rename
-        h.setFilesToRefresh(Collections.singleton(toFile));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFile));
         copyDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -291,10 +264,10 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
         copyDO(fileA, fileB);
         copyDO(fileB, fileC);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fileA));
 
         // test
@@ -322,9 +295,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toParent, fromFolder.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -360,9 +333,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toFolderParent, fromFolder.getName());
 
         // move
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFolder));
 
         // test
@@ -405,9 +378,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, "file");
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFile));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFile));
         copyDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -433,9 +406,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         commit(repositoryLocation);
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFolder));
 
         // test
@@ -473,9 +446,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         commit(repositoryLocation);
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFolder));
 
         // test
@@ -515,9 +488,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFile));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFile));
         copyFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -538,9 +511,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFile));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFile));
         copyFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -563,9 +536,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -616,9 +589,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFile));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFile));
         copyFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -644,10 +617,10 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // copy
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
         copyFO(fileA, fileB);
         copyFO(fileB, fileC);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fileA));
 
         // test
@@ -726,9 +699,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -764,9 +737,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toFolderParent, fromFolder.getName());
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFolder));
 
         // test
@@ -809,9 +782,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, "file");
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFile));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFile));
         copyFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
 
         // test
@@ -837,9 +810,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         commit();
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFolder));
 
         // test
@@ -876,9 +849,9 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         commit();
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFolder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFolder));
 
         // test
@@ -923,10 +896,10 @@ public class CopyInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // copy
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileC, fileA)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileC, fileA)));
         copyFO(fileA, fileC);
         copyFO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fileB));
 
         // test
