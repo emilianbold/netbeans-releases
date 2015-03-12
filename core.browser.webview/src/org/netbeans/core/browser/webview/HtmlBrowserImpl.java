@@ -61,6 +61,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -189,7 +190,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
 
                 PageInspector inspector = PageInspector.getDefault();
                 if (inspector != null && browserFeatures.isPageInspectorEnabled()) {
-                    inspector.inspectPage(new ProxyLookup(getLookup(), projectContext));
+                    inspector.inspectPage(new ProxyLookup(getLookup(), projectContext, Lookups.fixed(HtmlBrowserImpl.this)));
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override

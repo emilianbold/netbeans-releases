@@ -103,7 +103,8 @@ public class JsBracesMatcher implements BracesMatcher {
                 backward = origin[2] < 0;
 
                 TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-                sequences = getEmbeddedTokenSequences(th, originOffset, backward, language);
+                // to get it work, there should not be checked previous ts. it can be different. see issue #250521
+                sequences = getEmbeddedTokenSequences(th, originOffset, false, language);
 
                 if (!sequences.isEmpty()) {
                     // Check special tokens
