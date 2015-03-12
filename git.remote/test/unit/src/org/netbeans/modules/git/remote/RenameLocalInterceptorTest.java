@@ -44,12 +44,8 @@ package org.netbeans.modules.git.remote;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.git.remote.FileInformation.Status;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
-import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Utilities;
 
@@ -57,12 +53,11 @@ import org.openide.util.Utilities;
  *
  * @author ondra
  */
-public class RenameInterceptorTest extends AbstractGitTestCase {
+public class RenameLocalInterceptorTest extends AbstractLocalGitTestCase {
 
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
-    private StatusRefreshLogHandler h;
 
-    public RenameInterceptorTest(String name) {
+    public RenameLocalInterceptorTest(String name) {
         super(name);
     }
     
@@ -74,27 +69,6 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
     @Override
     protected boolean isRunAll() {return false;}
 
-    @Override
-    protected void setUp() throws Exception {
-        if (Utilities.isWindows()) {
-            throw new UnsupportedOperationException("Unsupported platform");
-        }
-        super.setUp();
-        MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
-        System.setProperty("versioning.git.handleExternalEvents", "false");
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
-        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
-        Git.STATUS_LOG.setLevel(Level.ALL);
-        h = new StatusRefreshLogHandler(repositoryLocation);
-        Git.STATUS_LOG.addHandler(h);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        Git.STATUS_LOG.removeHandler(h);
-        super.tearDown();
-    }
-
     public void testRenameVersionedFile_DO() throws Exception {
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(repositoryLocation, "fromFile");
         VCSFileProxySupport.createNew(fromFile);
@@ -103,9 +77,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(repositoryLocation, "toFile");
 
         // rename
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
         renameDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -123,9 +97,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(repositoryLocation, "toFile");
 
         // rename
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
         renameDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -144,9 +118,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
         renameDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -166,15 +140,15 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         commit(fromFile);
         
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
         renameDO(fromFile, toFile);
         
         // test
-        if (Utilities.isWindows() || Utilities.isMac()) {
+        if (Utilities.isMac()) {
             assertTrue(Arrays.asList(toFile.getParentFile().listFiles()).contains(toFile.getName()));
             assertFalse(Arrays.asList(fromFile.getParentFile().listFiles()).contains(fromFile.getName()));
         } else {
-            assertTrue(h.waitForFilesToRefresh());
+            assertTrue(refreshHandler.waitForFilesToRefresh());
             assertFalse(fromFile.exists());
             assertTrue(toFile.exists());
             assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(fromFile).getStatus());
@@ -190,7 +164,7 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         commit(fromFile);
         
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
         renameFO(fromFile, toFile);
         
         // test
@@ -198,7 +172,7 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
             assertTrue(Arrays.asList(toFile.getParentFile().listFiles()).contains(toFile.getName()));
             assertFalse(Arrays.asList(fromFile.getParentFile().listFiles()).contains(fromFile.getName()));
         } else {
-            assertTrue(h.waitForFilesToRefresh());
+            assertTrue(refreshHandler.waitForFilesToRefresh());
             assertFalse(fromFile.exists());
             assertTrue(toFile.exists());
             assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(fromFile).getStatus());
@@ -216,7 +190,7 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         commit(fromFolder);
         
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
         renameDO(fromFolder, toFolder);
         
         // test
@@ -224,7 +198,7 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
             assertTrue(Arrays.asList(toFolder.getParentFile().listFiles()).contains(toFolder.getName()));
             assertFalse(Arrays.asList(fromFolder.getParentFile().listFiles()).contains(fromFolder.getName()));
         } else {
-            assertTrue(h.waitForFilesToRefresh());
+            assertTrue(refreshHandler.waitForFilesToRefresh());
             assertFalse(fromFolder.exists());
             assertTrue(toFolder.exists());
             assertTrue(toFile.exists());
@@ -243,7 +217,7 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         commit(fromFolder);
         
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
         renameFO(fromFolder, toFolder);
         
         // test
@@ -251,7 +225,7 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
             assertTrue(Arrays.asList(toFolder.getParentFile().listFiles()).contains(toFolder.getName()));
             assertFalse(Arrays.asList(fromFolder.getParentFile().listFiles()).contains(fromFolder.getName()));
         } else {
-            assertTrue(h.waitForFilesToRefresh());
+            assertTrue(refreshHandler.waitForFilesToRefresh());
             assertFalse(fromFolder.exists());
             assertTrue(toFolder.exists());
             assertTrue(toFile.exists());
@@ -270,9 +244,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
         renameDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -292,10 +266,10 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(repositoryLocation, "to");
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         renameDO(fileA, fileB);
         renameDO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -316,10 +290,10 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         renameDO(fileA, fileB);
         renameDO(fileB, fileC);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fileA.exists());
@@ -345,11 +319,11 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         renameDO(fileA, fileB);
         renameDO(fileB, fileC);
         renameDO(fileC, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -373,10 +347,10 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         renameDO(fileA, fileC);
         renameDO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -400,10 +374,10 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         renameFO(fileA, fileC);
         renameFO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -424,11 +398,11 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
 
         // rename
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(repositoryLocation, "B");
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         renameDO(fileA, fileB);
         // create from file
         fileA.getParentFile().toFileObject().createData(fileA.getName());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileB.exists());
@@ -452,9 +426,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, file.getName());
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         renameDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -487,9 +461,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
 
         // rename
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(repositoryLocation, "to");
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         renameDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -538,9 +512,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(repositoryLocation, "toFile");
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
         renameFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -560,9 +534,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(repositoryLocation, "toFile");
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
         renameFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -582,9 +556,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         renameFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -604,9 +578,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
         renameFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -625,10 +599,10 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(repositoryLocation, "to");
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         renameFO(fileA, fileB);
         renameFO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -649,10 +623,10 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         renameFO(fileA, fileB);
         renameFO(fileB, fileC);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fileA.exists());
@@ -678,11 +652,11 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         renameFO(fileA, fileB);
         renameFO(fileB, fileC);
         renameFO(fileC, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -703,14 +677,14 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
 
         // rename
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(repositoryLocation, "B");
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         renameFO(fileA, fileB);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // create from file
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
         fileA.getParentFile().toFileObject().createData(fileA.getName());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileB.exists());
@@ -737,9 +711,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         renameFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -772,9 +746,9 @@ public class RenameInterceptorTest extends AbstractGitTestCase {
 
         // rename
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(repositoryLocation, "to");
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         renameFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
