@@ -434,5 +434,19 @@ implements PropertyChangeListener, DebuggerManagerListener {
             // do nothing
         }
 
+        @Override
+        public int getCurrentHitCount() {
+            return -1;
+        }
+
+        @Override
+        public int getHitCountsTillBreak() {
+            return -1;
+        }
+
+        @Override
+        public void resetHitCounts() {
+        }
+        
     }
 }
