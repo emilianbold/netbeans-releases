@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.remote;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -79,9 +80,14 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     private enum Scope{All, Successful, Failed};
     private static final Scope TESTS_SCOPE = Scope.Successful;
+    private boolean skipTest = false;
 
     public AbstractGitTestCase (String name) {
         super(name);
+        String gitPath = "/usr/bin/git";
+        if (!new File(gitPath).exists()) {
+            skipTest = true;
+        }
     }
     
     protected abstract boolean isFailed();
@@ -89,6 +95,9 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     @Override
     public boolean canRun() {
+        if (skipTest) {
+            return false;
+        }
         if (!isRunAll()) {
             switch (TESTS_SCOPE) {
                 case Failed:
