@@ -1766,6 +1766,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     break;
                 case LPAREN:
                 case COMMA:
+                case RPAREN:
                     prefix = env.getPrefix();
                     if (prefix == null || prefix.length() == 0) {
                         addConstructorArguments(env, nc);
