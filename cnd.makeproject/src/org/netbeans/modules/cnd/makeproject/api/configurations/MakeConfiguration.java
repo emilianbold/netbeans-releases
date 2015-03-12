@@ -1148,17 +1148,17 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     
     public String expandMacros(String val) {
         // Substitute macros
-        val = CndPathUtilities.expandMacro(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_OUTPUT_PATH_MACRO, getOutputValue());
-        val = CndPathUtilities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilities.getBaseName(getOutputValue())); // NOI18N
-        val = CndPathUtilities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.OBJECTDIR_MACRO, ConfigurationMakefileWriter.getObjectDir(this)); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_PLATFORM_MACRO, getVariant()); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_CONF_MACRO, getName()); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_DISTDIR_MACRO, MakeConfiguration.DIST_FOLDER); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_BUILDDIR_MACRO, MakeConfiguration.BUILD_FOLDER); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_DLIB_EXT_MACRO, getLibraryExtension()); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.PROJECTDIR_MACRO, getBaseDir());
+        val = CndPathUtilities.expandAllMacroses(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_OUTPUT_PATH_MACRO, getOutputValue());
+        val = CndPathUtilities.expandAllMacroses(val, "${OUTPUT_BASENAME}", CndPathUtilities.getBaseName(getOutputValue())); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.OBJECTDIR_MACRO, ConfigurationMakefileWriter.getObjectDir(this)); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_PLATFORM_MACRO, getVariant()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_CONF_MACRO, getName()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_DISTDIR_MACRO, MakeConfiguration.DIST_FOLDER); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_BUILDDIR_MACRO, MakeConfiguration.BUILD_FOLDER); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_DLIB_EXT_MACRO, getLibraryExtension()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.PROJECTDIR_MACRO, getBaseDir());
         return val;
     }
 
