@@ -88,7 +88,7 @@ public class GlobalIsNotDefined extends JsAstRule {
     
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) throws BadLocationException {
-        if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.getJsParserResult().getSnapshot().getMimePath())) {
+        if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.getJsParserResult().getSnapshot().getMimePath().getPath())) {
             // compute this hint just for the js files.
             return;
         }
