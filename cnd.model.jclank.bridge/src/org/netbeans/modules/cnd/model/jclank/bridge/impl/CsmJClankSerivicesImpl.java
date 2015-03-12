@@ -77,7 +77,7 @@ public final class CsmJClankSerivicesImpl {
         settings.progress = handle;
         settings.cancelled = new Interrupter() {
             @Override
-            public boolean cancelled() {
+            public boolean isCancelled() {
                 return cancelled.get();
             }
         };
@@ -97,7 +97,7 @@ public final class CsmJClankSerivicesImpl {
         settings.TraceStatisticsOS = out;
         settings.cancelled = new Interrupter() {
             @Override
-            public boolean cancelled() {
+            public boolean isCancelled() {
                 return cancelled.get();
             }
         };
