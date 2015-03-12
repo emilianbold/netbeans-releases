@@ -44,26 +44,20 @@ package org.netbeans.modules.git.remote;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.git.remote.FileInformation.Status;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
-import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author ondra
  */
-public class MoveInterceptorTest extends AbstractGitTestCase {
+public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
 
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
-    private StatusRefreshLogHandler h;
 
-    public MoveInterceptorTest(String name) {
+    public MoveLocalInterceptorTest(String name) {
         super(name);
     }
     
@@ -75,27 +69,6 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
     @Override
     protected boolean isRunAll() {return false;}
 
-    @Override
-    protected void setUp() throws Exception {
-        if (Utilities.isWindows()) {
-            throw new UnsupportedOperationException("Unsupported platform");
-        }
-        super.setUp();
-        MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
-        System.setProperty("versioning.git.handleExternalEvents", "false");
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
-        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
-        Git.STATUS_LOG.setLevel(Level.ALL);
-        h = new StatusRefreshLogHandler(repositoryLocation);
-        Git.STATUS_LOG.addHandler(h);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        Git.STATUS_LOG.removeHandler(h);
-        super.tearDown();
-    }
-
     public void testMoveVersionedFile_DO() throws Exception {
         VCSFileProxy fromFile = VCSFileProxy.createFileProxy(repositoryLocation, "file");
         VCSFileProxySupport.createNew(fromFile);
@@ -106,9 +79,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
         moveDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -134,9 +107,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         commit(fromFile);
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, "file");
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
         moveDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -159,9 +132,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         add();
         commit();
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -197,9 +170,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         commit(repositoryLocation);
 
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         assertTrue(toFolder.exists());
         VCSFileProxy toFolder1 = VCSFileProxy.createFileProxy(toFolder, fromFolder1.getName());
@@ -246,9 +219,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         commit(repositoryLocation);
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, "file");
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -271,9 +244,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         add();
         commit();
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -309,9 +282,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         commit(repositoryLocation);
 
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         assertTrue(toFolder.exists());
         VCSFileProxy toFolder1 = VCSFileProxy.createFileProxy(toFolder, fromFolder1.getName());
@@ -354,9 +327,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
         moveDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -377,9 +350,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -404,9 +377,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
         moveDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -429,9 +402,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
         moveDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -453,10 +426,10 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folder, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
         moveDO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -482,10 +455,10 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         moveDO(fileA, fileC);
         moveDO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -513,10 +486,10 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileC);
         moveFO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -543,11 +516,11 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         moveDO(fileA, fileB);
         moveDO(fileB, fileC);
         moveDO(fileC, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -558,15 +531,15 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileB).getStatus());
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileC).getStatus());
 
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
-        assertTrue(h.waitForFilesToRefresh());
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
+        assertTrue(refreshHandler.waitForFilesToRefresh());
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
         moveDO(fileB, fileC);
-        assertTrue(h.waitForFilesToRefresh());
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileC)));
+        assertTrue(refreshHandler.waitForFilesToRefresh());
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileC)));
         moveDO(fileC, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -590,12 +563,12 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folderB, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
 
         // create from file
         fileA.getParentFile().toFileObject().createData(fileA.getName());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileB.exists());
@@ -621,9 +594,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, file.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -661,9 +634,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toFolderParent, fromFolder.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -714,9 +687,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -739,9 +712,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -763,9 +736,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -788,9 +761,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
         moveFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -814,9 +787,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // rename
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFile.exists());
@@ -841,10 +814,10 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         assertFalse(fileB.exists());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -869,10 +842,10 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileC);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fileA.exists());
@@ -902,11 +875,11 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileC);
         moveFO(fileC, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -930,14 +903,14 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folderB, fileA.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         moveFO(fileA, fileB);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // create from file
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
         fileA.getParentFile().toFileObject().createData(fileA.getName());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileB.exists());
@@ -966,9 +939,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());
@@ -1006,9 +979,9 @@ public class MoveInterceptorTest extends AbstractGitTestCase {
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toFolderParent, fromFolder.getName());
 
         // move
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fromFolder.exists());

@@ -86,6 +86,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void copyFile_SingleRepo_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
         VCSFileProxy copy = VCSFileProxy.createFileProxy(folder, "copy");
@@ -109,6 +112,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyFile_SingleRepo_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file = createFile(folder, "file");
         VCSFileProxy targetFolder = createFolder("target");
@@ -124,6 +130,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyUnversionedFile_SingleRepo_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy file = createFile(folder, "file");
@@ -147,6 +156,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyUnversionedFile_SingleRepo_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy file = createFile(folder, "file");
@@ -162,6 +174,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyFolder_SingleRepo_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file1 = createFile(folder, "file1");
         VCSFileProxy file2 = createFile(folder, "file2");
@@ -201,6 +216,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyFolder_SingleRepo_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy file1 = createFile(folder, "file1");
         VCSFileProxy file2 = createFile(folder, "file2");
@@ -224,6 +242,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyUnversionedFolder_SingleRepo_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy file1 = createFile(folder, "file1");
@@ -247,6 +268,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyUnversionedFolder_SingleRepo_DO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy file1 = createFile(folder, "file1");
@@ -270,6 +294,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyTree_SingleRepo_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy target = createFolder("target");
         VCSFileProxy copy = VCSFileProxy.createFileProxy(target, "copy");
@@ -286,6 +313,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyTree_SingleRepo_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         VCSFileProxy target = createFolder("target");
         VCSFileProxy copy = VCSFileProxy.createFileProxy(target, folder.getName());
@@ -302,6 +332,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyUnversionedTree_SingleRepo_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy target = createFolder("target");
@@ -317,6 +350,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyUnversionedTree_SingleRepo_DO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy target = createFolder("target");
@@ -332,6 +368,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyTree_TwoRepos_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy target = createFolder("target");
@@ -349,6 +388,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyTree_TwoRepos_DO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy target = createFolder("target");
@@ -366,6 +408,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyTree_UnversionedTarget_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy target = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), "mercurialtest_target_" + testName + "_" + System.currentTimeMillis());
@@ -389,6 +434,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
 
     public void copyTree_UnversionedTarget_DO() throws Exception {
+        if (skipTest()) {
+            return;
+        }
         VCSFileProxy folder = createFolder("folder");
         commit(folder);
         VCSFileProxy target = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), "mercurialtest_target_" + testName + "_" + System.currentTimeMillis());
@@ -412,6 +460,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void copyFileToIgnoredFolder_DO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // prepare
         VCSFileProxy folder = createFolder("ignoredFolder");
         HgUtils.addIgnored(folder.getParentFile(), new VCSFileProxy[] { folder });
@@ -431,6 +482,9 @@ public class CopyInterceptorTest extends  RemoteVersioningTestBase {
     }
     
     public void copyFileToIgnoredFolder_FO () throws Exception {
+        if (skipTest()) {
+            return;
+        }
         // prepare
         VCSFileProxy folder = createFolder("ignoredFolder");
         HgUtils.addIgnored(folder.getParentFile(), new VCSFileProxy[] { folder });

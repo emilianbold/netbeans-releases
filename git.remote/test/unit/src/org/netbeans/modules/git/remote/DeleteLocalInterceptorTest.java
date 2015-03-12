@@ -46,29 +46,23 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.git.remote.cli.jgit.Utils;
 import org.netbeans.modules.git.remote.FileInformation.Status;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
-import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author ondra
  */
-public class DeleteInterceptorTest extends AbstractGitTestCase {
+public class DeleteLocalInterceptorTest extends AbstractLocalGitTestCase {
 
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
-    private StatusRefreshLogHandler h;
 
-    public DeleteInterceptorTest(String name) {
+    public DeleteLocalInterceptorTest(String name) {
         super(name);
     }
     
@@ -80,27 +74,6 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
     @Override
     protected boolean isRunAll() {return false;}
 
-    @Override
-    protected void setUp() throws Exception {
-        if (Utilities.isWindows()) {
-            throw new UnsupportedOperationException("Unsupported platform");
-        }
-        super.setUp();
-        MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
-        System.setProperty("versioning.git.handleExternalEvents", "false");
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
-        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
-        Git.STATUS_LOG.setLevel(Level.ALL);
-        h = new StatusRefreshLogHandler(repositoryLocation);
-        Git.STATUS_LOG.addHandler(h);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        Git.STATUS_LOG.removeHandler(h);
-        super.tearDown();
-    }
-
     public void testDeleteUnversionedFile () throws Exception {
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(repositoryLocation, "file");
@@ -109,9 +82,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
 
         // delete
-        h.setFilesToRefresh(Collections.singleton(file));
+        refreshHandler.setFilesToRefresh(Collections.singleton(file));
         delete(file);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(file.exists());
@@ -127,9 +100,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(file).getStatus());
 
         // delete
-        h.setFilesToRefresh(Collections.singleton(file));
+        refreshHandler.setFilesToRefresh(Collections.singleton(file));
         delete(file);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(file.exists());
@@ -142,9 +115,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
     public void testDeleteVersionedFileExternally() throws Exception {
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(repositoryLocation, "file");
-        h.setFilesToRefresh(Collections.singleton(file));
+        refreshHandler.setFilesToRefresh(Collections.singleton(file));
         repositoryLocation.toFileObject().createData(file.getName());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         assertEquals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
         add(file);
         commit(repositoryLocation);
@@ -158,9 +131,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         assertFalse(file.exists());
 
         // notify changes
-        h.setFilesToRefresh(Collections.singleton(file));
+        refreshHandler.setFilesToRefresh(Collections.singleton(file));
         VersioningSupport.refreshFor(new VCSFileProxy[]{file});
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
         assertEquals(EnumSet.of(Status.REMOVED_INDEX_WORKING_TREE, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
         delete(true, file);
         commit(repositoryLocation);
@@ -180,9 +153,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(file).getStatus());
 
         // delete
-        h.setFilesToRefresh(Collections.singleton(folder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(folder));
         delete(folder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(folder.exists());
@@ -235,9 +208,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         VCSFileProxySupport.createNew(file);
 
         // delete
-        h.setFilesToRefresh(Collections.singleton(folder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(folder));
         delete(folder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(folder.exists());
@@ -282,9 +255,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         commit();
 
         // delete
-        h.setFilesToRefresh(Collections.singleton(folder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(folder));
         delete(folder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(folder.exists());
@@ -315,9 +288,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         VCSFileProxySupport.createNew(file22);
 
         // delete
-        h.setFilesToRefresh(Collections.singleton(folder));
+        refreshHandler.setFilesToRefresh(Collections.singleton(folder));
         delete(folder);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(folder.exists());
@@ -338,11 +311,11 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(repositoryLocation, "file");
 
-        h.setFilesToRefresh(Collections.singleton(file));
+        refreshHandler.setFilesToRefresh(Collections.singleton(file));
         // create
         FileObject fo = repositoryLocation.toFileObject();
         fo.createData(file.getName());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(file.exists());
@@ -358,19 +331,19 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileA).getStatus());
 
         // delete
-        h.setFilesToRefresh(Collections.singleton(fileA));
+        refreshHandler.setFilesToRefresh(Collections.singleton(fileA));
         FileObject fo = fileA.toFileObject();
         fo.delete();
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test if deleted
         assertFalse(fileA.exists());
         assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(fileA).getStatus());
 
         // create
-        h.setFilesToRefresh(Collections.singleton(fileA));
+        refreshHandler.setFilesToRefresh(Collections.singleton(fileA));
         fo.getParent().createData(fo.getName());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -380,12 +353,12 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
     public void testDeleteA_CreateA_RunAtomic() throws Exception {
         // init
         final VCSFileProxy fileA = VCSFileProxy.createFileProxy(repositoryLocation, "A");
-        h.setFilesToRefresh(Collections.singleton(fileA));
+        refreshHandler.setFilesToRefresh(Collections.singleton(fileA));
         VCSFileProxySupport.createNew(fileA);
         add();
         commit();
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileA).getStatus());
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         final FileObject fo = fileA.toFileObject();
         AtomicAction a = new AtomicAction() {
@@ -395,9 +368,9 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
                 fo.getParent().createData(fo.getName());
             }
         };
-        h.setFilesToRefresh(Collections.singleton(fileA));
+        refreshHandler.setFilesToRefresh(Collections.singleton(fileA));
         fo.getFileSystem().runAtomicAction(a);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
@@ -414,11 +387,11 @@ public class DeleteInterceptorTest extends AbstractGitTestCase {
         commit();
 
         // delete A
-        h.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
         delete(fileA);
         // rename B to A
         renameDO(fileB, fileA);
-        assertTrue(h.waitForFilesToRefresh());
+        assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // test
         assertFalse(fileB.exists());

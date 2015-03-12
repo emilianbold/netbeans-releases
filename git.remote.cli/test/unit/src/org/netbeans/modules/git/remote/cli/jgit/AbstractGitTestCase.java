@@ -74,6 +74,7 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 
 /**
@@ -86,6 +87,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     private final VCSFileProxy repositoryLocation;
     private JGitRepository localRepository;
     protected static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor ();
+    private boolean skipTest = false;
 
     private enum Scope{All, Successful, Failed};
     private static final Scope TESTS_SCOPE = Scope.Successful;
@@ -96,6 +98,11 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         workDir = VCSFileProxy.createFileProxy(getWorkDir());
         repositoryLocation = VCSFileProxy.createFileProxy(workDir, "repo");
         wc = VCSFileProxy.createFileProxy(workDir, getName() + "_wc");
+        String gitPath = "/usr/bin/git";
+        FileObject git = VCSFileProxySupport.getResource(workDir, gitPath).toFileObject();
+        if (git == null || !git.isValid()) {
+            skipTest = true;
+        }
     }
 
     protected abstract boolean isFailed();
@@ -103,6 +110,9 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     @Override
     public boolean canRun() {
+        if (skipTest) {
+            return false;
+        }
         if (!isRunAll()) {
             switch (TESTS_SCOPE) {
                 case Failed:
