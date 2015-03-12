@@ -119,7 +119,11 @@ public enum JadeCompletionContext {
         if (!ts.movePrevious()) {
             return TAG_AND_KEYWORD;
         }
-        ts.moveNext();
+        if (!ts.moveNext()) {
+            if (ts.token() != null && ts.token().id() == JadeTokenId.EOL) {
+                return TAG_AND_KEYWORD;
+            }
+        }
         
         Token<JadeTokenId> token = ts.token();
         JadeTokenId id = token.id();
