@@ -94,6 +94,8 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result2;
@@ -333,6 +335,20 @@ public class RunFindBugs {
                     if ("UPM_UNCALLED_PRIVATE_METHOD".equals(b.getBugPattern().getType())) {
                         if (js == null) {
                             js = JavaSource.forFileObject(sourceFile);
+                        }
+                        // see #235630
+                        if (doc instanceof LineDocument) {
+                            int offset = LineDocumentUtils.getLineStartFromIndex((LineDocument) doc, sourceLine.getStartLine() - 1);
+                            if (offset < 0) {
+                                continue;
+                            }
+                        } else {
+                            if (lineOffsets == null) {
+                                lineOffsets = computeLineMap(sourceFile, FileEncodingQuery.getEncoding(sourceFile));
+                            }
+                            if ((lineOffsets.length / 2) < sourceLine.getStartLine()) {
+                                continue;
+                            }
                         }
                         int[] span = spanForEnclosingMethod(info, js, sourceLine.getStartLine());
                         if (span != null && span[0] != (-1)) {
