@@ -52,6 +52,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -321,7 +323,8 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
         private final HashSet<VCSFileProxy> refreshedFiles = new HashSet<VCSFileProxy>();
         private final VCSFileProxy topFolder;
         private final Set<String> interestingFiles = new HashSet<String>();
-        boolean active;
+        private boolean active;
+        private CountDownLatch latch;
 
         public StatusRefreshLogHandler (VCSFileProxy topFolder) {
             this.topFolder = topFolder;
@@ -336,16 +339,16 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
                 synchronized (this) {
                     if (refreshedFiles.containsAll(filesToRefresh)) {
                         filesRefreshed = true;
-                        notifyAll();
+                        latch.countDown();
                     }
                 }
             } else if (record.getMessage().contains("refreshAllRoots() roots: ")) {
                 synchronized (this) {
                     for (VCSFileProxy f : (Set<VCSFileProxy>) record.getParameters()[0]) {
-                        if (f.getPath().startsWith(topFolder.getPath()))
-                        refreshedFiles.add(f);
+                        if (f.getPath().startsWith(topFolder.getPath())) {
+                            refreshedFiles.add(f);
+                        }
                     }
-                    notifyAll();
                 }
             } else if (record.getMessage().equals("refreshAllRoots() file status: {0} {1}")) {
                 interestingFiles.add((String) record.getParameters()[0]);
@@ -367,18 +370,11 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
             filesToRefresh = files;
             interestingFiles.clear();
             active = true;
+            latch = new CountDownLatch(1);
         }
 
         public boolean waitForFilesToRefresh () throws InterruptedException {
-            for (int i = 0; i < 50; ++i) {
-                synchronized (this) {
-                    if (filesRefreshed) {
-                        return true;
-                    }
-                    wait(500);
-                }
-            }
-            return false;
+            return latch.await(5, TimeUnit.SECONDS);
         }
 
         public boolean getFilesRefreshed () {

@@ -41,6 +41,7 @@ package org.netbeans.modules.javascript2.jade.editor.lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
+
 %%
 
 %public
@@ -228,13 +229,13 @@ h = [0-9a-f]
 nonascii = [\200-\377]
 unicode	= \\{h}{1,6}(\r\n|[ \t\r\n\f])?
 escape =	{unicode}|\\[ -~\200-\377]
-nmstart	 =	[_a-z]|{nonascii}|{escape}
+nmstart	 =	[_a-zA-Z]|{nonascii}|{escape}
 nmchar	=	[_a-zA-Z0-9-]|{nonascii}|{escape}
 
 HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 HtmlIdentifierPart = [[:letter:][:digit:]]+[[:letter:][:digit:]\-]*
 HtmlIdentifier = {HtmlIdentifierPart}(:{HtmlIdentifierPart})*
-CssIdentifier = {nmstart}{nmchar}*
+CssIdentifier = -?{nmstart}{nmchar}*
 LineTerminator = \r|\n|\r\n
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 WS = [ \t\f\u00A0\u000B]
