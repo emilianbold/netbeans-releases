@@ -188,7 +188,7 @@ public class Schema2BeansUtil {
     /**
      * Merge child nodes
      * 
-     * @param node     current node base webapp
+     * @param node     current node base
      * @param childNode child node if exist
      * @param foundBean child bean
      * @param currentChild current child node
@@ -196,32 +196,32 @@ public class Schema2BeansUtil {
      * @param nodeMap node map
      * @param document document
      * @param patternBean pattern bean
-     * @param children list relevant childs current node base webapp
+     * @param children list relevant childs current node base
      */
-    private static void mergeChildNodes(Node node, Node childNode, BaseBean foundBean, 
-            Node currentChild, Node patternChild, Map nodeMap, Document document, 
+    private static void mergeChildNodes(Node node, Node childNode, BaseBean foundBean,
+            Node currentChild, Node patternChild, Map nodeMap, Document document,
             BaseBean patternBean, List children) {
         Node foundChild = childNode;
-                if (foundChild == null) {
-                    foundChild = takeEqualNode(children, patternChild);
-                }
-                if (foundChild != null) {
-                    if (foundChild != currentChild) {
-                        node.removeChild(foundChild);
-                        node.insertBefore(foundChild, currentChild);
-                    }
-                    if (foundBean != null) {
-                        mergeBeans(nodeMap, foundBean, patternBean);
-            } else if (isRelevantNode(foundChild) && foundChild.getChildNodes().getLength() != 0) {
-                        mergeNode(nodeMap, foundChild, patternChild);
-                    } else {
-                        foundChild.setNodeValue(patternChild.getNodeValue());
-                    }
-                } else {
-                    Node child = document.importNode(patternChild, true);
-                    node.insertBefore(child, currentChild);
-                }
+        if (foundChild == null) {
+            foundChild = takeEqualNode(children, patternChild);
+        }
+        if (foundChild != null) {
+            if (foundChild != currentChild) {
+                node.removeChild(foundChild);
+                node.insertBefore(foundChild, currentChild);
             }
+            if (foundBean != null) {
+                mergeBeans(nodeMap, foundBean, patternBean);
+            } else if (isRelevantNode(foundChild)) {
+                mergeNode(nodeMap, foundChild, patternChild);
+            } else {
+                foundChild.setNodeValue(patternChild.getNodeValue());
+            }
+        } else {
+            Node child = document.importNode(patternChild, true);
+            node.insertBefore(child, currentChild);
+        }
+    }
 
     /**
      * Merge "unsupported" attributes of a node
