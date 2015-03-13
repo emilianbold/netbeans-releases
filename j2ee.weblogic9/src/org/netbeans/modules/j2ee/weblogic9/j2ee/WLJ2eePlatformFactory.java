@@ -892,9 +892,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             Set<WLServerLibrary> tmpNewLibraries;
-            // #249289 - we need a fresh one as for deleted server there might
-            // not be any properties anymore; needs fix on higher level
-            if (InstanceProperties.getInstanceProperties(platform.dm.getUri()) != null) {
+            // #249289 - deleted server may still listen until GCed
+            if (platform.dm.getRealInstanceProperties() != null) {
                 tmpNewLibraries = new WLServerLibrarySupport(platform.dm).getDeployedLibraries();
             } else {
                 tmpNewLibraries = Collections.emptySet();
