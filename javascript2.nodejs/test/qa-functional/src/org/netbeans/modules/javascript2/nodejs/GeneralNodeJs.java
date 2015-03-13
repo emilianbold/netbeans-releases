@@ -61,6 +61,7 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
@@ -435,6 +436,42 @@ public class GeneralNodeJs extends JellyTestCase {
         Node node = new Node(rootNode, "Sources|" + fileName);
         node.select();
         node.performPopupAction("Open");
+        evt.waitNoEvent(3000);
+        // wait for Navigator as inidication of file being ready - IDE could be downloading documentation for Angular/NodeJS/Knockout/Require which could pause resolving file in editor
+        waitForNavigator();
+    }
+    
+    private void waitForNavigator() {
+        long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout");
+
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", 300000);
+            NavigatorOperator nav = new NavigatorOperator();
+            Waiter waiter = new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object obj) {
+                    int rowCount = ((NavigatorOperator) obj).getTree().getRowCount();
+                    if (rowCount > 1) {
+                        return true;
+                    } else {
+                        return (null);
+                    }
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Navigator populated: ";
+                }
+            });
+            waiter.setOutput(nav.getOutput());
+            waiter.setTimeoutsToCloneOf(nav.getTimeouts(), "ComponentOperator.WaitComponentEnabledTimeout");
+            waiter.waitAction(nav);
+
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", defaultTimeout);
+        } catch (InterruptedException ex) {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", defaultTimeout);
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     protected void checkCompletionItems(
