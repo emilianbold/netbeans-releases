@@ -75,7 +75,8 @@ public class JadeFormatter implements Formatter {
     @Override
     public void reindent(Context context) {
         String mimeType = getMimeTypeAtOffset(context.document(), context.startOffset());
-        if (JadeTokenId.JADE_MIME_TYPE.equals(mimeType)) {
+        String lineEndMimeType = getMimeTypeAtOffset(context.document(), context.endOffset() - 1);
+        if (JadeTokenId.JADE_MIME_TYPE.equals(mimeType) && mimeType.equals(lineEndMimeType)) {
             IndentationCounter.Indentation indent = new IndentationCounter((BaseDocument) context.document()).count(context.caretOffset());
             indent.modify(context);
         }

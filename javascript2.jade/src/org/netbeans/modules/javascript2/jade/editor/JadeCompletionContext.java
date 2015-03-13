@@ -48,6 +48,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.jade.editor.lexer.JadeTokenId;
 
 /**
@@ -126,6 +127,12 @@ public enum JadeCompletionContext {
         
         if (!ts.movePrevious()) {
             return TAG_AND_KEYWORD;
+        } else if (ts.token().id() == JadeTokenId.TAG) {
+            // just check, whether we are on the first tag in the file. see issue #251160
+            if (!ts.movePrevious()) {
+                return TAG_AND_KEYWORD;
+            }
+            ts.moveNext();
         }
         if (!ts.moveNext()) {
             if (ts.token() != null && ts.token().id() == JadeTokenId.EOL) {

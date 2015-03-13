@@ -12,7 +12,7 @@
     <fontcolor name="separator"  default="default"/>
     <fontcolor name="javascript-embedded" bgColor="FFE3F2E1" default="default"/>
     <fontcolor name="comment"  default="comment"/>
-    <fontcolor name="unbuffered-commnet"  default="comment"/>
+    <fontcolor name="unbuffered-comment"  default="comment"/>
     <fontcolor name="code-delimiter"  default="default"/>
     <fontcolor name="plain-text-delimiter"  default="default"/>
     <fontcolor name="plain-text"  bgColor="E3F2ff" default="default"/>
