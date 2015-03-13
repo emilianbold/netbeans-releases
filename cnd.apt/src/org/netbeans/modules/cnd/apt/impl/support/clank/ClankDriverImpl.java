@@ -43,31 +43,21 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
 import java.util.Collections;
-import org.clang.basic.IdentifierInfo;
-import org.clang.basic.tok;
 import org.clang.lex.Token;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
 import org.clang.tools.services.support.Interrupter;
-import org.clang.tools.services.support.TrackIncludeInfoCallback;
-import static org.clank.java.std.strcmp;
-import org.clank.support.Casts;
 import org.clank.support.NativePointer;
 import org.llvm.support.llvm;
-import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
-import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,7 +66,7 @@ import org.openide.util.Exceptions;
  */
 public class ClankDriverImpl {
 
-    private static final boolean TRACE = true;
+    static final boolean TRACE = false;
 
     public static TokenStream getTokenStream(APTFileBuffer buffer,
             PreprocHandler ppHandler,
@@ -87,6 +77,7 @@ public class ClankDriverImpl {
             Token[] tokens = includeHandler.getTokens();
             int nrTokens = includeHandler.getNrTokens();
             if (tokens == null) {
+                int inclStackIndex = includeHandler.getInclStackIndex();
                 CharSequence path = buffer.getAbsolutePath();
                 byte[] bytes = toBytes(buffer.getCharBuffer());
                 // prepare params to run preprocessor
@@ -102,7 +93,7 @@ public class ClankDriverImpl {
                         return interrupter.cancelled();
                     }
                 };
-                FileTokensCallback fileTokensCallback = new FileTokensCallback(path, STOP_AT_FILE_PATH, llvm.errs(), callback);
+                ClankPPCallback fileTokensCallback = new ClankPPCallback(path, inclStackIndex, llvm.errs(), callback);
                 settings.IncludeInfoCallbacks = fileTokensCallback;
                 ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
                 ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
@@ -112,7 +103,7 @@ public class ClankDriverImpl {
                     return null;
                 }
                 nrTokens = fileTokensCallback.getNrTokens();
-                includeHandler.setIncludeInfo(fileTokensCallback.getIncludeStackIndex(), tokens, nrTokens);
+                includeHandler.setTokens(tokens, nrTokens);
             }
             if (interrupter.cancelled() || tokens == null) {
                 return null;
@@ -123,7 +114,6 @@ public class ClankDriverImpl {
             return null;
         }
     }
-    private static final int STOP_AT_FILE_PATH = -1;
 
     private static byte[] toBytes(char[] chars) {
         byte[] asciis = new byte[chars.length];
@@ -131,71 +121,6 @@ public class ClankDriverImpl {
             asciis[i] = NativePointer.$(chars[i]);
         }
         return asciis;
-    }
-
-    private static class FileTokensCallback extends TrackIncludeInfoCallback {
-
-        private final ClankDriver.ClankPreprocessorCallback delegate;
-        private final CharSequence path;
-        private final int stopAtIndex;
-        private Token[] tokens;
-        private int nrTokens;
-        private int inclStackIndex;
-
-        public FileTokensCallback(CharSequence path, int stopAtIndex, raw_ostream traceOS, ClankDriver.ClankPreprocessorCallback delegate) {
-            super(traceOS);
-            this.path = path;
-            this.stopAtIndex = stopAtIndex;
-            this.delegate = delegate;
-        }
-
-        @Override
-        public void onExit(TrackIncludeInfoCallback.IncludeFileInfo fileInfo) {
-            if (ClankDriverImpl.TRACE) {
-                traceOS.$out("Exit from ");
-                if (fileInfo.isFile()) {
-                    traceOS.$out(fileInfo.getName());
-                } else {
-                    traceOS.$out(fileInfo.getFileID());
-                }
-                traceOS.$out(" with #Token: ").$out(fileInfo.getTokens().size()).$out("\n");
-                int[] offs = fileInfo.getSkippedRanges();
-                if (offs.length > 0) {
-                    for (int i = 0; i < offs.length; i += 2) {
-                        int st = offs[i];
-                        int end = offs[i + 1];
-                        traceOS.$out("[").$out(st).$out("-").$out(end).$out("] ");
-                    }
-                    traceOS.$out("\n");
-                }
-                traceOS.flush();
-            }
-            
-            if (stopAtIndex != STOP_AT_FILE_PATH) {
-                if (stopAtIndex == fileInfo.getIncludeIndex()) {
-                    nrTokens = fileInfo.getTokens().size();
-                    tokens = fileInfo.stealTokens();
-                    inclStackIndex = fileInfo.getIncludeIndex();
-                }
-            } else if (fileInfo.isFile() && (strcmp(path, fileInfo.getName()) == 0)) {
-                nrTokens = fileInfo.getTokens().size();
-                tokens = fileInfo.stealTokens();
-                inclStackIndex = fileInfo.getIncludeIndex();
-            }
-        }
-
-        private Token[] getTokens() {
-            return tokens;
-        }
-
-        public int getNrTokens() {
-            return nrTokens;
-        }
-
-        private int getIncludeStackIndex() {
-            assert (stopAtIndex == STOP_AT_FILE_PATH) || stopAtIndex == inclStackIndex : "stopAtIndex="+stopAtIndex + " vs. " + inclStackIndex;
-            return inclStackIndex;
-        }
     }
 
     private static final class ClankToAPTTokenStream implements APTTokenStream, TokenStream {

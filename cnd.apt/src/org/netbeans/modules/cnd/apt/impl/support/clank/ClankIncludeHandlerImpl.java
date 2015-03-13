@@ -145,9 +145,12 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     public int getNrTokens() {
         return nrTokens;
     }
-    
-    void setIncludeInfo(int inclStackIndex, Token[] tokens, int nrTokens) {
-        this.inclStackIndex = inclStackIndex;
+
+    public int getInclStackIndex() {
+        return inclStackIndex;
+    }
+
+    void setTokens(Token[] tokens, int nrTokens) {
         if (tokens == null) {
             this.tokens = NO_TOKENS;
             this.nrTokens = 0;
