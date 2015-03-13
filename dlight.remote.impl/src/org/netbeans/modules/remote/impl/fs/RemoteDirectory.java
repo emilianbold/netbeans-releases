@@ -1576,7 +1576,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }        
         checkConnection(child, true);
         DirectoryStorage storage = getDirectoryStorage(child.getNameExt()); // do we need this?
-        Lock lock = lock = RemoteFileSystem.getLock(child.getCache()).writeLock();
+        Lock lock = RemoteFileSystem.getLock(child.getCache()).writeLock();
         lock.lock();
         try {
             if (child.getCache().exists()) {
