@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.parsing.lucene;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -58,7 +60,7 @@ import org.netbeans.modules.parsing.lucene.support.Convertor;
  *
  * @author Tomas Zezula
  */
-public class RowIndexPerfTest extends NbTestCase {
+public class RawIndexPerfTest extends NbTestCase {
 
     private static final int NO_RUNS = 0;   //10;
     private static final int NO_ROUNDS = 100;
@@ -66,14 +68,15 @@ public class RowIndexPerfTest extends NbTestCase {
     private static final int NO_QUERIES = ROUND_SIZE/10;
 
     private final AtomicLong seq = new AtomicLong();
+    private final Random rnd = new Random();
 
-    public RowIndexPerfTest(String name) {
+    public RawIndexPerfTest(String name) {
         super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp(); //To change body of generated methods, choose Tools | Templates.
+        super.setUp();
         clearWorkDir();
     }
 
@@ -82,19 +85,20 @@ public class RowIndexPerfTest extends NbTestCase {
         if (NO_RUNS > 0) {
             long indexTime = 0L;
             long searchTime = 0L;
+            final File indexFolder = getWorkDir();
             for (int i = 0; i< NO_RUNS; i++) {
-                long[] times = measure();
+                long[] times = measure(indexFolder);
                 indexTime+=times[0];
                 searchTime+=times[1];
             }
-            System.out.println(indexTime/(NO_RUNS*1000000));
-            System.out.println(searchTime/(NO_RUNS*1000000));
+            System.out.printf("Index time: %d%n",indexTime/(NO_RUNS*1000000));
+            System.out.printf("Search time: %d%n", searchTime/(NO_RUNS*1000000));
         }
     }
 
-    private long[] measure() throws Exception {
+    private long[] measure(final File indexDir) throws Exception {
         long it = 0;
-        final LuceneIndex index = LuceneIndex.create(getWorkDir(), new KeywordAnalyzer());
+        final LuceneIndex index = LuceneIndex.create(indexDir, new KeywordAnalyzer());
         for (int i=0; i< NO_ROUNDS; i++) {
             final List<Long> items = generateData(ROUND_SIZE);
             final long st = System.nanoTime();
@@ -107,6 +111,15 @@ public class RowIndexPerfTest extends NbTestCase {
             it+= System.nanoTime() - st;
         }
         long qt = 0;
+        final List<Long> res = new ArrayList<>();
+        final Convertor<Document,Long> c = new DocToLong();
+        for (int i=0; i< NO_QUERIES; i++) {
+            final Query q = createQuery();
+            final long st = System.nanoTime();
+            index.query(res, c, null, null, q);
+            qt += System.nanoTime() - st;
+            res.clear();
+        }
         return new long[] {it, qt};
     }
 
@@ -118,12 +131,17 @@ public class RowIndexPerfTest extends NbTestCase {
         return res;
     }
 
+    private Query createQuery() {
+        int i = rnd.nextInt((int)seq.get());
+        return new TermQuery(new Term("dec", String.valueOf(i)));
+    }
+
     private static final class LongToDoc implements Convertor<Long, Document> {
         @Override
         public Document convert(Long p) {
             final Document doc = new Document();
-            doc.add(new Field("dec", Long.toString(p), Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
-            doc.add(new Field("hex", Long.toHexString(p), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+            doc.add(new Field("dec", Long.toString(p), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+            doc.add(new Field("hex", Long.toHexString(p), Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
             doc.add(new Field("bin", Long.toBinaryString(p), Field.Store.YES, Field.Index.NO));
             return doc;
         }
@@ -133,6 +151,13 @@ public class RowIndexPerfTest extends NbTestCase {
         @Override
         public Query convert(Long p) {
             return new TermQuery(new Term("dec", Long.toString(p)));
+        }
+    }
+
+    private static final class DocToLong implements Convertor<Document,Long> {
+        @Override
+        public Long convert(Document p) {
+            return Long.valueOf(p.getFieldable("dec").stringValue());
         }
     }
 }
