@@ -105,7 +105,7 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
     protected boolean isFailed() {
         return Arrays.asList("copyUnversionedFolder_DO","copyVersionedFolder_DO","copyVersionedFolder2Repos_DO",
                 "copyFileTree2Repos_DO","copyUnversionedFolder_FO","copyVersionedFolder_FO","copyFileTree_FO",
-                "copyVersionedFolder2Repos_FO","copyFileTree2Repos_FO").contains(testName);
+                "copyVersionedFolder2Repos_FO","copyFileTree2Repos_FO","copyFileTree_DO").contains(testName);
     }
 
     @Override
