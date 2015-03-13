@@ -97,6 +97,7 @@
 			<tocitem text="Opening a Terminal Window for a Build Host" target="RemoteDevelopmentTerminal" />
 			<tocitem text="Managing Build Hosts" target="RemoteDevelopmentBrowsing" />
 			<tocitem text="Working with Remote Build Hosts Using the Toolbar" target="RemoteDevelopmentToolbar" />
+			<tocitem text="Using Full Remote Mode with Version Control" target="RemoteVCS" />
 		</tocitem>
 		<tocitem text="Testing C/C++ Projects">
 			<tocitem text="About C and C++ Unit Tests" target="c_unit_about" />

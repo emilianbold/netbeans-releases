@@ -1007,8 +1007,24 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
+    /*package */ DirEntry getDirEntry(String childName) {
+        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        if (trace) {trace("waiting for lock");} // NOI18N
+        writeLock.lock();
+        try {
+            DirectoryStorage storage = getExistingDirectoryStorage();
+            if (storage == DirectoryStorage.EMPTY) {
+                return null;
+            }
+            return storage.getValidEntry(childName);
+        } finally {
+            writeLock.unlock();
+        }        
+    }
+
     /*package */void updateStat(RemotePlainFile fo, DirEntry entry) {
         RemoteLogger.assertTrue(fo.getNameExt().equals(entry.getName()));
+        RemoteLogger.assertTrue(fo.getParent() == this);
         RemoteLogger.assertFalse(entry.isDirectory());
         RemoteLogger.assertFalse(entry.isLink());
         Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
@@ -1526,21 +1542,41 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return false;
     }
 
-    void ensureChildSync(RemotePlainFile child) throws
-            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    private static boolean isLoadingInEditor() {
+        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            if ("org.openide.text.DocumentOpenClose$DocumentLoad".equals(element.getClassName())) { //NOI18N
+                if ("atomicLockedRun".equals(element.getMethodName())) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
+    private boolean cacheExists(RemotePlainFile child) {
         Lock lock = RemoteFileSystem.getLock(child.getCache()).readLock();
         lock.lock();
         try {
-            if (child.getCache().exists()) {
-                return;
-            }
+            return child.getCache().exists();
         } finally {
             lock.unlock();
-        }
+        }        
+    }
+    
+    /*package*/ void ensureChildSync(RemotePlainFile child) throws
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+
+        if (cacheExists(child)) {
+            if(isLoadingInEditor() && ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                child.refreshImpl(false, null, false, RefreshMode.DEFAULT);
+            }
+            if (cacheExists(child)) {
+                return;
+            }
+        }        
         checkConnection(child, true);
         DirectoryStorage storage = getDirectoryStorage(child.getNameExt()); // do we need this?
-        lock = RemoteFileSystem.getLock(child.getCache()).writeLock();
+        Lock lock = RemoteFileSystem.getLock(child.getCache()).writeLock();
         lock.lock();
         try {
             if (child.getCache().exists()) {

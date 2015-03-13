@@ -404,4 +404,5 @@
 	<mapID target="sendto-tab" url="SendTo/sendto-tab.html"/>
 	<mapID target="stop_script" url="images/stop_script.gif"/>
 	<mapID target="sendto-vscript" url="SendTo/sendto-vscript.html"/>
+	<mapID target="RemoteVCS" url="WorkingWithCandC++Projects/RemoteVCS.html"/>
 </map>
