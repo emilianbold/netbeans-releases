@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -73,6 +74,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         ClankPreprocessorCallback callback = new MyClankPreprocessorCallback();
         FileImpl fileImpl = getMainFile();
         TokenStream tsFromClank = ClankDriver.getTokenStream(fileImpl.getBuffer(), ppHandler, callback, interrupter);
+        if (tsFromClank == null) {
+            return null;
+        }
         APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppHandler.getState());
         TokenStream filteredTokenStream = languageFilter.getFilteredStream(tsFromClank);
         return filteredTokenStream;

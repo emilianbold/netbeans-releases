@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
@@ -105,7 +106,11 @@ public class ClankDriverImpl {
                 settings.IncludeInfoCallbacks = fileTokensCallback;
                 ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
                 ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
-                tokens = fileTokensCallback.getTokens(); 
+                tokens = fileTokensCallback.getTokens();
+                if (tokens == null) {
+                    CndUtils.assertTrueInConsole(false, "no Tokens for " + path);
+                    return null;
+                }
                 nrTokens = fileTokensCallback.getNrTokens();
                 includeHandler.setIncludeInfo(fileTokensCallback.getIncludeStackIndex(), tokens, nrTokens);
             }
