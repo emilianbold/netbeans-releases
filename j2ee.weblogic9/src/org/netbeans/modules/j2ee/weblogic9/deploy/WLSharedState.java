@@ -63,19 +63,17 @@ public class WLSharedState {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final InstanceProperties ip;
-
     /** <i>GuardedBy("this")</i> */
     private DomainChangeListener domainListener;
 
     /* <i>GuardedBy("this")</i> */
     private boolean restartNeeded;
 
-    public WLSharedState(InstanceProperties ip) {
-        this.ip = ip;
+    public WLSharedState() {
+        super();
     }
 
-    public synchronized void configure() {
+    public synchronized void configure(InstanceProperties ip) {
         if (domainListener != null) {
             return;
         }
