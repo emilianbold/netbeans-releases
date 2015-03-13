@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -78,7 +79,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return null;
         }
         APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppHandler.getState());
-        TokenStream filteredTokenStream = languageFilter.getFilteredStream(tsFromClank);
+        TokenStream filteredTokenStream = languageFilter.getFilteredStream(new APTCommentsFilter(tsFromClank));
         return filteredTokenStream;
     }
 
