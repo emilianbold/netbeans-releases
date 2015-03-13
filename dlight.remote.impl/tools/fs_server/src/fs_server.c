@@ -151,9 +151,9 @@ static const char* err_get_message() {
 
 static const char* err_to_string(int err_no) {
 #if __linux__
-    return strerror_r(err_no, err_info.strerr, thread_emsg_bufsize);
+    return strerror_r(err_no, err_info.strerr, strerr_bufsize);
 #else
-    if (strerror_r(err_no, err_info.strerr, thread_emsg_bufsize)) {
+    if (strerror_r(err_no, err_info.strerr, strerr_bufsize)) {
         return "";
     } else {
         return err_info.strerr;
@@ -613,7 +613,7 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
 
 static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {
     array_init(entries, 100);
-    visit_dir_entries(path, fs_entry_creating_visitor, entries);
+    visit_dir_entries(path, fs_entry_creating_visitor, NULL, entries);
     array_truncate(entries);
 }
 
@@ -693,6 +693,16 @@ typedef struct {
 static void response_end(int request_id, const char* path);
 static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
+static void response_error(int request_id, const char* path, int err_code, const char *err_msg);
+
+static void ls_error_handler(bool dir_itself, const char* path, int err, const char* additional_message, void *data) {
+    if (dir_itself && data) {
+        response_ls_data *rsp_data = data;
+        response_error(rsp_data->request_id, path, err, additional_message);
+    } else {
+        default_error_handler(dir_itself, path, err, additional_message,data);
+    }
+}
 
 static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
 
@@ -724,7 +734,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     }
 
     response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
-    visit_dir_entries(path, response_ls_plain_visitor, &data);
+    visit_dir_entries(path, response_ls_plain_visitor, ls_error_handler, &data);
 
     response_end(request_id, path);
 
@@ -737,7 +747,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     }
 
     if (recursive) {
-        visit_dir_entries(path, response_ls_recursive_visitor, &data);
+        visit_dir_entries(path, response_ls_recursive_visitor, NULL, &data);
         if (!inner) {
             response_end(request_id, path);
         }
@@ -965,7 +975,7 @@ static bool copy_dir(const char* path, const char* path2, int id) {
     cds->dst_path_base_end = cds->dst_path + len + 1;
     cds->dst_max_append_size = PATH_MAX - len - 1;
 
-    visit_dir_entries(path, copy_dir_visitor, cds);
+    visit_dir_entries(path, copy_dir_visitor, NULL, cds);
 
     bool success = cds->success;
     free(cds);

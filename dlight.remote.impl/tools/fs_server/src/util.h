@@ -133,7 +133,10 @@ void buffer_free(buffer* buf);
 bool visit_dir_entries(
         const char* path, 
         bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), 
+        void (*error_handler) (bool dir_itself, const char* path, int err, const char* additional_message, void *data),
         void *data);
+
+void default_error_handler(bool dir_itself, const char* path, int err, const char* additional_message, void *data);
 
 const char* get_basename(const char *path);
 

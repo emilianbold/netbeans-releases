@@ -404,7 +404,7 @@ static bool removing_visitor(char* name, struct stat *stat_buf, char* link, cons
 
 bool clean_dir(const char* path) {
     bool res = true;
-    visit_dir_entries(path, removing_visitor, &res);
+    visit_dir_entries(path, removing_visitor, NULL, &res);
     return res;
 }
 
@@ -419,8 +419,25 @@ void buffer_free(buffer* buf) {
     }
 }
 
-bool visit_dir_entries(const char* path, 
-        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), void *data) {
+void default_error_handler(bool dir_itself, const char* path, int err, const char* additional_message, void *data) {
+    char buf[400];
+    const char* emsg;
+#if __linux__
+    emsg = strerror_r(err, buf, 400);
+#else
+    emsg = strerror_r(err, buf, 256) ? "?" : buf;
+#endif
+    report_error("%s '%s': %s\n", additional_message, path, emsg);
+}
+
+/** returns 0 in the case of success or errno in the case of failure */
+int visit_dir_entries(const char* path, 
+        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), 
+        void (*error_handler) (bool dir_itself, const char* path, int err, const char* additional_message, void *data),
+        void *data) {
+    if (!error_handler) {
+        error_handler = default_error_handler;
+    }
     DIR *d = d = opendir(path);
     if (d) {
         union {
@@ -438,7 +455,7 @@ bool visit_dir_entries(const char* path,
         struct dirent *entry;
         while (true) {
             if (readdir_r(d, &entry_buf.d, &entry)) {
-                report_error("error reading directory %s: %s\n", path, strerror(errno));
+                error_handler(true, path, errno, "error reading directory", data);
                 break;
             }
             if (!entry) {
@@ -454,7 +471,7 @@ bool visit_dir_entries(const char* path,
                 if (is_link) {
                     ssize_t sz = readlink(abspath, link, buf_size);
                     if (sz == -1) {
-                        report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
+                        error_handler(false, abspath, errno, "error performing readlink", data);
                         strcpy(link, "?");
                     } else {
                         link[sz] = 0;
@@ -464,7 +481,7 @@ bool visit_dir_entries(const char* path,
                     break;
                 }
             } else {
-                report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));                
+                error_handler(false, abspath, errno, "error getting stat", data);
             }
         }
         free(abspath);
@@ -472,7 +489,7 @@ bool visit_dir_entries(const char* path,
         closedir(d);
         return true; // TODO: error processing: what some of them has errors?
     } else {
-        report_error("error opening directory '%s': %s\n", path, strerror(errno));
+        error_handler(true, path, errno, "error opening directory", data);
         return false;
     }
 }
