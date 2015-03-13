@@ -83,9 +83,10 @@ public class ClankDriverImpl {
                 // prepare params to run preprocessor
                 ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
                 settings.WorkName = path;
+                settings.KeepCommentsTokens = false;
                 settings.GenerateDiagnostics = true;
-                settings.PrettyPrintDiagnostics = true;
-                settings.PrintDiagnosticsOS = llvm.errs();
+                settings.PrettyPrintDiagnostics = false;
+                settings.PrintDiagnosticsOS = llvm.nulls();
                 settings.TraceClankStatistics = false;
                 settings.cancelled = new Interrupter() {
                     @Override
