@@ -48,6 +48,7 @@ import org.clang.lex.Token;
 import static org.clank.java.std.$second_uint;
 import org.clank.support.Casts;
 import org.clank.support.Unsigned;
+import org.llvm.adt.StringMapEntryBase;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -78,18 +79,22 @@ import org.openide.util.CharSequences;
         if (APTLiteConstTextToken.isLiteConstTextType(aptTokenType)) {
             textID = APTLiteConstTextToken.toTextID(aptTokenType);
         } else {
-            if (orig.isLiteral()) {
+            IdentifierInfo II = orig.getIdentifierInfo();
+            if (II != null) {
+                StringMapEntryBase entry = II.getEntry();
+                assert entry != null;
+                String txt = new String(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
+                textID = TextCache.getManager().getString(CharSequences.create(txt));
+            } else if (orig.isLiteral()) {
                 textID = CharSequences.create(Casts.toCharSequence(orig.getLiteralData()));
             } else if (orig.is(tok.TokenKind.comment)) {
                 textID = COMMENT_TEXT_ID;
-            } else if (orig.is(tok.TokenKind.raw_identifier)) {
-                textID = TextCache.getManager().getString(CharSequences.create(Casts.toCharSequence(orig.getRawIdentifierData())));
             } else {
-                IdentifierInfo identifierInfo = orig.getIdentifierInfo();
-                assert identifierInfo != null : "No Text for " + orig;
-                textID = TextCache.getManager().getString(Casts.toCharSequence(identifierInfo.getNameStart()));
+                assert orig.is(tok.TokenKind.raw_identifier) : "unexpected " + orig;
+                textID = TextCache.getManager().getString(CharSequences.create(Casts.toCharSequence(orig.getRawIdentifierData(), orig.getLength())));
             }
         }
+        assert textID.length() <= orig.getLength() : textID + "\n vs. \n" + orig;
     }
 
     @Override
