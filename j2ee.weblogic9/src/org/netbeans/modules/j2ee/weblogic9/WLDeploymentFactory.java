@@ -234,10 +234,10 @@ public class WLDeploymentFactory implements DeploymentFactory {
     private static synchronized WLSharedState getSharedState(InstanceProperties props) {
         WLSharedState mutableState = stateCache.get(props);
         if (mutableState == null) {
-            mutableState = new WLSharedState(props);
+            mutableState = new WLSharedState();
             stateCache.put(props, mutableState);
         }
-        mutableState.configure();
+        mutableState.configure(props);
         return mutableState;
     }
 

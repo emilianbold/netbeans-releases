@@ -45,6 +45,7 @@ package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Locale;
@@ -52,11 +53,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -123,6 +126,40 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private static final RequestProcessor OBJECT_POLL_RP = new RequestProcessor("ProgressObject Poll", 1);
 
+    private static final InstanceProperties EMPTY_PROPERTIES = new InstanceProperties() {
+
+        @Override
+        public void setProperties(Properties props) throws IllegalStateException {
+            throw new IllegalStateException("Already removed InstanceProperties");
+        }
+
+        @Override
+        public void setProperty(String propname, String value) throws IllegalStateException {
+            throw new IllegalStateException("Already removed InstanceProperties");
+        }
+
+        @Override
+        public String getProperty(String propname) throws IllegalStateException {
+            throw new IllegalStateException("Already removed InstanceProperties");
+        }
+
+        @Override
+        public Enumeration propertyNames() throws IllegalStateException {
+            throw new IllegalStateException("Already removed InstanceProperties");
+        }
+
+        @Override
+        public DeploymentManager getDeploymentManager() {
+            throw new IllegalStateException("Already removed InstanceProperties");
+        }
+
+        @Override
+        public void refreshServerInstance() {
+            throw new IllegalStateException("Already removed InstanceProperties");
+        }
+
+    };
+
     static {
         if (DEBUG_JSR88) {
             System.setProperty("weblogic.deployer.debug", "all"); // NOI18N
@@ -140,7 +177,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private final boolean disconnected;
 
     /* GuardedBy("this") */
-    private InstanceProperties instanceProperties;
+    private WeakReference<InstanceProperties> instanceProperties;
 
     /* GuardedBy("this") */
     private DeploymentManager manager;
@@ -150,7 +187,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     /* GuardedBy("this") */
     private WLConnectionSupport connectionSupport;
-    
+
     /* GuardedBy("this") */
     private WebLogicConfiguration config;
 
@@ -248,9 +285,21 @@ public class WLDeploymentManager implements DeploymentManager2 {
      */
     public synchronized InstanceProperties getInstanceProperties() {
         if (instanceProperties == null) {
-            instanceProperties = InstanceProperties.getInstanceProperties(uri);
+            instanceProperties = new WeakReference<InstanceProperties>(InstanceProperties.getInstanceProperties(uri));
         }
-        return instanceProperties;
+        InstanceProperties ip = instanceProperties.get();
+        if (ip == null) {
+            ip = EMPTY_PROPERTIES;
+        }
+        return ip;
+    }
+
+    @CheckForNull
+    public synchronized InstanceProperties getRealInstanceProperties() {
+        if (instanceProperties == null) {
+            instanceProperties = new WeakReference<InstanceProperties>(InstanceProperties.getInstanceProperties(uri));
+        }
+        return instanceProperties.get();
     }
 
     @NonNull
