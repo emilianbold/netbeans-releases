@@ -74,7 +74,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     private final APTFileSearch fileSearch;
     private static final Token[] NO_TOKENS = new Token[0];
     
-    private int inclStackIndex = -1;
+    private int inclStackIndex;
     private Token[] tokens = NO_TOKENS;
     private int nrTokens = -1;
 
@@ -93,6 +93,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         this.userIncludePaths = userIncludePaths;
         this.userIncludeFilePaths = userIncludeFilePaths;
         this.fileSearch = fileSearch;
+        this.inclStackIndex = 0;
     }
 
     @Override
@@ -145,7 +146,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return nrTokens;
     }
     
-    void setTokens(Token[] tokens, int nrTokens) {
+    void setIncludeInfo(int inclStackIndex, Token[] tokens, int nrTokens) {
+        this.inclStackIndex = inclStackIndex;
         if (tokens == null) {
             this.tokens = NO_TOKENS;
             this.nrTokens = 0;
@@ -336,6 +338,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 
         public  List<IncludeDirEntry> getUserIncludeFilePaths() {
             return this.userIncludeFilePaths;
+        }
+
+        public int getIncludeStackIndex() {
+            return this.inclStackIndex;
         }
     }
     

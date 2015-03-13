@@ -107,7 +107,7 @@ public class ClankDriverImpl {
                 ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
                 tokens = fileTokensCallback.getTokens(); 
                 nrTokens = fileTokensCallback.getNrTokens();
-                includeHandler.setTokens(tokens, nrTokens);
+                includeHandler.setIncludeInfo(fileTokensCallback.getIncludeStackIndex(), tokens, nrTokens);
             }
             if (interrupter.cancelled() || tokens == null) {
                 return null;
@@ -135,6 +135,7 @@ public class ClankDriverImpl {
         private final int stopAtIndex;
         private Token[] tokens;
         private int nrTokens;
+        private int inclStackIndex;
 
         public FileTokensCallback(CharSequence path, int stopAtIndex, raw_ostream traceOS, ClankDriver.ClankPreprocessorCallback delegate) {
             super(traceOS);
@@ -169,10 +170,12 @@ public class ClankDriverImpl {
                 if (stopAtIndex == fileInfo.getIncludeIndex()) {
                     nrTokens = fileInfo.getTokens().size();
                     tokens = fileInfo.stealTokens();
+                    inclStackIndex = fileInfo.getIncludeIndex();
                 }
             } else if (fileInfo.isFile() && (strcmp(path, fileInfo.getName()) == 0)) {
                 nrTokens = fileInfo.getTokens().size();
                 tokens = fileInfo.stealTokens();
+                inclStackIndex = fileInfo.getIncludeIndex();
             }
         }
 
@@ -182,6 +185,11 @@ public class ClankDriverImpl {
 
         public int getNrTokens() {
             return nrTokens;
+        }
+
+        private int getIncludeStackIndex() {
+            assert (stopAtIndex == STOP_AT_FILE_PATH) || stopAtIndex == inclStackIndex : "stopAtIndex="+stopAtIndex + " vs. " + inclStackIndex;
+            return inclStackIndex;
         }
     }
 

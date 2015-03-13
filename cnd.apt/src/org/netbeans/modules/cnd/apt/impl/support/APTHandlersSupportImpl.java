@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankIncludeHandlerImpl;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
@@ -219,9 +220,20 @@ public class APTHandlersSupportImpl {
         }
     }
     
-    private static Collection<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
-        assert !APTTraceFlags.USE_CLANK;
-        return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
+    private static Collection<APTIncludeHandler.IncludeInfo> getIncludeStack(PPIncludeHandler.State inclState) {
+        if (inclState == null) {
+            return null;
+        }
+        if (inclState instanceof ClankIncludeHandlerImpl.StateImpl) {
+            int includeStackIndex = ((ClankIncludeHandlerImpl.StateImpl)inclState).getIncludeStackIndex();
+            if (includeStackIndex == 0) {
+                return Collections.emptyList();
+            }
+            assert false : "not yet supported " + includeStackIndex;
+            return null;
+        } else {
+            return ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
+        }
     }
     
     /*package*/ static PPIncludeHandler.State copyIncludeState(PPIncludeHandler.State inclState, boolean cleanState) {
