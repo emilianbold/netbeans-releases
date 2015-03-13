@@ -72,8 +72,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import sun.org.mozilla.javascript.internal.ast.NewExpression;
-import sun.plugin.cache.OldCacheEntry;
 
 /**
  *
