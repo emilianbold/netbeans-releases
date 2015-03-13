@@ -42,12 +42,16 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import org.clang.basic.IdentifierInfo;
+import org.clang.basic.SourceManager;
 import org.clang.basic.tok;
 import org.clang.lex.Token;
+import static org.clank.java.std.$second_uint;
 import org.clank.support.Casts;
+import org.clank.support.Unsigned;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
 
 /**
@@ -59,11 +63,33 @@ import org.openide.util.CharSequences;
     private static final CharSequence COMMENT_TEXT_ID = CharSequences.create("/*COMMENT*/");
 
     private final Token orig;
+    private final SourceManager SM;
     private final int aptTokenType;
+    private final int offset;
+    private final CharSequence textID;
 
-    /*package*/ClankToAPTToken(Token token) {
+    /*package*/ClankToAPTToken(SourceManager SM, Token token) {
+        this.SM = SM;
         this.orig = token;
+        long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedExpansionLoc(token.getRawLocation());
+        this.offset = Unsigned.long2uint($second_uint(decomposedLoc));
+        assert offset >= 0 : "negative " + offset + " for " + token;
         this.aptTokenType = ClankToAPTUtils.convertClankToAPTTokenKind(token.getKind());
+        if (APTLiteConstTextToken.isLiteConstTextType(aptTokenType)) {
+            textID = APTLiteConstTextToken.toTextID(aptTokenType);
+        } else {
+            if (orig.isLiteral()) {
+                textID = CharSequences.create(Casts.toCharSequence(orig.getLiteralData()));
+            } else if (orig.is(tok.TokenKind.comment)) {
+                textID = COMMENT_TEXT_ID;
+            } else if (orig.is(tok.TokenKind.raw_identifier)) {
+                textID = TextCache.getManager().getString(CharSequences.create(Casts.toCharSequence(orig.getRawIdentifierData())));
+            } else {
+                IdentifierInfo identifierInfo = orig.getIdentifierInfo();
+                assert identifierInfo != null : "No Text for " + orig;
+                textID = TextCache.getManager().getString(Casts.toCharSequence(identifierInfo.getNameStart()));
+            }
+        }
     }
 
     @Override
@@ -81,29 +107,17 @@ import org.openide.util.CharSequences;
 
     @Override
     public CharSequence getTextID() {
-        if (APTLiteConstTextToken.isLiteConstTextType(aptTokenType)) {
-            return APTLiteConstTextToken.toTextID(aptTokenType);
-        } else if (orig.isLiteral()) {
-            return CharSequences.create(Casts.toCharSequence(orig.getLiteralData()));
-        } else if (orig.is(tok.TokenKind.comment)) {
-            return COMMENT_TEXT_ID;
-        } else if (orig.is(tok.TokenKind.raw_identifier)) {
-            return CharSequences.create(Casts.toCharSequence(orig.getRawIdentifierData()));
-        } else {
-            IdentifierInfo identifierInfo = orig.getIdentifierInfo();
-            assert identifierInfo != null : "No Text for " + orig;
-            return CharSequences.create(Casts.toCharSequence(identifierInfo.getNameStart()));
-        }
+        return textID;
     }
 
     @Override
     public String toString() {
-        return "ClankToAPTToken{" + "aptTokenType=" + APTUtils.getAPTTokenName(aptTokenType) + "\norig=" + orig + '}';
+        return "ClankToAPTToken{" + "aptType=" + APTUtils.getAPTTokenName(aptTokenType) + ":" + textID + "\norig=" + orig + '}';
     }
 
     @Override
     public int getOffset() {
-        return 0;
+        return offset;
     }
 
     @Override
@@ -113,7 +127,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int getEndOffset() {
-        return 1;
+        return offset + orig.getLength();
     }
 
     @Override
@@ -123,7 +137,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int getEndColumn() {
-        return 1;
+        return 222;
     }
 
     @Override
@@ -133,7 +147,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int getEndLine() {
-        return 1;
+        return 444;
     }
 
     @Override
@@ -153,7 +167,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int getColumn() {
-        return 0;
+        return 111;
     }
 
     @Override
@@ -163,7 +177,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int getLine() {
-        return 1;
+        return 333;
     }
 
     @Override

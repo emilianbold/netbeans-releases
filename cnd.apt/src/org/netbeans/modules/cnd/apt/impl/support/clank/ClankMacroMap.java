@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -132,5 +133,15 @@ public class ClankMacroMap implements PPMacroMap {
         public State copyCleaned() {
             return this;
         }
+
+        @Override
+        public String toString() {
+            return APTUtils.macros2String(macros);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return APTUtils.macros2String(macros);
     }
 }

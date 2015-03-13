@@ -121,5 +121,30 @@ public class ClankFileMacroMap extends ClankMacroMap {
             super.restoreTo(macroMap);
             macroMap.sysMacros = this.sysMacros;
         }
+
+        @Override
+        public String toString() {
+            StringBuilder retValue = new StringBuilder();
+            retValue.append("FileState\n"); // NOI18N
+            retValue.append("Snapshot\n"); // NOI18N
+            retValue.append(super.toString());
+            retValue.append("\nSystem MacroMap\n"); // NOI18N
+            if (System.getProperty("cnd.apt.macro.trace") != null) {
+                retValue.append(sysMacros);
+            } else {
+                retValue.append(System.identityHashCode(sysMacros));
+            }
+            return retValue.toString();
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder retValue = new StringBuilder();
+        retValue.append("Own Map:\n"); // NOI18N
+        retValue.append(super.toString());
+        retValue.append("System Map:\n"); // NOI18N
+        retValue.append(sysMacros);
+        return retValue.toString();
     }
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
 import java.util.Collections;
+import org.clang.basic.SourceManager;
 import org.clang.lex.Token;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
@@ -74,9 +75,8 @@ public class ClankDriverImpl {
             final org.netbeans.modules.cnd.support.Interrupter interrupter) {
         try {
             ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
-            Token[] tokens = includeHandler.getTokens();
-            int nrTokens = includeHandler.getNrTokens();
-            if (tokens == null) {
+            ClankIncludeHandlerImpl.CachedTokens cached = includeHandler.getCachedTokens();
+            if (cached == null) {
                 int inclStackIndex = includeHandler.getInclStackIndex();
                 CharSequence path = buffer.getAbsolutePath();
                 byte[] bytes = toBytes(buffer.getCharBuffer());
@@ -97,18 +97,17 @@ public class ClankDriverImpl {
                 settings.IncludeInfoCallbacks = fileTokensCallback;
                 ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
                 ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
-                tokens = fileTokensCallback.getTokens();
-                if (tokens == null) {
+                cached = fileTokensCallback.getCachedTokens();
+                if (cached == null) {
                     CndUtils.assertTrueInConsole(false, "no Tokens for " + path);
                     return null;
                 }
-                nrTokens = fileTokensCallback.getNrTokens();
-                includeHandler.setTokens(tokens, nrTokens);
+                includeHandler.cacheTokens(cached);
             }
-            if (interrupter.cancelled() || tokens == null) {
+            if (interrupter.cancelled()) {
                 return null;
             }
-            return new ClankToAPTTokenStream(tokens, nrTokens);
+            return new ClankToAPTTokenStream(cached);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -128,17 +127,20 @@ public class ClankDriverImpl {
         private int index;
         private final int lastIndex;
         private final Token[] tokens;
+        private final SourceManager SM;
 
-        public ClankToAPTTokenStream(Token[] tokens, int nrTokens) {
-            this.tokens = tokens;
-            this.lastIndex = nrTokens - 1;
+        private ClankToAPTTokenStream(ClankIncludeHandlerImpl.CachedTokens cached) {
+            assert cached != null;
+            this.SM = cached.SM;
+            this.tokens = cached.tokens;
+            this.lastIndex = cached.nrTokens - 1;
             this.index = 0;
         }
 
         @Override
         public APTToken nextToken() {
             if (index < lastIndex) {
-                return new ClankToAPTToken(tokens[index++]);
+                return new ClankToAPTToken(SM, tokens[index++]);
             } else {
                 return APTUtils.EOF_TOKEN;
             }

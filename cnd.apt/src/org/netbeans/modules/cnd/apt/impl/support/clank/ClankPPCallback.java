@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
-import org.clang.lex.Token;
 import org.clang.tools.services.support.TrackIncludeInfoCallback;
 import static org.clank.java.std.strcmp;
 import org.llvm.support.raw_ostream;
@@ -57,14 +56,14 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
     private final ClankDriver.ClankPreprocessorCallback delegate;
     private final CharSequence path;
     private final int stopAtIndex;
-    private Token[] tokens;
-    private int nrTokens;
+    private ClankIncludeHandlerImpl.CachedTokens stolenTokens;
 
     public ClankPPCallback(CharSequence path, int stopAtIndex, raw_ostream traceOS, ClankDriver.ClankPreprocessorCallback delegate) {
         super(traceOS);
         this.path = path;
         this.stopAtIndex = stopAtIndex;
         this.delegate = delegate;
+        this.stolenTokens = null;
     }
 
     @Override
@@ -83,7 +82,7 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
             } else {
                 traceOS.$out(fileInfo.getFileID());
             }
-            traceOS.$out(" with #Token: ").$out(fileInfo.getTokens().size()).$out("\n");
+            traceOS.$out(" with #Token: ").$out(fileInfo.getNrTokens()).$out("\n");
             int[] offs = fileInfo.getSkippedRanges();
             if (offs.length > 0) {
                 for (int i = 0; i < offs.length; i += 2) {
@@ -98,17 +97,13 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
 
         if (stopAtIndex == fileInfo.getIncludeIndex()) {
             CndUtils.assertTrueInConsole((fileInfo.isFile() && (strcmp(path, fileInfo.getName()) == 0)), "expected " + path, fileInfo);
-            nrTokens = fileInfo.getTokens().size();
-            tokens = fileInfo.stealTokens();
+            int nrTokens = fileInfo.getNrTokens();
+            stolenTokens = new ClankIncludeHandlerImpl.CachedTokens(fileInfo.getSourceManager(), fileInfo.stealTokens(), nrTokens);
         }
     }
 
-    public Token[] getTokens() {
-        return tokens;
-    }
-
-    public int getNrTokens() {
-        return nrTokens;
+    ClankIncludeHandlerImpl.CachedTokens getCachedTokens() {
+        return stolenTokens;
     }
 }
 

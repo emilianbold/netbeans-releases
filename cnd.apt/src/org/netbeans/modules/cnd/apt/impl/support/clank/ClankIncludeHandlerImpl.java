@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.clang.basic.SourceManager;
 import org.clang.lex.Token;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
@@ -72,11 +73,29 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 
     private StartEntry startFile;
     private final APTFileSearch fileSearch;
-    private static final Token[] NO_TOKENS = new Token[0];
-    
+    private static final CachedTokens NO_TOKENS = new CachedTokens();
+
+    public static final class CachedTokens {
+        public final SourceManager SM;
+        public final Token[] tokens;
+        public final int nrTokens;
+
+        private CachedTokens() {
+            this.nrTokens = -1;
+            this.tokens = null;
+            this.SM = null;
+        }
+
+        public CachedTokens(SourceManager SM, Token[] tokens, int nrTokens) {
+            this.SM = SM;
+            this.tokens = tokens;
+            this.nrTokens = nrTokens;
+        }
+
+    }
+
     private int inclStackIndex;
-    private Token[] tokens = NO_TOKENS;
-    private int nrTokens = -1;
+    private CachedTokens cachedTokens;
 
     public  ClankIncludeHandlerImpl(StartEntry startFile) {
         this(startFile, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), startFile.getFileSearch());
@@ -134,29 +153,23 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return Collections.unmodifiableList(systemIncludePaths);
     }
 
-    public Token[] getTokens() {
-        if (tokens == NO_TOKENS) {
+    public CachedTokens getCachedTokens() {
+        if (cachedTokens == NO_TOKENS) {
             return null;
         } else {
-            return tokens;
+            return cachedTokens;
         }
-    }
-
-    public int getNrTokens() {
-        return nrTokens;
     }
 
     public int getInclStackIndex() {
         return inclStackIndex;
     }
 
-    void setTokens(Token[] tokens, int nrTokens) {
-        if (tokens == null) {
-            this.tokens = NO_TOKENS;
-            this.nrTokens = 0;
+    void cacheTokens(CachedTokens cache) {
+        if (cache == null) {
+            this.cachedTokens = NO_TOKENS;
         } else {
-            this.tokens = tokens;
-            this.nrTokens = nrTokens;
+            this.cachedTokens = cache;
         }
     }
     
@@ -172,8 +185,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         private final StartEntry   startFile;
 
         private final int inclStackIndex;
-        private final Token[] tokens;
-        private final int nrTokens;
+        private final CachedTokens cachedTokens;
         private int hashCode = 0;
         
         protected StateImpl(ClankIncludeHandlerImpl handler) {
@@ -183,8 +195,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             this.startFile = handler.startFile;
 
             this.inclStackIndex = handler.inclStackIndex;
-            this.tokens = handler.tokens;
-            this.nrTokens = handler.nrTokens;
+            this.cachedTokens = handler.cachedTokens;
         }
         
         private StateImpl(StateImpl other, boolean cleanState) {
@@ -193,8 +204,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             
             // state object is immutable => safe to share stacks
             this.inclStackIndex = other.inclStackIndex;
-            this.tokens = other.tokens;
-            this.nrTokens = other.nrTokens;
+            this.cachedTokens = other.cachedTokens;
 	    
             if (cleanState) {
                 this.systemIncludePaths = CLEANED_MARKER;
@@ -214,8 +224,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             handler.startFile = this.startFile;
             
             handler.inclStackIndex = this.inclStackIndex;
-            handler.tokens = this.tokens;
-            handler.nrTokens = this.nrTokens;
+            handler.cachedTokens = this.cachedTokens;
             // do not restore include info if state is cleaned
             if (!isCleaned()) {
                 // TODO: put tokens into handler
@@ -293,8 +302,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             }
             
             inclStackIndex = input.readInt();
-            nrTokens = 0;
-            tokens = NO_TOKENS;
+            cachedTokens = NO_TOKENS;
         }        
 	
 	public final StartEntry getStartEntry() {
