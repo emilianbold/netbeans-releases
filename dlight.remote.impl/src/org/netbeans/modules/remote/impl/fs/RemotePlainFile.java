@@ -447,11 +447,18 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (refreshMode != RefreshMode.FROM_PARENT && Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N
             long time = System.currentTimeMillis();
-            final DirEntry newEntry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), getPath());
             final DirEntry oldEntry = getParent().getDirEntry(getNameExt());
             boolean refreshParent = false;
             boolean updateStat = false;
-            if (oldEntry == null || !oldEntry.isValid()) {
+            DirEntry newEntry = null;
+            try {
+                newEntry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), getPath());
+            } catch (ExecutionException ex) {
+                if (!RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                    throw ex;
+                }
+            }
+            if (newEntry == null || oldEntry == null || !oldEntry.isValid()) {
                 refreshParent = true;
             } else {
                 // oldEntry != null && oldEntry.isValid
