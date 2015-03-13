@@ -45,7 +45,9 @@ package org.netbeans.modules.bugzilla.issue;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -66,6 +68,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.repository.RepositoryTest;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.openide.util.test.MockLookup;
@@ -90,6 +93,16 @@ public class IssueTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        
+        // reset
+        Method m = MylynSupport.class.getDeclaredMethod("reset", new Class[0]);
+        m.setAccessible(true);
+        m.invoke(MylynSupport.class);
+                
+        Field f = Bugzilla.class.getDeclaredField("instance");
+        f.setAccessible(true);
+        f.set(Bugzilla.class, null);
+        
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         MockLookup.setLayersAndInstances();
         BugtrackingUtil.getBugtrackingConnectors(); // ensure conector

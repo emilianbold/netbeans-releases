@@ -106,9 +106,9 @@ public enum JadeTokenId implements TokenId {
     OPERATOR_PLUS("+", "operator"), // NOI18N
     
     COMMENT_DELIMITER(null, "comment"), // NOI18N
-    UNBUFFERED_COMMENT_DELIMITER(null, "unbuffered-commnet"), //NOI18N
+    UNBUFFERED_COMMENT_DELIMITER(null, "unbuffered-comment"), //NOI18N
     COMMENT(null, "comment"), // NOI18N
-    UNBUFFERED_COMMENT(null, "unbuffered-commnet"), //NOI18N
+    UNBUFFERED_COMMENT(null, "unbuffered-comment"), //NOI18N
     
     CODE_DELIMITER(null, "code-delimiter"), //NOI18N
     PLAIN_TEXT_DELIMITER(null, "plain-text-delimiter"), //NOI18N

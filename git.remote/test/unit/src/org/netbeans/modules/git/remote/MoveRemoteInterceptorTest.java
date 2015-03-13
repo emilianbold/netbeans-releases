@@ -104,8 +104,7 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("moveFileTree2Repos_DO","moveAddedFile2UnversionedFolder_DO","moveA2B_CreateA_DO",
-                "moveAddedFile2UnversionedFolder_FO","moveVersionedFolder_FO","moveFileTree_FO").contains(testName);
+        return Arrays.asList("moveAddedFile2UnversionedFolder_FO","moveAddedFile2UnversionedFolder_DO").contains(testName);
     }
 
     @Override
@@ -480,6 +479,8 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
         moveDO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
+if(false);
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
 
         // test
         assertFalse(fromFile.exists());
@@ -659,6 +660,8 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         // create from file
         fileA.getParentFile().toFileObject().createData(fileA.getName());
         assertTrue(refreshHandler.waitForFilesToRefresh());
+if(false);
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
 
         // test
         assertTrue(fileB.exists());

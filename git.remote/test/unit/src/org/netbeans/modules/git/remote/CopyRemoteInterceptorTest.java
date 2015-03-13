@@ -103,9 +103,7 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("copyUnversionedFolder_DO","copyVersionedFolder_DO","copyVersionedFolder2Repos_DO",
-                "copyFileTree2Repos_DO","copyUnversionedFolder_FO","copyVersionedFolder_FO","copyFileTree_FO",
-                "copyVersionedFolder2Repos_FO","copyFileTree2Repos_FO","copyFileTree_DO").contains(testName);
+        return Arrays.asList().contains(testName);
     }
 
     @Override
@@ -185,7 +183,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFolder));
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFolder));
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder,toFile)));
 
         // test
         assertTrue(fromFolder.exists());
@@ -366,7 +365,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFile));
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFile));
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFile,toFile)));
 
         // test
         assertTrue(fromFolder.exists());
@@ -486,7 +486,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFolder));
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFolder));
+else     getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder,toFile)));
 
         // test
         assertTrue(fromFolder.exists());
@@ -529,7 +530,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFolder));
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFolder));
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder,toFolder)));
 
         // test
         assertTrue(fromFolder.exists());
@@ -628,8 +630,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFile));
-
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFile));
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFile,toFile)));
         // test
         assertTrue(fromFolder.exists());
         assertTrue(toFolder.exists());
@@ -809,8 +811,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFile));
-
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFile));
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFile,toFile)));
         // test
         assertTrue(fromFolder.exists());
         assertTrue(toFolder.exists());
@@ -850,8 +852,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFolder));
-
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFolder));
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder,toFolder)));
         // test
         assertTrue(fromFolder.exists());
         assertTrue(toFolder.exists());
@@ -929,7 +931,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFolder));
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFolder));
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder,toFile)));
 
         // test
         assertTrue(fromFolder.exists());
@@ -971,7 +974,8 @@ public class CopyRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(toFolder));
         copyFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        getCache().refreshAllRoots(Collections.singleton(fromFolder));
+if(false)getCache().refreshAllRoots(Collections.singleton(fromFolder));
+else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder,toFolder)));
 
         // test
         assertTrue(fromFolder.exists());

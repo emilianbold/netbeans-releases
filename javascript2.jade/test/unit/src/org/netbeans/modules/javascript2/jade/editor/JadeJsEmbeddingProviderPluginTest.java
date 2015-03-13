@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.jade.editor;
 
-package org.netbeans.modules.bugzilla.query;
-
-import javax.swing.ListModel;
-import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
-import org.netbeans.modules.bugzilla.TestConstants;
-import org.netbeans.modules.bugzilla.TestUtil;
-import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import java.util.Collections;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 
 /**
  *
- * @author tomas
+ * @author Petr Pisl
  */
-public class QueryTestUtil implements TestConstants, QueryConstants {
-    public static void selectTestProject(final BugzillaQuery q) {
-        QueryPanel qp = (QueryPanel) q.getController().getComponent(QueryMode.EDIT);
-        ListModel model = qp.productList.getModel();
-        for (int i = 0; i < model.getSize(); i++) {
-            QueryParameter.ParameterValue pv = (ParameterValue) model.getElementAt(i);
-            if (pv.getValue().equals(TEST_PROJECT)) {
-                qp.productList.setSelectedIndex(i);
-                break;
+public class JadeJsEmbeddingProviderPluginTest extends CslTestBase {
+    
+    public JadeJsEmbeddingProviderPluginTest(String testName) {
+        super(testName);
+    }
+    
+    public void testIssue251143() throws Exception {
+        checkVirtualSource("testfiles/jsEmbedding/issue251143.jade");
+    }
+    
+    private void checkVirtualSource(final String testFile) throws Exception {
+        Source testSource = getTestSource(getTestFile(testFile));
+        
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Iterable<Embedding> embeddings = resultIterator.getEmbeddings();
+                Embedding jsEmbedding = null;
+                for (Embedding embedding : embeddings) {
+                    if (embedding.getMimeType().equals("text/javascript")) {
+                        jsEmbedding = embedding;
+                        break;
+                    }
+                }
+                assertNotNull("JS embeding was not found.", jsEmbedding);
+                String text = jsEmbedding.getSnapshot().getText().toString();
+                
+                assertDescriptionMatches(testFile, text, true, ".vs.js");
             }
-        }
+        });
     }
-
-    public static BugzillaRepository getRepository() {
-        BugzillaRepository repo = TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
-        repo.ensureCredentials();
-        return repo;
-    }
-
 }
