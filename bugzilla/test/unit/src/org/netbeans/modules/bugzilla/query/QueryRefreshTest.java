@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
@@ -51,9 +53,13 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_PASSWD;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_URL;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.test.MockLookup;
@@ -94,7 +100,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         long ts = System.currentTimeMillis();
         final String summary = "summary" + System.currentTimeMillis();
 
-        final BugzillaRepository repo = QueryTestUtil.getRepository();
+        final BugzillaRepository repo = QueryTestUtil.getRepository();        
         String id = TestUtil.createIssue(repo, summary);
         assertNotNull(id);
 

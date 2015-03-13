@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Proxy;
@@ -63,9 +64,13 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_PASSWD;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_URL;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.issue.IssueTestUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 
 /**
  *
@@ -91,11 +96,15 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         
-        trm = new TaskRepositoryManager();
-        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
-
-
-        trm.addRepositoryConnector(brc);
+        // reset
+        Method m = MylynSupport.class.getDeclaredMethod("reset", new Class[0]);
+        m.setAccessible(true);
+        m.invoke(MylynSupport.class);
+                
+        Field f = Bugzilla.class.getDeclaredField("instance");
+        f.setAccessible(true);
+        f.set(Bugzilla.class, null);
+        
         WebUtil.init();
         
         if (defaultPS == null) {
@@ -113,10 +122,12 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     public void testIsLoginHandler() throws Throwable {
         RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, REPO_URL, "bgzll", "bgzll", "XXX", null , "XXX".toCharArray(), null);
         BugzillaRepository repository = new BugzillaRepository(info);
+        repository.ensureCredentials();
         assertHandler(repository, "LoginHandler");
 
         info = new RepositoryInfo("bgzll", BugzillaConnector.ID, REPO_URL, "bgzll", "bgzll", REPO_USER, null , "XXX".toCharArray(), null);
         repository = new BugzillaRepository(info);
+        repository.ensureCredentials();
         assertHandler(repository, "LoginHandler");
         
     }
@@ -136,6 +147,7 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         
         RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "http://crap", "bgzll", "bgzll", null, null, null , null);
         BugzillaRepository repository = new BugzillaRepository(info);
+        repository.ensureCredentials();
         assertHandler(repository, "NotFoundHandler");
     }
 
@@ -154,10 +166,12 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         
         RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "dil://dil.com", "bgzll", "bgzll", null, null, null , null);
         BugzillaRepository repository = new BugzillaRepository(info);
+        repository.ensureCredentials();
         assertHandler(repository, "DefaultHandler");
 
         info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "crap", "bgzll", "bgzll", null, null, null , null);
         repository = new BugzillaRepository(info);
+        repository.ensureCredentials();
         assertHandler(repository, "DefaultHandler");
 
         // XXX need more tests
