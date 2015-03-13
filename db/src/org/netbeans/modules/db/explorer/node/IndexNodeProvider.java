@@ -85,14 +85,14 @@ public class IndexNodeProvider extends NodeProvider {
     private final MetadataElementHandle handle;
 
     private IndexNodeProvider(Lookup lookup) {
-        super(lookup, new IndexComparator());
+        super(lookup, indexComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         handle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     @Override
     protected synchronized void initialize() {
-        final List<Node> newList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<>();
 
         boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
@@ -131,12 +131,12 @@ public class IndexNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class IndexComparator implements Comparator<Node> {
+   private static final Comparator<Node> indexComparator = new Comparator<Node>() {
 
         @Override
         public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareTo(model2.getDisplayName());
         }
 
-    }
+    };
 }

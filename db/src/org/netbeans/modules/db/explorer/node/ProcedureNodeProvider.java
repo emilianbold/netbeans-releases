@@ -98,7 +98,7 @@ public class ProcedureNodeProvider extends NodeProvider {
 
     @SuppressWarnings("unchecked")
     private ProcedureNodeProvider(Lookup lookup) {
-        super(lookup, new ProcedureComparator());
+        super(lookup, procedureComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
@@ -148,14 +148,14 @@ public class ProcedureNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class ProcedureComparator implements Comparator<Node> {
+    private static final Comparator<Node> procedureComparator = new Comparator<Node>() {
 
         @Override
         public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareTo(model2.getDisplayName());
         }
 
-    }
+    };
 
     @Override
     public synchronized void refresh() {

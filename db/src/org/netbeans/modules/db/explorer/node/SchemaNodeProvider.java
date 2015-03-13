@@ -93,7 +93,7 @@ public class SchemaNodeProvider extends NodeProvider implements PropertyChangeLi
     private final MetadataElementHandle<Catalog> catalogHandle;
 
     private SchemaNodeProvider(Lookup lookup) {
-        super(lookup, new SchemaComparator());
+        super(lookup, schemaComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         catalogHandle = getLookup().lookup(MetadataElementHandle.class);
     }
@@ -199,7 +199,7 @@ public class SchemaNodeProvider extends NodeProvider implements PropertyChangeLi
         }
     }
 
-    private static class SchemaComparator implements Comparator<Node> {
+    private static final Comparator<Node> schemaComparator = new Comparator<Node>() {
 
         @Override
         public int compare(Node node1, Node node2) {
@@ -213,7 +213,7 @@ public class SchemaNodeProvider extends NodeProvider implements PropertyChangeLi
             }
             return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
         }
-    }
+    };
 
     @NbBundle.Messages({
         "LBL_OtherSchemas=Other schemas"

@@ -90,7 +90,7 @@ public class CatalogNodeProvider extends NodeProvider implements PropertyChangeL
     private final DatabaseConnection connection;
 
     private CatalogNodeProvider(Lookup lookup) {
-        super(lookup, new CatalogComparator());
+        super(lookup, catalogComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
     }
 
@@ -192,7 +192,7 @@ public class CatalogNodeProvider extends NodeProvider implements PropertyChangeL
         }
     }
 
-    private static class CatalogComparator implements Comparator<Node> {
+    private static final Comparator<Node> catalogComparator = new Comparator<Node>() {
 
         @Override
         public int compare(Node node1, Node node2) {
@@ -204,7 +204,7 @@ public class CatalogNodeProvider extends NodeProvider implements PropertyChangeL
             }
             return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
         }
-    }
+    };
 
     @NbBundle.Messages({
         "LBL_OtherDatabases=Other databases"
