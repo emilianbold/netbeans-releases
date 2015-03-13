@@ -45,11 +45,7 @@ import org.clang.lex.Token;
 import org.clang.tools.services.support.TrackIncludeInfoCallback;
 import static org.clank.java.std.strcmp;
 import org.llvm.support.raw_ostream;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -69,6 +65,13 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         this.path = path;
         this.stopAtIndex = stopAtIndex;
         this.delegate = delegate;
+    }
+
+    @Override
+    public void onEnter(IncludeFileInfo file) {
+        if (ClankDriverImpl.TRACE) {
+            traceOS.$out("Enter: " + file).$out("\n").flush();
+        }
     }
 
     @Override
@@ -94,7 +97,7 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         }
 
         if (stopAtIndex == fileInfo.getIncludeIndex()) {
-            CndUtils.assertTrueInConsole((fileInfo.isFile() && (strcmp(path, fileInfo.getName()) == 0)), "expected " + path, fileInfo.getName());
+            CndUtils.assertTrueInConsole((fileInfo.isFile() && (strcmp(path, fileInfo.getName()) == 0)), "expected " + path, fileInfo);
             nrTokens = fileInfo.getTokens().size();
             tokens = fileInfo.stealTokens();
         }
