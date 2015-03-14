@@ -55,6 +55,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -563,22 +564,25 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-
-            CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
-            if (csmFile != null) {
-                CsmObject csmObject = ReferencesSupport.findDeclaration(csmFile, doc, null, caretOffset);
-                if (csmObject != null) {
-                    CsmDocProvider docProvider = Lookup.getDefault().lookup(CsmDocProvider.class);
-                    if (docProvider != null) {
-                        CompletionDocumentation documentation = docProvider.createDocumentation(csmObject, csmFile);
-                        if (documentation != null) {
-                            resultSet.setDocumentation(documentation);
+            CsmCacheManager.enter();
+            try {
+                CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+                if (csmFile != null) {
+                    CsmObject csmObject = ReferencesSupport.findDeclaration(csmFile, doc, null, caretOffset);
+                    if (csmObject != null) {
+                        CsmDocProvider docProvider = Lookup.getDefault().lookup(CsmDocProvider.class);
+                        if (docProvider != null) {
+                            CompletionDocumentation documentation = docProvider.createDocumentation(csmObject, csmFile);
+                            if (documentation != null) {
+                                resultSet.setDocumentation(documentation);
+                            }
                         }
                     }
                 }
+                resultSet.finish();
+            } finally {
+                CsmCacheManager.leave();
             }
-
-            resultSet.finish();
         }
     }
 

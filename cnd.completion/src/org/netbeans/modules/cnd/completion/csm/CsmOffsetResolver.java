@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -101,9 +102,14 @@ public class CsmOffsetResolver {
     public static CsmObject findObject(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
         assert (file != null) : "can't be null file in findObject";
         // not interested in context, only object under offset
-        CsmContext context = new CsmContext(file, offset);
-        CsmObject last = findObjectWithContext(file, offset, context, fileReferncesContext);
-        last = exploreTypeObject(context, last, offset);
+        CsmObject last = (CsmObject) CsmCacheManager.get(new CsmLastObjectKey(file, offset));
+        if (last == null) {
+            CsmContext context = new CsmContext(file, offset);
+            last = findObjectWithContext(file, offset, context, fileReferncesContext);
+            last = exploreTypeObject(context, last, offset);
+            CsmCacheManager.put(new CsmContextKey(file, offset), context);
+            CsmCacheManager.put(new CsmLastObjectKey(file, offset), last);
+        }
         return last;
     }
 
@@ -345,10 +351,14 @@ public class CsmOffsetResolver {
     }
 
     public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
-        CsmContext context = new CsmContext(file, offset);
-        findObjectWithContext(file, offset, context, fileReferncesContext);
-        exploreTypeObject(context, context.getLastObject(), offset);
-        return context;
+        CsmContext context = (CsmContext) CsmCacheManager.get(new CsmContextKey(file, offset));
+        if (context == null) {
+            context = new CsmContext(file, offset);
+            findObjectWithContext(file, offset, context, fileReferncesContext);
+            exploreTypeObject(context, context.getLastObject(), offset);
+            CsmCacheManager.put(new CsmContextKey(file, offset), context);
+        }
+        return new CsmContext(context); // return a clone of context
     }
     
     public static CsmContext findContextFromScope(CsmFile file, int offset, CsmScope contextScope) {
@@ -365,5 +375,58 @@ public class CsmOffsetResolver {
         context.setLastObject(context.getLastScope());
         exploreTypeObject(context, context.getLastObject(), offset);
         return context;
+    }
+    
+    // Most likely caching of contexts is senseless (it is fast to get a new one)
+    private abstract static class AbstractResolvePointKey {
+        
+        private final CsmFile file; 
+        
+        private final int offset;
+
+        public AbstractResolvePointKey(CsmFile file, int offset) {
+            this.file = file;
+            this.offset = offset;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + (this.file != null ? this.file.hashCode() : 0);
+            hash = 97 * hash + this.offset;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final AbstractResolvePointKey other = (AbstractResolvePointKey) obj;
+            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+                return false;
+            }
+            if (this.offset != other.offset) {
+                return false;
+            }
+            return true;
+        }
+    }
+    
+    private static class CsmContextKey extends AbstractResolvePointKey {
+
+        public CsmContextKey(CsmFile file, int offset) {
+            super(file, offset);
+        }
+    }
+    
+    private static class CsmLastObjectKey extends AbstractResolvePointKey {
+
+        public CsmLastObjectKey(CsmFile file, int offset) {
+            super(file, offset);
+        }
     }
 }

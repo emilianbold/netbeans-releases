@@ -88,16 +88,21 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     private String curTokenText;
     private int endScanOffset;
     private boolean supportTemplates;
+    private boolean supportLambdas;
     private int nrQuestions = 0;
 
     // isMacro callback
     private MacroCallback macroCallback = null;
     
-    private List<OffsetableToken> lookaheadTokens = new ArrayList<OffsetableToken>();
-    private int lookaheadTokensParensLevel = 0;
-    private int lookaheadTokensBracketsLevel = 0;
-    private int lookaheadTokensBracesLevel = 0;
-    private int lookaheadTokensLtgtsLevel = 0;
+    private final List<OffsetableToken> lambdaLookaheadTokens = new ArrayList<OffsetableToken>();
+    private int lambdaLookaheadLevel = 0;
+    private LambdaLookaheadStage lambdaLookaheadStage = null;
+    
+    private final List<OffsetableToken> tplLookaheadTokens = new ArrayList<OffsetableToken>();
+    private int tplLookaheadParensLevel = 0;
+    private int tplLookaheadBracketsLevel = 0;
+    private int tplLookaheadBracesLevel = 0;
+    private int tplLookaheadLtgtsLevel = 0;
     
     
     CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
@@ -112,6 +117,15 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
      */
     void enableTemplateSupport(boolean supportTemplates) {
         this.supportTemplates = supportTemplates;
+    }
+    
+    /**
+     * Set whether lambda features should be enabled.
+     *
+     * @param supportLambdas true to parse expression as being in syntax with lambdas
+     */
+    void enableLambdaSupport(boolean supportLambdas) {
+        this.supportLambdas = supportLambdas;
     }
 
     /** Get the expression stack from the bottom to top */
@@ -316,72 +330,330 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             return inPP;
         }
         
-        lookahead(token, tokenOffset);
+        lambdaLookahead(token, tokenOffset, isMacroExpansion());
         return false;
     }
     
-    private void lookahead(Token<TokenId> token, int tokenOffset) {
+    private void lambdaLookahead(Token<TokenId> token, int tokenOffset, boolean macro) {
+        boolean lookahead = false;
+        if (isLambdaAmbiguity(token)) {
+            lambdaLookaheadStage = tryLookaheadLambda(token, lambdaLookaheadStage);
+            if (lambdaLookaheadStage == LambdaLookaheadStage.done) {
+                lookahead = true;
+                // We will add only 4 tokens to lambda (only because we do not need all tokens)
+                OffsetableToken captureLBracket = null;
+                OffsetableToken captureRBracket = null;
+                OffsetableToken bodyLBrace = null;
+                CsmCompletionExpression lambda = new CsmCompletionExpression(LAMBDA_FUNCTION);
+                for (OffsetableToken lambdaToken : lambdaLookaheadTokens) {
+                    if (captureLBracket == null && lambdaToken.token.id() == CppTokenId.LBRACKET) {
+                        captureLBracket = lambdaToken;
+                    } else if (captureRBracket == null && lambdaToken.token.id() == CppTokenId.RBRACKET) {
+                        captureRBracket = lambdaToken;
+                    } else if (bodyLBrace == null && lambdaToken.token.id() == CppTokenId.LBRACE) {
+                        bodyLBrace = lambdaToken;
+                    }
+                }
+                lambda.addToken((CppTokenId) captureLBracket.token.id(), captureLBracket.offset, captureLBracket.token.text().toString());
+                lambda.addToken((CppTokenId) captureRBracket.token.id(), captureRBracket.offset, captureRBracket.token.text().toString());
+                lambda.addToken((CppTokenId) bodyLBrace.token.id(), bodyLBrace.offset, bodyLBrace.token.text().toString());
+                lambda.addToken((CppTokenId) token.id(), tokenOffset, token.text().toString());
+                pushExp(lambda);
+                lambdaLookaheadStage = null;
+                lambdaLookaheadTokens.clear();
+                lambdaLookaheadLevel = 0;
+            } else if (lambdaLookaheadStage != null) {
+                lookahead = true;
+                lambdaLookaheadTokens.add(new OffsetableToken(token, tokenOffset, macro, inPP));
+            }
+        }
+        if (!lookahead) {
+            if (lambdaLookaheadTokens.isEmpty()) {
+                templateLookahead(token, tokenOffset, macro, false);
+            } else {
+                Boolean oldInPP = inPP;
+                for (OffsetableToken offsetableToken : lambdaLookaheadTokens) {
+                    inPP = offsetableToken.inPP;
+                    templateLookahead(offsetableToken.token, offsetableToken.offset, offsetableToken.macro, true);
+                }
+                lambdaLookaheadStage = null;
+                lambdaLookaheadTokens.clear();
+                lambdaLookaheadLevel = 0;
+                inPP = oldInPP;
+                templateLookahead(token, tokenOffset, macro, true);
+            }
+        }
+    }
+    
+    private boolean isLambdaAmbiguity(Token<TokenId> token) {
+        if (!supportLambdas) {
+            return false;
+        }
+        if (!lambdaLookaheadTokens.isEmpty()) {
+            return true;
+        }
+        CppTokenId cppTokId = (CppTokenId) token.id();
+        switch (cppTokId) {
+            case LBRACKET:
+                CsmCompletionExpression top = peekExp();
+                if(top != null) {
+                    // from rule about generic types in tokenImpl
+                    switch(top.getExpID()) {
+                        case OPERATOR:
+                        case METHOD_OPEN:
+                        case LAMBDA_CALL_OPEN:
+                        case PARENTHESIS_OPEN:
+                            lambdaLookaheadStage = LambdaLookaheadStage.capture;
+                            return true;
+
+                        default:
+                            break;   
+                    }
+                } else {
+                    lambdaLookaheadStage = LambdaLookaheadStage.capture;
+                    return true;
+                }
+                break;
+                
+            default:
+                break;
+        }
+        return false;
+    }
+    
+    private LambdaLookaheadStage tryLookaheadLambda(Token<TokenId> token, LambdaLookaheadStage stage) {
+        switch ((CppTokenId)token.id()) {
+            case WHITESPACE:
+            case BLOCK_COMMENT:
+            case DOXYGEN_COMMENT:
+            case DOXYGEN_LINE_COMMENT:
+            case LINE_COMMENT:
+            case ESCAPED_LINE:
+            case ESCAPED_WHITESPACE:
+            case NEW_LINE:
+                return stage;
+        }
+        LambdaLookaheadStage nextStage = stage;
+        switch (stage) {
+            case capture:
+                if (token.id() == CppTokenId.LBRACKET) {
+                    lambdaLookaheadLevel++;
+                    if (lambdaLookaheadLevel > 1) {
+                        nextStage = null; // error: brackets cannot be inside lambda capture
+                    }
+                } else if (token.id() == CppTokenId.RBRACKET) {
+                    lambdaLookaheadLevel--;
+                    if (lambdaLookaheadLevel == 0) {
+                        nextStage = LambdaLookaheadStage.try_declarator_params;
+                    }
+                }
+                break;
+                
+            case try_declarator_params:
+                if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LPAREN) {
+                    // declarator is optional, so if it doesn't begin with '(', proceed to body immidiately
+                    nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.body);
+                } else if (token.id() == CppTokenId.LPAREN) {
+                    lambdaLookaheadLevel++;
+                } else if (token.id() == CppTokenId.RPAREN) {
+                    lambdaLookaheadLevel--;
+                    if (lambdaLookaheadLevel == 0) {
+                        nextStage = LambdaLookaheadStage.try_declarator_mutable;
+                    }
+                }
+                break;
+                
+            case try_declarator_mutable:
+                if (token.id() == CppTokenId.MUTABLE) {
+                    nextStage = LambdaLookaheadStage.try_declarator_exception;
+                } else {
+                    nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.try_declarator_exception);
+                }
+                break;
+            
+            case try_declarator_exception:
+                if (token.id() == CppTokenId.THROW) {
+                    // do nothing
+                } else if (token.id() == CppTokenId.NOEXCEPT) {
+                    // do nothing
+                } else if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LPAREN) {
+                    nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.try_declarator_attribute);
+                } else if (token.id() == CppTokenId.LPAREN) {
+                    lambdaLookaheadLevel++;
+                } else if (token.id() == CppTokenId.RPAREN) {
+                    lambdaLookaheadLevel--;
+                    if (lambdaLookaheadLevel == 0) {
+                        nextStage = LambdaLookaheadStage.try_declarator_attribute;
+                    }
+                }
+                break;
+                
+            case try_declarator_attribute:
+                if (token.id() == CppTokenId.__ATTRIBUTE) {
+                    nextStage = LambdaLookaheadStage.declarator_attribute_parens;
+                } else if (token.id() == CppTokenId.__ATTRIBUTE__) {
+                    nextStage = LambdaLookaheadStage.declarator_attribute_parens;
+                } else if (token.id() == CppTokenId.LBRACKET) {
+                    nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.declarator_attribute_cpp11);
+                } else {
+                    nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.try_declarator_trailing_type);
+                }
+                break;
+                
+            case declarator_attribute_parens:
+                if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LPAREN) {
+                    nextStage = null; // error: after keyword should be parens
+                } else if (token.id() == CppTokenId.LPAREN) {
+                    lambdaLookaheadLevel++;
+                } else if (token.id() == CppTokenId.RPAREN) {
+                    lambdaLookaheadLevel--;
+                    if (lambdaLookaheadLevel == 0) {
+                        nextStage = LambdaLookaheadStage.try_declarator_attribute; // next attribute
+                    }
+                }
+                break;
+                
+            case declarator_attribute_cpp11:
+                if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LBRACKET) {
+                    nextStage = null; // error: after first bracket should be second
+                } else if (token.id() == CppTokenId.LBRACKET) {
+                    lambdaLookaheadLevel++;
+                } else if (token.id() == CppTokenId.RBRACKET) {
+                    lambdaLookaheadLevel--;
+                    if (lambdaLookaheadLevel == 0) {
+                        nextStage = LambdaLookaheadStage.try_declarator_attribute; // next attribute
+                    }
+                }
+                break;
+                
+            case try_declarator_trailing_type:
+                if (token.id() == CppTokenId.ARROW) {
+                    nextStage = LambdaLookaheadStage.declarator_trailing_type_rest;
+                } else {
+                    nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.body);
+                }
+                break;
+                
+            case declarator_trailing_type_rest:
+                if (CndLexerUtilities.isType((CppTokenId) token.id())) {
+                    // do nothing
+                } else {
+                    switch ((CppTokenId) token.id()) {
+                        case IDENTIFIER:
+                        case SCOPE:
+                        case STAR:
+                        case AMP:
+                        case TYPENAME:
+                        case TEMPLATE:
+                        case STRUCT:
+                        case CLASS:
+                        case UNION:
+                        case ENUM:
+                            break;
+                        
+                        case LBRACKET:
+                        case LPAREN:
+                        case LT:
+                            lambdaLookaheadLevel++;
+                            break;
+
+                        case RBRACKET:
+                        case RPAREN:
+                        case GT:
+                            lambdaLookaheadLevel--;
+                            break;
+                            
+                        default:
+                            if (lambdaLookaheadLevel > 0) {
+                                // do nothing
+                            } else if (lambdaLookaheadLevel == 0) {
+                                nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.body);
+                            } else {
+                                nextStage = null; // error - type is incorrect!
+                            }
+                            break;
+                    }
+                }
+                break;
+                
+            case body:
+                if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LBRACE) {
+                    nextStage = null; // body should start with '{'
+                } else if (token.id() == CppTokenId.LBRACE) {
+                    lambdaLookaheadLevel++;
+                } else if (token.id() == CppTokenId.RBRACE) {
+                    lambdaLookaheadLevel--;
+                    if (lambdaLookaheadLevel == 0) {
+                        nextStage = LambdaLookaheadStage.done;
+                    }
+                }
+                break;
+        }
+        return nextStage;
+    }
+    
+    private void templateLookahead(Token<TokenId> token, int tokenOffset, boolean macro, boolean mayBeInLambda) {
         boolean lookahead = false;
         if(isTemplateAmbiguity(token)) {
             if(isLookaheadNeeded(token)) {
                 lookahead = true;
-                lookaheadTokens.add(new OffsetableToken(token, tokenOffset, isMacroExpansion(), inPP));
+                tplLookaheadTokens.add(new OffsetableToken(token, tokenOffset, isMacroExpansion(), inPP));
                 switch ((CppTokenId) token.id()) {
                     case LT:
-                        lookaheadTokensLtgtsLevel++;
+                        tplLookaheadLtgtsLevel++;
                         break;
                     case GT:
-                        lookaheadTokensLtgtsLevel--;
+                        tplLookaheadLtgtsLevel--;
                         break;
 //                    case GTGT:
 //                        lookaheadTokensLtgtsLevel -= 2;
 //                        break;
                     case LPAREN:
-                        lookaheadTokensParensLevel++;
+                        tplLookaheadParensLevel++;
                         break;
                     case RPAREN:
-                        lookaheadTokensParensLevel--;
+                        tplLookaheadParensLevel--;
                         break;
                     case LBRACKET:
-                        lookaheadTokensBracketsLevel++;
+                        tplLookaheadBracketsLevel++;
                         break;
                     case RBRACKET:
-                        lookaheadTokensBracketsLevel--;
+                        tplLookaheadBracketsLevel--;
                         break;
                     case LBRACE:
-                        lookaheadTokensBracesLevel++;
+                        tplLookaheadBracesLevel++;
                         break;
                     case RBRACE:
-                        lookaheadTokensBracesLevel--;
+                        tplLookaheadBracesLevel--;
                         break;
                 }            
             }
         } 
         if(!lookahead) {
-            if(lookaheadTokens.isEmpty()) {
-                tokenImpl(token, tokenOffset, isMacroExpansion());                
+            if(tplLookaheadTokens.isEmpty()) {
+                tokenImpl(token, tokenOffset, macro, mayBeInLambda);                
             } else {
                 Boolean oldInPP = inPP;
-                for (OffsetableToken offsetableToken : lookaheadTokens) {
+                for (OffsetableToken offsetableToken : tplLookaheadTokens) {
                     inPP = offsetableToken.inPP;
-                    tokenImpl(offsetableToken.token, offsetableToken.offset, offsetableToken.macro);
+                    tokenImpl(offsetableToken.token, offsetableToken.offset, offsetableToken.macro, mayBeInLambda);
                 }
-                lookaheadTokens.clear();                
-                tokenImpl(token, tokenOffset, isMacroExpansion());
+                tplLookaheadTokens.clear();                
                 inPP = oldInPP;
-                lookaheadTokensParensLevel = 0;
-                lookaheadTokensBracketsLevel = 0;
-                lookaheadTokensBracesLevel = 0;
-                lookaheadTokensLtgtsLevel = 0;
+                tokenImpl(token, tokenOffset, macro, mayBeInLambda);
+                tplLookaheadParensLevel = 0;
+                tplLookaheadBracketsLevel = 0;
+                tplLookaheadBracesLevel = 0;
+                tplLookaheadLtgtsLevel = 0;
             }
         }
     }
     
     private boolean isLookaheadNeeded(Token<TokenId> token) {
-        int tempLookaheadTokensParensLevel = lookaheadTokensParensLevel;
-        int tempLookaheadTokensBracketsLevel = lookaheadTokensBracketsLevel;
-        int tempLookaheadTokensBracesLevel = lookaheadTokensBracesLevel;
-        int tempLookaheadTokensLtgtsLevel = lookaheadTokensLtgtsLevel;
+        int tempLookaheadTokensParensLevel = tplLookaheadParensLevel;
+        int tempLookaheadTokensBracketsLevel = tplLookaheadBracketsLevel;
+        int tempLookaheadTokensBracesLevel = tplLookaheadBracesLevel;
+        int tempLookaheadTokensLtgtsLevel = tplLookaheadLtgtsLevel;
         
         switch ((CppTokenId) token.id()) {
             case LT:
@@ -412,7 +684,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 tempLookaheadTokensBracesLevel--;
                 break;
         }        
-        if (!lookaheadTokens.isEmpty()) {
+        if (!tplLookaheadTokens.isEmpty()) {
             return !(tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensBracesLevel == 0 && tempLookaheadTokensLtgtsLevel == 0);
         } else {
             return true;
@@ -421,7 +693,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     
     private boolean isTemplateAmbiguity(Token<TokenId> token) {
         if(supportTemplates && (token.id() == CppTokenId.LT || 
-                (!lookaheadTokens.isEmpty() && lookaheadTokens.get(0).token.id() == CppTokenId.LT))) {
+                (!tplLookaheadTokens.isEmpty() && tplLookaheadTokens.get(0).token.id() == CppTokenId.LT))) {
             CsmCompletionExpression top = peekExp();
             if(top != null) {
                 // from rule about generic types in tokenImpl
@@ -443,7 +715,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     
     private OffsetableToken isSupportTemplates() {
         LinkedList<CppTokenId> stack = new LinkedList<CppTokenId>();
-        for (OffsetableToken offsetableToken : lookaheadTokens) {
+        for (OffsetableToken offsetableToken : tplLookaheadTokens) {
             switch((CppTokenId)offsetableToken.token.id()) {
                 case LT:
                     stack.push(CppTokenId.LT);
@@ -857,7 +1129,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     }
 
     @SuppressWarnings("fallthrough")
-    private void tokenImpl(Token<TokenId> token, int tokenOffset, boolean macro) {
+    private void tokenImpl(Token<TokenId> token, int tokenOffset, boolean macro, boolean mayBeInLambda) {
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
         CppTokenId tokenID = (CppTokenId)token.id();
@@ -1082,6 +1354,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 case PARENTHESIS_OPEN:
                                 case SPECIAL_PARENTHESIS_OPEN:
                                 case METHOD_OPEN:
+                                case LAMBDA_CALL_OPEN:
                                 case MEMBER_POINTER_OPEN:
                                 case NEW:
                                 case GOTO:
@@ -1199,6 +1472,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case MEMBER_POINTER:
                             case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
+                            case LAMBDA_CALL_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
                             case SPECIAL_PARENTHESIS_OPEN:
@@ -1226,6 +1500,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 case GENERIC_TYPE_OPEN:
                                 case MEMBER_POINTER_OPEN: // next is operator as well
                                 case METHOD_OPEN:
+                                case LAMBDA_CALL_OPEN:
                                 case ARRAY_OPEN:
                                 case PARENTHESIS_OPEN:
                                 case SPECIAL_PARENTHESIS_OPEN:
@@ -1671,6 +1946,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         switch (topID) {
                             case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
+                            case LAMBDA_CALL_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
                             case SPECIAL_PARENTHESIS_OPEN:
@@ -1719,6 +1995,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
                             case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
+                            case LAMBDA_CALL_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
                             case SPECIAL_PARENTHESIS_OPEN:
@@ -1743,6 +2020,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         switch (topID) {
                             case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
+                            case LAMBDA_CALL_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
                             case SPECIAL_PARENTHESIS_OPEN:
@@ -1784,6 +2062,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case VARIABLE:
                             case ARRAY:
                             case METHOD:
+                            case LAMBDA_CALL:
                             case CONSTRUCTOR:
                             case PARENTHESIS:
                             case CONVERSION:
@@ -1827,6 +2106,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
                             case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
+                            case LAMBDA_CALL_OPEN:
                             case PARENTHESIS_OPEN:
                             case SPECIAL_PARENTHESIS_OPEN:
                             case OPERATOR:
@@ -1864,6 +2144,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case MEMBER_POINTER:
                             case INSTANCEOF:
                             case METHOD:
+                            case LAMBDA_CALL:
+                            case LAMBDA_FUNCTION: // apart from call, lambda itself can be parameter
                             case GENERIC_TYPE: // can be "HashMap<List<String>" plus "," state
                             case GENERIC_WILD_CHAR: // chack for "HashMap<?" plus "," case
                                 CsmCompletionExpression top2 = peekExp2();
@@ -1883,6 +2165,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         break;
 
                                     case PARENTHESIS_OPEN:
+                                        popExp();
+                                        top2.addParameter(top);
+                                        addTokenTo(top2);
+                                        top = top2;
+                                        break;
+                                        
+                                    case LAMBDA_CALL_OPEN:
                                         popExp();
                                         top2.addParameter(top);
                                         addTokenTo(top2);
@@ -1913,6 +2202,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 break;
 
                             case METHOD_OPEN:
+                                addTokenTo(top);
+                                break;
+                                
+                            case LAMBDA_CALL_OPEN:
                                 addTokenTo(top);
                                 break;
 
@@ -1976,6 +2269,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
                                 break;
                             }
+                            
+                            case LAMBDA_FUNCTION: // [](){...}(
+                                popExp();
+                                CsmCompletionExpression lambdaExp = createTokenExp(LAMBDA_CALL_OPEN);
+                                lambdaExp.addParameter(top);
+                                pushExp(lambdaExp);
+                                break;
 
                             case AUTO:   // auto(
                             case DECLTYPE_OPEN:    // decltype(                                
@@ -1983,6 +2283,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case PARENTHESIS_OPEN: // ((
                             case SPECIAL_PARENTHESIS_OPEN: // if((
                             case METHOD_OPEN:      // a((
+                            case LAMBDA_CALL_OPEN: // [](){return 0;}((
                             case NO_EXP:
                             case OPERATOR:         // 3+(
                             case CONVERSION:       // (int)(
@@ -2035,6 +2336,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case TYPE_REFERENCE:
                             case INSTANCEOF:
                             case METHOD:
+                            case LAMBDA_CALL:
+                            case LAMBDA_FUNCTION:
                             case GENERIC_TYPE:
                                 CsmCompletionExpression top2 = peekExp2();
                                 CsmCompletionExpression top3;
@@ -2134,6 +2437,14 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         top = top2;
                                         mtd = true;
                                         break;
+                                        
+                                    case LAMBDA_CALL_OPEN:
+                                        popExp();
+                                        top2.addParameter(top);
+                                        top2.setExpID(LAMBDA_CALL);
+                                        addTokenTo(top2);
+                                        top = top2;
+                                        break;
 
                                     case CONVERSION:
                                         popExp();
@@ -2188,6 +2499,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
                             case METHOD_OPEN:
                                 mtd = true;
+                                break;
+                                
+                            case LAMBDA_CALL_OPEN: // empty param_list for lambda
+                                addTokenTo(top);
+                                top.setExpID(LAMBDA_CALL);
                                 break;
 
                             case PARENTHESIS_OPEN: // empty parenthesis
@@ -2579,7 +2895,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             pushExp(createTokenExp(OPERATOR, top));
                             alternativeParse = true;
                             errorState = false;
-                            tokenImpl(token, tokenOffset, macro);
+                            tokenImpl(token, tokenOffset, macro, mayBeInLambda);
                             alternativeParse = false;
                         }
                     }
@@ -2596,7 +2912,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     pushExp(createTokenExp(AUTO));
                     errorState = false;
                 } else {
-                    if(!macro) {
+                    if(!macro && !mayBeInLambda) {
                         lastSeparatorOffset = tokenOffset;
                     }
                 }
@@ -2621,23 +2937,39 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     @SuppressWarnings("fallthrough")
     @Override
     public void end(int offset, int lastTokenOffset) {
-        boolean oldSupportTemplates = supportTemplates;
-        Boolean oldInPP = inPP;
-        int lookaheadSize = lookaheadTokens.size();
-        OffsetableToken disableTillToken = isSupportTemplates();
-        supportTemplates = disableTillToken == null;
-        for (int i = 0; i < lookaheadSize; i++) {
-            OffsetableToken currentToken = lookaheadTokens.remove(0);
-            inPP = currentToken.inPP;
-            tokenImpl(currentToken.token, currentToken.offset, currentToken.macro);
-            if(currentToken == disableTillToken) {
-                disableTillToken = isSupportTemplates();
-                supportTemplates = disableTillToken == null;
+        // Lambda lookahead
+        if (!lambdaLookaheadTokens.isEmpty()) {
+            Boolean oldInPP = inPP;
+            for (OffsetableToken offsetableToken : lambdaLookaheadTokens) {
+                inPP = offsetableToken.inPP;
+                templateLookahead(offsetableToken.token, offsetableToken.offset, offsetableToken.macro, true);
             }
+            lambdaLookaheadStage = null;
+            lambdaLookaheadTokens.clear();
+            lambdaLookaheadLevel = 0;
+            inPP = oldInPP;
         }
-        lookaheadTokens.clear();
-        supportTemplates = oldSupportTemplates;
-        inPP = oldInPP;
+        
+        // Template lookahead
+        if (!tplLookaheadTokens.isEmpty()) {
+            boolean oldSupportTemplates = supportTemplates;
+            Boolean oldInPP = inPP;
+            int lookaheadSize = tplLookaheadTokens.size();
+            OffsetableToken disableTillToken = isSupportTemplates();
+            supportTemplates = disableTillToken == null;
+            for (int i = 0; i < lookaheadSize; i++) {
+                OffsetableToken currentToken = tplLookaheadTokens.remove(0);
+                inPP = currentToken.inPP;
+                tokenImpl(currentToken.token, currentToken.offset, currentToken.macro, false);
+                if(currentToken == disableTillToken) {
+                    disableTillToken = isSupportTemplates();
+                    supportTemplates = disableTillToken == null;
+                }
+            }
+            tplLookaheadTokens.clear();
+            supportTemplates = oldSupportTemplates;
+            inPP = oldInPP;
+        }
 
         if (lastValidTokenID != null) {
             // if space or comment occurs as last token
@@ -2792,6 +3124,19 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 popExp();
                                 top2.addParameter(top);
                                 top2.setExpID(CONSTRUCTOR);
+                                reScan = true;
+                                break;
+                        }
+                        break;
+                        
+                    case LAMBDA_CALL:
+                        switch (top2ID) {
+                            case DOT_OPEN:
+                            case ARROW_OPEN:
+                            case SCOPE_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                top2.setExpID(openExpID2ExpID(top2ID)); // *_OPEN => *, use value of case
                                 reScan = true;
                                 break;
                         }
@@ -3004,5 +3349,18 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         }
     }
     
+    private static enum LambdaLookaheadStage {
+        capture, // [...] block
+        try_declarator_params, // (parameter-declaration-clause) 
+        try_declarator_mutable, // mutable
+        try_declarator_exception, // exception_spec
+        try_declarator_attribute, // beginning of attribute - '[' or '__attribute__' or '__attribute'
+        declarator_attribute_parens, // ending of old-style attribute - (...)
+        declarator_attribute_cpp11, // ending of new style attribute - [[...]]
+        try_declarator_trailing_type, // beginning of trailing type - '->'
+        declarator_trailing_type_rest, // ending of trailing type - type_name
+        body,  // {...} block
+        done   // parsing of labmda finished
+    }
 }
 

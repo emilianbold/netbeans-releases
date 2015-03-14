@@ -123,6 +123,7 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.iterateTypeChain;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.howMany;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Qualificator;
@@ -267,7 +268,7 @@ public final class CompletionSupport implements DocumentListener {
     /** Return the position of the last command separator before
      * the given position.
      */
-    protected int getLastCommandSeparator(final int pos) throws BadLocationException {
+    protected int getLastCommandSeparator(CsmFile file, final int pos) throws BadLocationException {
         if (pos < 0 || pos > getDocument().getLength()) {
             throw new BadLocationException("position is out of range[" + 0 + "-" + getDocument().getLength() + "]", pos); // NOI18N
         }
@@ -277,7 +278,8 @@ public final class CompletionSupport implements DocumentListener {
         // freeze the value to prevent modification of cache value from diff thread
         int curCachedValue = lastSeparatorOffset;
         if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos) && 
-                !CndTokenUtilities.isInProCDirective(getDocument(), pos)) {
+                !CndTokenUtilities.isInProCDirective(getDocument(), pos) &&
+                !isInLambda(file, curCachedValue)) {
             if (curCachedValue >= 0 && curCachedValue < pos && 
                     !CndTokenUtilities.isInProCDirective(getDocument(), curCachedValue)) {
                 return curCachedValue;
@@ -293,6 +295,42 @@ public final class CompletionSupport implements DocumentListener {
         } else {
             return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
         }
+    }
+    
+    public static boolean areLambdasEnabled(CsmFile csmFile) {
+        if (csmFile != null) {
+            if (APTLanguageSupport.getInstance().isLanguageCpp(CsmBaseUtilities.getFileLanguage(csmFile))) {
+                if (APTLanguageSupport.getInstance().isFlavourSufficient(CsmBaseUtilities.getFileLanguageFlavor(csmFile), APTLanguageSupport.FLAVOR_CPP11)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public static boolean areTemplatesEnabled(CsmFile csmFile) {
+        if (csmFile != null) {
+            switch (csmFile.getFileType()) {
+                case SOURCE_C_FILE:
+                case SOURCE_FORTRAN_FILE:
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+    private static boolean isInLambda(CsmFile file, int pos) {
+        if (areLambdasEnabled(file)) {
+            CsmContext context = CsmOffsetResolver.findContext(file, pos, null);
+            ListIterator<CsmContext.CsmContextEntry> entries = context.reverseIterator();
+            while (entries.hasPrevious()) {
+                CsmContext.CsmContextEntry entry = entries.previous();
+                if (CsmKindUtilities.isLambda(entry.getScope())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** Get the class from name. The import sections are consulted to find
@@ -352,40 +390,46 @@ public final class CompletionSupport implements DocumentListener {
         return isAssignable(null, from, to);
     }
 
-    public static boolean isAssignable(Context ctx, CsmType origFrom, CsmType origTo) {
-        TypeInfoCollector fromInfo = new TypeInfoCollector();
-        CsmType from = iterateTypeChain(origFrom, fromInfo);
-        
-        TypeInfoCollector toInfo = new TypeInfoCollector();
-        CsmType to = iterateTypeChain(origTo, toInfo);
-        
-        CsmClassifier fromCls = from.getClassifier();
-        CsmClassifier toCls = to.getClassifier();
-
-        if (fromCls == null || CsmBaseUtilities.isUnresolved(fromCls)) {
+    static boolean isAssignable(Context ctx, CsmType origFrom, CsmType origTo) {
+        AnalyzedType from = AnalyzedType.create(ctx, origFrom, false, false);
+        if (from == null) {
             return false;
         }
-
-        if (toCls == null || CsmBaseUtilities.isUnresolved(toCls)) {
-            if (ctx != null && ctx.getContextScope() != null) {
-                List<CsmInstantiation> instantiations = CsmInstantiationProvider.getDefault().getInstantiatedTypeInstantiations(to);
-                // TODO: run this check only if resolving was started from macros and we should use context scope
-                to = CsmExpressionResolver.resolveMacroType(to, ctx.getContextScope(), instantiations, new ResolvedTypeInfoCollector(toInfo));
-                toCls = (to != null) ? to.getClassifier() : null;
-                if (toCls == null || CsmBaseUtilities.isUnresolved(toCls)) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+        AnalyzedType to = AnalyzedType.create(ctx, origTo, true, true);
+        if (to == null) {
+            return false;
         }
+        if (!isAutoConvertible(from.type, from.origType, from.typeInfo, to.type, to.origType, to.typeInfo, from.classifier, to.classifier)) {
+            return isUserConvertible(from.type, from.origType, from.typeInfo, to.type, to.origType, to.typeInfo, from.classifier, to.classifier);
+        }
+        return true;
+    }
+    
+    /**
+     * Checks if type 'to' can be converted from type 'from' with default
+     * conversions (all except user defined ones).
+     * 
+     * @param from
+     * @param to
+     * @return true if convertible
+     */
+    public static boolean isAutoConvertible(CsmType from, CsmType to) {
+        return isAutoConvertible(null, from, to);
+    }
+    
+    static boolean isAutoConvertible(Context ctx, CsmType origFrom, CsmType origTo) {
+        AnalyzedType from = AnalyzedType.create(ctx, origFrom, false, false);
+        if (from == null) {
+            return false;
+        }
+        AnalyzedType to = AnalyzedType.create(ctx, origTo, true, true);
+        if (to == null) {
+            return false;
+        }
+        return isAutoConvertible(from.type, from.origType, from.typeInfo, to.type, to.origType, to.typeInfo, from.classifier, to.classifier);
+    }
         
-        if (CsmKindUtilities.isInstantiation(toCls)) {
-            if (!CsmInstantiationProvider.getDefault().isViableInstantiation((CsmInstantiation) toCls, true)) {
-                return false;
-            }
-        }        
-        
+    public static boolean isAutoConvertible(CsmType from, CsmType origFrom, TypeInfoCollector fromInfo, CsmType to, CsmType origTo, TypeInfoCollector toInfo, CsmClassifier fromCls, CsmClassifier toCls) {
         final int fromArrayDepth = howMany(fromInfo, Qualificator.ARRAY);
         final int toArrayDepth = howMany(toInfo, Qualificator.ARRAY);
         final int fromPointerDepth = howMany(fromInfo, Qualificator.POINTER);
@@ -419,7 +463,7 @@ public final class CompletionSupport implements DocumentListener {
         }
         
         String tfrom = origFrom.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
-        String tto =origTo.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
+        String tto = origTo.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
 
         if (tfrom.equals(tto)) {
             return true;
@@ -428,10 +472,95 @@ public final class CompletionSupport implements DocumentListener {
         if (CsmCompletion.isPrimitiveClass(fromCls) && CsmCompletion.isPrimitiveClass(toCls)) {
             return true;
         }
+        
         if (CsmKindUtilities.isClass(toCls) && CsmKindUtilities.isClass(fromCls)) {
             return CsmInheritanceUtilities.isAssignableFrom((CsmClass)fromCls, (CsmClass)toCls);
         }
         return false;
+    }
+    
+    /**
+     * Checks if type 'to' can be converted from type 'from' with user
+     * defined conversion.
+     * 
+     * @param from
+     * @param to
+     * @return true if convertible
+     */
+    public static boolean isUserConvertible(CsmType from, CsmType to) {
+        return isUserConvertible(null, from, to);
+    }
+    
+    static boolean isUserConvertible(Context ctx, CsmType origFrom, CsmType origTo) {
+        AnalyzedType from = AnalyzedType.create(ctx, origFrom, false, false);
+        if (from == null) {
+            return false;
+        }
+        AnalyzedType to = AnalyzedType.create(ctx, origTo, true, true);
+        if (to == null) {
+            return false;
+        }
+        return isUserConvertible(from.type, from.origType, from.typeInfo, to.type, to.origType, to.typeInfo, from.classifier, to.classifier);
+    }
+    
+    public static boolean isUserConvertible(CsmType from, CsmType origFrom, TypeInfoCollector fromInfo, CsmType to, CsmType origTo, TypeInfoCollector toInfo, CsmClassifier fromCls, CsmClassifier toCls) {
+        final int fromArrayDepth = howMany(fromInfo, Qualificator.ARRAY);
+        final int toArrayDepth = howMany(toInfo, Qualificator.ARRAY);
+        final int fromPointerDepth = howMany(fromInfo, Qualificator.POINTER);
+        final int toPointerDepth = howMany(toInfo, Qualificator.POINTER);     
+        
+        if (fromArrayDepth == 0 && toArrayDepth == 0 && fromPointerDepth == 0 && toPointerDepth == 0 && CsmKindUtilities.isClass(toCls)) {
+            CsmClass clazz = (CsmClass) toCls;
+            for (CsmMember member : clazz.getMembers()) {
+                if (CsmKindUtilities.isConstructor(member)) {
+                    CsmConstructor constructor = (CsmConstructor) member;
+                    if (constructor.getParameters() != null) {
+                        boolean appropriate = true;
+                        boolean first = true;
+                        for (CsmParameter param : constructor.getParameters()) {
+                            if (first) {
+                                first = false;
+                                if (!CsmKindUtilities.isTemplateParameterType(param.getType())) {
+                                    TypeInfoCollector paramInfo = new TypeInfoCollector();
+                                    CsmType paramType = iterateTypeChain(param.getType(), paramInfo);
+                                    CsmClassifier paramCls = paramType.getClassifier();
+                                    if (!isViableClassifier(paramCls, true)) {
+                                        appropriate = false;
+                                        break;                                        
+                                    }
+                                    if (!isAutoConvertible(from, origFrom, fromInfo, paramType, param.getType(), paramInfo, fromCls, paramCls)) {
+                                        appropriate = false;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                if (param.getInitialValue() == null) {
+                                    appropriate = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (appropriate) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    private static boolean isViableClassifier(CsmClassifier cls, boolean checkInstantiationViability) {
+        if (cls == null || CsmBaseUtilities.isUnresolved(cls)) {
+            return false;
+        }
+        if (checkInstantiationViability && CsmKindUtilities.isInstantiation(cls)) {
+            if (!CsmInstantiationProvider.getDefault().isViableInstantiation((CsmInstantiation) cls, true)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public CsmType getCommonType(CsmType typ1, CsmType typ2) {
@@ -449,24 +578,24 @@ public final class CompletionSupport implements DocumentListener {
                 boolean firstIsPrimitive = CndLexerUtilities.isType(cls1.getName().toString());
                 boolean secondIsPrimitive = CndLexerUtilities.isType(cls2.getName().toString());
                 if (!firstIsPrimitive && !secondIsPrimitive) { // non-primitive classes
-                    if (isAssignable(typ1, typ2)) {
+                    if (isAutoConvertible(typ1, typ2)) {
                         return typ1;
-                    } else if (isAssignable(typ2, typ1)) {
+                    } else if (isAutoConvertible(typ2, typ1)) {
                         return typ2;
                     } else {
                         return null;
                     }
                 } else { // at least one primitive class
                     if (secondIsPrimitive) {
-                        if (isAssignable(typ1, typ2)) {
+                        if (isAutoConvertible(typ1, typ2)) {
                             return typ1;
-                        } else if (isAssignable(typ2, typ1)) {
+                        } else if (isAutoConvertible(typ2, typ1)) {
                             return typ2;
                         }
                     } else if (firstIsPrimitive) {
-                        if (isAssignable(typ2, typ1)) {
+                        if (isAutoConvertible(typ2, typ1)) {
                             return typ2;
-                        } else if (isAssignable(typ1, typ2)) {
+                        } else if (isAutoConvertible(typ1, typ2)) {
                             return typ1;
                         }
                     }
@@ -1792,6 +1921,45 @@ public final class CompletionSupport implements DocumentListener {
             if (resolvedType != null) {
                 collector.check(resolvedType);
             }
+        }
+    }
+    
+    private static class AnalyzedType {
+        
+        public final CsmType type;
+        
+        public final CsmType origType;
+        
+        public final TypeInfoCollector typeInfo;
+        
+        public final CsmClassifier classifier;
+        
+        public static AnalyzedType create(Context ctx, CsmType toAnalyze, boolean deepResolving, boolean checkInstantiationViability) {
+            TypeInfoCollector typeInfo = new TypeInfoCollector();
+            CsmType type = iterateTypeChain(toAnalyze, typeInfo);
+            CsmClassifier cls = type.getClassifier();
+            
+            if (deepResolving && (cls == null || CsmBaseUtilities.isUnresolved(cls))) {
+                if (ctx != null && ctx.getContextScope() != null) {
+                    List<CsmInstantiation> instantiations = CsmInstantiationProvider.getDefault().getInstantiatedTypeInstantiations(type);
+                    // TODO: run this check only if resolving was started from macros and we should use context scope
+                    type = CsmExpressionResolver.resolveMacroType(type, ctx.getContextScope(), instantiations, new ResolvedTypeInfoCollector(typeInfo));
+                    cls = (type != null) ? type.getClassifier() : null;
+                }
+            }
+            
+            if (!isViableClassifier(cls, checkInstantiationViability)) {
+                return null;
+            }
+            
+            return new AnalyzedType(type, toAnalyze, typeInfo, cls);
+        }
+
+        private AnalyzedType(CsmType type, CsmType origType, TypeInfoCollector typeInfo, CsmClassifier classifier) {
+            this.type = type;
+            this.origType = origType;
+            this.typeInfo = typeInfo;
+            this.classifier = classifier;
         }
     }
 }

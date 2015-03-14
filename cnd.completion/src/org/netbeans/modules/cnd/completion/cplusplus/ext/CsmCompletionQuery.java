@@ -79,6 +79,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmClosureType;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
@@ -86,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmFunctional;
@@ -133,6 +135,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
+import static org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport.areLambdasEnabled;
+import static org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport.areTemplatesEnabled;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.AUTO_KEYWORD;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.isAutoType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
@@ -141,6 +145,7 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
+import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
@@ -561,7 +566,7 @@ abstract public class CsmCompletionQuery {
             }
             if (tp == null) {
                 // find last separator position
-                final int lastSepOffset = sup.getLastCommandSeparator(offset);
+                final int lastSepOffset = sup.getLastCommandSeparator(csmFile, offset);
                 tp = processTokensInFile(csmFile, lastSepOffset, offset, doc, docVersion);
                 baseDocument.putProperty(TOKEN_PROCESSOR_CACHE_KEY, new TokenProcessorCache(offset, docVersion, tp));        
             } else {
@@ -726,15 +731,8 @@ abstract public class CsmCompletionQuery {
         if(etp instanceof CsmExpandedTokenProcessor) {
             tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
         }
-        boolean enableTemplates = true;
-        if (csmFile != null) {
-            switch (csmFile.getFileType()) {
-                case SOURCE_C_FILE:
-                case SOURCE_FORTRAN_FILE:
-                    enableTemplates = false;
-            }
-        }
-        tp.enableTemplateSupport(enableTemplates);
+        tp.enableLambdaSupport(areLambdasEnabled(csmFile));
+        tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -777,18 +775,9 @@ abstract public class CsmCompletionQuery {
         }    
         if (cppts != null) {
             final TokenSequence<TokenId> cppTokenSequence = cppts;
-            
-            boolean enableTemplates = true;
             CsmFile csmFile = expression.getContainingFile();
-            if (csmFile != null) {
-                switch (csmFile.getFileType()) {
-                    case SOURCE_C_FILE:
-                    case SOURCE_FORTRAN_FILE:
-                        enableTemplates = false;
-                }
-            }
-            tp.enableTemplateSupport(enableTemplates);
-            
+            tp.enableLambdaSupport(areLambdasEnabled(csmFile));
+            tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
             CndTokenUtilities.processTokens(tp, cppTokenSequence, exprStartOffset, exprEndOffset, exprStartOffset);  
         }
         
@@ -1394,6 +1383,7 @@ abstract public class CsmCompletionQuery {
                                 antiLoop.add(initializer);
 
                                 final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initializer.getEndOffset(), initializer.getStartOffset());
+                                tp.enableLambdaSupport(true);
                                 tp.enableTemplateSupport(true);
                                 final BaseDocument doc = getBaseDocument();
                                 doc.render(new Runnable() {
@@ -3053,6 +3043,32 @@ abstract public class CsmCompletionQuery {
                         }
                     }
                     break;
+                    
+                case CsmCompletionExpression.LAMBDA_CALL:
+                    if (!last || findType) {
+                        if (item.getParameterCount() > 0 && item.getParameter(0).getExpID() == CsmCompletionExpression.LAMBDA_FUNCTION) {
+                            CsmCompletionExpression lambdaFunction = item.getParameter(0);
+                            CsmFunctionDefinition lambda = getCsmLambda(lambdaFunction);
+                            if (lambda != null) {
+                                List<CsmType> typeList = getTypeList(item, 1);
+                                lastType = CompletionSupport.extractFunctionType(this, Arrays.asList(lambda), null, typeList);
+                            }
+                        }
+                    }
+                    break;
+                    
+                case CsmCompletionExpression.LAMBDA_FUNCTION:
+                    if (findType) {
+                        // LAMBDA_FUNCTION node is declaration, so only findType is supported
+                        CsmFunctionDefinition lambda = getCsmLambda(item);
+                        if (lambda != null) {
+                            lastType = new CsmCompletion.CompletionClosureType(lambda, 0, false);
+                        } else {
+                            lastType = null; // no lambda found
+                            cont = false;
+                        }
+                    }
+                    break;
             }
             
             // Handle decltypes
@@ -3109,6 +3125,29 @@ abstract public class CsmCompletionQuery {
                 cont = false;
             }
             return cont;
+        }
+        
+        private CsmFunctionDefinition getCsmLambda(CsmCompletionExpression lambdaFunction) {
+            if (lambdaFunction != null && lambdaFunction.getExpID() == CsmCompletionExpression.LAMBDA_FUNCTION) {
+                int bodyStartOffset = -1;
+                for (int i = 0; i < lambdaFunction.getTokenCount(); i++) {
+                    if (lambdaFunction.getTokenID(i) == CppTokenId.LBRACE) {
+                        bodyStartOffset = lambdaFunction.getTokenOffset(i);
+                    }
+                }
+                if (bodyStartOffset >= 0) {
+                    CsmContext context;
+                    if (contextScope != null) {
+                        context = CsmOffsetResolver.findContextFromScope(contextFile, bodyStartOffset, contextScope);
+                    } else {
+                        context = CsmOffsetResolver.findContext(contextFile, bodyStartOffset, getFileReferencesContext());
+                    }
+                    if (CsmKindUtilities.isLambda(context.getLastObject())) {
+                        return (CsmFunctionDefinition) context.getLastObject();
+                    }
+                }
+            }
+            return null;
         }
         
         private <T extends CsmFunctional> List<T> instantiateFunctions(Collection<T> functions, CsmCompletionExpression exp, List<CsmType> passedParams, Predicate<CsmFunctional> acceptor) {
@@ -3210,6 +3249,9 @@ abstract public class CsmCompletionQuery {
         
         private CsmFunctional lookForVariableOperator(CsmVariable object) {
             CsmType varType = ((CsmVariable) object).getType();
+            if (isAutoType(varType)) {
+                varType = findAutoVariableType(object, varType);
+            }
             return lookForOperator(varType);
         }
         
@@ -3217,6 +3259,8 @@ abstract public class CsmCompletionQuery {
             if (type != null) {
                 CsmClassifier cls = getClassifier(type, contextFile, endOffset);
                 if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
+                    return (CsmFunctional) cls;
+                } else if (CsmKindUtilities.isClosureClassifier(cls)) {
                     return (CsmFunctional) cls;
                 } else {
                     CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
@@ -3993,7 +4037,11 @@ abstract public class CsmCompletionQuery {
     private static boolean isProhibitedResultItem(Object obj) {
         if (obj instanceof CsmObject) {
             CsmObject csmObj = (CsmObject) obj;
-            return CsmKindUtilities.isFunctionPointerClassifier(csmObj);
+            if (CsmKindUtilities.isFunctionPointerClassifier(csmObj)) {
+                return true;
+            } else if (CsmKindUtilities.isClosureClassifier(csmObj)) {
+                return true;
+            }
         }
         return false;
     }

@@ -191,8 +191,14 @@ public class CsmCompletionExpression {
     public static final int AUTO = 49;
     /** '->' after cpp11 new syntax function declaration (auto [declarator] -> [return type] ) */
     public static final int ARROW_RETURN_TYPE = 50;
+    /** Declaration of lambda function */
+    public static final int LAMBDA_FUNCTION = 51;
+    /** Unfinished call of lambda function */
+    public static final int LAMBDA_CALL_OPEN = 52;
+    /** Finished call of lambda function */
+    public static final int LAMBDA_CALL = 53;
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = ARROW_RETURN_TYPE;
+    private static final int LAST_ID = LAMBDA_CALL;
     private static final int cppTokenIDsLength = EnumSet.allOf(CppTokenId.class).size();
     /** Array that holds the precedence of the operator
      * and whether it's right associative or not.
@@ -599,6 +605,12 @@ public class CsmCompletionExpression {
                 return "SPECIAL_PARENTHESIS"; // NOI18N
             case SPECIAL_PARENTHESIS_OPEN:
                 return "SPECIAL_PARENTHESIS_OPEN"; // NOI18N
+            case LAMBDA_FUNCTION:
+                return "LAMBDA"; // NOI18N
+            case LAMBDA_CALL_OPEN:
+                return "LAMBDA_CALL_OPEN"; // NOI18N
+            case LAMBDA_CALL:
+                return "LAMBDA_CALL"; // NOI18N
             default:
                 return "Unknown expID " + expID; // NOI18N
         }

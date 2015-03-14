@@ -374,4 +374,21 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug250270.cpp", 7, 11, "bug250270.cpp", 6, 7);
         performTest("bug250270.cpp", 8, 13, "bug250270.cpp", 3, 5);
     }  
+    
+    public void testBug251181() throws Exception {
+        performTest("bug251181.cpp", 10, 31, "bug251181.cpp", 3, 9);
+        performTest("bug251181.cpp", 12, 29, "bug251181.cpp", 4, 13);
+        performTest("bug251181.cpp", 15, 31, "bug251181.cpp", 3, 9);
+        performTest("bug251181.cpp", 16, 22, "bug251181.cpp", 4, 13);
+        
+        performTest("bug251181.cpp", 57, 26, "bug251181.cpp", 48, 15);
+        performTest("bug251181.cpp", 58, 26, "bug251181.cpp", 49, 15);
+        performTest("bug251181.cpp", 59, 26, "bug251181.cpp", 50, 15);
+        performTest("bug251181.cpp", 60, 26, "bug251181.cpp", 51, 15);
+        
+        performTest("bug251181.cpp", 79, 26, "bug251181.cpp", 70, 15);
+        performTest("bug251181.cpp", 80, 26, "bug251181.cpp", 71, 15);
+        performTest("bug251181.cpp", 81, 26, "bug251181.cpp", 72, 15);
+        performTest("bug251181.cpp", 82, 26, "bug251181.cpp", 73, 15);
+    }  
 }

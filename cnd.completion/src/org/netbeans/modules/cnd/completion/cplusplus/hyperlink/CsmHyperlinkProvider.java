@@ -580,17 +580,22 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     @Override
     protected String getTooltipText(Document doc, TokenItem<TokenId> token, int offset, HyperlinkType type) {
-        CsmObject item = findTargetObject(doc, token, offset, false);
-        CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
-        if (msg != null) {
-            if (CsmKindUtilities.isMacro(item)) {
-                msg = getAlternativeHyperlinkTip(doc, "AltMacroHyperlinkHint", msg); // NOI18N
-            } else if (CsmKindUtilities.isMethod(item)) {
-                msg = getAlternativeHyperlinkTip(doc, "AltMethodHyperlinkHint", msg); // NOI18N
-            } else if (CsmKindUtilities.isClass(item)) {
-                msg = getAlternativeHyperlinkTip(doc, "AltClassHyperlinkHint", msg); // NOI18N
+        CsmCacheManager.enter();
+        try {
+            CsmObject item = findTargetObject(doc, token, offset, false);
+            CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
+            if (msg != null) {
+                if (CsmKindUtilities.isMacro(item)) {
+                    msg = getAlternativeHyperlinkTip(doc, "AltMacroHyperlinkHint", msg); // NOI18N
+                } else if (CsmKindUtilities.isMethod(item)) {
+                    msg = getAlternativeHyperlinkTip(doc, "AltMethodHyperlinkHint", msg); // NOI18N
+                } else if (CsmKindUtilities.isClass(item)) {
+                    msg = getAlternativeHyperlinkTip(doc, "AltClassHyperlinkHint", msg); // NOI18N
+                }
             }
+            return msg == null ? null : msg.toString();
+        } finally {
+            CsmCacheManager.leave();
         }
-        return msg == null ? null : msg.toString();
     }
 }

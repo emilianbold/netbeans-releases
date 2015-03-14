@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -74,18 +75,23 @@ import org.openide.util.lookup.ServiceProvider;
 public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
     @Override
     public List<CsmReference> getFunctionCalls(StyledDocument document, int line) {
-        if (line < 0 || document == null) {
-            return Collections.emptyList();
+        CsmCacheManager.enter();
+        try {
+            if (line < 0 || document == null) {
+                return Collections.emptyList();
+            }
+
+            CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
+            if (csmFile == null || !csmFile.isParsed()) {
+                return Collections.emptyList();
+            }
+
+            final Element lineRootElement = NbDocument.findLineRootElement(document);
+
+            return getFunctionCalls(csmFile, lineRootElement, line);
+        } finally {
+            CsmCacheManager.leave();
         }
-
-        CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
-        if (csmFile == null || !csmFile.isParsed()) {
-            return Collections.emptyList();
-        }
-
-        final Element lineRootElement = NbDocument.findLineRootElement(document);
-
-        return getFunctionCalls(csmFile, lineRootElement, line);
     }
 
     private static List<CsmReference> getFunctionCalls(final CsmFile csmFile,
