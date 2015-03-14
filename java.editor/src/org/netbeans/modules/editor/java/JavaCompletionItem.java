@@ -55,6 +55,7 @@ import java.awt.Graphics;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -80,6 +81,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.editor.BaseDocument;
@@ -96,6 +98,7 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.CompositeCompletionItem;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
 import org.openide.util.Exceptions;
@@ -261,6 +264,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     public static JavaCompletionItem createInitializeAllConstructorItem(CompilationInfo info, boolean isDefault, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
         return new InitializeAllConstructorItem(info, isDefault, fields, superConstructor, parent, substitutionOffset);
+    }
+
+    private static CompletionItem createExcludeItem(CharSequence name) {
+        if (name == null) {
+            ExcludeFromCompletionItem item = ExcludeFromCompletionItem.CONFIGURE_ITEM != null ? ExcludeFromCompletionItem.CONFIGURE_ITEM.get() : null;
+            if (item == null) {
+                ExcludeFromCompletionItem.CONFIGURE_ITEM = new WeakReference<ExcludeFromCompletionItem>(item = new ExcludeFromCompletionItem(name));
+            }
+            return item;
+        }
+        return new ExcludeFromCompletionItem(name);
     }
 
     public static final String COLOR_END = "</font>"; //NOI18N
@@ -812,7 +826,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    static class ClassItem extends WhiteListJavaCompletionItem<TypeElement> {
+    static class ClassItem extends WhiteListJavaCompletionItem<TypeElement> implements CompositeCompletionItem {
 
         private static final String CLASS = "org/netbeans/modules/editor/resources/completion/class_16.png"; //NOI18N
         private static final String CLASS_COLOR = Utilities.getHTMLColor(150, 64, 64);
@@ -833,6 +847,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private CharSequence sortText;
         private String leftText;
         private boolean autoImportEnclosingType;
+        private List<CompletionItem> subItems = new ArrayList<>();
 
         private ClassItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, ReferencesCount referencesCount, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImportEnclosingType, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(elem), whiteList);
@@ -854,6 +869,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 this.sortText = this.simpleName;
             }
             this.autoImportEnclosingType = autoImportEnclosingType;
+            this.subItems.add(createExcludeItem(elem.getQualifiedName()));
+            this.subItems.add(createExcludeItem(info.getElements().getPackageOf(elem).getQualifiedName() + ".*")); //NOI18N
+            this.subItems.add(createExcludeItem(null));
         }
 
         @Override
@@ -869,6 +887,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         public CharSequence getInsertPrefix() {
             return simpleName;
+        }
+
+        public List<CompletionItem> getSubItems() {
+            return subItems;
         }
 
         @Override
@@ -3818,6 +3840,75 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         public boolean instantSubstitution(JTextComponent component) {
             return false;
+        }
+    }
+
+    @NbBundle.Messages({"exclude_Lbl=Exclude \"{0}\" from completion", "configure_Excludes_Lbl=Configure excludes"}) // NOI18N
+    private static class ExcludeFromCompletionItem implements CompletionItem {
+
+        private static final ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/hints/resources/suggestion.gif", false); // NOI18N
+        private static WeakReference<ExcludeFromCompletionItem> CONFIGURE_ITEM;
+        private CharSequence name;
+        private String text;
+
+        private ExcludeFromCompletionItem(CharSequence name) {
+            this.name = name;
+            this.text = name == null ? Bundle.configure_Excludes_Lbl() : Bundle.exclude_Lbl(name);
+        }
+        
+        @Override
+        public void defaultAction(JTextComponent component) {
+            Completion.get().hideAll();
+            if (name == null) {
+                OptionsDisplayer.getDefault().open("Editor/CodeCompletion/text/x-java"); //NOI18N
+            } else {
+                org.netbeans.modules.java.completion.Utilities.exclude(name);
+                Completion.get().showCompletion();
+            }
+        }
+
+        @Override
+        public void processKeyEvent(KeyEvent evt) {
+        }
+
+        @Override
+        public int getPreferredWidth(Graphics g, Font defaultFont) {
+            return CompletionUtilities.getPreferredWidth(text, null, g, defaultFont);
+        }
+
+        @Override
+        public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
+            CompletionUtilities.renderHtml(icon, text, null, g, defaultFont, defaultColor, width, height, selected);
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return null;
+        }
+
+        @Override
+        public CompletionTask createToolTipTask() {
+            return null;
+        }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;
+        }
+
+        @Override
+        public int getSortPriority() {
+            return 10;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return text;
+        }
+
+        @Override
+        public CharSequence getInsertPrefix() {
+            return null;
         }
     }
 

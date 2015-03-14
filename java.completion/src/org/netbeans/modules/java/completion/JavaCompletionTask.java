@@ -631,7 +631,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     Set<TypeMirror> exs = tu.getUncaughtExceptions(tryPath);
                     Elements elements = controller.getElements();
                     for (TypeMirror ex : exs) {
-                        if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))) {
+                        if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString())
+                                && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))
+                                && !Utilities.isExcluded(((TypeElement)((DeclaredType) ex).asElement()).getQualifiedName())) {
                             env.addToExcludes(((DeclaredType) ex).asElement());
                             results.add(itemFactory.createTypeItem(controller, (TypeElement) ((DeclaredType) ex).asElement(), (DeclaredType) ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType) ex).asElement()), false, false, false, true, false));
                         }
@@ -771,7 +773,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
                         Elements elements = controller.getElements();
                         for (TypeMirror ex : exs) {
-                            if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))) {
+                            if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString())
+                                    && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))
+                                    && !Utilities.isExcluded(((TypeElement)((DeclaredType) ex).asElement()).getQualifiedName())) {
                                 env.addToExcludes(((DeclaredType) ex).asElement());
                                 results.add(itemFactory.createTypeItem(env.getController(), (TypeElement) ((DeclaredType) ex).asElement(), (DeclaredType) ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType) ex).asElement()), false, false, false, true, false));
                             }
@@ -817,7 +821,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                 }
                                 Elements elements = controller.getElements();
                                 for (TypeMirror ex : exs) {
-                                    if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))) {
+                                    if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString())
+                                            && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))
+                                            && !Utilities.isExcluded(((TypeElement)((DeclaredType) ex).asElement()).getQualifiedName())) {
                                         env.addToExcludes(((DeclaredType) ex).asElement());
                                         results.add(itemFactory.createTypeItem(env.getController(), (TypeElement) ((DeclaredType) ex).asElement(), (DeclaredType) ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType) ex).asElement()), false, false, false, true, false));
                                     }
@@ -942,7 +948,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     for (TypeMirror smart : smarts) {
                         if (smart.getKind() == TypeKind.DECLARED) {
                             TypeElement elem = (TypeElement) ((DeclaredType) smart).asElement();
-                            if (elem.getKind() == ANNOTATION_TYPE && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))) {
+                            if (elem.getKind() == ANNOTATION_TYPE && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && !Utilities.isExcluded(elem.getQualifiedName())) {
                                 results.add(itemFactory.createTypeItem(env.getController(), elem, (DeclaredType) smart, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, false, false, true, false));
                             }
                         }
@@ -1149,8 +1155,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                             if (upperBound != null && upperBound.getKind() == TypeKind.DECLARED) {
                                                 while (upperBound.getKind() == TypeKind.DECLARED) {
                                                     TypeElement elem = (TypeElement) ((DeclaredType) upperBound).asElement();
-                                                    if (startsWith(env, elem.getSimpleName().toString()) && withinBounds(env, upperBound, bounds)
-                                                            && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))) {
+                                                    if (startsWith(env, elem.getSimpleName().toString()) && withinBounds(env, upperBound, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && !Utilities.isExcluded(elem.getQualifiedName())) {
                                                         results.add(itemFactory.createTypeItem(env.getController(), elem, (DeclaredType) upperBound, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false));
                                                     }
                                                     env.addToExcludes(elem);
@@ -1159,7 +1164,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                             } else if (lowerBound != null && lowerBound.getKind() == TypeKind.DECLARED) {
                                                 for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType) lowerBound)) {
                                                     TypeElement elem = (TypeElement) subtype.asElement();
-                                                    if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))) {
+                                                    if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && !Utilities.isExcluded(elem.getQualifiedName())) {
                                                         results.add(itemFactory.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false));
                                                     }
                                                     env.addToExcludes(elem);
@@ -1174,7 +1179,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                             bounds = bounds.subList(0, bounds.size());
                             for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType) lowerBound)) {
                                 TypeElement elem = (TypeElement) subtype.asElement();
-                                if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))) {
+                                if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && !Utilities.isExcluded(elem.getQualifiedName())) {
                                     results.add(itemFactory.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false));
                                 }
                                 env.addToExcludes(elem);
@@ -1514,7 +1519,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                             for (TypeMirror ex : exs) {
                                 if (ex.getKind() == TypeKind.DECLARED) {
                                     Element e = ((DeclaredType) ex).asElement();
-                                    if (e.getEnclosingElement() == el && startsWith(env, e.getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))) {
+                                    if (e.getEnclosingElement() == el && startsWith(env, e.getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && !Utilities.isExcluded(((TypeElement)e).getQualifiedName())) {
                                         env.addToExcludes(e);
                                         results.add(itemFactory.createTypeItem(env.getController(), (TypeElement) e, (DeclaredType) ex, anchorOffset, null, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, true, false));
                                     }
@@ -1561,7 +1566,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                 for (TypeMirror ex : exs) {
                                     if (ex.getKind() == TypeKind.DECLARED) {
                                         Element e = ((DeclaredType) ex).asElement();
-                                        if (e.getEnclosingElement() == el && startsWith(env, e.getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))) {
+                                        if (e.getEnclosingElement() == el && startsWith(env, e.getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && !Utilities.isExcluded(((TypeElement)e).getQualifiedName())) {
                                             env.addToExcludes(e);
                                             results.add(itemFactory.createTypeItem(env.getController(), (TypeElement) e, (DeclaredType) ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(e), false, env.isInsideClass(), true, true, false));
                                         }
@@ -1724,7 +1729,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                         if (encl == null) {
                                             for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType) smart)) {
                                                 TypeElement elem = (TypeElement) subtype.asElement();
-                                                if (toExclude != elem && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))) {
+                                                if (toExclude != elem && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && !Utilities.isExcluded(elem.getQualifiedName())) {
                                                     results.add(itemFactory.createTypeItem(env.getController(), elem, (DeclaredType) SourceUtils.resolveCapturedType(controller, subtype), anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), true, true, false, true, false));
                                                 }
                                                 env.addToExcludes(elem);
@@ -1809,7 +1814,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 Set<TypeMirror> exs = tu.getUncaughtExceptions(tryPath);
                 Elements elements = controller.getElements();
                 for (TypeMirror ex : exs) {
-                    if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))) {
+                    if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString())
+                            && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))
+                            && !Utilities.isExcluded(((TypeElement)((DeclaredType) ex).asElement()).getQualifiedName())) {
                         env.addToExcludes(((DeclaredType) ex).asElement());
                         results.add(itemFactory.createTypeItem(env.getController(), (TypeElement) ((DeclaredType) ex).asElement(), (DeclaredType) ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType) ex).asElement()), false, false, false, true, false));
                     }
@@ -1847,7 +1854,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     }
                     Elements elements = controller.getElements();
                     for (TypeMirror ex : exs) {
-                        if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))) {
+                        if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString())
+                                && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType) ex).asElement()))
+                                && !Utilities.isExcluded(((TypeElement)((DeclaredType) ex).asElement()).getQualifiedName())) {
                             env.addToExcludes(((DeclaredType) ex).asElement());
                             results.add(itemFactory.createTypeItem(env.getController(), (TypeElement) ((DeclaredType) ex).asElement(), (DeclaredType) ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType) ex).asElement()), false, false, false, true, false));
                         }
@@ -2082,7 +2091,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                             if (smart.getKind() == TypeKind.DECLARED) {
                                 for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType) smart)) {
                                     TypeElement elem = (TypeElement) subtype.asElement();
-                                    if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) {
+                                    if ((Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && !Utilities.isExcluded(elem.getQualifiedName())) {
                                         results.add(itemFactory.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, false, false, true, false));
                                     }
                                     env.addToExcludes(elem);
@@ -3060,7 +3069,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     case CLASS:
                     case ENUM:
                     case INTERFACE:
-                        return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, e, (DeclaredType) t);
+                        return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && !Utilities.isExcluded(((TypeElement)e).getQualifiedName()) && trees.isAccessible(scope, e, (DeclaredType) t);
                 }
                 return false;
             }
@@ -3225,6 +3234,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         }
                         return startsWith(env, e.getSimpleName().toString())
                                 && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
+                                && !Utilities.isExcluded(((TypeElement)e).getQualifiedName())
                                 && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)
                                 && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees))
                                 && env.isAccessible(scope, e, t, isSuperCall) && isStatic;
@@ -3370,7 +3380,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 Set<? extends Element> excludes = env.getExcludes();
                 for (DeclaredType subtype : getSubtypesOf(env, baseType)) {
                     TypeElement elem = (TypeElement) subtype.asElement();
-                    if ((excludes == null || !excludes.contains(elem)) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && (!env.isAfterExtends() || !elem.getModifiers().contains(Modifier.FINAL))) {
+                    if ((excludes == null || !excludes.contains(elem)) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && !Utilities.isExcluded(elem.getQualifiedName()) && (!env.isAfterExtends() || !elem.getModifiers().contains(Modifier.FINAL))) {
                         results.add(itemFactory.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, true, false));
                     }
                 }
@@ -3399,7 +3409,10 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 if ((env.getExcludes() == null || !env.getExcludes().contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees))) {
                     String name = e.getSimpleName().toString();
                     return name.length() > 0 && !Character.isDigit(name.charAt(0)) && startsWith(env, name)
-                            && (!isStatic || e.getModifiers().contains(STATIC) || e.getEnclosingElement() == enclMethod) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
+                            && (!isStatic || e.getModifiers().contains(STATIC) || e.getEnclosingElement() == enclMethod)
+                            && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
+                            && (e.getKind() == TYPE_PARAMETER || !Utilities.isExcluded(((TypeElement)e).getQualifiedName()))
+                            && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
                 }
                 return false;
             }
@@ -3423,7 +3436,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
             public boolean accept(Element e, TypeMirror t) {
                 if ((e.getKind().isClass() || e.getKind().isInterface())) {
                     return (env.getExcludes() == null || !env.getExcludes().contains(e)) && startsWith(env, e.getSimpleName().toString())
-                            && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement) e)
+                            && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
+                            && !Utilities.isExcluded(((TypeElement)e).getQualifiedName()) && trees.isAccessible(scope, (TypeElement) e)
                             && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees));
                 }
                 return false;
