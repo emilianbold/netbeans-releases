@@ -81,6 +81,10 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jaroslav Bachorik
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "ProfilerLauncher_unsupportedProject=Profiling not supported for {0}",
+    "ProfilerLauncher_noFeature=<html><b>No profiling feature selected.</b><br><br>Please select at least one profiling feature for the session.</html>"
+})
 public class ProfilerLauncher {
     final private static Logger LOG = Logger.getLogger(ProfilerLauncher.class.getName());
     
@@ -113,6 +117,10 @@ public class ProfilerLauncher {
             profiler.setProfiledProject(project, getFile());
             
             final ProfilingSettings pSettings = getProfilingSettings();
+            if (pSettings == null) { // #250237 ?
+                ProfilerDialogs.displayError(Bundle.ProfilerLauncher_noFeature());
+                return false;
+            }
             
             if (isAttach()) {
                 final AttachSettings aSettings = getAttachSettings();
@@ -124,8 +132,7 @@ public class ProfilerLauncher {
                 
                 if (!ProjectSensitivePerformer.supportsProfileProject(command, project) &&
                     !FileSensitivePerformer.supportsProfileFile(command, getFile())) {
-                    ProfilerDialogs.displayError("Profiling not supported for " +
-                                                 ProjectUtilities.getDisplayName(project));
+                    ProfilerDialogs.displayError(Bundle.ProfilerLauncher_unsupportedProject(ProjectUtilities.getDisplayName(project)));
                     return false;
                 }
                 
