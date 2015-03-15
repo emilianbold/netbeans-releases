@@ -1383,10 +1383,7 @@ public final class DatabaseConnection implements DBConnection {
      * Decide whether scrollable cursors should be used by the connection.
      */
     private boolean isUseScrollableCursorsByDefault() {
-        return drv != null
-                && (drv.startsWith("org.apache.derby") //NOI18N
-                || drv.startsWith("com.mysql") //NOI18N
-                || drv.startsWith("org.postgresql")); //NOI18N
+        return false;
     }
 
     public boolean isUseScrollableCursors() {
