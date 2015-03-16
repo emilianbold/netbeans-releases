@@ -86,7 +86,7 @@ import org.openide.util.CharSequences;
                 String txt = new String(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
                 textID = TextCache.getManager().getString(CharSequences.create(txt));
             } else if (orig.isLiteral()) {
-                textID = CharSequences.create(Casts.toCharSequence(orig.getLiteralData()));
+                textID = CharSequences.create(Casts.toCharSequence(orig.getLiteralData(), orig.getLength()));
             } else if (orig.is(tok.TokenKind.comment)) {
                 textID = COMMENT_TEXT_ID;
             } else {
