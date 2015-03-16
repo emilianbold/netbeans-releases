@@ -87,7 +87,7 @@ import org.openide.util.RequestProcessor;
 /**
  * @author Tomas Mysik
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=200)
+@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=210)
 public class ImportantFilesNodeFactory implements NodeFactory {
     static final Logger LOGGER = Logger.getLogger(ImportantFilesNodeFactory.class.getName());
 

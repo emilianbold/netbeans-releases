@@ -87,6 +87,11 @@ public final class ImportantFiles {
         return new ImportantFilesNodeFactory();
     }
 
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 200)
+    public static NodeFactory forPhpProject() {
+        return new ImportantFilesNodeFactory();
+    }
+
     //~ Inner classes
 
     private static final class ImportantFilesNodeFactory implements NodeFactory {
