@@ -65,6 +65,8 @@ public class ProfileOptionSet extends OptionSetSupport {
         DebuggerOption.GDB_FOLLOW_FORK_MODE,
         DebuggerOption.GDB_DETACH_ON_FORK,
         
+        DebuggerOption.GDB_REVERSE_DEBUGGING,
+        
         DebuggerOption.FOLLOW_FORK_MODE,
 	DebuggerOption.FOLLOW_FORK_INHERIT,
 

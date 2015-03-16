@@ -342,6 +342,14 @@ public class DebuggerOption extends Option {
 			    "on", //NOI18N // deault value
 			    true, // is engine option
 			    Type.COMBO_BOX, false);  //type , hasToolTip
+    
+    public static final DebuggerOption GDB_REVERSE_DEBUGGING = 
+        new DebuggerOption( // NOI18N
+			    "reverse_debugging", // NOI18N //name
+                            new String[] {"on", "off"},  // NOI18N //values
+                            "off", // deault value
+			    true, // is engine option
+			    Type.CHECK_BOX, false);  //type , hasToolTip
 
     public static final DebuggerOption OUTPUT_BASE  =
 	new DebuggerOption( // NOI18N

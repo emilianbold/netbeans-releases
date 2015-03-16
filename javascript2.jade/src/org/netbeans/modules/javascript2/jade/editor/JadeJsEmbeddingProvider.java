@@ -129,7 +129,7 @@ public class JadeJsEmbeddingProvider extends EmbeddingProvider {
                     while (token.id() == JadeTokenId.EOL && ts.moveNext()) {
                         token = ts.token();
                     }
-                    if (token.id() == JadeTokenId.PLAIN_TEXT) {
+                    if (token.id() == JadeTokenId.PLAIN_TEXT || token.id() == JadeTokenId.JAVASCRIPT) {
                         embeddings.add(snapshot.create(ts.offset(), token.length(), JS_MIME_TYPE));
                     }
                 }

@@ -809,7 +809,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void stepIntoMain() {
         send("-break-insert -t main"); //NOI18N
         firstBreakpointId = STEP_INTO_ID; // to force pid request but avoid continue
-        sendResumptive("-exec-run"); // NOI18N
+        MICommand cmd = new MIResumptiveCommand("-exec-run") { // NOI18N
+
+            @Override
+            protected void onRunning(MIRecord record) {
+                startRecordingIfNeeded();
+                super.onRunning(record);
+            }
+            
+        };
+        gdb.sendCommand(cmd, true);
     }
 
     @Override
@@ -913,6 +922,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             @Override
             protected void onDone(MIRecord record) {
                 attachDone();
+                startRecordingIfNeeded();
                 finish();
             }
         };
@@ -957,6 +967,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         state().isCore = true;
                         stateChanged();
 			session().setSessionState(state());
+                        startRecordingIfNeeded();
                         
                         MICommand cmd2 = new MiCommandImpl("-thread-list-ids") { // NOI18N
 
@@ -1396,6 +1407,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 @Override
                     protected void onRunning(MIRecord record) {
                         state().isProcess = true;
+                        startRecordingIfNeeded();
                         super.onRunning(record);
                     }
                 };
@@ -1441,15 +1453,28 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void popToHere(Frame frame) {
         int frameNo = Integer.parseInt(frame.getNumber());
-        if (frameNo > 0) {
-            makeFrameCurrent(getStack()[frameNo-1]);
-            execFinish();
+        // We have to pop the last frame several times
+        // as there is no way to pop several frames at once in GDB
+        while (frameNo > 0) {
+            popTopmostCall();
+            frameNo--;
         }
     }
 
     @Override
     public void popTopmostCall() {
-        stepOut();
+        if (!DebuggerOption.GDB_REVERSE_DEBUGGING.isEnabled(optionLayers())) {
+            NativeDebuggerManager.error(Catalog.get("MSG_Reverse_Debugging_Option"));	// NOI18N
+        } else {
+            sendResumptive(peculiarity.execFinishCommand(currentThreadId) + " --reverse");
+        }
+    }
+    
+    private void startRecordingIfNeeded() {
+        if (DebuggerOption.GDB_REVERSE_DEBUGGING.isEnabled(optionLayers())) {
+            send("-gdb-set record stop-at-limit off"); // NOI18N
+            send("record"); // NOI18N
+        }
     }
 
     @Override
@@ -1458,8 +1483,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public void popToCurrentFrame() {
-        makeCalleeCurrent();
-        execFinish();
+        popToHere(getCurrentFrame());
     }
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
@@ -5482,7 +5506,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void stepOutInst() {
         execFinish();
     }
-
+            
     // interface NativeDebugger
     @Override
     public void stepOverInst() {

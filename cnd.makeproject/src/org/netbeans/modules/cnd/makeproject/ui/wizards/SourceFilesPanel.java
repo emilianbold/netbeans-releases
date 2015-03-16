@@ -148,6 +148,14 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         return excludePatternTextField.getText();
     }
 
+    public void setResolveSymLinks(boolean resolve) {
+        resolveSymLink.setSelected(resolve);
+    }
+    
+    public boolean getResolveSymLinks() {
+        return resolveSymLink.isSelected();
+    }
+
     public FileObjectFilter getFileFilter() {
         Pattern excludePattern = null;
 
@@ -310,6 +318,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         excludePatternLabel = new javax.swing.JLabel();
         excludePatternTextField = new javax.swing.JTextField();
         seeAlsoLabel = new javax.swing.JLabel();
+        resolveSymLink = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(450, 350));
 
@@ -338,13 +347,12 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
         seeAlsoLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.seeAlsoLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(resolveSymLink, org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "RESOLVE_SYM_LINK")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(excludePatternLabel)
-                .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
@@ -354,11 +362,12 @@ public class SourceFilesPanel extends javax.swing.JPanel {
                     .addComponent(deleteButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(seeAlsoLabel)
-                .addContainerGap(104, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(sourceFilesLabel)
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(excludePatternLabel)
+                    .addComponent(seeAlsoLabel)
+                    .addComponent(sourceFilesLabel)
+                    .addComponent(resolveSymLink))
+                .addContainerGap(52, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -370,8 +379,10 @@ public class SourceFilesPanel extends javax.swing.JPanel {
                         .addComponent(addButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deleteButton))
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(resolveSymLink)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(excludePatternLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(excludePatternTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -453,6 +464,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     private javax.swing.JLabel excludePatternLabel;
     private javax.swing.JTextField excludePatternTextField;
     private javax.swing.JList list;
+    private javax.swing.JCheckBox resolveSymLink;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel seeAlsoLabel;
     private javax.swing.JLabel sourceFilesLabel;

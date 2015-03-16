@@ -566,7 +566,7 @@ abstract public class CsmCompletionQuery {
             }
             if (tp == null) {
                 // find last separator position
-                final int lastSepOffset = sup.getLastCommandSeparator(csmFile, offset);
+                final int lastSepOffset = sup.getLastCommandSeparator(csmFile, offset, getFileReferencesContext());
                 tp = processTokensInFile(csmFile, lastSepOffset, offset, doc, docVersion);
                 baseDocument.putProperty(TOKEN_PROCESSOR_CACHE_KEY, new TokenProcessorCache(offset, docVersion, tp));        
             } else {
