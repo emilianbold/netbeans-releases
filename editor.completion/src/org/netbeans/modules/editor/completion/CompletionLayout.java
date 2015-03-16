@@ -57,6 +57,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -143,6 +144,13 @@ public final class CompletionLayout {
     public void showCompletion(List data, String title, int anchorOffset,
     ListSelectionListener listSelectionListener, String additionalItemsText, String shortcutHint, int selectedIndex) {
         completionPopup.show(data, title, anchorOffset, listSelectionListener, additionalItemsText, shortcutHint, selectedIndex);
+        for (Iterator<CompletionLayoutPopup> iterator = visiblePopups.iterator(); iterator.hasNext();) {
+            CompletionLayoutPopup next = iterator.next();
+            if (next instanceof CompletionPopup && next != completionPopup) {
+                next.hide();
+                iterator.remove();
+            }
+        }
         if (!visiblePopups.contains(completionPopup))
             visiblePopups.push(completionPopup);
     }

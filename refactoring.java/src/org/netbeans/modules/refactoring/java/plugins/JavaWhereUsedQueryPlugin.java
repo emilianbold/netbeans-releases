@@ -399,6 +399,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     @Override
     public Problem prepare(final RefactoringElementsBag elements) {
         fireProgressListenerStart(ProgressEvent.START, -1);
+        usedAccessFilters.clear();
+        usedFilters.clear();
         Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
         fireProgressListenerStep(a.size());
         Problem problem = null;
