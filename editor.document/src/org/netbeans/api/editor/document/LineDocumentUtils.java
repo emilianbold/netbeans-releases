@@ -362,8 +362,7 @@ public final class LineDocumentUtils {
     throws BadLocationException
     {
         checkOffsetValid(doc, offset);
-        CharSequence docText = DocumentUtilities.getText(doc);
-        return TextSearchUtils.isLineEmpty(docText, offset);
+        return getLineFirstNonWhitespace(doc, offset) == -1;
     }
 
     public static int getNextNonNewline(@NonNull LineDocument doc, int offset)
