@@ -140,7 +140,7 @@ bool JvmLauncher::isPermSizeSupported() {
     // unknown - it's when Java is specified in netbeans.conf
     // or by --jdkhome
     if (javaVersion.empty()) {
-        string releaseFilePath = "\"" + javaPath + "\\release\"";
+        string releaseFilePath = javaPath + "\\release";
         ifstream releaseFile(releaseFilePath.c_str());
         if (releaseFile.is_open()) {
             string line;

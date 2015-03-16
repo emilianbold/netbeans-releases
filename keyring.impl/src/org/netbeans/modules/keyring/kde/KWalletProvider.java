@@ -45,13 +45,10 @@ package org.netbeans.modules.keyring.kde;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.keyring.KeyringProvider;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
