@@ -778,6 +778,7 @@ public final class PhpProject implements Project {
                 ProjectBrowserProviderImpl.create(this),
                 new PhpVisibilityQuery.PhpVisibilityQueryImpl(this),
                 new UsageLogging(),
+                new ImportantFilesImpl(this),
                 // ?? getRefHelper()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N
