@@ -54,13 +54,16 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -80,6 +83,9 @@ import org.openide.util.WeakListeners;
  * UI for "Important Files" node.
  */
 public final class ImportantFiles {
+
+    static final Logger LOGGER = Logger.getLogger(ImportantFiles.class.getName());
+
 
     private ImportantFiles() {
     }
@@ -296,12 +302,33 @@ public final class ImportantFiles {
         }
 
         @Override
+        public String getHtmlDisplayName() {
+            String displayName = getDisplayName();
+            assert displayName != null : fileInfo;
+            StatusDecorator statusDecorator = getStatusDecorator();
+            if (statusDecorator != null) {
+                return statusDecorator.annotateNameHtml(displayName, Collections.singleton(fileInfo.getFile()));
+            }
+            return displayName;
+        }
+
+        @Override
         public String getShortDescription() {
             String description = fileInfo.getDescription();
             if (description != null) {
                 return description;
             }
             return super.getShortDescription();
+        }
+
+        @CheckForNull
+        private StatusDecorator getStatusDecorator() {
+            try {
+                return fileInfo.getFile().getFileSystem().getDecorator();
+            } catch (FileStateInvalidException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+            return null;
         }
 
     }
@@ -320,6 +347,5 @@ public final class ImportantFiles {
         }
 
     }
-
 
 }
