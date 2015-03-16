@@ -136,8 +136,9 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                         JsFunction func = (JsFunction) globalObject.getProperty(functionName);
                         if (func == null) {
                             // try to find it enclosed in IIFE
-                            JsFunction iife = (JsFunction) ModelUtils.findJsObject(globalObject, fArgument.getOffset());
-                            if (iife != null) {
+                            JsObject argumentObject = ModelUtils.findJsObject(globalObject, fArgument.getOffset());
+                            if (argumentObject != null && argumentObject instanceof JsFunction) {
+                                JsFunction iife = (JsFunction) argumentObject;
                                 func = (JsFunction) iife.getProperty(functionName);
                             }
                         }
