@@ -353,40 +353,58 @@ public final class Queries {
             return endEnum;
         }
     }
-    
+
     private static class RegexpFilter extends AbstractTCFilter {
-        
+        private static final BitSet SPECIAL_CHARS = new BitSet(126);
+        static {
+            final char[] specials = new char[] {'{','}','[',']','(',')','\\','.','*','?'}; //NOI18N
+            for (char c : specials) {
+                SPECIAL_CHARS.set(c);
+            }
+        }
+
         private final String fieldName;
         private final String startPrefix;
         private final Pattern pattern;
-                        
+
         public RegexpFilter(final String fieldName, final String  regexp, final boolean caseSensitive) {
             this.fieldName = fieldName;
             this.pattern = caseSensitive ? Pattern.compile(regexp) : Pattern.compile(regexp, Pattern.CASE_INSENSITIVE);
             this.startPrefix = getStartText(regexp);
         }
-        
+
         protected FilteredTermEnum getTermEnum(final @NonNull IndexReader reader) throws IOException {
             return new RegexpTermEnum(reader, fieldName, pattern, startPrefix);
         }
-        
+
         private static String getStartText(final String regexp) {
-            if (!Character.isJavaIdentifierStart(regexp.charAt(0))) {
-                return "";  //NOI18N
-            }
             final StringBuilder startBuilder = new StringBuilder ();
-            startBuilder.append(regexp.charAt(0));
-            for (int i=1; i<regexp.length(); i++) {
+            boolean quoted = false;
+            for (int i = 0; i < regexp.length(); i++) {
                 char c = regexp.charAt(i);
-                if (!Character.isJavaIdentifierPart(c)) {
+                if (c == '\\' && (i+1) < regexp.length()) { //NOI18N
+                    char cn = regexp.charAt(i+1);
+                    if (!quoted && cn == 'Q') { //NOI18N
+                        quoted = true;
+                        i++;
+                        continue;
+                    } else if (cn == 'E') { //NOI18N
+                        quoted = false;
+                        i++;
+                        continue;
+                    }
+                } else if (!quoted && (c == '^') || c == '$') { //NOI18N
+                    continue;
+                }
+                if (!quoted && SPECIAL_CHARS.get(c)) {
                     break;
                 }
                 startBuilder.append(c);
             }
             return startBuilder.toString();
-        }                                                        
+        }
     }
-    
+
     private static class PrefixFilter extends AbstractTCFilter {
         
         protected final Term term;
