@@ -148,7 +148,7 @@ public abstract class PhpFrameworkProvider {
      * Returns the configuration files (no directories allowed!) belonging to this framework. The files
      * do not need to exist, however only existing files are taken into account.
      * <p>
-     * These files are displayed under <tt>Important Files</tt> node in <tt>Projects</tt> view.
+     * These files are displayed under <tt>Configuration Files</tt> node in <tt>Projects</tt> view.
      * <p>
      * <b>This method should be as fast as possible.</b>
      *

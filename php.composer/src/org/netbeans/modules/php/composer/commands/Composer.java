@@ -78,13 +78,13 @@ import org.openide.util.Utilities;
  */
 public final class Composer {
 
+    public static final String COMPOSER_FILENAME = "composer.json"; // NOI18N
+
     public static final List<String> COMPOSER_FILENAMES;
 
     private static final String COMPOSER = "composer"; // NOI18N
     private static final String COMPOSER_PHAR = COMPOSER + ".phar"; // NOI18N
     private static final String COMPOSER_BAT = COMPOSER + ".bat"; // NOI18N
-
-    private static final String COMPOSER_FILENAME = "composer.json"; // NOI18N
 
     // commands
     private static final String INIT_COMMAND = "init"; // NOI18N
