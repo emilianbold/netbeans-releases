@@ -75,7 +75,7 @@ public final class ClankToAPTUtils {
                 // C99 6.4.4.1: Integer Constants
                 // C99 6.4.4.2: Floating Constants
             case tok.TokenKind.numeric_constant: // 0x123
-                return APTTokenTypes.NUMBER;
+                return APTTokenTypes.DECIMALINT;
                 // C99 6.4.4: Character Constants
             case tok.TokenKind.char_constant: // 'a'
             case tok.TokenKind.wide_char_constant: // L'b'
