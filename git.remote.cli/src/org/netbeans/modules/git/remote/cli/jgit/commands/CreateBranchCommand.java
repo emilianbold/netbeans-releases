@@ -93,7 +93,7 @@ public class CreateBranchCommand extends GitCommand {
         addArgument(2, "branch"); //NOI18N
         addArgument(2, "-v"); //NOI18N
         addArgument(2, "-v"); //NOI18N
-        addArgument(2, "--all"); //NOI18N
+        addArgument(2, "-a"); //NOI18N
     }
     
     @Override

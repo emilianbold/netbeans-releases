@@ -39,10 +39,9 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.common.spi;
+package org.netbeans.modules.php.spi.phpmodule;
 
 import java.util.Collection;
-import java.util.Objects;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -52,8 +51,8 @@ import org.openide.util.Parameters;
 /**
  * Information about important files.
  * <p>
- * Implementations are expected to be found in project's lookup.
- * @since 1.73
+ * Implementations are expected to be found in project's lookup (using @ProjectServiceProvider).
+ * @since 2.50
  * @see ImportantFilesSupport
  */
 public interface ImportantFilesImplementation {
@@ -139,28 +138,6 @@ public interface ImportantFilesImplementation {
         @Override
         public String toString() {
             return "FileInfo{" + "file=" + file + ", displayName=" + displayName + ", description=" + description + '}'; // NOI18N
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 71 * hash + Objects.hashCode(this.file);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final FileInfo other = (FileInfo) obj;
-            if (!Objects.equals(this.file, other.file)) {
-                return false;
-            }
-            return true;
         }
 
     }
