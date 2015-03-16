@@ -210,6 +210,7 @@ public class ImportProject implements PropertyChangeListener {
     private DoubleFile expectedCmakeLog = null;
     private DoubleFile existingBuildLog;
     private File configureLog = null;
+    boolean resolveSymLinks;
 
 
     public ImportProject(WizardDescriptor wizard) {
@@ -301,6 +302,7 @@ public class ImportProject implements PropertyChangeListener {
         });
         sources = list.iterator();
         sourceFoldersFilter = MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
+        resolveSymLinks = CommonUtilities.resolveSymbolicLinks();
     }
 
     private void customSetup(WizardDescriptor wizard) {
@@ -331,6 +333,12 @@ public class ImportProject implements PropertyChangeListener {
         manualCA = Boolean.TRUE.equals(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE.get(wizard));
         toolchain = WizardConstants.PROPERTY_TOOLCHAIN.get(wizard);
         defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wizard));
+        Boolean resolve = WizardConstants.PROPERTY_RESOLVE_SYM_LINKS.get(wizard);
+        if (resolve != null) {
+            resolveSymLinks = resolve;
+        } else {
+            resolveSymLinks = CommonUtilities.resolveSymbolicLinks();
+        }
     }
 
     public Set<FileObject> create() throws IOException {
@@ -387,6 +395,7 @@ public class ImportProject implements PropertyChangeListener {
             extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
             extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(new ArrayList<>(includeDirectoriesVector));
         }
+        extConf.getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(TRACE);
         // Macros
         if (macros != null && macros.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(macros, "; "); // NOI18N
@@ -515,7 +524,7 @@ public class ImportProject implements PropertyChangeListener {
                     waitSources.countDown();
                 }
                 if (configurationDescriptor.getActiveConfiguration() != null) {
-                    configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(CommonUtilities.resolveSymbolicLinks());
+                    configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(resolveSymLinks);
                     if (runConfigure && 
                         (configurePath != null && configurePath.length() > 0 && configureFileObject != null && configureFileObject.isValid() ||
                         configureCommand != null)) {
@@ -1436,7 +1445,7 @@ public class ImportProject implements PropertyChangeListener {
             final Map<String, Object> map = new HashMap<>();
             DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
             DiscoveryWizardDescriptor.EXEC_LOG_FILE.toMap(map, execLog.getLocalPath());
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getLocalPath()); // NOI18N
@@ -1490,7 +1499,7 @@ public class ImportProject implements PropertyChangeListener {
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
             DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (dwarfSource != null) {
                 if (dwarfSource.isFolder()) {
                     DiscoveryWizardDescriptor.BUILD_FOLDER.toMap(map, dwarfSource.getPath());
@@ -1536,7 +1545,7 @@ public class ImportProject implements PropertyChangeListener {
             final Map<String, Object> map = new HashMap<>();
             DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
             DiscoveryWizardDescriptor.LOG_FILE.toMap(map, makeLog.getLocalPath());
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     DiscoveryProvider provider = DiscoveryWizardDescriptor.PROVIDER.fromMap(map);
@@ -1570,7 +1579,7 @@ public class ImportProject implements PropertyChangeListener {
             final Map<String, Object> map = new HashMap<>();
             DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
             DiscoveryWizardDescriptor.LOG_FILE.toMap(map, makeLog.getLocalPath());
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start fix macros by log file {0}", makeLog.getLocalPath()); // NOI18N
@@ -1592,7 +1601,7 @@ public class ImportProject implements PropertyChangeListener {
             Map<String, Object> map = new HashMap<>();
             DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
             DiscoveryWizardDescriptor.INVOKE_PROVIDER.toMap(map, Boolean.TRUE);
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by object files"); // NOI18N

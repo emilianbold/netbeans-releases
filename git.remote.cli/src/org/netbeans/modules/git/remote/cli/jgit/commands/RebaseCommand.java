@@ -167,7 +167,6 @@ public class RebaseCommand extends GitCommand {
                 operation == GitClient.RebaseOperationType.CONTINUE) {
                 status.rebaseStatus = GitRebaseResult.RebaseStatus.OK;
             }
-            System.err.println(output);
         }
     }
     
