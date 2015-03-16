@@ -87,24 +87,24 @@ import org.openide.util.RequestProcessor;
 /**
  * @author Tomas Mysik
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=210)
-public class ImportantFilesNodeFactory implements NodeFactory {
-    static final Logger LOGGER = Logger.getLogger(ImportantFilesNodeFactory.class.getName());
+@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=250)
+public class FrameworkConfigFilesNodeFactory implements NodeFactory {
+    static final Logger LOGGER = Logger.getLogger(FrameworkConfigFilesNodeFactory.class.getName());
 
-    public ImportantFilesNodeFactory() {
+    public FrameworkConfigFilesNodeFactory() {
     }
 
     @Override
     public NodeList<?> createNodes(Project p) {
         final PhpProject project = p.getLookup().lookup(PhpProject.class);
-        return new ImportantFilesChildrenList(project);
+        return new FrameworkConfigFilesChildrenList(project);
     }
 
-    private static class ImportantFilesChildrenList implements NodeList<Node>, PropertyChangeListener {
+    private static class FrameworkConfigFilesChildrenList implements NodeList<Node>, PropertyChangeListener {
         private final PhpProject project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-        public ImportantFilesChildrenList(PhpProject project) {
+        public FrameworkConfigFilesChildrenList(PhpProject project) {
             this.project = project;
         }
 
@@ -120,7 +120,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         @Override
         public List<Node> keys() {
             if (project.hasConfigFiles()) {
-                return Collections.<Node>singletonList(new Nodes.DummyNode(new ImportantFilesRootNode(project, new ImportantFilesChildFactory(project))));
+                return Collections.<Node>singletonList(new Nodes.DummyNode(new FrameworkConfigFilesRootNode(project, new FrameworkConfigFilesChildFactory(project))));
             }
             return Collections.emptyList();
         }
@@ -158,15 +158,15 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
     }
 
-    private static class ImportantFilesRootNode extends AbstractNode implements PropertyChangeListener {
+    private static class FrameworkConfigFilesRootNode extends AbstractNode implements PropertyChangeListener {
 
         @StaticResource
         private static final String CONFIG_BADGE_IMAGE = "org/netbeans/modules/php/project/ui/resources/config-badge.gif"; // NOI18N
 
-        final ImportantFilesChildFactory childFactory;
+        final FrameworkConfigFilesChildFactory childFactory;
 
 
-        public ImportantFilesRootNode(PhpProject project, ImportantFilesChildFactory childFactory) {
+        public FrameworkConfigFilesRootNode(PhpProject project, FrameworkConfigFilesChildFactory childFactory) {
             super(Children.create(childFactory, true));
 
             this.childFactory = childFactory;
@@ -176,7 +176,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_ImportantFiles");
+            return NbBundle.getMessage(FrameworkConfigFilesNodeFactory.class, "LBL_FrameworkConfigFiles");
         }
 
         @Override
@@ -202,9 +202,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
     }
 
-    private static class ImportantFilesChildFactory extends ChildFactory.Detachable<Pair<PhpFrameworkProvider, FileObject>> {
+    private static class FrameworkConfigFilesChildFactory extends ChildFactory.Detachable<Pair<PhpFrameworkProvider, FileObject>> {
 
-        private static final RequestProcessor RP = new RequestProcessor(ImportantFilesChildFactory.class.getName(), Runtime.getRuntime().availableProcessors());
+        private static final RequestProcessor RP = new RequestProcessor(FrameworkConfigFilesChildFactory.class.getName(), Runtime.getRuntime().availableProcessors());
         static final int FILE_CHANGE_DELAY = 300; // ms
 
         private final PhpProject project;
@@ -216,7 +216,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             }
         });
 
-        public ImportantFilesChildFactory(PhpProject project) {
+        public FrameworkConfigFilesChildFactory(PhpProject project) {
             this.project = project;
         }
 
@@ -234,7 +234,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 return null;
             }
             try {
-                return new ImportantFileNode(key, sourcesDirectory);
+                return new FrameworkConfigFileNode(key, sourcesDirectory);
             } catch (DataObjectNotFoundException ex) {
                 LOGGER.log(Level.WARNING, ex.getMessage(), ex);
             }
@@ -316,11 +316,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
-    private static final class ImportantFileNode extends FilterNode {
+    private static final class FrameworkConfigFileNode extends FilterNode {
         private final Pair<PhpFrameworkProvider, FileObject> pair;
         private final FileObject sourceDir;
 
-        public ImportantFileNode(Pair<PhpFrameworkProvider, FileObject> pair, FileObject sourceDir) throws DataObjectNotFoundException {
+        public FrameworkConfigFileNode(Pair<PhpFrameworkProvider, FileObject> pair, FileObject sourceDir) throws DataObjectNotFoundException {
             super(DataObject.find(pair.second()).getNodeDelegate());
             this.pair = pair;
             this.sourceDir = sourceDir;
@@ -332,7 +332,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             if (filepath == null) {
                 filepath = FileUtil.getFileDisplayName(pair.second());
             }
-            return NbBundle.getMessage(ImportantFileNode.class, "LBL_ImportantFileTooltip", filepath, pair.first().getName());
+            return NbBundle.getMessage(FrameworkConfigFileNode.class, "LBL_ImportantFileTooltip", filepath, pair.first().getName());
         }
     }
 }
