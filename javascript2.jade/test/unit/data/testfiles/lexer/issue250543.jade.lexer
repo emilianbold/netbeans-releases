@@ -80,7 +80,7 @@
 [WHITESPACE(12):            ][PLAIN_TEXT_DELIMITER(1):|][PLAIN_TEXT(34): It must always be on its own line][EOL(1):\n]
 [WHITESPACE(8):        ][TAG(1):p][WHITESPACE(1): ][TEXT(44):Plain text can include <strong>html</strong>][EOL(1):\n]
 [WHITESPACE(8):        ][TAG(6):script][PLAIN_TEXT_DELIMITER(1):.][EOL(1):\n]
-[PLAIN_TEXT(119):          if (usingJade)
+[JAVASCRIPT(119):          if (usingJade)
             console.log('you are awesome')
           else
             console.log('use jade')
