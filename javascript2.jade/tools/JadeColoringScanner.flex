@@ -67,6 +67,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     boolean continueJS = false;
     boolean inString = false;
     int whereToGo = 0;
+
+    private static enum TAG_TYPE  { OTHER, SCRIPT, STYLE};
+    TAG_TYPE lastTag = TAG_TYPE.OTHER;
     
 
     public JadeColoringLexer(LexerRestartInfo info) {
@@ -86,7 +89,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         if (zzState == YYINITIAL && zzLexicalState == YYINITIAL) {
             return null;
         }
-        return new LexerState(zzState, zzLexicalState, canFollowTag, indent, hasCssId);
+        return new LexerState(zzState, zzLexicalState, canFollowTag, indent, hasCssId, lastTag);
     }
 
     public void setState(LexerState state) {
@@ -95,6 +98,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.canFollowTag = state.canFollowTag;
         this.indent = state.indent;
         this.hasCssId = state.hasCssId;
+        this.lastTag = state.lastTag;
     }
 
     public JadeTokenId nextToken() throws java.io.IOException {
@@ -111,13 +115,16 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         /** indent of the new line */
         final int indent;
         final boolean hasCssId;
+        /** last readed tag to switch embeding of js , css or html*/
+        final TAG_TYPE lastTag;
 
-        LexerState (int zzState, int zzLexicalState, boolean canFollowTag, int indent, boolean hasCssId) {
+        LexerState (int zzState, int zzLexicalState, boolean canFollowTag, int indent, boolean hasCssId, TAG_TYPE lastTag) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowTag = canFollowTag;
             this.indent = indent;
             this.hasCssId = hasCssId;
+            this.lastTag = lastTag;
         }
 
         @Override
@@ -144,6 +151,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.indent != other.indent) {
                 return false;
             }
+            if (this.lastTag != other.lastTag) {
+                return false;
+            }
             return true;
         }
 
@@ -155,6 +165,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             hash = 31 * hash + (this.canFollowTag ? 0 : 1);
             hash = 31 * hash + (this.hasCssId ? 0 : 1);
             hash = 31 * hash + this.indent;
+            hash = 31 * hash + this.lastTag.hashCode();
             return hash;
         }
 
@@ -162,6 +173,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         public String toString() {
             return "LexerState{" + "zzState=" + zzState + ", zzLexicalState=" + zzLexicalState + '}';
         }
+    }
+
+    JadeTokenId getTokenIdFromTagType (TAG_TYPE tagType) {
+        if (tagType == TAG_TYPE.SCRIPT) {
+            return JadeTokenId.JAVASCRIPT;
+        }
+        return JadeTokenId.PLAIN_TEXT;
     }
 
  // End user code
@@ -307,9 +325,20 @@ UnbufferedComment = "//-"
                                         return JadeTokenId.CODE_DELIMITER; }
     {WhiteSpace}                    {   indent = tokenLength;
                                         return JadeTokenId.WHITESPACE; }
+    "script"                        {   yybegin(AFTER_TAG);
+                                        dotAfterTag = true;
+                                        hasCssId = false;
+                                        lastTag = TAG_TYPE.SCRIPT;
+                                        return JadeTokenId.TAG ;}
+    "style"                        {    yybegin(AFTER_TAG);
+                                        dotAfterTag = true;
+                                        hasCssId = false;
+                                        lastTag = TAG_TYPE.STYLE;
+                                        return JadeTokenId.TAG ;}
     {HtmlIdentifier}                {   yybegin(AFTER_TAG);
                                         dotAfterTag = true;
                                         hasCssId = false;
+                                        lastTag = TAG_TYPE.OTHER;
                                         return JadeTokenId.TAG ;}
     {LineTerminator}                {   indent = 0; 
                                         return JadeTokenId.EOL; }
@@ -635,13 +664,20 @@ UnbufferedComment = "//-"
 }
 
 <IN_PLAIN_TEXT_LINE> {
-    .*                              { }
+    [#!]"{"                         {   yypushback(2);
+                                        yybegin(JAVASCRIPT_EXPRESSION);
+                                        whereToGo = IN_PLAIN_TEXT_LINE;
+                                        if (tokenLength > 2) {
+                                            return getTokenIdFromTagType(lastTag);
+                                        }
+                                    }
     {LineTerminator}                {   yypushback(1);
                                         yybegin(AFTER_EOL);
                                         if (tokenLength - 1 > 0 ) {
-                                            return JadeTokenId.PLAIN_TEXT;
+                                            return getTokenIdFromTagType(lastTag);
                                         }
                                     }
+    .                              { }
 }
 
 <AFTER_PLAIN_TEXT_BLOCK_DELIMITER> {
