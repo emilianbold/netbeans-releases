@@ -178,7 +178,7 @@ public class LogCommand extends GitCommand {
             addArgument(1, "branch");
             addArgument(1, "-v"); //NOI18N
             addArgument(1, "-v"); //NOI18N
-            addArgument(1, "--all"); //NOI18N
+            addArgument(1, "-a"); //NOI18N
             addArgument(1, "--contains");
             addArgument(1, revisionPlaseHolder);
         }

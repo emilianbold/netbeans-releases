@@ -80,7 +80,7 @@ public class ListBranchCommand extends GitCommand {
         addArgument(0, "-v"); //NOI18N
         addArgument(0, "-v"); //NOI18N
         if (all) {
-            addArgument(0, "--all"); //NOI18N
+            addArgument(0, "-a"); //NOI18N
         }
     }
     
