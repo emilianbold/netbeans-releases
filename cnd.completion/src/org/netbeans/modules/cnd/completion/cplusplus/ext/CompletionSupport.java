@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctional;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -275,11 +276,16 @@ public final class CompletionSupport implements DocumentListener {
         if (pos == 0) {
             return 0;
         }
+        
+        int modelSeparator = tryGetSeparatorFromModel(file, pos);
+        if (modelSeparator >= 0) {
+            return modelSeparator;
+        }
+        
         // freeze the value to prevent modification of cache value from diff thread
         int curCachedValue = lastSeparatorOffset;
         if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos) && 
-                !CndTokenUtilities.isInProCDirective(getDocument(), pos) &&
-                !isInLambda(file, curCachedValue)) {
+                !CndTokenUtilities.isInProCDirective(getDocument(), pos)) {
             if (curCachedValue >= 0 && curCachedValue < pos && 
                     !CndTokenUtilities.isInProCDirective(getDocument(), curCachedValue)) {
                 return curCachedValue;
@@ -297,7 +303,16 @@ public final class CompletionSupport implements DocumentListener {
         }
     }
     
-    public static boolean areLambdasEnabled(CsmFile csmFile) {
+    public static boolean isCpp98OrMore(CsmFile csmFile) {
+        if (csmFile != null) {
+            if (APTLanguageSupport.getInstance().isLanguageCpp(CsmBaseUtilities.getFileLanguage(csmFile))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean isCpp11OrMore(CsmFile csmFile) {
         if (csmFile != null) {
             if (APTLanguageSupport.getInstance().isLanguageCpp(CsmBaseUtilities.getFileLanguage(csmFile))) {
                 if (APTLanguageSupport.getInstance().isFlavourSufficient(CsmBaseUtilities.getFileLanguageFlavor(csmFile), APTLanguageSupport.FLAVOR_CPP11)) {
@@ -306,6 +321,10 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         return false;
+    }
+    
+    public static boolean areLambdasEnabled(CsmFile csmFile) {
+        return isCpp11OrMore(csmFile);
     }
     
     public static boolean areTemplatesEnabled(CsmFile csmFile) {
@@ -319,18 +338,27 @@ public final class CompletionSupport implements DocumentListener {
         return true;
     }
     
-    private static boolean isInLambda(CsmFile file, int pos) {
-        if (areLambdasEnabled(file)) {
+    private static int tryGetSeparatorFromModel(CsmFile file, int pos) {
+        // Enable only for cpp11 ant later because for previous standards simple 
+        // text based logic worked decently
+        if (isCpp11OrMore(file)) {
             CsmContext context = CsmOffsetResolver.findContext(file, pos, null);
-            ListIterator<CsmContext.CsmContextEntry> entries = context.reverseIterator();
-            while (entries.hasPrevious()) {
-                CsmContext.CsmContextEntry entry = entries.previous();
-                if (CsmKindUtilities.isLambda(entry.getScope())) {
-                    return true;
+            CsmObject lastObj = context.getLastObject();
+            if (CsmKindUtilities.isLambda(lastObj)) {
+                // If pos is inside return type of lambda, set separator to its beginning
+                CsmType retType = ((CsmFunction) lastObj).getReturnType();
+                if (CsmOffsetUtilities.isInObject(retType, pos)) {
+                    return ((CsmOffsetable) retType).getStartOffset();
+                }
+            }
+            if (CsmKindUtilities.isOffsetable(lastObj)) {
+                CsmOffsetable offs = (CsmOffsetable) lastObj;
+                if (offs.getStartOffset() < pos && offs.getEndOffset() > pos) {
+                    return ((CsmOffsetable) lastObj).getStartOffset();
                 }
             }
         }
-        return false;
+        return -1;
     }
 
     /** Get the class from name. The import sections are consulted to find
