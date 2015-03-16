@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.refactoring.api.impl;
 
-import java.util.Collection;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProblemDetails;
-import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
-import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 
 /**
  *
- * @author Martin Matula, Jan Becicka
+ * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
  */
-public abstract class APIAccessor {
-    public static APIAccessor DEFAULT;
+public abstract class SPIUIAccessor {
+    public static SPIUIAccessor DEFAULT;
 
     static {
-        Class c = AbstractRefactoring.class;
+        Class c = FiltersDescription.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-
-    public abstract Collection<GuardedBlockHandler> getGBHandlers(AbstractRefactoring refactoring);
-    public abstract Problem chainProblems(Problem p, Problem p1);
-    public abstract ProblemDetails createProblemDetails(ProblemDetailsImplementation pdi);
-    public abstract boolean isCommit(RefactoringSession session);
-    public abstract RefactoringElementImplementation getRefactoringElementImplementation(RefactoringElement el) ;
-    public abstract boolean hasPluginsWithProgress(AbstractRefactoring refactoring);
-    public abstract boolean hasChangesInGuardedBlocks(RefactoringSession session);
-    public abstract boolean hasChangesInReadOnlyFiles(RefactoringSession session);
-    public abstract FiltersDescription getFiltersDescription(AbstractRefactoring refactoring);
-    public abstract void resetFiltersDescription(AbstractRefactoring refactoring);
-    public abstract boolean isFinished(RefactoringSession session);
-
+    
+    public abstract void reset(FiltersDescription desc);
+    
 }

@@ -47,12 +47,17 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.refactoring.api.impl.SPIUIAccessor;
 
 /**
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
  * @since 1.29
  */
 public final class FiltersDescription {
+    
+    static {
+        SPIUIAccessor.DEFAULT = new AccessorImpl();
+    }
 
     /**
      * List of {@code FilterItem}s describing filters properties
@@ -191,6 +196,12 @@ public final class FiltersDescription {
      */
     public boolean isEnabled(int index) {
         return filters.get(index).enabled;
+    }
+    
+    void reset() {
+        for (FilterItem filter : filters) {
+            filter.enabled = false;
+        }
     }
 
     private static class FilterItem {

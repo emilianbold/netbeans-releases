@@ -42,35 +42,33 @@
 package org.netbeans.modules.parsing.lucene;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.index.Term;
+import java.util.regex.Pattern;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex2;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class RawIndexPerfTest extends NbTestCase {
+public class DocumentIndexPerfTest extends NbTestCase {
 
-    private static final int NO_RUNS = 0;   //10;
+    private static final int NO_RUNS = 0;
     private static final int NO_ROUNDS = 100;
-    private static final int ROUND_SIZE = 10_000;
-    private static final int NO_QUERIES = ROUND_SIZE/10;
+    private static final int ROUND_SIZE = 1_000;
 
     private final AtomicLong seq = new AtomicLong();
-    private final Random rnd = new Random();
 
-    public RawIndexPerfTest(String name) {
+    public DocumentIndexPerfTest(final String name) {
         super(name);
     }
 
@@ -80,49 +78,38 @@ public class RawIndexPerfTest extends NbTestCase {
         clearWorkDir();
     }
 
-
-    public void testPerf() throws Exception {
+    public void testRegExpQuery() throws IOException, InterruptedException {
         if (NO_RUNS > 0) {
-            long indexTime = 0L;
-            long searchTime = 0L;
+            long t = 0L;
             final File indexFolder = getWorkDir();
-            for (int i = 0; i< NO_RUNS; i++) {
+            for (int cr = 0; cr < NO_RUNS; cr++) {
                 deleteContent(indexFolder);
-                long[] times = measure(indexFolder);
-                indexTime+=times[0];
-                searchTime+=times[1];
+                final DocumentIndex2 index = (DocumentIndex2) IndexManager.createDocumentIndex(indexFolder);
+                prepareData(index);
+                Query q = Queries.createQuery("bin", "bin", "101.*1", Queries.QueryKind.REGEXP);  //NOI18N
+                final Convertor<IndexDocument,Long> c = new IndexDocumentToLong();
+                for (int i = 0; i< ROUND_SIZE; i++) {
+                    long st = System.nanoTime();
+                    index.query(q, c, "bin","hex"); //NOI18N
+                    t+= System.nanoTime() - st;
+                }
+                q = Queries.createQuery("bin", "bin", Pattern.quote("101")+".*1", Queries.QueryKind.REGEXP);  //NOI18N
+                for (int i = 0; i< ROUND_SIZE; i++) {
+                    long st = System.nanoTime();
+                    index.query(q, c, "bin","hex"); //NOI18N
+                    t+= System.nanoTime() - st;
+                }
+                index.close();
             }
-            System.out.printf("Index time: %d%n",indexTime/(NO_RUNS*1000000));
-            System.out.printf("Search time: %d%n", searchTime/(NO_RUNS*1000000));
+            System.out.println("Regexp query: " + (t/(1_000_000 * NO_RUNS)));
         }
     }
 
-    private long[] measure(final File indexDir) throws Exception {
-        long it = 0;
-        final LuceneIndex index = LuceneIndex.create(indexDir, new KeywordAnalyzer());
-        for (int i=0; i< NO_ROUNDS; i++) {
-            final List<Long> items = generateData(ROUND_SIZE);
-            final long st = System.nanoTime();
-            index.store(
-                items,
-                Collections.<Long>emptySet(),
-                new LongToDoc(),
-                new LongToQuery(),
-                false);
-            it+= System.nanoTime() - st;
+    private void prepareData(@NonNull final DocumentIndex2 index) throws IOException {
+        for (int i=0; i < NO_ROUNDS; i++) {
+            List<Long> data = generateData(ROUND_SIZE);
+            addDataToIndex(index, data);
         }
-        long qt = 0;
-        final List<Long> res = new ArrayList<>();
-        final Convertor<Document,Long> c = new DocToLong();
-        for (int i=0; i< NO_QUERIES; i++) {
-            final Query q = createQuery();
-            final long st = System.nanoTime();
-            index.query(res, c, null, null, q);
-            qt += System.nanoTime() - st;
-            res.clear();
-        }
-        index.close();
-        return new long[] {it, qt};
     }
 
     private List<Long> generateData(int size) {
@@ -133,9 +120,16 @@ public class RawIndexPerfTest extends NbTestCase {
         return res;
     }
 
-    private Query createQuery() {
-        int i = rnd.nextInt((int)seq.get());
-        return new TermQuery(new Term("dec", String.valueOf(i)));
+    private void addDataToIndex(
+            @NonNull final DocumentIndex2 index,
+            @NonNull final List<Long> data) throws IOException {
+        for (long l : data) {
+            final IndexDocument doc = IndexManager.createDocument(Long.toString(l));
+            doc.addPair("bin", Long.toBinaryString(l), true, true); //NOI18N
+            doc.addPair("hex", Long.toHexString(l), true, true);    //NOI18N
+            index.addDocument(doc);
+        }
+        index.store(false);
     }
 
     private static void deleteContent(File folder) {
@@ -150,28 +144,12 @@ public class RawIndexPerfTest extends NbTestCase {
         }
     }
 
-    private static final class LongToDoc implements Convertor<Long, Document> {
+    private static final class IndexDocumentToLong implements Convertor<IndexDocument, Long> {
         @Override
-        public Document convert(Long p) {
-            final Document doc = new Document();
-            doc.add(new Field("dec", Long.toString(p), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
-            doc.add(new Field("hex", Long.toHexString(p), Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
-            doc.add(new Field("bin", Long.toBinaryString(p), Field.Store.YES, Field.Index.NO));
-            return doc;
+        public Long convert(IndexDocument p) {
+            final String hexStr = p.getValue("hex");    //NOI18N
+            return Long.valueOf(hexStr, 16);
         }
     }
 
-    private static final class LongToQuery implements Convertor<Long, Query> {
-        @Override
-        public Query convert(Long p) {
-            return new TermQuery(new Term("dec", Long.toString(p)));
-        }
-    }
-
-    private static final class DocToLong implements Convertor<Document,Long> {
-        @Override
-        public Long convert(Document p) {
-            return Long.valueOf(p.getFieldable("dec").stringValue());
-        }
-    }
 }
