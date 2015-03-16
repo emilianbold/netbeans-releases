@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.common.spi;
 
 import java.util.Collection;
+import java.util.Objects;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -138,6 +139,28 @@ public interface ImportantFilesImplementation {
         @Override
         public String toString() {
             return "FileInfo{" + "file=" + file + ", displayName=" + displayName + ", description=" + description + '}'; // NOI18N
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 71 * hash + Objects.hashCode(this.file);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileInfo other = (FileInfo) obj;
+            if (!Objects.equals(this.file, other.file)) {
+                return false;
+            }
+            return true;
         }
 
     }
