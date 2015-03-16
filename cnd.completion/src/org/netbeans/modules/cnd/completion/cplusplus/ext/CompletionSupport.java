@@ -269,7 +269,7 @@ public final class CompletionSupport implements DocumentListener {
     /** Return the position of the last command separator before
      * the given position.
      */
-    protected int getLastCommandSeparator(CsmFile file, final int pos) throws BadLocationException {
+    protected int getLastCommandSeparator(CsmFile file, final int pos, FileReferencesContext fileReferences) throws BadLocationException {
         if (pos < 0 || pos > getDocument().getLength()) {
             throw new BadLocationException("position is out of range[" + 0 + "-" + getDocument().getLength() + "]", pos); // NOI18N
         }
@@ -277,7 +277,7 @@ public final class CompletionSupport implements DocumentListener {
             return 0;
         }
         
-        int modelSeparator = tryGetSeparatorFromModel(file, pos);
+        int modelSeparator = tryGetSeparatorFromModel(file, pos, fileReferences);
         if (modelSeparator >= 0) {
             return modelSeparator;
         }
@@ -338,11 +338,11 @@ public final class CompletionSupport implements DocumentListener {
         return true;
     }
     
-    private static int tryGetSeparatorFromModel(CsmFile file, int pos) {
+    private static int tryGetSeparatorFromModel(CsmFile file, int pos, FileReferencesContext fileReferences) {
         // Enable only for cpp11 ant later because for previous standards simple 
         // text based logic worked decently
         if (isCpp11OrMore(file)) {
-            CsmContext context = CsmOffsetResolver.findContext(file, pos, null);
+            CsmContext context = CsmOffsetResolver.findContext(file, pos, fileReferences);
             CsmObject lastObj = context.getLastObject();
             if (CsmKindUtilities.isLambda(lastObj)) {
                 // If pos is inside return type of lambda, set separator to its beginning
