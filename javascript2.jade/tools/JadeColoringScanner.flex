@@ -175,11 +175,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         }
     }
 
-    JadeTokenId getTokenIdFromTagType (TAG_TYPE tagType) {
+    JadeTokenId getTokenIdFromTagType (TAG_TYPE tagType, JadeTokenId defaultId) {
         if (tagType == TAG_TYPE.SCRIPT) {
             return JadeTokenId.JAVASCRIPT;
         }
-        return JadeTokenId.PLAIN_TEXT;
+        return defaultId;
     }
 
  // End user code
@@ -668,13 +668,13 @@ UnbufferedComment = "//-"
                                         yybegin(JAVASCRIPT_EXPRESSION);
                                         whereToGo = IN_PLAIN_TEXT_LINE;
                                         if (tokenLength > 2) {
-                                            return getTokenIdFromTagType(lastTag);
+                                            return getTokenIdFromTagType(lastTag, JadeTokenId.PLAIN_TEXT);
                                         }
                                     }
     {LineTerminator}                {   yypushback(1);
                                         yybegin(AFTER_EOL);
                                         if (tokenLength - 1 > 0 ) {
-                                            return getTokenIdFromTagType(lastTag);
+                                            return getTokenIdFromTagType(lastTag, JadeTokenId.PLAIN_TEXT);
                                         }
                                     }
     .                              { }
@@ -714,7 +714,7 @@ UnbufferedComment = "//-"
                                             indent = currentIndent;
                                             if (tokenLength > currentIndent) {
                                                 yypushback(currentIndent);
-                                                return JadeTokenId.PLAIN_TEXT;
+                                                return getTokenIdFromTagType(lastTag, JadeTokenId.PLAIN_TEXT);
                                             } else {
                                                 return JadeTokenId.WHITESPACE;
                                             }
@@ -726,7 +726,7 @@ UnbufferedComment = "//-"
                                             yypushback(currentIndent);
                                             yybegin(AFTER_EOL);
                                             if (tokenLength > currentIndent) {
-                                                return JadeTokenId.PLAIN_TEXT;
+                                                return getTokenIdFromTagType(lastTag, JadeTokenId.PLAIN_TEXT);
                                             }
                                         }
                                         yybegin(IN_PLAIN_TEXT_BLOCK);
@@ -736,7 +736,7 @@ UnbufferedComment = "//-"
                                         yybegin(AFTER_EOL);
                                         indent = 0;
                                         if (tokenLength > 1) {
-                                            return JadeTokenId.PLAIN_TEXT;
+                                            return getTokenIdFromTagType(lastTag, JadeTokenId.PLAIN_TEXT);
                                         }
                                     }
 }
@@ -1024,7 +1024,7 @@ UnbufferedComment = "//-"
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return JadeTokenId.PLAIN_TEXT;
+        return getTokenIdFromTagType(lastTag, JadeTokenId.PLAIN_TEXT);
     } else {
         return null;
     }}
@@ -1032,7 +1032,7 @@ UnbufferedComment = "//-"
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return JadeTokenId.PLAIN_TEXT;
+        return getTokenIdFromTagType(lastTag, JadeTokenId.PLAIN_TEXT);
     } else {
         return null;
     }}

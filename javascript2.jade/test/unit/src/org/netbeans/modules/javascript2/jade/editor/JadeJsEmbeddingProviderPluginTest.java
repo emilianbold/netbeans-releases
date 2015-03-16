@@ -68,6 +68,10 @@ public class JadeJsEmbeddingProviderPluginTest extends CslTestBase {
         checkVirtualSource("testfiles/lexer/issue251150.jade");
     }
     
+    public void testIssue251144() throws Exception {
+        checkVirtualSource("testfiles/lexer/issue251144.jade");
+    }
+    
     private void checkVirtualSource(final String testFile) throws Exception {
         Source testSource = getTestSource(getTestFile(testFile));
         
