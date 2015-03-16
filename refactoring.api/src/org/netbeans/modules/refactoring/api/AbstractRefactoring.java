@@ -57,6 +57,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
+import org.netbeans.modules.refactoring.api.impl.SPIUIAccessor;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory;
 import org.netbeans.modules.refactoring.spi.ProgressProvider;
@@ -171,6 +172,10 @@ public abstract class AbstractRefactoring {
 
     FiltersDescription getFiltersDescription() {
         return filtersDescription;
+    }
+    
+    void resetFiltersDescription() {
+        SPIUIAccessor.DEFAULT.reset(filtersDescription);
     }
     
     Collection getGBHandlers() {
