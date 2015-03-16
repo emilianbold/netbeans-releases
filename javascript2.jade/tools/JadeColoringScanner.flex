@@ -548,8 +548,8 @@ UnbufferedComment = "//-"
    {AnyChar}                    { }
 }
 <AFTER_INCLUDE> {
-    ":"{Input}                      {   return JadeTokenId.FILTER; }
-    .                               {   yypushback(1); yybegin(FILEPATH); }
+    ":"{Input}                      {   return JadeTokenId.FILTER; }    
+    {AnyChar}                       {   yypushback(1); yybegin(FILEPATH); }
 }
 
 <JAVASCRIPT> {
