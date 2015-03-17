@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,8 +44,8 @@
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Set;
@@ -59,12 +59,13 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.sun.api.CmpMappingProvider;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
@@ -84,12 +85,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
-/** Manages the deployment plan I/O and access for initializing DConfigBeans
- *
- * @author Vince Kraemer
- * @author Peter Williams
+/**
+ * Manages the deployment plan I/O and access for initializing DConfigBeans
+ * <p/>
+ * @author Vince Kraemer, Peter Williams, Tomas Kraus
  */ 
-public class SunONEDeploymentConfiguration extends GlassfishConfiguration implements DeploymentConfiguration { //implements Constants, SunDeploymentConfigurationInterface {
+public class SunONEDeploymentConfiguration
+extends GlassfishConfiguration implements DeploymentConfiguration {
 
     /**
      * inject cmp bean & field update support into descriptor listener factories
@@ -108,28 +110,38 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     private SunDeploymentManagerInterface sdmi;
     
 
-    /** Create an instance of SunONEDeploymentConfiguration for GF V2
-     *  and earlier servers.
+    /**
+     * Create an instance of SunONEDeploymentConfiguration for GF V2
+     * and earlier servers.
      *
-     * @param module J2eeModule instance for the project represented by this config.
+     * @param module  J2eeModule instance for the project represented by this config.
+     * @param mySdmi  Sun deployment manager.
+     * @param version GlassFish server version.
      *
      * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException
      */
-    public SunONEDeploymentConfiguration(J2eeModule module, SunDeploymentManagerInterface mySdmi)
-            throws ConfigurationException {
-        super(module);
+    public SunONEDeploymentConfiguration(
+            final J2eeModule module, final SunDeploymentManagerInterface mySdmi,
+            final GlassFishVersion version
+    ) throws ConfigurationException {
+        super(module, version);
         this.sdmi = mySdmi;
     }
 
-    /** Create an instance of SunONEDeploymentConfiguration for Webserver.
+    /**
+     * Create an instance of SunONEDeploymentConfiguration for Webserver.
      *
      * @param module J2eeModule instance for the project represented by this config.
      * @param webServerDDName short name for web server sun dd
+     * @param version GlassFish server version.
      *
      * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException
      */
-    public SunONEDeploymentConfiguration(J2eeModule module, String webServerDDName) throws ConfigurationException {
-        super(module, J2eeModuleHelper.getWsModuleHelper(webServerDDName));
+    public SunONEDeploymentConfiguration(
+            final J2eeModule module, final String webServerDDName,
+            final GlassFishVersion version
+    ) throws ConfigurationException {
+        super(module, J2eeModuleHelper.getWsModuleHelper(webServerDDName), version);
     }
 
     /** Deprecated form used for JSR-88.  Only exists to keep legacy parts of

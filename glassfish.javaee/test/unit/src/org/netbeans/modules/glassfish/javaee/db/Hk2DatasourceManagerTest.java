@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -51,16 +51,27 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import static org.junit.Assert.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- *
- * @author vkraemer
+ * GlassFish server data source manager tests.
+ * <p/>
+ * @author Vince Kraemer, Tomas Kraus
  */
-public class Hk2DatasourceManagerTest {
+public class Hk2DatasourceManagerTest extends NbTestCase {
 
-    public Hk2DatasourceManagerTest() {
+    private J2eeModule j2eeModule;
+    private HK2TestEEModuleImpl j2eeModuleImpl;
+
+    public Hk2DatasourceManagerTest(String testName) {
+        super(testName);
     }
 
     @BeforeClass
@@ -72,10 +83,19 @@ public class Hk2DatasourceManagerTest {
     }
 
     @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        File dataDir = getDataDir();
+        File rootFolder = new File(dataDir, "hk2sample");
+        rootFolder.mkdirs();
+        FileObject rootFolderFO = FileUtil.toFileObject(rootFolder);
+        j2eeModuleImpl = new HK2TestEEModuleImpl(
+                rootFolderFO, J2eeModule.Type.WAR, Profile.JAVA_EE_7_FULL.toPropertiesString());
+        j2eeModule = J2eeModuleFactory.createJ2eeModule(j2eeModuleImpl);
     }
 
     @After
+    @Override
     public void tearDown() {
     }
 
@@ -93,11 +113,13 @@ public class Hk2DatasourceManagerTest {
         }
         File resourceDir = null;
         try {
-            resourceDir = new File(new File(codebase.toURI()).getParentFile(), "data/178776");  // NOI18N
+            resourceDir = new File(
+                    new File(codebase.toURI()).getParentFile(), "data/178776");  // NOI18N
         } catch (URISyntaxException x) {
             throw new Error(x);
         }
-        Set<Datasource> result = Hk2DatasourceManager.getDatasources(resourceDir);
+        Set<Datasource> result = Hk2DatasourceManager.getDatasources(
+                j2eeModule, GlassFishVersion.GF_3);
 //        assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         assert null != result : "null result";
