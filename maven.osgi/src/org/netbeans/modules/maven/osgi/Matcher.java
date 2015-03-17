@@ -43,7 +43,10 @@ package org.netbeans.modules.maven.osgi;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * A matcher for a LIST of PATTERN,
@@ -158,7 +161,12 @@ class Matcher {
                 // Optional non capturing group of ( dot, any )
                 sb.append("(?:\\..*)?");
             }
-            return Pattern.compile(sb.toString());
+            try {
+                return Pattern.compile(sb.toString());
+            } catch(PatternSyntaxException px) {
+                Logger.getLogger(Matcher.class.getName()).log(Level.WARNING, null, px);
+                return null; // what else ?
+            }
         } else {
             // No wildcard found, avoid compiling pattern so the Item will
             // use a simple equals test.
