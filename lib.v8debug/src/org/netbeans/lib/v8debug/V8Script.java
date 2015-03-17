@@ -44,12 +44,13 @@ package org.netbeans.lib.v8debug;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
+import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Script {
+public final class V8Script extends V8Value {
     
     private final String name;
     private final long id;
@@ -59,19 +60,19 @@ public final class V8Script {
     private final Object data;
     private final String source;
     private final String sourceStart;
-    private final long sourceLength;
+    private final PropertyLong sourceLength;
     private final ReferencedValue context;
-    private final String text;
     private final Type scriptType;
     private final CompilationType compilationType;
     private final ReferencedValue evalFromScript;
     private final EvalFromLocation evalFromLocation;
     
-    public V8Script(String name, long id, long lineOffset, long columnOffset,
+    public V8Script(long handle, String name, long id, long lineOffset, long columnOffset,
                     long lineCount, Object data, String source, String sourceStart,
-                    long sourceLength, ReferencedValue context, String text,
+                    Long sourceLength, ReferencedValue context, String text,
                     Type scriptType, CompilationType compilationType,
                     ReferencedValue evalFromScript, EvalFromLocation evalFromLocation) {
+        super(handle, V8Value.Type.Script, text);
         this.name = name;
         this.id = id;
         this.lineOffset = lineOffset;
@@ -80,9 +81,8 @@ public final class V8Script {
         this.data = data;
         this.source = source;
         this.sourceStart = sourceStart;
-        this.sourceLength = sourceLength;
+        this.sourceLength = new PropertyLong(sourceLength);
         this.context = context;
-        this.text = text;
         this.scriptType = scriptType;
         this.compilationType = compilationType;
         this.evalFromScript = evalFromScript;
@@ -121,7 +121,7 @@ public final class V8Script {
         return sourceStart;
     }
 
-    public long getSourceLength() {
+    public PropertyLong getSourceLength() {
         return sourceLength;
     }
     
@@ -129,10 +129,6 @@ public final class V8Script {
         return context;
     }
     
-    public String getText() {
-        return text;
-    }
-
     public Type getScriptType() {
         return scriptType;
     }

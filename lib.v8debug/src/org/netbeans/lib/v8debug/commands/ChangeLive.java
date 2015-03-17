@@ -186,6 +186,22 @@ public final class ChangeLive {
                     }
                     return FunctionStatus.valueOf(statusName);
                 }
+
+                @Override
+                public String toString() {
+                    String statusName = super.toString();
+                    statusName = Character.toLowerCase(statusName.charAt(0)) + statusName.substring(1);
+                    for (int i = 0; i < statusName.length(); i++) {
+                        if (Character.isUpperCase(statusName.charAt(i))) {
+                            statusName = statusName.substring(0, i) + " " +
+                                         Character.toLowerCase(statusName.charAt(i)) +
+                                         statusName.substring(i+1);
+                            i++;
+                        }
+                    }
+                    return statusName;
+                }
+                
             }
             
             public ChangeTree(String name,

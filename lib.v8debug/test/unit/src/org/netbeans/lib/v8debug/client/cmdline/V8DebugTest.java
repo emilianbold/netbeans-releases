@@ -235,7 +235,7 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_VARS);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 2, testFilePath, LINE_BRKP_VARS-1, -1, new long[] { 6, 4});
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 2, testFilePath, LINE_BRKP_VARS-1, null, new long[] { 6, 4});
         // node.js v0.10.36: column 6
         // io.js v1.0.4: column 4
         
@@ -259,7 +259,7 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_LONG_STACK);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 3, testFilePath, LINE_BRKP_LONG_STACK-1, -1, 8);
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 3, testFilePath, LINE_BRKP_LONG_STACK-1, null, 8);
         commandsToTest.remove(V8Command.Setbreakpoint);
         
         V8Debug.TestAccess.doCommand(v8dbg, "cont");
@@ -274,7 +274,7 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_ARRAYS);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 4, testFilePath, LINE_BRKP_ARRAYS-1, -1, new long[] {10, 4});
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 4, testFilePath, LINE_BRKP_ARRAYS-1, null, new long[] {10, 4});
         // node.js v0.10.36: column 10
         // io.js v1.0.4: column 4
         
@@ -292,7 +292,7 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_OBJECTS);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 5, testFilePath, LINE_BRKP_OBJECTS-1, -1, new long[] {6, 4});
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 5, testFilePath, LINE_BRKP_OBJECTS-1, null, new long[] {6, 4});
         // node.js v0.10.36: column 6
         // io.js v1.0.4: column 4
         
@@ -367,7 +367,7 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_SCOPE);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 6, testFilePath, LINE_BRKP_SCOPE-1, -1, 4);
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 6, testFilePath, LINE_BRKP_SCOPE-1, null, 4);
         V8Debug.TestAccess.doCommand(v8dbg, "cont");
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Continue, lastResponse.getCommand());
@@ -689,7 +689,7 @@ public class V8DebugTest extends AbstractTestBase {
         assertEquals(testFilePath, script.getName());
         assertEquals(V8Script.Type.NORMAL, script.getScriptType());
         assertNull(script.getSource());
-        assertEquals(TEST_NUM_CHARS, script.getSourceLength());
+        assertEquals(TEST_NUM_CHARS, script.getSourceLength().getValue());
         assertEquals("(function (exports, require, module, __filename, __dirname) { /* \n * DO NOT ALTE", script.getSourceStart());
     }
     
@@ -738,7 +738,7 @@ public class V8DebugTest extends AbstractTestBase {
         assertTrue(functionRef.hasValue());
         V8Function function = (V8Function) functionRef.getValue();
         assertEquals("longStack", function.getName());
-        assertEquals(testFilePath, V8Debug.TestAccess.getScript(v8dbg, function.getScriptId()).getName());
+        assertEquals(testFilePath, V8Debug.TestAccess.getScript(v8dbg, function.getScriptId().getValue()).getName());
         
         ReferencedValue receiverRef = f.getReceiver();
         assertNotNull(receiverRef);
@@ -1301,7 +1301,7 @@ public class V8DebugTest extends AbstractTestBase {
         }
         V8Script testScript = scriptsByName.get(testFilePath);
         assertEquals(TEST_NUM_LINES, testScript.getLineCount());
-        assertEquals(TEST_NUM_CHARS, testScript.getSourceLength());
+        assertEquals(TEST_NUM_CHARS, testScript.getSourceLength().getValue());
         assertEquals(0, testScript.getLineOffset());
         assertEquals(0, testScript.getColumnOffset());
         assertEquals(testFilePath, V8Debug.TestAccess.getScript(v8dbg, testScript.getId()).getName());
@@ -1427,7 +1427,7 @@ public class V8DebugTest extends AbstractTestBase {
             assertEquals(i+1, b.getNumber());
             V8Breakpoint.ActualLocation[] actualLocations = b.getActualLocations();
             assertEquals(1, actualLocations.length);
-            assertEquals(testFilePath, V8Debug.TestAccess.getScript(v8dbg, actualLocations[0].getScriptId()).getName());
+            assertEquals(testFilePath, V8Debug.TestAccess.getScript(v8dbg, actualLocations[0].getScriptId().getValue()).getName());
             assertTrue(actualLocations[0].getColumn() >= 0);
             assertTrue(actualLocations[0].getLine() >= 0);
         }
@@ -1643,7 +1643,7 @@ public class V8DebugTest extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_REFS);
         V8Response lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 11, testFilePath, LINE_BRKP_REFS-1, -1, 4);
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 11, testFilePath, LINE_BRKP_REFS-1, null, 4);
         V8Debug.TestAccess.doCommand(v8dbg, "cont");
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Continue, lastResponse.getCommand());

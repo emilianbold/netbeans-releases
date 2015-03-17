@@ -141,20 +141,20 @@ public final class V8Breakpoint {
         
         private final long line;
         private final long column;
-        private final long scriptId;
+        private final PropertyLong scriptId;
         private final String scriptName;
         
         public ActualLocation(long line, long column, long scriptId) {
             this.line = line;
             this.column = column;
-            this.scriptId = scriptId;
+            this.scriptId = new PropertyLong(scriptId);
             this.scriptName = null;
         }
         
         public ActualLocation(long line, long column, String scriptName) {
             this.line = line;
             this.column = column;
-            this.scriptId = -1;
+            this.scriptId = new PropertyLong(null);
             this.scriptName = scriptName;
         }
 
@@ -166,7 +166,7 @@ public final class V8Breakpoint {
             return column;
         }
 
-        public long getScriptId() {
+        public PropertyLong getScriptId() {
             return scriptId;
         }
 

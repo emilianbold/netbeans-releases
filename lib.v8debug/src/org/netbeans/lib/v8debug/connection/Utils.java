@@ -39,13 +39,13 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug.client;
+package org.netbeans.lib.v8debug.connection;
 
 /**
  *
  * @author Martin Entlicher
  */
-class Utils {
+final class Utils {
     
     /**
      * Find an index of the pattern in an array.

@@ -60,7 +60,8 @@ public final class V8Event extends V8Packet {
 
         @Override
         public String toString() {
-            return super.toString().toLowerCase();
+            String str = super.toString();
+            return Character.toLowerCase(str.charAt(0)) + str.substring(1);
         }
         
         static Kind fromString(String eventName) {

@@ -69,7 +69,7 @@ import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.lib.v8debug.V8StepAction;
-import org.netbeans.lib.v8debug.client.ClientConnection;
+import org.netbeans.lib.v8debug.connection.ClientConnection;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
@@ -88,6 +88,7 @@ import org.netbeans.lib.v8debug.commands.Source;
 import org.netbeans.lib.v8debug.commands.Threads;
 import org.netbeans.lib.v8debug.commands.V8Flags;
 import org.netbeans.lib.v8debug.commands.Version;
+import org.netbeans.lib.v8debug.connection.IOListener;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.lib.v8debug.events.CompileErrorEventBody;
@@ -971,7 +972,7 @@ public class V8Debug {
             if (scriptName != null) {
                 sb.append(scriptName);
             } else {
-                V8Script script = getScript(l.getScriptId());
+                V8Script script = getScript(l.getScriptId().getValue());
                 if (script != null) {
                     sb.append(script.getName());
                 } else {
@@ -1078,6 +1079,7 @@ public class V8Debug {
         static V8Debug createV8Debug(String hostName, int port, Testeable testeable) throws IOException {
             final V8Debug v8dbg = new V8Debug(hostName, port);
             v8dbg.testeable = testeable;
+            v8dbg.cc.addIOListener(testeable);
             v8dbg.startCommandLoop();
             Thread responseLoop = new Thread("Response loop") {
                 @Override
@@ -1123,7 +1125,7 @@ public class V8Debug {
         
     }
     
-    static interface Testeable {
+    static interface Testeable extends IOListener {
         
         void notifyResponse(V8Response response);
         
