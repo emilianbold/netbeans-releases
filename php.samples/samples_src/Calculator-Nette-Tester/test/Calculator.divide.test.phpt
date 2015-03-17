@@ -41,7 +41,6 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-require __DIR__ . '/../src/Calculator.php';
 require __DIR__ . '/../src/vendor/autoload.php';
 
 use Tester\Assert;
