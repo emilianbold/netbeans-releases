@@ -617,15 +617,28 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                         try {
                             filter = new HashSet<String>();
                             assert file != null : "Null file for URL: " + url;  //NOI18N
-                            final String relPath = FileUtil.getRelativePath(getRoot(), file);
-                            final String clsName = FileObjects.convertFolder2Package(
-                                    FileObjects.stripExtension(relPath));
-                            index.query(
-                                    filter,
-                                    DocumentUtil.binaryNameConvertor(),
-                                    DocumentUtil.declaredTypesFieldSelector(false),
-                                    null,
-                                    DocumentUtil.queryClassWithEncConvertor(true).convert(Pair.<String,String>of(clsName,relPath)));
+                            final FileObject root = getRoot();
+                            final String relPath = FileUtil.getRelativePath(root, file);
+                            if (relPath != null) {
+                                final String clsName = FileObjects.convertFolder2Package(
+                                        FileObjects.stripExtension(relPath));
+                                index.query(
+                                        filter,
+                                        DocumentUtil.binaryNameConvertor(),
+                                        DocumentUtil.declaredTypesFieldSelector(false),
+                                        null,
+                                        DocumentUtil.queryClassWithEncConvertor(true).convert(Pair.<String,String>of(clsName,relPath)));
+                            } else {
+                                LOGGER.log(
+                                    Level.WARNING,
+                                    "File: {0}({1}) is not owned by root: {2}({3})",
+                                    new Object[]{
+                                        FileUtil.getFileDisplayName(file),
+                                        file.isValid(),
+                                        FileUtil.getFileDisplayName(root),
+                                        root.isValid()
+                                    });
+                            }
                         } catch (InterruptedException ie) {
                             //Never thrown, but throw as IOE for sure
                             throw new IOException(ie);
