@@ -1466,7 +1466,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!DebuggerOption.GDB_REVERSE_DEBUGGING.isEnabled(optionLayers())) {
             NativeDebuggerManager.error(Catalog.get("MSG_Reverse_Debugging_Option"));	// NOI18N
         } else {
-            sendResumptive(peculiarity.execFinishCommand(currentThreadId) + " --reverse");
+            sendResumptive(peculiarity.execFinishCommand(currentThreadId) + " --reverse");	// NOI18N
         }
     }
     

@@ -105,6 +105,11 @@ public final class WizardConstants {
     public static final WizardConstant<String> PROPERTY_WORKING_DIR = new WizardConstant<>("buildCommandWorkingDirTextField"); // NOI18N
     public static final WizardConstant<String> PROPERTY_SOURCE_FOLDER_PATH = new WizardConstant<>("sourceFolderPath"); // NOI18N
     public static final WizardConstant<String> PROPERTY_SIMPLE_MODE_FOLDER = new WizardConstant<>("simpleModeFolder"); // NOI18N
+    
+    public static final WizardConstant<Boolean> PROPERTY_CREATE_MAIN_FILE = new WizardConstant<>("createMainFile"); // NOI18N
+    public static final WizardConstant<String> PROPERTY_MAIN_FILE_NAME = new WizardConstant<>("mainFileName"); // NOI18N
+    public static final WizardConstant<String> PROPERTY_MAIN_TEMPLATE_NAME = new WizardConstant<>("mainFileTemplate"); // NOI18N
+    public static final WizardConstant<String> PROPERTY_LANGUAGE_STANDARD = new WizardConstant<>("languageStandard"); // NOI18N
 
     // the property is not null in case full remote project wizard
     public static final WizardConstant<ExecutionEnvironment> PROPERTY_REMOTE_FILE_SYSTEM_ENV = new WizardConstant<>("REMOTE_FILE_ENV"); //NOI18N
