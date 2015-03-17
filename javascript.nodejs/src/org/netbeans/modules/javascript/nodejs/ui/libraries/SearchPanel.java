@@ -465,7 +465,7 @@ public class SearchPanel extends javax.swing.JPanel {
                     String searchTerm = evt.getPropertyName();
                     if (searchTerm.equals(lastSearchTerm)) {
                         Library[] libraries = (Library[])evt.getNewValue();
-                        if (lastSearchInNames) {
+                        if (lastSearchInNames && (libraries != null)) {
                             libraries = filterByName(libraries, lastSearchTerm);
                         }
                         updateLibraries(libraries);

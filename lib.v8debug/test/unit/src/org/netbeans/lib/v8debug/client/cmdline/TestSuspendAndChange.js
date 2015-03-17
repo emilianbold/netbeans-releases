@@ -56,7 +56,7 @@ function RunLoop() {
 }
 */
 function RunLoop() {
-    var n = 100000000*numLoops;
+    var n = 10000000*numLoops;
     var i = 0;
     var s = 0;
     for (i = 0; i < n; i++) {

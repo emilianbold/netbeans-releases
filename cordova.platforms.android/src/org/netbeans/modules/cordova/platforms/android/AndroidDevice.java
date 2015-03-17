@@ -54,7 +54,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.Device;
 import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.netbeans.modules.cordova.platforms.spi.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
@@ -181,7 +180,9 @@ public class AndroidDevice implements Device {
     public void addProperties(Properties props) {
         final MobilePlatform android = getPlatform();
         if (android.isReady()) {
-            props.put("android.build.target", android.getPrefferedTarget().getName());//NOI18N
+            if (android.getPrefferedTarget() != null) {
+                props.put("android.build.target", android.getPrefferedTarget().getName());//NOI18N
+            }
             props.put("android.sdk.home", android.getSdkLocation());//NOI18N
             props.put("android.target.device.arg", isEmulator() ? "emulate" : "run");//NOI18N
         } else {

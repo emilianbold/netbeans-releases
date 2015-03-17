@@ -430,7 +430,7 @@ public class ScriptsHandler {
 
         @Override
         public long getLength() {
-            return script.getSourceLength();
+            return script.getSourceLength().getValue();
         }
 
         @NbBundle.Messages({ "ERR_ScriptFailedToLoad=The script failed to load.",

@@ -53,12 +53,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.json.simple.JSONObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.netbeans.lib.v8debug.JSONWriter;
 import org.netbeans.lib.v8debug.V8Body;
 import org.netbeans.lib.v8debug.V8Breakpoint;
 import org.netbeans.lib.v8debug.V8Command;
@@ -158,16 +160,20 @@ abstract class AbstractTestBase {
         }.start();
     }
     
-    protected void checkBRResponse(SetBreakpoint.ResponseBody sbResponseBody, long bpNumber, String scriptName, long line, long column, long actualColumn) {
+    protected void checkBRResponse(SetBreakpoint.ResponseBody sbResponseBody, long bpNumber, String scriptName, long line, Long column, long actualColumn) {
         checkBRResponse(sbResponseBody, bpNumber, scriptName, line, column, new long[] { actualColumn });
     }
     
-    protected void checkBRResponse(SetBreakpoint.ResponseBody sbResponseBody, long bpNumber, String scriptName, long line, long column, long[] actualColumns) {
+    protected void checkBRResponse(SetBreakpoint.ResponseBody sbResponseBody, long bpNumber, String scriptName, long line, Long column, long[] actualColumns) {
         assertEquals("Breakpoint number", bpNumber, sbResponseBody.getBreakpoint());
         assertEquals("Breakpoint type", V8Breakpoint.Type.scriptName, sbResponseBody.getType());
         assertEquals(scriptName, sbResponseBody.getScriptName());
         assertEquals(line, sbResponseBody.getLine().getValue());
-        assertEquals(column, sbResponseBody.getColumn().getValue());
+        if (column == null) {
+            assertFalse(sbResponseBody.getColumn().hasValue());
+        } else {
+            assertEquals(column.longValue(), sbResponseBody.getColumn().getValue());
+        }
         V8Breakpoint.ActualLocation[] actualLocations = sbResponseBody.getActualLocations();
         assertEquals("Breakpoint locations", 1, actualLocations.length);
         assertEquals(line, actualLocations[0].getLine());
@@ -183,7 +189,7 @@ abstract class AbstractTestBase {
             }
             assertTrue("Actual column "+alc+" does not match expected colums: "+Arrays.toString(actualColumns), match);
         }
-        long scriptId = actualLocations[0].getScriptId();
+        long scriptId = actualLocations[0].getScriptId().getValue();
         assertEquals(scriptName, V8Debug.TestAccess.getScript(v8dbg, scriptId).getName());
     }
 
@@ -301,7 +307,7 @@ abstract class AbstractTestBase {
             assertEquals(name, f.getName());
             assertEquals(inferredName, f.getInferredName());
             assertEquals(source, f.getSource());
-            assertEquals(scriptName, V8Debug.TestAccess.getScript(v8dbg, f.getScriptId()).getName());
+            assertEquals(scriptName, V8Debug.TestAccess.getScript(v8dbg, f.getScriptId().getValue()).getName());
             //assertEquals(scriptId, f.getScriptId());
             assertEquals(position, f.getPosition().getValue());
             assertEquals(line, f.getLine().getValue());
@@ -409,6 +415,9 @@ abstract class AbstractTestBase {
         
         private V8Response lastResponse;
         private V8Event lastEvent;
+        private String lastReceivedResponseMessage;
+        private String lastReceivedEventMessage;
+        private String lastNotifiedEventMessage;
         private boolean closed;
 
         @Override
@@ -419,6 +428,7 @@ abstract class AbstractTestBase {
 
         @Override
         public synchronized void notifyEvent(V8Event event) {
+            this.lastNotifiedEventMessage = lastReceivedEventMessage;
             this.lastEvent = event;
             this.notifyAll();
         }
@@ -428,12 +438,30 @@ abstract class AbstractTestBase {
             this.closed = true;
         }
         
+        @Override
+        public void sent(String str) {
+        }
+
+        @Override
+        public void received(String str) {
+            if (str.indexOf("\"type\":\"event\"") > 0) {
+                lastReceivedEventMessage = str;
+            } else {
+                lastReceivedResponseMessage = str;
+            }
+        }
+
+        @Override
+        public void closed() {
+        }
+        
         public synchronized V8Response getLastResponse() throws InterruptedException {
             while (lastResponse == null) {
                 this.wait();
             }
             V8Response response = lastResponse;
             lastResponse = null;
+            checkResponseStoreTo(response, lastReceivedResponseMessage);
             return response;
         }
         
@@ -447,12 +475,112 @@ abstract class AbstractTestBase {
             }
             V8Event event = lastEvent;
             lastEvent = null;
+            checkEventStoreTo(event, lastNotifiedEventMessage);
             return event;
         }
         
         public boolean isClosed() {
             return closed;
         }
-        
+
+    }
+    
+    private static void checkResponseStoreTo(V8Response response, String message) {
+        JSONObject json = JSONWriter.store(response);
+        String storedMessage = json.toJSONString();
+        storedMessage = storedMessage.replace("\\/", "/"); // Replace escaped slash "\/" with shash "/". Unescape slashes.
+        boolean equals = compareMessages(response.getCommand().name(), message, storedMessage);
+        //assertEquals(message, storedMessage);
+        assertTrue(equals);
+    }
+    
+    private static void checkEventStoreTo(V8Event event, String message) {
+        JSONObject json = JSONWriter.store(event);
+        String storedMessage = json.toJSONString();
+        storedMessage = storedMessage.replace("\\/", "/"); // Replace escaped slash "\/" with shash "/". Unescape slashes.
+        boolean equals = compareMessages(event.getKind().name(), message, storedMessage);
+        //assertEquals(message, storedMessage);
+        assertTrue(equals);
+    }
+    
+    private static final String ignoreString = "frameIndex\":null,\"";
+    private static final String ignoreNoNameProperties = ",{\"attributes\":";
+    private static final String ignoreNoNameQuotation = "\"name\":";
+    private static final String ignoreCondition1 = "\"condition\":{}";
+    private static final String ignoreCondition2 = "\"condition\":null";
+    
+    private static boolean compareMessages(String name, String message, String storedMessage) {
+        if (!message.equals(storedMessage)) {
+            System.err.println("Different stored response of command/event: "+name);
+            int i = 0;
+            int j = 0;
+            for (; i < message.length() && j < storedMessage.length(); i++, j++) {
+                if (message.charAt(i) == storedMessage.charAt(j)) {
+                    continue;
+                }
+                if (message.substring(i).startsWith(ignoreString)) {
+                    i += ignoreString.length();
+                    i--;
+                    j--;
+                    continue;
+                } else if (storedMessage.substring(j).startsWith(ignoreString)) {
+                    j += ignoreString.length();
+                    i--;
+                    j--;
+                    continue;
+                }
+                if (i > 3 && j > 3) {
+                    if (message.substring(i-3).startsWith(ignoreNoNameProperties) &&
+                        storedMessage.substring(j-3).startsWith(",{\"name\":")) {
+                        // property without a name
+                        System.err.println("Ignoring message: '"+message.substring(i-3, message.indexOf('}', i)+1)+"'");
+                        i = message.indexOf('}', i);
+                        j -= 4;
+                        continue;
+                    } else if (message.substring(i-2).startsWith("{\"attributes\":") &&
+                        storedMessage.substring(j-2).startsWith("{\"name\":")) {
+                        // property without a name
+                        System.err.println("Ignoring message: '"+message.substring(i-2, message.indexOf('}', i)+2)+"'");
+                        i = message.indexOf('}', i) + 1;
+                        j -= 3;
+                        continue;
+                    } else if (message.substring(i).startsWith(ignoreNoNameProperties) &&
+                               storedMessage.substring(j).startsWith("]")) {
+                        // property without a name
+                        System.err.println("Ignoring message: '"+message.substring(i, message.indexOf('}', i)+1)+"'");
+                        i = message.indexOf('}', i);
+                        j--;
+                        continue;
+                    }
+                }
+                if (storedMessage.charAt(j) == '"' &&
+                    (i > ignoreNoNameQuotation.length() &&
+                     message.substring(0, i).endsWith(ignoreNoNameQuotation))) {
+                    // name value not quoted, but in storedMessage it is quoted
+                    j++;
+                    while (message.charAt(i) == storedMessage.charAt(j)) {
+                        i++; j++;
+                    }
+                    if (storedMessage.charAt(j) == '"') {
+                        j++;
+                    }
+                    continue;
+                }
+                if (i > 12 && message.substring(i-12).startsWith(ignoreCondition1) &&
+                    storedMessage.substring(j-12).startsWith(ignoreCondition2)) {
+                    i++;
+                    j += 3;
+                    continue;
+                }
+                
+                i = Math.max(0, i - 20);
+                j = Math.max(0, j - 20);
+                System.err.println("Expecting: ..."+message.substring(i));
+                System.err.println("Received:  ..."+storedMessage.substring(j));
+                System.err.println("Full message: "+message);
+                return false;
+            }
+        }
+        return true;
     }
 }
