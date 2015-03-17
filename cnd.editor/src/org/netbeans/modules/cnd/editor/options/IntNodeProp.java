@@ -50,7 +50,7 @@ public class IntNodeProp extends PropertySupport<Integer> {
 
     private final CodeStyle.Language language;
     private final String optionID;
-    private PreviewPreferences preferences;
+    private final PreviewPreferences preferences;
     private int state;
 
     public IntNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
@@ -95,11 +95,16 @@ public class IntNodeProp extends PropertySupport<Integer> {
         return null;
     }
 
+    @Override
     public Integer getValue() {
-        return Integer.valueOf(state);
+        return state;
     }
 
+    @Override
     public void setValue(Integer v) {
+        if (v < 0) {
+            throw new IllegalArgumentException(getString("NonNegativeValue")); // NOI18N
+        }
         state = v;
         getPreferences().putInt(optionID, state);
     }
@@ -116,6 +121,6 @@ public class IntNodeProp extends PropertySupport<Integer> {
 
     @Override
     public boolean isDefaultValue() {
-        return getDefault() == getValue().intValue();
+        return getDefault() == getValue();
     }
 }
