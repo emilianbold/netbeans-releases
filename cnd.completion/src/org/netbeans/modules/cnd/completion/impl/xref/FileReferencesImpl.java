@@ -376,7 +376,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                         break;
                     case LBRACKET:
                         if (afterBracket) {                            
-                            if (APTLanguageSupport.FLAVOR_CPP11.equals(CsmBaseUtilities.getFileLanguageFlavor(csmFile))) {
+                            if (CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile)) {
                                 blockConsumer = new BlockConsumer(CppTokenId.LBRACKET, CppTokenId.RBRACKET);
                                 derefToken = null;
                                 break;
