@@ -347,7 +347,7 @@ public class DebuggerOption extends Option {
         new DebuggerOption( // NOI18N
 			    "reverse_debugging", // NOI18N //name
                             new String[] {"on", "off"},  // NOI18N //values
-                            "off", // deault value
+                            "off",  // NOI18N // deault value
 			    true, // is engine option
 			    Type.CHECK_BOX, false);  //type , hasToolTip
 
