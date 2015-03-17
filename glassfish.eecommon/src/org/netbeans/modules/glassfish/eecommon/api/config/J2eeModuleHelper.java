@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,21 +57,23 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
- * @author Peter Williams
+ * Java EE module helper.
+ * <p/>
+ * @author Peter Williams, Tomas Kraus
  */
 public abstract class J2eeModuleHelper {
 
     /** Web application meta data directory. */
-    public static final String WEB_INF = "WEB-INF";
+    public static final String WEB_INF = JavaEEModule.WEB_INF;
 
-    /** GlassFish specific meta data file for version 1 and 2. */
-    public static final String GF_WEB_XML_V1
-            = WEB_INF + File.separatorChar + "sun-web.xml";
-    
-    /** GlassFish specific meta data file for version 3 and 4. */
+    /** GlassFish specific meta data file for version since version 3.1. */
     public static final String GF_WEB_XML_V2
-            = WEB_INF + File.separatorChar + "glassfish-web.xml";
+            = WEB_INF + File.separatorChar + GlassfishConfiguration.RESOURCE_FILES[0];
+
+    /** GlassFish specific meta data file for version 1, 2 and 3.0. */
+    public static final String GF_WEB_XML_V1
+            = WEB_INF + File.separatorChar + GlassfishConfiguration.RESOURCE_FILES[1];
+    
 
     private static final Map<Object, J2eeModuleHelper> helperMap;
     private static final Map<Object, J2eeModuleHelper> gfhelperMap;

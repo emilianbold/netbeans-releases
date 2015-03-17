@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,6 +42,7 @@ package org.netbeans.modules.glassfish.tooling.data;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.glassfish.tooling.logging.Logger;
+import org.netbeans.modules.glassfish.tooling.utils.EnumUtils;
 
 /**
  * GlassFish server version.
@@ -271,7 +272,7 @@ public enum GlassFishVersion {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
+    // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
     /** Major version number. */
@@ -372,6 +373,7 @@ public enum GlassFishVersion {
      * @return Value of <code>true</code> when all parts of version numbers are
      *         the same or <code>false</code> otherwise.
      */
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
     public boolean equals(final GlassFishVersion version) {
         if (version == null) {
             return false;
@@ -381,6 +383,36 @@ public enum GlassFishVersion {
                     && this.update == version.update
                     && this.build == version.build;
         }
+    }
+
+    /** {@inheritDoc} */
+    public static boolean eq(Enum<GlassFishVersion> v1, Enum<GlassFishVersion> v2) {
+        return EnumUtils.eq(v1, v2);
+    }
+
+     /** {@inheritDoc} */
+    public static boolean ne(Enum<GlassFishVersion> v1, Enum<GlassFishVersion> v2) {
+        return EnumUtils.ne(v1, v2);
+    }
+
+     /** {@inheritDoc} */
+    public static boolean lt(Enum<GlassFishVersion> v1, Enum<GlassFishVersion> v2) {
+        return EnumUtils.lt(v1, v2);
+    }
+
+     /** {@inheritDoc} */
+    public static boolean le(Enum<GlassFishVersion> v1, Enum<GlassFishVersion> v2) {
+        return EnumUtils.le(v1, v2);
+    }
+
+    /** {@inheritDoc} */
+    public static boolean gt(Enum<GlassFishVersion> v1, Enum<GlassFishVersion> v2) {
+        return EnumUtils.gt(v1, v2);
+    }
+
+     /** {@inheritDoc} */
+    public static boolean ge(Enum<GlassFishVersion> v1, Enum<GlassFishVersion> v2) {
+        return EnumUtils.ge(v1, v2);
     }
 
     /**
