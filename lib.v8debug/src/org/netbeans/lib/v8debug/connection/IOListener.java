@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -40,28 +40,18 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-var changing = require('./TestTheChangingScript');
+package org.netbeans.lib.v8debug.connection;
 
-numLoops = 10;
-
-/*
-function RunLoop() {
-    var toChange = "to change";
-    var changed;
-    changed = changing.changingFunction(toChange);
-    console.log(changed);
-    if (--numLoops > 0) {
-        setTimeout(RunLoop, 500);
-    }
+/**
+ * I/O communication listener, that can be used for logging.
+ * 
+ * @author Martin Entlicher
+ */
+public interface IOListener {
+    
+    void sent(String str);
+    
+    void received(String str);
+    
+    void closed();
 }
-*/
-function RunLoop() {
-    var n = 10000000*numLoops;
-    var i = 0;
-    var s = 0;
-    for (i = 0; i < n; i++) {
-        s = changing.sum(i);
-    }
-    console.log("s = "+s);
-}
-RunLoop();

@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-var changing = require('./TestTheChangingScript');
+package org.netbeans.lib.v8debug.connection;
 
-numLoops = 10;
-
-/*
-function RunLoop() {
-    var toChange = "to change";
-    var changed;
-    changed = changing.changingFunction(toChange);
-    console.log(changed);
-    if (--numLoops > 0) {
-        setTimeout(RunLoop, 500);
-    }
+/**
+ *
+ * @author Martin Entlicher
+ */
+public final class HeaderProperties {
+    
+    public static final String TYPE = "Type";                                   // NOI18N
+    public static final String V8_VERSION = "V8-Version";                       // NOI18N
+    public static final String PROTOCOL_VERSION = "Protocol-Version";           // NOI18N
+    public static final String EMBEDDING_HOST = "Embedding-Host";               // NOI18N
+    
+    private HeaderProperties() {}
+    
 }
-*/
-function RunLoop() {
-    var n = 10000000*numLoops;
-    var i = 0;
-    var s = 0;
-    for (i = 0; i < n; i++) {
-        s = changing.sum(i);
-    }
-    console.log("s = "+s);
-}
-RunLoop();

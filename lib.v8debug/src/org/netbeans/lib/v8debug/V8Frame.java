@@ -43,6 +43,7 @@ package org.netbeans.lib.v8debug;
 
 import java.util.Map;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
+import org.netbeans.lib.v8debug.vars.V8Function;
 
 /**
  *
@@ -50,9 +51,9 @@ import org.netbeans.lib.v8debug.vars.ReferencedValue;
  */
 public final class V8Frame {
     
-    private final long index;
+    private final PropertyLong index;
     private final ReferencedValue receiver;
-    private final ReferencedValue func;
+    private final ReferencedValue<V8Function> func;
     private final long scriptRef;
     private final boolean constructCall;
     private final boolean atReturn;
@@ -66,13 +67,13 @@ public final class V8Frame {
     private final V8Scope[] scopes;
     private final String text;
     
-    public V8Frame(long index, ReferencedValue receiver, ReferencedValue func, long scriptRef,
+    public V8Frame(Long index, ReferencedValue receiver, ReferencedValue<V8Function> func, long scriptRef,
                    boolean constructCall, boolean atReturn, boolean debuggerFrame,
                    Map<String, ReferencedValue> argumentRefs,
                    Map<String, ReferencedValue> localRefs,
                    long position, long line, long column, String sourceLineText,
                    V8Scope[] scopes, String text) {
-        this.index = index;
+        this.index = new PropertyLong(index);
         this.receiver = receiver;
         this.func = func;
         this.scriptRef = scriptRef;
@@ -89,7 +90,7 @@ public final class V8Frame {
         this.text = text;
     }
 
-    public long getIndex() {
+    public PropertyLong getIndex() {
         return index;
     }
 
@@ -97,7 +98,7 @@ public final class V8Frame {
         return receiver;
     }
 
-    public ReferencedValue getFunction() {
+    public ReferencedValue<V8Function> getFunction() {
         return func;
     }
 

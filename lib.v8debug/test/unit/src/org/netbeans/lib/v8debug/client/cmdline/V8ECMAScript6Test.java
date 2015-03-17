@@ -217,7 +217,7 @@ public class V8ECMAScript6Test extends AbstractTestBase {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+53);
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 2, testFilePath, 53-1, -1, 4);
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 2, testFilePath, 53-1, null, 4);
         
         checkLocalVar("cat", "abc", false);
         

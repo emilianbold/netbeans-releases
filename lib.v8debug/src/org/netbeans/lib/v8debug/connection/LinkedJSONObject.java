@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug.client;
+package org.netbeans.lib.v8debug.connection;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -49,9 +49,9 @@ import org.json.simple.JSONObject;
 
 /**
  *
- * @author martin
+ * @author Martin Entlicher
  */
-class LinkedJSONObject extends JSONObject {
+public class LinkedJSONObject extends JSONObject {
 
     LinkedHashMap linkedMap = new LinkedHashMap();
 

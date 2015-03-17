@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,21 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.v8debug.client;
+package org.netbeans.lib.v8debug.connection;
+
+import java.util.List;
+import java.util.Map;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.ContainerFactory;
 
 /**
- * I/O communication listener, that can be used for logging.
+ * Container factory, which provides {@link LinkedJSONObject}.
  * 
  * @author Martin Entlicher
  */
-public interface IOListener {
-    
-    void sent(String str);
-    
-    void received(String str);
-    
-    void closed();
+class LinkedJSONContainterFactory implements ContainerFactory {
+
+    @Override
+    public Map createObjectContainer() {
+        return new LinkedJSONObject();
+    }
+
+    @Override
+    public List creatArrayContainer() {
+        return new JSONArray();
+    }
+
 }

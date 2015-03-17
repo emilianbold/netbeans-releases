@@ -295,9 +295,7 @@ public class DDDataObject extends  DDMultiViewDataObject
             WebAppProxy app = new WebAppProxy(org.netbeans.modules.j2ee.dd.impl.common.DDUtils.createWebApp(
                     createInputStream(), version), version);
             if (updateWebApp) {
-                if (version.equals(webAppProxy.getVersion())
-                        && webAppProxy.getOriginal() != null
-                        && webAppProxy.getStatus() == WebApp.STATE_VALID) {
+                if (version.equals(webAppProxy.getVersion()) && webAppProxy.getOriginal() != null) {
                     webApp.merge(app, WebApp.MERGE_UPDATE);
                 } else if (app.getOriginal() != null) {
                     webApp = webAppProxy = app;
