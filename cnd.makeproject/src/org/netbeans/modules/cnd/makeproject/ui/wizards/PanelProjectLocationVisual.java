@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards;
@@ -117,7 +116,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                                 CndLanguageStandards.CndLanguageStandard.C99.toString(),
                                 CndLanguageStandards.CndLanguageStandard.C11.toString()
                                 };
-    static final String[] FORTRAN = new String[]{"Fortran" // NOI18N
+    static final String[] FORTRAN = new String[]{"Fortran90 Fixed", // NOI18N
+                                                 "Fortran90 Free", // NOI18N
+                                                 "Fortran95", // NOI18N
+                                                 "Fortran2003", // NOI18N
+                                                 "Fortran2008" // NOI18N
                                 };
     private final PanelConfigureProject controller;
     private final String templateName;
@@ -702,8 +705,28 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                         WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                         WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/cppFiles/main.cc"); // NOI18N
                     } else if (languageStandard.first().equals(FORTRAN[0])) {
-                        WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + "." + fortranExtensions.getDefaultExtension()); // NOI18N
-                        WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFixedFormatFile.f"); // NOI18N
+                        switch(languageStandard.second()) {
+                            case 0:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFixedFormatFile.f"); // NOI18N
+                                break;
+                            case 1:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f90"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFreeFormatFile.f90"); // NOI18N
+                                break;
+                            case 2:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f95"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFreeFormatFile.f90"); // NOI18N
+                                break;
+                            case 3:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f03"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFreeFormatFile.f90"); // NOI18N
+                                break;
+                            case 4:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f08"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFreeFormatFile.f90"); // NOI18N
+                                break;
+                        }
                     }
                 }
                 MakeOptions.getInstance().setPrefApplicationLanguage((String) createMainComboBox.getSelectedItem());

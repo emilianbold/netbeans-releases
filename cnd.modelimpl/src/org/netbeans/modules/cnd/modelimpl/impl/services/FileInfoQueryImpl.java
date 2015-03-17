@@ -39,8 +39,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -53,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -64,6 +67,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
@@ -79,10 +83,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.CndParserResult;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  * CsmFileInfoQuery implementation
@@ -90,6 +97,46 @@ import org.netbeans.modules.parsing.spi.Parser;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery.class)
 public final class FileInfoQueryImpl extends CsmFileInfoQuery {
+    
+    @Override
+    public boolean isCpp98OrLater(CsmFile csmFile) {
+        if (csmFile != null) {
+            Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> languageFlavor = getFileLanguageFlavor(csmFile);
+            if (NativeFileItem.Language.CPP == languageFlavor.first()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean isCpp11OrLater(CsmFile csmFile) {
+        if (csmFile != null) {
+            Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> languageFlavor = getFileLanguageFlavor(csmFile);
+            if (NativeFileItem.Language.CPP == languageFlavor.first()) {
+                switch (languageFlavor.second()) {
+                    case CPP11:
+                    case CPP14:
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean isCpp14OrLater(CsmFile csmFile) {
+        if (csmFile != null) {
+            Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> languageFlavor = getFileLanguageFlavor(csmFile);
+            if (NativeFileItem.Language.CPP == languageFlavor.first()) {
+                switch (languageFlavor.second()) {
+                    case CPP14:
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
 
     @Override
     public List<FSPath> getSystemIncludePaths(CsmFile file) {
@@ -393,6 +440,124 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             return ((FileImpl)file).getNativeFileItem();
         }
         return null;
+    }
+
+    @Override
+    public Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> getFileLanguageFlavor(CsmFile csmFile) {
+        if (csmFile != null) {
+            Collection<CsmCompilationUnit> compilationUnits = getCompilationUnits(csmFile, 0);
+            if (!compilationUnits.isEmpty()) {
+                NativeFileItem.Language bestLanguage = null;
+                NativeFileItem.LanguageFlavor bestFlavor = null;
+                for (CsmCompilationUnit cu : compilationUnits) {
+                    NativeFileItem startItem = getNativeFileItem(cu.getStartFile());
+                    if (startItem != null) {
+                        if (getLangPriority(bestLanguage) < getLangPriority(startItem.getLanguage())) {
+                            bestLanguage = startItem.getLanguage();
+                        }
+                        if (getFlavorPriority(bestFlavor) < getFlavorPriority(startItem.getLanguageFlavor())) {
+                            bestFlavor = startItem.getLanguageFlavor();
+                        }
+                    }
+                }
+                if (bestLanguage != null && bestFlavor != null) {
+                    return Pair.of(bestLanguage, bestFlavor);
+                }
+            }
+            if (csmFile.isHeaderFile()) {
+                return Pair.of(NativeFileItem.Language.C_HEADER, NativeFileItem.LanguageFlavor.UNKNOWN);
+            } else if (csmFile.isSourceFile()) {
+                return Pair.of(NativeFileItem.Language.CPP, NativeFileItem.LanguageFlavor.UNKNOWN);
+            } 
+        }
+        return Pair.of(NativeFileItem.Language.OTHER, NativeFileItem.LanguageFlavor.UNKNOWN);
+    }
+    
+    private int getLangPriority(NativeFileItem.Language lang) {
+        if (lang == null) {
+            return -1;
+        }
+        switch (lang) {
+            case OTHER:
+                return 0;
+            case C_HEADER:
+                return 1;
+            case C:
+                return 2;
+            case CPP:
+                return 3;
+        }
+        return 0;
+    }
+    
+    private int getFlavorPriority(NativeFileItem.LanguageFlavor flavor) {
+        if (flavor == null) {
+            return -1;
+        }
+        switch (flavor) {
+            case DEFAULT:
+            case UNKNOWN:
+                return 0;
+            case C:
+                return 1;
+            case C89:
+                return 2;
+            case C99:
+                return 3;
+            case C11:
+                return 4;
+            case CPP:
+                return 5;
+            case CPP11:
+                return 6;
+            case CPP14:
+                return 7;
+        }
+        return 0;
+    }
+
+    @Override
+    public Pair<String, String> getAPTLanguageFlavor(Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> langFlavor) {
+        String aptLang = APTLanguageSupport.UNKNOWN;
+        switch (langFlavor.first()) {
+            case C:
+                aptLang = APTLanguageSupport.GNU_C;
+                break;
+                
+            case CPP:
+                aptLang = APTLanguageSupport.GNU_CPP;
+                break;
+                
+            case C_HEADER:
+                aptLang = APTLanguageSupport.GNU_CPP;
+                break;
+                
+            case FORTRAN:
+                aptLang = APTLanguageSupport.FORTRAN;
+                break;
+        }
+        String aptFlavor = APTLanguageSupport.FLAVOR_UNKNOWN;
+        switch (langFlavor.second()) {
+            case C:
+            case C89:
+            case C99:
+            case C11:
+                aptFlavor = APTLanguageSupport.FLAVOR_UNKNOWN;
+                break;
+                
+            case CPP:
+            case CPP11:
+            case CPP14:
+                aptFlavor = APTLanguageSupport.FLAVOR_CPP11;
+                break;
+                
+            case F77:
+            case F90:
+            case F95:
+                aptFlavor = APTLanguageSupport.FLAVOR_FORTRAN_FREE;
+                break;
+        }
+        return Pair.of(aptLang, aptFlavor);
     }
 
     @Override

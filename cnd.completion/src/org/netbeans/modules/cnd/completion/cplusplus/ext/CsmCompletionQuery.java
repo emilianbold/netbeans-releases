@@ -120,6 +120,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import static org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver.ResolvedTypeHandler;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
@@ -2573,7 +2574,7 @@ abstract public class CsmCompletionQuery {
                             String varName = item.getTokenText(nrTokens - 1);
                             int varPos = item.getTokenOffset(nrTokens - 1);                            
                             if (item.getTokenID(nrTokens - 1) == CppTokenId.AUTO) {
-                                if (APTLanguageSupport.FLAVOR_CPP11.equals(CsmBaseUtilities.getFileLanguageFlavor(contextFile))) {
+                                if (CsmFileInfoQuery.getDefault().isCpp11OrLater(contextFile)) {
                                     CsmObject contextObject = CsmOffsetResolver.findObject(contextFile, item.getTokenOffset(0), getFileReferencesContext());
                                     if (CsmKindUtilities.isVariable(contextObject)) {
                                         CsmVariable contextVar = (CsmVariable) contextObject;

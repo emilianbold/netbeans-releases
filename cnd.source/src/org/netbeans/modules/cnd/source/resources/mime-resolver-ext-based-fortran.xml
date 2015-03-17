@@ -55,6 +55,7 @@ made subject to such option by the copyright holder.
         <ext name="F95"/>
         <ext name="f03"/>
         <ext name="F03"/>
+        <ext name="f08"/>
         <ext name="for"/>
         <ext name="mod"/>
         <resolver mime="text/x-fortran"/>
