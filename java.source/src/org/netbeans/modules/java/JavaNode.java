@@ -81,6 +81,7 @@ import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.InvalidClassFormatException;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.spi.java.loaders.RenameHandler;
 import org.openide.filesystems.*;
@@ -538,9 +539,14 @@ public final class JavaNode extends DataNode implements ChangeListener {
                                 CLASS_ICON_BASE;
                         }
                     }
-                } catch (FileNotFoundException ex) {
+                } catch (FileNotFoundException e) {
                     // may happen in the file is just being cleaned up; should not log.
-                    
+                } catch (InvalidClassFormatException e) {
+                    // broken class file just log
+                    LOG.log(
+                        Level.INFO,
+                        "Invalid classfile: {0}",   //NOI18N
+                        FileUtil.getFileDisplayName(file));
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);
                 }
