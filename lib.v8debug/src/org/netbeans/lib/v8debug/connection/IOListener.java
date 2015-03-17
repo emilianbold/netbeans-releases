@@ -1,8 +1,7 @@
-<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,19 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-require __DIR__ . '/../src/vendor/autoload.php';
+package org.netbeans.lib.v8debug.connection;
 
-use Tester\Assert;
-use Tester\Environment;
-
-Environment::setup();
-
-$calculator = new Calculator();
-
-Assert::same(0, $calculator->plus(0, 0));
-Assert::same(1, $calculator->plus(0, 1));
-Assert::same(1, $calculator->plus(1, 0));
-Assert::same(2, $calculator->plus(1, 1));
+/**
+ * I/O communication listener, that can be used for logging.
+ * 
+ * @author Martin Entlicher
+ */
+public interface IOListener {
+    
+    void sent(String str);
+    
+    void received(String str);
+    
+    void closed();
+}

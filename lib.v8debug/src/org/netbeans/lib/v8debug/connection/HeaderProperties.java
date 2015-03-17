@@ -1,8 +1,7 @@
-<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,19 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-require __DIR__ . '/../src/vendor/autoload.php';
+package org.netbeans.lib.v8debug.connection;
 
-use Tester\Assert;
-use Tester\Environment;
-
-Environment::setup();
-
-$calculator = new Calculator();
-
-Assert::same(0, $calculator->plus(0, 0));
-Assert::same(1, $calculator->plus(0, 1));
-Assert::same(1, $calculator->plus(1, 0));
-Assert::same(2, $calculator->plus(1, 1));
+/**
+ *
+ * @author Martin Entlicher
+ */
+public final class HeaderProperties {
+    
+    public static final String TYPE = "Type";                                   // NOI18N
+    public static final String V8_VERSION = "V8-Version";                       // NOI18N
+    public static final String PROTOCOL_VERSION = "Protocol-Version";           // NOI18N
+    public static final String EMBEDDING_HOST = "Embedding-Host";               // NOI18N
+    
+    private HeaderProperties() {}
+    
+}

@@ -49,6 +49,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -77,6 +79,8 @@ import org.openide.util.Utilities;
  * Represents <a href="http://getcomposer.org/">Composer</a> command line tool.
  */
 public final class Composer {
+
+    static final Logger LOGGER = Logger.getLogger(Composer.class.getName());
 
     public static final String COMPOSER_FILENAME = "composer.json"; // NOI18N
 
@@ -161,8 +165,9 @@ public final class Composer {
 
     public Future<Integer> initIfNotPresent(PhpModule phpModule) {
         assert phpModule != null;
-        FileObject configFile = getComposerConfigFile(phpModule);
-        if (configFile != null && configFile.isValid()) {
+        FileObject composerJson = getComposerJson(phpModule);
+        if (composerJson != null
+                && composerJson.isValid()) {
             return null;
         }
         return init(phpModule);
@@ -170,15 +175,16 @@ public final class Composer {
 
     @NbBundle.Messages({
         "Composer.run.init=Composer (init)",
-        "Composer.file.exists=Composer config file already exists - overwrite it?",
+        "Composer.file.exists=Composer.json already exists - overwrite it?",
         "# {0} - project name",
         "Composer.init.description=Description of project {0}."
     })
     public Future<Integer> init(PhpModule phpModule) {
         assert phpModule != null;
-        // config file
-        FileObject configFile = getComposerConfigFile(phpModule);
-        if (configFile != null && configFile.isValid()) {
+        // composer.json
+        FileObject composerJson = getComposerJson(phpModule);
+        if (composerJson != null
+                && composerJson.isValid()) {
             // existing config
             if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_file_exists())) {
                 return null;
@@ -198,7 +204,7 @@ public final class Composer {
                 String.format(NAME_PARAM, getInitName(options.getVendor(), phpModule.getName())),
                 String.format(AUTHOR_PARAM, options.getAuthorName(), options.getAuthorEmail()),
                 String.format(DESCRIPTION_PARAM, Bundle.Composer_init_description(phpModule.getDisplayName())));
-        return runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init(), params);
+        return runCommand(phpModule, true, INIT_COMMAND, Bundle.Composer_run_init(), params);
     }
 
     private String getInitName(String vendor, String projectName) {
@@ -273,7 +279,7 @@ public final class Composer {
 
     @NbBundle.Messages("Composer.run.search=Composer (search)")
     public Future<Integer> search(@NullAllowed PhpModule phpModule, String token, boolean onlyName, final OutputProcessor<SearchResult> outputProcessor) {
-        PhpExecutable composer = getComposerExecutable(phpModule, Bundle.Composer_run_search());
+        PhpExecutable composer = getComposerExecutable(phpModule, false, Bundle.Composer_run_search());
         if (composer == null) {
             return null;
         }
@@ -312,7 +318,7 @@ public final class Composer {
 
     @NbBundle.Messages("Composer.run.show=Composer (show)")
     public Future<Integer> show(@NullAllowed PhpModule phpModule, String name, final OutputProcessor<String> outputProcessor) {
-        PhpExecutable composer = getComposerExecutable(phpModule, Bundle.Composer_run_show());
+        PhpExecutable composer = getComposerExecutable(phpModule, false, Bundle.Composer_run_show());
         if (composer == null) {
             return null;
         }
@@ -351,7 +357,11 @@ public final class Composer {
     }
 
     private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, String command, String title, List<String> commandParams) {
-        PhpExecutable composer = getComposerExecutable(phpModule, title);
+        return runCommand(phpModule, false, command, title, commandParams);
+    }
+
+    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, boolean forceProjectDir, String command, String title, List<String> commandParams) {
+        PhpExecutable composer = getComposerExecutable(phpModule, forceProjectDir, title);
         if (composer == null) {
             return null;
         }
@@ -361,8 +371,8 @@ public final class Composer {
     }
 
     @CheckForNull
-    private PhpExecutable getComposerExecutable(@NullAllowed PhpModule phpModule, String title) {
-        File dir = resolveWorkDir(phpModule);
+    private PhpExecutable getComposerExecutable(@NullAllowed PhpModule phpModule, boolean forceProjectDir, String title) {
+        File dir = resolveWorkDir(phpModule, forceProjectDir);
         if (dir == null
                 && phpModule != null) {
             warnNoSources(phpModule.getDisplayName());
@@ -414,18 +424,30 @@ public final class Composer {
                 new NotifyDescriptor.Message(Bundle.Composer_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
     }
 
-    private FileObject getComposerConfigFile(PhpModule phpModule) {
+    @CheckForNull
+    private FileObject getComposerJson(PhpModule phpModule) {
         assert phpModule != null;
-        File dir = resolveWorkDir(phpModule);
-        if (dir == null) {
+        if (workDir != null) {
+            FileObject fo = FileUtil.toFileObject(workDir);
+            if (fo == null) {
+                // invalid workdir?
+                LOGGER.log(Level.INFO, "Valid workdir expected but invalid given: {0}", workDir);
+                return null;
+            }
+            return fo.getFileObject(COMPOSER_FILENAME);
+        }
+        // first project dir
+        FileObject composerJson = phpModule.getProjectDirectory().getFileObject(COMPOSER_FILENAME);
+        if (composerJson != null) {
+            return composerJson;
+        }
+        // now source dir
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // invalid sources
             return null;
         }
-        FileObject fo = FileUtil.toFileObject(dir);
-        if (fo == null) {
-            assert false : "FileObject should be found for file: " + dir;
-            return null;
-        }
-        return fo.getFileObject(COMPOSER_FILENAME);
+        return sourceDirectory.getFileObject(COMPOSER_FILENAME);
     }
 
     private boolean userConfirmation(String title, String question) {
@@ -434,19 +456,23 @@ public final class Composer {
     }
 
     @CheckForNull
-    private File resolveWorkDir(PhpModule phpModule) {
+    private File resolveWorkDir(PhpModule phpModule, boolean forceProjectDir) {
         if (workDir != null) {
             return workDir;
         }
         if (phpModule == null) {
             return null;
         }
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
+        FileObject composerJson = getComposerJson(phpModule);
+        if (composerJson != null) {
+            return FileUtil.toFile(composerJson.getParent());
+        }
+        FileObject dir = forceProjectDir ? phpModule.getProjectDirectory() : phpModule.getSourceDirectory();
+        if (dir == null) {
             // broken project
             return null;
         }
-        return FileUtil.toFile(sourceDirectory);
+        return FileUtil.toFile(dir);
     }
 
     public File getWorkDir() {

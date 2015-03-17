@@ -41,6 +41,8 @@
  */
 package org.netbeans.lib.v8debug;
 
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
+
 /**
  *
  * @author Martin Entlicher
@@ -62,5 +64,19 @@ public final class V8Request extends V8Packet {
 
     public V8Arguments getArguments() {
         return arguments;
+    }
+    
+    public V8Response createSuccessResponse(long sequence, V8Body body,
+                                            ReferencedValue[] referencedValues,
+                                            boolean running) {
+        return new V8Response(sequence, getSequence(), command, body,
+                              referencedValues, running, true, null);
+    }
+    
+    public V8Response createErrorResponse(long sequence,
+                                          boolean running,
+                                          String errorMessage) {
+        return new V8Response(sequence, getSequence(), command, null,
+                              null, running, false, errorMessage);
     }
 }

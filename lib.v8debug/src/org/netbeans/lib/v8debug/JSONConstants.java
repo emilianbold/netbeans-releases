@@ -105,8 +105,10 @@ class JSONConstants {
     public static final String VALUE_PROTOTYPE_OBJECT = "prototypeObject";
     public static final String VALUE_PROPERTIES = "properties";
     public static final String FUNCTION_INFERRED_NAME = "inferredName";
+    public static final String FUNCTION_RESOLVED = "resolved";
     public static final String INLINE_REFS = "inlineRefs";
     public static final String OBJECT = "object";
+    public static final String LENGTH = "length";
     
     public static final String ATTRIBUTES = "attributes";
     public static final String PROPERTY_TYPE = "propertyType";

@@ -77,4 +77,9 @@ public class YamlLexerTest extends YamlTestBase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/input3.yaml.txt",
                 YamlTokenId.language());
     }
+    
+     public void testIssue246124() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/issue246124.yaml",
+                YamlTokenId.language());
+    }
 }

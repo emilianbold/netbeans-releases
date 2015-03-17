@@ -39,16 +39,13 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug.client;
+package org.netbeans.lib.v8debug.connection;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.charset.Charset;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -56,18 +53,18 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.simple.JSONArray;
-import org.netbeans.lib.v8debug.JSONReader;
-import org.netbeans.lib.v8debug.JSONWriter;
-import org.netbeans.lib.v8debug.V8Event;
-import org.netbeans.lib.v8debug.V8Request;
-import org.netbeans.lib.v8debug.V8Response;
-import org.netbeans.lib.v8debug.V8Type;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.netbeans.lib.v8debug.JSONReader;
+import org.netbeans.lib.v8debug.JSONWriter;
 import org.netbeans.lib.v8debug.V8Command;
+import org.netbeans.lib.v8debug.V8Event;
+import org.netbeans.lib.v8debug.V8Request;
+import org.netbeans.lib.v8debug.V8Response;
+import org.netbeans.lib.v8debug.V8Type;
+import static org.netbeans.lib.v8debug.connection.DebuggerConnection.*;
 
 /**
  *
@@ -76,12 +73,6 @@ import org.netbeans.lib.v8debug.V8Command;
 public final class ClientConnection {
     
     private static final Logger LOG = Logger.getLogger(ClientConnection.class.getName());
-    
-    static final Charset CHAR_SET = Charset.forName("UTF-8");                   // NOI18N
-    private static final byte[] EOL = new byte[] { 13, 10 }; // \r\n
-    private static final String CONTENT_LENGTH_STR = "Content-Length: ";        // NOI18N
-    private static final byte[] CONTENT_LENGTH_BYTES = CONTENT_LENGTH_STR.getBytes(CHAR_SET);
-    private static final int BUFFER_SIZE = 4096;
     
     private final Socket server;
     private final InputStream serverIn;
@@ -257,46 +248,6 @@ public final class ClientConnection {
         }
     }
     
-    private int readContentLength(byte[] bytes, int[] from, int to, int[] beginPos) throws IOException {
-        int clPos = Utils.indexOf(CONTENT_LENGTH_BYTES, bytes, from[0], to);
-        if (clPos < 0) {
-            // some garbage to ignore
-            return -1;
-        }
-        beginPos[0] = clPos;
-        clPos += CONTENT_LENGTH_BYTES.length;
-        int end = Utils.indexOf(EOL, bytes, clPos, to);
-        if (end < 0) {
-            /*
-            Logger.getLogger(NodeJSDebugger.class.getName()).warning("Data inconsistency: no EOL for "+
-                             CONTENT_LENGTH_STR+" in "+
-                             new String(bytes, CHAR_SET));
-            */
-            return -1;
-        }
-        String clStr = new String(bytes, clPos, end - clPos, CHAR_SET);
-        int contentLength;
-        try {
-            contentLength = Integer.parseInt(clStr);
-        } catch (NumberFormatException nfex) {
-            throw new IOException("Data inconsistency: can not read content length from '"+clStr+"' in "+
-                                  new String(bytes, CHAR_SET));
-            //return -1;
-        }
-        from[0] = end + EOL.length;
-        return contentLength;
-    }
-
-    private String readTools(byte[] bytes, int[] fromPtr, int n) {
-        int end = Utils.indexOf(EOL, bytes, fromPtr[0], n);
-        if (end < 0) {
-            return null;
-        }
-        int from = fromPtr[0];
-        fromPtr[0] = end + EOL.length;
-        return new String(bytes, from, end - from, CHAR_SET);
-    }
-
     private void received(Listener listener, String tools, String message) throws ParseException {
         //System.out.println("RECEIVED: tools: '"+tools+"', message: '"+message+"'");
         fireReceived(message);
@@ -333,20 +284,6 @@ public final class ClientConnection {
         void response(V8Response response);
         
         void event(V8Event event);
-    }
-    
-    private static final class LinkedJSONContainterFactory implements ContainerFactory {
-
-        @Override
-        public Map createObjectContainer() {
-            return new LinkedJSONObject();
-        }
-
-        @Override
-        public List creatArrayContainer() {
-            return new JSONArray();
-        }
-        
     }
     
 }
