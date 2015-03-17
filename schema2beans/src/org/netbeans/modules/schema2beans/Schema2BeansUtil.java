@@ -212,7 +212,7 @@ public class Schema2BeansUtil {
             }
             if (foundBean != null) {
                 mergeBeans(nodeMap, foundBean, patternBean);
-            } else if (isRelevantNode(foundChild)) {
+            } else if (isRelevantNode(foundChild) && foundChild.hasChildNodes()) {
                 mergeNode(nodeMap, foundChild, patternChild);
             } else {
                 foundChild.setNodeValue(patternChild.getNodeValue());
@@ -330,7 +330,7 @@ public class Schema2BeansUtil {
         }
         if (trueList.size() == 1) {
             return trueList;
-        } else if (trueList.size() == 0) {
+        } else if (trueList.isEmpty()) {
             trueList = falseList;
         }
 
@@ -345,7 +345,31 @@ public class Schema2BeansUtil {
         }
         if (trueList.size() == 1) {
             return trueList;
-        } else if (trueList.size() == 0) {
+        } else if (trueList.isEmpty()) {
+            trueList = falseList;
+        }
+
+        if (patternNode.getChildNodes().getLength() == 1) {
+            Node child = patternNode.getFirstChild();
+            if (child.getNodeType() == Node.TEXT_NODE) {
+                for (Iterator it = trueList.iterator(); it.hasNext();) {
+                    Node node = (Node) it.next();
+                    boolean keep = false;
+                    if (node.getChildNodes().getLength() == 1) {
+                        Node otherChild = node.getFirstChild();
+                        keep = otherChild.getNodeType() == Node.TEXT_NODE
+                                && equals(child.getTextContent(), otherChild.getTextContent());
+                    }
+                    if (!keep) {
+                        it.remove();
+                        falseList.add(node);
+                    }
+                }
+            }
+        }
+        if (trueList.size() == 1) {
+            return trueList;
+        } else if (trueList.isEmpty()) {
             trueList = falseList;
         }
 
@@ -358,7 +382,7 @@ public class Schema2BeansUtil {
                 falseList.add(node);
             }
         }
-        if (trueList.size() == 0) {
+        if (trueList.isEmpty()) {
             return falseList;
         } else {
             return trueList;
