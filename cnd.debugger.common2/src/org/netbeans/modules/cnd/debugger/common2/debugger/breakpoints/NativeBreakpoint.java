@@ -63,6 +63,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -226,7 +227,7 @@ public abstract class NativeBreakpoint
 
 	// create one for children too so getChildren() naturally
 	// returns a 0-sized array
-	children = new ArrayList<NativeBreakpoint>(1);
+	children = new CopyOnWriteArrayList<NativeBreakpoint>();
 
 	if (!isRestored())
 	    updateTimestamp();	// record creation date
@@ -421,7 +422,7 @@ public abstract class NativeBreakpoint
 	*/
     }
 
-    private final ArrayList<NativeBreakpoint> children;
+    private final CopyOnWriteArrayList<NativeBreakpoint> children;
 
     private NativeBreakpoint parent;
 
