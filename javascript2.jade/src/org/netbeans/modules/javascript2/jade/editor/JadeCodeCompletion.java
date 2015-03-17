@@ -248,14 +248,14 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         if (tagName != null && !tagName.isEmpty() && htmlTag != null) {
             if (prefix.isEmpty()) {
                 if (tagName.isEmpty()) {
-                    resultAttrs = getAllAttributes(htmlModel);
+                    resultAttrs = getAllAttributes(htmlModel, prefix);
                 } else {
                     resultAttrs = htmlTag.getAttributes();
                 }
             } else {
                 Collection<HtmlTagAttribute> attributes = htmlTag.getAttributes();
                 if (tagName.isEmpty() || htmlTag.getTagClass() == HtmlTagType.UNKNOWN) {
-                    attributes = getAllAttributes(htmlModel);
+                    attributes = getAllAttributes(htmlModel, prefix);
                 }
                 resultAttrs = new ArrayList<>();
                 for (HtmlTagAttribute htmlTagAttribute : attributes) {
@@ -265,7 +265,7 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
                 }
             }
         } else {
-            resultAttrs = getAllAttributes(htmlModel);
+            resultAttrs = getAllAttributes(htmlModel, prefix);
         }
         for (HtmlTagAttribute attribute: resultAttrs) {
             resultList.add(JadeCompletionItem.create(request, attribute));
@@ -362,13 +362,13 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         return tagName;
     }
 
-    private Collection<HtmlTagAttribute> getAllAttributes(HtmlModel htmlModel) {
+    private Collection<HtmlTagAttribute> getAllAttributes(HtmlModel htmlModel, String prefix) {
         Map<String, HtmlTagAttribute> result = new HashMap<String, HtmlTagAttribute>();
         for (HtmlTag htmlTag : htmlModel.getAllTags()) {
             for (HtmlTagAttribute htmlTagAttribute : htmlTag.getAttributes()) {
                 // attributes can probably differ per tag so we can just offer some of them,
                 // at least for the CC purposes it should be complete list of attributes for unknown tag
-                if (!result.containsKey(htmlTagAttribute.getName())) {
+                if (!result.containsKey(htmlTagAttribute.getName()) && htmlTagAttribute.getName().startsWith(prefix)) {
                     result.put(htmlTagAttribute.getName(), htmlTagAttribute);
                 }
             }

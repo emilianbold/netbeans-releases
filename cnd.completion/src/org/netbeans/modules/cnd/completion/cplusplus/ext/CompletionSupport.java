@@ -97,6 +97,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement.Kind;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.CalcTemplateTypeStrategy;
@@ -124,10 +125,12 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.iterateTypeChain;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.howMany;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Qualificator;
+import org.openide.util.Pair;
 
 /**
  *
@@ -303,28 +306,8 @@ public final class CompletionSupport implements DocumentListener {
         }
     }
     
-    public static boolean isCpp98OrMore(CsmFile csmFile) {
-        if (csmFile != null) {
-            if (APTLanguageSupport.getInstance().isLanguageCpp(CsmBaseUtilities.getFileLanguage(csmFile))) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public static boolean isCpp11OrMore(CsmFile csmFile) {
-        if (csmFile != null) {
-            if (APTLanguageSupport.getInstance().isLanguageCpp(CsmBaseUtilities.getFileLanguage(csmFile))) {
-                if (APTLanguageSupport.getInstance().isFlavourSufficient(CsmBaseUtilities.getFileLanguageFlavor(csmFile), APTLanguageSupport.FLAVOR_CPP11)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     public static boolean areLambdasEnabled(CsmFile csmFile) {
-        return isCpp11OrMore(csmFile);
+        return CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
     }
     
     public static boolean areTemplatesEnabled(CsmFile csmFile) {
@@ -341,7 +324,7 @@ public final class CompletionSupport implements DocumentListener {
     private static int tryGetSeparatorFromModel(CsmFile file, int pos, FileReferencesContext fileReferences) {
         // Enable only for cpp11 ant later because for previous standards simple 
         // text based logic worked decently
-        if (isCpp11OrMore(file)) {
+        if (CsmFileInfoQuery.getDefault().isCpp11OrLater(file)) {
             CsmContext context = CsmOffsetResolver.findContext(file, pos, fileReferences);
             CsmObject lastObj = context.getLastObject();
             if (CsmKindUtilities.isLambda(lastObj)) {
@@ -1378,10 +1361,13 @@ public final class CompletionSupport implements DocumentListener {
 
                                     // Handle declaration of function types
                                     if (tplParam.isTypeBased() && canBeFunctionType(paramInst)) {
+                                        Pair<String, String> aptLangFlavor = CsmFileInfoQuery.getDefault().getAPTLanguageFlavor(
+                                                CsmFileInfoQuery.getDefault().getFileLanguageFlavor(context.getContextFile())
+                                        );
                                         RenderedExpression renderedExpression = renderExpression(paramInst, new ExpressionBuilderImpl.Creator());
                                         type = CsmTypes.createType(renderedExpression.text, context.getContextScope(), new CsmTypes.SequenceDescriptor(
-                                            CsmBaseUtilities.getFileLanguage(context.getContextFile()), 
-                                            CsmBaseUtilities.getFileLanguageFlavor(context.getContextFile()), 
+                                            aptLangFlavor.first(), 
+                                            aptLangFlavor.second(), 
                                             false, 
                                             true, 
                                             false, 
