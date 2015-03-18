@@ -59,6 +59,8 @@ import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -70,17 +72,15 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.web.clientproject.api.util.WatchedFile;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 // XXX should use WatchedFile
 /**
@@ -105,15 +105,11 @@ public final class JsonFile {
 
     };
 
-    private final String fileName;
-    private final FileObject directory;
+    private final WatchedFile watchedFile;
     private final List<Pair<String, String[]>> watchedFields;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private final FileChangeListener directoryListener = new DirectoryListener();
-    private final FileChangeListener jsonFileListener = new JsonFileListener();
+    private final ChangeListener watchedFileChangeListener = new WatchedFileChangeListener();
 
-    // @GuardedBy("this")
-    private File jsonFile;
     // @GuardedBy("this")
     private Map<String, Object> content;
     private volatile boolean contentInited = false;
@@ -126,14 +122,10 @@ public final class JsonFile {
      * @param watchedFields content fields that are watched for changes
      */
     public JsonFile(String fileName, FileObject directory, WatchedFields watchedFields) {
-        assert fileName != null;
-        assert directory != null;
-        assert directory.isFolder() : "Must be folder: " + directory;
-        assert watchedFields != null;
-        this.fileName = fileName;
-        this.directory = directory;
+        Parameters.notNull("watchedFields", watchedFields); // NOI18N
+        watchedFile = WatchedFile.create(fileName, directory);
         this.watchedFields = watchedFields.getData();
-        this.directory.addFileChangeListener(directoryListener);
+        watchedFile.addChangeListener(WeakListeners.change(watchedFileChangeListener, watchedFile));
     }
 
     /**
@@ -141,7 +133,7 @@ public final class JsonFile {
      */
     public void cleanup() {
         contentInited = false;
-        clear(true, false);
+        clear(false);
     }
 
     /**
@@ -167,7 +159,7 @@ public final class JsonFile {
      * @return {@code true} if the JSON file exists on disk, {@code false} otherwise
      */
     public boolean exists() {
-        return getJsonFile().isFile();
+        return watchedFile.exists();
     }
 
     /**
@@ -175,7 +167,7 @@ public final class JsonFile {
      * @return JSON file
      */
     public File getFile() {
-        return getJsonFile();
+        return watchedFile.getFile();
     }
 
     /**
@@ -183,15 +175,15 @@ public final class JsonFile {
      * @return full path of the JSON file
      */
     public String getPath() {
-        return getJsonFile().getAbsolutePath();
+        return getFile().getAbsolutePath();
     }
 
     /**
      * Refreshes the file (when it was modified externally).
      */
     public void refresh() {
-        clear(false, false);
-        FileUtil.toFileObject(getJsonFile()).refresh();
+        clear(false);
+        FileUtil.toFileObject(getFile()).refresh();
     }
 
     /**
@@ -207,12 +199,12 @@ public final class JsonFile {
         if (content != null) {
             return new LinkedHashMap<>(content);
         }
-        File file = getJsonFile();
+        File file = getFile();
         if (!file.isFile()) {
             return null;
         }
         JSONParser parser = new JSONParser();
-        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(jsonFile), StandardCharsets.UTF_8))) {
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             content = (Map<String, Object>) parser.parse(reader, CONTAINER_FACTORY);
         } catch (ParseException ex) {
             LOGGER.log(Level.INFO, file.getAbsolutePath(), ex);
@@ -275,7 +267,7 @@ public final class JsonFile {
         assert !EventQueue.isDispatchThread();
         assert exists();
         initContent();
-        DataObject dataObject = DataObject.find(FileUtil.toFileObject(getJsonFile()));
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(getFile()));
         EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
         assert editorCookie != null : "No EditorCookie for " + dataObject;
         boolean modified = editorCookie.isModified();
@@ -294,7 +286,7 @@ public final class JsonFile {
         if (!modified) {
             editorCookie.saveDocument();
         }
-        clear(false);
+        clear(true);
     }
 
     void setContent(Document document, List<String> fieldHierarchy, Object value) {
@@ -497,45 +489,14 @@ public final class JsonFile {
         getContent();
     }
 
-    private synchronized File getJsonFile() {
-        if (jsonFile == null) {
-            jsonFile = new File(FileUtil.toFile(directory), fileName);
-            try {
-                FileUtil.addFileChangeListener(jsonFileListener, jsonFile);
-                LOGGER.log(Level.FINE, "Started listening to {0}", jsonFile);
-            } catch (IllegalArgumentException ex) {
-                // ignore, already listening
-                LOGGER.log(Level.FINE, "Already listening to {0}", jsonFile);
-            }
-        }
-        return jsonFile;
-    }
-
-    void clear(boolean newFile) {
-        clear(newFile, true);
-    }
-
-    void clear(boolean newFile, boolean fireChanges) {
+    void clear(boolean fireChanges) {
         Map<String, Object> oldContent;
         Map<String, Object> newContent = null;
         synchronized (this) {
             oldContent = content;
             if (content != null) {
-                LOGGER.log(Level.FINE, "Clearing cached content of {0}", jsonFile);
+                LOGGER.log(Level.FINE, "Clearing cached content of {0}", watchedFile);
                 content = null;
-            }
-            if (newFile) {
-                if (jsonFile != null) {
-                    try {
-                        FileUtil.removeFileChangeListener(jsonFileListener, jsonFile);
-                        LOGGER.log(Level.FINE, "Stopped listenening to {0}", jsonFile);
-                    } catch (IllegalArgumentException ex) {
-                        // not listeneing yet, ignore
-                        LOGGER.log(Level.FINE, "Not listenening yet to {0}", jsonFile);
-                    }
-                    LOGGER.log(Level.FINE, "Clearing cached json path {0}", jsonFile);
-                }
-                jsonFile = null;
             }
             if (fireChanges) {
                 newContent = getContent();
@@ -625,34 +586,10 @@ public final class JsonFile {
 
     }
 
-    private final class DirectoryListener extends FileChangeAdapter {
+    private final class WatchedFileChangeListener implements ChangeListener {
 
         @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            clear(true);
-        }
-
-    }
-
-    private final class JsonFileListener extends FileChangeAdapter {
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            clear(false);
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            clear(false);
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            clear(false);
-        }
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
+        public void stateChanged(ChangeEvent e) {
             clear(true);
         }
 
