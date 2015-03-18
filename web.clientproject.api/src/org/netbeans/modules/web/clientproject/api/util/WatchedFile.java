@@ -165,6 +165,11 @@ public final class WatchedFile {
         fireChange();
     }
 
+    @Override
+    public String toString() {
+        return "WatchedFile{" + "directory=" + directory + ", filename=" + filename + '}'; // NOI18N
+    }
+
     //~ Inner classes
 
     private final class DirectoryListener extends FileChangeAdapter {
