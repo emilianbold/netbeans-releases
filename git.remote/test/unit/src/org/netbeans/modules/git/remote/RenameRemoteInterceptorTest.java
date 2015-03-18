@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ClassForAllEnvironments;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -98,7 +97,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("renameA2B_CreateA_DO").contains(testName);
+        return Arrays.asList().contains(testName);
     }
 
     @Override
@@ -191,7 +190,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         renameDO(fromFile, toFile);
         
         // test
-        if (Utilities.isMac()) {
+        if (VCSFileProxySupport.isMac(repositoryLocation)) {
             assertTrue(Arrays.asList(toFile.getParentFile().listFiles()).contains(toFile.getName()));
             assertFalse(Arrays.asList(fromFile.getParentFile().listFiles()).contains(fromFile.getName()));
         } else {
@@ -218,7 +217,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         renameFO(fromFile, toFile);
         
         // test
-        if (Utilities.isWindows() || Utilities.isMac()) {
+        if (VCSFileProxySupport.isMac(repositoryLocation)) {
             assertTrue(Arrays.asList(toFile.getParentFile().listFiles()).contains(toFile.getName()));
             assertFalse(Arrays.asList(fromFile.getParentFile().listFiles()).contains(fromFile.getName()));
         } else {
@@ -247,7 +246,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         renameDO(fromFolder, toFolder);
         
         // test
-        if (Utilities.isWindows() || Utilities.isMac()) {
+        if (VCSFileProxySupport.isMac(repositoryLocation)) {
             assertTrue(Arrays.asList(toFolder.getParentFile().listFiles()).contains(toFolder.getName()));
             assertFalse(Arrays.asList(fromFolder.getParentFile().listFiles()).contains(fromFolder.getName()));
         } else {
@@ -277,7 +276,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         renameFO(fromFolder, toFolder);
         
         // test
-        if (Utilities.isWindows() || Utilities.isMac()) {
+        if (VCSFileProxySupport.isMac(repositoryLocation)) {
             assertTrue(Arrays.asList(toFolder.getParentFile().listFiles()).contains(toFolder.getName()));
             assertFalse(Arrays.asList(fromFolder.getParentFile().listFiles()).contains(fromFolder.getName()));
         } else {
@@ -484,6 +483,8 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         // test
         assertTrue(fileB.exists());
         assertTrue(fileA.exists());
+if(false);
+else    getCache().refreshAllRoots(fileA);
 
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileA).getStatus());
         FileInformation info = getCache().getStatus(fileB);
