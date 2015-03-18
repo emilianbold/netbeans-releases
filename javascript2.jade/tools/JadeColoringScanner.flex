@@ -254,7 +254,7 @@ nmchar	=	[_a-zA-Z0-9-]|{nonascii}|{escape}
 
 HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 HtmlIdentifierPart = [[:letter:][:digit:]]+[[:letter:][:digit:]\-]*
-HtmlIdentifier = {HtmlIdentifierPart}(:{HtmlIdentifierPart})*
+HtmlIdentifier = {HtmlIdentifierPart}({HtmlIdentifierPart})*
 CssIdentifier = -?{nmstart}{nmchar}*
 LineTerminator = \r|\n|\r\n
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
