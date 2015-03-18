@@ -232,6 +232,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state IN_FILTER_BLOCK
 %state IN_FILTER_BLOCK_AFTER_EOL
 %state AFTER_INCLUDE
+%state AFTER_BLOCK
 %state AFTER_COLON_IN_TAG
 %state AFTER_EACH
 %state JAVASCRIPT_AFTER_EACH
@@ -311,7 +312,7 @@ UnbufferedComment = "//-"
     "default"                       {   yybegin(AFTER_TAG); // handling : after the keyword
                                         return JadeTokenId.KEYWORD_DEFAULT;}
 
-    "block"                         {   yybegin(AFTER_TAG);
+    "block"                         {   yybegin(AFTER_BLOCK);
                                         return JadeTokenId.KEYWORD_BLOCK;}
     "extends"                       {   yybegin(FILEPATH);
                                         return JadeTokenId.KEYWORD_EXTENDS;}
@@ -579,6 +580,14 @@ UnbufferedComment = "//-"
 <AFTER_INCLUDE> {
     ":"{Input}                      {   return JadeTokenId.FILTER; }    
     {AnyChar}                       {   yypushback(1); yybegin(FILEPATH); }
+}
+
+<AFTER_BLOCK>    {
+    {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
+    {Input}                         {   yybegin(TEXT_LINE);
+                                        return JadeTokenId.BLOCK_NAME;}
+    {LineTerminator}                {   yybegin(AFTER_EOL);
+                                        return JadeTokenId.EOL; }
 }
 
 <JAVASCRIPT> {
