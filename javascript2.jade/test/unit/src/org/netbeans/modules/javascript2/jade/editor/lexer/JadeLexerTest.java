@@ -245,7 +245,7 @@ public class JadeLexerTest extends CslTestBase {
     }
     
     public void testIteration05() throws Exception {
-        checkLexer("testfiles/lexer/iteration04.jade");
+        checkLexer("testfiles/lexer/iteration05.jade");
     }
     
     public void testMixin01() throws Exception {
@@ -362,6 +362,10 @@ public class JadeLexerTest extends CslTestBase {
     
     public void testIssue250516() throws Exception {
         checkLexer("testfiles/lexer/issue250516.jade");
+    }
+    
+    public void testIssue250537() throws Exception {
+        checkLexer("testfiles/lexer/issue250537.jade");
     }
     
     private void checkLexer(final String filePath) throws Exception {

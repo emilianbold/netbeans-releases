@@ -1,5 +1,5 @@
 [EOL(1):\n]
-[TAG(17):tagname:withcolon][EOL(1):\n]
+[TAG(7):tagname][OPERATOR_COLON(1)::][TAG(9):withcolon][EOL(1):\n]
 [EOL(1):\n]
 [EOL(1):\n]
 [TAG(5):first][OPERATOR_COLON(1)::][WHITESPACE(1): ][TAG(6):second][OPERATOR_COLON(1)::][WHITESPACE(1): ][TAG(5):third][WHITESPACE(1): ][TEXT(6):: text][EOL(1):\n]
