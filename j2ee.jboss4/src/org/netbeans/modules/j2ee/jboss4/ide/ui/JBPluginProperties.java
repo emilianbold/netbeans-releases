@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -168,7 +169,7 @@ public class JBPluginProperties {
 
     public boolean isCurrentServerLocationValid() {
         if (getInstallLocation() != null) {
-            return JBPluginUtils.isGoodJBServerLocation(new File(getInstallLocation()));
+            return JBPluginUtils.isGoodJBServerLocation(new File(getInstallLocation()), (Version) null);
         }
 
         return false;
