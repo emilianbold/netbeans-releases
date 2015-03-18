@@ -221,10 +221,8 @@ public final class Composer {
         return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_install());
     }
 
-    @NbBundle.Messages("Composer.run.installDev=Composer (install dev)")
     public Future<Integer> installDev(PhpModule phpModule) {
-        assert phpModule != null;
-        return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_installDev(), Collections.singletonList(DEV_PARAM));
+        return install(phpModule);
     }
 
     @NbBundle.Messages("Composer.run.installNoDev=Composer (install no-dev)")
@@ -239,10 +237,8 @@ public final class Composer {
         return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_update());
     }
 
-    @NbBundle.Messages("Composer.run.updateDev=Composer (update dev)")
     public Future<Integer> updateDev(PhpModule phpModule) {
-        assert phpModule != null;
-        return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateDev(), Collections.singletonList(DEV_PARAM));
+        return update(phpModule);
     }
 
     @NbBundle.Messages("Composer.run.updateNoDev=Composer (update no-dev)")

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,6 +57,7 @@ import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -65,18 +66,43 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.util.NbBundle;
 
 /**
- * 
- * @author Ludovic Champenois
- * @author Peter Williams
+ * Java EE server configuration API support for GlassFish servers before 3.1.
+ * Covers GlassFish servers before 3.1. Old {@code sun-resources.xml} files are used.
+ * <p/>
+ * @author Ludovic Champenois, Peter Williams, Tomas Kraus
  */
 public class Hk2Configuration extends GlassfishConfiguration implements DeploymentConfiguration {
 
-    public Hk2Configuration(J2eeModule module) throws ConfigurationException {
-        super(module);
+    /**
+     * Creates an instance of Java EE server configuration API support
+     * for GlassFish servers before 3.1.
+     * <p/>
+     * @param module  Java EE module (project).
+     * @param version GlassFish server version.
+     * @throws ConfigurationException when there is a problem with Java EE server
+     *         configuration initialization.
+     */
+    public Hk2Configuration(
+            final J2eeModule module, final GlassFishVersion version
+    ) throws ConfigurationException {
+        super(module, version);
     }
 
-    public Hk2Configuration(J2eeModule module, J2eeModuleHelper jmh) throws ConfigurationException {
-        super(module, jmh);
+    /**
+     * Creates an instance of Java EE server configuration API support
+     * for GlassFish servers before 3.1 with existing {@link J2eeModuleHelper} instance.
+     * <p/>
+     * @param module       Java EE module (project).
+     * @param moduleHelper Already existing {@link J2eeModuleHelper} instance.
+     * @param version      GlassFish server version.
+     * @throws ConfigurationException when there is a problem with Java EE server
+     *         configuration initialization.
+     */
+    public Hk2Configuration(
+            final J2eeModule module, final J2eeModuleHelper jmh,
+            final GlassFishVersion version
+    ) throws ConfigurationException {
+        super(module, jmh, version);
     }
 
     @Deprecated
@@ -88,8 +114,8 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
     // DatasourceConfiguration support
     // ------------------------------------------------------------------------
     @Override
-    public Set<Datasource> getDatasources() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory());
+    public Set<Datasource> getDatasources() throws ConfigurationException {
+        return Hk2DatasourceManager.getDatasources(module, version);
     }
 
     @Override
@@ -98,25 +124,20 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
     }
 
     @Override
-    public Datasource createDatasource(String jndiName, String url, String username, String password, String driver) throws UnsupportedOperationException, org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException, DatasourceAlreadyExistsException {
-        File resourceDir = module.getResourceDirectory();
-        if (resourceDir == null) {
-            // Unable to create JDBC data source for resource ref.
-//            postResourceError(NbBundle.getMessage(ModuleConfigurationImpl.class,
-//                    "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Null Resource Folder");
-            throw new ConfigurationException(NbBundle.getMessage(
-                    ModuleConfigurationImpl.class, "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
-        }
-
-        return Hk2DatasourceManager.createDataSource(jndiName, url, username, password, driver, resourceDir,"sun-resources");
+    public Datasource createDatasource(
+            final String jndiName, final String url, final String username,
+            final String password, final String driver
+    ) throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
+        return Hk2DatasourceManager.createDataSource(
+                jndiName, url, username, password, driver, module, version);
     }
 
     // ------------------------------------------------------------------------
     // MessageDestinationConfiguration support
     // ------------------------------------------------------------------------
     @Override
-    public Set<MessageDestination> getMessageDestinations() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+    public Set<MessageDestination> getMessageDestinations()
+            throws ConfigurationException {
         return Hk2MessageDestinationManager.getMessageDestinations(module.getResourceDirectory(),"sun-resources");
     }
 

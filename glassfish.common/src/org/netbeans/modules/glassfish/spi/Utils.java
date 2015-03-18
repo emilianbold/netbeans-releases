@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -61,8 +61,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
- * @author vbk
+ * Utilities.
+ * <p/>
+ * @author Vince Kraemer
  */
 public class Utils {
 
@@ -416,7 +417,7 @@ public class Utils {
 
     /** 
      * Use the server instance id for a project to decide whether the server specific DD/resource
-     * file should use the glassfish- prefix.
+     * file should use the {@code glassfish-} prefix.
      * 
      * @param serverInstanceID
      * @return
