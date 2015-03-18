@@ -104,9 +104,14 @@ public final class ClientConnection {
         String tools = null;
         StringBuilder message = new StringBuilder();
         Map<String, String> header = null;
+        int from = 0;
         while ((n = serverIn.read(buffer, readOffset, BUFFER_SIZE - readOffset)) > 0) {
             n += readOffset;
-            int from = 0;
+            /*System.err.print("readOffset = "+readOffset+" => n = "+n+" : [");
+            for (int ri = readOffset; ri < n; ri++) {
+                System.err.print(Integer.toHexString(buffer[ri])+",");
+            }
+            System.err.println("\b]");*/
             do {
                 if (contentLength < 0) {
                     fromPtr[0] = from;
@@ -130,7 +135,12 @@ public final class ClientConnection {
                         from = fromPtr[0];
                     }
                 }
+                if (from >= n) {
+                    break;
+                }
                 int length = Math.min(contentLength - message.length(), n - from);
+                //System.err.println("buffer.length = "+buffer.length+", from = "+from+", length = "+length);
+                //System.err.println("  appending: "+new String(buffer, from, length, CHAR_SET));
                 message.append(new String(buffer, from, length, CHAR_SET));
                 from += length;
                 if (message.length() == contentLength) {
@@ -151,8 +161,10 @@ public final class ClientConnection {
             if (from < n) {
                 System.arraycopy(buffer, from, buffer, 0, n - from);
                 readOffset = n - from;
+                from = 0;
             } else {
                 readOffset = 0;
+                from -= n; // from might be > n when there's some overlap of e.g. \r\n
             }
         }
         

@@ -209,6 +209,7 @@ public final class NameMatcherFactory {
                 replace(")","").        //NOI18N
                 replace("\\","").       //NOI18N
                 replace(".", "\\.").    //NOI18N
+                replace("+","\\+").     //NOI18N
                 replace( "*", ".*" ).   //NOI18N
                 replace( '?', '.' );    //NOI18N
         if (prefix) {

@@ -495,7 +495,7 @@ public final class CompilationInfoImpl {
             this.root = root;
             this.jfo = jfo;
             this.cpInfo = cpInfo;
-            this.source2Errors = new HashMap<JavaFileObject, TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>>();
+            this.source2Errors = new HashMap<>();
         }
         
         @Override
@@ -512,9 +512,8 @@ public final class CompilationInfoImpl {
                 Collection<Diagnostic<? extends JavaFileObject>> diags = errors.get((int) message.getPosition());
 
                 if (diags == null) {
-                    errors.put((int) message.getPosition(), diags = new ArrayList<Diagnostic<? extends JavaFileObject>>());
+                    errors.put((int) message.getPosition(), diags = new ArrayList<>());
                 }
-                
                 diags.add(message);
             }
         }
@@ -524,31 +523,31 @@ public final class CompilationInfoImpl {
             if (isIncompleteClassPath()) {
                 if (root != null && JavaIndex.hasSourceCache(root.toURL(), false)) {
                     errors = source2Errors.get(file);
-                if (errors == null) {
-                    source2Errors.put(file, errors = new TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>());
+                    if (errors == null) {
+                        source2Errors.put(file, errors = new TreeMap<>());
                         if (this.jfo != null && this.jfo == file) {
-                            errors.put(
-                                -1,
-                                Collections.<Diagnostic<? extends JavaFileObject>>singleton(new IncompleteClassPath(this.jfo)));
-                }
+                            final List l;
+                            errors.put(-1, l = new ArrayList<>());
+                            l.add(new IncompleteClassPath(this.jfo));
+                        }
                     }
                 } else {
                     errors = new TreeMap<>();
                     if (this.jfo != null && this.jfo == file) {
-                        errors.put(
-                            -1,
-                            Collections.<Diagnostic<? extends JavaFileObject>>singleton(new IncompleteClassPath(this.jfo)));
+                        final List l;
+                        errors.put(-1, l = new ArrayList<>());
+                        l.add(new IncompleteClassPath(this.jfo));
                     }
                 }
             } else {
                 errors = source2Errors.get(file);
                 if (errors == null) {
-                    source2Errors.put(file, errors = new TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>());
+                    source2Errors.put(file, errors = new TreeMap<>());
                 }
             }
-                return errors;
+            return errors;
         }
-        
+
         final boolean hasPartialReparseErrors () {
             // #236654: warnings should not stop processing of the reparsed method
             return this.partialReparseErrors != null && partialReparseRealErrors;
