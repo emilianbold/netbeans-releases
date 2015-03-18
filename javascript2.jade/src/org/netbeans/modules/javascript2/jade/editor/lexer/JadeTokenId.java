@@ -124,6 +124,8 @@ public enum JadeTokenId implements TokenId {
     FILE_PATH(null, "file-path"), // NOI18N
     FILTER(null, "filter"), //NOI18N
     FILTER_TEXT(null, "filter-text"), //NOI18N
+    
+    BLOCK_NAME(null, "block-name"), //NOI18N
     // html 
     TAG (null, "html-tag"), //NOI18N
     ATTRIBUTE(null, "html-attribute"), //NOI18N
