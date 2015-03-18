@@ -598,7 +598,7 @@ final class Worker implements Runnable {
                 final Project project = FileOwnerQuery.getOwner(file);
                 FileDescriptor fd = new FileDescription(
                         file,
-                        r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
+                        r.getRelativePath(),
                         project,
                         request.getLine());
                 boolean preferred = project != null && request.getCurrentProject() != null ?

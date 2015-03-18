@@ -703,7 +703,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 jlName.setText(formattedFileName);
                 jlPath.setIcon(null);
                 jlPath.setHorizontalAlignment(SwingConstants.LEFT);
-                jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
+                jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : ""); //NOI18N
                 setProjectName(jlPrj, fd.getProjectName());
                 jlPrj.setIcon(fd.getProjectIcon());
                 if (!isSelected) {
