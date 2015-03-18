@@ -79,9 +79,9 @@ public final class V8Event extends V8Packet {
     private final PropertyBoolean success;
     private final String errorMessage;
     
-    V8Event(long sequence, Kind eventKind, V8Body body,
-            ReferencedValue[] referencedValues, Boolean running,
-            Boolean success, String errorMessage) {
+    public V8Event(long sequence, Kind eventKind, V8Body body,
+                   ReferencedValue[] referencedValues, Boolean running,
+                   Boolean success, String errorMessage) {
         super(sequence, V8Type.event);
         this.eventKind = eventKind;
         this.body = body;
