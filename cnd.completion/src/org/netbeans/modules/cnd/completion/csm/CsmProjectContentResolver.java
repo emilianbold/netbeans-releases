@@ -749,20 +749,27 @@ public final class CsmProjectContentResolver {
 
     private void fillFileLocalIncludeNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match,
             CsmFile file, List<CsmFunction> out, boolean needDeclFromUnnamedNS) {
-        CsmDeclaration.Kind kinds[] = {
-            CsmDeclaration.Kind.FUNCTION,
-            CsmDeclaration.Kind.FUNCTION_DEFINITION,
-            CsmDeclaration.Kind.FUNCTION_LAMBDA,
-            CsmDeclaration.Kind.FUNCTION_FRIEND,
-            CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
-        };
-        Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
-        getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
+        if (!ns.isGlobal()) {
+            CsmDeclaration.Kind kinds[] = {
+                CsmDeclaration.Kind.FUNCTION,
+                CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                CsmDeclaration.Kind.FUNCTION_LAMBDA,
+                CsmDeclaration.Kind.FUNCTION_FRIEND,
+                CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
+            };
+            Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
+            getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
 
-        List<CsmFunction> funs = new ArrayList<CsmFunction>();
-        filterDeclarations(se.iterator(), funs, kinds, strPrefix, match, false);
-        funs = filterFunctionDefinitions(funs);
-        out.addAll(funs);
+            List<CsmFunction> funs = new ArrayList<CsmFunction>();
+            filterDeclarations(se.iterator(), funs, kinds, strPrefix, match, false);
+            funs = filterFunctionDefinitions(funs);
+            out.addAll(funs);
+        } else {
+            // Global ns doesn't have definitions, so search in file instead
+            Map<CharSequence, CsmFunction> allLocalDecls = new HashMap<CharSequence, CsmFunction>();
+            fillFileLocalFunctions(strPrefix, match, file, needDeclFromUnnamedNS, false, allLocalDecls);
+            out.addAll(allLocalDecls.values());
+        }
     }
 
     private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file,
@@ -1589,7 +1596,7 @@ public final class CsmProjectContentResolver {
         }
         return res;
     }
-
+    
     ////////////////////////////////////////////////////////////////////////////
     // staff to help with visibility handling
     private static final class VisibilityInfo {

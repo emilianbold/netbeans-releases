@@ -452,6 +452,13 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug249613.cpp", 25, 25, "bug249613.cpp", 17, 13);
     }        
     
+    public void testBug251256() throws Exception {
+        // Bug 251256 - Unable to resolve static functions dereferenced with ::
+        performTest("bug251256.cpp", 10, 10, "bug251256.cpp", 1, 1);
+        performTest("bug251256.cpp", 11, 10, "bug251256.cpp", 3, 1);
+        performTest("bug251256.cpp", 12, 10, "bug251256.cpp", 6, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
