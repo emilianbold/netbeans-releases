@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.glassfish.eecommon.api.config;
 
-import org.netbeans.modules.glassfish.eecommon.api.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -54,6 +53,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.glassfish.eecommon.api.Utils;
+import org.netbeans.modules.glassfish.eecommon.api.XmlFileCreator;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.utils.OsUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -89,37 +92,217 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Basic j2eeserver configuration api support for V2 and V3 plugins
- *
- * @author Peter Williams
+ * Basic Java EE server configuration API support for V2, V3 and V4 plugins.
+ * <p/>
+ * @author Peter Williams, Tomas Kraus
  */
 public abstract class GlassfishConfiguration implements
         ContextRootConfiguration,
         EjbResourceConfiguration,
         MessageDestinationConfiguration,
-        DatasourceConfiguration
-    {
+        DatasourceConfiguration {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish Java EE common module Logger. */
+    private static final Logger LOGGER = Logger.getLogger("glassfish-eecommon");
+
+    /** GlassFish resource file suffix is {@code .xml}. */
+    private static final String RESOURCE_FILES_SUFFIX = ".xml";
+
+   /** List of base file names containing server resources:<ul>
+      * <li><i>[0]</i> points to current name used since GlassFich v3.</li>
+      * <li><i>[1]</i> points to old name used before GlassFich v3.</li>
+      * <ul>*/
+    static final String[] RESOURCE_FILES = {
+        "glassfish-resources" + RESOURCE_FILES_SUFFIX,
+        "sun-resources" + RESOURCE_FILES_SUFFIX
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Create resource file path fragment for given Java EE module.
+     * <i>Internal helper method.</i>
+     * <p/>
+     * @param module   Java EE module (project).
+     * @param fileName Resources file name.
+     * @return Resource file path fragment for given Java EE module.
+     */
+    private static String resourceFilePath(final J2eeModule module,final String fileName) {
+        String configDir = JavaEEModule.getConfigDir(module.getType());
+        if (configDir == null) {
+            throw new IllegalArgumentException("Unknown Java EE module type.");
+        }
+        return OsUtils.joinPaths(configDir, fileName);
+    }
+
+    /**
+     * Get existing {@code RESOURCE_FILES} array indexes for provided GlassFish
+     * server version.
+     * <br/>
+     * <i>Internal {@link #getExistingResourceFile(J2eeModule, GlassFishVersion)
+     * helper method.</i>
+     * <p/>
+     * @param version GlassFish server version.
+     * @return An array of {@code RESOURCE_FILES} array indexes pointing
+     *         to resource files to search for.
+     */
+    private static int[] versionToResourceFilesIndexes(
+            final GlassFishVersion version) {
+        // All files for unknown version.
+        if (version == null) {
+            return new int[]{0,1};
+        }
+        // glassfish-resources.xml for v4
+        if (GlassFishVersion.ge(version, GlassFishVersion.GF_4)) {
+            return new int[]{0};
+        }
+        // glassfish-resources.xml and sun-resources.xml for v3
+        if (GlassFishVersion.ge(version, GlassFishVersion.GF_3_1)) {
+            return new int[]{0,1};
+        // sun-resources.xml for older
+        } else {
+            return new int[]{1};
+        }
+    }
+
+    /**
+     * Get new {@code RESOURCE_FILES} array index for provided GlassFish
+     * server version.
+     * <p/>
+     * @param version GlassFish server version.
+     * @return An {@code RESOURCE_FILES} array index pointing
+     *         to resource file to be created.
+     */
+    private static int versionToNewResourceFilesIndex(
+            final GlassFishVersion version) {
+        // glassfish-resources.xml is returned for versions 3.1 and higher
+        // or as default for unknown version.
+        if (version == null
+                || GlassFishVersion.ge(version, GlassFishVersion.GF_3_1)) {
+            return 0;
+        // sun-resources.xml is returned for versions before 3.1
+        } else {
+            return 1;
+        }
+    }
+
+    /**
+     * Get existing GlassFish resources file name.
+     * GlassFish resources file depends on server version and used storage.
+     * GlassFish v3 supports old {@code sun-resources.xml} together with new
+     * {@code glassfish-resources.xml}. GlassFish v4 supports only
+     * new {@code glassfish-resources.xml} file.
+     * Those files can be found in server configuration directory (to be included
+     * into target project archive) or in server resources directory (won't be
+     * included into target project archive).
+     * Search works with following priorities:<ul>
+     * <li><i>GlassFish v2:</i> Only {@code sun-resources.xml} is checked.</li>
+     * <li><i>GlassFish v3:</i> {@code glassfish-resources.xml} is checked first,
+     *                          {@code sun-resources.xml} as fallback.</li>
+     * <li><i>GlassFish v4:</i> Only {@code glassfish-resources.xml} is checked.</li>
+     * <li><i>Configuration directory</i> is checked first, <i>resources directory</i>
+     *        as fallback.</li>
+     * </ul>
+     * 
+     * @param module  Java EE module (project).
+     * @param version Resources file names depend on GlassFish server version.
+     * @return Existing GlassFish resources file or {@code null} when no resources
+     *         file was found.
+     */
+    public static final File getExistingResourceFile(
+            final J2eeModule module, final GlassFishVersion version) {
+        // RESOURCE_FILES indexes to search for.
+        final int[] indexes = versionToResourceFilesIndexes(version);
+        for (int index : indexes) {
+            // Check configuration directory first.
+            final String name = resourceFilePath(module, RESOURCE_FILES[index]);
+            File file = module.getDeploymentConfigurationFile(name);
+            if (file != null && file.isFile() && file.canRead()) {
+                return file;
+            }
+            // Check resiources directory as a fallback.
+            file = new File(module.getResourceDirectory(), RESOURCE_FILES[index]);
+            if (file.isFile() && file.canRead()) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get new GlassFish resources file name for creation.
+     * <p/>
+     * @param module  Java EE module (project).
+     * @param version Resources file names depend on GlassFish server version.
+     * @return GlassFish resources file to be created.
+     */
+    public static final File getNewResourceFile(
+            final J2eeModule module, final GlassFishVersion version) {
+        final int index = versionToNewResourceFilesIndex(version);
+        final String name = resourceFilePath(module, RESOURCE_FILES[index]);
+        return module.getDeploymentConfigurationFile(name);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
 
     protected final J2eeModule module;
     protected final J2eeModuleHelper moduleHelper;
     protected final File primarySunDD;
     protected final File secondarySunDD;
     protected DescriptorListener descriptorListener;
-
+    /** GlassFish server version. */
+    protected GlassFishVersion version;
     private ASDDVersion appServerVersion;
     private ASDDVersion minASVersion;
     private ASDDVersion maxASVersion;
     private boolean deferredAppServerChange;
     private final String defaultcr;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
 
-    protected GlassfishConfiguration(J2eeModule module) throws ConfigurationException {
-        this(module, J2eeModuleHelper.getSunDDModuleHelper(module.getType()));
+    /**
+     * Creates an instance of Java EE server configuration API support.
+     * {@link J2eeModuleHelper} instance is added depending on Java EE module type.
+     * <p/>
+     * @param module  Java EE module (project).
+     * @param version GlassFish server version.
+     * @throws ConfigurationException when there is a problem with Java EE server
+     *         configuration initialization.
+     */
+    protected GlassfishConfiguration(
+            final J2eeModule module, final GlassFishVersion version
+    ) throws ConfigurationException {
+        this(module, J2eeModuleHelper.getSunDDModuleHelper(module.getType()), version);
     }
 
-    protected GlassfishConfiguration(J2eeModule module, J2eeModuleHelper moduleHelper) throws ConfigurationException {
+    /**
+     * Creates an instance of Java EE server configuration API support with existing
+     * {@link J2eeModuleHelper} instance.
+     * <p/>
+     * @param module       Java EE module (project).
+     * @param moduleHelper Already existing {@link J2eeModuleHelper} instance.
+     * @param version      GlassFish server version.
+     * @throws ConfigurationException when there is a problem with Java EE server
+     *         configuration initialization.
+     */
+    @SuppressWarnings("LeakingThisInConstructor")
+    protected GlassfishConfiguration(
+            final J2eeModule module, final J2eeModuleHelper moduleHelper,
+            final GlassFishVersion version
+    ) throws ConfigurationException {
         this.module = module;
         this.moduleHelper = moduleHelper;
+        this.version = version;
         if(moduleHelper != null) {
             this.primarySunDD = moduleHelper.getPrimarySunDDFile(module);
             this.secondarySunDD = moduleHelper.getSecondarySunDDFile(module);
@@ -210,6 +393,10 @@ public abstract class GlassfishConfiguration implements
         throw new UnsupportedOperationException("JSR-88 configuration not supported.");
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
     public void dispose() {
         if(descriptorListener != null) {
             descriptorListener.removeListeners();
@@ -218,7 +405,7 @@ public abstract class GlassfishConfiguration implements
 
         GlassfishConfiguration storedCfg = getConfiguration(primarySunDD);
         if (storedCfg != this) {
-            Logger.getLogger("glassfish-eecommon").log(Level.INFO, 
+            LOGGER.log(Level.INFO, 
                     "Stored DeploymentConfiguration ({0}) instance not the one being disposed of ({1}).",
                     new Object[]{storedCfg, this});
         }
@@ -232,7 +419,8 @@ public abstract class GlassfishConfiguration implements
     // Appserver version support
     // ------------------------------------------------------------------------
     private ASDDVersion computeMinASVersion(String j2eeModuleVersion) {
-        return moduleHelper.getMinASVersion(j2eeModuleVersion, ASDDVersion.SUN_APPSERVER_7_0);
+        return moduleHelper.getMinASVersion(
+                j2eeModuleVersion, ASDDVersion.SUN_APPSERVER_7_0);
     }
 
     private ASDDVersion computeMaxASVersion() {
@@ -244,8 +432,9 @@ public abstract class GlassfishConfiguration implements
                 result = ASDDVersion.SUN_APPSERVER_10_1;
             else
                 result = ASDDVersion.SUN_APPSERVER_10_0;
-            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, NbBundle.getMessage(
-                    GlassfishConfiguration.class, "ERR_UnidentifiedTargetServer", result.toString())); // NOI18N
+            LOGGER.log(Level.WARNING,
+                    NbBundle.getMessage(GlassfishConfiguration.class,
+                    "ERR_UnidentifiedTargetServer", result.toString())); // NOI18N
         }
         return result;
     }
@@ -353,10 +542,10 @@ public abstract class GlassfishConfiguration implements
                     }
                 } catch (IndexOutOfBoundsException ex) {
                     // Can't identify server install folder.
-                    Logger.getLogger("glassfish-eecommon").log(Level.WARNING, NbBundle.getMessage(
+                    LOGGER.log(Level.WARNING, NbBundle.getMessage(
                             GlassfishConfiguration.class, "ERR_NoServerInstallLocation", instance)); // NOI18N
                 } catch (NullPointerException ex) {
-                    Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
         } else if ("SUNWebserver7".equals(serverType)) {
@@ -634,12 +823,12 @@ public abstract class GlassfishConfiguration implements
                     }
                 }
             } catch (IOException ex) {
-                Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                 String defaultMessage = " retrieving context-root from sun-web.xml";
                 displayError(ex, defaultMessage);
             }
         } else {
-            Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: {0}",
                     module.getType());
         }
@@ -671,11 +860,11 @@ public abstract class GlassfishConfiguration implements
                                         }
                                     }
                                 } catch (IOException ex) {
-                                    Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                                    LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
                                     String defaultMessage = " trying set context-root in sun-web.xml";
                                     displayError(ex, defaultMessage);
                                 } catch (Exception ex) {
-                                    Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                                    LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
                                     String defaultMessage = " trying set context-root in sun-web.xml";
                                     displayError(ex, defaultMessage);
                                 }
@@ -703,11 +892,11 @@ public abstract class GlassfishConfiguration implements
                                     }
                                 }
                             } catch (IOException ex) {
-                                Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
                                 String defaultMessage = " trying set context-root in sun-web.xml";
                                 displayError(ex, defaultMessage);
                             } catch (Exception ex) {
-                                Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
                                 String defaultMessage = " trying set context-root in sun-web.xml";
                                 displayError(ex, defaultMessage);
                             }
@@ -715,7 +904,7 @@ public abstract class GlassfishConfiguration implements
                     });
                 }
             } else {
-                Logger.getLogger("glassfish-eecommon").log(Level.WARNING,  // NOI18N
+                LOGGER.log(Level.WARNING,  // NOI18N
                         "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: {0}",  // NOI18N
                         module.getType());
             }
@@ -988,7 +1177,7 @@ public abstract class GlassfishConfiguration implements
                 return;
             }
         } catch(NumberFormatException ex) {
-            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
 
         try {
@@ -1049,7 +1238,7 @@ public abstract class GlassfishConfiguration implements
                 return;
             }
         } catch(NumberFormatException ex) {
-            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
 
         try {
@@ -1384,7 +1573,7 @@ public abstract class GlassfishConfiguration implements
                     rootDD.write(outputStream);
                 }
             } else {
-                Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Deployment plan not supported in GlassfishConfiguration.save()");
             }
         } catch(Exception ex) {
@@ -1480,7 +1669,7 @@ public abstract class GlassfishConfiguration implements
         // writing the changed descriptor to disk.
         // !PW FIXME notify user
         // RR = could do handleEventRelatedException(ex) instead
-        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+        LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
     }
 
     protected void handleEventRelatedException(Exception ex) {
@@ -1488,7 +1677,7 @@ public abstract class GlassfishConfiguration implements
         // must trap it here so it doesn't cause trouble upstream.
         // We handle it the same as above for now.
         // !PW FIXME should we notify here, or just log?
-        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+        LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
     }
 
     // ------------------------------------------------------------------------
