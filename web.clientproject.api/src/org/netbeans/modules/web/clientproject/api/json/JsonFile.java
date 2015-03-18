@@ -82,7 +82,6 @@ import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
-// XXX should use WatchedFile
 /**
  * Class representing any JSON file on a disk.
  * @since 1.88
