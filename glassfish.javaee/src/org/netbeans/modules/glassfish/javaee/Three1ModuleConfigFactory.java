@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,36 +42,23 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
 
 /**
- *
- * @author vbk
+ * Factory to construct proper module configuration object.
+ * <p/>
+ * @author Vince Kraemer, Tomas Kraus
  */
-public class Three1ModuleConfigFactory implements ModuleConfigurationFactory {
-    private final Hk2DeploymentManager hk2Dm;
+public class Three1ModuleConfigFactory extends AbstractHk2ConfigurationFactory
+implements ModuleConfigurationFactory2 {
     
-    /** Creates a new instance of Hk2ModuleConfigFactory */
-    public Three1ModuleConfigFactory(Hk2DeploymentManager hk2Dm) {
-        this.hk2Dm = hk2Dm;
+    /**
+     * Creates a new instance of {@link Three1ModuleConfigFactory}.
+     * <p/>
+     * @param hk2dm Deployment manager.
+     */
+    public Three1ModuleConfigFactory(final Hk2DeploymentManager hk2dm) {
+        super(hk2dm);
     }
-    
-    @Override
-    public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
-        ModuleConfiguration retVal = null;
-        try {
-            retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module), hk2Dm);
-        } catch (ConfigurationException ce) {
-            throw ce;
-        } catch (Exception ex) {
-            ConfigurationException ce = new ConfigurationException(module.toString());
-            ce.initCause(ex);
-            throw ce;
-        }
-        return retVal;
-    }
-    
+
 }

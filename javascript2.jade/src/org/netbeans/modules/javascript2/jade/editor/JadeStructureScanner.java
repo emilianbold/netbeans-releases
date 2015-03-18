@@ -89,7 +89,7 @@ public class JadeStructureScanner implements StructureScanner {
             if (afterEOL) {
                 if (id == JadeTokenId.WHITESPACE) {
                     indent = token.length();
-                } else if (id == JadeTokenId.TAG || id == JadeTokenId.KEYWORD_BLOCK) {
+                } else if (id == JadeTokenId.TAG || id == JadeTokenId.KEYWORD_BLOCK || id == JadeTokenId.KEYWORD_MIXIN) {
                     afterEOL = false;
                     stack.add(new FoldingItem(FoldType.TAG, indent, ts.offset(), ts.offset() + token.length()));
                 } else  if (id != JadeTokenId.COMMENT_DELIMITER && id != JadeTokenId.UNBUFFERED_COMMENT_DELIMITER){
