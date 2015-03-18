@@ -82,6 +82,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
+// XXX should use WatchedFile
 /**
  * Class representing any JSON file on a disk.
  * @since 1.88
