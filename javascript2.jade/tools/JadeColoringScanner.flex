@@ -176,10 +176,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     JadeTokenId getTokenIdFromTagType (TAG_TYPE tagType, JadeTokenId defaultId) {
-        if (tagType == TAG_TYPE.SCRIPT) {
-            return JadeTokenId.JAVASCRIPT;
+        switch (tagType) {
+            case SCRIPT: return JadeTokenId.JAVASCRIPT;
+            case STYLE: return JadeTokenId.CSS;
+            default: return defaultId;
         }
-        return defaultId;
     }
 
  // End user code

@@ -11,6 +11,7 @@
     <fontcolor name="text"  default="default"/>
     <fontcolor name="separator"  default="default"/>
     <fontcolor name="javascript-embedded" bgColor="FFE3F2E1" default="default"/>
+    <fontcolor name="css-embedded" bgColor="FFE3F2E1" default="default"/>
     <fontcolor name="comment"  default="comment"/>
     <fontcolor name="unbuffered-comment"  default="comment"/>
     <fontcolor name="code-delimiter"  default="default"/>

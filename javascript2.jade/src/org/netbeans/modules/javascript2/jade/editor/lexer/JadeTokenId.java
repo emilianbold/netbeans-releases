@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -131,6 +132,7 @@ public enum JadeTokenId implements TokenId {
     ATTRIBUTE(null, "html-attribute"), //NOI18N
     TEXT(null, "text"), //NOI18N
     JAVASCRIPT(null, "javascript-embedded"),
+    CSS(null, "css-embedded"),
     
     BRACKET_LEFT_PAREN("(", "separator"), // NOI18N
     BRACKET_RIGHT_PAREN(")", "separator"), // NOI18N
@@ -188,11 +190,14 @@ public enum JadeTokenId implements TokenId {
                 protected LanguageEmbedding<?> embedding(Token<JadeTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
                     JadeTokenId id = token.id();
                     
-                    if (id == JAVASCRIPT) {
-                        return LanguageEmbedding.create(JsTokenId.javascriptLanguage(), 0, 0, true);
-                    }
-                    if (id == PLAIN_TEXT || id == TEXT) {
-                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
+                    switch (id) {
+                        case JAVASCRIPT: 
+                            return LanguageEmbedding.create(JsTokenId.javascriptLanguage(), 0, 0, true);
+                        case CSS: 
+                            return LanguageEmbedding.create(CssTokenId.language(), 0, 0, true);
+                        case PLAIN_TEXT:
+                        case TEXT:
+                            return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                     }
                     return null; // No embedding
                 }
