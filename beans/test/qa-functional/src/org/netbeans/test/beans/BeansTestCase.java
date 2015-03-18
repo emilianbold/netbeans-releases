@@ -54,6 +54,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -102,9 +103,11 @@ public class BeansTestCase extends JellyTestCase {
             if(cg.getDisplayName().equals("Add Property...")) {
                 list.setSelectedIndex(i);
                 jdo.pushKey(KeyEvent.VK_ENTER);                
+                new EventTool().waitNoEvent(250);
                 return true;
             }
         }
+        fail("Dialog not found");
         return false;
     }
     
