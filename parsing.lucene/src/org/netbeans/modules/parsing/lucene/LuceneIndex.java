@@ -47,8 +47,10 @@ import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -227,6 +229,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         try {
             in = dirCache.acquireReader();
             if (in == null) {
+                LOGGER.log(Level.FINE, "{0} is invalid!", this);
                 return;
             }
 
@@ -280,7 +283,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         try {
             in = dirCache.acquireReader();
             if (in == null) {
-                LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
+                LOGGER.log(Level.FINE, "{0} is invalid!", this);
                 return;
             }
             final BitSet bs = new BitSet(in.maxDoc());
@@ -962,7 +965,8 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     }
                     assert source != null;
                     this.reader = IndexReader.open(source,true);
-                } catch (final FileNotFoundException fnf) {
+                } catch (final FileNotFoundException | ClosedByInterruptException | InterruptedIOException e) {
+                    //Either the index dir does not exist or the thread is interrupted
                     //pass - returns null
                 } catch (IOException ioe) {
                     if (validCache == null) {
