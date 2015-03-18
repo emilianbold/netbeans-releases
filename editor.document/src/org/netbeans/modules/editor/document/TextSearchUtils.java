@@ -84,7 +84,7 @@ public class TextSearchUtils {
 
             if (classifier.isWhitespace(ch)) {
                 if (inIdentifier || inPunct) {
-                    return i;
+                    return i + 1;
                 }
             } else { // non-WS char
                 boolean identifierChar = classifier.isIdentifierPart(ch);
@@ -217,6 +217,64 @@ public class TextSearchUtils {
                     return i + 1;
                 }
                 boolean identifierChar = classifier.isIdentifierPart(ch);
+                if (inIdentifier) {
+                    if (!identifierChar) { // Start of ident
+                        return i + 1;
+                    }
+                }
+                if (inPunct) {
+                    if (identifierChar) { // Identifier after punct
+                        return i + 1;
+                    }
+                }
+                if (identifierChar) {
+                    inIdentifier = true;
+                } else {
+                    inPunct = true;
+                }
+            }
+        }
+        return limitOffset;
+    }
+
+    /**
+     * Get start of a previous word.
+     * 
+     * @param text non-null text to search.
+     * @param classifier non-null character classifier.
+     * @param offset >= 0 offset in text.
+     * @return previous word start offset.
+     * @since 1.4
+     */
+    public static int getPreviousWordStart(@NonNull CharSequence text, @NonNull CharClassifier classifier, int offset) {
+        int limitOffset = 0;
+        boolean inWhitespace = false;
+        boolean inIdentifier = false;
+        boolean inPunct = false;
+        for (int i = offset - 1; i >= limitOffset; i--) {
+            char ch = text.charAt(i);
+            if (ch == '\n') {
+                // If first char skip right below it
+                return (i == offset - 1) ? i : i + 1;
+            }
+            if (classifier.isWhitespace(ch)) {
+                if (inIdentifier || inPunct) {
+                    return i + 1;
+                }
+                inWhitespace = true; // Current impl skips WS after identifier
+            } else {
+                boolean identifierChar = classifier.isIdentifierPart(ch);
+                if (inWhitespace) { // non-WS char in front of WS
+                    inWhitespace = false;
+                    if (identifierChar) {
+                        // Search for identifier start
+                        inIdentifier = true;
+                        continue;
+                    } else {
+                        inPunct = true;
+                        continue;
+                    }
+                }
                 if (inIdentifier) {
                     if (!identifierChar) { // Start of ident
                         return i + 1;
