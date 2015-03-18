@@ -446,7 +446,7 @@ public class Utilities {
     @Deprecated
     public static int getPreviousWord(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getPreviousWordEnd(doc, offset);
+        return LineDocumentUtils.getPreviousWordStart(doc, offset);
     }
 
     /** Get first white character in document in forward direction

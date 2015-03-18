@@ -310,7 +310,7 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
 
         @Override
         public CharSequence getInsertPrefix() {
-            return name;
+            return accept() ? getDelegate().getInsertPrefix() : null;
         }
     }
 }
