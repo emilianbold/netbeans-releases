@@ -176,10 +176,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     JadeTokenId getTokenIdFromTagType (TAG_TYPE tagType, JadeTokenId defaultId) {
-        if (tagType == TAG_TYPE.SCRIPT) {
-            return JadeTokenId.JAVASCRIPT;
+        switch (tagType) {
+            case SCRIPT: return JadeTokenId.JAVASCRIPT;
+            case STYLE: return JadeTokenId.CSS;
+            default: return defaultId;
         }
-        return defaultId;
     }
 
  // End user code
@@ -232,6 +233,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state IN_FILTER_BLOCK
 %state IN_FILTER_BLOCK_AFTER_EOL
 %state AFTER_INCLUDE
+%state AFTER_BLOCK
 %state AFTER_COLON_IN_TAG
 %state AFTER_EACH
 %state JAVASCRIPT_AFTER_EACH
@@ -252,7 +254,7 @@ nmchar	=	[_a-zA-Z0-9-]|{nonascii}|{escape}
 
 HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 HtmlIdentifierPart = [[:letter:][:digit:]]+[[:letter:][:digit:]\-]*
-HtmlIdentifier = {HtmlIdentifierPart}(:{HtmlIdentifierPart})*
+HtmlIdentifier = {HtmlIdentifierPart}({HtmlIdentifierPart})*
 CssIdentifier = -?{nmstart}{nmchar}*
 LineTerminator = \r|\n|\r\n
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
@@ -311,7 +313,7 @@ UnbufferedComment = "//-"
     "default"                       {   yybegin(AFTER_TAG); // handling : after the keyword
                                         return JadeTokenId.KEYWORD_DEFAULT;}
 
-    "block"                         {   yybegin(AFTER_TAG);
+    "block"                         {   yybegin(AFTER_BLOCK);
                                         return JadeTokenId.KEYWORD_BLOCK;}
     "extends"                       {   yybegin(FILEPATH);
                                         return JadeTokenId.KEYWORD_EXTENDS;}
@@ -579,6 +581,14 @@ UnbufferedComment = "//-"
 <AFTER_INCLUDE> {
     ":"{Input}                      {   return JadeTokenId.FILTER; }    
     {AnyChar}                       {   yypushback(1); yybegin(FILEPATH); }
+}
+
+<AFTER_BLOCK>    {
+    {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
+    {Input}                         {   yybegin(TEXT_LINE);
+                                        return JadeTokenId.BLOCK_NAME;}
+    {LineTerminator}                {   yybegin(AFTER_EOL);
+                                        return JadeTokenId.EOL; }
 }
 
 <JAVASCRIPT> {

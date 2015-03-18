@@ -23,7 +23,7 @@ else
          BITNESS=64
       fi
    else
-      uname -a | egrep "x86_64|WOW64" >/dev/null
+      uname -a | egrep "x86_64|WOW64|sparc64" >/dev/null
       if [ $? -eq 0 ]; then
          BITNESS=64
       fi
@@ -53,15 +53,22 @@ OSFAMILY=${OSFAMILY:-`test "$OS" = "Linux" && echo LINUX`}
 OSFAMILY=${OSFAMILY:-${OS}}
 
 CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo ${CPUTYPE}`
-if [ "${CPUFAMILY}" != "x86" -a "${CPUFAMILY}" != "sparc" ]; then
+if [ "${CPUFAMILY}" != "x86" -a "${CPUFAMILY}" != "sparc" -a "${CPUFAMILY}" != "sparc64" ]; then
    CPUTYPE=`uname -m`
 fi
 CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo ${CPUTYPE}`
+if [ "${CPUFAMILY}" = "sparc64" ]; then
+   CPUFAMILY="sparc"
+fi
 
 USERDIRBASE=${HOME}
 
 if [ "${OSFAMILY}" = "LINUX" ]; then
-   CPUNUM=`cat /proc/cpuinfo | grep processor | wc -l | sed 's/^ *//'`
+   if [ "${CPUFAMILY}" = "sparc" ]; then
+     CPUNUM=`cat /proc/cpuinfo | grep 'ncpus active' | sed 's/[^:]*.[ ]*//'`
+   else
+     CPUNUM=`cat /proc/cpuinfo | grep processor | wc -l | sed 's/^ *//'`
+   fi
 elif [ "${OSFAMILY}" = "WINDOWS" ]; then
    CPUNUM=$NUMBER_OF_PROCESSORS
    OSNAME=`uname`

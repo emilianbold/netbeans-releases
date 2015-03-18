@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -75,9 +75,14 @@ public class ConfigBuilderProvider {
             = new Config.Next(GlassFishVersion.GF_4,
             ConfigBuilderProvider.class.getResource("GlassFishV4.xml"));
 
+    /** Library builder configuration since GlassFish 4.1. */
+    private static final Config.Next CONFIG_V4_1
+            = new Config.Next(GlassFishVersion.GF_4_1,
+            ConfigBuilderProvider.class.getResource("GlassFishV4_1.xml"));
+
     /** Library builder configuration for GlassFish cloud. */
     private static final Config config
-            = new Config(CONFIG_V3, CONFIG_V4);
+            = new Config(CONFIG_V3, CONFIG_V4, CONFIG_V4_1);
 
     /** Builders array for each server instance. */
     private static final Map<GlassFishServer, ConfigBuilder> builders
@@ -119,8 +124,8 @@ public class ConfigBuilderProvider {
                 return builder;
             }
             String serverHome = server.getServerHome();
-            builders.put(server, builder = new ConfigBuilder(
-                    config, serverHome, serverHome, serverHome));
+            builder = new ConfigBuilder(config, serverHome, serverHome, serverHome);
+            builders.put(server, builder);
         }
         return builder;
     }

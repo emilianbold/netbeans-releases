@@ -144,7 +144,7 @@ public class RenameLocalInterceptorTest extends AbstractLocalGitTestCase {
         renameDO(fromFile, toFile);
         
         // test
-        if (Utilities.isMac()) {
+        if (VCSFileProxySupport.isMac(repositoryLocation)) {
             assertTrue(Arrays.asList(toFile.getParentFile().listFiles()).contains(toFile.getName()));
             assertFalse(Arrays.asList(fromFile.getParentFile().listFiles()).contains(fromFile.getName()));
         } else {
@@ -168,7 +168,7 @@ public class RenameLocalInterceptorTest extends AbstractLocalGitTestCase {
         renameFO(fromFile, toFile);
         
         // test
-        if (Utilities.isWindows() || Utilities.isMac()) {
+        if (VCSFileProxySupport.isMac(repositoryLocation)) {
             assertTrue(Arrays.asList(toFile.getParentFile().listFiles()).contains(toFile.getName()));
             assertFalse(Arrays.asList(fromFile.getParentFile().listFiles()).contains(fromFile.getName()));
         } else {
@@ -194,7 +194,7 @@ public class RenameLocalInterceptorTest extends AbstractLocalGitTestCase {
         renameDO(fromFolder, toFolder);
         
         // test
-        if (Utilities.isWindows() || Utilities.isMac()) {
+        if (VCSFileProxySupport.isMac(repositoryLocation)) {
             assertTrue(Arrays.asList(toFolder.getParentFile().listFiles()).contains(toFolder.getName()));
             assertFalse(Arrays.asList(fromFolder.getParentFile().listFiles()).contains(fromFolder.getName()));
         } else {
@@ -221,7 +221,7 @@ public class RenameLocalInterceptorTest extends AbstractLocalGitTestCase {
         renameFO(fromFolder, toFolder);
         
         // test
-        if (Utilities.isWindows() || Utilities.isMac()) {
+        if (VCSFileProxySupport.isMac(repositoryLocation)) {
             assertTrue(Arrays.asList(toFolder.getParentFile().listFiles()).contains(toFolder.getName()));
             assertFalse(Arrays.asList(fromFolder.getParentFile().listFiles()).contains(fromFolder.getName()));
         } else {

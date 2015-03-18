@@ -770,10 +770,14 @@ public abstract class RemoteFileObjectBase {
                         if (moveHandler != null) {
                             Map<String,Object> attr = getAttributesMap();
                             moveHandler.handle();
-                            refresh(true);
+                            getParent().nonRecursiveRefresh();
                             //perfromance bottleneck to call refresh on folder
                             //(especially for many files to be moved)
-                            target.refresh(true);
+                            if (target instanceof RemoteFileObject) {
+                                ((RemoteFileObject) target).getImplementor().nonRecursiveRefresh();
+                            } else {
+                                target.refresh(true);
+                            }
                             result = target.getFileObject(name, ext); // XXX ?
                             assert result != null : "Cannot find " + target + " with " + name + "." + ext;
                             //FileUtil.copyAttributes(this, result);
@@ -819,6 +823,22 @@ public abstract class RemoteFileObjectBase {
                     RemoteLogger.assertTrueInConsole(movedFO != null, "null file object after move of \n{0}\n into\n{1}\nwith name {2}", this, target, newNameExt);
                     if (movedFO == null) {
                         throw new IOException("Null file object after move " + getExecutionEnvironment() + ':' + newPath); //NOI18N // nerw IOException sic!
+                    }
+                    if (USE_VCS) {
+                        FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+                        if (interceptor != null) {
+                            try {
+                                getFileSystem().setInsideVCS(true);
+                                FileProxyI fileProxyFrom = FilesystemInterceptorProvider.toFileProxy(fileSystem, from);
+                                IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxyFrom);
+                                if (deleteHandler != null) {
+                                    deleteHandler.handle();
+                                }
+                                interceptor.deleteSuccess(fileProxyFrom);
+                            } finally {
+                                getFileSystem().setInsideVCS(false);
+                            }
+                        }
                     }
                     return movedFO;
                 } catch (InterruptedException | CancellationException ex) {

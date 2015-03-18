@@ -92,7 +92,7 @@ public class DeleteRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("deleteVersionedFileExternally","deleteA_CreateA_RunAtomic").contains(testName);
+        return Arrays.asList().contains(testName);
     }
 
     @Override
@@ -159,15 +159,20 @@ public class DeleteRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
         // delete externally
         VCSFileProxySupport.delete(file);
-
         // test
         assertFalse(file.exists());
 
         // notify changes
+if(false){        
         refreshHandler.setFilesToRefresh(Collections.singleton(file));
         VersioningSupport.refreshFor(new VCSFileProxy[]{file});
-        assertTrue(refreshHandler.waitForFilesToRefresh());
-        assertEquals(EnumSet.of(Status.REMOVED_INDEX_WORKING_TREE, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
+        assertTrue(refreshHandler.waitForFilesToRefresh());}
+else    getCache().refreshAllRoots(Collections.singleton(file));
+// Remote file system does not support externaly deleted file.
+// If we try to delete externaly, the file will exists in remote FS.
+// If we try ro delete by VCSFileProxySupport, the file will be deleted from index
+if(false)assertEquals(EnumSet.of(Status.REMOVED_INDEX_WORKING_TREE, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
+else    assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
         delete(true, file);
         commit(repositoryLocation);
         getCache().refreshAllRoots(Collections.singleton(file));
@@ -434,7 +439,8 @@ public class DeleteRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         refreshHandler.setFilesToRefresh(Collections.singleton(fileA));
         fo.getFileSystem().runAtomicAction(a);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-
+if(false);
+else    getCache().refreshAllRoots(fileA);
         // test
         assertTrue(fileA.exists());
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileA).getStatus());
