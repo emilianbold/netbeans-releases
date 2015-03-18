@@ -2166,7 +2166,7 @@ abstract public class CsmCompletionQuery {
                                         if (last) { // get all matching fields/methods/packages
                                             List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, true); // find matching nested namespaces
                                             res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, true, false)); // matching classes
-                                            res.addAll(finder.findStaticNamespaceElements(lastNamespace, var, openingSource)); // matching static elements
+//                                            res.addAll(finder.findStaticNamespaceElements(lastNamespace, var, openingSource)); // matching static elements
                                             result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                                         }
                                     }
@@ -2952,7 +2952,7 @@ abstract public class CsmCompletionQuery {
                                         break;
                                     }
                                     List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, exactMatch, true, false); // matching classes
-//                                    elems.addAll(finder.findStaticNamespaceElements(lastNamespace, mtdName, openingSource)); // matching static elements
+//                                    elems.addAll(finder.findStaticNamespaceElements(curNs, mtdName, openingSource)); // matching static elements
                                     for (CsmObject obj: elems) {
                                         if (CsmKindUtilities.isFunction(obj)) {
                                             mtdList.add((CsmFunction)obj);
