@@ -824,6 +824,22 @@ public abstract class RemoteFileObjectBase {
                     if (movedFO == null) {
                         throw new IOException("Null file object after move " + getExecutionEnvironment() + ':' + newPath); //NOI18N // nerw IOException sic!
                     }
+                    if (USE_VCS) {
+                        FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+                        if (interceptor != null) {
+                            try {
+                                getFileSystem().setInsideVCS(true);
+                                FileProxyI fileProxyFrom = FilesystemInterceptorProvider.toFileProxy(fileSystem, from);
+                                IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxyFrom);
+                                if (deleteHandler != null) {
+                                    deleteHandler.handle();
+                                }
+                                interceptor.deleteSuccess(fileProxyFrom);
+                            } finally {
+                                getFileSystem().setInsideVCS(false);
+                            }
+                        }
+                    }
                     return movedFO;
                 } catch (InterruptedException | CancellationException ex) {
                     throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); //NOI18N
