@@ -770,10 +770,14 @@ public abstract class RemoteFileObjectBase {
                         if (moveHandler != null) {
                             Map<String,Object> attr = getAttributesMap();
                             moveHandler.handle();
-                            refresh(true);
+                            getParent().nonRecursiveRefresh();
                             //perfromance bottleneck to call refresh on folder
                             //(especially for many files to be moved)
-                            target.refresh(true);
+                            if (target instanceof RemoteFileObject) {
+                                ((RemoteFileObject) target).getImplementor().nonRecursiveRefresh();
+                            } else {
+                                target.refresh(true);
+                            }
                             result = target.getFileObject(name, ext); // XXX ?
                             assert result != null : "Cannot find " + target + " with " + name + "." + ext;
                             //FileUtil.copyAttributes(this, result);

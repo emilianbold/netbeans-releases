@@ -1701,10 +1701,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         // unfortunately we can't skip refresh if there is a storage but no children exists
         // in this case we have to reafresh just storage - but for the time being only RemoteDirectory can do that
         // TODO: revisit this after refactoring cache into a separate class(es)
-        DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
-        if (recursive) {
-            for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
-                child.refreshImpl(true, antiLoop, expected, RefreshMode.FROM_PARENT);
+        try {
+            DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
+            if (recursive) {
+                for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
+                    child.refreshImpl(true, antiLoop, expected, RefreshMode.FROM_PARENT);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            final RemoteDirectory parent = getParent();
+            if (parent != null) {
+                parent.refreshImpl(false, antiLoop, expected, refreshMode);
+            } else {
+                throw ex;
             }
         }
     }
