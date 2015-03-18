@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,6 +57,7 @@ import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -67,14 +68,25 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * 
- * @author Ludovic Champenois
- * @author Peter Williams
+ * Java EE server configuration API support for GlassFish servers 3.1 and later.
+ * <p/>
+ * @author Ludovic Champenois, Peter Williams, Tomas Kraus
  */
 public class Three1Configuration extends Hk2Configuration implements DeploymentConfiguration {
 
-    public Three1Configuration(J2eeModule module) throws ConfigurationException {
-        super(module, J2eeModuleHelper.getGlassfishDDModuleHelper(module.getType()));
+    /**
+     * Creates an instance of Java EE server configuration API support
+     * for GlassFish servers 3.1 and later.
+     * <p/>
+     * @param module  Java EE module (project).
+     * @param version GlassFish server version.
+     * @throws ConfigurationException when there is a problem with Java EE server
+     *         configuration initialization.
+     */
+    public Three1Configuration(
+            final J2eeModule module, final GlassFishVersion version
+    ) throws ConfigurationException {
+        super(module, J2eeModuleHelper.getGlassfishDDModuleHelper(module.getType()), version);
     }
 
     @Deprecated
@@ -87,7 +99,7 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
     // ------------------------------------------------------------------------
     @Override
     public Set<Datasource> getDatasources() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory());
+        return Hk2DatasourceManager.getDatasources(module, version);
     }
 
     @Override
@@ -97,18 +109,8 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
 
     @Override
     public Datasource createDatasource(String jndiName, String url, String username, String password, String driver) throws UnsupportedOperationException, org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException, DatasourceAlreadyExistsException {
-        File resourceDir = module.getResourceDirectory();
-        if (resourceDir == null) {
-            // Unable to create JDBC data source for resource ref.
-//            postResourceError(NbBundle.getMessage(ModuleConfigurationImpl.class,
-//                    "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING,
-                    "Resource Folder " + resourceDir + " does not exist.");
-            throw new ConfigurationException(NbBundle.getMessage(
-                    ModuleConfigurationImpl.class, "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
-        }
-
-        return Hk2DatasourceManager.createDataSource(jndiName, url, username, password, driver, resourceDir,"glassfish-resources");
+        return Hk2DatasourceManager.createDataSource(
+                jndiName, url, username, password, driver, module, version);
     }
 
     // ------------------------------------------------------------------------

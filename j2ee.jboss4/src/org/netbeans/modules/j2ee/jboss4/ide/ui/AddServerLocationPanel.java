@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,7 +96,8 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     public HelpCtx getHelp() {
         return new HelpCtx("j2eeplugins_registering_app_server_jboss_location"); //NOI18N
     }
-    
+
+    @Override
     public boolean isValid() {
         String locationStr = component.getInstallLocation();
         if (locationStr == null || locationStr.trim().length() < 1) {
@@ -104,9 +106,20 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
             return false;
         }
 
-        if (!JBPluginUtils.isGoodJBServerLocation(new File(locationStr))) {
+        File f = new File(locationStr);
+        Version version = JBPluginUtils.getServerVersion(new File(locationStr));
+
+        if (!JBPluginUtils.isGoodJBServerLocation(f, version)) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidServerLocation")); // NOI18N
+            return false;
+        }
+
+        if (version != null
+                && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0
+                && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_1_0) < 0) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidJBoss7Versio")); // NOI18N
             return false;
         }
                 

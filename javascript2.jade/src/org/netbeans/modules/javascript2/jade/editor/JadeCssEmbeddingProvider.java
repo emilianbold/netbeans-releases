@@ -90,23 +90,10 @@ public class JadeCssEmbeddingProvider extends EmbeddingProvider {
         
         List<Embedding> embeddings = new ArrayList<>();
         
-        Token<JadeTokenId> lastTag = null;
         while (ts.moveNext()) {
             Token<JadeTokenId> token = ts.token();
-            if (token.id() == JadeTokenId.TAG) {
-                lastTag = token;
-            }
-            if (token.id() == JadeTokenId.PLAIN_TEXT_DELIMITER) {
-                // check whether there is not 
-                if (lastTag != null && STYLE_TAG_NAME.equals(lastTag.text().toString().toLowerCase()) && ts.moveNext()) {
-                    token = ts.token();
-                    while (token.id() == JadeTokenId.EOL && ts.moveNext()) {
-                        token = ts.token();
-                    }
-                    if (token.id() == JadeTokenId.PLAIN_TEXT) {
-                        embeddings.add(snapshot.create(ts.offset(), token.length(), CSS_MIME_TYPE));
-                    }
-                }
+            if (token.id() == JadeTokenId.CSS) {
+                embeddings.add(snapshot.create(ts.offset(), token.length(), CSS_MIME_TYPE));
             }
         }
         
