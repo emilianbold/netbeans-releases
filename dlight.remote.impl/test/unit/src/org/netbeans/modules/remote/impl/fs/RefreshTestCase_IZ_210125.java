@@ -91,7 +91,7 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
             String dirPath1 = dirFO1.getPath();
             String filePath1 = fileFO1.getPath();
             //RemoteFileSystemManager.getInstance().getFileSystem(execEnv).getRefreshManager().testWaitLastRefreshFinished();
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
             sleep(100); // just in case
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", "rm -rf " + dirPath1);
             assertTrue("error removing " + dirPath1 + " at " + execEnv, res.isOK());
