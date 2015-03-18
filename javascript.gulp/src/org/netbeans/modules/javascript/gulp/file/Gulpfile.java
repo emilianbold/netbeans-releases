@@ -41,33 +41,32 @@
  */
 package org.netbeans.modules.javascript.gulp.file;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.web.clientproject.api.json.JsonFile;
+import org.netbeans.modules.web.clientproject.api.util.WatchedFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 @MIMEResolver.Registration(displayName = "Gulpfile", resource = "../resources/gulpfile-resolver.xml", position = 122)
-public final class Gulpfile implements PropertyChangeListener {
+public final class Gulpfile implements ChangeListener {
 
     public static final String FILE_NAME = "gulpfile.js"; // NOI18N
 
-    final JsonFile gruntfile;
+    final WatchedFile gruntfile;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
     private Gulpfile(FileObject directory) {
         assert directory != null;
-        gruntfile = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.all());
+        gruntfile = WatchedFile.create(FILE_NAME, directory);
     }
 
     public static Gulpfile create(FileObject directory) {
         Gulpfile gruntfile = new Gulpfile(directory);
-        gruntfile.gruntfile.addPropertyChangeListener(WeakListeners.propertyChange(gruntfile, gruntfile.gruntfile));
+        gruntfile.gruntfile.addChangeListener(WeakListeners.change(gruntfile, gruntfile.gruntfile));
         return gruntfile;
     }
 
@@ -88,7 +87,7 @@ public final class Gulpfile implements PropertyChangeListener {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
 
