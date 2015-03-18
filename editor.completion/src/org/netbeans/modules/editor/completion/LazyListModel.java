@@ -489,9 +489,9 @@ implements ListModel, Runnable, javax.swing.event.ListDataListener {
     /** Finds the appropriate index of given internal index. The state is 
      * supposed to be after updateYourAssumeptions => no EMPTY_VALUE
      */
-    private int findExternalIndex (int myIndex) {
+    public int findExternalIndex (int myIndex) {
         int outIndex = 0;
-        for (int i = -1; i < size; i++) {
+        for (int i = -1; i < getSize(); i++) {
             if (getExternal (i) == NOT_TESTED) {
                 outIndex++;
             } else {

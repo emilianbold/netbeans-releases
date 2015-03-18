@@ -127,8 +127,7 @@ public class CompletionScrollPane extends JScrollPane {
     
     public void setData(List data, String title, int selectedIndex) {
         dataObj = data;
-        view.setData(data);
-        view.setSelectedIndex(selectedIndex);
+        view.setData(data, selectedIndex);
         Rectangle r = view.getCellBounds(selectedIndex, selectedIndex);
         if (r != null)
             view.scrollRectToVisible(r);
