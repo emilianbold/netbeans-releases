@@ -243,7 +243,19 @@ public enum JadeCompletionContext {
                 }
             } else if (id == JadeTokenId.COMMENT) {
                 return TAG_AND_KEYWORD;
+            } else if (id == JadeTokenId.TEXT) {
+                text = token.text().toString();
+                if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
+                    if (acceptTokenChains(ts, KEYWORD_POSITION, true)) {
+                        return CSS_ID;
+                    }
+                }
+            } else if (id == JadeTokenId.PLAIN_TEXT_DELIMITER) {
+                if (acceptTokenChains(ts, KEYWORD_POSITION, true)) {
+                    return CSS_CLASS;
+                }
             }
+            
             while (ts.movePrevious()) {
                 token = ts.token();
                 id = token.id(); 
