@@ -168,7 +168,11 @@ public class DeclTypeImpl extends TypeImpl {
             }
         }
         
-        return type;
+        // TODO: most likely this test is not sufficient. But, technically,
+        // CsmExpressionResolver.resolveType should return types declared 
+        // above current decltype. So there should not be recursion via several 
+        // decltypes.
+        return (type != this) ? type : null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
