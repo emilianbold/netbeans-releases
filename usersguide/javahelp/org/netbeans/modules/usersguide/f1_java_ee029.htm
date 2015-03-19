@@ -1,14 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>Standard EJB Module Project Properties Dialog Box: Sources</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-03-18</p>
 <p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer" name="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref598" name="sthref598"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref1131" name="sthref1131"></a>
 <h1>Standard EJB Module Project Properties Dialog Box: Sources</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>The Libraries page lets you set up the libraries that the project contains on its classpath.</p>
@@ -27,23 +28,20 @@
 <td align="left" id="r2c1-t22" headers="r1c1-t22">
 <p>Java Platform</p>
 </td>
-<td align="left" headers="r2c1-t22 r1c2-t22">
-<p>You can use the Java Platform drop-down list to set the specific JDK installation that the IDE uses to compile and run your project. The IDE adds the selected platform's libraries to the classpath and uses the platform's executables (such as <code>javac</code> and <code>java</code>) to run and build the project. The default platform for all projects is the platform on which the IDE is running. To register additional platforms and attach Javadoc and source files to a platform, click<b>Manage Platforms</b>.</p>
-</td>
+<td align="left" headers="r2c1-t22 r1c2-t22">You can use the Java Platform drop-down list to set the specific JDK installation that the IDE uses to compile and run your project. The IDE adds the selected platform's libraries to the classpath and uses the platform's executables (such as <code dir="ltr">javac</code> and <code dir="ltr">java</code>) to run and build the project. The default platform for all projects is the platform on which the IDE is running. To register additional platforms and attach Javadoc and source files to a platform, click<b>Manage Platforms</b>.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t22" headers="r1c1-t22">
 <p>Libraries Folder</p>
 </td>
-<td align="left" headers="r3c1-t22 r1c2-t22">
-<p>To make it easier to share libraries among different users and projects, you can set a folder to hold those libraries (or references to those libraries). You can create a new folder or specify an existing folder that already contains copies of the libraries on which your project depends. 
+<td align="left" headers="r3c1-t22 r1c2-t22">To make it easier to share libraries among different users and projects, you can set a folder to hold those libraries (or references to those libraries). You can create a new folder or specify an existing folder that already contains copies of the libraries on which your project depends. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</p>
+
 <p>To specify the folder, click Browse. If there is already a libraries folder, a file chooser opens. If there is not a libraries folder, the New Libraries wizard opens. In the New Libraries wizard, you set a libraries folder and then specify how to reference each library. The simplest case is to have the libraries copied to that folder. You can also refer to the libraries in their existing location (with a relative path or an absolute path). If you have specified an existing folder, you also have the option of using copies of libraries that are already in that folder instead of the copies that are contained in the IDE's Ant Library Manager.</p>
 <p>Each standard EJB module project maintains a separate classpath for compilation, compiling tests, and running tests. Use the buttons on the right of the dialog box to add, remove, and change the order of classpath elements. You can add any of the following:</p>
 </td>
@@ -52,9 +50,7 @@
 <td align="left" id="r4c1-t22" headers="r1c1-t22">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;JAR file or folder</p>
 </td>
-<td align="left" headers="r4c1-t22 r1c2-t22">
-<p>A JAR file or folder containing compiled class files and other resources.</p>
-</td>
+<td align="left" headers="r4c1-t22 r1c2-t22">A JAR file or folder containing compiled class files and other resources.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t22" headers="r1c1-t22">
@@ -68,9 +64,7 @@
 <td align="left" id="r6c1-t22" headers="r1c1-t22">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Project</p>
 </td>
-<td align="left" headers="r6c1-t22 r1c2-t22">
-<p>The build output, source files, and Javadoc files of another IDE project.</p>
-</td>
+<td align="left" headers="r6c1-t22 r1c2-t22">The build output, source files, and Javadoc files of another IDE project.</td>
 </tr>
 </tbody>
 </table>
@@ -82,6 +76,7 @@
 <li>If a JAR file is registered in the Ant Library Manager and has attached source code and Javadoc documentation, you can just add the JAR file to the classpath and the IDE finds the Javadoc documentation and source code automatically. You should use the Add Library button if you want to add a library that contains several JAR files. Adding a library that is managed in the Ant Library Manager also makes it easier for other developers with which you share the project to fix broken references to Javadoc documentation and source code.</li>
 <li>Adding a free-form project to the classpath of a standard project does nothing unless you have declared the free-form project's build outputs in the Output page of its Project Properties dialog box.</li>
 </ul>
+<a id="sthref1132" name="sthref1132"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -147,7 +142,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>
