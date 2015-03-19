@@ -60,7 +60,7 @@ import org.openide.filesystems.FileUtil;
  * Designed to be called from installer.
  * <p/>
  * Sample command line<br/>
- * java -cp ./platform/core/core.jar:./platform/lib/boot.jar:./platform/lib/org-openide-modules.jar:./platform/core/org-openide-filesystems.jar:./platform/lib/org-openide-util.jar:./platform/lib/org-openide-util-lookup.jar:./enterprise/modules/org-netbeans-modules-j2eeapis.jar:./enterprise/modules/org-netbeans-modules-j2eeserver.jar:./enterprise/modules/org-netbeans-modules-glassfish-common.jar:./enterprise/modules/ext/glassfish-tooling-sdk.jar org.netbeans.modules.glassfish.common.registration.AutomaticRegistration ./ide /users/tomas/WS/gfr3122/glassfish
+ * java -cp ./platform/core/core.jar:./platform/core/core-base.jar:./platform/lib/boot.jar:./platform/lib/org-openide-modules.jar:./platform/core/org-openide-filesystems.jar:./platform/lib/org-openide-util.jar:./platform/lib/org-openide-util-lookup.jar:./platform/lib/org-openide-util-ui.jar:./enterprise/modules/org-netbeans-modules-j2eeapis.jar:./enterprise/modules/org-netbeans-modules-j2eeserver.jar:./enterprise/modules/org-netbeans-modules-glassfish-common.jar:./enterprise/modules/org-netbeans-modules-glassfish-tooling.jar org.netbeans.modules.glassfish.common.registration.AutomaticRegistration %lt;clusterDir&gt; &lt;glassfishDir&gt;
  * <p/>
  * @author Vince Kraemer, Petr Hejl Tomas Kraus
  * @see #main(args)
