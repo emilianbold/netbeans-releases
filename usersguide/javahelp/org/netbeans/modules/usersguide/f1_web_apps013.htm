@@ -1,14 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>web.xml Visual Editor: Resource References</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-03-18</p>
 <p><a id="dd_multiview_references_resRefsNode" name="dd_multiview_references_resRefsNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref489" name="sthref489"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref918" name="sthref918"></a>
 <h1>web.xml Visual Editor: Resource References</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use the Resource References section to add, remove, and view the web application's resource references. 
@@ -19,11 +20,11 @@
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>To access a data source, a JMS connection factory, a JavaMail session, or a URL link from a web application, you must declare a resource reference in the application's web application deployment descriptor. The resource reference specifies a JNDI name, the object type, and the kind of authentication used when the resource is accessed. To connect the resource reference to the resource, you must map the JNDI name of the former to the latter. This mapping is done in the server-specific deployment descriptor file, such as the <code>sun-web.xml</code> file for the Glassfish application server.</p>
-<p>You use the resource reference in your code to extract the resource you need. For example, a resource reference defined in the <code>web.xml</code> file is used to extract data from a data source as shown in <a href="#CHDHFBIA">Example: Resource Reference</a></p>
+<p>To access a data source, a JMS connection factory, a JavaMail session, or a URL link from a web application, you must declare a resource reference in the application's web application deployment descriptor. The resource reference specifies a JNDI name, the object type, and the kind of authentication used when the resource is accessed. To connect the resource reference to the resource, you must map the JNDI name of the former to the latter. This mapping is done in the server-specific deployment descriptor file, such as the <code dir="ltr">sun-web.xml</code> file for the Glassfish application server.</p>
+<p>You use the resource reference in your code to extract the resource you need. For example, a resource reference defined in the <code dir="ltr">web.xml</code> file is used to extract data from a data source as shown in <a href="#CHDHFBIA">Example: Resource Reference</a></p>
 <a id="CHDHFBIA" name="CHDHFBIA"></a>
 <p>Resource Reference</p>
-<pre xml:space="preserve">
+<pre xml:space="preserve" dir="ltr">
 public BookDBAO () throws Exception {
    try  {
       Context initCtx = new InitialContext();
@@ -41,7 +42,7 @@ public BookDBAO () throws Exception {
 }
 </pre>
 <!-- -->
-<p>To declare a resource reference, you must register it in the <code>web.xml</code> file. When you do this, you provide information needed by the server to use the resource reference.</p>
+<p>To declare a resource reference, you must register it in the <code dir="ltr">web.xml</code> file. When you do this, you provide information needed by the server to use the resource reference.</p>
 <p>In the Visual Editor, click <b>References</b> at the top of the editor to open the References section, then click the Resource References header to open the Resource References section. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1114">
@@ -66,62 +67,49 @@ public BookDBAO () throws Exception {
 <td align="left" id="r2c1-t20" headers="r1c1-t20">
 <p>Resource Name</p>
 </td>
-<td align="left" headers="r2c1-t20 r1c2-t20">
-<p>Specifies the resource reference's name, such as <code>myDataSource</code>.</p>
-</td>
+<td align="left" headers="r2c1-t20 r1c2-t20">Specifies the resource reference's name, such as <code dir="ltr">myDataSource</code>.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t20" headers="r1c1-t20">
 <p>Resource Type</p>
 </td>
-<td align="left" headers="r3c1-t20 r1c2-t20">
-<p>Specifies the variable's name for validation, such as <code>java.lang.String</code>.</p>
-</td>
+<td align="left" headers="r3c1-t20 r1c2-t20">Specifies the variable's name for validation, such as <code dir="ltr">java.lang.String</code>.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t20" headers="r1c1-t20">
 <p>Authentification</p>
 </td>
-<td align="left" headers="r4c1-t20 r1c2-t20">
-<p>Specifies the source of the authentification credentials.</p>
-</td>
+<td align="left" headers="r4c1-t20 r1c2-t20">Specifies the source of the authentification credentials.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t20" headers="r1c1-t20">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Application</p>
 </td>
-<td align="left" headers="r5c1-t20 r1c2-t20">
-<p>Programmatic authentification, provided by the application.</p>
-</td>
+<td align="left" headers="r5c1-t20 r1c2-t20">Programmatic authentification, provided by the application.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t20" headers="r1c1-t20">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Container</p>
 </td>
-<td align="left" headers="r6c1-t20 r1c2-t20">
-<p>(Default) Provided by the caller who logged in to the server and created the component instance.</p>
-</td>
+<td align="left" headers="r6c1-t20 r1c2-t20">(Default) Provided by the caller who logged in to the server and created the component instance.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t20" headers="r1c1-t20">
 <p>Sharing Scope</p>
 </td>
-<td align="left" headers="r7c1-t20 r1c2-t20">
-<p>By default, connections to a resource manager are shareable across web components in an application that use the same resource in the same transaction context.</p>
-</td>
+<td align="left" headers="r7c1-t20 r1c2-t20">By default, connections to a resource manager are shareable across web components in an application that use the same resource in the same transaction context.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t20" headers="r1c1-t20">
 <p>Description</p>
 </td>
-<td align="left" headers="r8c1-t20 r1c2-t20">
-<p>Specifies a description, such as <code>Resource Reference for My Data Source</code>.</p>
-</td>
+<td align="left" headers="r8c1-t20 r1c2-t20">Specifies a description, such as <code dir="ltr">Resource Reference for My Data Source</code>.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<a id="sthref919" name="sthref919"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -147,7 +135,7 @@ public BookDBAO () throws Exception {
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

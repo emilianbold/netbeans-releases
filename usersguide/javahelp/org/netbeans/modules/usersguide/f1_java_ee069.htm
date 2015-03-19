@@ -1,19 +1,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>New JDBC Connection Pool: Add Connection Pool Optional Settings</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-03-18</p>
 <p><a id="AS_Wiz_ConnPool_poolSettings" name="AS_Wiz_ConnPool_poolSettings"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref639" name="sthref639"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref1212" name="sthref1212"></a>
 <h1>New JDBC Connection Pool: Add Connection Pool Optional Settings</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>This page of the New File wizard for defining a JDBC connection pool allows you to modify the default values for pool settings, transaction isolation, and connection validation. It is best to leave these settings at their default values and modify them later in the connection pool properties window.</p>
 <p>The following settings can be modified in this screen:</p>
-<a id="sthref640" name="sthref640"></a>
+<a id="sthref1213" name="sthref1213"></a>
 <p><b>Pool Settings</b></p>
 <p>A set of physical database connections reside in the pool. When an application requests a connection, the connection is removed from the pool, and when the application releases the connection, it is returned to the pool.</p>
 
@@ -31,47 +32,35 @@
 <td align="left" id="r2c1-t67" headers="r1c1-t67">
 <p>Steady Pool Size</p>
 </td>
-<td align="left" headers="r2c1-t67 r1c2-t67">
-<p>An integer value representing the number of connections in the pool at any given moment. Usually, this is the minimum connections in the pool.</p>
-</td>
+<td align="left" headers="r2c1-t67 r1c2-t67">An integer value representing the number of connections in the pool at any given moment. Usually, this is the minimum connections in the pool.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t67" headers="r1c1-t67">
 <p>Max Pool Size</p>
 </td>
-<td align="left" headers="r3c1-t67 r1c2-t67">
-<p>An integer value representing the maximum number of connections in the pool.</p>
-</td>
+<td align="left" headers="r3c1-t67 r1c2-t67">An integer value representing the maximum number of connections in the pool.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t67" headers="r1c1-t67">
-<p>Max Wait time</p>
-</td>
-<td align="left" headers="r4c1-t67 r1c2-t67">
-<p>An integer value representing the maximum wait time in milliseconds.</p>
-</td>
+<td align="left" id="r4c1-t67" headers="r1c1-t67">Max Wait time</td>
+<td align="left" headers="r4c1-t67 r1c2-t67">An integer value representing the maximum wait time in milliseconds.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t67" headers="r1c1-t67">
 <p>Pool Resize Quantity</p>
 </td>
-<td align="left" headers="r5c1-t67 r1c2-t67">
-<p>Connection pools, as they shrink to the minimum pool size, are resized in batches. This number represents the number of connections in the batch for resizing the pool. A batch size that is too large may delay connection recycling, while a batch size too small may be less efficient.</p>
-</td>
+<td align="left" headers="r5c1-t67 r1c2-t67">Connection pools, as they shrink to the minimum pool size, are resized in batches. This number represents the number of connections in the batch for resizing the pool. A batch size that is too large may delay connection recycling, while a batch size too small may be less efficient.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t67" headers="r1c1-t67">
 <p>Idle Timeout (seconds)</p>
 </td>
-<td align="left" headers="r6c1-t67 r1c2-t67">
-<p>An integer value representing the maximum idle timeout length in seconds. This is the amount of time that a connection may remain idle in the pool. Connections that remain idle for longer than this time are closed.</p>
-</td>
+<td align="left" headers="r6c1-t67 r1c2-t67">An integer value representing the maximum idle timeout length in seconds. This is the amount of time that a connection may remain idle in the pool. Connections that remain idle for longer than this time are closed.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="sthref641" name="sthref641"></a>
+<a id="sthref1214" name="sthref1214"></a>
 <p><b>Transaction Isolation</b></p>
 <p>Because a database is usually accessed by many users concurrently, one transaction might update data while another attempts to read the same data. The isolation level of a transaction defines the degree to which the data being updated is visible to other transactions. For details on isolation levels, refer to the documentation of the database vendor.</p>
 
@@ -89,23 +78,19 @@
 <td align="left" id="r2c1-t68" headers="r1c1-t68">
 <p>Transaction Isolation</p>
 </td>
-<td align="left" headers="r2c1-t68 r1c2-t68">
-<p>Set to true or false. When set to true, the application server validates connections before they are sent to an application. When validation is in force, the application server can automatically reinstate connections to databases that fail due to network or database server failures.</p>
-</td>
+<td align="left" headers="r2c1-t68 r1c2-t68">Set to true or false. When set to true, the application server validates connections before they are sent to an application. When validation is in force, the application server can automatically reinstate connections to databases that fail due to network or database server failures.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t68" headers="r1c1-t68">
 <p>Guarantee Isolation Level</p>
 </td>
-<td align="left" headers="r3c1-t68 r1c2-t68">
-<p>Set to true or false. If you set to true, all connections taken from the pool have the same isolation level. For example, if the isolation level for the connection is changed programatically (with con.setTransactionIsolation) when last used, this mechanism changes the status back to the specified isolation level.</p>
-</td>
+<td align="left" headers="r3c1-t68 r1c2-t68">Set to true or false. If you set to true, all connections taken from the pool have the same isolation level. For example, if the isolation level for the connection is changed programatically (with con.setTransactionIsolation) when last used, this mechanism changes the status back to the specified isolation level.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="sthref642" name="sthref642"></a>
+<a id="sthref1215" name="sthref1215"></a>
 <p><b>Connection Validation</b></p>
 <p>The application server can validate connections before they are passed to applications. Validation allows the application server to automatically re-establish database connections if the database becomes unavailable due to network failure or database server crash. Validation of connections incurs additional overhead and slightly reduces performance.</p>
 
@@ -123,70 +108,47 @@
 <td align="left" id="r2c1-t69" headers="r1c1-t69">
 <p>Connection Validation Required</p>
 </td>
-<td align="left" headers="r2c1-t69 r1c2-t69">
-<p>Set to true or false. When set to true, the application server validates connections before they are sent to an application. When validation is in force, the application server can automatically reinstate connections to databases that fail due to network or database server failures</p>
-</td>
+<td align="left" headers="r2c1-t69 r1c2-t69">Set to true or false. When set to true, the application server validates connections before they are sent to an application. When validation is in force, the application server can automatically reinstate connections to databases that fail due to network or database server failures</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t69" headers="r1c1-t69">
 <p>Validation Method</p>
 </td>
-<td align="left" headers="r3c1-t69 r1c2-t69">
-<p>Select the validation method from the pull-down list. There are three valid methods: auto-commit, meta-data, and table.</p>
-</td>
+<td align="left" headers="r3c1-t69 r1c2-t69">Select the validation method from the pull-down list. There are three valid methods: auto-commit, meta-data, and table.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t69" headers="r1c1-t69">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;auto-commit and meta-data</p>
-</td>
-<td align="left" headers="r4c1-t69 r1c2-t69">
-<p>The application server validates a connection by calling the con.getAutoCommit() and con.getMetaData() methods. However, since the results of these calls may be cached, they do not always provide reliable validations.</p>
-</td>
+<td align="left" id="r4c1-t69" headers="r1c1-t69">&nbsp;&nbsp;&nbsp;&nbsp;auto-commit and meta-data</td>
+<td align="left" headers="r4c1-t69 r1c2-t69">The application server validates a connection by calling the con.getAutoCommit() and con.getMetaData() methods. However, since the results of these calls may be cached, they do not always provide reliable validations.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t69" headers="r1c1-t69">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;table</p>
-</td>
-<td align="left" headers="r5c1-t69 r1c2-t69">
-<p>The application queries a database table you've specified, using the query: select (count *) from &lt;table-name&gt;. While the table must exist and be accessible, it need not have any rows. Do not use an existing table that has a large number of rows or a table that is already frequently accessed.</p>
-</td>
+<td align="left" id="r5c1-t69" headers="r1c1-t69">&nbsp;&nbsp;&nbsp;&nbsp;table</td>
+<td align="left" headers="r5c1-t69 r1c2-t69">The application queries a database table you've specified, using the query: select (count *) from &lt;table-name&gt;. While the table must exist and be accessible, it need not have any rows. Do not use an existing table that has a large number of rows or a table that is already frequently accessed.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t69" headers="r1c1-t69">
 <p>Table Name</p>
 </td>
-<td align="left" headers="r6c1-t69 r1c2-t69">
-<p>This is the name of the connection validation table. Set the table name if you selected table as the validation method.</p>
-</td>
+<td align="left" headers="r6c1-t69 r1c2-t69">This is the name of the connection validation table. Set the table name if you selected table as the validation method.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t69" headers="r1c1-t69">
 <p>Fail All Connections</p>
 </td>
-<td align="left" headers="r7c1-t69 r1c2-t69">
-<p>Set to true or false. When set to true, if a single connection fails, the application server closes all connections in the pool and then reestablishes them. When set to false, only individual connections are reestablished.</p>
-</td>
+<td align="left" headers="r7c1-t69 r1c2-t69">Set to true or false. When set to true, if a single connection fails, the application server closes all connections in the pool and then reestablishes them. When set to false, only individual connections are reestablished.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t69" headers="r1c1-t69">
-<p>Non Transactional Connections</p>
-</td>
-<td align="left" headers="r8c1-t69 r1c2-t69">
-<p>Set to true or false. When set to true, connections are not automatically enlisted and delisted in transaction contexts. A non-transactional connection can be used to query the database while a transaction is still in progress (before the transaction commits). Non-transactional connections are not automatically returned to the pool and need to be explicitly closed by the application. The default is false.</p>
-</td>
+<td align="left" id="r8c1-t69" headers="r1c1-t69">Non Transactional Connections</td>
+<td align="left" headers="r8c1-t69 r1c2-t69">Set to true or false. When set to true, connections are not automatically enlisted and delisted in transaction contexts. A non-transactional connection can be used to query the database while a transaction is still in progress (before the transaction commits). Non-transactional connections are not automatically returned to the pool and need to be explicitly closed by the application. The default is false.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r9c1-t69" headers="r1c1-t69">
-<p>Allow Non Component Callers</p>
-</td>
-<td align="left" headers="r9c1-t69 r1c2-t69">
-<p>Set to true or false. When set to true, the connection pool can be accessed remotely by non-Java-EE components (components other than EJBs and servlets). The returned connection is automatically enlisted with the transaction context obtained from the transaction manager. The default is false.</p>
-</td>
+<td align="left" id="r9c1-t69" headers="r1c1-t69">Allow Non Component Callers</td>
+<td align="left" headers="r9c1-t69 r1c2-t69">Set to true or false. When set to true, the connection pool can be accessed remotely by non-Java-EE components (components other than EJBs and servlets). The returned connection is automatically enlisted with the transaction context obtained from the transaction manager. The default is false.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<a id="sthref1216" name="sthref1216"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -220,7 +182,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

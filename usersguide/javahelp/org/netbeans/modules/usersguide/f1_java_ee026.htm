@@ -1,14 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>Standard EJB Module Project Properties Dialog Box: Libraries</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-03-18</p>
 <p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries" name="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref594" name="sthref594"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref1124" name="sthref1124"></a>
 <h1>Standard EJB Module Project Properties Dialog Box: Libraries</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>The Libraries page lets you set up the libraries that the project contains on its classpath.</p>
@@ -27,9 +28,7 @@
 <td align="left" id="r2c1-t20" headers="r1c1-t20">
 <p>Java Platform</p>
 </td>
-<td align="left" headers="r2c1-t20 r1c2-t20">
-<p>You can use the Java Platform drop-down list to set the specific JDK installation that the IDE uses to compile and run your project. The IDE adds the selected platform's libraries to the classpath and uses the platform's executables (such as javac and java) to run and build the project. The default platform for all projects is the platform on which the IDE is running. To register additional platforms and attach Javadoc and source files to a platform, click <b>Manage Platforms</b>.</p>
-</td>
+<td align="left" headers="r2c1-t20 r1c2-t20">You can use the Java Platform drop-down list to set the specific JDK installation that the IDE uses to compile and run your project. The IDE adds the selected platform's libraries to the classpath and uses the platform's executables (such as javac and java) to run and build the project. The default platform for all projects is the platform on which the IDE is running. To register additional platforms and attach Javadoc and source files to a platform, click <b>Manage Platforms</b>.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t20" headers="r1c1-t20">
@@ -45,32 +44,26 @@
 <td align="left" id="r4c1-t20" headers="r1c1-t20">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;JAR file or Folder</p>
 </td>
-<td align="left" headers="r4c1-t20 r1c2-t20">
-<p>A JAR file or folder containing compiled class files and other resources.</p>
-</td>
+<td align="left" headers="r4c1-t20 r1c2-t20">A JAR file or folder containing compiled class files and other resources.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t20" headers="r1c1-t20">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Library</p>
 </td>
-<td align="left" headers="r5c1-t20 r1c2-t20">
-<p>A collection of JAR files, source code, and Javadoc that has been registered in the Ant Library Manager. 
+<td align="left" headers="r5c1-t20 r1c2-t20">A collection of JAR files, source code, and Javadoc that has been registered in the Ant Library Manager. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG389">
 <param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t20" headers="r1c1-t20">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Project</p>
 </td>
-<td align="left" headers="r6c1-t20 r1c2-t20">
-<p>The build output, source files, and Javadoc files of another IDE project.</p>
-</td>
+<td align="left" headers="r6c1-t20 r1c2-t20">The build output, source files, and Javadoc files of another IDE project.</td>
 </tr>
 </tbody>
 </table>
@@ -90,12 +83,13 @@
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>You can use the Source/Binary Format combo box to set the lowest Java platform version with which the generated Java code should be compatible. This setting corresponds to the javac <code>-source</code> option. Setting the source/binary format helps prevent you from using Java language constructs that are not available in the platform version to which you want to deploy. However, setting the source/binary format does not ensure that the platform APIs are used compatibly with that platform version. To make sure that your application is fully compatible with an earlier Java platform version, you need to switch to the Libraries tab and set the Java Platform setting to the minimum version on which you plan to deploy.</p>
+<p>You can use the Source/Binary Format combo box to set the lowest Java platform version with which the generated Java code should be compatible. This setting corresponds to the javac <code dir="ltr">-source</code> option. Setting the source/binary format helps prevent you from using Java language constructs that are not available in the platform version to which you want to deploy. However, setting the source/binary format does not ensure that the platform APIs are used compatibly with that platform version. To make sure that your application is fully compatible with an earlier Java platform version, you need to switch to the Libraries tab and set the Java Platform setting to the minimum version on which you plan to deploy.</p>
 <p><b>Note</b>: Specifying the source/binary format does not change the Java platform whose libraries and executables are used to compile and run your project. To set the Java platform that is used for compiling and running your project, click <b>Libraries</b> and set the Java Platform setting accordingly. You cannot set the source/binary format of a project to a higher release than the project's Java platform.</p>
-<a id="sthref595" name="sthref595"></a>
+<a id="sthref1125" name="sthref1125"></a>
 <p><b>Test Packages Folders</b></p>
-<p>You can use this pane to specify the folder that the IDE uses when creating JUnit tests. By default, when you create a project the IDE creates a test packages folder called <code>test</code> with the label <b>Test Packages</b>. Use the buttons to the right of the list to remove the selected folder or to specify the folder that the IDE uses when creating tests. You can also modify the <b>Label</b> field to change how the folder is displayed in the Projects window.</p>
+<p>You can use this pane to specify the folder that the IDE uses when creating JUnit tests. By default, when you create a project the IDE creates a test packages folder called <code dir="ltr">test</code> with the label <b>Test Packages</b>. Use the buttons to the right of the list to remove the selected folder or to specify the folder that the IDE uses when creating tests. You can also modify the <b>Label</b> field to change how the folder is displayed in the Projects window.</p>
 <p>To create JUnit tests with the IDE, a project must have a test packages folder. If the test packages folder for your project is missing or unavailable, you can create a new folder in your project and then use this pane to designate the new folder as the test packages folder.</p>
+<a id="sthref1126" name="sthref1126"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -137,7 +131,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

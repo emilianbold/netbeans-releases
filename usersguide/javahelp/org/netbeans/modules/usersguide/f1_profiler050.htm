@@ -1,14 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>VM Telemetry Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-03-18</p>
 <p><a id="TelemetryWindow.HelpCtx" name="TelemetryWindow.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref424" name="sthref424"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref795" name="sthref795"></a>
 <h1>VM Telemetry Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to view high-level data on thread activity and memory heap and garbage collection in the VM. The VM Telemetry window typically opens in the editor area. 
@@ -35,45 +36,35 @@
 <p>Export</p>
 <p><img width="16" height="16" src="img/saveas.png" alt="Export icon." title="Export icon." /></p>
 </td>
-<td align="left" headers="r2c1-t56 r1c2-t56">
-<p>Exports the results as a text file.</p>
-</td>
+<td align="left" headers="r2c1-t56 r1c2-t56">Exports the results as a text file.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t56" headers="r1c1-t56">
 <p>Save Current View</p>
 <p><img width="16" height="16" src="img/saveview.png" alt="Save Current View icon." title="Save Current View icon." /></p>
 </td>
-<td align="left" headers="r3c1-t56 r1c2-t56">
-<p>Saves the results as a <code>.png</code> image file.</p>
-</td>
+<td align="left" headers="r3c1-t56 r1c2-t56">Saves the results as a <code dir="ltr">.png</code> image file.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t56" headers="r1c1-t56">
 <p>Zoom In</p>
 <p><img width="16" height="16" src="img/zoomin.png" alt="Zoom In icon." title="Zoom In icon." /></p>
 </td>
-<td align="left" headers="r4c1-t56 r1c2-t56">
-<p>Increases the detail of the graph.</p>
-</td>
+<td align="left" headers="r4c1-t56 r1c2-t56">Increases the detail of the graph.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t56" headers="r1c1-t56">
 <p>Zoom Out</p>
 <p><img width="16" height="16" src="img/zoomout.png" alt="Zoom Out icon." title="Zoom Out icon." /></p>
 </td>
-<td align="left" headers="r5c1-t56 r1c2-t56">
-<p>Decreases the detail of the graph.</p>
-</td>
+<td align="left" headers="r5c1-t56 r1c2-t56">Decreases the detail of the graph.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t56" headers="r1c1-t56">
 <p>Scale To Fit</p>
 <p><img width="16" height="16" src="img/scaletofit.png" alt="Scale to Fit icon." title="Scale to Fit icon." /></p>
 </td>
-<td align="left" headers="r6c1-t56 r1c2-t56">
-<p>Toggles between a scalable view and a fixed-scale view.</p>
-</td>
+<td align="left" headers="r6c1-t56 r1c2-t56">Toggles between a scalable view and a fixed-scale view.</td>
 </tr>
 </tbody>
 </table>
@@ -95,8 +86,7 @@
 <td align="left" id="r2c1-t57" headers="r1c1-t57">
 <p>Threads / Loaded Classes</p>
 </td>
-<td align="left" headers="r2c1-t57 r1c2-t57">
-<p>Displays the total number of threads in the profiled application JVM.</p>
+<td align="left" headers="r2c1-t57 r1c2-t57">Displays the total number of threads in the profiled application JVM.
 <p>Place your cursor over the graph to display a tooltip with information about the current and maximum number of threads.</p>
 </td>
 </tr>
@@ -104,8 +94,7 @@
 <td align="left" id="r3c1-t57" headers="r1c1-t57">
 <p>Memory (Heap)</p>
 </td>
-<td align="left" headers="r3c1-t57 r1c2-t57">
-<p>Displays the total and used size. These are the figures that a Java application can obtain using the <code>java.lang.Runtime.totalMemory()</code> and <code>java.lang.Runtime.freeMemory()</code> calls.</p>
+<td align="left" headers="r3c1-t57 r1c2-t57">Displays the total and used size. These are the figures that a Java application can obtain using the <code dir="ltr">java.lang.Runtime.totalMemory()</code> and <code dir="ltr">java.lang.Runtime.freeMemory()</code> calls.
 <p>Place your cursor over the graph to view more detailed information about memory usage at that point in time.</p>
 </td>
 </tr>
@@ -113,8 +102,7 @@
 <td align="left" id="r4c1-t57" headers="r1c1-t57">
 <p>Memory (GC)</p>
 </td>
-<td align="left" headers="r4c1-t57 r1c2-t57">
-<p>Displays displays the relative time spent in garbage collection and the number of surviving generations.</p>
+<td align="left" headers="r4c1-t57 r1c2-t57">Displays displays the relative time spent in garbage collection and the number of surviving generations.
 <p>Place your cursor over the graph to view more detailed information about garbage collection statistics at that point in time.</p>
 </td>
 </tr>
@@ -122,6 +110,7 @@
 </table>
 <br />
 <!-- -->
+<a id="sthref796" name="sthref796"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -139,7 +128,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>
