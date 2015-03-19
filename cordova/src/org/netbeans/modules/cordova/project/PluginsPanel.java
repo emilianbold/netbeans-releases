@@ -47,10 +47,9 @@ import java.util.Comparator;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import org.netbeans.modules.cordova.updatetask.CordovaPlugin;
 
 /**
@@ -122,12 +121,14 @@ public final class PluginsPanel extends JPanel {
     private void initPlugins() {
         initAllPluginsList();
         initSelectedPluginsList();
+        updateButtonsEnabled();
     }
     
 
     private void initAllPluginsList() {
         assert EventQueue.isDispatchThread();
         pluginsList.setModel(allPluginsModel);
+        pluginsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         pluginsFilterTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -151,24 +152,8 @@ public final class PluginsPanel extends JPanel {
     private void initSelectedPluginsList() {
         assert EventQueue.isDispatchThread();
         selectedPluginsList.setModel(selectedPluginsModel);
-        selectedPluginsModel.addListDataListener(new ListDataListener() {
-
-            @Override
-            public void intervalAdded(ListDataEvent e) {
-                updateButtonsEnabled();
-            }
-
-            @Override
-            public void intervalRemoved(ListDataEvent e) {
-                updateButtonsEnabled();
-            }
-
-            @Override
-            public void contentsChanged(ListDataEvent e) {
-                updateButtonsEnabled();
-            }
-        });
-   }
+        selectedPluginsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
 
     private boolean isUpdateRunning() {
         return !panelEnabled;
@@ -309,11 +294,13 @@ public final class PluginsPanel extends JPanel {
     private void selectSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSelectedButtonActionPerformed
         selectedPluginsModel.add(pluginsList.getSelectedValuesList());
         allPluginsModel.remove(pluginsList.getSelectedValuesList());
+        updateButtonsEnabled();
     }//GEN-LAST:event_selectSelectedButtonActionPerformed
 
     private void deselectSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deselectSelectedButtonActionPerformed
         allPluginsModel.add(selectedPluginsList.getSelectedValuesList());
         selectedPluginsModel.remove(selectedPluginsList.getSelectedValuesList());
+        updateButtonsEnabled();
     }//GEN-LAST:event_deselectSelectedButtonActionPerformed
 
     private void pluginsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_pluginsListValueChanged
@@ -339,8 +326,8 @@ public final class PluginsPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void updateButtonsEnabled() {
-        selectSelectedButton.setEnabled(pluginsList.getSelectedIndex()!=-1);
-        deselectSelectedButton.setEnabled(selectedPluginsModel.getSize() > 0 && selectedPluginsList.getSelectedIndex()!=-1 && selectedPluginsList.getSelectedIndex()<selectedPluginsModel.getSize());
+        selectSelectedButton.setEnabled(allPluginsModel.getSize() > 0 && pluginsList.getSelectedIndex() != -1 && pluginsList.getSelectedIndex() < allPluginsModel.getSize());
+        deselectSelectedButton.setEnabled(selectedPluginsModel.getSize() > 0 && selectedPluginsList.getSelectedIndex() != -1 && selectedPluginsList.getSelectedIndex() < selectedPluginsModel.getSize());
     }
 
     private static final class PluginsListModel extends AbstractListModel {

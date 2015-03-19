@@ -105,7 +105,7 @@ public abstract class CsmInstantiationProvider {
     }
     
     /**
-     * Calculates template type for the given parameter using patternType
+     * Deduces template type for the given parameter using patternType
      * as a pattern to find template parameter and actualType as type
      * from which template type should be calculated.
      * 
@@ -122,7 +122,7 @@ public abstract class CsmInstantiationProvider {
      * 
      * @return calculated type(s) or null if type couldn't be calculated
      */
-    public abstract CsmType[] calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy);
+    public abstract CsmType[] deduceTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, DeduceTemplateTypeStrategy strategy);
 
     /**
      * Returns instantiation of template
@@ -254,7 +254,7 @@ public abstract class CsmInstantiationProvider {
     
     public abstract Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration);
     
-    public interface CalcTemplateTypeStrategy {
+    public interface DeduceTemplateTypeStrategy {
         
         /**
          * @param error
@@ -268,21 +268,21 @@ public abstract class CsmInstantiationProvider {
         }        
     }
     
-    public static final class DefaultCalcTemplateTypeStrategy implements CalcTemplateTypeStrategy {
+    public static final class DefaultDeduceTemplateTypeStrategy implements DeduceTemplateTypeStrategy {
         
         private final Set<Error> errors = new HashSet<Error>();
         
         private final Set<Error> acceptableErrors;
         
-        public DefaultCalcTemplateTypeStrategy() {
+        public DefaultDeduceTemplateTypeStrategy() {
             this(Collections.<Error>emptySet());
         }
         
-        public DefaultCalcTemplateTypeStrategy(Error ... acceptableErrors) {
+        public DefaultDeduceTemplateTypeStrategy(Error ... acceptableErrors) {
             this(EnumSet.copyOf(Arrays.asList(acceptableErrors)));
         }
 
-        public DefaultCalcTemplateTypeStrategy(Set<Error> acceptableErrors) {
+        public DefaultDeduceTemplateTypeStrategy(Set<Error> acceptableErrors) {
             this.acceptableErrors = acceptableErrors;
         }
         
@@ -306,7 +306,7 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmType[] calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy) {
+        public CsmType[] deduceTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, DeduceTemplateTypeStrategy strategy) {
             return null;
         }
 
