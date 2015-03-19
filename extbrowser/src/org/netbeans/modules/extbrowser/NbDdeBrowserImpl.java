@@ -110,7 +110,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     }
                 } else {
                     String javaVMName = System.getProperty("java.vm.name"); //NOI18N
-                    if ((javaVMName != null) && (javaVMName.indexOf("64") > -1)) { //NOI18N
+                    if ((javaVMName != null) && (javaVMName.contains("64"))) { //NOI18N
                         System.loadLibrary(EXTBROWSER_DLL_64BIT);
                     } else {
                         System.loadLibrary(EXTBROWSER_DLL);
@@ -241,20 +241,21 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         try {
             String cmd = getDefaultOpenCommand ();
             if (cmd != null) {
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.IEXPLORE) >= 0) {
+                cmd = cmd.toUpperCase();
+                if (cmd.contains(ExtWebBrowser.IEXPLORE)) {
                     return ExtWebBrowser.IEXPLORE;
                 }
 
-                if (cmd.toUpperCase ().indexOf ("CHROME") >= 0) { // NOI18N
+                if (cmd.contains("CHROME")) { // NOI18N
                     return ExtWebBrowser.CHROME;
                 }
 
                 // check FF before Mozilla becuase FF is Mozilla but Mozills itself is old one
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.FIREFOX) >= 0) {
+                if (cmd.contains(ExtWebBrowser.FIREFOX)) {
                     return ExtWebBrowser.FIREFOX;
                 }
                 
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.MOZILLA) >= 0) {
+                if (cmd.contains(ExtWebBrowser.MOZILLA)) {
                     return ExtWebBrowser.MOZILLA;
                 }
             }
