@@ -404,7 +404,7 @@ public class StatementFinder {
                     if (en != null) {
                         String scopeToAdd = scope;
                         if (scopeToAdd == null) {
-                             scopeToAdd = getQualifiedName(condition.getScope(), en);
+                             scopeToAdd = getQualifiedName(CsmBaseUtilities.getLastCommonScope(condition.getScope(), en), en);
                              if (scopeToAdd == null) {
                                  scopeToAdd = "";
                              }
