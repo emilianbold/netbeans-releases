@@ -294,9 +294,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         /** FIFO of urls that should be displayed */
         Vector tasks;
         
-        /** flag for quiting of this thread */
-        boolean doProcessing = true;
-        
         /** This is set to true during displaying of URL. 
          *  Used by Timer to interrupt displaying and print error message 
          */
@@ -335,7 +332,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         @Override
         public void run() {
             logFine("NbDdeBrowserImpl.run"); // NOI18N
-            while (doProcessing) {
+            while (true) {
                 try {
                     /** url to be displayed */
                     DisplayTask task = getNextTask();
