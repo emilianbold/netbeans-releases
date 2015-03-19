@@ -127,6 +127,10 @@ public class JadeCompletionContextTest extends JadeTestBase {
         checkCompletionContext("testfiles/ccContext/issue251132.jade");
     }
     
+    public void testIssue251152() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue251152.jade");
+    }
+    
     public void testIssue251160() throws Exception {
         checkCompletionContext("testfiles/ccContext/issue251160.jade");
     }
