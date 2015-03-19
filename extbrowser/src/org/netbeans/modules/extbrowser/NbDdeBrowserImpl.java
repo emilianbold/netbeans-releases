@@ -214,19 +214,16 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     @Override
     protected PrivateBrowserFamilyId detectPrivateBrowserFamilyId(){
         PrivateBrowserFamilyId id = super.detectPrivateBrowserFamilyId();
-        if (id != PrivateBrowserFamilyId.UNKNOWN){
-            return id;
+        if (id == PrivateBrowserFamilyId.UNKNOWN){
+            switch (realDDEServer()) {
+                case ExtWebBrowser.FIREFOX: id = PrivateBrowserFamilyId.FIREFOX; break;
+                case ExtWebBrowser.CHROME: id = PrivateBrowserFamilyId.CHROME; break;
+                default: id = PrivateBrowserFamilyId.UNKNOWN;
+            }
         }
-        String ddeServer = realDDEServer();
-        if ( ExtWebBrowser.FIREFOX.equals( ddeServer ) ){
-            return PrivateBrowserFamilyId.FIREFOX;
-        }
-        else if ( ExtWebBrowser.CHROME.equals( ddeServer)){
-            return PrivateBrowserFamilyId.CHROME;
-        }
-        return PrivateBrowserFamilyId.UNKNOWN;
+        return id;
     }
-    
+
     /** Finds the name of DDE server. 
      *  If <Default system browser> is set then it resolves it into either 
      *  Netscape or IExplore
