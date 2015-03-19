@@ -81,7 +81,7 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author Rob Englander
  */
-public class ConnectionNode extends BaseNode {
+public class ConnectionNode extends BaseNode implements PropertyChangeListener {
     
     private static final String CONNECTEDICONBASE = "org/netbeans/modules/db/resources/connection.gif"; // NOI18N
     private static final String DISCONNECTEDICONBASE = "org/netbeans/modules/db/resources/connectionDisconnected.gif"; // NOI18N
@@ -110,7 +110,6 @@ public class ConnectionNode extends BaseNode {
     
     // the connection
     private final DatabaseConnection connection;
-    private PropertyChangeListener propertyChangeListener;
 
     /**
      * Constructor
@@ -126,22 +125,21 @@ public class ConnectionNode extends BaseNode {
     @Override
     protected void initialize() {
         // listen for change events
-        connection.addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    private final RequestProcessor.Task UPDATE = RP.create(
-                            new Runnable() { //#203127 - asynchronous update
-                                @Override
-                                public void run() {
-                                    updateModel();
-                                }
-                            });
-
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        UPDATE.schedule(10);
-                    }
-                });
+        connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
         updateModel();
+    }
+
+    private final RequestProcessor.Task UPDATE = RP.create(
+            new Runnable() { //#203127 - asynchronous update
+                @Override
+                public void run() {
+                    updateModel();
+                }
+            });
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        UPDATE.schedule(10);
     }
 
     @Override
