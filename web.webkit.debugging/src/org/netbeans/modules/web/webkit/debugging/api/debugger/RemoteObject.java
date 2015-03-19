@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
 public class RemoteObject extends AbstractObject {
     
     private static final String PROP_TYPE = "type";                 // NOI18N
+    private static final String PROP_SUBTYPE = "subtype";           // NOI18N
     private static final String PROP_VALUE = "value";               // NOI18N
     private static final String PROP_DESCRIPTION = "description";   // NOI18N
     private static final String PROP_CLASS_NAME = "className";      // NOI18N
@@ -68,11 +69,6 @@ public class RemoteObject extends AbstractObject {
     
     public static enum Type {
         OBJECT(Bundle.TYPE_OBJECT()),
-// object subtype hints: probably not neede now
-//        ARRAY,
-//        NODE,
-//        REGEXP,
-//        DATE,
         FUNCTION(Bundle.TYPE_FUNCTION()),
         UNDEFINED(Bundle.TYPE_UNDEFINED()),
         STRING(Bundle.TYPE_STRING()),
@@ -89,6 +85,14 @@ public class RemoteObject extends AbstractObject {
             return name;
         }
         
+    }
+    
+    public static enum SubType {
+        ARRAY,
+        DATE,
+        NODE,
+        NULL,
+        REGEXP
     }
         
     private JSONObject property;
@@ -120,6 +124,23 @@ public class RemoteObject extends AbstractObject {
         } else {
             assert false : "what type is this?? '"+t+"'";
             return Type.OBJECT;
+        }
+    }
+    
+    public SubType getSubType() {
+        String st = (String) getObject().get(PROP_SUBTYPE);
+        if (st == null) {
+            return null;
+        }
+        switch (st) {
+            case "array" : return SubType.ARRAY;
+            case "date"  : return SubType.DATE;
+            case "node"  : return SubType.NODE;
+            case "null"  : return SubType.NULL;
+            case "regexp": return SubType.REGEXP;
+            default:
+                assert false: "Unknown sub type: '"+st+"'";
+                return null;
         }
     }
 
