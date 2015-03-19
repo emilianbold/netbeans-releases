@@ -159,7 +159,9 @@ import org.openide.util.RequestProcessor;
     }
 
     public void connected() {
-        RP.post(new ConnectTask());
+        if (RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+            RP.post(new ConnectTask());
+        }
     }
 
     /*package*/ void requestRefreshCycle(String path) {

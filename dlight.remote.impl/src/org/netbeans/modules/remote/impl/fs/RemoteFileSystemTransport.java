@@ -79,6 +79,9 @@ public abstract class RemoteFileSystemTransport {
 
     public static void refreshFast(RemoteDirectory directory, boolean expected) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        if (!directory.hasCache()) {
+            return;
+        }
         String path = directory.getPath();
         if (path.isEmpty()) {
             path = "/"; // NOI18N
