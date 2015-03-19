@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
