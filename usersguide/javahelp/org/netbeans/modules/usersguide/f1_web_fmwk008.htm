@@ -1,14 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>New JSF Pages from Entity Class Wizard: Generate JSF Pages and Classes</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-03-18</p>
 <p><a id="framework_jsf_fromentity_setup" name="framework_jsf_fromentity_setup"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref526" name="sthref526"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref995" name="sthref995"></a>
 <h1>New JSF Pages from Entity Class Wizard: Generate JSF Pages and Classes</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to generate JSP pages with JSF components based on entity classes in your web application. The generated JSP pages provide a web interface for the entity classes. For each entity class, the IDE creates four JSP pages enabling you to view, edit, create, and destroy entries in the data source. The IDE also creates controller and facade classes for each entity class and JSF utility classes. 
@@ -36,72 +37,55 @@
 <td align="left" id="r2c1-t8" headers="r1c1-t8">
 <p>Project</p>
 </td>
-<td align="left" headers="r2c1-t8 r1c2-t8">
-<p>Specifies the project in which the JSF pages and classes will be located.</p>
-</td>
+<td align="left" headers="r2c1-t8 r1c2-t8">Specifies the project in which the JSF pages and classes will be located.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t8" headers="r1c1-t8">
 <p>Location</p>
 </td>
-<td align="left" headers="r3c1-t8 r1c2-t8">
-<p>Select the folder for source packages.</p>
-</td>
+<td align="left" headers="r3c1-t8 r1c2-t8">Select the folder for source packages.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t8" headers="r1c1-t8">
 <p>Session Bean Package</p>
 </td>
-<td align="left" headers="r4c1-t8 r1c2-t8">
-<p>Select an existing package from the Package dropdown list or type the name of a new package for the facade classes.</p>
-</td>
+<td align="left" headers="r4c1-t8 r1c2-t8">Select an existing package from the Package dropdown list or type the name of a new package for the facade classes.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t8" headers="r1c1-t8">
 <p>JSF Classes Package</p>
 </td>
-<td align="left" headers="r5c1-t8 r1c2-t8">
-<p>Select an existing package from the Package dropdown list or type the name of a new package for the JSF controller classes.</p>
-</td>
+<td align="left" headers="r5c1-t8 r1c2-t8">Select an existing package from the Package dropdown list or type the name of a new package for the JSF controller classes.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t8" headers="r1c1-t8">
 <p>JSF Pages Folder</p>
 </td>
-<td align="left" headers="r6c1-t8 r1c2-t8">
-<p>Specify the location of the JSF Pages folder. If no folder is specified the JSF pages are saved in a folder in the default Web Pages folder.</p>
-</td>
+<td align="left" headers="r6c1-t8 r1c2-t8">Specify the location of the JSF Pages folder. If no folder is specified the JSF pages are saved in a folder in the default Web Pages folder.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t8" headers="r1c1-t8">
 <p>Localization Bundle Name</p>
 </td>
-<td align="left" headers="r7c1-t8 r1c2-t8">
-<p>Type the name of the bundle properties file. The default name is <code>Bundle</code>.</p>
-</td>
+<td align="left" headers="r7c1-t8 r1c2-t8">Type the name of the bundle properties file. The default name is <code dir="ltr">Bundle</code>.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t8" headers="r1c1-t8">
 <p>Override Existing Files</p>
 </td>
-<td align="left" headers="r8c1-t8 r1c2-t8">
-<p>When selected, the generated bundle properties file will replace the existing bundle properties file with the same name. If you want more than one bundle properties file you need to ensure that the name of each file is unique. An entry for the bundle properties file is automatically added to <code>faces-config.xml</code>.</p>
-</td>
+<td align="left" headers="r8c1-t8 r1c2-t8">When selected, the generated bundle properties file will replace the existing bundle properties file with the same name. If you want more than one bundle properties file you need to ensure that the name of each file is unique. An entry for the bundle properties file is automatically added to <code dir="ltr">faces-config.xml</code>.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r9c1-t8" headers="r1c1-t8">
 <p>Choose Templates</p>
 </td>
-<td align="left" headers="r9c1-t8 r1c2-t8">
-<p>Select either JavaServer Faces or PrimeFaces in the drop-down list.</p>
-</td>
+<td align="left" headers="r9c1-t8 r1c2-t8">Select either JavaServer Faces or PrimeFaces in the drop-down list.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r10c1-t8" headers="r1c1-t8">
 <p>Customize Template</p>
 </td>
-<td align="left" headers="r10c1-t8 r1c2-t8">
-<p>Enables you to modify the file templates that are used for generating the pages and bundle properties file. Right-click to view a list of the templates and select a template to open the template in the editor.</p>
+<td align="left" headers="r10c1-t8 r1c2-t8">Enables you to modify the file templates that are used for generating the pages and bundle properties file. Right-click to view a list of the templates and select a template to open the template in the editor.
 <p>To edit the template in the editor you need to close the wizard. The modified template will be used the next time you use the wizard.</p>
 </td>
 </tr>
@@ -114,6 +98,7 @@
 <li>You can also modify file templates by choosing <b>Tools</b> &gt; <b>Templates</b> from the main menu and then selecting the template you want to edit from the list in the Template Manager.</li>
 <li>Be aware that templates are not project-specific and the IDE will also use the modified template for generating files in other projects.</li>
 </ul>
+<a id="sthref996" name="sthref996"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -147,7 +132,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

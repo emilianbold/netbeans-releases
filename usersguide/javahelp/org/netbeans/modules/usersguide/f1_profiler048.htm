@@ -1,14 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>Memory Snapshot</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-03-18</p>
 <p><a id="MemorySnapshot.HelpCtx" name="MemorySnapshot.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref422" name="sthref422"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref791" name="sthref791"></a>
 <h1>Memory Snapshot</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to capture data on live objects, object allocation and liveness. The data captured in the snapshot depends upon the options that were selected for the profiling session. You can take a memory snapshot when you are analyzing memory usage. The snapshot is displayed in the main editor window. 
@@ -34,8 +35,7 @@
 <td align="left" id="r2c1-t52" headers="r1c1-t52">
 <p>Memory Results</p>
 </td>
-<td align="left" headers="r2c1-t52 r1c2-t52">
-<p>Displays a list of classes (including array classes), with the total size and number of instances allocated at the time you took the snapshot.</p>
+<td align="left" headers="r2c1-t52 r1c2-t52">Displays a list of classes (including array classes), with the total size and number of instances allocated at the time you took the snapshot.
 <p>If Record Stack Trace for Allocations was selected as a profiling option, you can display the stack traces for a specific class by right-clicking the name of the class and selecting <b>Show Allocation Stack Traces</b>. The stack traces are displayed in the <b>Allocation Stack Traces</b> tab.</p>
 </td>
 </tr>
@@ -43,16 +43,13 @@
 <td align="left" id="r3c1-t52" headers="r1c1-t52">
 <p>Info</p>
 </td>
-<td align="left" headers="r3c1-t52 r1c2-t52">
-<p>Displays data on when the snapshot was taken, where it is saved, and the configuration of the profiling session.</p>
-</td>
+<td align="left" headers="r3c1-t52 r1c2-t52">Displays data on when the snapshot was taken, where it is saved, and the configuration of the profiling session.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t52" headers="r1c1-t52">
 <p>Allocation Stack Traces</p>
 </td>
-<td align="left" headers="r4c1-t52 r1c2-t52">
-<p>Displays a reverse call graph with all call paths leading to object allocations for the given class.</p>
+<td align="left" headers="r4c1-t52 r1c2-t52">Displays a reverse call graph with all call paths leading to object allocations for the given class.
 <p>This tab is only available if <b>Record Stack Trace for Allocations</b> was selected as a profiling option.</p>
 </td>
 </tr>
@@ -60,7 +57,8 @@
 </table>
 <br />
 <!-- -->
-<p>Right-click any class in the Memory Results tab or the Allocation Stack Traces tab and select Go To Source to load the source <code>.java</code> file of a class.</p>
+<p>Right-click any class in the Memory Results tab or the Allocation Stack Traces tab and select Go To Source to load the source <code dir="ltr">.java</code> file of a class.</p>
+<a id="sthref792" name="sthref792"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -86,7 +84,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>
