@@ -1137,7 +1137,7 @@ public final class FoldHierarchyTransactionImpl {
         for (int i = 1; i < indexesLengthM1; i++) {
             int index = indexes[i] + indexShift;
             removeFoldFromHierarchy(fold, index, block);
-            indexShift += index;
+            indexShift = index;
         }
         
         // Need to process last (most inner) fold
