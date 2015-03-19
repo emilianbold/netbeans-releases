@@ -414,14 +414,13 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
                 task.browser.pcs.firePropertyChange(PROP_URL, task.browser.getURL(), url);
 
-            } catch (Exception ex) {
-                final Exception ex1 = ex;
+            } catch (final Exception ex) {
                 logFine("Interrupted in URLDisplayer.dispatchURL.end"); // NOI18N
-                Exceptions.attachLocalizedMessage(ex1, NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"));
+                Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"));
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        Exceptions.printStackTrace(ex1);
+                        Exceptions.printStackTrace(ex);
                     }
                 });
             }
