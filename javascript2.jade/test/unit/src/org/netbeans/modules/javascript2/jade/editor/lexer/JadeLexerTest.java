@@ -368,6 +368,10 @@ public class JadeLexerTest extends CslTestBase {
         checkLexer("testfiles/lexer/issue250537.jade");
     }
     
+    public void testIssue250542() throws Exception {
+        checkLexer("testfiles/lexer/issue250542.jade");
+    }
+    
     private void checkLexer(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         Snapshot snapshot = testSource.createSnapshot();

@@ -111,6 +111,9 @@ public enum JadeCompletionContext {
         new Object[]{JadeTokenId.CSS_CLASS, JadeTokenId.PLAIN_TEXT_DELIMITER}
     );
     
+    private String CSS_ID_PREFIX = "#"; // NOI18N
+    private String CSS_CLASS_PREFIX = "."; //NOI18N
+    
     @NonNull
     public static JadeCompletionContext findCompletionContext(ParserResult info, int offset){
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
@@ -153,7 +156,19 @@ public enum JadeCompletionContext {
                 return TAG;
             case CSS_ID: return CSS_ID;
             case CSS_CLASS: return CSS_CLASS;
-            case TEXT: text = token.text().toString(); break;
+            case TEXT: 
+                text = token.text().toString();
+                if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
+                    if (acceptTokenChains(ts, TAG_POSITION, true)) {
+                        return CSS_ID;
+                    }
+                }
+                break;
+            case PLAIN_TEXT_DELIMITER:
+                if (acceptTokenChains(ts, TAG_POSITION, true)) {
+                    return CSS_CLASS;
+                }
+                break;
             case COMMENT:
                 String commentText = token.text().toString();
                 int index = offset -  ts.offset() - 1;
@@ -228,7 +243,19 @@ public enum JadeCompletionContext {
                 }
             } else if (id == JadeTokenId.COMMENT) {
                 return TAG_AND_KEYWORD;
+            } else if (id == JadeTokenId.TEXT) {
+                text = token.text().toString();
+                if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
+                    if (acceptTokenChains(ts, KEYWORD_POSITION, true)) {
+                        return CSS_ID;
+                    }
+                }
+            } else if (id == JadeTokenId.PLAIN_TEXT_DELIMITER) {
+                if (acceptTokenChains(ts, KEYWORD_POSITION, true)) {
+                    return CSS_CLASS;
+                }
             }
+            
             while (ts.movePrevious()) {
                 token = ts.token();
                 id = token.id(); 

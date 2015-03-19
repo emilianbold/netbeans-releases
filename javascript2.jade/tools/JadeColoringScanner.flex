@@ -818,7 +818,7 @@ UnbufferedComment = "//-"
     ","                             {   yybegin(MIXIN_CALL_ARGUMENT);
                                         parenBalance = 1; braceBalance = 0;
                                         return JadeTokenId.OPERATOR_COMMA; }
-    ")"                             {   yybegin(IN_PLAIN_TEXT_LINE);
+    ")"                             {   yybegin(AFTER_TAG);
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
     {LineTerminator}                {   yybegin(AFTER_EOL);
                                         return JadeTokenId.EOL; }
