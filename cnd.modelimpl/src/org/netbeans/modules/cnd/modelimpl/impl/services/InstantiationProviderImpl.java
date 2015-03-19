@@ -165,7 +165,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     
 
     @Override
-    public CsmType[] calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy) {
+    public CsmType[] deduceTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, DeduceTemplateTypeStrategy strategy) {
         if (patternType != null && actualType != null) {
 //            CsmClassifir cls = patternType.getClassifier();
             TypeDigger digger = TypeDigger.create(templateParam, patternType);
@@ -196,7 +196,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     } else if (Qualificator.RVALUE_REFERENCE.equals(paramQual)) {
                                         continue;
                                     }
-                                    if (strategy.canSkipError(CalcTemplateTypeStrategy.Error.MatchQualsError)) {
+                                    if (strategy.canSkipError(DeduceTemplateTypeStrategy.Error.MatchQualsError)) {
                                         qualsError = true;
                                         break;
                                     } else {
@@ -204,7 +204,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     }
                                 }
                                 if (!targetQualIter.previous().equals(paramQual)) {
-                                    if (strategy.canSkipError(CalcTemplateTypeStrategy.Error.MatchQualsError)) {
+                                    if (strategy.canSkipError(DeduceTemplateTypeStrategy.Error.MatchQualsError)) {
                                         qualsError = true;
                                         break;
                                     } else {
@@ -803,10 +803,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
      * @return specialization parameter for the given template parameter
      */
     private CsmSpecializationParameter deduceSpecializationParam(CsmTemplateParameter specTemplateParam, ClassImplSpecialization specialization, InstantiationParametersInfo paramsInfo) {
-        Iterator<CsmSpecializationParameter> specParamIter = specialization.getSpecializationParameters().iterator();
-        Iterator<CsmSpecializationParameter> instParamIter = paramsInfo.getInstParams().iterator();
-        Iterator<CsmType> instParamTypeIter = paramsInfo.getParamsTypes().iterator();
-        Iterator<String> instParamTextIter = paramsInfo.getParamsTexts().iterator();
+        ListIterator<CsmSpecializationParameter> specParamIter = specialization.getSpecializationParameters().listIterator();
+        ListIterator<CsmSpecializationParameter> instParamIter = paramsInfo.getInstParams().listIterator();
+        ListIterator<CsmType> instParamTypeIter = paramsInfo.getParamsTypes().listIterator();
+        ListIterator<String> instParamTextIter = paramsInfo.getParamsTexts().listIterator();
         while (specParamIter.hasNext() && instParamIter.hasNext() && instParamTypeIter.hasNext() && instParamTextIter.hasNext()) {
             CsmSpecializationParameter specParam = specParamIter.next();
             CsmSpecializationParameter instParam = instParamIter.next();
@@ -814,11 +814,38 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             String instParamText = instParamTextIter.next();
             if (specTemplateParam.isTypeBased() && CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam) && instType != null) {
                 CsmType specParamType = ((CsmTypeBasedSpecializationParameter) specParam).getType();
-                DefaultCalcTemplateTypeStrategy calcStrategy = new DefaultCalcTemplateTypeStrategy(CalcTemplateTypeStrategy.Error.MatchQualsError);
-                CsmType results[] = calcTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
-                if (results != null && results.length > 0) {
+                List<CsmType> results = new ArrayList<>(2);
+                DefaultDeduceTemplateTypeStrategy calcStrategy = new DefaultDeduceTemplateTypeStrategy(DeduceTemplateTypeStrategy.Error.MatchQualsError);
+                CsmType deduced[] = deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
+                if (deduced != null && deduced.length > 0) {
+                    results.addAll(Arrays.asList(deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy)));
+                    if (specTemplateParam.isVarArgs() 
+                            && instParamIter.hasNext()
+                            && CsmBaseUtilities.isValid(specParamType.getClassifier()) 
+                            && CharSequenceUtilities.textEquals(specTemplateParam.getQualifiedName(), specParamType.getClassifier().getQualifiedName())) 
+                    {
+                        // 1. specTemplateParam is variadic 
+                        // 2. specTemplateParam appears in specialization parameters as is. (Except qualifiers maybe)
+                        // 3. there are more instantiation parameters
+                        // All that means that specTemplateParam must contain other instantiation params
+                        while (instParamIter.hasNext() && instParamTypeIter.hasNext() && instParamTextIter.hasNext()) {
+                            instParam = instParamIter.next();
+                            instType = instParamTypeIter.next();
+                            instParamText = instParamTextIter.next();
+                            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam) && instType != null) {
+                                deduced = deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
+                                if (deduced != null && deduced.length > 0) {
+                                    results.addAll(Arrays.asList(deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy)));
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (results.size() > 0) {
                     if (!specTemplateParam.isVarArgs()) {
-                        CsmType unfolded = Instantiation.unfoldInstantiatedType(results[0]);
+                        CsmType unfolded = Instantiation.unfoldInstantiatedType(results.get(0));
                         return createTypeBasedSpecializationParameter(unfolded, specParam.getScope());
                     } else {
                         List<CsmSpecializationParameter> varArgs = new ArrayList<>();
@@ -1718,12 +1745,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             return templateType;
         }
         
-        public CsmType[] extract(CsmType target, CalcTemplateTypeStrategy strategy) {
+        public CsmType[] extract(CsmType target, DeduceTemplateTypeStrategy strategy) {
             CsmType types[] = wrapType(target);
             for (ExtractAction action : actions) {
                 CsmType nextTypes[] = action.extract(types[0]);
                 if (nextTypes == null || nextTypes.length == 0) {
-                    return strategy.canSkipError(CalcTemplateTypeStrategy.Error.ExtractNextTypeError) ? types : null;
+                    return strategy.canSkipError(DeduceTemplateTypeStrategy.Error.ExtractNextTypeError) ? types : null;
                 }
                 types = nextTypes;
             }

@@ -100,8 +100,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
-import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.CalcTemplateTypeStrategy;
-import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DefaultCalcTemplateTypeStrategy;
+import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DeduceTemplateTypeStrategy;
+import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DefaultDeduceTemplateTypeStrategy;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -1465,14 +1465,14 @@ public final class CompletionSupport implements DocumentListener {
                     break;
                 }
                 CsmType paramType = param.getType();
-                DefaultCalcTemplateTypeStrategy calcStrategy = new DefaultCalcTemplateTypeStrategy(CalcTemplateTypeStrategy.Error.MatchQualsError);
+                DefaultDeduceTemplateTypeStrategy calcStrategy = new DefaultDeduceTemplateTypeStrategy(DeduceTemplateTypeStrategy.Error.MatchQualsError);
                 if (CsmKindUtilities.isTemplateParameterType(paramType) && paramIndex == funParams.size() - 1 
                         && templateParam.equals(((CsmTemplateParameterType) paramType).getParameter())
                         && templateParam.isVarArgs()) {
                     List<CsmType> varArgs = new ArrayList<CsmType>();
                     int argIndex = paramIndex;
                     while (argIndex < typeList.size()) {
-                        CsmType calculatedTypes[] = CsmInstantiationProvider.getDefault().calcTemplateType(templateParam, paramType, typeList.get(argIndex), calcStrategy);
+                        CsmType calculatedTypes[] = CsmInstantiationProvider.getDefault().deduceTemplateType(templateParam, paramType, typeList.get(argIndex), calcStrategy);
                         if (calculatedTypes != null && calculatedTypes.length > 0) {
                             varArgs.addAll(Arrays.asList(calculatedTypes)); // actually, calculatedTypes should have length = 1
                         }
@@ -1481,7 +1481,7 @@ public final class CompletionSupport implements DocumentListener {
                     map.put(templateParam, varArgs.toArray(new CsmType[varArgs.size()]));
                     break;
                 } else {
-                    CsmType calculatedTypes[] = CsmInstantiationProvider.getDefault().calcTemplateType(templateParam, paramType, typeList.get(paramIndex), calcStrategy);
+                    CsmType calculatedTypes[] = CsmInstantiationProvider.getDefault().deduceTemplateType(templateParam, paramType, typeList.get(paramIndex), calcStrategy);
                     if (calculatedTypes != null && calculatedTypes.length > 0) {
                         map.put(templateParam, calculatedTypes);
                         break;
