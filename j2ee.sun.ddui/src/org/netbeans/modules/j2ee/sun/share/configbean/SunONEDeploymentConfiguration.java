@@ -144,6 +144,36 @@ extends GlassfishConfiguration implements DeploymentConfiguration {
         super(module, J2eeModuleHelper.getWsModuleHelper(webServerDDName), version);
     }
 
+   /**
+     * Create an instance of SunONEDeploymentConfiguration for GF V2
+     * and earlier servers.
+     *
+     * @param module  J2eeModule instance for the project represented by this config.
+     * @param mySdmi  Sun deployment manager.
+     * @deprecated Use constructor with {@link GlassFishVersion}.
+     * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException
+     */
+    public SunONEDeploymentConfiguration(
+            final J2eeModule module, final SunDeploymentManagerInterface mySdmi
+    ) throws ConfigurationException {
+        super(module, null);
+        this.sdmi = mySdmi;
+    }
+
+    /**
+     * Create an instance of SunONEDeploymentConfiguration for Webserver.
+     *
+     * @param module J2eeModule instance for the project represented by this config.
+     * @param webServerDDName short name for web server sun dd
+     * @deprecated Use constructor with {@link GlassFishVersion}.
+     * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException
+     */
+    public SunONEDeploymentConfiguration(
+            final J2eeModule module, final String webServerDDName
+    ) throws ConfigurationException {
+        super(module, J2eeModuleHelper.getWsModuleHelper(webServerDDName), null);
+    }
+
     /** Deprecated form used for JSR-88.  Only exists to keep legacy parts of
      *  j2eeserver module happy.
      *
