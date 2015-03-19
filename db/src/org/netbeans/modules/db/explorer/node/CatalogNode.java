@@ -57,12 +57,13 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Rob Englander
  */
-public class CatalogNode extends BaseNode {
+public class CatalogNode extends BaseNode implements PropertyChangeListener {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/database.gif";
     private static final String FOLDER = "Catalog"; //NOI18N
 
@@ -97,16 +98,14 @@ public class CatalogNode extends BaseNode {
     protected void initialize() {
         refreshMetaData();
 
-        connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(DatabaseConnection.PROP_DEFCATALOG)) {
-                        updateProperties();
-                    }
-                }
-            }
-        );
+        connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(DatabaseConnection.PROP_DEFCATALOG)) {
+            updateProperties();
+        }
     }
 
     private void refreshMetaData() {
@@ -169,7 +168,7 @@ public class CatalogNode extends BaseNode {
         }
 
         if (catalog != null) {
-            boolean isDefault = false;
+            boolean isDefault;
             String def = connection.getDefaultCatalog();
             if (def != null) {
                 isDefault = def.equals(name);
