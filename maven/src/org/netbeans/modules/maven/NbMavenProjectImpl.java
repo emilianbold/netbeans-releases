@@ -127,6 +127,7 @@ public final class NbMavenProjectImpl implements Project {
     private static final Logger LOG = Logger.getLogger(NbMavenProjectImpl.class.getName());
     
     //sequential execution might be necesary for #166919
+    public static final RequestProcessor LOADING_RP = new RequestProcessor("Maven project loading", 1); //NOI18
     public static final RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18
     //minor optimization. In case the queue already holds the task and is not run, delay, if running reschedule.
     private final RequestProcessor.Task reloadTask = RELOAD_RP.create(new Runnable() {
@@ -813,7 +814,12 @@ public final class NbMavenProjectImpl implements Project {
             this.watcherRef = new WeakReference<NbMavenProject>(watcher);
             //needs to be kept around to prevent recreating instances
             general = Lookups.forPath("Projects/org-netbeans-modules-maven/Lookup"); //NOI18N
-            check();
+//            LOADING_RP.post(new Runnable() {
+//                @Override
+//                public void run() {
+                    check();
+//                }
+//            });
             watcher.addPropertyChangeListener(WeakListeners.propertyChange(this, watcher));
         }
 
