@@ -157,15 +157,16 @@ public enum JadeCompletionContext {
             case CSS_ID: return CSS_ID;
             case CSS_CLASS: return CSS_CLASS;
             case TEXT: 
-                text = token.text().toString(); 
+                text = token.text().toString();
                 if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
                     if (acceptTokenChains(ts, TAG_POSITION, true)) {
                         return CSS_ID;
                     }
-                } else if (JadeCodeCompletion.CSS_CLASS_PREFIX.equals(text)) {
-                    if (acceptTokenChains(ts, TAG_POSITION, true)) {
-                        return CSS_CLASS;
-                    }
+                }
+                break;
+            case PLAIN_TEXT_DELIMITER:
+                if (acceptTokenChains(ts, TAG_POSITION, true)) {
+                    return CSS_CLASS;
                 }
                 break;
             case COMMENT:
