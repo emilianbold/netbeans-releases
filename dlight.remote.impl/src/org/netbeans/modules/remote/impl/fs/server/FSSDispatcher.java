@@ -451,7 +451,8 @@ import org.openide.util.RequestProcessor;
                 }
             } else {
                 String toExpand = "$osname-$platform" + // NOI18N
-                        ((osFamily == HostInfo.OSFamily.LINUX) ? "${_isa}" : ""); // NOI18N
+                        ((osFamily == HostInfo.OSFamily.LINUX && 
+                        hostInfo.getCpuFamily() != HostInfo.CpuFamily.SPARC) ? "${_isa}" : ""); // NOI18N
                 platformPath = macroExpander.expandPredefinedMacros(toExpand);
             }
             toolPath += "bin/" + platformPath + "/fs_server"; //NOI18N
