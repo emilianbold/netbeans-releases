@@ -65,6 +65,10 @@
                     <name>Armv5</name>
                     <type>0</type>
                 </confElem>
+                <confElem>
+                    <name>SLinux64</name>
+                    <type>0</type>
+                </confElem>
             </confList>
             <formatting>
                 <project-formatting-style>false</project-formatting-style>

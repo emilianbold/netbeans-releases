@@ -15,6 +15,8 @@ ifeq (armv, $(shell expr substr `arch` 1 4))
     OS_ARCH = $(OS)-arm
 else ifeq (sun4, $(ARCH))
   OS_ARCH = $(OS)-sparc
+else ifeq (sparc64, $(ARCH))
+  OS_ARCH = $(OS)-sparc
 else
   OS_ARCH = $(OS)-x86
 endif
@@ -32,6 +34,7 @@ CC_COMMON=gcc
 CC_Linux-x86      = $(CC_COMMON)
 CC_Linux-x86_64   = $(CC_COMMON)
 CC_Linux-arm      = $(CC_COMMON)
+CC_Linux-sparc    = $(CC_COMMON)
 CC_MacOSX-x86     = clang 
 CC_MacOSX-x86_64  = clang 
 CC_SunOS-sparc    = $(CC_COMMON)
@@ -73,6 +76,7 @@ CF_COMMON         = --std=c99 -g -Wall -Werror -D_REENTRANT
 CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
+CF_Linux-sparc    = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m32
 CF_MacOSX-x86_64  = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m64
 CF_SunOS-sparc    = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64

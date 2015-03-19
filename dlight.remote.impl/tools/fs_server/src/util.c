@@ -354,7 +354,7 @@ char* signal_name(int signal) {
         case SIGPIPE:   return "SIGPIPE";
         case SIGALRM:   return "SIGALRM";
         case SIGTERM:   return "SIGTERM";
-#if __linux__        
+#if __linux__  && ! __sparc__
         case SIGSTKFLT: return "SIGSTKFLT";
 #endif        
 //        case SIGCLD:    return "SIGCLD"; // dup
