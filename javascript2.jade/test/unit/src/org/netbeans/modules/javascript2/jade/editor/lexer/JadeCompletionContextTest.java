@@ -139,6 +139,10 @@ public class JadeCompletionContextTest extends JadeTestBase {
         checkCompletionContext("testfiles/ccContext/issue251278.jade");
     }
     
+    public void testIssue251281() throws Exception {
+        checkCompletionContext("testfiles/ccContext/issue251281.jade");
+    }
+    
     private void checkCompletionContext(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         final Snapshot snapshot = testSource.createSnapshot();
