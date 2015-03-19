@@ -353,12 +353,18 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     }
 
     void store() {
-        PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).setSdkLocation(androidSdkField.getText());
-//        CordovaPlatform.getDefault().setSdkLocation(cordovaSdkField.getText());
-        PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setCodeSignIdentity(identityTextField.getText());
-        final ProvisioningProfile prov = (ProvisioningProfile) provisioningCombo.getSelectedItem();
-        if (prov !=null)
-            PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setProvisioningProfilePath(prov.getPath());
+        final MobilePlatform androidPlatform = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+        if (androidPlatform != null && androidSdkField != null) {
+            androidPlatform.setSdkLocation(androidSdkField.getText());
+        }
+        final MobilePlatform iOSPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
+        if (iOSPlatform != null && identityTextField != null && provisioningCombo != null) {
+            iOSPlatform.setCodeSignIdentity(identityTextField.getText());
+            final ProvisioningProfile prov = (ProvisioningProfile) provisioningCombo.getSelectedItem();
+            if (prov != null) {
+                iOSPlatform.setProvisioningProfilePath(prov.getPath());
+            }
+        }
     }
 
     @NbBundle.Messages(
