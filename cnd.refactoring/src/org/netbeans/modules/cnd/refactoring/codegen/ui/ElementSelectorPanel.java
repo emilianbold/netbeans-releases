@@ -72,7 +72,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     private final JCheckBox inline = new JCheckBox();
     private boolean inlineMethod;
     /** Creates new form ElementSelectorPanel */
-    public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection, boolean supportInline) {
+    public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection, boolean supportInline, boolean sortChildren) {
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
         elementView.setRootVisible(false);
@@ -86,7 +86,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         } else {
             inlineMethod = false;
         }
-        setRootElement(elementDescription, singleSelection);
+        setRootElement(elementDescription, singleSelection, sortChildren);
         //make sure that the first element is pre-selected
         Node root = manager.getRootContext();
         Node[] children = root.getChildren().getNodes();
@@ -128,11 +128,11 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         return handles;
     }
 
-    public final void setRootElement(ElementNode.Description elementDescription, boolean singleSelection) {
+    public final void setRootElement(ElementNode.Description elementDescription, boolean singleSelection, boolean sortChildren) {
 
         Node n;
         if (elementDescription != null) {
-            ElementNode en = new ElementNode(elementDescription);
+            ElementNode en = new ElementNode(elementDescription, sortChildren);
             en.setSingleSelection(singleSelection);
             n = en;
         } else {
