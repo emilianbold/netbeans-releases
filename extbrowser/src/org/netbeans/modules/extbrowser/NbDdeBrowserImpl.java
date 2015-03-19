@@ -181,13 +181,20 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
             try {
                 url = URLUtil.createExternalURL(url, false);
-                URI uri = url.toURI();
-                
-                if (np != null) {
-                    np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
+                String urlTxt;
+                if (url == null) {
+                    urlTxt = ""; // NOI18N;
+                } else {
+                    try {
+                        urlTxt = url.toURI().toASCIIString();
+                    } catch (URISyntaxException ex) {
+                        logInfo(ex);
+                        urlTxt = url.toString();
+                    }
                 }
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+                if (np != null) {
+                    np.exec(new SimpleExtBrowser.BrowserFormat(urlTxt));
+                }
             } catch (IOException ex) {
                 logInfo(ex);
                 BrowserUtils.notifyMissingBrowser(np.getProcessName());
