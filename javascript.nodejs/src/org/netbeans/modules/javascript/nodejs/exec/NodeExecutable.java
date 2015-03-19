@@ -314,7 +314,7 @@ public class NodeExecutable {
         for (File src : sourceRoots) {
             localPaths.add(src.getAbsolutePath());
             for (File site : siteRoots) {
-                if (FileUtils.isSubdirectoryOf(src, site)) {
+                if (FileUtils.isSubdirectoryOf(src, site) && !src.equals(site)) {
                     if (localPathsExclusionFilter.isEmpty()) {
                         localPathsExclusionFilter = new ArrayList<>();
                     }
