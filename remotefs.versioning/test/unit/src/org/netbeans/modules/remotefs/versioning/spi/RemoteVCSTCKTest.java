@@ -129,15 +129,17 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
             System.setProperty("netbeans.user", System.getProperty("nbjunit.workdir"));
         }
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-        String mspec = null;
-        for(String section : rcFile.getSections()) {
-            if (section.equals("remote.platforms")) {
-                Collection<String> keys = rcFile.getKeys(section);
-                for(String key : keys) {
-                    if (key.equals("intel-Linux")) {
-                        String get = rcFile.get(section, key, null);
-                        if (get == null) {
-                            mspec = key;
+        String mspec = rcFile.get("remote", "vcstck.mspec");
+        if (mspec == null) {
+            for(String section : rcFile.getSections()) {
+                if (section.equals("remote.platforms")) {
+                    Collection<String> keys = rcFile.getKeys(section);
+                    for(String key : keys) {
+                        if (key.equals("intel-Linux")) {
+                            String get = rcFile.get(section, key, null);
+                            if (get == null) {
+                                mspec = key;
+                            }
                         }
                     }
                 }

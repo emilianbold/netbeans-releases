@@ -368,6 +368,17 @@ public class RemoteFileSystemUtils {
         }
         return null;
     }
+    
+    public static void deleteRecursively(File file) {
+        if (file != null) {
+            file.delete();
+            if (file.isDirectory()) {
+                for (File child : file.listFiles()) {
+                    deleteRecursively(child);
+                }
+            }
+        }
+    }
 
     // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil" defaultstate="collapsed">
 

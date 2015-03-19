@@ -122,7 +122,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         if (execEnv == null) {
             return;
         }
-        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, true);
         fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
         assertNotNull("Null remote file system", fs);
         File cache = fs.getCache();

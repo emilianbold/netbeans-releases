@@ -80,7 +80,7 @@ public class RefreshNonInstantiatedTestCase extends RemoteFileTestBase {
     public void testRefreshNonInstantiated() throws Exception {
         String baseDir = null;
         try {
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
             baseDir = mkTempAndRefreshParent(true);
             RemoteFileObject baseFO = getFileObject(baseDir);
             baseFO.refresh();

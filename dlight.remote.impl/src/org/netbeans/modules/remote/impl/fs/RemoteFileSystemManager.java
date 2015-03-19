@@ -75,13 +75,16 @@ public class RemoteFileSystemManager {
         return INSTANCE;
     }
 
-    public void resetFileSystem(ExecutionEnvironment execEnv) {
+    public void resetFileSystem(ExecutionEnvironment execEnv, boolean clearCache) {
         synchronized(lock) {
             SoftReference<RemoteFileSystem> ref = fileSystems.remove(execEnv);
             if (ref != null) {
                 RemoteFileSystem fs = ref.get();
                 if (fs != null) {
                     fs.dispose();
+                }
+                if (clearCache) {
+                    RemoteFileSystemUtils.deleteRecursively(fs.getCache());
                 }
             }
         }
