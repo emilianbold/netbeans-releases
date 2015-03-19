@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -93,8 +95,16 @@ public class DeclTypeImpl extends TypeImpl {
     
     @Override
     public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {    
-        CsmType type = resolve(instantiations);
-        CsmClassifier classifier = type != null ? type.getClassifier() : null;
+        CsmClassifier classifier = null;
+        Resolver resolver = ResolverFactory.createResolver(this);
+        try {
+            if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                CsmType type = resolve(instantiations);
+                classifier = type != null ? type.getClassifier() : null;
+            }
+        } finally {
+            ResolverFactory.releaseResolver(resolver);
+        }
         if (classifier == null) {
             classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
         }
@@ -107,8 +117,16 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isPointer(List<CsmInstantiation> instantiations) {
-        CsmType type = resolve(instantiations);
-        return type != null ? type.isPointer() : false;
+        Resolver resolver = ResolverFactory.createResolver(this);
+        try {
+            if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                CsmType type = resolve(instantiations);
+                return type != null ? type.isPointer() : false;
+            }
+        } finally {
+            ResolverFactory.releaseResolver(resolver);
+        }
+        return false;
     }
 
     @Override
@@ -117,8 +135,16 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isReference(List<CsmInstantiation> instantiations) {
-        CsmType type = resolve(instantiations);
-        return type != null ? type.isReference() : false;
+        Resolver resolver = ResolverFactory.createResolver(this);
+        try {
+            if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                CsmType type = resolve(instantiations);
+                return type != null ? type.isReference() : false;
+            }
+        } finally {
+            ResolverFactory.releaseResolver(resolver);
+        }
+        return false;
     }
 
     @Override
@@ -127,8 +153,16 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isConst(List<CsmInstantiation> instantiations) {
-        CsmType type = resolve(instantiations);
-        return type != null ? type.isConst() : false;
+        Resolver resolver = ResolverFactory.createResolver(this);
+        try {
+            if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                CsmType type = resolve(instantiations);
+                return type != null ? type.isConst() : false;
+            }
+        } finally {
+            ResolverFactory.releaseResolver(resolver);
+        }
+        return false;
     }    
 
     @Override
@@ -137,8 +171,16 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isRValueReference(List<CsmInstantiation> instantiations) {
-        CsmType type = resolve(instantiations);
-        return type != null ? type.isRValueReference(): false;
+        Resolver resolver = ResolverFactory.createResolver(this);
+        try {
+            if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                CsmType type = resolve(instantiations);
+                return type != null ? type.isRValueReference(): false;
+            }
+        } finally {
+            ResolverFactory.releaseResolver(resolver);
+        }
+        return false;
     }
 
     private boolean canUseCache(List<CsmInstantiation> instantiations) {
@@ -148,11 +190,11 @@ public class DeclTypeImpl extends TypeImpl {
     
     private CsmType resolve(List<CsmInstantiation> instantiations) {
         CsmType type = null;
-        
+
         if (canUseCache(instantiations)) {
             type = cachedType;
         }
-        
+
         if (type == null) {
             if (canUseCache(instantiations)) {
                 synchronized (this) {
@@ -168,10 +210,6 @@ public class DeclTypeImpl extends TypeImpl {
             }
         }
         
-        // TODO: most likely this test is not sufficient. But, technically,
-        // CsmExpressionResolver.resolveType should return types declared 
-        // above current decltype. So there should not be recursion via several 
-        // decltypes.
         return (type != this) ? type : null;
     }
 
