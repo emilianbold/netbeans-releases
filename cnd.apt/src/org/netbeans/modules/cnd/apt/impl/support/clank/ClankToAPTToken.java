@@ -90,8 +90,8 @@ import org.openide.util.CharSequences;
             if (II != null) {
                 StringMapEntryBase entry = II.getEntry();
                 assert entry != null;
-                String txt = new String(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
-                textID = TextCache.getManager().getString(CharSequences.create(txt));
+                CharSequence txt = CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
+                textID = TextCache.getManager().getString(txt);
             } else if (orig.isLiteral()) {
                 textID = CharSequences.create(Casts.toCharSequence(orig.getLiteralData(), orig.getLength()));
             } else if (orig.is(tok.TokenKind.comment)) {

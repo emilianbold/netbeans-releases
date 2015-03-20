@@ -78,13 +78,15 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 
     public static final class CachedTokens {
         public final APTToken[] tokens;
+        public int[] skppedRanges;
 
         private CachedTokens() {
             this.tokens = null;
         }
 
-        public CachedTokens(SourceManager SM, Token[] tokens, int nrTokens) {
-            this.tokens = ClankToAPTToken.convertToAPT(SM, tokens, nrTokens);
+        public CachedTokens(int[] skppedRanges, APTToken[] tokens) {
+            this.skppedRanges = skppedRanges;
+            this.tokens = tokens;
         }
 
     }

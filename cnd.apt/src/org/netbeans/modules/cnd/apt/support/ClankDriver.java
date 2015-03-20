@@ -62,6 +62,16 @@ public final class ClankDriver {
     }
     
     public interface ClankPreprocessorCallback {
+      boolean onEnter(ClankFileInfo include);
+      boolean onExit(ClankFileInfo include);
+    }
 
+    public interface ClankFileInfo {
+      CharSequence getFilePath();
+      PreprocHandler getHandler();
+      APTTokenStream getTokenStream();
+      int getIncludeIndex();
+      ResolvedPath getResolvedPath();
+      int[] getSkippedRanges();
     }
 }

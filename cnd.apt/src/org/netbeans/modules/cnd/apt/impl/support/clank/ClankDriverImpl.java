@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
 import java.util.Collections;
-import org.clang.basic.SourceManager;
-import org.clang.lex.Token;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
@@ -94,7 +92,7 @@ public class ClankDriverImpl {
                         return interrupter.cancelled();
                     }
                 };
-                ClankPPCallback fileTokensCallback = new ClankPPCallback(path, inclStackIndex, llvm.errs(), callback);
+                ClankPPCallback fileTokensCallback = new ClankPPCallback(includeHandler, path, inclStackIndex, llvm.errs(), callback);
                 settings.IncludeInfoCallbacks = fileTokensCallback;
                 ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
                 ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
@@ -108,7 +106,7 @@ public class ClankDriverImpl {
             if (interrupter.cancelled()) {
                 return null;
             }
-            return new ClankToAPTTokenStream(cached);
+            return new ArrayBasedAPTTokenStream(cached.tokens);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -123,16 +121,15 @@ public class ClankDriverImpl {
         return asciis;
     }
 
-    private static final class ClankToAPTTokenStream implements APTTokenStream, TokenStream {
+    static final class ArrayBasedAPTTokenStream implements APTTokenStream, TokenStream {
 
         private int index;
         private final int lastIndex;
         private final APTToken[] tokens;
 
-        private ClankToAPTTokenStream(ClankIncludeHandlerImpl.CachedTokens cached) {
-            assert cached != null;
-            this.tokens = cached.tokens;
-            this.lastIndex = cached.tokens.length - 1;
+        ArrayBasedAPTTokenStream(APTToken[] tokens) {
+            this.tokens = tokens;
+            this.lastIndex = tokens.length - 1;
             this.index = 0;
         }
 
@@ -143,6 +140,11 @@ public class ClankDriverImpl {
             } else {
                 return APTUtils.EOF_TOKEN;
             }
+        }
+
+        @Override
+        public String toString() {
+            return APTUtils.debugString(new ArrayBasedAPTTokenStream(tokens)).toString();
         }
     }
 }
