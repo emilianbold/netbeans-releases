@@ -51,6 +51,7 @@ import java.io.InterruptedIOException;
 import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -621,18 +622,18 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             assert folder != null;
             assert cachePolicy != null;
             assert analyzer != null;
-            this.folder = folder;
+            this.folder = new Folder(folder);
             this.lockFactory = new RecordOwnerLockFactory();
-            this.fsDir = createFSDirectory(folder, lockFactory);
-            this.cachePolicy = cachePolicy;                        
+            this.fsDir = createFSDirectory(this.folder, lockFactory);
+            this.cachePolicy = cachePolicy;
             this.analyzer = analyzer;
             this.storeCloseSynchronizer = new StoreCloseSynchronizer();
         }
-        
+
         Analyzer getAnalyzer() {
             return this.analyzer;
         }
-        
+
         void clear() throws IOException {
             Future<Void> sync;
             while (true) {
@@ -1344,6 +1345,39 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 };
             }
         }
+    }
 
+    private static final class Folder extends File {
+        private static final java.nio.file.InvalidPathException IPE = new java.nio.file.InvalidPathException("", "") {    //NOI18N
+            @Override
+            public Throwable fillInStackTrace() {
+                return this;
+            }
+        };
+
+        Folder(@NonNull final File folder) {
+            super(folder.getAbsolutePath());
+        }
+
+        @Override
+        public File getAbsoluteFile() {
+            assert isAbsolute();
+            return this;
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return true;
+        }
+
+        @Override
+        public boolean isFile() {
+            return !isDirectory();
+        }
+
+        @Override
+        public Path toPath() {
+            throw IPE;
+        }
     }
 }
