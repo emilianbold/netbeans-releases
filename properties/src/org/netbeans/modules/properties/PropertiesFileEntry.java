@@ -66,6 +66,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.util.WeakListeners;
 
 /**
  * Item in a set of properties files represented by a single
@@ -93,6 +97,8 @@ public class PropertiesFileEntry extends PresentableFileEntry
     
     /** Generated serial version UID. */    
     static final long serialVersionUID = -3882240297814143015L;
+    private final FileChangeAdapter list;
+    private FileChangeListener weakList;
     
     
     /**
@@ -115,6 +121,20 @@ public class PropertiesFileEntry extends PresentableFileEntry
             basicName = getFile().getName();
         else
             basicName = fo.getName();
+        
+        list = new FileChangeAdapter() {
+
+            @Override
+            public void fileChanged (FileEvent fe) {
+                getHandler().autoParse();
+            }
+
+            @Override
+            public void fileDeleted (FileEvent fe) {
+                detachListener();
+            }
+        };
+        attachListener(file);
         
         getCookieSet().add(PropertiesEditorSupport.class, this);
     }
@@ -152,6 +172,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
             LOG.finer("delete()");                                      //NOI18N
         }
         getHandler().stopParsing();
+        detachListener();
 
         try {
             super.delete();
@@ -187,7 +208,10 @@ public class PropertiesFileEntry extends PresentableFileEntry
             String basicName = getDataObject().getPrimaryFile().getName();
             String newName = basicName + pasteSuffix + Util.getLocaleSuffix(this);
 
-            return fileObject.move (lock, folder, newName, fileObject.getExt());
+            detachListener();
+            FileObject fo = fileObject.move (lock, folder, newName, fileObject.getExt());
+            attachListener(fo);
+            return fo;
         } finally {
             if (!wasLocked) {
                 lock.releaseLock ();
@@ -259,7 +283,9 @@ public class PropertiesFileEntry extends PresentableFileEntry
         if (!getFile().getName().startsWith(basicName))
             throw new IllegalStateException("Resource Bundles: error in Properties loader/rename."); // NOI18N
 
+        detachListener();
         FileObject fo = super.rename(name + getFile().getName().substring(basicName.length()));
+        attachListener(fo);
         basicName = name;
         return fo;
     }
@@ -398,6 +424,16 @@ public class PropertiesFileEntry extends PresentableFileEntry
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(Util.HELP_ID_CREATING);
+    }
+
+    private void attachListener (FileObject fo) {
+        fo.addFileChangeListener(weakList = WeakListeners.create(FileChangeListener.class, list, fo));
+    }
+
+    private void detachListener () {
+        FileObject fo = getFile();
+        fo.removeFileChangeListener(weakList);
+        weakList = null;
     }
 
     
