@@ -77,9 +77,9 @@ public class JadeCompletionItem implements CompletionProposal {
         return new JadeCompletionItem(request, element);
     }
     
-    public static CompletionProposal createCssItem(CompletionRequest request, String name) {
+    public static CompletionProposal createCssItem(CompletionRequest request, String name, String cssPrefix) {
         ElementHandle element = new SimpleElement(name, ElementKind.RULE);
-        return new JadeCompletionItem(request, element);
+        return new CssItem(request, element, cssPrefix);
     }
     
     public JadeCompletionItem(CompletionRequest request, ElementHandle element) {
@@ -234,6 +234,22 @@ public class JadeCompletionItem implements CompletionProposal {
         @Override
         public int getSortPrioOverride() {
             return 130;
+        }
+    }
+    
+    static class CssItem extends JadeCompletionItem {
+        private final String cssPrefix;
+        
+        public CssItem(CompletionRequest request, ElementHandle element, final String cssPrefix) {
+            super(request, element);
+            this.cssPrefix = cssPrefix;
+        }
+        
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.appendText(cssPrefix);
+            formatter.appendText(getName());
+            return formatter.getText();
         }
     }
     
