@@ -111,9 +111,6 @@ public enum JadeCompletionContext {
         new Object[]{JadeTokenId.CSS_CLASS, JadeTokenId.PLAIN_TEXT_DELIMITER}
     );
     
-    private String CSS_ID_PREFIX = "#"; // NOI18N
-    private String CSS_CLASS_PREFIX = "."; //NOI18N
-    
     @NonNull
     public static JadeCompletionContext findCompletionContext(ParserResult info, int offset){
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
@@ -158,10 +155,8 @@ public enum JadeCompletionContext {
             case CSS_CLASS: return CSS_CLASS;
             case TEXT: 
                 text = token.text().toString();
-                if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
-                    if (acceptTokenChains(ts, TAG_POSITION, true)) {
-                        return CSS_ID;
-                    }
+                if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text) && acceptTokenChains(ts, TAG_POSITION, true)) {
+                    return CSS_ID;
                 }
                 break;
             case PLAIN_TEXT_DELIMITER:
@@ -231,29 +226,31 @@ public enum JadeCompletionContext {
                 token = ts.token();
                 id = token.id();
             }
-            if (id == JadeTokenId.EOL) {
-                isBeginOfLine = true;
-                if (text != null){
-                    if (JadeCodeCompletion.CSS_CLASS_PREFIX.equals(text)) {
+            switch (id) {
+                case EOL:
+                    isBeginOfLine = true;
+                    if (text != null) {
+                        if (JadeCodeCompletion.CSS_CLASS_PREFIX.equals(text)) {
+                            return CSS_CLASS;
+                        }
+                        if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
+                            return CSS_ID;
+                        }
+                    }
+                    break;
+                case COMMENT: 
+                    return TAG_AND_KEYWORD;
+                case TEXT:
+                    text = token.text().toString();
+                    if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text) && acceptTokenChains(ts, KEYWORD_POSITION, true)) {
+                        return CSS_ID;
+                    }
+                    break;
+                case PLAIN_TEXT_DELIMITER:
+                    if (acceptTokenChains(ts, KEYWORD_POSITION, true)) {
                         return CSS_CLASS;
                     }
-                    if ( JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
-                        return CSS_ID;
-                    }
-                }
-            } else if (id == JadeTokenId.COMMENT) {
-                return TAG_AND_KEYWORD;
-            } else if (id == JadeTokenId.TEXT) {
-                text = token.text().toString();
-                if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text)) {
-                    if (acceptTokenChains(ts, KEYWORD_POSITION, true)) {
-                        return CSS_ID;
-                    }
-                }
-            } else if (id == JadeTokenId.PLAIN_TEXT_DELIMITER) {
-                if (acceptTokenChains(ts, KEYWORD_POSITION, true)) {
-                    return CSS_CLASS;
-                }
+                    break;
             }
             
             while (ts.movePrevious()) {
