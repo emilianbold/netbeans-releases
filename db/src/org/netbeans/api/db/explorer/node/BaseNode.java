@@ -45,11 +45,10 @@ package org.netbeans.api.db.explorer.node;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -132,8 +131,7 @@ public abstract class BaseNode extends AbstractNode {
     private final ChildNodeFactory childNodeFactory;
     private final NodeProvider nodeProvider;
 
-    private final List<Property> props = new CopyOnWriteArrayList<Property>();
-    private final HashMap<String, Object> propMap = new HashMap<String, Object>();
+    private final HashMap<String, Object> propMap = new HashMap<>();
 
     public boolean isRemoved = false;
     private volatile boolean refreshing = false;
@@ -298,16 +296,18 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     protected void clearProperties() {
-        for (Property prop : props) {
-            getSheet().get(Sheet.PROPERTIES).remove(prop.getName());
+        Sheet.Set propertySet = getSheet().get(Sheet.PROPERTIES);
+        
+        // This should be save - getProperties return an array, not a list
+        // => assumption: This is a copy of the property set
+        for (Property prop : propertySet.getProperties()) {
+            propertySet.remove(prop.getName());
         }
         
-        props.clear();
         propMap.clear();
     }
 
     protected void addProperty(Property nps) {
-        props.add(nps);
         getSheet().get(Sheet.PROPERTIES).put(nps);
     }
 
@@ -321,7 +321,6 @@ public abstract class BaseNode extends AbstractNode {
             propDesc = NbBundle.getMessage (BaseNode.class, desc);
         }
         PropertySupport ps = new NodePropertySupport(this, name, clazz, propName, propDesc, writeable);
-        props.add(ps);
         propMap.put(ps.getName(), value);
 
         getSheet().get(Sheet.PROPERTIES).put(ps);
@@ -336,7 +335,8 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     public synchronized Collection<Property> getProperties() {
-        return Collections.unmodifiableCollection(props);
+        Property[] properties = getSheet().get(Sheet.PROPERTIES).getProperties();
+        return Collections.unmodifiableCollection(Arrays.asList(properties));
     }
 
     @Override
