@@ -91,6 +91,22 @@ public class BindingsNGTest {
         assertEquals(eng.eval("ko.value.currentTweets[0].from_user_id"), 0d, "Boolean values are set to true");
     }
 
+    @Test
+    public void generateModelWithFunctions() throws Exception {
+        Bindings myModel = Bindings.create("MyModel")
+                .function("myFunc1")
+                .function("func2");
+
+        String txt = myModel.generate();
+        assertValidJS(txt);
+        assertNotNull(eng.eval("ko"));
+        assertNotNull(eng.eval("ko.value"));
+        assertNotNull(eng.eval("ko.value.myFunc1"));
+        assertNotNull(eng.eval("ko.value.func2"));
+        assertEquals("function", eng.eval("typeof ko.value.myFunc1"));
+        assertEquals("function", eng.eval("typeof ko.value.func2"));
+    }
+
     private void assertValidJS(String txt) {
         assertNotNull(txt, "We have some script");
         try {

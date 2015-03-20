@@ -135,6 +135,19 @@ public final class Bindings {
     }
 
     /**
+     * Generates a function (empty) into the JSON class.
+     *
+     * @param name name of variable (must be valid JavaScript identifier)
+     * @return this object
+     *
+     * @since 1.1
+     */
+    public final Bindings function(String name) {
+        addProp(name, false, "function() {}");
+        return this;
+    }
+
+    /**
      * Generates complex subtype based on another {@link Bindings} class.
      *
      * @param name name of variable (must be valid JavaScript identifier)
