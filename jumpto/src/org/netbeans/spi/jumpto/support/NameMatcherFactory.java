@@ -30,6 +30,9 @@
  */
 package org.netbeans.spi.jumpto.support;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -42,6 +45,23 @@ import org.openide.util.Parameters;
  * @author Vladimir Kvashin
  */
 public final class NameMatcherFactory {
+
+    private static final Map<Character,String> RE_SPECIALS;
+    static {
+        final Map<Character,String> m = new HashMap<>();
+        m.put('{',"\\{");         //NOI18N
+        m.put('}',"\\}");         //NOI18N
+        m.put('[',"\\[");         //NOI18N
+        m.put(']',"\\]");         //NOI18N
+        m.put('(',"\\(");         //NOI18N
+        m.put(')',"\\)");         //NOI18N
+        m.put('\\',"\\\\");       //NOI18N
+        m.put('.', "\\.");        //NOI18N
+        m.put('+',"\\+");         //NOI18N
+        m.put('*', ".*" );        //NOI18N
+        m.put('?', ".");          //NOI18N
+        RE_SPECIALS = Collections.unmodifiableMap(m);
+    }
 
     private NameMatcherFactory() {
     }
@@ -200,21 +220,19 @@ public final class NameMatcherFactory {
      * @since 1.20
      */
     public static String wildcardsToRegexp(final String pattern, boolean prefix) {
-        String result = pattern.
-                replace("{","").        //NOI18N
-                replace("}","").        //NOI18N
-                replace("[","").        //NOI18N
-                replace("]","").        //NOI18N
-                replace("(","").        //NOI18N
-                replace(")","").        //NOI18N
-                replace("\\","").       //NOI18N
-                replace(".", "\\.").    //NOI18N
-                replace("+","\\+").     //NOI18N
-                replace( "*", ".*" ).   //NOI18N
-                replace( '?', '.' );    //NOI18N
-        if (prefix) {
-            result = result.concat(".*");   //NOI18N
+        final StringBuilder res = new StringBuilder();
+        for (int i = 0; i< pattern.length(); i++) {
+            final char c = pattern.charAt(i);
+            final String r = RE_SPECIALS.get(c);
+            if (r != null) {
+                res.append(r);
+            } else {
+                res.append(c);
+            }
         }
-        return result;
+        if (prefix) {
+            res.append(".*");   //NOI18N
+        }
+        return res.toString();
     }
 }

@@ -42,10 +42,9 @@
 
 package org.netbeans.test.java.editor.formatting;
 
-import org.netbeans.modules.java.ui.FmtOptions;
+
 import org.netbeans.test.java.editor.formatting.operators.BracesOperator;
 import org.netbeans.test.java.editor.formatting.operators.FormattingOptionsOperator;
-import org.openide.util.NbBundle;
 
 /**
  *
