@@ -108,6 +108,7 @@ public class DocumentationScrollPane extends JScrollPane {
     // doc browser history
     private List<ElementJavadoc> history = new ArrayList<ElementJavadoc>(5);
     private int currentHistoryIndex = -1;
+    //@GuardedBy("this")
     protected ElementJavadoc currentDocumentation = null;
     private Reference<FileObject> currentFile;
     //@GuardedBy("this")
@@ -352,20 +353,28 @@ public class DocumentationScrollPane extends JScrollPane {
         bForward.setEnabled(false);
     }
 
-    private void openInExternalBrowser(){
-        if (currentDocumentation != null) {
-            URL url = currentDocumentation.getURL();
+    private void openInExternalBrowser() {
+        final ElementJavadoc cd;
+        synchronized (this) {
+            cd = currentDocumentation;
+        }
+        if (cd != null) {
+            URL url = cd.getURL();
             if (url != null) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             }
         }
     }
-    
+
     private void goToSource() {
-        if (currentDocumentation != null) {
-            final Action action = currentDocumentation.getGotoSourceAction();
+        final ElementJavadoc cd;
+        synchronized (this) {
+            cd = currentDocumentation;
+        }
+        if (cd != null) {
+            final Action action = cd.getGotoSourceAction();
             if (action != null) {
-                action.actionPerformed(new ActionEvent(currentDocumentation, 0, null));
+                action.actionPerformed(new ActionEvent(cd, 0, null));
             }
         }
     }
@@ -505,17 +514,23 @@ public class DocumentationScrollPane extends JScrollPane {
                 if (desc != null) {
                     RP.post(new Runnable() {
                         public @Override void run() {
-                            final ElementJavadoc doc = currentDocumentation.resolveLink(desc);
-                            if (doc != null) {
-                                EventQueue.invokeLater(new Runnable() {
-                                    public @Override void run() {
-                                        setData(doc, false);
-                                    }
-                                });
+                            final ElementJavadoc cd;
+                            synchronized (DocumentationScrollPane.this) {
+                                cd = currentDocumentation;
+                            }
+                            if (cd != null) {
+                                final ElementJavadoc doc = cd.resolveLink(desc);
+                                if (doc != null) {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        public @Override void run() {
+                                            setData(doc, false);
+                                        }
+                                    });
+                                }
                             }
                         }
                     });
-                }                    
+                }
             }
         }
     }
