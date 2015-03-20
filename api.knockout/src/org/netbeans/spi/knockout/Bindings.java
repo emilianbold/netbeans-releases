@@ -42,13 +42,19 @@
 package org.netbeans.spi.knockout;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.spi.knockout.BindingsProvider.Response;
 import org.openide.filesystems.FileObject;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.TopologicalSortException;
 
 /**
  * Allows structural description of a <code>ko.applyBindings</code> parameter.
@@ -63,7 +69,7 @@ public final class Bindings {
 
     private final String name;
     private final List<Bindings> subBindings = new ArrayList<>();
-    private final List<String> props = new ArrayList<>();
+    private final List<Object> props = new ArrayList<>();
 
     private Bindings(String name) {
         this.name = name;
@@ -144,7 +150,7 @@ public final class Bindings {
      */
     public final Bindings modelProperty(String name, Bindings binding, boolean array) {
         subBindings.add(binding);
-        addProp(name, array, binding.name);
+        addProp(name, array, binding);
         return this;
     }
 
@@ -152,44 +158,78 @@ public final class Bindings {
         StringBuilder sb = new StringBuilder();
         //sb.append("(function() {\n");
         HashSet<Bindings> visited = new HashSet<>();
-        LinkedHashSet<Bindings> lhs = new LinkedHashSet<>();
-        walkBindings(visited, lhs);
-        for (Bindings b : lhs) {
-            b.generate(sb);
+        Collection<Bindings> lhs = new LinkedHashSet<>();
+        StringBuilder delayedInit = new StringBuilder();
+        if (!walkBindings(visited, lhs)) {
+            Map<Bindings, List<Bindings>> edges = new HashMap<>();
+            for (Bindings b : lhs) {
+                edges.put(b, b.subBindings);
+            }
+            try {
+                BaseUtilities.topologicalSort(lhs, edges);
+                // There is a cycle, so the resolution should fail
+                throw new IllegalStateException();
+            } catch (TopologicalSortException ex) {
+                lhs = Collections.checkedList(ex.partialSort(), Bindings.class);
+            }
         }
-        sb.append("  ko.applyBindings(").append(name).append(");\n");
+        for (Bindings b : lhs) {
+            b.generate(sb, delayedInit, visited);
+            visited.remove(b);
+        }
+        sb.append(delayedInit);
+        sb.append("\nko.applyBindings(").append(name).append(");\n");
         //sb.append("}());");
         return sb.toString();
     }
 
-    private void generate(StringBuilder sb) {
+    private void generate(StringBuilder sb, StringBuilder delayedInit, Set<Bindings> notYetProcessed) {
         sb.append("var ").append(name).append(" = {");
         String sep = "\n";
-        for (String s : props) {
-            sb.append(sep).append("  ").append(s);
+        for (int i = 0; i < props.size(); i += 3) {
+            String propName = (String)props.get(i);
+            Boolean array = (Boolean)props.get(i + 1);
+            Object value = props.get(i + 2);
+            
+            if (value instanceof Bindings) {
+                Bindings b = (Bindings) value;
+                if (notYetProcessed.contains(b)) {
+                    delayedInit.append("\n").append(this.name).append("[\"").
+                        append(propName).append("\"] = ").append(b.name).
+                        append(";");
+                    continue;
+                }
+                value = b.name;
+            }
+            
+            if (array) {
+                value = "[ " + value + " ]";
+            }
+            sb.append(sep).append("  ").append('\"').append(propName).append("\" : ").append(value);
             sep = ",\n";
         }
         sb.append("\n};\n");
     }
 
-    private void addProp(String name, boolean array, String value) {
-        if (array) {
-            value = "[ " + value + " ]";
-        }
+    private void addProp(String name, boolean array, Object value) {
         if (name.contains("\"")) {
             throw new IllegalStateException("Wrong name " + name);
         }
-        props.add('\"' + name + "\" : " + value);
+        props.add(name);
+        props.add(array);
+        props.add(value);
     }
 
-    private void walkBindings(Set<Bindings> visited, Set<Bindings> collect) {
+    private boolean walkBindings(Set<Bindings> visited, Collection<Bindings> collect) {
         if (!visited.add(this)) {
-            return;
+            return false;
         }
+        boolean ok = true;
         for (Bindings b : subBindings) {
-            b.walkBindings(visited, collect);
+            ok &= b.walkBindings(visited, collect);
         }
         collect.add(this);
+        return ok;
     }
 
     /**
