@@ -221,9 +221,15 @@ public class SBHomeFactory {
                             reader.close();
                         }
                         String version = props.getProperty("version"); //NOI18N
+                        if (version == null) {
+                            version = props.getProperty("app.version"); //NOI18N
+                        }
                         return new Home(homePath, launcherPath, propertiesPath, version == null ? defaultVersion : version);
                     } catch (IOException e) {
                     }
+                } else if (Utilities.isMac() && path.equals(NbBundle.getMessage(SBHomeFactory.class, "MAC_GLUON_HOME"))) { //NOI18N
+                    // Gluon SceneBuilder 8.0.0 does not have scenebuilder.properties file
+                    return new Home(homePath, launcherPath, propertiesPath, defaultVersion);
                 }
             }
         } else {
