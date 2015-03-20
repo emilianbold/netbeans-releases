@@ -50,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -86,6 +87,8 @@ import org.openide.util.Utilities;
  *
  */
 public class ChromeManagerAccessor implements ExtensionManagerAccessor {
+
+    static final Logger LOGGER = Logger.getLogger(ChromeManagerAccessor.class.getName());
 
     private static final String NO_WEB_STORE_SWITCH=
             "netbeans.extbrowser.manual_chrome_plugin_install"; // NOI18N
@@ -144,19 +147,23 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
         private ExtensionManager.ExtensitionStatus isInstalledImpl() {
             JSONObject preferences = findPreferences();
+            LOGGER.log(Level.FINE, "Chrome preferences: {0}", preferences);
             if (preferences == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
+            LOGGER.log(Level.FINE, "Chrome preferences -> extensions: {0}", preferences.get("extensions"));
             JSONObject extensions = (JSONObject)preferences.get("extensions");
             if (extensions == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
+            LOGGER.log(Level.FINE, "Chrome preferences -> extensions -> settings: {0}", extensions.get("settings"));
             JSONObject settings = (JSONObject)extensions.get("settings");
             if (settings == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
             for (Object item : settings.entrySet()) {
                 Map.Entry e = (Map.Entry)item;
+                LOGGER.log(Level.FINE, "Chrome preferences - extensions -> settings -> value/extension: {0}", e.getValue());
                 JSONObject extension = (JSONObject)e.getValue();
                 if (extension != null) {
                     String path = (String)extension.get("path");
@@ -165,6 +172,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
+                    LOGGER.log(Level.FINE, "Chrome preferences - extensions -> settings -> value/extension -> manifest: {0}", extension.get("manifest"));
                     JSONObject manifest = (JSONObject)extension.get("manifest");
                     if (manifest != null && PLUGIN_PUBLIC_KEY.equals((String)manifest.get("key"))) {
                         String version = (String)manifest.get("version");
@@ -184,6 +192,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
         private JSONObject findPreferences() {
             File defaultProfile = getDefaultProfile();
+            LOGGER.log(Level.FINE, "Chrome default profile: {0}", defaultProfile);
             if (defaultProfile == null) {
                 return null;
             }
@@ -196,6 +205,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     JSONObject preferences = Utils.readFile(prefs[0]);
                     if (preferences != null
                             && preferences.get("extensions") != null) { // NOI18N
+                        LOGGER.log(Level.FINE, "Chrome preferences file: {0}", prefs[0]);
                         return preferences;
                     }
                 }
@@ -279,6 +289,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
         private File getDefaultProfile() {
             String[] userData = getUserData();
+            LOGGER.log(Level.FINE, "Chrome user data: {0}", Arrays.toString(userData));
             if ( userData != null ){
                 for (String dataDir : userData) {
                     File dir = new File(dataDir);
