@@ -149,7 +149,7 @@ public final class ClientConnection {
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (ParseException pex) {
-                        throw new IOException(pex.getLocalizedMessage(), pex);
+                        throw new IOException(pex.getLocalizedMessage()+" message = '"+message+"'", pex);
                     } catch (Throwable t) {
                         LOG.log(Level.SEVERE, message.toString(), t);
                     }

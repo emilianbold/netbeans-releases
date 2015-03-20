@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,13 +43,13 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.glassfish.tooling.data.GlassFishJavaEEConfig;
 import org.netbeans.modules.glassfish.tooling.data.GlassFishJavaSEConfig;
 import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
 import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
-import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilderProvider;
 import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilder;
-import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilderProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
@@ -115,8 +115,8 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
      * @param version GlassFish server version used to pick up display name.
      * @return GlassFish JavaEE platform name related to given server version.
      */
-    private static String getDisplayName(GlassFishVersion version) {
-        int ord = version.ordinal();
+    private static String getDisplayName(final GlassFishVersion version) {
+        final int ord = version.ordinal();
         if (ord >= GlassFishVersion.GF_4.ordinal()) {
             return NbBundle.getMessage(
                     Hk2JavaEEPlatformFactory.class, "MSG_V4ServerPlatform");
@@ -140,8 +140,8 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
      * @param version GlassFish server version used to pick up display name.
      * @return GlassFish JavaEE library name related to given server version.
      */
-    private static String getLibraryName(GlassFishVersion version) {
-        int ord = version.ordinal();
+    private static String getLibraryName(final GlassFishVersion version) {
+        final int ord = version.ordinal();
         if (ord >= GlassFishVersion.GF_4.ordinal()) {
             return NbBundle.getMessage(
                     Hk2JavaEEPlatformFactory.class, "LBL_V4ServerLibraries");
@@ -165,8 +165,8 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
      * @param version GlassFish server version used to pick up lookup key.
      * @return Lookup key for given GlassFish server version.
      */
-    private static String getLookupKey(GlassFishVersion version) {
-        int ord = version.ordinal();
+    private static String getLookupKey(final GlassFishVersion version) {
+        final int ord = version.ordinal();
         if (ord >= GlassFishVersion.GF_4.ordinal()) {
             return V4_LOOKUP_KEY;
         } else {
@@ -185,27 +185,26 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
      *           environment object is created.
      */
     @Override
-    public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
+    public J2eePlatformImpl getJ2eePlatformImpl(final DeploymentManager dm) {
         if (dm instanceof Hk2DeploymentManager) {
-            GlassFishServer server = ((Hk2DeploymentManager)dm)
+            final GlassFishServer server = ((Hk2DeploymentManager)dm)
                     .getCommonServerSupport().getInstance();
-            GlassFishVersion version = server.getVersion();
-            ConfigBuilder cb = ConfigBuilderProvider.getBuilder(server);
-            GlassFishJavaSEConfig javaSEConfig = cb.getJavaSEConfig(version);
-            GlassFishJavaEEConfig javaEEConfig = cb.getJavaEEConfig(version);
-            String[] platforms = Hk2JavaEEPlatformImpl.nbJavaSEProfiles(
+            final GlassFishVersion version = server.getVersion();
+            final ConfigBuilder cb = ConfigBuilderProvider.getBuilder(server);
+            final GlassFishJavaSEConfig javaSEConfig = cb.getJavaSEConfig(version);
+            final GlassFishJavaEEConfig javaEEConfig = cb.getJavaEEConfig(version);
+            final String[] platforms = Hk2JavaEEPlatformImpl.nbJavaSEProfiles(
                     javaSEConfig.getPlatforms());
-            Profile[] profiles = Hk2JavaEEPlatformImpl
+            final Profile[] profiles = Hk2JavaEEPlatformImpl
                     .nbJavaEEProfiles(javaEEConfig.getProfiles());
-            J2eeModule.Type[] types = Hk2JavaEEPlatformImpl
+            final J2eeModule.Type[] types = Hk2JavaEEPlatformImpl
                     .nbModuleTypes(javaEEConfig.getModuleTypes());
             return new Hk2JavaEEPlatformImpl((Hk2DeploymentManager)dm,
                     platforms, profiles, types, getDisplayName(version),
                     getLibraryName(version), getLookupKey(version));
         }
         throw new IllegalArgumentException(
-                "Deployment manager instance is not instance"
-                + " of Hk2DeploymentManager");
+                "Deployment manager instance is not instance  of Hk2DeploymentManager");
     }
 
 }

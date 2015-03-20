@@ -293,7 +293,7 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
             Exceptions.printStackTrace(ex);
         }
         for(String className: unique) {
-            resultList.add(JadeCompletionItem.createCssItem(request, CSS_ID_PREFIX + className));
+            resultList.add(JadeCompletionItem.createCssItem(request, className, CSS_ID_PREFIX));
         }
     }
     
@@ -319,7 +319,7 @@ public class JadeCodeCompletion implements CodeCompletionHandler2 {
         }
         
         for(String className: unique) {
-            resultList.add(JadeCompletionItem.createCssItem(request, CSS_CLASS_PREFIX + className));
+            resultList.add(JadeCompletionItem.createCssItem(request, className, CSS_CLASS_PREFIX));
         }
     }
     
