@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,6 +70,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -98,18 +99,23 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     
-    private Hk2DeploymentManager dm;
+    /** Deployment manager. */
+    private final Hk2DeploymentManager dm;
+
+    /** GlassFish library. */
     private final LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
+
+    /** GlassFish library storage. */
     private final LibraryImplementation[] libraries = { lib };
 
     /** NetBeans JavaSE platforms. */
-    private String[] platforms;
+    private final String[] platforms;
 
     /** NetBeans JavaEE profiles. */
-    private Profile[] profiles;
+    private final Profile[] profiles;
 
     /** NetBeans JavaEE module types. */
-    private J2eeModule.Type[] types;
+    private final J2eeModule.Type[] types;
 
     /** NetBeans JavaEE platform display name. */
     private final String displayName;
@@ -126,7 +132,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     private final Lookup lkp;
 
     /** Jersey Library support. */
-    private Hk2LibraryProvider libraryProvider;
+    private final Hk2LibraryProvider libraryProvider;
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -138,15 +144,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      * @return Local Lookup instance.
      */
     private Lookup initLocalLookup() {
-        String gfRootStr = dm.getProperties().getGlassfishRoot();
-        WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class,
+        final String gfRootStr = dm.getProperties().getGlassfishRoot();
+        final WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class,
                 new Hk2JaxWsStack(gfRootStr, this), WSStack.Source.SERVER);
-        WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class,
+        final WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class,
                 new Hk2JaxRpcStack(gfRootStr), WSStack.Source.SERVER);
-        Lookup baseLookup = Lookups.fixed(
+        final GlassFishServer server = dm.getCommonServerSupport().getInstance();
+        final Lookup baseLookup = Lookups.fixed(
                 gfRootStr, new JaxRsStackSupportImpl(), wsStack, rpcStack,
-                new Hk2JpaSupportImpl(
-                dm.getCommonServerSupport().getInstance()));
+                server, new Hk2JpaSupportImpl(server));
         return LookupProviderSupport.createCompositeLookup(
                 baseLookup, lookupKey);
     }
@@ -158,9 +164,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      * @return Array of NetBeans JavaSE platforms containing known GlassFish
      *         tooling SDK JavaSE platforms.
      */
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     public static String[] nbJavaSEProfiles(
             final Set<JavaSEPlatform> sdkPlatforms) {
-        int size = sdkPlatforms != null ? sdkPlatforms.size() : 0;
+        final int size = sdkPlatforms != null ? sdkPlatforms.size() : 0;
         String[] platforms = new String[size];
         if (size > 0) {
             int index = 0;
@@ -179,9 +186,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      * @return Array of NetBeans JavaEE profiles containing known GlassFish
      *         tooling SDK JavaEE profiles.
      */
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     public static Profile[] nbJavaEEProfiles(
             final Set<JavaEEProfile> sdkProfiles) {
-        int sdkSize = sdkProfiles != null ? sdkProfiles.size() : 0;
+        final int sdkSize = sdkProfiles != null ? sdkProfiles.size() : 0;
         int size = sdkSize;
         // Shrink output array size for unsupported JavaEE profiles.
         for (JavaEEProfile sdkProfile : sdkProfiles) switch(sdkProfile) {
@@ -222,9 +230,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      * @return Array of NetBeans JavaEE module types containing known GlassFish
      *         tooling SDK JavaEE module types.
      */
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     public static J2eeModule.Type[] nbModuleTypes(
             final Set<ModuleType> sdkModuleTypes) {
-        int size = sdkModuleTypes != null ? sdkModuleTypes.size() : 0;
+        final int size = sdkModuleTypes != null ? sdkModuleTypes.size() : 0;
         J2eeModule.Type[] types = new J2eeModule.Type[size];
         if (size > 0) {
             int index = 0;
@@ -251,8 +260,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      * @param platforms Array of supported JavaSE platforms.
      * @return Newly created set of supported JavaSE platforms.
      */
-    Set<String> platformsSetFromArray(String[] platforms) {
-        int size = platforms != null ? platforms.length : 0;
+    Set<String> platformsSetFromArray(final String[] platforms) {
+        final int size = platforms != null ? platforms.length : 0;
         Set<String> platformSet = new HashSet<>(size);
         for (int i = 0; i < size; i++) {
             platformSet.add(platforms[i]);
@@ -266,9 +275,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      * @param profiles Array of NetBeans JavaEE profiles.
      * @return Newly created set of NetBeans JavaEE profiles from array.
      */
-    Set<Profile> profilesSetFromArray(Profile[] profiles) {
-        int size = profiles != null ? profiles.length : 0;
-        Set<Profile> profileSet = new HashSet<>(size);
+    Set<Profile> profilesSetFromArray(final Profile[] profiles) {
+        final int size = profiles != null ? profiles.length : 0;
+        final Set<Profile> profileSet = new HashSet<>(size);
         for (int i = 0; i < size; i++) {
             profileSet.add(profiles[i]);
         }
@@ -283,9 +292,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      * @return Newly created set of NetBeans JavaEE module types from array.
      */
     Set<J2eeModule.Type> moduleTypesSetFromArray(
-            J2eeModule.Type[] moduleTypes) {
-        int size = moduleTypes != null ? moduleTypes.length : 0;
-        Set<J2eeModule.Type> moduleTypeSet = new HashSet<>(size);
+            final J2eeModule.Type[] moduleTypes) {
+        final int size = moduleTypes != null ? moduleTypes.length : 0;
+        final Set<J2eeModule.Type> moduleTypeSet = new HashSet<>(size);
         for (int i = 0; i < size; i++) {
             moduleTypeSet.add(moduleTypes[i]);
         }
@@ -329,9 +338,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
     private void addFcl() {
         if (null == fcl) {
-            String path = dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-            File f = new File(path, "modules"); // NOI18N
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+            final String path = dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+            final File f = new File(path, "modules"); // NOI18N
+            final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
             if (null == fo) {
                 Logger.getLogger("glassfish-javaee").log(Level.WARNING, "{0} did not exist but should", f.getAbsolutePath());
                 return;
@@ -339,32 +348,32 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             fcl = new FileChangeListener() {
 
                 @Override
-                public void fileFolderCreated(FileEvent fe) {
+                public void fileFolderCreated(final FileEvent fe) {
                     notifyLibrariesChanged();
                 }
 
                 @Override
-                public void fileDataCreated(FileEvent fe) {
+                public void fileDataCreated(final FileEvent fe) {
                     notifyLibrariesChanged();
                 }
 
                 @Override
-                public void fileChanged(FileEvent fe) {
+                public void fileChanged(final FileEvent fe) {
                     notifyLibrariesChanged();
                 }
 
                 @Override
-                public void fileDeleted(FileEvent fe) {
+                public void fileDeleted(final FileEvent fe) {
                     notifyLibrariesChanged();
                 }
 
                 @Override
-                public void fileRenamed(FileRenameEvent fe) {
+                public void fileRenamed(final FileRenameEvent fe) {
                     notifyLibrariesChanged();
                 }
 
                 @Override
-                public void fileAttributeChanged(FileAttributeEvent fe) {
+                public void fileAttributeChanged(final FileAttributeEvent fe) {
                     // we can ignore this type of change
                 }
             };
@@ -561,7 +570,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      * @return Supported JavaEE profiles.
      */
     @Override
-    public Set<Profile> getSupportedProfiles(J2eeModule.Type type) {
+    public Set<Profile> getSupportedProfiles(final J2eeModule.Type type) {
         return profilesSetFromArray(profiles);
     }
 
@@ -662,7 +671,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         initLibraries();
     }
 
-    private static RequestProcessor libInitThread =
+    private static final RequestProcessor libInitThread =
             new RequestProcessor("init libs -- Hk2JavaEEPlatformImpl");
     
      private void initLibraries() {
@@ -705,10 +714,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
     /**
      * Get GlassFish version.
-     * <p/>
-     * Returns {
-     *
-     * @see GlassFishVersion} for current GlassFish server instance.
+     * Returns {@see GlassFishVersion} for current GlassFish server instance.
      * <p/>
      * @return GlassFish version.
      */
@@ -733,8 +739,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      *         for GlassFish.
      */
     private String getAccConfigFile() {
-        GlassFishVersion version = getGFVersion();
-        String accConfigFile;
+        final GlassFishVersion version = getGFVersion();
+        final String accConfigFile;
         if (version != null
                 && version.ordinal() >= GlassFishVersion.GF_4.ordinal()) {
             accConfigFile = GFv4_ACC_XML;
@@ -824,9 +830,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#addJsr311Api(org.netbeans.api.project.Project)
          */
         @Override
-        public boolean addJsr311Api(Project project) {
-            Library library = libraryProvider.getJaxRsLibrary();
-            FileObject sourceRoot = getSourceRoot(project);
+        public boolean addJsr311Api(final Project project) {
+            final Library library = libraryProvider.getJaxRsLibrary();
+            final FileObject sourceRoot = getSourceRoot(project);
             if (library != null && sourceRoot != null) {
                 try {
                     String classPathType = hasJee6Profile()
@@ -840,13 +846,13 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             }
             // TODO: Rewrite to use Hk2LibraryProvider#getJaxRsName()
             // or getJaxRsClassPathURLs()
-            GlassFishVersion version = getGFVersion();
+            final GlassFishVersion version = getGFVersion();
             try {
                 if (version == null) {
                     return false;
                 }                
                 else if (version.equalsMajorMinor(GlassFishVersion.GF_3)) {
-                    File jsr311 = ServerUtilities.getJarName(dm.getProperties()
+                    final File jsr311 = ServerUtilities.getJarName(dm.getProperties()
                             .getGlassfishRoot(), "jsr311-api.jar"); // NOI18N
                     if (jsr311 == null || !jsr311.exists()) {
                         return false;
@@ -855,7 +861,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                             .toURI(jsr311).toURL()));
                 }
                 else if (version.equalsMajorMinor(GlassFishVersion.GF_3_1)) {
-                    File jerseyCore = ServerUtilities.getJarName(dm.getProperties().
+                    final File jerseyCore = ServerUtilities.getJarName(dm.getProperties().
                             getGlassfishRoot(), "jersey-core.jar"); // NOI18N
                     if ( jerseyCore== null || !jerseyCore.exists()){
                         return false;
@@ -864,7 +870,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                             Utilities.toURI(jerseyCore).toURL()));
                 }
                 else if (version.equalsMajorMinor(GlassFishVersion.GF_4)) {
-                    File javaxWsRs = ServerUtilities.getJarName(dm.getProperties().
+                    final File javaxWsRs = ServerUtilities.getJarName(dm.getProperties().
                             getGlassfishRoot(), "javax.ws.rs-api.jar"); // NOI18N
                     if ( javaxWsRs== null || !javaxWsRs.exists()){
                         return false;
@@ -909,11 +915,11 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
         
         @Override
-        public void removeJaxRsLibraries(Project project) {
-            Library library = libraryProvider.getJerseyLibrary();
-            FileObject sourceRoot = getSourceRoot(project);
+        public void removeJaxRsLibraries(final Project project) {
+            final Library library = libraryProvider.getJerseyLibrary();
+            final FileObject sourceRoot = getSourceRoot(project);
             if ( sourceRoot != null){
-                String[] classPathTypes = new String[]{ ClassPath.COMPILE , 
+                final String[] classPathTypes = new String[]{ ClassPath.COMPILE , 
                         JavaClassPathConstants.COMPILE_ONLY };
                 for (String type : classPathTypes) {
                     try {
@@ -960,14 +966,14 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#isBundled(java.lang.String)
          */
         @Override
-        public boolean isBundled( String classFqn ) {
-            List<URL> urls = libraryProvider.getJerseyClassPathURLs();
+        public boolean isBundled(final String classFqn ) {
+            final List<URL> urls = libraryProvider.getJerseyClassPathURLs();
             for( URL url : urls ){
                 FileObject root = URLMapper.findFileObject(url);
                 if ( FileUtil.isArchiveFile(root)){
                     root = FileUtil.getArchiveRoot(root);
                 }
-                String path = classFqn.replace('.', '/')+".class";
+                final String path = classFqn.replace('.', '/')+".class";
                 if ( root.getFileObject(path )!= null ){
                     return true;
                 }
@@ -975,8 +981,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             return false;
         }
 
-        private FileObject getSourceRoot(Project project) {
-            SourceGroup[] sourceGroups = ProjectUtils.getSources(project)
+        private FileObject getSourceRoot(final Project project) {
+            final SourceGroup[] sourceGroups = ProjectUtils.getSources(project)
                     .getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             if (sourceGroups == null || sourceGroups.length < 1) {
                 return null;
@@ -985,12 +991,12 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
         
         private boolean hasJee6Profile(){
-            Set<Profile> profiles = getSupportedProfiles();
+            final Set<Profile> profiles = getSupportedProfiles();
             return profiles.contains(Profile.JAVA_EE_6_FULL) || 
                 profiles.contains(Profile.JAVA_EE_6_WEB) ;
         }
         
-        private void addURL( Collection<URL> urls, File file ){
+        private void addURL(final Collection<URL> urls, final File file ){
             if ( file == null || !file.exists()) {
                 return;
             }
@@ -1001,21 +1007,21 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             }
         }
         
-        private boolean addJars( Project project, Collection<URL> jars ){
-            List<URL> urls = new ArrayList<>();
+        private boolean addJars(final Project project, Collection<URL> jars ){
+            final List<URL> urls = new ArrayList<>();
             for (URL url : jars) {
                 if ( FileUtil.isArchiveFile( url)){
                     urls.add(FileUtil.getArchiveRoot(url));
                 }
             }
-            SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+            final SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
             if (sourceGroups == null || sourceGroups.length < 1) {
                return false;
             }
-            FileObject sourceRoot = sourceGroups[0].getRootFolder();
+            final FileObject sourceRoot = sourceGroups[0].getRootFolder();
             try {
-                String classPathType;
+                final String classPathType;
                 if ( hasJee6Profile() ){
                     classPathType = JavaClassPathConstants.COMPILE_ONLY;
                 }
@@ -1055,7 +1061,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         private static final String VERSION_TAG = "product_version";    // NOI18N
 
         @Override
-        public void startElement(String uri, String localName, String qName,
+        public void startElement(final String uri, final String localName, final String qName,
             Attributes attributes) throws SAXException 
         {
             super.startElement(uri, localName, qName, attributes);
@@ -1065,7 +1071,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
 
         @Override
-        public void endElement(String uri, String localName, String qName) 
+        public void endElement(final String uri, final String localName, final String qName) 
                 throws SAXException 
         {
             super.endElement(uri, localName, qName);
@@ -1075,7 +1081,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
 
         @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
+        public void characters(final char[] ch, final int start, final int length) throws SAXException {
             super.characters(ch, start, length);
             if ( versionTag ){
                 version.append(ch, start, length);
@@ -1087,6 +1093,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
         
         private boolean versionTag;
-        private StringBuilder version = new StringBuilder();
+        private final StringBuilder version = new StringBuilder();
     }
 }
