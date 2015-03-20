@@ -1204,7 +1204,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
 
             private CleanReference(final RAMDirectory[] dir) {
                 super (dir, BaseUtilities.activeReferenceQueue());
-                final IndexCacheFactory.RAMContoller c = IndexCacheFactory.getDefault().getRAMController();
+                final IndexCacheFactory.RAMController c = IndexCacheFactory.getDefault().getRAMController();
                 final boolean doHardRef = !c.isFull();
                 if (doHardRef) {
                     this.hardRef = dir;
