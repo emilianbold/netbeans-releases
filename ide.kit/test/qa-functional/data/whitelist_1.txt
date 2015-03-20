@@ -89,7 +89,6 @@ org.netbeans.modules.editor.impl.ReformatBeforeSaveTask
 org.netbeans.modules.editor.impl.actions.clipboardhistory.ClipboardHistory
 org.netbeans.modules.editor.lib.BeforeSaveTasks
 org.netbeans.modules.editor.lib.BeforeSaveTasks$Task
-org.netbeans.modules.editor.settings.storage.Utils$NoNetworkAccessEntityCatalog
 
 #217794
 org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer$Factory
@@ -3192,8 +3191,6 @@ org.netbeans.modules.editor.settings.storage.SettingsProvider$MyLookup
 org.netbeans.modules.editor.settings.storage.SettingsType
 org.netbeans.modules.editor.settings.storage.SettingsType$Cache
 org.netbeans.modules.editor.settings.storage.SettingsType$DefaultLocator
-org.netbeans.modules.editor.settings.storage.SettingsType$FontsColorsLocator
-org.netbeans.modules.editor.settings.storage.SettingsType$LegacyTextBaseLocator
 org.netbeans.modules.editor.settings.storage.SettingsType$Locator
 org.netbeans.modules.editor.settings.storage.SpiPackageAccessor
 org.netbeans.modules.editor.settings.storage.StorageImpl
@@ -6696,3 +6693,40 @@ org.objectweb.asm.tree.MethodNode
 org.objectweb.asm.tree.TryCatchBlockNode
 org.objectweb.asm.tree.TypeInsnNode
 org.objectweb.asm.tree.VarInsnNode
+org.objectweb.asm.tree.InvokeDynamicInsnNode
+org.objectweb.asm.tree.LocalVariableAnnotationNode
+org.objectweb.asm.tree.LookupSwitchInsnNode
+org.objectweb.asm.tree.MultiANewArrayInsnNode
+org.objectweb.asm.tree.TableSwitchInsnNode
+org.objectweb.asm.tree.TypeAnnotationNode
+
+# Multiple repositories
+org.openide.filesystems.Repository$LocalProvider
+org.openide.filesystems.Repository$MainFS
+
+# splitting core.startup into core.startup+base
+org.netbeans.core.startup.base.LayerFactory
+org.netbeans.core.startup.base.LayerFactory$Provider
+org.netbeans.core.startup.impl.BinaryLayerFactoryProvider
+org.netbeans.core.startup.preferences.RelPaths$1IS
+
+# MIME Lookup headless split
+org.netbeans.modules.editor.mimelookup.APIAccessor
+org.netbeans.modules.editor.mimelookup.MimeLookupCacheSPI
+org.netbeans.modules.editor.mimelookup.MimePathLookup$1R
+org.netbeans.modules.editor.mimelookup.SharedMimeLookupCache
+
+# editor settings headless split
+org.netbeans.modules.editor.settings.storage.SettingsType$LocatorFactory
+org.netbeans.modules.editor.settings.storage.StorageImpl$StorageCache
+org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl$PreferencesFactory
+org.netbeans.modules.editor.settings.storage.ApiAccessor
+
+org.netbeans.modules.editor.settings.storage.EditorLocatorFactory
+org.netbeans.modules.editor.settings.storage.EditorLocatorFactory$FontsColorsLocator
+org.netbeans.modules.editor.settings.storage.EditorLocatorFactory$LegacyTextBaseLocator
+org.netbeans.modules.editor.settings.storage.NbUtils$NoNetworkAccessEntityCatalog
+org.netbeans.modules.editor.settings.storage.StorageImpl$StorageCacheImpl
+
+# Bugfix #249671
+org.netbeans.modules.editor.settings.storage.EditorSettingsImpl$KeymapProfileTracker
