@@ -20,7 +20,7 @@
             <attribute name="enabled" value="true"/>
         </node>
         <node name="Braces_FOR_LOOP">
-            <attribute name="enabled" value="true"/>
+            <attribute name="enabled" value="false"/>
         </node>
         <node name="org.netbeans.modules.java.hints.threading.Tiny.emptySynchronized"/>
         <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.date">
