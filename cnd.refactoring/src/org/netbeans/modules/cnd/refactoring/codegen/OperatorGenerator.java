@@ -909,6 +909,16 @@ public class OperatorGenerator implements CodeGenerator {
         }
 
         @Override
+        public boolean isOverride() {
+            return false;
+        }
+
+        @Override
+        public boolean isFinal() {
+            return false;
+        }
+
+        @Override
         public boolean isExplicit() {
             return false;
         }

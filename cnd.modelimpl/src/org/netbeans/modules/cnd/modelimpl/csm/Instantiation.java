@@ -1379,6 +1379,16 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
 
         @Override
+        public boolean isOverride() {
+            return declaration.isOverride();
+        }
+
+        @Override
+        public boolean isFinal() {
+            return declaration.isFinal();
+        }
+
+        @Override
         public boolean isExplicit() {
             return declaration.isExplicit();
         }

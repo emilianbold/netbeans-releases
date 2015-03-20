@@ -68,8 +68,8 @@ import org.openide.util.CharSequences;
  */
 public class MethodImplSpecialization<T> extends MethodImpl<T> {
 
-    protected MethodImplSpecialization(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _explicit, boolean _static, boolean _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
+    protected MethodImplSpecialization(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _override, boolean _final, boolean _explicit, boolean _static, boolean _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, _virtual, _override, _final, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
     }
 
     public static<T> MethodImplSpecialization<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
@@ -88,6 +88,8 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
+        boolean _override = false;
+        boolean _final = false;
         boolean _explicit = false;
         boolean afterParen = false;
         boolean _abstract = false;
@@ -98,6 +100,12 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
                     break;
                 case CPPTokenTypes.LITERAL_virtual:
                     _virtual = true;
+                    break;
+                case CPPTokenTypes.LITERAL_override:
+                    _override = true;
+                    break;
+                case CPPTokenTypes.LITERAL_final:
+                    _final = true;
                     break;
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
@@ -115,7 +123,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        MethodImplSpecialization<T> methodImpl = new MethodImplSpecialization<>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
+        MethodImplSpecialization<T> methodImpl = new MethodImplSpecialization<>(name, rawName, cls, visibility, _virtual, _override, _final, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -151,7 +159,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
     
         @Override
         public MethodImplSpecialization create(CsmParserProvider.ParserErrorDelegate delegate) {
-            MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), isExplicit(),  isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), false, false, isExplicit(),  isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), isGlobal());
             init(fun);
             return fun;
         }
