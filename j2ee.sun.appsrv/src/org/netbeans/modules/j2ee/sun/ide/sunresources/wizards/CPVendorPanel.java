@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,56 +49,56 @@
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Vector;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Vector;
+import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import javax.swing.ButtonGroup;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListDataListener;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-
 import org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator;
 import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
-import org.openide.loaders.TemplateWizard;
-
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroupHelper;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldHelper;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.TemplateWizard;
 
-public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener, DocumentListener, ListDataListener, WizardConstants {
-    
+public class CPVendorPanel extends javax.swing.JPanel
+implements ChangeListener, DocumentListener, ListDataListener, WizardConstants {
+
     static final long serialVersionUID = 93474632245456421L;
     
     private ArrayList dbconns;
     private ResourceConfigHelper helper;
     private FieldGroup generalGroup, propGroup, vendorGroup;
     private boolean useExistingConnection = true;
-    private String[] vendors;
+    private final String[] vendors;
     private boolean firstTime = true;
     private boolean setupValid = true;
     
     private static final String CONST_TRUE = "true"; // NOI18N
 
-    public ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
+    public final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
     private final List listeners = new ArrayList();
 
     protected final CPVendor panel;
     
     /** Creates new form DBSchemaConnectionpanel */
+    @SuppressWarnings("LeakingThisInConstructor")
     public CPVendorPanel(CPVendor panel, ResourceConfigHelper helper, Wizard wiardInfo) {
         this.firstTime = true;
         this.panel = panel;
@@ -116,6 +116,7 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
                 
         nameLabel.setLabelFor(nameField);
         nameComboBox.registerKeyboardAction(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     nameComboBox.requestFocus();
                 }
@@ -154,10 +155,11 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
             nameComboBox.addItem(bundle.getString("DBVendor_" + vendors[i]));   //NOI18N
         }
         
-        if (nameComboBox.getItemCount() == 0)
+        if (nameComboBox.getItemCount() == 0) {
             nameComboBox.insertItemAt(bundle.getString("NoTemplate"), 0); //NOI18N
-        else
+        } else {
             nameComboBox.insertItemAt(bundle.getString("SelectFromTheList"), 0); //NOI18N
+        }
         nameComboBox.setSelectedIndex(0);
         
         existingConnComboBox.getModel().addListDataListener(this);
@@ -403,10 +405,11 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
         //change datasource classname following database vendor change
         ResourceConfigData data = this.helper.getData();
         Field dsField;
-        if (isXA.isSelected())
+        if (isXA.isSelected()) {
             dsField = FieldHelper.getField(this.generalGroup, __XADatasourceClassname);
-        else
+        } else {
             dsField = FieldHelper.getField(this.generalGroup, __DatasourceClassname);
+        }
         data.setString(__DatasourceClassname, FieldHelper.getConditionalFieldValue(dsField, vendorName));
         
         if (isXA.isSelected()) {
@@ -418,6 +421,7 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
         }
     }
     
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     private void setPropertiesInData(String vendorName) {
         //change standard properties following database vendor change
         ResourceConfigData data = this.helper.getData();
@@ -426,11 +430,11 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
         for (int i = 0; i < propFields.length; i++) {
             String value = FieldHelper.getConditionalFieldValue(propFields[i], vendorName);
             String name = propFields[i].getName();
-            if (name.equals(__Url) && value.length() > 0)
+            if (name.equals(__Url) && value.length() > 0) {
                 data.addProperty(name, FieldHelper.toUrl(value));
-            else if (name.equals(__DatabaseName) && value.length() > 0)
+            } else if (name.equals(__DatabaseName) && value.length() > 0) {
                 data.addProperty(name, FieldHelper.toUrl(value));
-            else if (name.equals(__User) || name.equals(__Password)) {
+            } else if (name.equals(__User) || name.equals(__Password)) {
                 data.addProperty(propFields[i].getName(), value);
             }else{
                 //All Others
@@ -445,7 +449,8 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
         setExistingConnData();
     }
     
-    public void setExistingConnData() {
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    private void setExistingConnData() {
         if(existingConnComboBox.getSelectedIndex() > 0) {
             if (!useExistingConnection) {
                 this.helper.getData().setResourceName(__JdbcConnectionPool);
@@ -472,8 +477,9 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
                 data.addProperty(__DatabaseName, dbconn.getDatabaseURL());
             }else if(vendorName.startsWith("derby")) {  //NOI18N)
                 setDerbyProps(vendorName, url);
-            }else    
+            }else {
                 data.addProperty(__Url, url);
+            }
             data.addProperty(__User, user);
             data.addProperty(__Password, password);
             
@@ -482,6 +488,7 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
 
     }
     
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     private void setDerbyProps(String vendorName, String url) {
         //change standard properties following database vendor change
         ResourceConfigData data = this.helper.getData();
@@ -546,44 +553,53 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
         }
         
         if (existingConnRadioButton.isSelected()) {
-            if (existingConnComboBox.getSelectedIndex() > 0)
+            if (existingConnComboBox.getSelectedIndex() > 0) {
                 return true;
-            else
+            } else {
                 panel.setErrorMsg(bundle.getString("Err_ChooseDBConn"));
+            }
         }else if (newCofigRadioButton.isSelected()) {
-            if (nameComboBox.getSelectedIndex() > 0)
+            if (nameComboBox.getSelectedIndex() > 0) {
                 return true;
-            else
+            } else {
                 panel.setErrorMsg(bundle.getString("Err_ChooseDBVendor"));
+            }
         } 
         
         return false;
     }
 
+    @Override
     public void removeUpdate(final javax.swing.event.DocumentEvent event) {
         fireChange();
     }
     
+    @Override
     public void changedUpdate(final javax.swing.event.DocumentEvent event) {
         fireChange();
     }
     
+    @Override
     public void insertUpdate(final javax.swing.event.DocumentEvent event) {
         fireChange();
     }
 
+    @Override
     public void intervalAdded(final javax.swing.event.ListDataEvent p1) {
         fireChange();
     }
     
+    @Override
     public void intervalRemoved(final javax.swing.event.ListDataEvent p1) {
         fireChange();
     }
     
+    @Override
     public void contentsChanged(final javax.swing.event.ListDataEvent p1) {
         fireChange();
     }
 
+    @Override
     public void stateChanged(final javax.swing.event.ChangeEvent p1) {
         if (firstTime) {
             return;
@@ -621,8 +637,9 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
         }
 
         Iterator iter = tempList.iterator();
-        while (iter.hasNext())
+        while (iter.hasNext()) {
             ((ChangeListener)iter.next()).stateChanged(event);
+        }
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -653,6 +670,7 @@ public class CPVendorPanel extends javax.swing.JPanel implements ChangeListener,
         }
     }
     
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void setInitialFocus(){
         new setFocus(nameField);
     }

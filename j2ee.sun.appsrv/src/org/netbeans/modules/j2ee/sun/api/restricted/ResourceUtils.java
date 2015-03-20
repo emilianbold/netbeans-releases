@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -52,56 +52,73 @@ package org.netbeans.modules.j2ee.sun.api.restricted;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.Writer;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.List;
-import java.util.Vector;
-import java.util.ArrayList;
-import java.util.Properties;
+import java.io.Writer;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.Attribute;
-import javax.management.ObjectName;
-import javax.management.AttributeList;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.openide.util.NbBundle;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.ObjectName;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.utils.OsUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
-import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.AdminObjectResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionPool;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcConnectionPool;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.MailResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
+import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.DataSourceBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JMSBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import static org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants.__ConnPoolSuffixJMS;
 import static org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants.__JndiName;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 /*
@@ -116,9 +133,31 @@ public class ResourceUtils implements WizardConstants{
     static final String[] sysConnpools = {"__CallFlowPool", "__TimerPool"}; //NOI18N
     static final String SAMPLE_DATASOURCE = "jdbc/sample";
     static final String SAMPLE_CONNPOOL = "SamplePool";
-    static final String SUN_RESOURCE_FILENAME = "sun-resources.xml"; //NOI18N
-    static final String GF_RESOURCE_FILENAME = "glassfish-resources.xml"; //NOI18N
-    private static final Logger LOG = Logger.getLogger(ResourceUtils.class.getName());
+
+    /** Logger for this class. */
+    private static final Logger LOGGER = Logger.getLogger(ResourceUtils.class.getName());
+
+    /** Name of web application configuration directory.
+      * Duplicates {@code org.netbeans.modules.glassfish.eecommon.api.config.JavaEEModule} field.*/
+    public static final String WEB_INF = "WEB-INF";
+
+    /** Name of java archive manifest directory.
+      * Duplicates {@code org.netbeans.modules.glassfish.eecommon.api.config.JavaEEModule} field.*/
+    public static final String META_INF = "META-INF";
+
+    /** GlassFish resource file suffix is {@code .xml}.
+      * Duplicates {@code org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration} field.*/
+    private static final String RESOURCE_FILES_SUFFIX = ".xml";
+
+    /** List of base file names containing server resources:<ul>
+      * <li><i>[0]</i> points to current name used since GlassFich v3.</li>
+      * <li><i>[1]</i> points to old name used before GlassFich v3.</li>
+      * <ul>
+      * Duplicates {@code org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration} field.*/
+    static final String[] RESOURCE_FILES = {
+        "glassfish-resources" + RESOURCE_FILES_SUFFIX,
+        "sun-resources" + RESOURCE_FILES_SUFFIX
+    };
 
     //FIXME: should not the constructor be private? (all methods are static)
     /** Creates a new instance of ResourceUtils */
@@ -129,7 +168,7 @@ public class ResourceUtils implements WizardConstants{
         try {
             res.write(FileUtil.toFile(resFile));
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "saveNodeToXml failed", ex);
+            LOGGER.log(Level.SEVERE, "saveNodeToXml failed", ex);
         }
     }
 
@@ -273,7 +312,7 @@ public class ResourceUtils implements WizardConstants{
             }//Returned value is null for JMS.
         }catch(Exception ex){
             String errorMsg = MessageFormat.format(bundle.getString("Err_ResourceUpdate"), new Object[]{resourceName}); //NOI18N
-            LOG.log(Level.SEVERE, errorMsg, ex);
+            LOGGER.log(Level.SEVERE, errorMsg, ex);
         }
         return isResUpdated;
     }
@@ -594,10 +633,121 @@ public class ResourceUtils implements WizardConstants{
 
             } //for
             res.addJdbcConnectionPool(connPool);
-            createFile(data.getTargetFileObject(), res,baseName);
+            createFile(data, res,baseName);
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "Unable to saveConnPoolDatatoXml", ex);
+            LOGGER.log(Level.SEVERE, "Unable to saveConnPoolDatatoXml", ex);
         }
+    }
+
+    /**
+     * Create directory structure for given file if not exists and return it as
+     * {@link File} instance
+     * <p/>.
+     * @param resourceFile File to check for existence of full path.
+     * @return Parent directory (including full path) of given file or {@code null}
+     *         if such a path could not be found.
+     */
+    public static File createPathForFile(final File resourceFile) {
+        final File resourceFileDir = resourceFile.getParentFile();
+        // Create directory structure if missing.
+        if (resourceFileDir != null) {
+            if (!resourceFileDir.exists()) {
+                resourceFileDir.mkdirs();
+            }
+        }
+        return resourceFileDir;
+    }
+
+    /**
+     * Get Java EE module provider for provided server resources file target folder.
+     * <p/>
+     * @param targetFolder Server resources file target folder.
+     * @return Java EE module provider found or {@code null} when target folder has
+     *         no owning project or no Java EE module provider was found.
+     */
+    public static J2eeModuleProvider getJavaEEModuleProvider(final FileObject targetFolder) {
+        final Project holdingProj = FileOwnerQuery.getOwner(targetFolder);
+        return holdingProj != null ?
+                (J2eeModuleProvider)holdingProj.getLookup().lookup(J2eeModuleProvider.class)
+                : null;
+    }
+
+    /**
+     * Retrieve {@link GlassFishServer} instance from Java EE platform stored in given
+     * Java EE module provider.
+     * <p/>
+     * @param provider Java EE module provider.
+     * @return {@link GlassFishServer} found or {@code null} when given {@code provider}
+     *         is {@code null} or no {@link GlassFishServer} instance was stored in Java
+     *         EE platform's lookup.
+     */
+    public static GlassFishServer getGlassFishServer(final J2eeModuleProvider provider) {
+        final ServerInstance serverInstance = provider != null && provider.getServerInstanceID() != null
+                ? Deployment.getDefault().getServerInstance(provider.getServerInstanceID())
+                : null;
+        J2eePlatform platform;
+        try {
+            platform = serverInstance != null
+                    ? serverInstance.getJ2eePlatform()
+                    : null;
+        } catch (InstanceRemovedException ex) {
+            platform = null;
+            LOGGER.log(Level.INFO, "Could not get Java EE platform", ex);
+        }
+        return platform != null
+                ? (GlassFishServer)platform.getLookup().lookup(GlassFishServer.class)
+                : null;        
+    }
+
+   /**
+     * Get Java EE module configuration directory (e.g. {@code "META-INF"}).
+     * This duplicates more complex and better code from
+     * {@code org.netbeans.modules.glassfish.eecommon.api.config.JavaEEModule}
+     * but I had to implement it twice because of reverse module dependency.
+     * <i>Internal helper method, do not call outside this module.</i>
+     * <p/>
+     * @param module Java EE module type.
+     * @return Java EE module configuration directory.
+     */
+    public static final String getJavaEEModuleConfigDir(final J2eeModule module) {
+        J2eeModule.Type type = module.getType();
+        if (type.equals(J2eeModule.Type.WAR)) {
+            return WEB_INF;
+        } else {
+            return META_INF;
+        }
+    }
+
+    /**
+     * Get resource file name depending on GlassFish server version.
+     * This duplicates more complex and better code from
+     * {@code org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration}
+     * but I had to implement it twice because of reverse module dependency.
+     * <i>Internal helper method, do not call outside this module.</i>
+     * <p/>
+     * @param version GlassFish server version.
+     * @return Current {@code "glassfish-resources.xml"} file name since 3.1
+     *         or {@code "sun-resources.xml"} otherwise.
+     */
+    public static final String getResourcesFileName(final GlassFishVersion version) {
+        return GlassFishVersion.ge(version, GlassFishVersion.GF_3_1)
+                ? RESOURCE_FILES[0] : RESOURCE_FILES[1];
+    }
+
+    /**
+     * Create resource file path fragment for given Java EE module
+     * (e.g. {@code "META-INF/glassfish-resources.xml"}).
+     * This duplicates more complex and better code from
+     * {@code org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration}
+     * but I had to implement it twice because of reverse module dependency.
+     * <i>Internal helper method, do not call outside this module.</i>
+     * <p/>
+     * @param module  Java EE module (project).
+     * @param version GlassFish server version.
+     * @return Resource file path fragment for given Java EE module.
+     */
+    public static final String getResourcesFileModulePath(final J2eeModule module, final GlassFishVersion version) {
+        return OsUtils.joinPaths(getJavaEEModuleConfigDir(module), getResourcesFileName(version));
     }
 
     public static void saveJDBCResourceDatatoXml(ResourceConfigData dsData, ResourceConfigData cpData, String baseName) {
@@ -637,9 +787,9 @@ public class ResourceUtils implements WizardConstants{
             if(cpData != null){
                 saveConnPoolDatatoXml(cpData, res,baseName);
             }
-            createFile(dsData.getTargetFileObject(), res,baseName);
+            createFile(dsData, res,baseName);
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "Unable to saveJDBCResourceDatatoXml", ex);
+            LOGGER.log(Level.SEVERE, "Unable to saveJDBCResourceDatatoXml", ex);
         }
     }
 
@@ -677,13 +827,13 @@ public class ResourceUtils implements WizardConstants{
 
             } //for
             res.addPersistenceManagerFactoryResource(pmfresource);
-            createFile(pmfData.getTargetFileObject(), res,baseName);
+            createFile(pmfData, res,baseName);
 
             if(dsData != null){
                 saveJDBCResourceDatatoXml(dsData, cpData,baseName);
             }
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "Unable to savePMFResourceDatatoXml", ex);
+            LOGGER.log(Level.SEVERE, "Unable to savePMFResourceDatatoXml", ex);
         }
     }
 
@@ -732,9 +882,9 @@ public class ResourceUtils implements WizardConstants{
                 res.addConnectorConnectionPool(connpoolresource);
             }
 
-            createFile(jmsData.getTargetFileObject(), res,baseName);
+            createFile(jmsData, res, baseName);
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "Unable to saveJMSResourceDatatoXml", ex);
+            LOGGER.log(Level.SEVERE, "Unable to saveJMSResourceDatatoXml", ex);
         }
     }
 
@@ -783,9 +933,9 @@ public class ResourceUtils implements WizardConstants{
             } //for
 
             res.addMailResource(mlresource);
-            createFile(data.getTargetFileObject(), res,baseName);
+            createFile(data, res, baseName);
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "Unable to saveMailResourceDatatoXml", ex);
+            LOGGER.log(Level.SEVERE, "Unable to saveMailResourceDatatoXml", ex);
         }
     }
 
@@ -821,7 +971,7 @@ public class ResourceUtils implements WizardConstants{
             }
         } catch (java.lang.NoClassDefFoundError ncdfe) {
             // this happens durring unit tests for the DataSourceWizard
-            LOG.log(Level.SEVERE, "getRegisteredConnectionPools failed", ncdfe);
+            LOGGER.log(Level.SEVERE, "getRegisteredConnectionPools failed", ncdfe);
         }
         return connPools;
     }
@@ -843,7 +993,7 @@ public class ResourceUtils implements WizardConstants{
             }
         } catch (java.lang.NoClassDefFoundError ncdfe) {
             // this happens durring unit tests for the PMFWizard
-            LOG.log(Level.SEVERE, "getRegisteredJdbcResources failed", ncdfe);
+            LOGGER.log(Level.SEVERE, "getRegisteredJdbcResources failed", ncdfe);
         }
         return dataSources;
     }
@@ -851,7 +1001,7 @@ public class ResourceUtils implements WizardConstants{
     private static List getResourceNames(InstanceProperties instProps, String query, String keyProperty){
         List retVal = new ArrayList();
         DeploymentManager dm = null;
-        LOG.log(Level.INFO, "investigate", new Exception());
+        LOGGER.log(Level.INFO, "investigate", new Exception());
         if (dm instanceof SunDeploymentManagerInterface) {
             SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface) dm;
             if (eightDM.isRunning()) {
@@ -883,7 +1033,7 @@ public class ResourceUtils implements WizardConstants{
             //Suppress exception when unable to get resource names
             //Possibe errors: deafult server is not Sun Application Server (classcast exception)
             //Application server is not running.
-            LOG.log(Level.WARNING, "getResourceNames failed", ex);
+            LOGGER.log(Level.WARNING, "getResourceNames failed", ex);
         }
         return resList;
     }
@@ -929,7 +1079,7 @@ public class ResourceUtils implements WizardConstants{
             }
         }catch(Exception ex){
             //Could not get list of local Connection pools
-            LOG.log(Level.SEVERE, "getConnectionPools failed", ex);
+            LOGGER.log(Level.SEVERE, "getConnectionPools failed", ex);
         }
         return projectCP;
     }
@@ -952,7 +1102,7 @@ public class ResourceUtils implements WizardConstants{
             }
         }catch(Exception ex){
             //Could not get list of local Connection pools
-            LOG.log(Level.SEVERE, "filterDataSources failed", ex);
+            LOGGER.log(Level.SEVERE, "filterDataSources failed", ex);
         }
         return projectDS;
     }
@@ -974,7 +1124,7 @@ public class ResourceUtils implements WizardConstants{
                 }
             }
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "getMailResources failed", ex);
+            LOGGER.log(Level.SEVERE, "getMailResources failed", ex);
         }
         return projectRes;
     }
@@ -1001,7 +1151,7 @@ public class ResourceUtils implements WizardConstants{
                 }
             }
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "getJMSResources failed", ex);
+            LOGGER.log(Level.SEVERE, "getJMSResources failed", ex);
         }
         return projectRes;
     }
@@ -1023,7 +1173,7 @@ public class ResourceUtils implements WizardConstants{
                 }
             }
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "getPersistenceManagerFactoryResource failed", ex);
+            LOGGER.log(Level.SEVERE, "getPersistenceManagerFactoryResource failed", ex);
         }
         return projectRes;
     }
@@ -1068,7 +1218,7 @@ public class ResourceUtils implements WizardConstants{
                 }
             }
         }catch(Exception ex){
-            LOG.log(Level.SEVERE, "getAllResourceNames failed", ex);
+            LOGGER.log(Level.SEVERE, "getAllResourceNames failed", ex);
         }
         return projectRes;
     }
@@ -1125,6 +1275,7 @@ public class ResourceUtils implements WizardConstants{
         return true;
     }
 
+    
     public static FileObject getResourceDirectory(FileObject fo){
         Project holdingProj = FileOwnerQuery.getOwner(fo);
         FileObject resourceDir = null;
@@ -1139,7 +1290,7 @@ public class ResourceUtils implements WizardConstants{
                         try {
                             resourceDir = FileUtil.createFolder(resourceLoc);
                         } catch (IOException ex) {
-                            LOG.log(Level.SEVERE, "getResourceDirectory failed", ex);
+                            LOGGER.log(Level.SEVERE, "getResourceDirectory failed", ex);
                         }
                     }
                 }
@@ -1152,7 +1303,7 @@ public class ResourceUtils implements WizardConstants{
         DeploymentManager dm = null;
         InstanceProperties ip = provider.getInstanceProperties();
         if (ip != null) {
-            LOG.log(Level.INFO, "investigate", new Exception());
+            LOGGER.log(Level.INFO, "investigate", new Exception());
         }
         return dm;
     }
@@ -1169,7 +1320,7 @@ public class ResourceUtils implements WizardConstants{
                     eightDM.createSampleDataSourceinDomain();
                 }
             } catch (Exception ex) {
-                LOG.log(Level.SEVERE, "createSampleDataSource failed", ex);
+                LOGGER.log(Level.SEVERE, "createSampleDataSource failed", ex);
             }
         }
     }
@@ -1213,7 +1364,7 @@ public class ResourceUtils implements WizardConstants{
             }// Server Running
         } catch (Exception ex) {
             //Unable to get server datasources
-            LOG.log(Level.SEVERE, "getServerDataSources failed", ex);
+            LOGGER.log(Level.SEVERE, "getServerDataSources failed", ex);
         }
         return datasources;
     }
@@ -1255,7 +1406,7 @@ public class ResourceUtils implements WizardConstants{
                 createResource(__CreateDS, params, mejb);
             }
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "updateSampleDatasource failed", ex);
+            LOGGER.log(Level.SEVERE, "updateSampleDatasource failed", ex);
         }
     }
 
@@ -1462,11 +1613,11 @@ public class ResourceUtils implements WizardConstants{
             InstanceProperties instanceProperties = getTargetServer(FileUtil.toFileObject(resourceDir));
             if(instanceProperties != null){
                 SunDeploymentManagerInterface eightDM = null; // (SunDeploymentManagerInterface)instanceProperties.getDeploymentManager();
-                LOG.log(Level.INFO, "investigate", new Exception());
+                LOGGER.log(Level.INFO, "investigate", new Exception());
                 return poolValues;
             }
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "getConnPoolValues failed", ex);
+            LOGGER.log(Level.SEVERE, "getConnPoolValues failed", ex);
         }
         return poolValues;
     }
@@ -1608,7 +1759,7 @@ public class ResourceUtils implements WizardConstants{
             }// Server Running
         } catch (Exception ex) {
             //Unable to get server datasources
-            LOG.log(Level.SEVERE, "getServerDestinations failed", ex);
+            LOGGER.log(Level.SEVERE, "getServerDestinations failed", ex);
         }
         return destinations;
     }
@@ -1625,7 +1776,7 @@ public class ResourceUtils implements WizardConstants{
                 if((serverName != null) && (serverName.indexOf("8.") != -1)) //NOI18N
                     is90Server = false;
             } catch (Exception ex) {
-                LOG.log(Level.SEVERE, "is90Server failed", ex);
+                LOGGER.log(Level.SEVERE, "is90Server failed", ex);
             }
         }
         return is90Server;
@@ -1636,7 +1787,7 @@ public class ResourceUtils implements WizardConstants{
         try{
             isGlassfish = ServerLocationManager.isGlassFish(sunDm.getPlatformRoot());
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "is90ServerLocal failed", ex);
+            LOGGER.log(Level.SEVERE, "is90ServerLocal failed", ex);
         }
         return isGlassfish;
     }
@@ -1650,7 +1801,7 @@ public class ResourceUtils implements WizardConstants{
         try{
             location = FileUtil.createFolder(targetFolder);
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "getServerResourcesGraph failed", ex);
+            LOGGER.log(Level.SEVERE, "getServerResourcesGraph failed", ex);
         }
         return getServerResourcesGraph(location,"");
     }
@@ -1681,66 +1832,130 @@ public class ResourceUtils implements WizardConstants{
                 in = new java.io.FileInputStream(sunResource);
                 res = DDProvider.getDefault().getResourcesGraph(in);
             } catch (FileNotFoundException ex) {
-                LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
+                LOGGER.log(Level.SEVERE, "getResourcesGraph failed", ex);
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
+                LOGGER.log(Level.SEVERE, "getResourcesGraph failed", ex);
             } catch (SAXException ex) {
-                LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
+                LOGGER.log(Level.SEVERE, "getResourcesGraph failed", ex);
             } finally {
                 try {
                     if (null != in)  {
                         in.close();
                     }
                 } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
+                    LOGGER.log(Level.SEVERE, "getResourcesGraph failed", ex);
                 }
             }
         }
         return res;
     }
 
-    public static void createFile(File targetFolder, final Resources res, String baseName){
+    /**
+     * Write resources to file.
+     * <p/>
+     * @param targetFolder Resources file target folder.
+     * @param res          Resources to be written.
+     * @param baseName     Resources file base name.
+     * @deprecated Use {@link #createFile(ResourceConfigData, Resources, String)}
+     */
+    public static void createFile(
+            final File targetFolder, final Resources res, final String baseName
+    ) {
         createFile(FileUtil.toFileObject(targetFolder), res, baseName);
     }
 
-    public static void createFile(FileObject targetFolder, final Resources res, String baseName){
-        targetFolder = setUpExists(targetFolder);
-        File sunResource = getServerResourcesFile(targetFolder,true);
-        if((sunResource != null) && sunResource.exists()){
-            try {
-                res.write(sunResource);
-            } catch (Exception ex) {
-                LOG.log(Level.SEVERE, "createFile failed", ex);
-            }
-        }else{
-            writeServerResource(targetFolder, res, baseName);
+    /**
+     * Write resources to file.
+     * <p/>
+     * @param targetFolder Resources file target folder.
+     * @param res          Resources to be written.
+     * @param baseName     Resources file base name.
+     * @deprecated Use {@link #createFile(ResourceConfigData, Resources, String)}
+     */
+    public static void createFile (
+            final FileObject targetFolder, final Resources res, final String baseName
+    ) {
+        final FileObject folderToWrite = setUpExists(targetFolder);
+        if (!overwriteExistingResourcesFile(folderToWrite, res)) {
+            final File resourceFile = new File(FileUtil.toFile(folderToWrite), baseName);
+            writeNewResourceFile(resourceFile, res);
         }
     }
 
-    private static void writeServerResource(FileObject targetFolder, final Resources res, final String baseName){
+    /**
+     * Write resources to file.
+     * <p/>
+     * @param configData Resources configuration data.
+     * @param res        Resources to be written.
+     * @param baseName   Resources file base name.
+     */
+    public static void createFile (
+            final ResourceConfigData configData, final Resources res, final String baseName
+    ) {
+        if (!overwriteExistingResourcesFile(configData.getTargetFileObject(), res)) {
+            final File resourceFile = configData.targetFileForNewResourceFile(baseName);
+            writeNewResourceFile(resourceFile, res);
+        }
+    }
+
+    /**
+     * Overwrite server resources file if this file already exists.
+     * Will write resources file only if such a file already exists.
+     * <p/>
+     * @param targetFolder Resources file target folder. 
+     * @param res          Resources to be written.
+     * @returns Value of true if (@code targetFolder} is not {@code null}
+     *          and resources file already exists (an attempt to overwrite
+     *          resources file was done).
+     */
+    private static boolean overwriteExistingResourcesFile(
+            final FileObject targetFolder, final Resources res
+    ) {
+        final File resourceFile = getServerResourcesFile(targetFolder, true);
+        if ((resourceFile != null) && resourceFile.exists()) {
+            try {
+                res.write(resourceFile);
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "Failed to overwrite server resources file", ex);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Write new server resources file.
+     * <p/>
+     * @param resourceFile Resources file including full path.
+     * @param res          Resources to be written.
+     */
+    private static void writeNewResourceFile(final File resourceFile, final Resources res) {
         try {
-            final FileObject resTargetFolder  = targetFolder;
-            FileSystem fs = targetFolder.getFileSystem();
+            final FileObject resourceFileDir = FileUtil.toFileObject(resourceFile.getParentFile());
+            final FileSystem fs = resourceFileDir.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws java.io.IOException {
-                    FileObject newfile = resTargetFolder.createData(baseName, "xml"); //NOI18N
-                    FileLock lock = newfile.lock();
-                    Writer w = null;
+                    resourceFile.createNewFile();
+                    final FileObject resourceFileFo = FileUtil.toFileObject(resourceFile);
+                    final FileLock lock = resourceFileFo.lock();
+                    Writer out = null;
                     try {
-                        Writer out = new OutputStreamWriter(newfile.getOutputStream(lock), "UTF8");
+                        out = new OutputStreamWriter(resourceFileFo.getOutputStream(lock), "UTF8");
                         res.write(out);
                         out.flush();
-                        out.close();
-                    } catch(Exception ex){
-                        //Error writing file
-                        LOG.log(Level.SEVERE, "writeServerResource failed", ex);
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.SEVERE, "Failed to write new server resources file", ex);
                     } finally {
+                        if (out != null) {
+                            out.close();
+                        }
                         lock.releaseLock();
                     }
                 }
             });
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "writeServerResource failed", ex);
+            LOGGER.log(Level.SEVERE, "Failed to write new server resources file", ex);
         }
     }
 
@@ -1764,9 +1979,9 @@ public class ResourceUtils implements WizardConstants{
                     }
                 }
                 if (null != metaInf) {
-                    FileObject resourcesFO = metaInf.getFileObject(GF_RESOURCE_FILENAME);
+                    FileObject resourcesFO = metaInf.getFileObject(RESOURCE_FILES[0]);
                     if (null == resourcesFO) {
-                        resourcesFO = metaInf.getFileObject(SUN_RESOURCE_FILENAME);
+                        resourcesFO = metaInf.getFileObject(RESOURCE_FILES[1]);
                     }
                     if (null != resourcesFO) {
                         return FileUtil.toFile(resourcesFO);
@@ -1778,10 +1993,10 @@ public class ResourceUtils implements WizardConstants{
             while(en.hasMoreElements()){
                 FileObject resourceFile = (FileObject)en.nextElement();
                 File resource = FileUtil.toFile(resourceFile);
-                if(resource.getName().equals(SUN_RESOURCE_FILENAME)){
+                if(resource.getName().equals(RESOURCE_FILES[1])){
                     serverResource = resource;
                 }
-                if(resource.getName().equals(GF_RESOURCE_FILENAME)){
+                if(resource.getName().equals(RESOURCE_FILES[0])){
                     serverResource = resource;
                     break;
                 }
@@ -1820,12 +2035,12 @@ public class ResourceUtils implements WizardConstants{
                         newGraph = getResourceGraphs(newGraph, existResource);
                         boolean success = oldResource.delete();
                         if(! success){
-                            LOG.log(Level.INFO, "Unable to delete *.sun-resource file(s)");
+                            LOGGER.log(Level.INFO, "Unable to delete *.sun-resource file(s)");
                         }
                     }
                     createFile(targetFolder, newGraph,baseName);
                 } catch (Exception ex) {
-                    LOG.log(Level.SEVERE, "migrateResources failed", ex);
+                    LOGGER.log(Level.SEVERE, "migrateResources failed", ex);
                 }
             }
         }
