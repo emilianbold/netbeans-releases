@@ -65,7 +65,32 @@ import org.netbeans.lib.v8debug.V8Response;
 import static org.netbeans.lib.v8debug.connection.DebuggerConnection.*;
 
 /**
- *
+ * A debugger server connection. This is a main server debugger class.
+ * Create an instance of this class to listen for incoming debugger connections.
+ * <p>
+ * The typical usage is:
+ * <pre><tt>
+ *   final ServerConnection sn = new ServerConnection();
+ *   final Map&lt;String, String&gt; properties = ... // See HeaderProperties.
+ *   new Thread() {
+ *       public void run() {
+ *           try {
+ *               sn.runConnectionLoop(map, new ServerConnection.Listener() {
+ *                   public ServerConnection.ResponseProvider request(V8Request request) {
+ *                       return ServerConnection.ResponseProvider.create(
+ *                           request.createSuccessResponse(...));
+ *                   }
+ *               });
+ *           } catch (IOException ex) {
+ *               ...
+ *           }
+ *      }
+ *   }.start();
+ *   ...
+ *   V8Event event = new V8Event(...);
+ *   sn.send(event);
+ * </tt></pre>
+ * 
  * @author Martin Entlicher
  */
 public final class ServerConnection {
@@ -83,14 +108,38 @@ public final class ServerConnection {
     private final ContainerFactory containerFactory = new LinkedJSONContainterFactory();
     private final Set<IOListener> ioListeners = new CopyOnWriteArraySet<>();
     
+    /**
+     * Create a new server listening connection with automatically selected port
+     * number. The actual port number that was selected can be retrieved by
+     * calling {@link #getPort()}.
+     * @throws IOException when an IO problem occurs.
+     */
     public ServerConnection() throws IOException {
         server = new ServerSocket(0);
     }
     
-    public ServerConnection(int serverPort) throws IOException {
+    /**
+     * Create a new server listening connection on the specific port.
+     * @param serverPort The port the connection is listening on.
+     * @throws IOException when an IO problem occurs.
+     * @throws IllegalArgumentException if the port parameter is outside the
+     * specified range of valid port values, which is between 0 and 65535, inclusive.
+     */
+    public ServerConnection(int serverPort) throws IOException, IllegalArgumentException {
         server = new ServerSocket(serverPort);
     }
     
+    /**
+     * Execute the debugger events loop. Run this in an application thread, this
+     * class does not provide any threading. This method waits until some client
+     * debugger is connected, keeps processing the debugger requests and keeps
+     * blocking until the connection is closed. Then the method can be called
+     * again to accept another client debugger connection.
+     * @param properties The map of properties to provide to the client as a header.
+     * See {@link HeaderProperties}
+     * @param listener The listener to receive the debugger events.
+     * @throws IOException thrown when an IO problem occurs.
+     */
     public void runConnectionLoop(Map<String, String> properties, Listener listener) throws IOException {
         Socket socket = server.accept();
         socket.setTcpNoDelay(true);
@@ -101,6 +150,10 @@ public final class ServerConnection {
         runEventLoop(listener);
     }
     
+    /**
+     * Get the port number this connection is listening on.
+     * @return The port number.
+     */
     public int getPort() {
         return server.getLocalPort();
     }
@@ -204,11 +257,16 @@ public final class ServerConnection {
         }
     }
     
-    public void send(V8Response response) throws IOException {
+    private void send(V8Response response) throws IOException {
         JSONObject obj = JSONWriter.store(response);
         sendJSON(obj);
     }
     
+    /**
+     * Send a debugger event.
+     * @param event An event to send to the client.
+     * @throws IOException thrown when an IO problem occurs.
+     */
     public void send(V8Event event) throws IOException {
         JSONObject obj = JSONWriter.store(event);
         sendJSON(obj);
@@ -228,6 +286,12 @@ public final class ServerConnection {
         }
     }
     
+    /**
+     * Close the currently established client-server connection, if any.
+     * The {@link #runConnectionLoop(java.util.Map, org.netbeans.lib.v8debug.connection.ServerConnection.Listener)}
+     * can then be executed again to accept another client connection.
+     * @throws IOException thrown when an IO problem occurs.
+     */
     public void closeCurrentConnection() throws IOException {
         if (currentSocket != null) {
             currentSocket.close();
@@ -235,6 +299,10 @@ public final class ServerConnection {
         }
     }
 
+    /**
+     * Close the server connection. Stop accepting incoming connections.
+     * @throws IOException thrown when an IO problem occurs.
+     */
     public void closeServer() throws IOException {
         if (server != null) {
             server.close();
@@ -242,10 +310,18 @@ public final class ServerConnection {
         fireClosed();
     }
     
+    /**
+     * Add an I/O listener to monitor the debugger communication.
+     * @param iol an IOListener
+     */
     public void addIOListener(IOListener iol) {
         ioListeners.add(iol);
     }
     
+    /**
+     * Remove an I/O listener monitoring the communication.
+     * @param iol an IOListener
+     */
     public void removeIOListener(IOListener iol) {
         ioListeners.remove(iol);
     }
@@ -268,12 +344,28 @@ public final class ServerConnection {
         }
     }
     
+    /**
+     * Listener receiving debugger events.
+     */
     public interface Listener {
         
+        /**
+         * Called when a request is received. The implementation should compose
+         * a response and provide it either synchronously or asynchronously via
+         * the returned {@link ResponseProvider}.
+         * @param request The received request.
+         * @return The response provider allowing either synchronous or asynchronous response.
+         */
         ResponseProvider request(V8Request request);
         
     }
     
+    /**
+     * Debugger response provider. Allows synchronous or asynchronous responses.
+     * Create the response by calling
+     * {@link V8Request#createSuccessResponse(long, org.netbeans.lib.v8debug.V8Body, org.netbeans.lib.v8debug.vars.ReferencedValue[], boolean)}
+     * or {@link V8Request#createErrorResponse(long, boolean, java.lang.String)}.
+     */
     public static final class ResponseProvider {
         
         private V8Response response;
@@ -283,14 +375,36 @@ public final class ServerConnection {
             this.response = response;
         }
         
+        /**
+         * Create a synchronous response to a debugger request.
+         * @param response The response.
+         * Use {@link V8Request#createSuccessResponse(long, org.netbeans.lib.v8debug.V8Body, org.netbeans.lib.v8debug.vars.ReferencedValue[], boolean)}
+         * or {@link V8Request#createErrorResponse(long, boolean, java.lang.String)}
+         * to create the response.
+         * @return A synchronous response provider.
+         */
         public static ResponseProvider create(V8Response response) {
             return new ResponseProvider(response);
         }
         
+        /**
+         * Create an ampty asynchronous response provider.
+         * @return an asynchronous response, call
+         * {@link #setResponse(org.netbeans.lib.v8debug.V8Response)} on the
+         * returned object to set the response asynchronously.
+         */
         public static ResponseProvider createLazy() {
             return new ResponseProvider(null);
         }
         
+        /**
+         * Set the asynchronous response.
+         * @param response The response.
+         * Use {@link V8Request#createSuccessResponse(long, org.netbeans.lib.v8debug.V8Body, org.netbeans.lib.v8debug.vars.ReferencedValue[], boolean)}
+         * or {@link V8Request#createErrorResponse(long, boolean, java.lang.String)}
+         * to create the response.
+         * @throws IOException thrown when an IO problem occurs.
+         */
         public void setResponse(V8Response response) throws IOException {
             ServerConnection sc;
             synchronized (this) {

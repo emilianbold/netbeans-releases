@@ -42,7 +42,8 @@
 package org.netbeans.lib.v8debug;
 
 /**
- *
+ * Abstract response/event body.
+ * 
  * @author Martin Entlicher
  */
 public abstract class V8Body {
