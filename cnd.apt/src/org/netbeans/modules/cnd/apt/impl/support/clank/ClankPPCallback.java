@@ -67,7 +67,7 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
     }
 
     @Override
-    public void onEnter(IncludeFileInfo file) {
+    public void onEnter(TrackIncludeInfoCallback.IncludeFileInfo file) {
         if (ClankDriverImpl.TRACE) {
             traceOS.$out("Enter: " + file).$out("\n").flush();
         }

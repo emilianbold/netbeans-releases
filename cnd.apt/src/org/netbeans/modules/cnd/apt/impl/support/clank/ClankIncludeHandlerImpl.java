@@ -52,6 +52,7 @@ import org.clang.basic.SourceManager;
 import org.clang.lex.Token;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
@@ -76,20 +77,14 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     private static final CachedTokens NO_TOKENS = new CachedTokens();
 
     public static final class CachedTokens {
-        public final SourceManager SM;
-        public final Token[] tokens;
-        public final int nrTokens;
+        public final APTToken[] tokens;
 
         private CachedTokens() {
-            this.nrTokens = -1;
             this.tokens = null;
-            this.SM = null;
         }
 
         public CachedTokens(SourceManager SM, Token[] tokens, int nrTokens) {
-            this.SM = SM;
-            this.tokens = tokens;
-            this.nrTokens = nrTokens;
+            this.tokens = ClankToAPTToken.convertToAPT(SM, tokens, nrTokens);
         }
 
     }

@@ -127,21 +127,19 @@ public class ClankDriverImpl {
 
         private int index;
         private final int lastIndex;
-        private final Token[] tokens;
-        private final SourceManager SM;
+        private final APTToken[] tokens;
 
         private ClankToAPTTokenStream(ClankIncludeHandlerImpl.CachedTokens cached) {
             assert cached != null;
-            this.SM = cached.SM;
             this.tokens = cached.tokens;
-            this.lastIndex = cached.nrTokens - 1;
+            this.lastIndex = cached.tokens.length - 1;
             this.index = 0;
         }
 
         @Override
         public APTToken nextToken() {
             if (index < lastIndex) {
-                return new ClankToAPTToken(SM, tokens[index++]);
+                return tokens[index++];
             } else {
                 return APTUtils.EOF_TOKEN;
             }

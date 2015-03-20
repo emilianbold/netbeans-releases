@@ -63,14 +63,21 @@ import org.openide.util.CharSequences;
 
     private static final CharSequence COMMENT_TEXT_ID = CharSequences.create("/*COMMENT*/");
 
+    static APTToken[] convertToAPT(SourceManager SM, Token[] tokens, int nrTokens) {
+      APTToken[] out = new APTToken[nrTokens];
+      for (int i = 0; i < nrTokens; i++) {
+        out[i] = new ClankToAPTToken(SM, tokens[i]);
+      }
+      return out;
+    }
+
     private final Token orig;
-    private final SourceManager SM;
     private final int aptTokenType;
     private final int offset;
     private final CharSequence textID;
 
     /*package*/ClankToAPTToken(SourceManager SM, Token token) {
-        this.SM = SM;
+        assert SM != null;
         this.orig = token;
         long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedExpansionLoc(token.getRawLocation());
         this.offset = Unsigned.long2uint($second_uint(decomposedLoc));
