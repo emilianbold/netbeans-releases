@@ -88,13 +88,13 @@ ide/modules/ext/jsch-agentproxy-pageant.jar                           BSD-jsch-a
 ide/modules/ext/jsch-agentproxy-sshagent.jar                          BSD-jsch-agent-proxy
 ide/modules/ext/jsch-agentproxy-usocket-jna.jar                       BSD-jsch-agent-proxy
 ide/modules/ext/json-simple-1.1.1.jar                                 Apache-2.0
-ide/modules/ext/jvyamlb-0.2.3.jar                                     MIT-jvyamlb
+ide/modules/ext/jvyamlb-0.2.7.jar                                     MIT-jvyamlb
 ide/modules/ext/libpam4j-1.1.jar                                      MIT
 ide/modules/ext/log4j-1.2.15.jar                                      Apache-2.0
 ide/modules/ext/lucene-core-3.5.0.jar                                 Apache-2.0
 ide/modules/ext/non-schema.jar                                        MIT-non-schema
 ide/modules/ext/postgresql-9.2-1002.jdbc4.jar                         BSD-postgresql
-ide/modules/ext/processtreekiller-1.0.2.jar                           MIT
+ide/modules/ext/processtreekiller-1.0.3.jar                           MIT
 ide/modules/ext/resolver-1.2.jar                                      Apache-2.0
 ide/modules/ext/saxon9B.jar                                           MPL-1.0
 ide/modules/ext/servlet-2.2.jar                                       Apache-1.1
