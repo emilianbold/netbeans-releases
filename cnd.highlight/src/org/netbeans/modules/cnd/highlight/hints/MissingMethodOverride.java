@@ -42,15 +42,12 @@
 
 package org.netbeans.modules.cnd.highlight.hints;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmClass;
