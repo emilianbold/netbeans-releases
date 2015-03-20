@@ -44,7 +44,8 @@ package org.netbeans.lib.v8debug;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 
 /**
- *
+ * A command request.
+ * 
  * @author Martin Entlicher
  */
 public final class V8Request extends V8Packet {

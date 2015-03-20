@@ -42,7 +42,8 @@
 package org.netbeans.lib.v8debug;
 
 /**
- *
+ * Debugger command.
+ * 
  * @author Martin Entlicher
  */
 public enum V8Command {

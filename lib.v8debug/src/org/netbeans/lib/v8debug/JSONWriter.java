@@ -87,7 +87,8 @@ import org.netbeans.lib.v8debug.vars.V8String;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
- *
+ * Translator of Java API classes into the corresponding JSON objects.
+ * 
  * @author Martin Entlicher
  */
 @SuppressWarnings("unchecked")
