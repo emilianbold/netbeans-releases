@@ -55,6 +55,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -155,9 +156,15 @@ class MissingMethodOverride extends AbstractCodeAudit {
     
     private static final class MissingMethodOverrideErrorInfoImpl extends ErrorInfoImpl {
         private final BaseDocument doc;
+        private final int end;
         public MissingMethodOverrideErrorInfoImpl(Document doc, CsmMethod method, String providerName, String audutName, String message, CsmErrorInfo.Severity severity, int startOffset, int endOffset) {
             super(providerName, audutName, message, severity, startOffset, endOffset);
             this.doc = (BaseDocument) doc;
+            if (CsmKindUtilities.isFunctionDefinition(method)) {
+                end = ((CsmFunctionDefinition)method).getBody().getStartOffset()-1;
+            } else {
+                end = method.getEndOffset() - 1;
+            }
         }
     }    
     
@@ -174,7 +181,7 @@ class MissingMethodOverride extends AbstractCodeAudit {
         
         private List<? extends Fix> createFixes(MissingMethodOverrideErrorInfoImpl info) {
             try {
-                return Collections.singletonList(new AddMissingOverrideKeyvord(info.doc, info.getStartOffset(), info.getEndOffset()));
+                return Collections.singletonList(new AddMissingOverrideKeyvord(info.doc, info.end));
             } catch (BadLocationException ex) {
                 return Collections.emptyList();
             }
@@ -185,7 +192,7 @@ class MissingMethodOverride extends AbstractCodeAudit {
         private final BaseDocument doc;
         private final Position start;
 
-        public AddMissingOverrideKeyvord(BaseDocument doc, int startOffset, int endOffset) throws BadLocationException {
+        public AddMissingOverrideKeyvord(BaseDocument doc, int endOffset) throws BadLocationException {
             this.doc = doc;
             this.start = NbDocument.createPosition(doc, endOffset, Position.Bias.Forward);
         }
