@@ -30,7 +30,7 @@
               <Component id="librariesBrowse" min="-2" pref="131" max="-2" attributes="1"/>
           </Group>
           <Component id="jCheckBoxBuildSubprojects" alignment="0" max="32767" attributes="1"/>
-          <Component id="jTabbedPane1" alignment="0" max="32767" attributes="2"/>
+          <Component id="jTabbedPane1" alignment="0" pref="560" max="32767" attributes="2"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -1137,7 +1137,7 @@
         <Container class="javax.swing.JPanel" name="jPanelLiblets">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="LIBlets">
+              <JTabbedPaneConstraints tabName="Dependencies">
                 <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/j2me/project/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_LibletsTab" replaceFormat="java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;), {arguments})"/>
                 </Property>
@@ -1151,7 +1151,7 @@
                   <Component id="jPanelLibletsCards" pref="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="labelLibletsNote" max="32767" attributes="0"/>
+                      <Component id="labelLibletsNote" pref="0" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -1197,11 +1197,10 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <Component id="labelLibletInfo" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="594" pref="680" max="32767" attributes="0"/>
+                                      <EmptySpace min="594" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="checkBoxLibletUsage" max="32767" attributes="0"/>
                                           <Group type="102" attributes="0">
                                               <Group type="103" groupAlignment="0" attributes="0">
                                                   <Component id="labelLibletUrl" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1211,23 +1210,20 @@
                                               </Group>
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="jTextFieldLibletUrl" max="32767" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="buttonBrowseJad" min="-2" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Group type="102" alignment="0" attributes="0">
+                                                  <Group type="102" attributes="0">
                                                       <Group type="103" groupAlignment="0" attributes="0">
-                                                          <Group type="102" attributes="0">
-                                                              <Component id="jComboBoxLiblet" max="32767" attributes="0"/>
-                                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                                              <Component id="buttonAddLiblet" min="-2" pref="83" max="-2" attributes="0"/>
-                                                          </Group>
-                                                          <Group type="102" attributes="0">
+                                                          <Group type="102" alignment="0" attributes="0">
                                                               <Component id="jRadioButtonOptional" min="-2" max="-2" attributes="0"/>
                                                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                                               <Component id="jRadioButtonRequired" min="-2" max="-2" attributes="0"/>
                                                           </Group>
+                                                          <Component id="labelLibletLocalJad" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                      </Group>
+                                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                                  </Group>
+                                                  <Group type="102" alignment="1" attributes="0">
+                                                      <Group type="103" groupAlignment="1" attributes="0">
+                                                          <Component id="jTextFieldLibletUrl" max="32767" attributes="0"/>
                                                           <Group type="102" alignment="0" attributes="0">
                                                               <Component id="jRadioButtonLiblet" min="-2" max="-2" attributes="0"/>
                                                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -1236,12 +1232,20 @@
                                                               <Component id="jRadioButtonService" min="-2" max="-2" attributes="0"/>
                                                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                                               <Component id="jRadioButtonProprietary" min="-2" max="-2" attributes="0"/>
+                                                              <EmptySpace min="0" pref="9" max="32767" attributes="0"/>
                                                           </Group>
+                                                          <Component id="jComboBoxLiblet" alignment="0" max="32767" attributes="0"/>
                                                       </Group>
                                                       <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="buttonRemoveLiblet" min="-2" max="-2" attributes="0"/>
+                                                      <Group type="103" groupAlignment="0" attributes="0">
+                                                          <Group type="102" attributes="0">
+                                                              <Component id="buttonAddLiblet" min="-2" pref="83" max="-2" attributes="0"/>
+                                                              <EmptySpace max="-2" attributes="0"/>
+                                                              <Component id="buttonRemoveLiblet" min="-2" max="-2" attributes="0"/>
+                                                          </Group>
+                                                          <Component id="buttonBrowseJad" min="-2" max="-2" attributes="0"/>
+                                                      </Group>
                                                   </Group>
-                                                  <Component id="labelLibletLocalJad" max="32767" attributes="0"/>
                                               </Group>
                                           </Group>
                                           <Group type="102" attributes="0">
@@ -1262,12 +1266,13 @@
                                                           </Group>
                                                       </Group>
                                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                          <Component id="jTextFieldLibletNameValue" pref="250" max="32767" attributes="0"/>
+                                                          <Component id="jTextFieldLibletNameValue" pref="290" max="32767" attributes="0"/>
                                                           <Component id="jTextFieldLibletVendorValue" alignment="0" max="32767" attributes="0"/>
                                                           <Component id="jTextFieldLibletVersionValue" alignment="0" max="32767" attributes="0"/>
                                                       </Group>
                                                   </Group>
                                                   <Component id="labelLibletUsage" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="checkBoxLibletUsage" alignment="0" min="-2" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                           </Group>
@@ -1464,7 +1469,7 @@
                           <ComponentRef name="buttonGroupLibletType"/>
                         </Property>
                         <Property name="selected" type="boolean" value="true"/>
-                        <Property name="text" type="java.lang.String" value="liblet"/>
+                        <Property name="text" type="java.lang.String" value="Liblet"/>
                         <Property name="actionCommand" type="java.lang.String" value="LIBLET"/>
                       </Properties>
                     </Component>
@@ -1473,7 +1478,7 @@
                         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                           <ComponentRef name="buttonGroupLibletType"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="standard"/>
+                        <Property name="text" type="java.lang.String" value="Standard"/>
                         <Property name="actionCommand" type="java.lang.String" value="STANDARD"/>
                       </Properties>
                     </Component>
@@ -1482,7 +1487,7 @@
                         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                           <ComponentRef name="buttonGroupLibletType"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="service"/>
+                        <Property name="text" type="java.lang.String" value="Service"/>
                         <Property name="actionCommand" type="java.lang.String" value="SERVICE"/>
                       </Properties>
                     </Component>
@@ -1491,7 +1496,7 @@
                         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                           <ComponentRef name="buttonGroupLibletType"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="proprietary"/>
+                        <Property name="text" type="java.lang.String" value="Proprietary"/>
                         <Property name="actionCommand" type="java.lang.String" value="PROPRIETARY"/>
                       </Properties>
                     </Component>
@@ -1563,7 +1568,7 @@
                               <Component id="labelNoLiblets" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="bAddFirstLiblet" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="272" max="32767" attributes="0"/>
+                              <EmptySpace pref="286" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
