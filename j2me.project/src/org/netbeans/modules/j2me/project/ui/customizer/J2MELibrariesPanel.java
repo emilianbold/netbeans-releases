@@ -308,8 +308,11 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                         li.setType(LibletInfo.LibletType.valueOf(button.getActionCommand()));
                         jTextFieldLibletVendorValue.setText(li.getType() != LibletInfo.LibletType.SERVICE ? li.getVendor() : "");
                         jTextFieldLibletVersionValue.setText(li.getType() != LibletInfo.LibletType.SERVICE ? li.getVersion() : "");
-                        jTextFieldLibletVendorValue.setEnabled(li.getType() != LibletInfo.LibletType.LIBLET && li.getType() != LibletInfo.LibletType.SERVICE);
-                        jTextFieldLibletVersionValue.setEnabled(li.getType() != LibletInfo.LibletType.SERVICE);
+                        jTextFieldLibletVendorValue.setEnabled(li.getType() != LibletInfo.LibletType.LIBLET);
+                        jTextFieldLibletVendorValue.setVisible(li.getType() != LibletInfo.LibletType.SERVICE);
+                        labelLibletVendor.setVisible(li.getType() != LibletInfo.LibletType.SERVICE);
+                        jTextFieldLibletVersionValue.setVisible(li.getType() != LibletInfo.LibletType.SERVICE);
+                        labelLibletVersion.setVisible(li.getType() != LibletInfo.LibletType.SERVICE);
                         jComboBoxLiblet.repaint();
                     }
                 }
@@ -1230,19 +1233,19 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
 
         buttonGroupLibletType.add(jRadioButtonLiblet);
         jRadioButtonLiblet.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonLiblet, "liblet");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonLiblet, "Liblet");
         jRadioButtonLiblet.setActionCommand("LIBLET");
 
         buttonGroupLibletType.add(jRadioButtonStandard);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonStandard, "standard");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonStandard, "Standard");
         jRadioButtonStandard.setActionCommand("STANDARD");
 
         buttonGroupLibletType.add(jRadioButtonService);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonService, "service");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonService, "Service");
         jRadioButtonService.setActionCommand("SERVICE");
 
         buttonGroupLibletType.add(jRadioButtonProprietary);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonProprietary, "proprietary");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonProprietary, "Proprietary");
         jRadioButtonProprietary.setActionCommand("PROPRIETARY");
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonRemoveLiblet, "Remove...");
@@ -1277,10 +1280,9 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                 .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
                         .addComponent(labelLibletInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(594, 680, Short.MAX_VALUE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
                         .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(checkBoxLibletUsage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
                                 .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(labelLibletUrl)
@@ -1290,30 +1292,33 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                                 .addGap(18, 18, 18)
                                 .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
-                                        .addComponent(jTextFieldLibletUrl)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(buttonBrowseJad))
-                                    .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
                                         .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
-                                                .addComponent(jComboBoxLiblet, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(buttonAddLiblet, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
                                             .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
                                                 .addComponent(jRadioButtonOptional)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(jRadioButtonRequired))
-                                            .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                                            .addComponent(labelLibletLocalJad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelLibletSettingsLayout.createSequentialGroup()
+                                        .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jTextFieldLibletUrl)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanelLibletSettingsLayout.createSequentialGroup()
                                                 .addComponent(jRadioButtonLiblet)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(jRadioButtonStandard)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(jRadioButtonService)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(jRadioButtonProprietary)))
+                                                .addComponent(jRadioButtonProprietary)
+                                                .addGap(0, 9, Short.MAX_VALUE))
+                                            .addComponent(jComboBoxLiblet, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(buttonRemoveLiblet))
-                                    .addComponent(labelLibletLocalJad)))
+                                        .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                                                .addComponent(buttonAddLiblet, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(buttonRemoveLiblet))
+                                            .addComponent(buttonBrowseJad)))))
                             .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
                                 .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
@@ -1328,10 +1333,11 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                                                 .addComponent(labelLibletVersion)
                                                 .addGap(17, 17, 17)))
                                         .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(jTextFieldLibletNameValue, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                                            .addComponent(jTextFieldLibletNameValue, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
                                             .addComponent(jTextFieldLibletVendorValue)
                                             .addComponent(jTextFieldLibletVersionValue)))
-                                    .addComponent(labelLibletUsage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(labelLibletUsage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(checkBoxLibletUsage))
                                 .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())))
         );
@@ -1416,7 +1422,7 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                 .addComponent(labelNoLiblets)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(bAddFirstLiblet)
-                .addContainerGap(272, Short.MAX_VALUE))
+                .addContainerGap(286, Short.MAX_VALUE))
         );
 
         jPanelLibletsCards.add(jPanelNoLiblets, "panelNoLiblets");
@@ -1428,7 +1434,7 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
             .addComponent(jPanelLibletsCards, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
             .addGroup(jPanelLibletsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLibletsNote)
+                .addComponent(labelLibletsNote, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanelLibletsLayout.setVerticalGroup(
@@ -1467,7 +1473,7 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(librariesBrowse, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addComponent(jCheckBoxBuildSubprojects, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jTabbedPane1)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1541,6 +1547,13 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
         }
     }//GEN-LAST:event_buttonAddLibletActionPerformed
 
+    private void checkBoxLibletUsageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxLibletUsageActionPerformed
+        LibletInfo selected = (LibletInfo) jComboBoxLiblet.getSelectedItem();
+        if (selected != null) {
+            selected.setExtractClasses(checkBoxLibletUsage.isSelected());
+        }
+    }//GEN-LAST:event_checkBoxLibletUsageActionPerformed
+
     private void buttonRemoveLibletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveLibletActionPerformed
         int origSize = uiProperties.LIBLETS_MODEL.getSize();
         uiProperties.LIBLETS_MODEL.removeElement(uiProperties.LIBLETS_MODEL.getSelectedItem());
@@ -1548,10 +1561,6 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
             ((CardLayout)jPanelLibletsCards.getLayout()).show(jPanelLibletsCards, "panelNoLiblets");
         }
     }//GEN-LAST:event_buttonRemoveLibletActionPerformed
-
-    private void jComboBoxLibletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxLibletActionPerformed
-        updateLibletFormValues();
-    }//GEN-LAST:event_jComboBoxLibletActionPerformed
 
     private void buttonBrowseJadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBrowseJadActionPerformed
         LibletInfo selected = (LibletInfo) jComboBoxLiblet.getSelectedItem();
@@ -1569,12 +1578,9 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
         }
     }//GEN-LAST:event_buttonBrowseJadActionPerformed
 
-    private void checkBoxLibletUsageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxLibletUsageActionPerformed
-        LibletInfo selected = (LibletInfo) jComboBoxLiblet.getSelectedItem();
-        if (selected != null) {
-            selected.setExtractClasses(checkBoxLibletUsage.isSelected());
-        }
-    }//GEN-LAST:event_checkBoxLibletUsageActionPerformed
+    private void jComboBoxLibletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxLibletActionPerformed
+        updateLibletFormValues();
+    }//GEN-LAST:event_jComboBoxLibletActionPerformed
 
     private void updateJars(DefaultListModel model) {
         for (int i = 0; i < model.size(); i++) {
@@ -1696,10 +1702,10 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
             } else {
                 jTextFieldLibletUrl.setText(null);
             }
-            labelLibletUrl.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
-            jTextFieldLibletUrl.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
-            buttonBrowseJad.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
-            labelLibletLocalJad.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
+            labelLibletUrl.setVisible(selected.getType() == LibletInfo.LibletType.LIBLET);
+            jTextFieldLibletUrl.setVisible(selected.getType() == LibletInfo.LibletType.LIBLET);
+            buttonBrowseJad.setVisible(selected.getType() == LibletInfo.LibletType.LIBLET);
+            labelLibletLocalJad.setVisible(selected.getType() == LibletInfo.LibletType.LIBLET);
 
             jRadioButtonLiblet.setSelected(jRadioButtonLiblet.getActionCommand().equals(selected.getType().name()));
             jRadioButtonStandard.setSelected(jRadioButtonStandard.getActionCommand().equals(selected.getType().name()));
@@ -1717,11 +1723,15 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
             jTextFieldLibletVersionValue.setText(selected.getType() != LibletInfo.LibletType.SERVICE ? selected.getVersion() : "");
 
             jTextFieldLibletNameValue.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
-            jTextFieldLibletVendorValue.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET && selected.getType() != LibletInfo.LibletType.SERVICE);
-            jTextFieldLibletVersionValue.setEnabled(selected.getType() != LibletInfo.LibletType.SERVICE);
+            jTextFieldLibletVendorValue.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
+            labelLibletVendor.setVisible(selected.getType() != LibletInfo.LibletType.SERVICE);
+            jTextFieldLibletVendorValue.setVisible(selected.getType() != LibletInfo.LibletType.SERVICE);
+            labelLibletVersion.setVisible(selected.getType() != LibletInfo.LibletType.SERVICE);
+            jTextFieldLibletVersionValue.setVisible(selected.getType() != LibletInfo.LibletType.SERVICE);
 
             checkBoxLibletUsage.setSelected(selected.isExtractClasses());
-            checkBoxLibletUsage.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
+            labelLibletUsage.setVisible(selected.getType() == LibletInfo.LibletType.LIBLET);
+            checkBoxLibletUsage.setVisible(selected.getType() == LibletInfo.LibletType.LIBLET);
         }
     }
 }
