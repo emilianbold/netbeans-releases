@@ -1,5 +1,5 @@
 Name: JUnit
-Version: 4.10
+Version: 4.12
 OSR: 6529
 License: CPL-1.0
 Description: JUnit harness runtime
