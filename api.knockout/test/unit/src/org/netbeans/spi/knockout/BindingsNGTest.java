@@ -91,6 +91,36 @@ public class BindingsNGTest {
         assertEquals(eng.eval("ko.value.currentTweets[0].from_user_id"), 0d, "Boolean values are set to true");
     }
 
+    @Test
+    public void generateRecursiveModel() throws Exception {
+        Bindings m1 = Bindings.create("Hello");
+        Bindings m2 = Bindings.create("Multi");
+        m1.modelProperty("multi", m2, false);
+        m2.modelProperty("hello", m1, false);
+        m2.intProperty("int", false);
+        String txt = m2.generate();
+        assertValidJS(txt);
+        assertNotNull(eng.eval("ko"), txt);
+        assertNotNull(eng.eval("Hello.multi"), txt);
+        assertEquals(eng.eval("Hello.multi.hello === Hello"), Boolean.TRUE, txt);
+    }
+
+    @Test
+    public void generateRecursiveModel2() throws Exception {
+        Bindings one = Bindings.create("One");
+        Bindings two = Bindings.create("Two");
+        Bindings three = Bindings.create("Three");
+        one.modelProperty("three", three, false);
+        two.modelProperty("one", one, false);
+        three.modelProperty("two",two , false);
+        String txt = two.generate();
+        assertValidJS(txt);
+        assertNotNull(eng.eval("ko"), txt);
+        assertNotNull(eng.eval("One.three"), txt);
+        assertNotNull(eng.eval("One.three.two"), txt);
+        assertEquals(eng.eval("One.three.two.one === One"), Boolean.TRUE, txt);
+    }
+
     private void assertValidJS(String txt) {
         assertNotNull(txt, "We have some script");
         try {
