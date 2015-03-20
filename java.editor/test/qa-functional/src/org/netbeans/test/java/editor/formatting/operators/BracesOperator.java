@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.modules.java.ui.FmtBraces;
 import org.netbeans.modules.java.ui.FmtOptions;
 import org.openide.util.NbBundle;
 
@@ -54,13 +55,13 @@ import org.openide.util.NbBundle;
  * @author jprox
  */
 public class BracesOperator extends FormattingPanelOperator {    
-    public static final String SAME_LINE = NbBundle.getMessage(FmtOptions.class, "LBL_bp_SAME_LINE");
-    public static final String NEW_LINE_INDENTED = NbBundle.getMessage(FmtOptions.class, "LBL_bp_NEW_LINE_INDENTED");
-    public static final String NEW_LINE_HALF_INDENTED = NbBundle.getMessage(FmtOptions.class, "LBL_bp_NEW_LINE_HALF_INDENTED");
-    public static final String NEW_LINE = NbBundle.getMessage(FmtOptions.class, "LBL_bp_NEW_LINE");
-    public static final String BRACES_GENERATE = NbBundle.getMessage(FmtOptions.class, "LBL_bg_GENERATE");
-    public static final String BRACES_ELIMINATE = NbBundle.getMessage(FmtOptions.class, "LBL_bg_ELIMINATE");
-    public static final String BRACES_LEAVE_ALONE = NbBundle.getMessage(FmtOptions.class, "LBL_bg_LEAVE_ALONE");
+    public static final String SAME_LINE = NbBundle.getMessage(FmtBraces.class, "LBL_bp_SAME_LINE");
+    public static final String NEW_LINE_INDENTED = NbBundle.getMessage(FmtBraces.class, "LBL_bp_NEW_LINE_INDENTED");
+    public static final String NEW_LINE_HALF_INDENTED = NbBundle.getMessage(FmtBraces.class, "LBL_bp_NEW_LINE_HALF_INDENTED");
+    public static final String NEW_LINE = NbBundle.getMessage(FmtBraces.class, "LBL_bp_NEW_LINE");
+    public static final String BRACES_GENERATE = NbBundle.getMessage(FmtBraces.class, "LBL_bg_GENERATE");
+    public static final String BRACES_ELIMINATE = NbBundle.getMessage(FmtBraces.class, "LBL_bg_ELIMINATE");
+    public static final String BRACES_LEAVE_ALONE = NbBundle.getMessage(FmtBraces.class, "LBL_bg_LEAVE_ALONE");
     
     private JComboBoxOperator classDeclaration;
     private JComboBoxOperator methodDeclaration;
