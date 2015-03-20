@@ -421,7 +421,7 @@ public final class Composer {
     }
 
     @CheckForNull
-    private FileObject getComposerJson(PhpModule phpModule) {
+    public FileObject getComposerJson(PhpModule phpModule) {
         assert phpModule != null;
         if (workDir != null) {
             FileObject fo = FileUtil.toFileObject(workDir);
