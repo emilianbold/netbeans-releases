@@ -102,6 +102,7 @@ TMP-i686   :=  x86
 TMP-i86pc  :=  x86
 TMP-x86_64 :=  x86
 TMP-sparc  :=  sparc
+TMP-sparc64 :=  sparc
 TMP-sun4u  :=  sparc
 
 ifeq ($(UNAME_P), unknown)  # for my Ubuntu 10.4 on Intel I5 it says "unknown" :(

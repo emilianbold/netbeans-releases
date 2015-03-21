@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
@@ -71,7 +71,7 @@ public class GenerateProjectAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         final FileObject fo = activatedNodes[0].getLookup().lookup(FileObject.class);
-        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+        BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
 
             @Override
             public void run() {

@@ -76,12 +76,15 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public class ConstructorGenerator implements CodeGenerator {
+    
+    public enum Inited {must, may, cannot};
 
     public static class Factory implements CodeGenerator.Factory {
 
@@ -103,9 +106,7 @@ public class ConstructorGenerator implements CodeGenerator {
                 return ret;
             }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
-            final Set<CsmField> shouldBeInitializedFields = new LinkedHashSet<>();
-            final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
-            final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
+            final List<Pair<CsmField,Inited>> fields = new ArrayList<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
             final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new LinkedHashMap<>();
             CsmCacheManager.enter();
@@ -127,7 +128,7 @@ public class ConstructorGenerator implements CodeGenerator {
                         }
                     }
                 }
-                GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
+                GeneratorUtils.scanForFieldsAndConstructors(typeElement, fields, constructors);
             } finally {
                 CsmCacheManager.leave();
             }
@@ -144,16 +145,20 @@ public class ConstructorGenerator implements CodeGenerator {
                 constructorDescription = ElementNode.Description.create(typeElement, baseClassesDescriptions, false, false);
             }
             ElementNode.Description fieldsDescription = null;
-            if (!mayBeIninitializedFields.isEmpty() || !shouldBeInitializedFields.isEmpty() || !cannotBeInitializedFields.isEmpty()) {
+            if (!fields.isEmpty()) {
                 List<ElementNode.Description> fieldDescriptions = new ArrayList<>();
-                for (CsmField variableElement : mayBeIninitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, variableElement.equals(objectUnderOffset)));
-                }
-                for (CsmField variableElement : shouldBeInitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, true));
-                }
-                for (CsmField variableElement : cannotBeInitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, false, false));
+                for (Pair<CsmField,Inited> variableElement : fields) {
+                    switch(variableElement.second()) {
+                        case must:
+                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, true));
+                            break;
+                        case may:
+                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, variableElement.equals(objectUnderOffset)));
+                            break;
+                        case cannot:
+                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, false, false));
+                            break;
+                    }
                 }
                 fieldsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, fieldDescriptions, false, false)), false, false);
             }

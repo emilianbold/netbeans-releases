@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -84,152 +78,49 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
-import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformer;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.TaskIndexingMode;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.HintsController;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
+ * @author alsimon
  */
-public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
-    private final CancelSupport cancel = CancelSupport.create(this);
-    private AtomicBoolean canceled = new AtomicBoolean(false);
+public class ExpressionFinder {
+    private final Document doc;
+    private final CsmFile file;
+    private final int caretOffset;
+    private final int selectionStart;
+    private final int selectionEnd;
+    private final AtomicBoolean canceled;
+    private StatementResult result;
     
-    public LineFactoryTask() {
-        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
+    public ExpressionFinder(Document doc, CsmFile file, int caretOffset, int selectionStart, int selectionEnd, AtomicBoolean canceled) {
+        this.doc = doc;
+        this.file = file;
+        this.caretOffset = caretOffset;
+        this.selectionStart = selectionStart;
+        this.selectionEnd = selectionEnd;
+        this.canceled = canceled;
     }
 
-    @Override
-    public void run(Parser.Result result, SchedulerEvent event) {
-        synchronized (this) {
-            canceled.set(true);
-            canceled = new AtomicBoolean(false);
-        }
-        if (cancel.isCancelled()) {
-            return;
-        }
-        Collection<CodeAudit> audits = SuggestionProvider.getInstance().getAudits();
-        boolean enabled = false;
-        for(CodeAudit audit : audits) {
-            if (audit.isEnabled()) {
-                enabled = true;
-                break;
-            }
-        }
-        if (!enabled) {
-            return;
-        }
-        long time = 0;
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "LineFactoryTask started"); //NOI18N
-            time = System.currentTimeMillis();
-        }
-        final Document doc = result.getSnapshot().getSource().getDocument(false);
-        final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
-        final CsmFile file = CsmFileInfoQuery.getDefault().getCsmFile(result);
-        if (file != null && doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
-            if (event instanceof CursorMovedSchedulerEvent) {
-                process(audits, doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
-            }
-        }
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "LineFactoryTask finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
-        }
-    }
-
-    private void process(Collection<CodeAudit> audits, final Document doc, final FileObject fileObject, CursorMovedSchedulerEvent cursorEvent, final CsmFile file, final AtomicBoolean canceled) {
-        clearHint(doc, fileObject);
-        int caretOffset = cursorEvent.getCaretOffset();
-        JTextComponent comp = EditorRegistry.lastFocusedComponent();
-        int selectionStart = caretOffset;
-        int selectionEnd = caretOffset;
-        if (comp != null) {
-            selectionStart = Math.min(cursorEvent.getCaretOffset(),cursorEvent.getMarkOffset());//comp.getSelectionStart();
-            selectionEnd = Math.max(cursorEvent.getCaretOffset(),cursorEvent.getMarkOffset());//comp.getSelectionEnd();
-        }
-        if (canceled.get())  {
-            return;
-        }
-        StatementResult res = findExpressionStatement(file.getDeclarations(), selectionStart, selectionEnd, doc, canceled);
-        if (res == null) {
-            return;
-        }
-        if (canceled.get())  {
-            return;
-        }
-        boolean introduce = false;
-        boolean assign = false;
-        for(CodeAudit audit : audits) {
-            if (IntroduceVariable.ID.equals(audit.getID()) && audit.isEnabled()) {
-                introduce = true;
-            } else if (AssignVariable.ID.equals(audit.getID()) && audit.isEnabled()) {
-                assign = true;
-            } 
-        }
-        if (assign) {
-            CsmExpressionStatement expression = res.expression;
-            if (expression != null) {
-                createStatementHint(expression, doc, fileObject);
-            }
-        }
-        if (introduce) {
-            if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
-                if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
-                        CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
-                        isExpressionSelection(doc, selectionStart, selectionEnd)) {
-                    if (!(res.container.getStartOffset() == selectionStart &&
-                            res.container.getEndOffset() == selectionEnd)) {
-                        try {
-                            final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
-                            if(text.length() > 0) {
-                                CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
-                                if (isApplicableExpression(csmOffsetable, doc)) {
-                                    createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
-                                }
-                            }
-                        } catch (BadLocationException ex) {
-                        }
-                    }
-                }
-            }
-        }
+    public StatementResult findExpressionStatement() {
+        result = findExpressionStatement(file.getDeclarations());
+        return result;
     }
     
-    private StatementResult findExpressionStatement(Collection<? extends CsmOffsetableDeclaration> decls, int selectionStart, int selectionEnd, Document doc, final AtomicBoolean canceled) {
+    private StatementResult findExpressionStatement(Collection<? extends CsmOffsetableDeclaration> decls) {
         for(CsmOffsetableDeclaration decl : decls) {
             if (canceled.get()) {
                 return null;
@@ -237,20 +128,20 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
             if (decl.getStartOffset() < selectionStart && selectionEnd < decl.getEndOffset()) {
                 if (CsmKindUtilities.isFunctionDefinition(decl)) {
                     CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
-                    return findExpressionStatementInBody(def.getBody(), selectionStart, selectionEnd, doc, canceled);
+                    return findExpressionStatementInBody(def.getBody());
                 } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                     CsmNamespaceDefinition def = (CsmNamespaceDefinition) decl;
-                    return findExpressionStatement(def.getDeclarations(), selectionStart, selectionEnd, doc, canceled);
+                    return findExpressionStatement(def.getDeclarations());
                 } else if (CsmKindUtilities.isClass(decl)) {
                     CsmClass cls = (CsmClass) decl;
-                    return findExpressionStatement(cls.getMembers(), selectionStart, selectionEnd, doc, canceled);
+                    return findExpressionStatement(cls.getMembers());
                 }
             }
         }
         return null;
-    }    
-
-    private StatementResult findExpressionStatementInBody(CsmCompoundStatement body, int selectionStart, int selectionEnd, final Document doc, final AtomicBoolean canceled) {
+    }
+    
+    private StatementResult findExpressionStatementInBody(CsmCompoundStatement body) {
         if (body != null) {
             final List<CsmStatement> statements = body.getStatements();
             for(int i = 0; i < statements.size(); i++) {
@@ -269,7 +160,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                    nexStartOffset = body.getEndOffset();
                 }
                 if (startOffset <= selectionStart && selectionEnd < nexStartOffset) {
-                    final StatementResult res = findExpressionStatement(st, nexStartOffset, selectionStart, selectionEnd, doc, canceled);
+                    StatementResult res = findExpressionStatement(st, nexStartOffset);
                     if (res != null && res.statementInBody == null) {
                         res.statementInBody = st;
                     }
@@ -280,16 +171,16 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         return null;
     }
 
-    private StatementResult findExpressionStatement(final CsmStatement st, final int nexStartOffset, int selectionStrat, int selectionEnd, final Document doc, final AtomicBoolean canceled) {
+    private StatementResult findExpressionStatement(final CsmStatement st, final int nexStartOffset) {
         switch(st.getKind()) {
             case COMPOUND:
-                return findExpressionStatementInBody((CsmCompoundStatement)st, selectionStrat, selectionEnd, doc, canceled);
+                return findExpressionStatementInBody((CsmCompoundStatement)st);
             case SWITCH:
             {
                 CsmSwitchStatement switchStmt = (CsmSwitchStatement) st;
                 CsmCondition condition = switchStmt.getCondition();
                 if (condition != null &&
-                    condition.getStartOffset() <= selectionStrat && selectionEnd <= condition.getEndOffset()) {
+                    condition.getStartOffset() <= selectionStart && selectionEnd <= condition.getEndOffset()) {
                     StatementResult res = new StatementResult();
                     res.container = st;
                     return res;
@@ -297,8 +188,8 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                 final CsmStatement body = switchStmt.getBody();
                 if (body != null) {
                     final int startOffset = body.getStartOffset();
-                    if (startOffset <= selectionStrat && selectionEnd < nexStartOffset) {
-                        return findExpressionStatement(body, nexStartOffset, selectionStrat, selectionEnd, doc, canceled);
+                    if (startOffset <= selectionStart && selectionEnd < nexStartOffset) {
+                        return findExpressionStatement(body, nexStartOffset);
                     }
                 }
                 return null;
@@ -308,7 +199,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                 CsmForStatement forStmt = (CsmForStatement) st;
                 CsmStatement initStatement = forStmt.getInitStatement();
                 if (initStatement != null && 
-                    initStatement.getStartOffset() <= selectionStrat && selectionEnd <= initStatement.getEndOffset()) {
+                    initStatement.getStartOffset() <= selectionStart && selectionEnd <= initStatement.getEndOffset()) {
                     StatementResult res = new StatementResult();
                     res.container = st;
                     return res;
@@ -330,8 +221,8 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                 CsmStatement body = forStmt.getBody();
                 if (body != null) {
                     final int startOffset = body.getStartOffset();
-                    if (startOffset <= selectionStrat && selectionEnd < nexStartOffset) {
-                        return findExpressionStatement(body, nexStartOffset, selectionStrat, selectionEnd, doc, canceled);
+                    if (startOffset <= selectionStart && selectionEnd < nexStartOffset) {
+                        return findExpressionStatement(body, nexStartOffset);
                     }
                 }
                 return null;
@@ -357,8 +248,8 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                             endOffset = condition.getStartOffset();
                         }
                     }
-                    if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                        return findExpressionStatement(body, endOffset, selectionStrat, selectionEnd, doc, canceled);
+                    if (startOffset <= selectionStart && selectionEnd < endOffset) {
+                        return findExpressionStatement(body, endOffset);
                     }
                 }
                 return null;
@@ -374,8 +265,8 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                     if (handlers != null && handlers.size() > 0) {
                         endOffset = handlers.get(0).getStartOffset();
                     }
-                    if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                        return findExpressionStatement(tryBody, endOffset, selectionStrat, selectionEnd, doc, canceled);
+                    if (startOffset <= selectionStart && selectionEnd < endOffset) {
+                        return findExpressionStatement(tryBody, endOffset);
                     }
                 }
                 if (handlers != null) {
@@ -383,8 +274,8 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                         CsmExceptionHandler handler = handlers.get(i);
                         final int startOffset = handler.getStartOffset();
                         final int endOffset = handler.getEndOffset();
-                        if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                            return findExpressionStatement(handler, endOffset, selectionStrat, selectionEnd, doc, canceled);
+                        if (startOffset <= selectionStart && selectionEnd < endOffset) {
+                            return findExpressionStatement(handler, endOffset);
                         }
                     }
                 }
@@ -395,7 +286,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                 CsmIfStatement ifStmt = (CsmIfStatement) st;
                 CsmCondition condition = ifStmt.getCondition();
                 if (condition != null && 
-                    condition.getStartOffset() <= selectionStrat && selectionEnd <= condition.getEndOffset()) {
+                    condition.getStartOffset() <= selectionStart && selectionEnd <= condition.getEndOffset()) {
                     StatementResult res = new StatementResult();
                     res.container = st;
                     return res;
@@ -408,15 +299,15 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                     if (elseStmt != null) {
                         endOffset = elseStmt.getStartOffset();
                     }
-                    if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                        return findExpressionStatement(thenStmt, endOffset, selectionStrat, selectionEnd, doc, canceled);
+                    if (startOffset <= selectionStart && selectionEnd < endOffset) {
+                        return findExpressionStatement(thenStmt, endOffset);
                     }
                 }
                 if (elseStmt != null) {
                     final int startOffset = elseStmt.getStartOffset();
                     int endOffset = nexStartOffset;
-                    if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                        return findExpressionStatement(elseStmt, endOffset, selectionStrat, selectionEnd, doc, canceled);
+                    if (startOffset <= selectionStart && selectionEnd < endOffset) {
+                        return findExpressionStatement(elseStmt, endOffset);
                     }
                 }
                 return null;
@@ -434,10 +325,10 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                 for(CsmDeclaration decl : declarators) {
                     if (decl instanceof CsmVariable) {
                         CsmVariable d = (CsmVariable) decl;
-                        if (d.getStartOffset() <= selectionStrat && selectionEnd <= d.getEndOffset()) {
+                        if (d.getStartOffset() <= selectionStart && selectionEnd <= d.getEndOffset()) {
                             CsmExpression initialValue = d.getInitialValue();
                             if (initialValue != null) {
-                                if (initialValue.getStartOffset() <= selectionStrat && selectionEnd <= initialValue.getEndOffset()) {
+                                if (initialValue.getStartOffset() <= selectionStart && selectionEnd <= initialValue.getEndOffset()) {
                                     StatementResult res = new StatementResult();
                                     res.container = st;
                                     return res;
@@ -472,8 +363,8 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                         }
                     }
                 });
-                if (startOffset <= selectionStrat && selectionEnd <= trueEndOffset.get()) {
-                    if(isApplicable((CsmExpressionStatement) st, doc)) {
+                if (startOffset <= selectionStart && selectionEnd <= trueEndOffset.get()) {
+                    if(isApplicable((CsmExpressionStatement) st)) {
                         StatementResult res = new StatementResult();
                         res.expression = (CsmExpressionStatement) st;
                         res.container = (CsmExpressionStatement) st;
@@ -490,11 +381,25 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         return null;
     }
     
-    private boolean isApplicable(CsmExpressionStatement st, final Document doc) {
-        return isApplicableExpression(st.getExpression(), doc);        
+    private boolean isApplicable(CsmExpressionStatement st) {
+        return isApplicableExpression(st.getExpression());        
     }
     
-    private boolean isApplicableExpression(CsmOffsetable expression, final Document doc) {
+    CsmOffsetable applicableTextExpression() {
+        try {
+            String text = doc.getText(selectionStart, selectionEnd - selectionStart);
+            if (text.length() > 0) {
+                CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
+                if (isApplicableExpression(csmOffsetable)) {
+                    return csmOffsetable;
+                }
+            }
+        } catch (BadLocationException ex) {
+        }
+        return null;
+    }
+    
+    private boolean isApplicableExpression(CsmOffsetable expression) {
         final int startOffset = expression.getStartOffset();
         final int endOffset = expression.getEndOffset();
         final AtomicBoolean isAssignment = new AtomicBoolean(false);
@@ -552,9 +457,9 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         return true;
     }
     
-    private boolean isExpressionSelection(final Document doc, final int startOffset, final int endOffset) {
+    boolean isExpressionSelection() {
         final AtomicBoolean applicableSelection = new AtomicBoolean(false);
-        if (startOffset < endOffset) {
+        if (selectionStart < selectionEnd) {
             doc.render(new Runnable() {
 
                 @Override
@@ -562,11 +467,11 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                     TokenHierarchy<? extends Document> hi = TokenHierarchy.get(doc);
                     TokenSequence<?> ts = hi.tokenSequence();
                     // selection end between tokens?
-                    ts.move(endOffset);
+                    ts.move(selectionEnd);
                     boolean res = false;
                     if(ts.moveNext()) {
                         int from = ts.offset();
-                        if (endOffset == from) {
+                        if (selectionEnd == from) {
                             res = true;
                         }
                     }
@@ -574,12 +479,12 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                         return;
                     }
                     // selection start between tokens?
-                    ts.move(startOffset);
+                    ts.move(selectionStart);
                     res = false;
                     if(ts.movePrevious()) {
                         Token<?> token = ts.token();
                         int to = ts.offset()+token.length();
-                        if (startOffset == to) {
+                        if (selectionStart == to) {
                             res = true;
                         }
                     }
@@ -587,11 +492,11 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                         return;
                     }
                     // finally count paren balance
-                    ts.move(startOffset);
+                    ts.move(selectionStart);
                     int count = 0;
                     while(ts.moveNext()) {
                         Token<?> token = ts.token();
-                        if (ts.offset() >= endOffset) {
+                        if (ts.offset() >= selectionEnd) {
                             break;
                         }
                         if (token.id() == CppTokenId.LPAREN) {
@@ -611,67 +516,14 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         return applicableSelection.get();
     }
     
-    private void createStatementHint(CsmExpressionStatement expression, Document doc, FileObject fo) {
-        List<Fix> fixes = Collections.<Fix>singletonList(new AssignmentFixImpl(expression.getExpression(), doc, fo));
-        String description = NbBundle.getMessage(LineFactoryTask.class, "AssignVariable.name"); //NOI18N
-        List<ErrorDescription> hints = Collections.singletonList(
-                ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
-                        expression.getStartOffset(), expression.getStartOffset()));
-        HintsController.setErrors(doc, LineFactoryTask.class.getName(), hints);
-        
-    }
-
-    private void createExpressionHint(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
-        List<Fix> fixes = Collections.<Fix>singletonList(new IntroduceFixImpl(st, expression, doc, comp, fo));
-        String description = NbBundle.getMessage(LineFactoryTask.class, "IntroduceVariable.name"); //NOI18N
-        List<ErrorDescription> hints = Collections.singletonList(
-                ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
-                        expression.getStartOffset(), expression.getStartOffset()));
-        HintsController.setErrors(doc, LineFactoryTask.class.getName(), hints);
-    }
-
-    private void clearHint(Document doc, FileObject fo) {
-        HintsController.setErrors(doc, LineFactoryTask.class.getName(), Collections.<ErrorDescription>emptyList());
-        
+    
+    static final class StatementResult {
+        CsmExpressionStatement expression;
+        CsmStatement container;
+        CsmStatement statementInBody;
     }
     
-    @Override
-    public int getPriority() {return 500;}
-
-    @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
-    }
-
-    @Override
-    public final void cancel() {
-        synchronized(this) {
-            canceled.set(true);
-        }
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "LineFactoryTask cancelled"); //NOI18N
-        }
-    }
-    
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),
-        @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
-        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class)
-    })
-    public static class NavigatorSourceFactory extends TaskFactory {
-        @Override
-        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-            return Collections.singletonList(new LineFactoryTask());
-        }
-    }
-    
-    private static final class StatementResult {
-        private CsmExpressionStatement expression;
-        private CsmStatement container;
-        private CsmStatement statementInBody;
-    }
-
-    private static abstract class BaseFixImpl implements Fix {
+    static abstract class BaseFixImpl implements Fix {
         protected final CsmOffsetable expression;
         protected final BaseDocument doc;
         protected String name;
@@ -761,17 +613,17 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         }
     }
     
-    private static final class AssignmentFixImpl extends BaseFixImpl {
+    static final class AssignmentFixImpl extends BaseFixImpl {
         private final FileObject fo;
 
-        private AssignmentFixImpl(CsmExpression expression, Document doc, FileObject fo) {
+        AssignmentFixImpl(CsmExpression expression, Document doc, FileObject fo) {
             super(expression, doc);
             this.fo = fo;
         }
 
         @Override
         public String getText() {
-            return NbBundle.getMessage(LineFactoryTask.class, "FIX_AssignResultToVariable"); //NOI18N
+            return NbBundle.getMessage(SuggestionFactoryTask.class, "FIX_AssignResultToVariable"); //NOI18N
         }
 
         @Override
@@ -807,12 +659,12 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         }        
     }
     
-    private static final class IntroduceFixImpl extends BaseFixImpl {
+    static final class IntroduceFixImpl extends BaseFixImpl {
         private final CsmStatement st;
         private final FileObject fo;
         private final JTextComponent comp;
 
-        private IntroduceFixImpl(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
+        IntroduceFixImpl(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
             super(expression, doc);
             this.fo = fo;
             this.st = st;
@@ -821,7 +673,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
 
         @Override
         public String getText() {
-            return NbBundle.getMessage(LineFactoryTask.class, "FIX_IntroduceVariable"); //NOI18N
+            return NbBundle.getMessage(SuggestionFactoryTask.class, "FIX_IntroduceVariable"); //NOI18N
         }
 
         @Override
@@ -881,7 +733,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
             return changeInfo;
         }        
     }
-
+    
     private static class CsmOffsetableImpl implements CsmOffsetable {
 
         private final CsmFile file;
@@ -913,7 +765,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
 
         @Override
         public CsmOffsetable.Position getStartPosition() {
-            return new Position() {
+            return new CsmOffsetable.Position() {
 
                 @Override
                 public int getOffset() {
@@ -934,7 +786,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
 
         @Override
         public CsmOffsetable.Position getEndPosition() {
-            return new Position() {
+            return new CsmOffsetable.Position() {
 
                 @Override
                 public int getOffset() {
@@ -959,57 +811,5 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         }
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 1000)
-    public static final class IntroduceVariable implements CodeAuditFactory {
-        private static final String ID = "IntroduceVariable"; //NOI18N
-        @Override
-        public AbstractCodeAudit create(AuditPreferences preferences) {
-            String name = NbBundle.getMessage(LineFactoryTask.class, "IntroduceVariable.name"); // NOI18N
-            String description = NbBundle.getMessage(LineFactoryTask.class, "IntroduceVariable.description"); // NOI18N
-            return new AbstractCodeAudit(ID, name, description, "warning", true, preferences) { // NOI18N
 
-                @Override
-                public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
-                    return true;
-                }
-
-                @Override
-                public String getKind() {
-                    return "action"; //NOI18N
-                }
-
-                @Override
-                public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-                    throw new UnsupportedOperationException();
-                }
-            };
-        }
-    }
-    
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 1000)
-    public static final class AssignVariable implements CodeAuditFactory {
-        private static final String ID = "AssignVariable"; //NOI18N
-        @Override
-        public AbstractCodeAudit create(AuditPreferences preferences) {
-            String name = NbBundle.getMessage(LineFactoryTask.class, "AssignVariable.name"); // NOI18N
-            String description = NbBundle.getMessage(LineFactoryTask.class, "AssignVariable.description"); // NOI18N
-            return new AbstractCodeAudit(ID, name, description, "warning", true, preferences) { // NOI18N
-
-                @Override
-                public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
-                    return true;
-                }
-
-                @Override
-                public String getKind() {
-                    return "action"; //NOI18N
-                }
-
-                @Override
-                public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-                    throw new UnsupportedOperationException();
-                }
-            };
-        }
-    }
 }

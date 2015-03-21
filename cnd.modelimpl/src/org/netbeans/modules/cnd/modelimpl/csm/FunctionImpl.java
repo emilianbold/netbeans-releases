@@ -136,13 +136,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     protected CharSequence classTemplateSuffix;
 
-    private static final byte FLAGS_VOID_PARMLIST = 1 << 0;
-    private static final byte FLAGS_STATIC = 1 << 1;
-    private static final byte FLAGS_CONST = 1 << 2;
-    private static final byte FLAGS_OPERATOR = 1 << 3;
-    private static final byte FLAGS_INVALID = 1 << 4;
+    private static final short FLAGS_VOID_PARMLIST = 1 << 0;
+    private static final short FLAGS_STATIC = 1 << 1;
+    private static final short FLAGS_CONST = 1 << 2;
+    private static final short FLAGS_OPERATOR = 1 << 3;
+    private static final short FLAGS_INVALID = 1 << 4;
     protected static final int LAST_USED_FLAG_INDEX = 4;
-    private byte flags;
+    private short flags;
     
     protected FunctionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(file, startOffset, endOffset);
@@ -286,11 +286,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION;
     }
 
-    protected boolean hasFlags(byte mask) {
+    protected boolean hasFlags(short mask) {
         return (flags & mask) == mask;
     }
 
-    protected final void setFlags(byte mask, boolean value) {
+    protected final void setFlags(short mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {
@@ -1037,7 +1037,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeUTF(this.rawName, output);
         factory.writeUID(this.scopeUID, output);
         PersistentUtils.writeUTF(this.signature, output);
-        output.writeByte(flags);
+        output.writeShort(flags);
         PersistentUtils.writeUTF(getScopeSuffix(), output);
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
@@ -1054,7 +1054,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         this.scopeUID = factory.readUID(input);
         this.scopeRef = null;
         this.signature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
-        this.flags = input.readByte();
+        this.flags = input.readShort();
         this.classTemplateSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }

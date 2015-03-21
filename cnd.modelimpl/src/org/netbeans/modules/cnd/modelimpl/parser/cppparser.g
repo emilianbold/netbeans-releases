@@ -2473,7 +2473,7 @@ init_declarator[int kind]
 			ASSIGNEQUAL 
             (cast_array_initializer_head) => initializer
         |	
-            LPAREN (expression_list | array_initializer) RPAREN
+            LPAREN cpp11_expression_list RPAREN
         |
             array_initializer
 		)?
@@ -2769,7 +2769,7 @@ direct_declarator[int kind, int level]
         // in init_declarator. That change may require some improvements in
         // AstRenderer as it may be useful to preserve offsets of declarations.
         LPAREN
-        (expression_list | array_initializer)?
+        (cpp11_expression_list)?
         RPAREN
         {#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
     |
@@ -3118,7 +3118,7 @@ superclass_init
 	: 
 	q = qualified_id 
         (
-            LPAREN (expression_list | array_initializer)? RPAREN
+            LPAREN (cpp11_expression_list)? RPAREN
         |
             array_initializer
         )
@@ -3298,9 +3298,7 @@ parameter_declaration[boolean inTemplateParams]
                     (   
                         {inTemplateParams}? template_param_expression
                     |
-                        array_initializer // c++11 extended initilizer list
-                    |	
-                        assignment_expression
+                        cpp11_assignment_expression
                     )
 		)?
         ({endParameterDeclaration(oldTs)}?)
@@ -4219,6 +4217,18 @@ expression
 		{#expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #expression);}
 	;
 
+cpp11_expression_list
+    :
+        cpp11_assignment_expression (COMMA cpp11_assignment_expression)*
+    ;
+
+cpp11_assignment_expression
+    :
+            assignment_expression
+        |
+            array_initializer // uniform initialization syntax
+    ;
+
 assignment_expression
 	:
         (
@@ -4230,7 +4240,7 @@ assignment_expression
             |
             throw_expression
         )
-	(options {greedy=true;}:	
+        (options {greedy=true;}:	
             ( ASSIGNEQUAL              
             | TIMESEQUAL
             | DIVIDEEQUAL
