@@ -1452,6 +1452,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public void popToHere(Frame frame) {
+        if (warnAboutReverseIfNeeded()) {
+            return;
+        }
         int frameNo = Integer.parseInt(frame.getNumber());
         // We have to pop the last frame several times
         // as there is no way to pop several frames at once in GDB
@@ -1461,11 +1464,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    @Override
-    public void popTopmostCall() {
+    private boolean warnAboutReverseIfNeeded() {
         if (!DebuggerOption.GDB_REVERSE_DEBUGGING.isEnabled(optionLayers())) {
             NativeDebuggerManager.error(Catalog.get("MSG_Reverse_Debugging_Option"));	// NOI18N
-        } else {
+            return true;
+        }
+        return false;
+    }
+    @Override
+    public void popTopmostCall() {
+        if (!warnAboutReverseIfNeeded()) {
             sendResumptive(peculiarity.execFinishCommand(currentThreadId) + " --reverse");	// NOI18N
         }
     }
