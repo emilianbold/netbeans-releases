@@ -19,6 +19,7 @@ api.java,\
 api.java.classpath,\
 api.progress,\
 api.progress.nb,\
+api.templates,\
 api.visual,\
 apisupport.ant,\
 apisupport.crudsample,\
