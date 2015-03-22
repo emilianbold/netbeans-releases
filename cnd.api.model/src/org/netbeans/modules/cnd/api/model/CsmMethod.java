@@ -54,6 +54,12 @@ public interface CsmMethod extends CsmMember, CsmFunction {
 
     boolean isVirtual();
 
+    // C++11
+    boolean isOverride();
+
+    // C++11
+    boolean isFinal();
+
     // TODO: move this to CsmConstructor ??
     boolean isExplicit();
 

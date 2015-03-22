@@ -190,7 +190,7 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("decltypes1.cpp", 19, 57, "decltypes1.cpp", 11, 5);      
         performTest("decltypes1.cpp", 21, 46, "decltypes1.cpp", 11, 5);
         performTest("decltypes1.cpp", 23, 52, "decltypes1.cpp", 11, 5);
-//        performTest("decltypes1.cpp", 25, 61, "decltypes1.cpp", 11, 5); // TODO: it fails now!
+        performTest("decltypes1.cpp", 25, 61, "decltypes1.cpp", 11, 5);
     }
     
     public void testDecltypes2() throws Exception {
@@ -391,4 +391,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug251181.cpp", 81, 26, "bug251181.cpp", 72, 15);
         performTest("bug251181.cpp", 82, 26, "bug251181.cpp", 73, 15);
     }  
+    
+    public void testBug251305() throws Exception {
+        // Bug 251305 - StackOverflowError at org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter.UIDtoCsmObject
+        performTest("bug251305.cpp", 4, 55, "bug251305.cpp", 4, 24);
+        performTest("bug251305.cpp", 4, 61, "bug251305.cpp", 4, 9);
+    }
 }

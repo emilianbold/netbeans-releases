@@ -84,7 +84,7 @@ public class ElementNode extends AbstractNode {
         this(description, false);
     }
 
-    private ElementNode(Description description, boolean sortChildren) {
+    public ElementNode(Description description, boolean sortChildren) {
         super(description.subs == null ? Children.LEAF : new ElementChilren(description.subs, sortChildren), Lookups.singleton(description));
         this.description = description;
         description.node = ElementNode.this;
@@ -155,8 +155,10 @@ public class ElementNode extends AbstractNode {
     }
 
     private static final class ElementChilren extends Children.Keys<Description> {
+        private final boolean sortChildren;
 
         public ElementChilren(List<Description> descriptions, boolean sortChildren) {
+            this.sortChildren = sortChildren;
             if (sortChildren) {
                 Collections.sort(descriptions, Description.ALPHA_COMPARATOR);
             }
@@ -166,7 +168,7 @@ public class ElementNode extends AbstractNode {
 
         @Override
         protected Node[] createNodes(Description key) {
-            return new Node[]{new ElementNode(key, true)};
+            return new Node[]{new ElementNode(key, sortChildren)};
         }
     }
 
