@@ -582,6 +582,30 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals(Status.STATUS_IGNORED, st.getStatusIndexWC());
     }
     
+    public void testModifiedUnderIgnored () throws Exception {
+        File f = new File(workDir, "folder/f");
+        f.getParentFile().mkdirs();
+        write(f, "hi, i am new");
+        add(f);
+        commit(f);
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> st = client.getStatus(new File[] { f }, NULL_PROGRESS_MONITOR);
+        assertStatus(st, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        
+        client.ignore(new File[] { f.getParentFile() }, NULL_PROGRESS_MONITOR);
+        st = client.getStatus(new File[] { }, NULL_PROGRESS_MONITOR);
+        assertStatus(st, workDir, f.getParentFile(), false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        // file f is not ignored, it's committed
+        assertStatus(st, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        
+        write(f, "hi, i am modified");
+        st = client.getStatus(new File[] { }, NULL_PROGRESS_MONITOR);
+        assertStatus(st, workDir, f.getParentFile(), false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        // file f is not ignored, it's committed and modified
+        assertStatus(st, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        
+    }
+    
     public void testIgnoreExecutable () throws Exception {
         if (isWindows()) {
             // no reason to test on win
