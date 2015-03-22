@@ -114,6 +114,8 @@ spi.navigator,\
 spi.quicksearch,\
 tasklist.todo,\
 tasklist.ui,\
+templates,\
+templatesui,\
 uihandler,\
 versioning,\
 versioning.masterfs test || exit
