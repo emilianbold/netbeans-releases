@@ -187,7 +187,11 @@ public final class DefaultScriptHandler extends Handler<DefaultConfigurationPane
 
         try {
             hostInfo = HostInfoUtils.getHostInfo(env);
-            shell = hostInfo.getShell();
+            String hostShell = hostInfo.getShell();
+            
+            if (hostShell != null) {
+                shell = hostShell;
+            }
 
             if (validationScriptExecutor.isEmpty()) {
                 validationScriptExecutor = shell;
@@ -237,7 +241,11 @@ public final class DefaultScriptHandler extends Handler<DefaultConfigurationPane
 
                 try {
                     HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-                    shell = hostInfo.getShell();
+                    String hostShell = hostInfo.getShell();
+
+                    if (hostShell != null) {
+                        shell = hostShell;
+                    }
 
                     if (scriptExecutor.isEmpty()) {
                         scriptExecutor = shell;
