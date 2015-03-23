@@ -88,7 +88,8 @@ import org.netbeans.lib.v8debug.vars.V8String;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
- *
+ * Translator of JSON objects into the corresponding Java API classes.
+ * 
  * @author Martin Entlicher
  */
 public class JSONReader {

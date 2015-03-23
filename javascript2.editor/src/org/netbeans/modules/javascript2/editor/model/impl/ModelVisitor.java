@@ -829,7 +829,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         JsFunctionImpl callBackFunction = new JsFunctionImpl(
                                 parentObject instanceof DeclarationScope ? (DeclarationScope)parentObject : ModelUtils.getDeclarationScope(parentObject),
                                 parentObject, fqn.get(fqn.size() - 1), Collections.EMPTY_LIST, 
-                                new OffsetRange(callBack.getOffset(), callBack.getOffset() + callBack.getType().length()),
+                                callBack.getOffset() > -1 ? new OffsetRange(callBack.getOffset(), callBack.getOffset() + callBack.getType().length()) : OffsetRange.NONE,
                                 JsTokenId.JAVASCRIPT_MIME_TYPE, null);
                         parentObject.addProperty(callBackFunction.getName(), callBackFunction);
                         callBackFunction.setDocumentation(Documentation.create(comment.getDocumentation()));

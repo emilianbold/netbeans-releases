@@ -42,21 +42,36 @@
 package org.netbeans.lib.v8debug;
 
 /**
- *
+ * An optional long property.
+ * Use {@link #hasValue()} to test whether the property has the value or not.
+ * 
  * @author Martin Entlicher
  */
 public final class PropertyLong {
     
     private final Long l;
     
+    /**
+     * Create the long property.
+     * @param l when <code>null</code>, then the property is undefined.
+     */
     public PropertyLong(Long l) {
         this.l = l;
     }
     
+    /**
+     * Test whether the property has a value.
+     * @return whether the property has a value.
+     */
     public boolean hasValue() {
         return l != null;
     }
     
+    /**
+     * Get the property value. If the property does not have the value set,
+     * it returns <code>0</code>.
+     * @return the property value, or <code>0</code> when not set.
+     */
     public long getValue() {
         if (l == null) {
             return 0;
@@ -65,6 +80,11 @@ public final class PropertyLong {
         }
     }
     
+    /**
+     * Get the property value or the provided value when the property does not have one.
+     * @param defaultValue The default value to return when the property is undefined.
+     * @return 
+     */
     public long getValueOr(long defaultValue) {
         if (l == null) {
             return defaultValue;
