@@ -170,7 +170,9 @@ public class CSSUpdater {
      * Stop listening on changes.
      */
     synchronized void stop() {
-        webKit.getCSS().removeListener(listener);
+        if (webKit != null) {
+            webKit.getCSS().removeListener(listener);
+        }
         this.webKit = null;
         this.localhost = null;
         this.project = null;
