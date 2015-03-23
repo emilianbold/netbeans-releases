@@ -111,10 +111,10 @@ import org.openide.util.CharSequences;
                 CharSequence charSeq;
                 char$ptr literalData = orig.getLiteralData();
                 if (literalData == null) {
+                  // i.e. the case of lazy calculated DATE and TIME based strings
                   SmallVectorChar spell = new SmallVectorChar(orig.getLength());
                   StringRef spelling = PP.getSpelling(orig, spell);
                   charSeq = Casts.toCharSequence(spelling.begin(), spelling.size());
-                  CndUtils.assertTrueInConsole(false, orig + ":\n", charSeq);
                 } else {
                   CndUtils.assertTrueInConsole(literalData != null, "null literal " + orig);
                   charSeq = Casts.toCharSequence(literalData, orig.getLength());

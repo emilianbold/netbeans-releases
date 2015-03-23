@@ -53,6 +53,7 @@ import org.clang.lex.Token;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
@@ -74,25 +75,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 
     private StartEntry startFile;
     private final APTFileSearch fileSearch;
-    private static final CachedTokens NO_TOKENS = new CachedTokens();
-
-    public static final class CachedTokens {
-        public final APTToken[] tokens;
-        public int[] skppedRanges;
-
-        private CachedTokens() {
-            this.tokens = null;
-        }
-
-        public CachedTokens(int[] skppedRanges, APTToken[] tokens) {
-            this.skppedRanges = skppedRanges;
-            this.tokens = tokens;
-        }
-
-    }
+    private static final ClankDriver.APTTokenStreamCache NO_TOKENS = new ClankDriver.APTTokenStreamCache(null, null, -1);
 
     private int inclStackIndex;
-    private CachedTokens cachedTokens;
+    private ClankDriver.APTTokenStreamCache cachedTokens = NO_TOKENS;
 
     public  ClankIncludeHandlerImpl(StartEntry startFile) {
         this(startFile, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), startFile.getFileSearch());
@@ -150,9 +136,9 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return Collections.unmodifiableList(systemIncludePaths);
     }
 
-    public CachedTokens getCachedTokens() {
+    public ClankDriver.APTTokenStreamCache getCachedTokens() {
         if (cachedTokens == NO_TOKENS) {
-            return null;
+            return new ClankDriver.APTTokenStreamCache(null, null, inclStackIndex);
         } else {
             return cachedTokens;
         }
@@ -162,12 +148,14 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return inclStackIndex;
     }
 
-    void cacheTokens(CachedTokens cache) {
-        if (cache == null) {
+    void cacheTokens(ClankDriver.APTTokenStreamCache cache) {
+        assert cache != null;
+        if (!cache.hasTokenStream()) {
             this.cachedTokens = NO_TOKENS;
         } else {
             this.cachedTokens = cache;
         }
+        this.inclStackIndex = cache.getFileIndex();
     }
     
     /** immutable state object of include handler */
@@ -182,7 +170,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         private final StartEntry   startFile;
 
         private final int inclStackIndex;
-        private final CachedTokens cachedTokens;
+        private final ClankDriver.APTTokenStreamCache cachedTokens;
         private int hashCode = 0;
         
         protected StateImpl(ClankIncludeHandlerImpl handler) {
@@ -193,6 +181,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 
             this.inclStackIndex = handler.inclStackIndex;
             this.cachedTokens = handler.cachedTokens;
+            assert this.cachedTokens != null;
         }
         
         private StateImpl(StateImpl other, boolean cleanState) {
@@ -202,7 +191,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             // state object is immutable => safe to share stacks
             this.inclStackIndex = other.inclStackIndex;
             this.cachedTokens = other.cachedTokens;
-	    
+            assert this.cachedTokens != null;
             if (cleanState) {
                 this.systemIncludePaths = CLEANED_MARKER;
                 this.userIncludePaths = CLEANED_MARKER;
@@ -300,6 +289,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             
             inclStackIndex = input.readInt();
             cachedTokens = NO_TOKENS;
+            assert this.cachedTokens != null;
         }        
 	
 	public final StartEntry getStartEntry() {

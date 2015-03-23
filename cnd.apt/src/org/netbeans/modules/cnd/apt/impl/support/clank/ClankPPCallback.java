@@ -69,7 +69,6 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
     private final ClankDriver.ClankPreprocessorCallback delegate;
     private final CharSequence path;
     private final int stopAtIndex;
-    private ClankIncludeHandlerImpl.CachedTokens cachedTokens;
     private final ClankIncludeHandlerImpl includeHandler;
     private final ArrayList<ClankFileInfoImpl> includeStack = new ArrayList<ClankFileInfoImpl>(16);
 
@@ -80,7 +79,6 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         this.path = path;
         this.stopAtIndex = stopAtIndex;
         this.delegate = delegate;
-        this.cachedTokens = null;
     }
 
     @Override
@@ -90,6 +88,7 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         }
         if (fileInfo.isFile()) {
           ClankFileInfoImpl cur = new ClankFileInfoImpl(fileInfo, includeHandler);
+          includeHandler.cacheTokens(new ClankDriver.APTTokenStreamCache(null, null, fileInfo.getIncludeIndex()));
           includeStack.add(cur);
           delegate.onEnter(cur);
         }
@@ -120,21 +119,13 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
           assert includeStack.size() > 0 : "empty include stack?";
           ClankFileInfoImpl cur = includeStack.remove(includeStack.size() - 1);
           delegate.onExit(cur);
-          if (stopAtIndex == fileInfo.getIncludeIndex()) {
-              CndUtils.assertTrueInConsole((fileInfo.isFile() && (strcmp(path, fileInfo.getName()) == 0)), "expected " + path, fileInfo);
-              cachedTokens = new ClankIncludeHandlerImpl.CachedTokens(fileInfo.getSkippedRanges(), cur.getStolenTokens());
-          }
         }
     }
-    
-    ClankIncludeHandlerImpl.CachedTokens getCachedTokens() {
-        return cachedTokens;
-    }
 
-    private static final class ClankFileInfoImpl implements ClankDriver.ClankFileInfo {
+    public static final class ClankFileInfoImpl implements ClankDriver.ClankFileInfo {
       final TrackIncludeInfoCallback.IncludeFileInfo current;
       private final StartEntry startEntry;
-      private final CharSequence currentPath;
+      private CharSequence currentPath;
       APTToken[] stolenTokens;
       ResolvedPath resolvedPath;
       
@@ -143,11 +134,9 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         assert current != null;
         this.current = current;
         this.startEntry = includeHandler.getStartEntry();
-        String strPath = Casts.toCharSequence(current.getName()).toString();
-        this.currentPath = CharSequences.create(CndFileUtils.normalizeAbsolutePath(startEntry.getFileSystem(), strPath));
       }
       
-      APTToken[] getStolenTokens() {
+      public APTToken[] getStolenTokens() {
         if (stolenTokens == null) {
           // have to be called before stealing tokens
           int nrTokens = current.getNrTokens();
@@ -158,6 +147,10 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
 
       @Override
       public CharSequence getFilePath() {
+        if (currentPath == null) {
+          String strPath = Casts.toCharSequence(current.getName()).toString();
+          this.currentPath = CharSequences.create(CndFileUtils.normalizeAbsolutePath(startEntry.getFileSystem(), strPath));
+        }
         return currentPath;
       }
 

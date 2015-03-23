@@ -67,49 +67,41 @@ public class ClankDriverImpl {
 
     static final boolean TRACE = false;
 
-    public static TokenStream getTokenStream(APTFileBuffer buffer,
+    public static boolean preprocessImpl(APTFileBuffer buffer,
             PreprocHandler ppHandler,
             final ClankDriver.ClankPreprocessorCallback callback,
             final org.netbeans.modules.cnd.support.Interrupter interrupter) {
         try {
             ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
-            ClankIncludeHandlerImpl.CachedTokens cached = includeHandler.getCachedTokens();
-            if (cached == null) {
-                int inclStackIndex = includeHandler.getInclStackIndex();
-                CharSequence path = buffer.getAbsolutePath();
-                byte[] bytes = toBytes(buffer.getCharBuffer());
-                // prepare params to run preprocessor
-                ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
-                settings.WorkName = path;
-                settings.KeepCommentsTokens = false;
-                settings.GenerateDiagnostics = true;
-                settings.PrettyPrintDiagnostics = false;
-                settings.PrintDiagnosticsOS = llvm.nulls();
-                settings.TraceClankStatistics = false;
-                settings.cancelled = new Interrupter() {
-                    @Override
-                    public boolean isCancelled() {
-                        return interrupter.cancelled();
-                    }
-                };
-                ClankPPCallback fileTokensCallback = new ClankPPCallback(includeHandler, path, inclStackIndex, llvm.errs(), callback);
-                settings.IncludeInfoCallbacks = fileTokensCallback;
-                ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
-                ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
-                cached = fileTokensCallback.getCachedTokens();
-                if (cached == null) {
-                    CndUtils.assertTrueInConsole(false, "no Tokens for " + path);
-                    return null;
+            ClankDriver.APTTokenStreamCache cached = includeHandler.getCachedTokens();
+            assert cached != null;
+            assert !cached.hasTokenStream();
+            int inclStackIndex = cached.getFileIndex();
+            CharSequence path = buffer.getAbsolutePath();
+            // TODO: prepare buffers mapping
+            byte[] bytes = toBytes(buffer.getCharBuffer());
+            // prepare params to run preprocessor
+            ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
+            settings.WorkName = path;
+            settings.KeepCommentsTokens = false;
+            settings.GenerateDiagnostics = true;
+            settings.PrettyPrintDiagnostics = false;
+            settings.PrintDiagnosticsOS = llvm.nulls();
+            settings.TraceClankStatistics = false;
+            settings.cancelled = new Interrupter() {
+                @Override
+                public boolean isCancelled() {
+                    return interrupter.cancelled();
                 }
-                includeHandler.cacheTokens(cached);
-            }
-            if (interrupter.cancelled()) {
-                return null;
-            }
-            return new ArrayBasedAPTTokenStream(cached.tokens);
+            };
+            ClankPPCallback fileTokensCallback = new ClankPPCallback(includeHandler, path, inclStackIndex, llvm.errs(), callback);
+            settings.IncludeInfoCallbacks = fileTokensCallback;
+            ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
+            ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
+            return true;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return null;
+            return false;
         }
     }
 
@@ -121,13 +113,24 @@ public class ClankDriverImpl {
         return asciis;
     }
 
-    static final class ArrayBasedAPTTokenStream implements APTTokenStream, TokenStream {
+    public static void cacheTokenStream(PreprocHandler ppHandler, ClankDriver.APTTokenStreamCache toCache) {
+        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
+        includeHandler.cacheTokens(toCache);
+    }
+
+    public static ClankDriver.APTTokenStreamCache extractTokenStream(PreprocHandler ppHandler) {
+        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
+        ClankDriver.APTTokenStreamCache cached = includeHandler.getCachedTokens();
+        return cached;
+    }
+
+    public static final class ArrayBasedAPTTokenStream implements APTTokenStream, TokenStream {
 
         private int index;
         private final int lastIndex;
         private final APTToken[] tokens;
 
-        ArrayBasedAPTTokenStream(APTToken[] tokens) {
+        public ArrayBasedAPTTokenStream(APTToken[] tokens) {
             this.tokens = tokens;
             this.lastIndex = tokens.length - 1;
             this.index = 0;

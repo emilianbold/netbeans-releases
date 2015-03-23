@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankPPCallback;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.support.Interrupter;
 
@@ -52,17 +53,72 @@ import org.netbeans.modules.cnd.support.Interrupter;
  */
 public final class ClankDriver {
 
+
     private ClankDriver() {
     }
 
-    public static TokenStream getTokenStream(APTFileBuffer buffer, 
+    public static final class APTTokenStreamCache {
+      private final APTToken[] tokens;
+      private final int[] skippedRanges;
+      private final int fileIndex;
+
+      public APTTokenStreamCache(ClankFileInfo fileInfo) {
+        assert fileInfo instanceof ClankPPCallback.ClankFileInfoImpl;
+        ClankPPCallback.ClankFileInfoImpl fileInfoImpl = (ClankPPCallback.ClankFileInfoImpl) fileInfo;
+        this.skippedRanges = fileInfoImpl.getSkippedRanges();
+        this.fileIndex = fileInfoImpl.getIncludeIndex();
+        this.tokens = fileInfoImpl.getStolenTokens();
+      }
+
+      public APTTokenStreamCache(int[] skippedRanges, APTToken[] tokens, int fileIndex) {
+        this.skippedRanges = skippedRanges;
+        this.tokens = tokens;
+        this.fileIndex = fileIndex;
+      }
+
+      public int getFileIndex() {
+        return fileIndex;
+      }
+
+      public int[] getSkippedRanges() {
+          return skippedRanges;
+      }
+
+      public TokenStream getTokenStream() {
+          return new ClankDriverImpl.ArrayBasedAPTTokenStream(tokens);
+      }
+
+      public boolean hasTokenStream() {
+          return tokens != null;
+      }
+
+      @Override
+      public String toString() {
+        return "APTTokenStreamCache{" + "tokens=" + hasTokenStream() + "\nskippedRanges=" + skippedRanges + "\nfileIndex=" + fileIndex + '}';
+      }
+    }
+
+    public static void cacheTokenStream(PreprocHandler ppHandler, ClankDriver.APTTokenStreamCache toCache) {
+      ClankDriverImpl.cacheTokenStream(ppHandler, toCache);
+    }
+
+    public static APTTokenStreamCache extractTokenStream(PreprocHandler ppHandler) {
+      return ClankDriverImpl.extractTokenStream(ppHandler);
+    }
+
+    public static boolean preprocess(APTFileBuffer buffer,
             PreprocHandler ppHandler, 
             ClankPreprocessorCallback callback, Interrupter interrupter) {
-        return ClankDriverImpl.getTokenStream(buffer, ppHandler, callback, interrupter);
+        return ClankDriverImpl.preprocessImpl(buffer, ppHandler, callback, interrupter);
     }
     
     public interface ClankPreprocessorCallback {
       boolean onEnter(ClankFileInfo include);
+      /**
+       * return true to continue or false to stop preprocessing and exit
+       * @param include
+       * @return
+       */
       boolean onExit(ClankFileInfo include);
     }
 
