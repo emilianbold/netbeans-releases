@@ -212,13 +212,17 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
         String [] cp = {
             "platform/core/core.jar",
+            "platform/core/core-base.jar",
             "platform/lib/boot.jar",
             "platform/lib/org-openide-modules.jar",
             "platform/core/org-openide-filesystems.jar",
             "platform/lib/org-openide-util.jar",
             "platform/lib/org-openide-util-lookup.jar",
+            "platform/lib/org-openide-util-ui.jar",
+            "enterprise/modules/org-netbeans-modules-j2eeapis.jar",
+            "enterprise/modules/org-netbeans-modules-j2eeserver.jar",
             "enterprise/modules/org-netbeans-modules-glassfish-common.jar",
-            "enterprise/modules/ext/glassfish-tooling-sdk.jar"
+            "enterprise/modules/org-netbeans-modules-glassfish-tooling.jar"
         };
         for(String c : cp) {
             File f = new File(nbLocation, c);
