@@ -66,14 +66,13 @@ public abstract class J2eeModuleHelper {
     /** Web application meta data directory. */
     public static final String WEB_INF = JavaEEModule.WEB_INF;
 
-    /** GlassFish specific meta data file for version since version 3.1. */
-    public static final String GF_WEB_XML_V2
-            = WEB_INF + File.separatorChar + GlassfishConfiguration.RESOURCE_FILES[0];
-
-    /** GlassFish specific meta data file for version 1, 2 and 3.0. */
+    /** GlassFish specific meta data file for version 1 and 2. */
     public static final String GF_WEB_XML_V1
-            = WEB_INF + File.separatorChar + GlassfishConfiguration.RESOURCE_FILES[1];
-    
+            = WEB_INF + File.separatorChar + "sun-web.xml";
+
+    /** GlassFish specific meta data file for version 3 and 4. */
+    public static final String GF_WEB_XML_V2
+            = WEB_INF + File.separatorChar + "glassfish-web.xml";
 
     private static final Map<Object, J2eeModuleHelper> helperMap;
     private static final Map<Object, J2eeModuleHelper> gfhelperMap;
