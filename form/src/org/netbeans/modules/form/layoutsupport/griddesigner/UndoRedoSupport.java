@@ -56,9 +56,11 @@ import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsChange;
+import org.openide.awt.UndoRedo;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -72,6 +74,7 @@ public class UndoRedoSupport {
     int undoableEdits;
     int redoableEdits;
     FormModel.UndoRedoManager manager;
+    private Lookup undoRedoLookup;
     
     private UndoRedoSupport(FormModel model) {
         manager = (FormModel.UndoRedoManager)model.getUndoRedoManager();
@@ -94,6 +97,12 @@ public class UndoRedoSupport {
         });
         undoAction = new UndoAction(SystemAction.get(org.openide.actions.UndoAction.class));
         redoAction = new RedoAction(SystemAction.get(org.openide.actions.RedoAction.class));
+        undoRedoLookup = Lookups.singleton(new UndoRedo.Provider() {
+            @Override
+            public UndoRedo getUndoRedo() {
+                return manager;
+            }
+        });
     }
 
     static UndoRedoSupport getSupport(FormModel model) {
@@ -152,7 +161,7 @@ public class UndoRedoSupport {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Action perfAct = delegate instanceof ContextAwareAction ? ((ContextAwareAction)delegate).createContextAwareInstance(Lookup.EMPTY) : delegate;
+            Action perfAct = delegate instanceof ContextAwareAction ? ((ContextAwareAction)delegate).createContextAwareInstance(undoRedoLookup) : delegate;
             performer.performAction(new DelegateGridAction(perfAct));
         }
         
@@ -171,7 +180,7 @@ public class UndoRedoSupport {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Action perfAct = delegate instanceof ContextAwareAction ? ((ContextAwareAction)delegate).createContextAwareInstance(Lookup.EMPTY) : delegate;
+            Action perfAct = delegate instanceof ContextAwareAction ? ((ContextAwareAction)delegate).createContextAwareInstance(undoRedoLookup) : delegate;
             performer.performAction(new DelegateGridAction(perfAct));
         }
         
