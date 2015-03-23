@@ -159,7 +159,7 @@ public class ElementNode extends AbstractNode {
 
         public ElementChilren(List<Description> descriptions, boolean sortChildren) {
             this.sortChildren = sortChildren;
-            if (sortChildren) {
+            if (sortChildren && descriptions.size() > 1) {
                 Collections.sort(descriptions, Description.ALPHA_COMPARATOR);
             }
 
