@@ -48,7 +48,8 @@ import java.util.Set;
 import org.json.simple.JSONObject;
 
 /**
- *
+ * An implementation is {@link JSONObject} that keeps the order of added elements.
+ * 
  * @author Martin Entlicher
  */
 public class LinkedJSONObject extends JSONObject {

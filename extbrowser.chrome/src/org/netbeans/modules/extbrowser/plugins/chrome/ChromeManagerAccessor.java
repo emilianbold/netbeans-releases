@@ -163,9 +163,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             }
             for (Object item : settings.entrySet()) {
                 Map.Entry e = (Map.Entry)item;
-                LOGGER.log(Level.FINE, "Chrome preferences - extensions -> settings -> value/extension: {0}", e.getValue());
-                JSONObject extension = (JSONObject)e.getValue();
-                if (extension != null) {
+                Object value = e.getValue();
+                LOGGER.log(Level.FINE, "Chrome preferences - extensions -> settings -> value/extension: {0}", value);
+                // #251250
+                if (value instanceof JSONObject) {
+                    JSONObject extension = (JSONObject) value;
                     String path = (String)extension.get("path");
                     if (path != null && (path.contains("/extbrowser.chrome/plugins/chrome")
                             || path.contains("\\extbrowser.chrome\\plugins\\chrome")))

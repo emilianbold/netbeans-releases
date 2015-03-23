@@ -148,19 +148,21 @@ public final class WatchedFile {
         return file;
     }
 
-    synchronized void clear(boolean newFile) {
+    void clear(boolean newFile) {
         if (newFile) {
-            if (file != null) {
-                try {
-                    FileUtil.removeFileChangeListener(fileListener, file);
-                    LOGGER.log(Level.FINE, "Stopped listenening to {0}", file);
-                } catch (IllegalArgumentException ex) {
-                    // not listeneing yet, ignore
-                    LOGGER.log(Level.FINE, "Not listenening yet to {0}", file);
+            synchronized (this) {
+                if (file != null) {
+                    try {
+                        FileUtil.removeFileChangeListener(fileListener, file);
+                        LOGGER.log(Level.FINE, "Stopped listening to {0}", file);
+                    } catch (IllegalArgumentException ex) {
+                        // not listeneing yet, ignore
+                        LOGGER.log(Level.FINE, "Not listening yet to {0}", file);
+                    }
+                    LOGGER.log(Level.FINE, "Clearing cached file path {0}", file);
+                    file = null;
                 }
-                LOGGER.log(Level.FINE, "Clearing cached file path {0}", file);
             }
-            file = null;
         }
         fireChange();
     }

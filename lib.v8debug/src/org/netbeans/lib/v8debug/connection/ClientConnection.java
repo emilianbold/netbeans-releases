@@ -67,7 +67,32 @@ import org.netbeans.lib.v8debug.V8Type;
 import static org.netbeans.lib.v8debug.connection.DebuggerConnection.*;
 
 /**
- *
+ * A debugger client connection. This is a main client debugger class.
+ * Create an instance of this class to connect to a local or remote debugger.
+ * <p>
+ * The typical usage is:
+ * <pre><tt>
+ *   final ClientConnection connection = new ClientConnection(hostName, portNumber);
+ *   new Thread() {
+ *       void run() {
+ *           connection.runEventLoop(new ClientConnection.Listener() {
+ *               public void header(Map<String, String> properties) {
+ *                   // header received
+ *               }
+ *               public void response(V8Response response) {
+ *                   // response received
+ *               }
+ *               public void event(V8Event event) {
+ *                   // event received
+ *               }
+ *           });
+ *       }
+ *   }.start();
+ *   ...
+ *   V8Request request = Continue.createRequest(...);
+ *   connection.send(request);
+ * </tt></pre>
+ * 
  * @author Martin Entlicher
  */
 public final class ClientConnection {
@@ -82,6 +107,12 @@ public final class ClientConnection {
     private final ContainerFactory containerFactory = new LinkedJSONContainterFactory();
     private final Set<IOListener> ioListeners = new CopyOnWriteArraySet<>();
     
+    /**
+     * Create a new client connection.
+     * @param serverName the debugger server name. Can be <code>null</code> to connect to localhost.
+     * @param serverPort the debugger server port
+     * @throws IOException when an IO problem occurs.
+     */
     public ClientConnection(String serverName, int serverPort) throws IOException {
         server = new Socket(serverName, serverPort);
         serverIn = server.getInputStream();
@@ -95,6 +126,13 @@ public final class ClientConnection {
         this.serverOut = serverOut;
     }
     
+    /**
+     * Execute the debugger events loop. Run this in an application thread, this
+     * class does not provide any threading. This method blocks until the connection
+     * is closed and distributes the debugger events through the provided listener.
+     * @param listener The listener to receive the debugger events.
+     * @throws IOException thrown when an IO problem occurs.
+     */
     public void runEventLoop(Listener listener) throws IOException {
         int n;
         int contentLength = -1;
@@ -205,6 +243,12 @@ public final class ClientConnection {
         return map;
     }
     
+    /**
+     * Send a request to the debugger server. The implementation synchronizes the
+     * requests, no additional synchronization is necessary.
+     * @param request The request to be sent to the debugger server.
+     * @throws IOException thrown when an IO problem occurs.
+     */
     public void send(V8Request request) throws IOException {
         JSONObject obj = JSONWriter.store(request);
         String text = obj.toJSONString();
@@ -219,6 +263,10 @@ public final class ClientConnection {
         }
     }
     
+    /**
+     * Close the connection.
+     * @throws IOException thrown when an IO problem occurs.
+     */
     public void close() throws IOException {
         if (server != null) {
             server.close();
@@ -226,6 +274,11 @@ public final class ClientConnection {
         fireClosed();
     }
     
+    /**
+     * Test whether the connection is closed.
+     * @return <code>true</code> when the connection is already closed,
+     * <code>false</code> otherwise.
+     */
     public boolean isClosed() {
         if (server != null) {
             return server.isClosed();
@@ -234,10 +287,18 @@ public final class ClientConnection {
         }
     }
     
+    /**
+     * Add an I/O listener to monitor the debugger communication.
+     * @param iol an IOListener
+     */
     public void addIOListener(IOListener iol) {
         ioListeners.add(iol);
     }
     
+    /**
+     * Remove an I/O listener monitoring the communication.
+     * @param iol an IOListener
+     */
     public void removeIOListener(IOListener iol) {
         ioListeners.remove(iol);
     }
@@ -289,12 +350,28 @@ public final class ClientConnection {
         }
     }
     
+    /**
+     * Listener receiving debugger events.
+     */
     public static interface Listener {
         
+        /**
+         * Called when the initial header is received.
+         * @param properties Properties containing the header information.
+         * @see HeaderProperties class.
+         */
         void header(Map<String, String> properties);
         
+        /**
+         * Called when a response is received.
+         * @param response The received response.
+         */
         void response(V8Response response);
         
+        /**
+         * Called when an event is received.
+         * @param event The received event.
+         */
         void event(V8Event event);
     }
     

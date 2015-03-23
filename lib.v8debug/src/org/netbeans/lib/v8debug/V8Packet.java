@@ -42,7 +42,8 @@
 package org.netbeans.lib.v8debug;
 
 /**
- *
+ * An abstract V8 debugging protocol packet.
+ * 
  * @author Martin Entlicher
  */
 public abstract class V8Packet {
