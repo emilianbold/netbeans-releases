@@ -397,4 +397,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug251305.cpp", 4, 55, "bug251305.cpp", 4, 24);
         performTest("bug251305.cpp", 4, 61, "bug251305.cpp", 4, 9);
     }
+    
+    public void testBug249463() throws Exception {
+        // Bug 249463 - Code Assistance fails on auto type when used outside of namespace in C++11
+        performTest("bug249463.cpp", 17, 25, "bug249463.cpp", 3, 9);
+        performTest("bug249463.cpp", 18, 27, "bug249463.cpp", 3, 9);
+    }
 }
