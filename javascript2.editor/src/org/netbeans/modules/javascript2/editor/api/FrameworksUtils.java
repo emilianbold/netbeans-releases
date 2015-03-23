@@ -42,13 +42,15 @@
 
 package org.netbeans.modules.javascript2.editor.api;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Petr Pisl
  */
 public class FrameworksUtils {
+    
     public static final String CATEGORY = "jsframeworks";       //NOI18N
-    protected static final String CATEGORY_LABEL = "JavaScript Frameworks";//NOI18N
     
     public static final String HTML5_CLIENT_PROJECT = "org.netbeans.modules.web.clientproject"; //NOI18N
     public static final String PHP_PROJECT = "org-netbeans-modules-php-project"; //NOI18N
