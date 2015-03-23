@@ -95,7 +95,9 @@ public enum JadeCompletionContext {
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN},
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL},
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE}, 
-        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL, JadeTokenId.WHITESPACE}
+        new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL, JadeTokenId.WHITESPACE},
+        new Object[]{JadeTokenId.JAVASCRIPT, JadeTokenId.OPERATOR_COMMA},
+        new Object[]{JadeTokenId.JAVASCRIPT, JadeTokenId.OPERATOR_COMMA, JadeTokenId.WHITESPACE}
     );
     
     private static final List<Object[]> CSS_ID_POSITION = Arrays.asList(
@@ -136,6 +138,11 @@ public enum JadeCompletionContext {
         }
         if (!ts.moveNext()) {
             if (ts.token() != null && ts.token().id() == JadeTokenId.EOL) {
+                while ((ts.token().id() == JadeTokenId.WHITESPACE || ts.token().id() == JadeTokenId.EOL) && ts.movePrevious()) {
+                }
+                if (acceptTokenChains(ts, ATTRIBUTE_POSITION, false)) {
+                    return ATTRIBUTE;
+                }
                 return TAG_AND_KEYWORD;
             }
             isEOF = true;
@@ -201,8 +208,17 @@ public enum JadeCompletionContext {
             return TAG_AND_KEYWORD;
         }
         
-        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, true)) {
+        int helpIndex = ts.index();
+        while ((id == JadeTokenId.WHITESPACE || id == JadeTokenId.EOL) && ts.movePrevious()) {
+            id = ts.token().id();
+        }
+        if (acceptTokenChains(ts, ATTRIBUTE_POSITION, helpIndex == ts.index())) {
             return ATTRIBUTE;
+        }
+        if (helpIndex != ts.index()) {
+            ts.moveIndex(helpIndex);
+            ts.moveNext();
+            id = ts.token().id();
         }
         
         if (acceptTokenChains(ts, KEYWORD_POSITION, !isEOF)) {
