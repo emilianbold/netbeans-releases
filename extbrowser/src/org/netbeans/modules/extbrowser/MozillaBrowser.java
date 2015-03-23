@@ -45,7 +45,6 @@
 package org.netbeans.modules.extbrowser;
 
 import java.util.logging.Level;
-import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -56,16 +55,12 @@ import org.openide.util.Utilities;
  */
 public class MozillaBrowser extends ExtWebBrowser {
 
-//    /** storage for starting browser timeout property */
-//    protected int browserStartTimeout = 6000;
-
     private static final long serialVersionUID = -3982770681461437966L;
 
     /** Creates new ExtWebBrowser */
     public MozillaBrowser() {
         super(PrivateBrowserFamilyId.MOZILLA);
         ddeServer = ExtWebBrowser.MOZILLA;
-        //browserStartTimeout = 6000;
     }
 
     /** Determines whether the browser should be visible or not
@@ -78,7 +73,7 @@ public class MozillaBrowser extends ExtWebBrowser {
             try {
                 detectedPath = NbDdeBrowserImpl.getBrowserPath("MOZILLA");      // NOI18N
             } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log(Level.FINEST, "Cannot detect Mozilla : " + e);      // NOI18N
+                ExtWebBrowser.getEM().log(Level.FINEST, "Cannot detect Mozilla : {0}", e);      // NOI18N
             }
             if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
                 return Boolean.FALSE;
@@ -91,6 +86,7 @@ public class MozillaBrowser extends ExtWebBrowser {
     /** Getter for browser name
      *  @return name of browser
      */
+    @Override
     public String getName () {
         if (name == null) {
             this.name = NbBundle.getMessage(MozillaBrowser.class, "CTL_MozillaBrowserName");

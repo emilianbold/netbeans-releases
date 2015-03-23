@@ -231,7 +231,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         final DuplicateJdbcResourceFinder jdbcFinder
                 = new DuplicateJdbcResourceFinder(jndiName);
         File file = GlassfishConfiguration.getExistingResourceFile(module, version);
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             List<TreeParser.Path> pathList = new ArrayList<>();
             pathList.add(new TreeParser.Path("/resources/jdbc-resource", jdbcFinder));
             pathList.add(new TreeParser.Path("/resources/jdbc-connection-pool", cpFinder));

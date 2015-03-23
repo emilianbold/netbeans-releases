@@ -46,7 +46,8 @@ import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
- *
+ * An event that occurs in the debugger backend.
+ * 
  * @author Martin Entlicher
  */
 public final class V8Event extends V8Packet {

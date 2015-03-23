@@ -42,7 +42,8 @@
 package org.netbeans.lib.v8debug;
 
 /**
- *
+ * Abstract command arguments.
+ * 
  * @author Martin Entlicher
  */
 public abstract class V8Arguments {

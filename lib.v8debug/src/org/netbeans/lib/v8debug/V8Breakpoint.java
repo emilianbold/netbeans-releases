@@ -42,11 +42,15 @@
 package org.netbeans.lib.v8debug;
 
 /**
- *
+ * A breakpoint.
+ * 
  * @author Martin Entlicher
  */
 public final class V8Breakpoint {
     
+    /**
+     * The breakpoint type.
+     */
     public static enum Type {
     
         function,

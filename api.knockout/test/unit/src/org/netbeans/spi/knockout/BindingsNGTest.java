@@ -104,6 +104,23 @@ public class BindingsNGTest {
         assertNotNull(eng.eval("Hello.multi"), txt);
         assertEquals(eng.eval("Hello.multi.hello === Hello"), Boolean.TRUE, txt);
     }
+    
+    public void generateModelWithFunctions() throws Exception {
+        Bindings myModel = Bindings.create("MyModel")
+                .function("myFunc1")
+                .function("func2");
+
+        String txt = myModel.generate();
+        assertNotNull(eng.eval("ko"), txt);
+        assertNotNull(eng.eval("Hello.multi"), txt);
+        assertEquals(eng.eval("Hello.multi.hello === Hello"), Boolean.TRUE, txt);
+        assertNotNull(eng.eval("ko"));
+        assertNotNull(eng.eval("ko.value"));
+        assertNotNull(eng.eval("ko.value.myFunc1"));
+        assertNotNull(eng.eval("ko.value.func2"));
+        assertEquals("function", eng.eval("typeof ko.value.myFunc1"));
+        assertEquals("function", eng.eval("typeof ko.value.func2"));
+    }
 
     @Test
     public void generateRecursiveModel2() throws Exception {
