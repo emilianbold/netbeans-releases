@@ -55,16 +55,12 @@ import org.openide.util.Utilities;
  */
 public class MozillaBrowser extends ExtWebBrowser {
 
-//    /** storage for starting browser timeout property */
-//    protected int browserStartTimeout = 6000;
-
     private static final long serialVersionUID = -3982770681461437966L;
 
     /** Creates new ExtWebBrowser */
     public MozillaBrowser() {
         super(PrivateBrowserFamilyId.MOZILLA);
         ddeServer = ExtWebBrowser.MOZILLA;
-        //browserStartTimeout = 6000;
     }
 
     /** Determines whether the browser should be visible or not
