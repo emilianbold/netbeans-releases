@@ -163,6 +163,9 @@ public enum JadeCompletionContext {
                 if (acceptTokenChains(ts, TAG_POSITION, true)) {
                     return CSS_CLASS;
                 }
+                if (isEOF) {
+                    return CSS_CLASS;
+                }
                 break;
             case COMMENT:
                 String commentText = token.text().toString();
