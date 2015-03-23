@@ -49,6 +49,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 
 /**
@@ -115,13 +116,18 @@ public class InlineVariableTransformer extends RefactoringVisitor {
             }
         }
         if (el.equals(elementToFind)) {
-            ExpressionTree body = ((VariableTree)trees.getTree(elementToFind)).getInitializer();
+            GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+            TreePath resolvedPath = trees.getPath(elementToFind);
+            VariableTree varTree = (VariableTree)resolvedPath.getLeaf();
+            varTree = genUtils.importComments(varTree, resolvedPath.getCompilationUnit());
+            ExpressionTree body = varTree.getInitializer();
 
-            boolean parenthesize = OperatorPrecedence.needsParentheses(path, elementToFind, ((VariableTree)trees.getTree(elementToFind)).getInitializer(), workingCopy);
+            boolean parenthesize = OperatorPrecedence.needsParentheses(path, elementToFind, varTree.getInitializer(), workingCopy);
             if (parenthesize) {
                 body = make.Parenthesized((ExpressionTree) body);
             }
 
+            genUtils.copyComments(varTree, body, true);
             rewrite(tree, body);
         }
     }
