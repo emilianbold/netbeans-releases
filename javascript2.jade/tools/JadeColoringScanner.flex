@@ -1030,6 +1030,14 @@ UnbufferedComment = "//-"
     } else {
         return null;
     }}
+<IN_PLAIN_TEXT_LINE><<EOF>>                         {
+                                                        if (input.readLength() > 0 ) {
+                                                            input.backup(1);
+                                                            return getTokenIdFromTagType(lastTag, JadeTokenId.PLAIN_TEXT);
+                                                        } else {
+                                                            return null;
+                                                        }
+    }
 <IN_PLAIN_TEXT_BLOCK_AFTER_EOL><<EOF>>              {   if (input.readLength() > 0) {
         // backup eof
         input.backup(1);

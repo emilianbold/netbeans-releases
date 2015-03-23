@@ -49,9 +49,20 @@ package org.netbeans.lib.v8debug.connection;
  */
 public interface IOListener {
     
+    /**
+     * The raw string sent from our connection.
+     * @param str The string sent.
+     */
     void sent(String str);
     
+    /**
+     * The raw string received from the entity we're connected to.
+     * @param str The string received.
+     */
     void received(String str);
     
+    /**
+     * Called when the connection is closed.
+     */
     void closed();
 }
