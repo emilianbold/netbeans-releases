@@ -44,14 +44,19 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 import org.clang.basic.IdentifierInfo;
 import org.clang.basic.SourceManager;
 import org.clang.basic.tok;
+import org.clang.lex.Preprocessor;
 import org.clang.lex.Token;
 import static org.clank.java.std.$second_uint;
 import org.clank.support.Casts;
 import org.clank.support.Unsigned;
+import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringMapEntryBase;
+import org.llvm.adt.StringRef;
+import org.llvm.adt.aliases.SmallVectorChar;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
 
@@ -63,12 +68,20 @@ import org.openide.util.CharSequences;
 
     private static final CharSequence COMMENT_TEXT_ID = CharSequences.create("/*COMMENT*/");
 
-    static APTToken[] convertToAPT(SourceManager SM, Token[] tokens, int nrTokens) {
+    static APTToken[] convertToAPT(Preprocessor PP, Token[] tokens, int nrTokens) {
       APTToken[] out = new APTToken[nrTokens];
       for (int i = 0; i < nrTokens; i++) {
-        out[i] = new ClankToAPTToken(SM, tokens[i]);
+        out[i] = ClankToAPTToken.convert(PP, tokens[i]);
       }
       return out;
+    }
+
+    private static APTToken convert(Preprocessor PP, Token token) {
+      if (token.is(tok.TokenKind.eof)) {
+        return APTUtils.EOF_TOKEN;
+      } else {
+        return new ClankToAPTToken(PP, token);
+      }
     }
 
     private final Token orig;
@@ -76,7 +89,9 @@ import org.openide.util.CharSequences;
     private final int offset;
     private final CharSequence textID;
 
-    /*package*/ClankToAPTToken(SourceManager SM, Token token) {
+    /*package*/ClankToAPTToken(Preprocessor PP, Token token) {
+        assert PP != null;
+        SourceManager SM = PP.getSourceManager();
         assert SM != null;
         this.orig = token;
         long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedExpansionLoc(token.getRawLocation());
@@ -93,7 +108,18 @@ import org.openide.util.CharSequences;
                 CharSequence txt = CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
                 textID = TextCache.getManager().getString(txt);
             } else if (orig.isLiteral()) {
-                textID = CharSequences.create(Casts.toCharSequence(orig.getLiteralData(), orig.getLength()));
+                CharSequence charSeq;
+                char$ptr literalData = orig.getLiteralData();
+                if (literalData == null) {
+                  SmallVectorChar spell = new SmallVectorChar(orig.getLength());
+                  StringRef spelling = PP.getSpelling(orig, spell);
+                  charSeq = Casts.toCharSequence(spelling.begin(), spelling.size());
+                  CndUtils.assertTrueInConsole(false, orig + ":\n", charSeq);
+                } else {
+                  CndUtils.assertTrueInConsole(literalData != null, "null literal " + orig);
+                  charSeq = Casts.toCharSequence(literalData, orig.getLength());
+                }
+                textID = CharSequences.create(charSeq);
             } else if (orig.is(tok.TokenKind.comment)) {
                 textID = COMMENT_TEXT_ID;
             } else {
@@ -101,7 +127,7 @@ import org.openide.util.CharSequences;
                 textID = TextCache.getManager().getString(CharSequences.create(Casts.toCharSequence(orig.getRawIdentifierData(), orig.getLength())));
             }
         }
-        assert textID.length() <= orig.getLength() : textID + "\n vs. \n" + orig;
+        assert textID.length() <= orig.getLength() || orig.is(tok.TokenKind.comment) || orig.is(tok.TokenKind.eof): textID + "\n vs. \n" + orig;
     }
 
     @Override

@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
@@ -116,7 +117,8 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
             traceOS.flush();
         }
         if (fileInfo.isFile()) {
-          ClankFileInfoImpl cur = includeStack.remove(includeStack.size());
+          assert includeStack.size() > 0 : "empty include stack?";
+          ClankFileInfoImpl cur = includeStack.remove(includeStack.size() - 1);
           delegate.onExit(cur);
           if (stopAtIndex == fileInfo.getIncludeIndex()) {
               CndUtils.assertTrueInConsole((fileInfo.isFile() && (strcmp(path, fileInfo.getName()) == 0)), "expected " + path, fileInfo);
@@ -131,7 +133,7 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
 
     private static final class ClankFileInfoImpl implements ClankDriver.ClankFileInfo {
       final TrackIncludeInfoCallback.IncludeFileInfo current;
-      private final ClankIncludeHandlerImpl includeHandler;
+      private final StartEntry startEntry;
       private final CharSequence currentPath;
       APTToken[] stolenTokens;
       ResolvedPath resolvedPath;
@@ -140,13 +142,16 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
               ClankIncludeHandlerImpl includeHandler) {
         assert current != null;
         this.current = current;
-        this.includeHandler = includeHandler;
-        this.currentPath = CharSequences.create(Casts.toCharSequence(current.getName()));
+        this.startEntry = includeHandler.getStartEntry();
+        String strPath = Casts.toCharSequence(current.getName()).toString();
+        this.currentPath = CharSequences.create(CndFileUtils.normalizeAbsolutePath(startEntry.getFileSystem(), strPath));
       }
       
       APTToken[] getStolenTokens() {
         if (stolenTokens == null) {
-          stolenTokens = ClankToAPTToken.convertToAPT(current.getSourceManager(), current.stealTokens(), current.getNrTokens());
+          // have to be called before stealing tokens
+          int nrTokens = current.getNrTokens();
+          stolenTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.stealTokens(), nrTokens);
         }
         return stolenTokens;
       }
@@ -180,9 +185,8 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
       }
 
       private ResolvedPath createResolvedPath(CharSequence pathStr) {
-        StartEntry startEntry = includeHandler.getStartEntry();
         FileSystem fileSystem = startEntry.getFileSystem();
-        CharSequence folder = CndPathUtilities.getDirName(pathStr.toString());
+        CharSequence folder = CndFileUtils.normalizeAbsolutePath(fileSystem, CndPathUtilities.getDirName(pathStr.toString()));
         folder = FilePathCache.getManager().getString(CharSequences.create(folder));
         return new ResolvedPath(fileSystem, folder, pathStr, true, 0);
       }

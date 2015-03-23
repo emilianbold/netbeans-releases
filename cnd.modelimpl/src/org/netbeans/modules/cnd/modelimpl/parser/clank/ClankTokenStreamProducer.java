@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -102,7 +103,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         @Override
         public boolean onEnter(ClankDriver.ClankFileInfo info) {
             ResolvedPath resolvedPath = info.getResolvedPath();
-            return CharSequenceUtilities.textEquals(resolvedPath.getPath(), info.getFilePath());
+            CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(resolvedPath.getPath(), info.getFilePath()),
+                    resolvedPath.getPath() + " vs. ", info.getFilePath());
+            return true;
         }
 
         @Override
