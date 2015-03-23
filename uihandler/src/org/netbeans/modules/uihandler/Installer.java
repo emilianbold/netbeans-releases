@@ -127,6 +127,9 @@ public class Installer extends ModuleInstall implements Runnable {
     private static UIHandler ui = new UIHandler(false);
     private static UIHandler handler = new UIHandler(true);
     private static MetricsHandler metrics = new MetricsHandler();
+    private static Logger uiLogger;
+    private static Logger allLogger;
+    private static Logger metricsLogger;
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
@@ -254,8 +257,10 @@ public class Installer extends ModuleInstall implements Runnable {
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
         log.addHandler(ui);
+        uiLogger = log; // To prevent from GC
         Logger all = Logger.getLogger("");
         all.addHandler(handler);
+        allLogger = all;    // To prevent from GC
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
         logsFirstDateMetric = prefs.getLong(FIRST_DATE_METRICS_PROP, -1);
@@ -274,6 +279,7 @@ public class Installer extends ModuleInstall implements Runnable {
             log.setUseParentHandlers(true);
             log.setLevel(Level.FINEST);
             log.addHandler(metrics);
+            metricsLogger = log;    // To prevent from GC
             try {
                 LogRecord userData = getUserData(log);
                 LogRecords.write(logStreamMetrics(), userData);
@@ -456,10 +462,13 @@ public class Installer extends ModuleInstall implements Runnable {
     public final void doClose() {
         Logger log = Logger.getLogger(UI_LOGGER_NAME);
         log.removeHandler(ui);
+        uiLogger = null;
         Logger all = Logger.getLogger(""); // NOI18N
         all.removeHandler(handler);
+        allLogger = null;
         log = Logger.getLogger(METRICS_LOGGER_NAME);
         log.removeHandler(metrics);
+        metricsLogger = null;
 
         closeLogStream();
         closeLogStreamMetrics();
