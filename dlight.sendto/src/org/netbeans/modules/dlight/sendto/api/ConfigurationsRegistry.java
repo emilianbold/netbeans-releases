@@ -51,10 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -112,9 +108,6 @@ public final class ConfigurationsRegistry {
                 registry.absolutePath();
                 InputStream is = ConfigurationsRegistry.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/sendto/resources/initialConfiguration"); // NOI18N
 
-                HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
-                String shell = hostInfo.getShell();
-
                 if (is == null) {
                     return;
                 }
@@ -124,9 +117,7 @@ public final class ConfigurationsRegistry {
                 while ((s = br.readLine()) != null) {
                     int idx = s.indexOf('=');
                     if (idx > 0) {
-                        String key = s.substring(0, idx);
-                        String value = s.substring(idx + 1).replace("\\n", "\n").replace("${SHELL}", shell); //NOI18N
-                        registry.put(key, value); // NOI18N
+                        registry.put(s.substring(0, idx), s.substring(idx + 1).replace("\\n", "\n")); // NOI18N
                     }
                 }
             }
@@ -161,8 +152,6 @@ public final class ConfigurationsRegistry {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ConnectionManager.CancellationException ex) {
             Exceptions.printStackTrace(ex);
         }
     }

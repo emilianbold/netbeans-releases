@@ -50,25 +50,25 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -76,8 +76,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-class NonVirtualDestructor extends AbstractCodeAudit {
-    private NonVirtualDestructor(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+class MissingMethodOverride extends AbstractCodeAudit {
+    private MissingMethodOverride(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
     
@@ -90,6 +90,12 @@ class NonVirtualDestructor extends AbstractCodeAudit {
     public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
         if (file != null) {
+            if (request.isCancelled()) {
+                return;
+            }
+            if (!CsmFileInfoQuery.getDefault().isCpp11OrLater(file)) {
+                return;
+            }
             if (request.isCancelled()) {
                 return;
             }
@@ -113,21 +119,20 @@ class NonVirtualDestructor extends AbstractCodeAudit {
     }
     
     private void visit(CsmMember csmMember, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (CsmKindUtilities.isDestructor(csmMember)) {
+        if (CsmKindUtilities.isMethod(csmMember) && !CsmKindUtilities.isDestructor(csmMember) && !CsmKindUtilities.isConstructor(csmMember)) {
             CsmMethod method = (CsmMethod)csmMember;
             if (!request.getFile().equals(method.getContainingFile())) {
                 return;
             }
-            if (!CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                if (!CsmTypeHierarchyResolver.getDefault().getSubTypes(method.getContainingClass(), true).isEmpty()) {
-                    String message = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.message"); // NOI18N
-                    CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                    if (response instanceof AnalyzerResponse) {
-                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
-                                new NonVritualDestructorErrorInfoImpl(request.getDocument(), method, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
-                    } else {
-                        response.addError(new NonVritualDestructorErrorInfoImpl(request.getDocument(), method, CsmHintProvider.NAME, getID(), message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
-                    }
+            CsmVirtualInfoQuery.CsmOverriddenChain overriddenChain = CsmVirtualInfoQuery.getDefault().getOverriddenChain(method);
+            if (overriddenChain.getThisMethod().isVirtual() && overriddenChain.getBaseMethods().size() > 0 && !method.isOverride()) {
+                String message = NbBundle.getMessage(MissingMethodOverride.class, "MissingMethodOverride.description"); // NOI18N
+                CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
+                if (response instanceof AnalyzerResponse) {
+                    ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
+                            new MissingMethodOverrideErrorInfoImpl(request.getDocument(), method, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
+                } else {
+                    response.addError(new MissingMethodOverrideErrorInfoImpl(request.getDocument(), method, CsmHintProvider.NAME, getID(), message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
                 }
             }
         }
@@ -136,61 +141,73 @@ class NonVirtualDestructor extends AbstractCodeAudit {
         visit(csmClass.getMembers(), request, response);
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 1000)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 1300)
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
-            String id = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.name"); // NOI18N
-            String description = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.description"); // NOI18N
-            return new NonVirtualDestructor(id, id, description, "hint", true, preferences); // NOI18N
+            String id = NbBundle.getMessage(MissingMethodOverride.class, "MissingMethodOverride.name"); // NOI18N
+            String description = NbBundle.getMessage(MissingMethodOverride.class, "MissingMethodOverride.description"); // NOI18N
+            return new MissingMethodOverride(id, id, description, "hint", true, preferences); // NOI18N
         }
     }
     
-    private static final class NonVritualDestructorErrorInfoImpl extends ErrorInfoImpl {
+    private static final class MissingMethodOverrideErrorInfoImpl extends ErrorInfoImpl {
         private final BaseDocument doc;
-        public NonVritualDestructorErrorInfoImpl(Document doc, CsmMethod method, String providerName, String audutName, String message, Severity severity, int startOffset, int endOffset) {
+        private final int end;
+        public MissingMethodOverrideErrorInfoImpl(Document doc, CsmMethod method, String providerName, String audutName, String message, CsmErrorInfo.Severity severity, int startOffset, int endOffset) {
             super(providerName, audutName, message, severity, startOffset, endOffset);
             this.doc = (BaseDocument) doc;
+            if (CsmKindUtilities.isFunctionDefinition(method)) {
+                end = ((CsmFunctionDefinition)method).getBody().getStartOffset()-1;
+            } else {
+                end = method.getEndOffset() - 1;
+            }
         }
     }    
     
-    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1100)
-    public static final class VirtualDestructorFixProvider extends CsmErrorInfoHintProvider {
+    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1200)
+    public static final class MissingMethodOverrideFixProvider extends CsmErrorInfoHintProvider {
 
         @Override
         protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
-            if (info instanceof NonVritualDestructorErrorInfoImpl) {
-                alreadyFound.addAll(createFixes((NonVritualDestructorErrorInfoImpl) info));
+            if (info instanceof MissingMethodOverrideErrorInfoImpl) {
+                alreadyFound.addAll(createFixes((MissingMethodOverrideErrorInfoImpl) info));
             }
             return alreadyFound;
         }
         
-        private List<? extends Fix> createFixes(NonVritualDestructorErrorInfoImpl info) {
+        private List<? extends Fix> createFixes(MissingMethodOverrideErrorInfoImpl info) {
             try {
-                return Collections.singletonList(new AddVirtualKeyvord(info.doc, info.getStartOffset(), info.getEndOffset()));
+                return Collections.singletonList(new AddMissingOverrideKeyvord(info.doc, info.end));
             } catch (BadLocationException ex) {
                 return Collections.emptyList();
             }
         }
     }
     
-    private static final class AddVirtualKeyvord implements Fix {
+    private static final class AddMissingOverrideKeyvord implements Fix {
         private final BaseDocument doc;
         private final Position start;
 
-        public AddVirtualKeyvord(BaseDocument doc, int startOffset, int endOffset) throws BadLocationException {
+        public AddMissingOverrideKeyvord(BaseDocument doc, int endOffset) throws BadLocationException {
             this.doc = doc;
-            this.start = NbDocument.createPosition(doc, startOffset, Position.Bias.Forward);
+            this.start = NbDocument.createPosition(doc, endOffset, Position.Bias.Forward);
         }
 
         @Override
         public String getText() {
-            return NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.fix"); // NOI18N
+            return NbBundle.getMessage(NonVirtualDestructor.class, "MissingMethodOverride.fix"); // NOI18N
         }
 
         @Override
         public ChangeInfo implement() throws Exception {
-            String text = "virtual "; //NOI18N
+            String t = doc.getText(start.getOffset(), 1);
+            String text;
+            if (t.charAt(0) == ' ' || t.charAt(0) == ';') {
+                text = " override"; //NOI18N
+            } else {
+                text = " override "; //NOI18N
+            }
             doc.insertString(start.getOffset(), text, null);
             return null;
         }

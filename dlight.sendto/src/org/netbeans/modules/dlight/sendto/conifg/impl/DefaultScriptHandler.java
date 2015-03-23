@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.sendto.spi.Handler;
 import org.netbeans.modules.dlight.sendto.util.ScriptExecutor;
 import org.netbeans.modules.dlight.sendto.util.Utils;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -60,13 +61,17 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -174,12 +179,28 @@ public final class DefaultScriptHandler extends Handler<DefaultConfigurationPane
             return null;
         }
 
+        HostInfo hostInfo;
+        String shell = "/bin/sh"; //NOI18N
+
         String validationScript = cfg.get(VALIDATION_SCRIPT).trim();
         String validationScriptExecutor = cfg.get(VALIDATION_SCRIPT_EXECUTOR).trim();
 
-        if (validationScriptExecutor.isEmpty()) {
-            validationScriptExecutor = "/bin/sh"; // NOI18N
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(env);
+            String hostShell = hostInfo.getShell();
+            
+            if (hostShell != null) {
+                shell = hostShell;
+            }
+
+            if (validationScriptExecutor.isEmpty()) {
+                validationScriptExecutor = shell;
+            }
+        } catch (IOException ex) {
+        } catch (ConnectionManager.CancellationException ex) {
         }
+
+        validationScriptExecutor = validationScriptExecutor.replace("${SHELL}", shell); //NOI18N
 
         final ArrayList<String> args = new ArrayList<String>();
         args.add(null); // will be replaced with a script.. validation and then real...
@@ -216,9 +237,24 @@ public final class DefaultScriptHandler extends Handler<DefaultConfigurationPane
                 args.set(0, scriptPath);
                 String scriptExecutor = cfg.get(SCRIPT_EXECUTOR).trim();
 
-                if (scriptExecutor.isEmpty()) {
-                    scriptExecutor = "/bin/sh"; // NOI18N
+                String shell = "/bin/sh"; //NOI18N
+
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    String hostShell = hostInfo.getShell();
+
+                    if (hostShell != null) {
+                        shell = hostShell;
+                    }
+
+                    if (scriptExecutor.isEmpty()) {
+                        scriptExecutor = shell;
+                    }
+                } catch (IOException ex) {
+                } catch (ConnectionManager.CancellationException ex) {
                 }
+
+                scriptExecutor = scriptExecutor.replace("${SHELL}", shell); //NOI18N
 
                 List<String> cmd = new ArrayList<String>();
                 cmd.add(scriptExecutor);

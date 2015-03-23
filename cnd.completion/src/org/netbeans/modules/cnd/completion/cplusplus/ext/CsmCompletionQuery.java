@@ -1320,7 +1320,7 @@ abstract public class CsmCompletionQuery {
             if (!visibleObject.isEmpty()) {
                 resolveObj = visibleObject.get(0);
 //                resolveObj = createInstantiation(resolveObj);
-                resolveType = CsmCompletion.getObjectType(resolveObj, _const);
+                resolveType = getObjectType(resolveObj, _const);
                 visible.set(true);
                 // trace
                 if (TRACE_MULTIPLE_VISIBE_OBJECTS) {
@@ -1337,13 +1337,18 @@ abstract public class CsmCompletionQuery {
             }
             if (resolveType == null && bestCandidate != null) {
                 resolveObj = bestCandidate;
-                resolveType = CsmCompletion.getObjectType(resolveObj, _const);
+                resolveType = getObjectType(resolveObj, _const);
             }
-            if (CsmKindUtilities.isVariable(resolveObj) && isAutoType(resolveType)) {
-                resolveType = findAutoVariableType((CsmVariable) resolveObj, resolveType);
-            }
-            
+
             return resolveType;
+        }
+        
+        private CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
+            CsmType objType = CsmCompletion.getObjectType(obj, _constIfClassifier);
+            if (CsmKindUtilities.isVariable(obj) && isAutoType(objType)) {
+                objType = findAutoVariableType((CsmVariable) obj, objType);
+            }
+            return objType;
         }
         
         private CsmType findAutoVariableType(CsmVariable var, CsmType varType) {
@@ -2061,7 +2066,7 @@ abstract public class CsmCompletionQuery {
                                                     }
                                                     if (elemList != null && elemList.size() > 0) { // match found
                                                         CsmObject csmObj = (CsmObject) elemList.get(0);
-                                                        lastType = CsmCompletion.getObjectType(csmObj, false);
+                                                        lastType = getObjectType(csmObj, false);
                                                         staticOnly = false;
                                                     } else if (kind == ExprKind.ARROW || kind == ExprKind.SCOPE) {
                                                     } else { // no match found
@@ -2158,7 +2163,7 @@ abstract public class CsmCompletionQuery {
 //                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
 //                                        }
                                             CsmObject obj = res.isEmpty() ? null : (CsmObject) res.iterator().next();
-                                            lastType = CsmCompletion.getObjectType(obj, false);
+                                            lastType = getObjectType(obj, false);
                                             cont = (lastType != null);
                                             lastNamespace = null;
                                         }

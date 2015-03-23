@@ -590,11 +590,16 @@ public class FileStatusCache {
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
                 symlink = topmost != null && isSymlink(file);
                 if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
-                    SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
-                    status = SvnUtils.getSingleStatus(client, file);
-                    if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
+                    if (isParentIgnored(file)) {
+                        // increase performace and do not query files under ignored parent
                         status = null;
-                    }
+                    } else {
+                        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
+                        status = SvnUtils.getSingleStatus(client, file);
+                        if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
+                            status = null;
+                        }
+                    }                    
                 }
             } catch (SVNClientException e) {
                 // svnClientAdapter does not return SVNStatusKind.UNVERSIONED!!!
@@ -685,6 +690,16 @@ public class FileStatusCache {
         }                       
         return fi;
     }    
+
+    private boolean isParentIgnored (VCSFileProxy file) {
+        VCSFileProxy parent = file.getParentFile();
+        if (parent != null) {
+            FileInformation parentInfo = getCachedStatus(parent);
+            return parentInfo != null && parentInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+        } else {
+            return false;
+        }
+    }
 
     public void patchRevision(VCSFileProxy[] fileArray, SVNRevision.Number revision) {        
         for (VCSFileProxy file : fileArray) {            
@@ -906,7 +921,7 @@ public class FileStatusCache {
         ISVNStatus [] entries = null;
         final Context context = new Context(dir);
         try {
-            if (SvnUtils.isManaged(dir)) {                
+            if (SvnUtils.isManaged(dir) && !isParentIgnored(dir)) {                
                 SvnClient client = Subversion.getInstance().getClient(true, context);
                 entries = client.getStatus(dir, false, true); 
             }
@@ -1442,6 +1457,13 @@ public class FileStatusCache {
                     HashMap<VCSFileProxy, FileLabelInfo> labels = new HashMap<>(filesToRefresh.size());
                     for (VCSFileProxy file : filesToRefresh) {
                         try {
+                            FileInformation fi = master.getCachedStatus(file);
+                            if (fi != null && (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0
+                                    || master.isParentIgnored(file)) {
+                                // increase performace and do not query ignored files
+                                labels.put(file, FAKE_LABEL_INFO);
+                                continue;
+                            }
                             final Context context = new Context(file);
                             SvnClient client = Subversion.getInstance().getClient(false, context);
                             // get status for all files
@@ -1455,7 +1477,6 @@ public class FileStatusCache {
                             if (info.getLastChangedDate() != null) {
                                 lastDateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(info.getLastChangedDate());
                             }
-                            FileInformation fi = master.getCachedStatus(file);
                             Annotator.AnnotationFormat af = annotator.getAnnotationFormat(context.getFileSystem());
                             if (af.mimeTypeFlag) {
                                 // call svn prop command only when really needed

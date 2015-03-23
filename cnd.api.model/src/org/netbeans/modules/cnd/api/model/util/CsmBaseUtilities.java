@@ -44,8 +44,11 @@
 
 package org.netbeans.modules.cnd.api.model.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -60,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -76,6 +80,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
@@ -176,6 +181,35 @@ public class CsmBaseUtilities {
             return ((CsmNamespace)scope).isGlobal();
         }
         return false;
+    }
+    
+    public static CsmScope getLastCommonScope(CsmScope first, CsmScope second) {
+        if (first == null || second == null) {
+            return null;
+        }
+        if (first.equals(second)) {
+            return first;
+        }
+        int firstDepth = getScopeDepth(first);
+        int secondDepth = getScopeDepth(second);
+        while (firstDepth > secondDepth && CsmKindUtilities.isScopeElement(first)) {
+            first = ((CsmScopeElement) first).getScope();
+            --firstDepth;
+        }
+        while (firstDepth < secondDepth && CsmKindUtilities.isScopeElement(second)) {
+            second = ((CsmScopeElement) second).getScope();
+            --secondDepth;
+        }
+        if (firstDepth == secondDepth) {
+            while (!Objects.equals(first, second) && CsmKindUtilities.isScopeElement(first) && CsmKindUtilities.isScopeElement(second)) {
+                first = ((CsmScopeElement) first).getScope();
+                second = ((CsmScopeElement) second).getScope();
+            }
+            if (Objects.equals(first, second)) {
+                return first;
+            }
+        }
+        return null;
     }
     
     public static boolean sameSignature(CsmFunction checkDecl, CsmFunction targetDecl) {
@@ -490,5 +524,18 @@ public class CsmBaseUtilities {
             }
         }
         return false;
+    }
+    
+    private static boolean isTopLevelScope(CsmScope scope) {
+        return !CsmKindUtilities.isScopeElement(scope);
+    }
+    
+    private static int getScopeDepth(CsmScope scope) {
+        int depth = 1;
+        while (CsmKindUtilities.isScopeElement(scope)) {
+            scope = ((CsmScopeElement) scope).getScope();
+            ++depth;
+        }
+        return depth;
     }
 }
