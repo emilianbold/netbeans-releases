@@ -989,6 +989,31 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
     }
+    
+    public void testInlineTempComments() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        // my Text\n"
+                + "        String text = \"text\";\n"
+                + "        System.out.println(text);\n"
+                + "    }\n"
+                + "}"));
+
+        InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(\n"
+                + "                           // my Text\n"
+                + "                           \"text\");\n"
+                + "    }\n"
+                + "}"));
+    }
 
     public void testInlineTempa() throws Exception {
         writeFilesAndWaitForScan(src,
