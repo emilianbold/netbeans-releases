@@ -90,6 +90,7 @@ public class MozillaBrowser extends ExtWebBrowser {
     /** Getter for browser name
      *  @return name of browser
      */
+    @Override
     public String getName () {
         if (name == null) {
             this.name = NbBundle.getMessage(MozillaBrowser.class, "CTL_MozillaBrowserName");
