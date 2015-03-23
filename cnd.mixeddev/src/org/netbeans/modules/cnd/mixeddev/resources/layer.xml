@@ -5,11 +5,11 @@
         <folder name="text">
             <folder name="x-java">
                 <folder name="HyperlinkProviders">
-                    <attr name="JavaToCppHyperlinkProvider.instance/JavaHyperlinkProvider.instance" boolvalue="true"/>
+                    <!--<attr name="JavaToCppHyperlinkProvider.instance/JavaHyperlinkProvider.instance" boolvalue="true"/>-->
                     <file name="JavaToCppHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.mixeddev.java.JavaToCppHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
-                        <attr name="position" intvalue="100"/>
+                        <!--<attr name="position" intvalue="900"/>-->
                     </file>                           
                 </folder>                
             </folder>    
