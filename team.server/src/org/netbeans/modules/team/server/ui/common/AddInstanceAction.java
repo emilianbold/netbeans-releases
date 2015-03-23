@@ -48,7 +48,6 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -74,10 +73,6 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_AddInstance=Add Team Server...")
 public class AddInstanceAction extends AbstractAction {
 
-    @Messages("CTL_ADD=Add")
-    public static final String ADD_BUTTON = CTL_ADD();
-    @Messages("CTL_Cancel=Cancel")
-    public static final String CANCEL_BUTTON = CTL_Cancel();
     private static AddInstanceAction instance;
     public static final String ID = "org.netbeans.modules.team.server.ui.common.AddInstanceAction";
 
@@ -111,14 +106,12 @@ public class AddInstanceAction extends AbstractAction {
     @Override
     @Messages({"ERR_TeamServerNotValid=Provide a valid Team Server URL.", "CTL_NewTeamServerInstance=New Team Server"})
     public void actionPerformed(final ActionEvent ae) {
-        final JButton addButton = new JButton(ADD_BUTTON);
-        addButton.getAccessibleContext().setAccessibleDescription(ADD_BUTTON);
-        final TeamServerInstanceCustomizer tsInstanceCustomizer = new TeamServerInstanceCustomizer(addButton, getProviders());
+        final TeamServerInstanceCustomizer tsInstanceCustomizer = new TeamServerInstanceCustomizer(getProviders());
         ActionListener bl = new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (e.getSource().equals(addButton)) {
+                if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
                     try {
                         final TeamServer teamServer = tsInstanceCustomizer.getProvider().createTeamServer(tsInstanceCustomizer.getDisplayName(), tsInstanceCustomizer.getUrl());
                         tsInstanceCustomizer.startProgress();
@@ -180,13 +173,15 @@ public class AddInstanceAction extends AbstractAction {
                 tsInstanceCustomizer,
                 CTL_NewTeamServerInstance(),
                 true,
-                new Object[] {addButton, CANCEL_BUTTON}, addButton,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(ID),
                 bl
                 );
         tsInstanceCustomizer.setNotificationsSupport(dd.createNotificationLineSupport());
         tsInstanceCustomizer.setDialogDescriptor(dd);
+        dd.setValid(false); // initially disabled OK button
 
         dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dd);
         dialog.validate();
