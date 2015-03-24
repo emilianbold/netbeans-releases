@@ -172,9 +172,12 @@ public class CherryPickAction extends SingleRepositoryAction {
             return true;
         }
         VCSFileProxy sequencer = VCSFileProxy.createFileProxy(GitUtils.getGitFolderForRoot(repository), "sequencer");
-        for(VCSFileProxy ch : sequencer.listFiles()) {
-            if ("todo".equals(ch.getName())) { //NOI18N
-                return true;
+        final VCSFileProxy[] listFiles = sequencer.listFiles();
+        if (listFiles != null) {
+            for(VCSFileProxy ch : listFiles) {
+                if ("todo".equals(ch.getName())) { //NOI18N
+                    return true;
+                }
             }
         }
         return false;
