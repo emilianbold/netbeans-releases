@@ -1148,7 +1148,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 } else if (trackedBranch != null) {
                     sb.append(Bundle.LBL_BranchNode_basedOn(trackedBranch.getName()));
                 }
-                sb.append(" - ").append(branchId.substring(0, 10)); //NOI18N
+                sb.append(" - "); //NOI18N
+                if (branchId.length()>10) {
+                    sb.append(branchId.substring(0, 10));
+                } else {
+                    sb.append(branchId);
+                }
             }
             return sb.toString();
         }
