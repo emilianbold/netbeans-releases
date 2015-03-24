@@ -44,9 +44,11 @@ package org.netbeans.modules.javascript.bower.file;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.clientproject.api.json.JsonFile;
 import org.openide.filesystems.FileObject;
@@ -69,16 +71,34 @@ public final class BowerJson {
 
 
     public BowerJson(FileObject directory) {
+        this(directory, FILE_NAME);
+    }
+
+    // for unit tests
+    BowerJson(FileObject directory, String filename) {
         assert directory != null;
-        bowerJson = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.create()
+        bowerJson = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
                 .add(PROP_DEPENDENCIES, FIELD_DEPENDENCIES)
                 .add(PROP_DEV_DEPENDENCIES, FIELD_DEV_DEPENDENCIES));
     }
 
     public BowerDependencies getDependencies() {
-        Map<String, String> dependencies = bowerJson.getContentValue(Map.class, BowerJson.FIELD_DEPENDENCIES);
-        Map<String, String> devDependencies = bowerJson.getContentValue(Map.class, BowerJson.FIELD_DEV_DEPENDENCIES);
-        return new BowerDependencies(dependencies, devDependencies);
+        Map<Object, Object> dependencies = bowerJson.getContentValue(Map.class, BowerJson.FIELD_DEPENDENCIES);
+        Map<Object, Object> devDependencies = bowerJson.getContentValue(Map.class, BowerJson.FIELD_DEV_DEPENDENCIES);
+        return new BowerDependencies(sanitizeDependencies(dependencies), sanitizeDependencies(devDependencies));
+    }
+
+    @CheckForNull
+    private Map<String, String> sanitizeDependencies(@NullAllowed Map<Object, Object> data) {
+        if (data == null
+                || data.isEmpty()) {
+            return null;
+        }
+        Map<String, String> sanitized = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            sanitized.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        return sanitized;
     }
 
     public boolean exists() {
@@ -137,6 +157,11 @@ public final class BowerJson {
 
         public int getCount() {
             return dependencies.size() + devDependencies.size();
+        }
+
+        @Override
+        public String toString() {
+            return "BowerDependencies{" + "dependencies=" + dependencies + ", devDependencies=" + devDependencies + '}'; // NOI18N
         }
 
     }

@@ -110,6 +110,33 @@ public class BowerJsonTest extends NbTestCase {
         assertEquals(getFile().getAbsolutePath(), bowerJson.getPath());
     }
 
+    public void testDependencies() throws Exception {
+        BowerJson invalidBowerJson = new BowerJson(FileUtil.toFileObject(getDataDir()), "invalid-bower.json");
+        assertTrue(invalidBowerJson.getFile().getAbsolutePath(), invalidBowerJson.exists());
+        BowerJson.BowerDependencies dependencies = invalidBowerJson.getDependencies();
+        assertEquals(14, dependencies.getCount());
+        assertEquals(7, dependencies.dependencies.size());
+        assertEquals(7, dependencies.devDependencies.size());
+        Map<String, String> expectedDependencies = new HashMap<>();
+        expectedDependencies.put("a/b", "1.13.1");
+        expectedDependencies.put("c/d", "1");
+        expectedDependencies.put("e/f", "1.5");
+        expectedDependencies.put("g/h", "null");
+        expectedDependencies.put("i/j", "true");
+        expectedDependencies.put("k/l", "{myver=123}");
+        expectedDependencies.put("m/n", "[1, 2]");
+        assertEquals(expectedDependencies, dependencies.dependencies);
+        Map<String, String> expectedDevDependencies = new HashMap<>();
+        expectedDevDependencies.put("aa/bb", "42");
+        expectedDevDependencies.put("cc/dd", "1");
+        expectedDevDependencies.put("ee/ff", "1.5");
+        expectedDevDependencies.put("gg/hh", "null");
+        expectedDevDependencies.put("ii/jj", "true");
+        expectedDevDependencies.put("kk/ll", "{myver=123}");
+        expectedDevDependencies.put("mm/nn", "[1, 2]");
+        assertEquals(expectedDevDependencies, dependencies.devDependencies);
+    }
+
     public void testDependenciesChange() throws Exception {
         CountDownLatch countDownLatch1 = new CountDownLatch(1);
         PropertyChangeListenerImpl listener = new PropertyChangeListenerImpl();
