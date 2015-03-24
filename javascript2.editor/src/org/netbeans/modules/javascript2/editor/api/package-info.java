@@ -39,23 +39,24 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+@NbBundle.Messages("LBL_CATEGORY_FRAMEWORKS_LABEL=JavaScript Frameworks")
 @ProjectCustomizer.CompositeCategoryProvider.Registrations({
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = FrameworksUtils.HTML5_CLIENT_PROJECT,
             category = FrameworksUtils.CATEGORY,
-            categoryLabel = FrameworksUtils.CATEGORY_LABEL,
+            categoryLabel = "#LBL_CATEGORY_FRAMEWORKS_LABEL",
             position = 250
     ),
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = FrameworksUtils.PHP_PROJECT,
             category = FrameworksUtils.CATEGORY,
-            categoryLabel = FrameworksUtils.CATEGORY_LABEL,
+            categoryLabel = "#LBL_CATEGORY_FRAMEWORKS_LABEL",
             position = 193
     ),
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = FrameworksUtils.MAVEN_PROJECT,
             category = FrameworksUtils.CATEGORY,
-            categoryLabel = FrameworksUtils.CATEGORY_LABEL,
+            categoryLabel = "#LBL_CATEGORY_FRAMEWORKS_LABEL",
             position = 193
     )
 }
@@ -63,4 +64,5 @@
 package org.netbeans.modules.javascript2.editor.api;
 
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.NbBundle;
 
