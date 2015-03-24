@@ -122,7 +122,7 @@ public class ClankDriverImpl {
 
         public ArrayBasedAPTTokenStream(APTToken[] tokens) {
             this.tokens = tokens;
-            this.lastIndex = tokens.length - 1;
+            this.lastIndex = tokens.length;
             this.index = 0;
         }
 
