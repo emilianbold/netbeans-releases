@@ -110,7 +110,9 @@ public class CreateTagAction extends SingleRepositoryAction {
         @Override
         public GitTag call () {
             try {
-                LOG.log(Level.FINE, "Creating a tag: {0}/{1}", new Object[] { createTag.getTagName(), createTag.getRevision() }); //NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Creating a tag: {0}/{1}", new Object[] { createTag.getTagName(), createTag.getRevision() }); //NOI18N
+                }
                 GitTag tag = client.createTag(createTag.getTagName(), createTag.getRevision(),
                         createTag.getTagMessage(), false, createTag.isForceUpdate(), supp.getProgressMonitor());
                 log(tag);

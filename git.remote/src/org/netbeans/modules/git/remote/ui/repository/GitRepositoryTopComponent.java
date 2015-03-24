@@ -110,15 +110,19 @@ public class GitRepositoryTopComponent extends TopComponent implements Externali
     public static synchronized GitRepositoryTopComponent findInstance () {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            Git.LOG.log(Level.FINE, "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
+            if (Git.LOG.isLoggable(Level.FINE)) {
+                Git.LOG.log(Level.FINE, "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
+            }
             return getDefault();
         }
         if (win instanceof GitRepositoryTopComponent) {
             return (GitRepositoryTopComponent) win;
         }
-        Git.LOG.log(Level.FINE,
-                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
-                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
+        if (Git.LOG.isLoggable(Level.FINE)) {
+            Git.LOG.log(Level.FINE,
+                    "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                    "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
+        }
         return getDefault();
     }
 

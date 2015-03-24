@@ -275,11 +275,15 @@ public class RepositoryInfo {
                 GitBranch oldActiveBranch = activeBranch;
                 activeBranch = e.getValue();
                 if (oldActiveBranch == null || !oldActiveBranch.getName().equals(activeBranch.getName())) {
-                    LOG.log(Level.FINE, "active branch changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getName() }); //NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "active branch changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getName() }); //NOI18N
+                    }
                     firePropertyChange(new PropertyChangeEvent(this, PROPERTY_ACTIVE_BRANCH, oldActiveBranch, activeBranch));
                 }
                 if (oldActiveBranch == null || !oldActiveBranch.getId().equals(activeBranch.getId())) {
-                    LOG.log(Level.FINE, "current HEAD changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getId() }); //NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "current HEAD changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getId() }); //NOI18N
+                    }
                     firePropertyChange(new PropertyChangeEvent(this, PROPERTY_HEAD, oldActiveBranch, activeBranch));
                 }
             }
@@ -290,7 +294,9 @@ public class RepositoryInfo {
         GitRepositoryState oldState = this.repositoryState;
         this.repositoryState = repositoryState;
         if (!repositoryState.equals(oldState)) {
-            LOG.log(Level.FINE, "repository state changed: {0} --- {1}", new Object[] { oldState, repositoryState }); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "repository state changed: {0} --- {1}", new Object[] { oldState, repositoryState }); //NOI18N
+            }
             firePropertyChange(new PropertyChangeEvent(this, PROPERTY_STATE, oldState, repositoryState));
         }
     }
@@ -421,7 +427,9 @@ public class RepositoryInfo {
             start = repositoriesToRefresh.add(this);
         }
         if (start) {
-            LOG.log(Level.FINE, "Planning refresh for {0}", rootRef.get()); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Planning refresh for {0}", rootRef.get()); //NOI18N
+            }
             refreshTask.schedule(3000);
         }
     }
@@ -559,7 +567,9 @@ public class RepositoryInfo {
             Set<RepositoryInfo> delayed = new HashSet<>();
             while ((info = getNextRepositoryInfo()) != null) {
                 if (!info.refreshIfNotLocked()) {
-                    LOG.log(Level.FINE, "RepositoryRefreshTask: Repository {0} locked, info refresh delayed", info.getName()); //NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "RepositoryRefreshTask: Repository {0} locked, info refresh delayed", info.getName()); //NOI18N
+                    }
                     delayed.add(info);
                 }
             }

@@ -114,7 +114,9 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                     revision = revisionToCheckout;
                     if (newBranchName != null) {
                         revision = newBranchName;
-                        LOG.log(Level.FINE, "Creating branch: {0}:{1}", new Object[] { revision, revisionToCheckout }); //NOI18N
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "Creating branch: {0}:{1}", new Object[] { revision, revisionToCheckout }); //NOI18N
+                        }
                         GitBranch branch = client.createBranch(revision, revisionToCheckout, getProgressMonitor());
                         log(revisionToCheckout, branch);
 

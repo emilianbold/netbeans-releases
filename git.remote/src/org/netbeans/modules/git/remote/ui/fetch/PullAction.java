@@ -182,7 +182,9 @@ public class PullAction extends SingleRepositoryAction {
         })
         protected void perform () {
             final VCSFileProxy repository = getRepositoryRoot();
-            LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, target }); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, target }); //NOI18N
+            }
             try {
                 final GitClient client = getClient();
                 final Set<String> toDelete = new HashSet<String>();

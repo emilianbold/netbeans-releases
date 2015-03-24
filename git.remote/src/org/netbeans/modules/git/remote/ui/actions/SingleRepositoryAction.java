@@ -94,14 +94,18 @@ public abstract class SingleRepositoryAction extends GitAction {
     protected static Entry<VCSFileProxy, VCSFileProxy[]> getActionRoots (VCSContext context) {
         Set<VCSFileProxy> repositories = GitUtils.getRepositoryRoots(context);
         if (repositories.isEmpty()) {
-            LOG.log(Level.FINE, "No repository in the given context: {0}", context.getRootFiles()); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "No repository in the given context: {0}", context.getRootFiles()); //NOI18N
+            }
             return null;
         }
         SimpleImmutableEntry<VCSFileProxy, VCSFileProxy[]> actionRoots = GitUtils.getActionRoots(context);
         if (actionRoots != null) {
             VCSFileProxy repository = actionRoots.getKey();
             if (repositories.size() > 1) {
-                LOG.log(Level.FINE, "Multiple repositories in the given context: {0}, selected {1}", new Object[] { context.getRootFiles(), repository }); //NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Multiple repositories in the given context: {0}, selected {1}", new Object[] { context.getRootFiles(), repository }); //NOI18N
+                }
             }
         }
         return actionRoots;

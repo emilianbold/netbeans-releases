@@ -901,7 +901,9 @@ public final class GitClient {
         private <T> T runMethod (Callable<T> callable, String methodName, VCSFileProxy[] roots) throws GitException {
             try {
                 if (isExclusiveRepositoryAccess(methodName)) {
-                    LOG.log(Level.FINER, "Running an exclusive command: {0} on {1}", new Object[] { methodName, repositoryRoot }); //NOI18N
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.log(Level.FINER, "Running an exclusive command: {0} on {1}", new Object[] { methodName, repositoryRoot }); //NOI18N
+                    }
                     if (progressSupport != null) {
                         progressSupport.setRepositoryStateBlocked(repositoryRoot, true);
                     }
@@ -916,7 +918,9 @@ public final class GitClient {
                         return runMethodIntern(callable, methodName, roots);
                     }
                 } else {
-                    LOG.log(Level.FINER, "Running a parallelizable command: {0} on {1}", new Object[] { methodName, repositoryRoot.getPath() }); //NOI18N
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.log(Level.FINER, "Running a parallelizable command: {0} on {1}", new Object[] { methodName, repositoryRoot.getPath() }); //NOI18N
+                    }
                     return runMethodIntern(callable, methodName, roots);
                 }
             } catch (InterruptedException ex) {
@@ -966,7 +970,9 @@ public final class GitClient {
                                     LOG.log(Level.FINE, "Git command finished: [{0}] on repository [{1}], lasted {2} ms", new Object[] { methodName, repositoryRoot.getPath(), System.currentTimeMillis() - t}); //NOI18N
                                 }
                                 if (repositoryInfoRefreshNeeded) {
-                                    LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { methodName, repositoryRoot.getPath() }); //NOI18N
+                                    if (LOG.isLoggable(Level.FINER)) {
+                                        LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { methodName, repositoryRoot.getPath() }); //NOI18N
+                                    }
                                     RepositoryInfo.getInstance(repositoryRoot).refresh();
                                 }
                             }

@@ -139,7 +139,9 @@ class FilesystemInterceptor extends VCSInterceptor {
     public long refreshRecursively (VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
         long retval = -1;
         if (GitUtils.DOT_GIT.equals(dir.getName()) || gitFolderEventsHandler.isMetadataFolder(dir)) {
-            Git.STATUS_LOG.log(Level.FINER, "Interceptor.refreshRecursively: {0}", dir.getPath()); //NOI18N
+            if (Git.STATUS_LOG.isLoggable(Level.FINER)) {
+                Git.STATUS_LOG.log(Level.FINER, "Interceptor.refreshRecursively: {0}", dir.getPath()); //NOI18N
+            }
             children.clear();
             retval = gitFolderEventsHandler.refreshAdminFolder(dir);
             for(VCSFileProxy ch : dir.listFiles()) {
@@ -160,7 +162,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public boolean beforeCreate (final VCSFileProxy file, boolean isDirectory) {
-        LOG.log(Level.FINE, "beforeCreate {0} - {1}", new Object[] { file, isDirectory }); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "beforeCreate {0} - {1}", new Object[] { file, isDirectory }); //NOI18N
+        }
         if (GitUtils.isPartOfGitMetadata(file)) {
             return false;
         }
@@ -186,14 +190,18 @@ class FilesystemInterceptor extends VCSInterceptor {
                     client.release();
                 }
             }
-            LOG.log(Level.FINER, "beforeCreate(): finished: {0}", file); // NOI18N
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "beforeCreate(): finished: {0}", file); // NOI18N
+            }
         }
         return false;
     }
 
     @Override
     public void afterCreate (final VCSFileProxy file) {
-        LOG.log(Level.FINE, "afterCreate {0}", file); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "afterCreate {0}", file); //NOI18N
+        }
         if (GitUtils.isPartOfGitMetadata(file) && GitUtils.INDEX_LOCK.equals(file.getName())) {
             commandLogger.locked(file);
         }
@@ -210,7 +218,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public boolean beforeDelete (VCSFileProxy file) {
-        LOG.log(Level.FINE, "beforeDelete {0}", file); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "beforeDelete {0}", file); //NOI18N
+        }
         if (file == null) {
             return false;
         }
@@ -224,7 +234,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public void doDelete (VCSFileProxy file) throws IOException {
-        LOG.log(Level.FINE, "doDelete {0}", file); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "doDelete {0}", file); //NOI18N
+        }
         if (file == null) {
             return;
         }
@@ -261,7 +273,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public void afterDelete(final VCSFileProxy file) {
-        LOG.log(Level.FINE, "afterDelete {0}", file); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "afterDelete {0}", file); //NOI18N
+        }
         if (file == null) {
             return;
         }
@@ -280,7 +294,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public boolean beforeMove(VCSFileProxy from, VCSFileProxy to) {
-        LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        }
         if (from == null || to == null || to.exists()) {
             return true;
         }
@@ -290,7 +306,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public void doMove(final VCSFileProxy from, final VCSFileProxy to) throws IOException {
-        LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        }
         if (from == null || to == null || to.exists() && !equalPathsIgnoreCase(from, to)) {
             return;
         }
@@ -340,7 +358,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public void afterMove(final VCSFileProxy from, final VCSFileProxy to) {
-        LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        }
         if (from == null || to == null || !to.exists()) {
             return;
         }
@@ -363,7 +383,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public boolean beforeCopy (VCSFileProxy from, VCSFileProxy to) {
-        LOG.log(Level.FINE, "beforeCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "beforeCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        }
         if (from == null || to == null || to.exists()) {
             return true;
         }
@@ -373,7 +395,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public void doCopy (final VCSFileProxy from, final VCSFileProxy to) throws IOException {
-        LOG.log(Level.FINE, "doCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "doCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        }
         if (from == null || to == null || to.exists()) {
             return;
         }
@@ -412,7 +436,9 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     @Override
     public void afterCopy (final VCSFileProxy from, final VCSFileProxy to) {
-        LOG.log(Level.FINE, "afterCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "afterCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        }
         if (to == null) {
             return;
         }
@@ -429,7 +455,9 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (file.isDirectory()) {
             return;
         }
-        LOG.log(Level.FINE, "afterChange {0}", new Object[] { file }); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "afterChange {0}", new Object[] { file }); //NOI18N
+        }
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(file), true);
@@ -517,7 +545,9 @@ class FilesystemInterceptor extends VCSInterceptor {
             return callable.call();
         } finally {
             if (repository != null) {
-                LOG.log(Level.FINER, "Refreshing index timestamp after: {0} on {1}", new Object[] { commandName, repository.getPath() }); //NOI18N
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Refreshing index timestamp after: {0} on {1}", new Object[] { commandName, repository.getPath() }); //NOI18N
+                }
                 if (EventQueue.isDispatchThread()) {
                     Git.getInstance().getRequestProcessor().post(new Runnable() {
                         @Override
@@ -1075,13 +1105,17 @@ class FilesystemInterceptor extends VCSInterceptor {
         private void initializeFiles() {
             VCSFileProxy file;
             while ((file = getFileToInitialize()) != null) {
-                Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: {0}", file.getPath()); //NOI18N
+                if (Git.STATUS_LOG.isLoggable(Level.FINEST)) {
+                    Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: {0}", file.getPath()); //NOI18N
+                }
                 // select repository root for the file and finds it's .git folder
                 VCSFileProxy repositoryRoot = Git.getInstance().getRepositoryRoot(file);
                 if (repositoryRoot != null) {
                     if (addSeenRoot(repositoryRoot, file)) {
                         // this means the repository has not yet been scanned, so scan it
-                        Git.STATUS_LOG.log(Level.FINE, "initializeFiles: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getPath(), file.getPath()}); //NOI18N
+                        if (Git.STATUS_LOG.isLoggable(Level.FINE)) {
+                            Git.STATUS_LOG.log(Level.FINE, "initializeFiles: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getPath(), file.getPath()}); //NOI18N
+                        }
                         reScheduleRefresh(4000, Collections.singleton(file), false);
                         VCSFileProxy gitFolder = GitUtils.getGitFolderForRoot(repositoryRoot);
                         boolean refreshNeeded = false;
@@ -1100,14 +1134,18 @@ class FilesystemInterceptor extends VCSInterceptor {
                     }
                 }
             }
-            Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: finished"); //NOI18N
+            if (Git.STATUS_LOG.isLoggable(Level.FINEST)) {
+                Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: finished"); //NOI18N
+            }
         }
 
         private long refreshAdminFolder (VCSFileProxy metadataFolder) {
             long lastModified = 0;
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
                 metadataFolder = metadataFolder.normalizeFile();
-                Git.STATUS_LOG.log(Level.FINER, "refreshAdminFolder: special FS event handling for {0}", metadataFolder.getPath()); //NOI18N
+                if (Git.STATUS_LOG.isLoggable(Level.FINER)) {
+                    Git.STATUS_LOG.log(Level.FINER, "refreshAdminFolder: special FS event handling for {0}", metadataFolder.getPath()); //NOI18N
+                }
                 GitFolderTimestamps cached;
                 VCSFileProxy gitFolder = translateToGitFolder(metadataFolder);
                 if (isEnabled(gitFolder)) {
@@ -1171,7 +1209,9 @@ class FilesystemInterceptor extends VCSInterceptor {
         private void refreshReferences (VCSFileProxy metadataFolder, VCSFileProxy triggerFolder) {
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
                 metadataFolder = metadataFolder.normalizeFile();
-                Git.STATUS_LOG.log(Level.FINER, "refreshReferences: special FS event handling for {0}", triggerFolder.getPath()); //NOI18N
+                if (Git.STATUS_LOG.isLoggable(Level.FINER)) {
+                    Git.STATUS_LOG.log(Level.FINER, "refreshReferences: special FS event handling for {0}", triggerFolder.getPath()); //NOI18N
+                }
                 boolean refreshNeeded = false;
                 GitFolderTimestamps cached;
                 VCSFileProxy gitFolder = translateToGitFolder(metadataFolder);

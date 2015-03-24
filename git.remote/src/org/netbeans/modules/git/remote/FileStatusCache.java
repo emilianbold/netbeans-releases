@@ -260,7 +260,9 @@ public class FileStatusCache {
                                     fi.isDirectory() && !GitUtils.isIgnored(file, true)) ||  // folder is now up-to-date (and NOT ignored by Sharability)
                                     !fi.isDirectory() && !fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) // file is now up-to-date or also ignored by .gitignore
                                     && (correctRepository = !repository.equals(file) && repository.equals(filesOwner = git.getRepositoryRoot(file)))) { // do not remove info for gitlinks or nested repositories
-                                LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
+                                }
                                 refreshFileStatus(file, FILE_INFORMATION_UNKNOWN); // remove the file from cache
                             }
                             if (!correctRepository) {
@@ -458,7 +460,9 @@ public class FileStatusCache {
      */
     private FileInformation getStatus (final VCSFileProxy file, boolean seenInUI) {
         FileInformation info = getInfo(file); // cached value
-        LOG.log(Level.FINER, "getCachedStatus for file {0}: {1}", new Object[] {file, info}); //NOI18N
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, "getCachedStatus for file {0}: {1}", new Object[] {file, info}); //NOI18N
+        }
         boolean triggerGitScan = false;
         boolean addAsExcluded = false;
         if (info == null) {
@@ -497,7 +501,9 @@ public class FileStatusCache {
                 // unmanaged files
                 info = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED), true) : FILE_INFORMATION_NOTMANAGED;
             }
-            LOG.log(Level.FINER, "getCachedStatus: default for file {0}: {1}", new Object[] {file, info}); //NOI18N
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "getCachedStatus: default for file {0}: {1}", new Object[] {file, info}); //NOI18N
+            }
         } else {
             // an u-t-d file may be actually ignored. This needs to be checked since we skip ignored folders in the status scan
             // so ignored files appear as up-to-date after the scan finishes
@@ -586,7 +592,9 @@ public class FileStatusCache {
                 // put the file's FI into the cache
                 VCSFileProxy file = interestingEntry.getKey();
                 FileInformation fi = new FileInformation(interestingEntry.getValue());
-                LOG.log(Level.FINE, "refreshAllRoots() file status: {0} {1}", new Object[] {file.getPath(), fi}); // NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "refreshAllRoots() file status: {0} {1}", new Object[] {file.getPath(), fi}); // NOI18N
+                }
                 
                 FileInformation current;
                 boolean fireEvent = true;
@@ -619,7 +627,9 @@ public class FileStatusCache {
                 || // ugly piece of code, call sharability for U2D files only when toggling between ignored and U2D, otherwise SQ is called for EVERY U2D file
                 (current != null && fi.getStatus().contains(Status.UPTODATE) && current.getStatus().contains(Status.NOTVERSIONED_EXCLUDED))) && (GitUtils.isIgnored(file, true) || isParentIgnored(file))) {
             // file lies under an excluded parent
-            LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getPath()); // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getPath()); // NOI18N
+            }
             fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
         }
         return fi;
