@@ -325,6 +325,9 @@ public final class Git {
         }
         long t = System.currentTimeMillis();
         LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+            return null;
+        }
         if(unversionedParents.contains(file)) {
             LOG.fine(" cached as unversioned");
             return null;

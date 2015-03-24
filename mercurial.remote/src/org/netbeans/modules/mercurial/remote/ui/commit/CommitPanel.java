@@ -55,6 +55,7 @@ import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -68,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import javax.swing.Action;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -83,6 +85,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.SwingConstants.SOUTH;
@@ -94,6 +97,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 import org.netbeans.modules.mercurial.remote.HgFileNode;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.ui.diff.MultiDiffPanel;
@@ -121,7 +125,10 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.actions.CallbackSystemAction;
 
 /**
  *
@@ -609,6 +616,36 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             if (userValid != oldUserValid && cbAuthor.isSelected()) {
                 listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
             }
+        }
+    }
+
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        boolean ret = super.processKeyBinding(ks, e, condition, pressed);
+
+        // XXX #250546 Reason of overriding: to process global shortcut.
+        if ((JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT == condition) && (ret == false) && !e.isConsumed()) {
+
+            Keymap km = Lookup.getDefault().lookup(Keymap.class);
+            Action action = (km != null) ? km.getAction(ks) : null;
+
+            if (action == null) {
+                return false;
+            }
+
+            if (action instanceof CallbackSystemAction) {
+                CallbackSystemAction csAction = (CallbackSystemAction) action;
+                if (tabbedPane != null) {
+                    Action a = tabbedPane.getActionMap().get(csAction.getActionMapKey());
+                    if (a != null) {
+                        a.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, Utilities.keyToString(ks)));
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            return ret;
         }
     }
 
