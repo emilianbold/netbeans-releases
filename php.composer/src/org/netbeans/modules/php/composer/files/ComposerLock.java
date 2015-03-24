@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.composer.files;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,10 +70,24 @@ public final class ComposerLock {
 
 
     public ComposerLock(FileObject directory) {
+        this(directory, FILE_NAME);
+    }
+
+    // for unit tests
+    ComposerLock(FileObject directory, String filename) {
         assert directory != null;
-        composerLock = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.create()
+        assert filename != null;
+        composerLock = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
                 .add(PROP_PACKAGES, FIELD_PACKAGES)
                 .add(PROP_PACKAGES_DEV, FIELD_PACKAGES_DEV));
+    }
+
+    public File getFile() {
+        return composerLock.getFile();
+    }
+
+    public boolean exists() {
+        return composerLock.exists();
     }
 
     public void addPropertyChangeListener(PropertyChangeListener composerLockListener) {
@@ -97,18 +112,8 @@ public final class ComposerLock {
         }
         Map<String, String> result = new HashMap<>(data.size() * 2);
         for (Map<String, Object> pckg : data) {
-            Object name = pckg.get(FIELD_NAME);
-            if (!(name instanceof String)) {
-                assert false : pckg;
-                continue;
-            }
-            Object version = pckg.get(FIELD_VERSION);
-            if (!(version instanceof String)) {
-                assert false : pckg;
-                continue;
-            }
-            String prev = result.put((String) name, (String) version);
-            assert prev == null : result;
+            // be defensive
+            result.put(String.valueOf(pckg.get(FIELD_NAME)), String.valueOf(pckg.get(FIELD_VERSION)));
         }
         return result;
     }
@@ -137,6 +142,11 @@ public final class ComposerLock {
 
         public int getCount() {
             return packages.size() + packagesDev.size();
+        }
+
+        @Override
+        public String toString() {
+            return "ComposerPackages{" + "packages=" + packages + ", packagesDev=" + packagesDev + '}'; // NOI18N
         }
 
     }

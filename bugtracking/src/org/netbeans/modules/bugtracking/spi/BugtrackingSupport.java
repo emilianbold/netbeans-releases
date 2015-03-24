@@ -112,7 +112,7 @@ public final class BugtrackingSupport<R, Q, I> {
         if(info != null && NBBugzillaUtils.isNbRepository(info.getUrl())) { 
             // might be we just automatically generated a nb repository,
             // in such a case it also has to be added to the registry 
-            // as otherwise it happens only on manul repositoy creation
+            // as otherwise it happens only on manual repositoy creation
             RepositoryRegistry registry = RepositoryRegistry.getInstance();
             if(getRepositoryImpl(r) == null) {
                 registry.addRepository(impl);

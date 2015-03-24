@@ -42,8 +42,11 @@
 package org.netbeans.modules.php.composer.files;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.clientproject.api.json.JsonFile;
 import org.openide.filesystems.FileObject;
@@ -62,11 +65,25 @@ public final class ComposerJson {
 
 
     public ComposerJson(FileObject directory) {
+        this(directory, FILE_NAME);
+    }
+
+    // for unit tests
+    ComposerJson(FileObject directory, String filename) {
         assert directory != null;
+        assert filename != null;
         this.directory = directory;
-        composerJson = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.create()
+        composerJson = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
                 .add(PROP_REQUIRE, FIELD_REQUIRE)
                 .add(PROP_REQUIRE_DEV, FIELD_REQUIRE_DEV));
+    }
+
+    public File getFile() {
+        return composerJson.getFile();
+    }
+
+    public boolean exists() {
+        return composerJson.exists();
     }
 
     public void addPropertyChangeListener(PropertyChangeListener composerJsonListener) {
@@ -82,9 +99,22 @@ public final class ComposerJson {
     }
 
     public ComposerDependencies getDependencies() {
-        Map<String, String> dependencies = composerJson.getContentValue(Map.class, FIELD_REQUIRE);
-        Map<String, String> devDependencies = composerJson.getContentValue(Map.class, FIELD_REQUIRE_DEV);
-        return new ComposerDependencies(dependencies, devDependencies);
+        Map<Object, Object> dependencies = composerJson.getContentValue(Map.class, FIELD_REQUIRE);
+        Map<Object, Object> devDependencies = composerJson.getContentValue(Map.class, FIELD_REQUIRE_DEV);
+        return new ComposerDependencies(sanitizeDependencies(dependencies), sanitizeDependencies(devDependencies));
+    }
+
+    @CheckForNull
+    private Map<String, String> sanitizeDependencies(@NullAllowed Map<Object, Object> data) {
+        if (data == null
+                || data.isEmpty()) {
+            return null;
+        }
+        Map<String, String> sanitized = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            sanitized.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        return sanitized;
     }
 
     //~ Inner classes
@@ -111,6 +141,11 @@ public final class ComposerJson {
 
         public int getCount() {
             return dependencies.size() + devDependencies.size();
+        }
+
+        @Override
+        public String toString() {
+            return "ComposerDependencies{" + "dependencies=" + dependencies + ", devDependencies=" + devDependencies + '}'; // NOI18N
         }
 
     }
