@@ -907,10 +907,16 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             if (parent == null) {
                 GitRevisionInfo parentInfo = null;
                 try {
+                    if (revision.getParents().length == 0) {
+                        GitRevisionInfo trueRevision = getClient().log(revision.getRevision(), getProgressMonitor());
+                        if (trueRevision != null) {
+                            revision = trueRevision;
+                        }
+                    }
                     if (revision.getParents().length == 1) {
                         parentInfo = getClient().getPreviousRevision(file, revision.getRevision(), getProgressMonitor());
                     }
-                    if (parentInfo == null) {
+                    if (parentInfo == null && revision.getParents().length > 1) {
                         // fallback for merges and initial revisoin
                         parentInfo = getClient().getCommonAncestor(revision.getParents(), getProgressMonitor());
                     }
