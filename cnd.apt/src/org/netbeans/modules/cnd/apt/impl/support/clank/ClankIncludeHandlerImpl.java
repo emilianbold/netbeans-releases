@@ -235,17 +235,18 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             this.inclStack = other.inclStack;
             
             this.inclStackIndex = other.inclStackIndex;
-            this.cachedTokens = other.cachedTokens;
-            assert this.cachedTokens != null;
             if (cleanState) {
                 this.systemIncludePaths = CLEANED_MARKER;
                 this.userIncludePaths = CLEANED_MARKER;
                 this.userIncludeFilePaths = CLEANED_MARKER;
+                this.cachedTokens = NO_TOKENS;
             } else {
                 this.systemIncludePaths = other.systemIncludePaths;
                 this.userIncludePaths = other.userIncludePaths;
                 this.userIncludeFilePaths = other.userIncludeFilePaths;
+                this.cachedTokens = other.cachedTokens;
             }
+            assert this.cachedTokens != null;
         }
         
         int getIncludeStackDepth() {
