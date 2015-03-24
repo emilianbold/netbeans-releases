@@ -604,7 +604,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         Tree type = make.Type(origClass.asType());
         VariableTree parameter = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "delegate", type, null);
 
-        EnumSet<Modifier> modifiers = EnumSet.copyOf(origClass.getModifiers());
+        EnumSet<Modifier> modifiers = origClass.getModifiers().isEmpty()? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(origClass.getModifiers());
         modifiers.remove(Modifier.STATIC);
         modifiers.remove(Modifier.FINAL);
         modifiers.remove(Modifier.ABSTRACT);

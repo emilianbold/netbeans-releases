@@ -142,6 +142,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     }
 
     @Override
+    public Tree visitCase(CaseTree node, Element p) {
+        // Ignore case expression
+        return super.scan(node.getStatements(), p);
+    }
+
+    @Override
     public Tree visitNewClass(NewClassTree arg0, Element arg1) {
         Element currentElement = getCurrentElement();
         if (refactoring.getReferenceName()!=null && currentElement!=null && workingCopy.getTypes().isSubtype(workingCopy.getElementUtilities().enclosingTypeElement(currentElement).asType(), inner.asType())) {

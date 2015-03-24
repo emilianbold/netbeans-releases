@@ -54,6 +54,29 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
     
+    public void test236877() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    public void movedMethod(SourceClass a) {\n"
+                + "    }\n"
+                + "}\n"),
+                new File("u/TargetClass.java", "package u;\n"
+                + "public class TargetClass {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/SourceClass.java"), new int[]{1}, src.getFileObject("u/TargetClass.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "}\n"),
+                new File("u/TargetClass.java", "package u;\n"
+                + "import t.SourceClass;\n"
+                + "public class TargetClass {\n"
+                + "    public void movedMethod(SourceClass a) {\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void testMoveComments() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
