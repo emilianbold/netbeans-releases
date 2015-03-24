@@ -105,7 +105,7 @@ public class BaseTextUI extends BasicTextUI implements
     /** ID of the component in registry */
     int componentID = -1;
     
-    private AbstractDocument lastDocument;
+    private Document lastDocument;
 
     private int atomicModCount = -1;
     
@@ -139,7 +139,7 @@ public class BaseTextUI extends BasicTextUI implements
 
     protected void rootViewReplaceNotify() {
         // update the newly used document
-        lastDocument = (AbstractDocument)getComponent().getDocument();
+        lastDocument = getComponent().getDocument();
     }
 
     /** Called when the model of component is changed */
