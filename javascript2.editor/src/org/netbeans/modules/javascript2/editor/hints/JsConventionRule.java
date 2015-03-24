@@ -199,6 +199,10 @@ public class JsConventionRule extends JsAstRule {
             ts.move(offset);
             if (ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
+                if (id == JsTokenId.ERROR) {
+                    // don't display hints for error tokens. 
+                    return;
+                }
                 if (id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
@@ -232,19 +236,29 @@ public class JsConventionRule extends JsAstRule {
                             && !JsEmbeddingProvider.isGeneratedIdentifier(previous.text().toString())) {
                         fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
                         if (fileOffset >= 0) {
-                            hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
-                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                    new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
+                            addMissingSemicolonHint(fileOffset, ts.token().text().toString());
                         }
                     }
                 }
             } else if (!ts.moveNext() && ts.movePrevious() && ts.moveNext()) {
                 // we are probably at the end of file without the semicolon
                 fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
-                hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
-                        context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                        new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
+                addMissingSemicolonHint(fileOffset, ts.token().text().toString());
             }
+        }
+        
+        private void addMissingSemicolonHint(int offset, String problemText) {
+            String correctedText = problemText;
+            int index = correctedText.indexOf('\n');
+            if (index == 0) {
+                index = correctedText.indexOf('\n', 1);
+            }
+            if ( index > 0 ) {
+                correctedText = correctedText.substring(0, index);
+            }
+             hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(correctedText),
+                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                    new OffsetRange(offset, offset + correctedText.length()), null, 500));
         }
 
         @NbBundle.Messages("AssignmentCondition=Expected a conditional expression and instead saw an assignment.")
