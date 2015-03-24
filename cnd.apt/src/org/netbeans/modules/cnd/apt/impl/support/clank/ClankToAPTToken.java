@@ -84,7 +84,7 @@ import org.openide.util.CharSequences;
       }
     }
 
-    private final Token orig;
+    private final int endOffset;
     private final int aptTokenType;
     private final int offset;
     private final CharSequence textID;
@@ -93,41 +93,41 @@ import org.openide.util.CharSequences;
         assert PP != null;
         SourceManager SM = PP.getSourceManager();
         assert SM != null;
-        this.orig = token;
         long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedExpansionLoc(token.getRawLocation());
         this.offset = Unsigned.long2uint($second_uint(decomposedLoc));
+        this.endOffset = this.offset + token.getLength();
         assert offset >= 0 : "negative " + offset + " for " + token;
         this.aptTokenType = ClankToAPTUtils.convertClankToAPTTokenKind(token.getKind());
         if (APTLiteConstTextToken.isLiteConstTextType(aptTokenType)) {
             textID = APTLiteConstTextToken.toTextID(aptTokenType);
         } else {
-            IdentifierInfo II = orig.getIdentifierInfo();
+            IdentifierInfo II = token.getIdentifierInfo();
             if (II != null) {
                 StringMapEntryBase entry = II.getEntry();
                 assert entry != null;
                 CharSequence txt = CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
                 textID = TextCache.getManager().getString(txt);
-            } else if (orig.isLiteral()) {
+            } else if (token.isLiteral()) {
                 CharSequence charSeq;
-                char$ptr literalData = orig.getLiteralData();
+                char$ptr literalData = token.getLiteralData();
                 if (literalData == null) {
                   // i.e. the case of lazy calculated DATE and TIME based strings
-                  SmallVectorChar spell = new SmallVectorChar(orig.getLength());
-                  StringRef spelling = PP.getSpelling(orig, spell);
+                  SmallVectorChar spell = new SmallVectorChar(token.getLength());
+                  StringRef spelling = PP.getSpelling(token, spell);
                   charSeq = Casts.toCharSequence(spelling.begin(), spelling.size());
                 } else {
-                  CndUtils.assertTrueInConsole(literalData != null, "null literal " + orig);
-                  charSeq = Casts.toCharSequence(literalData, orig.getLength());
+                  CndUtils.assertTrueInConsole(literalData != null, "null literal " + token);
+                  charSeq = Casts.toCharSequence(literalData, token.getLength());
                 }
                 textID = CharSequences.create(charSeq);
-            } else if (orig.is(tok.TokenKind.comment)) {
+            } else if (token.is(tok.TokenKind.comment)) {
                 textID = COMMENT_TEXT_ID;
             } else {
-                assert orig.is(tok.TokenKind.raw_identifier) : "unexpected " + orig;
-                textID = TextCache.getManager().getString(CharSequences.create(Casts.toCharSequence(orig.getRawIdentifierData(), orig.getLength())));
+                assert token.is(tok.TokenKind.raw_identifier) : "unexpected " + token;
+                textID = TextCache.getManager().getString(CharSequences.create(Casts.toCharSequence(token.getRawIdentifierData(), token.getLength())));
             }
         }
-        assert textID.length() <= orig.getLength() || orig.is(tok.TokenKind.comment) || orig.is(tok.TokenKind.eof): textID + "\n vs. \n" + orig;
+        assert textID.length() <= token.getLength() || token.is(tok.TokenKind.comment) || token.is(tok.TokenKind.eof): textID + "\n vs. \n" + token;
     }
 
     @Override
@@ -150,7 +150,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public String toString() {
-        return "ClankToAPTToken{" + "aptType=" + APTUtils.getAPTTokenName(aptTokenType) + ":" + textID + "\norig=" + orig + '}';
+        return "ClankToAPTToken{" + "aptType=" + APTUtils.getAPTTokenName(aptTokenType) + ":" + textID + '}';
     }
 
     @Override
@@ -165,7 +165,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int getEndOffset() {
-        return offset + orig.getLength();
+        return endOffset;
     }
 
     @Override
