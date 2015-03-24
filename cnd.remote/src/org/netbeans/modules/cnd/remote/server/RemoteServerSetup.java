@@ -130,6 +130,10 @@ public class RemoteServerSetup {
                 BinarySetupMapEntry entry = binarySetupMap.get(path);
                 CndUtils.assertNotNullInConsole(entry, "Null entry"); //NOI18N
                 if (entry != null) {
+                    if (entry.localFile == null) {
+                        RemoteUtil.LOGGER.severe("Can not find file " + entry.remotePath + " in IDE installation");
+                        continue;
+                    }
                     File file = entry.localFile;
                     CndUtils.assertAbsoluteFileInConsole(file);
                     //String remotePath = REMOTE_LIB_DIR + file.getName();

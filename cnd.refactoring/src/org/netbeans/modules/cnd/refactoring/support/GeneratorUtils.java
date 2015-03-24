@@ -82,6 +82,8 @@ import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
+import org.netbeans.modules.cnd.refactoring.codegen.ConstructorGenerator;
+import org.netbeans.modules.cnd.refactoring.codegen.ConstructorGenerator.Inited;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
 import org.openide.util.CharSequences;
@@ -95,6 +97,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -220,8 +223,7 @@ public class GeneratorUtils {
 //        return result;
 //    }
 //
-    public static void scanForFieldsAndConstructors(final CsmClass clsPath, final Set<CsmField> shouldBeInitializedFields, final Set<CsmField> mayBeIninitializedFields,
-            final Set<CsmField> cannotBeInitializedFields, final List<CsmConstructor> constructors) {
+    public static void scanForFieldsAndConstructors(final CsmClass clsPath, List<Pair<CsmField, Inited>> fields, final List<CsmConstructor> constructors) {
         for (CsmMember member : clsPath.getMembers()) {
             if (CsmKindUtilities.isField(member)) {
                 CsmField field = (CsmField) member;
@@ -230,14 +232,14 @@ public class GeneratorUtils {
                 }
                 CsmType type = field.getType();
                 if (type.getArrayDepth() > 0) {
-                    cannotBeInitializedFields.add(field);
+                    fields.add(Pair.of(field, Inited.cannot));
                     continue;
                 }
                 if (type.isConst() || type.isReference()) {
-                    shouldBeInitializedFields.add(field);
+                    fields.add(Pair.of(field, Inited.must));
                     continue;
                 }
-                mayBeIninitializedFields.add(field);
+                fields.add(Pair.of(field, Inited.may));
             } else if (CsmKindUtilities.isConstructor(member)) {
                 constructors.add((CsmConstructor)member);
             }

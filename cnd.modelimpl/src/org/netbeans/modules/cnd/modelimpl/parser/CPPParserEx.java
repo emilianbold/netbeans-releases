@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -108,6 +109,31 @@ public class CPPParserEx extends CPPParser {
             }
             t.initialize(tok);
             return t;
+        }
+
+        @Override
+        public AST create(int type, String txt, AST t) {
+            if (t instanceof CsmAST) {
+                CsmAST csmAst = (CsmAST) t;
+                int offset = csmAst.getOffset();
+                int line = csmAst.getLine();
+                int column = csmAst.getColumn();
+                int endOffset = csmAst.getEndOffset();
+                int endLine = csmAst.getEndLine();
+                int endColumn = csmAst.getEndColumn();
+                csmAst.initialize(type, txt);
+                if (csmAst.getToken() instanceof APTBaseToken) {
+                    APTBaseToken astToken = (APTBaseToken) csmAst.getToken();
+                    astToken.setOffset(offset);
+                    astToken.setLine(line);
+                    astToken.setColumn(column);
+                    astToken.setEndOffset(endOffset);
+                    astToken.setEndLine(endLine);
+                    astToken.setEndColumn(endColumn);
+                }
+                return csmAst;
+            }
+            return super.create(type, txt, t);
         }
     }
 

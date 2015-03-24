@@ -207,4 +207,14 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // 246534 - inaccuracy tests: regression in 5 projects
         performTest("bug246534.cpp");
     }
+    
+    public void testBug251214() throws Exception {
+        // Bug 251214 - Implicit C++ uniform initialization among constructor arguments is marked as wrong
+        performTest("bug251214.cpp");
+    }
+    
+    public void testBug251329() throws Exception {
+        // Bug 251329 - Unexpected token if final occurs after trailing type specifier
+        performTest("bug251329.cpp");
+    }
 }

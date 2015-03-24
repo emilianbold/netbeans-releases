@@ -64,7 +64,7 @@ public class GetterSetterPanel extends JPanel {
     /** Creates new form GetterSetterPanel */
     public GetterSetterPanel(ElementNode.Description description, GeneratorUtils.Kind type) {
         initComponents();
-        elementSelector = new ElementSelectorPanel(description, false, true);
+        elementSelector = new ElementSelectorPanel(description, false, true, true);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;

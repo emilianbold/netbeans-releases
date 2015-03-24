@@ -159,7 +159,7 @@ public class SVNRevision {
     }
     
     public static class DateSpec extends SVNRevision {
-        private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US); //NOI18N
+        private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmssZ", Locale.US); //NOI18N
 
         protected final Date revDate;
 
