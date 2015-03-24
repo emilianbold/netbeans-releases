@@ -87,7 +87,7 @@ public class FileBufferFile extends AbstractFileBuffer {
         try {
             char[] buf = doGetChar();
             if( end > buf.length ) {
-                new IllegalArgumentException("").printStackTrace(System.err); // NOI18N
+                new IllegalArgumentException("" + start + ":" + end + " vs. " + buf.length).printStackTrace(System.err); // NOI18N
                 end = buf.length;
                 if (start > end) {
                     start = end;

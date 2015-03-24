@@ -213,10 +213,13 @@ public class APTHandlersSupportImpl {
     // impl details
     
     private static StartEntry extractStartEntry(PPIncludeHandler.State state) {
-        if (APTTraceFlags.USE_CLANK) {
-            return (state == null) ? null : ((ClankIncludeHandlerImpl.StateImpl) state).getStartEntry();
+        if (state == null) {
+            return null;
+        }
+        if (state instanceof ClankIncludeHandlerImpl.StateImpl) {
+            return ((ClankIncludeHandlerImpl.StateImpl) state).getStartEntry();
         } else {
-            return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
+            return ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
         }
     }
     
@@ -225,29 +228,27 @@ public class APTHandlersSupportImpl {
             return null;
         }
         if (inclState instanceof ClankIncludeHandlerImpl.StateImpl) {
-            int includeStackIndex = ((ClankIncludeHandlerImpl.StateImpl)inclState).getIncludeStackIndex();
-            if (includeStackIndex == 0) {
-                return Collections.emptyList();
-            }
-            assert false : "not yet supported " + includeStackIndex;
-            return null;
+            return ((ClankIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
         } else {
             return ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
         }
     }
     
     /*package*/ static PPIncludeHandler.State copyIncludeState(PPIncludeHandler.State inclState, boolean cleanState) {
-        if (APTTraceFlags.USE_CLANK) {
-            return inclState == null ? null : ((ClankIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
+        if (inclState == null) {
+          return null;
+        }      
+        if (inclState instanceof ClankIncludeHandlerImpl.StateImpl) {
+            return ((ClankIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
         } else {
-            return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
+            return ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
         }
     }
 
     /*package*/ static APTMacroMap.State createCleanMacroState(APTMacroMap.State macroState) {
         APTMacroMap.State out = null;
         if (macroState != null) {
-            if (APTTraceFlags.USE_CLANK) {
+            if (macroState instanceof ClankMacroMap.StateImpl) {
                 out = ((ClankMacroMap.StateImpl)macroState).copyCleaned();
             } else {
                 out = ((APTBaseMacroMap.StateImpl)macroState).copyCleaned();

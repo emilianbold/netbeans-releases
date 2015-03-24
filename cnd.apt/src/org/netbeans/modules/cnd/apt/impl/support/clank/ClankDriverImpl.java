@@ -76,7 +76,6 @@ public class ClankDriverImpl {
             ClankDriver.APTTokenStreamCache cached = includeHandler.getCachedTokens();
             assert cached != null;
             assert !cached.hasTokenStream();
-            int inclStackIndex = cached.getFileIndex();
             CharSequence path = buffer.getAbsolutePath();
             // TODO: prepare buffers mapping
             byte[] bytes = toBytes(buffer.getCharBuffer());
@@ -88,13 +87,9 @@ public class ClankDriverImpl {
             settings.PrettyPrintDiagnostics = false;
             settings.PrintDiagnosticsOS = llvm.nulls();
             settings.TraceClankStatistics = false;
-            settings.cancelled = new Interrupter() {
-                @Override
-                public boolean isCancelled() {
-                    return interrupter.cancelled();
-                }
-            };
-            ClankPPCallback fileTokensCallback = new ClankPPCallback(includeHandler, path, inclStackIndex, llvm.errs(), callback);
+            ClankPPCallback.CancellableInterrupter canceller = new ClankPPCallback.CancellableInterrupter(interrupter);
+            settings.cancelled = canceller;
+            ClankPPCallback fileTokensCallback = new ClankPPCallback(ppHandler, llvm.errs(), callback, canceller);
             settings.IncludeInfoCallbacks = fileTokensCallback;
             ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
             ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
@@ -111,11 +106,6 @@ public class ClankDriverImpl {
             asciis[i] = NativePointer.$(chars[i]);
         }
         return asciis;
-    }
-
-    public static void cacheTokenStream(PreprocHandler ppHandler, ClankDriver.APTTokenStreamCache toCache) {
-        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
-        includeHandler.cacheTokens(toCache);
     }
 
     public static ClankDriver.APTTokenStreamCache extractTokenStream(PreprocHandler ppHandler) {

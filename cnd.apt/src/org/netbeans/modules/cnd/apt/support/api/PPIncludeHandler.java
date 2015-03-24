@@ -63,4 +63,39 @@ public interface PPIncludeHandler {
      * returns the first file where include stack started
      */
     public StartEntry getStartEntry();
+    
+    public enum IncludeState {
+        Success,
+        Fail,
+        Recursive
+    }
+    
+    /*
+     * 
+     * notify about inclusion
+     * @param path included file absolute path
+     * @param line #include directive line
+     * @param offset #include directive offset
+     * @param resolvedDirIndex index of resolved directory in lists of include paths
+     * @return IncludeState.Recursive if inclusion is recursive and was prohibited
+     */
+    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex);
+    
+    /*
+     * notify about finished inclusion
+     */
+    public CharSequence popInclude();
+    
+    /**
+     * include stack entry
+     * - line where #include directive was
+     * - resolved #include directive as absolute included path
+     */
+    public interface IncludeInfo {
+        public FileSystem getFileSystem();
+        public CharSequence getIncludedPath();
+        public int getIncludeDirectiveLine();
+        public int getIncludeDirectiveOffset();
+        public int getIncludedDirIndex();
+    }     
 }

@@ -42,19 +42,18 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.ArrayList;
+import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.TrackIncludeInfoCallback;
-import static org.clank.java.std.strcmp;
 import org.clank.support.Casts;
 import org.llvm.support.raw_ostream;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
@@ -65,20 +64,40 @@ import org.openide.util.CharSequences;
  * @author Vladimir Voskresensky
  */
 public class ClankPPCallback extends TrackIncludeInfoCallback {
+    public static final class CancellableInterrupter implements Interrupter {
+      final org.netbeans.modules.cnd.support.Interrupter outerDelegate;
+      private boolean cancelledState = false;
+      
+      public CancellableInterrupter(org.netbeans.modules.cnd.support.Interrupter outerDelegate) {
+        this.outerDelegate = outerDelegate;
+      }
+      
+      @Override
+      public boolean isCancelled() {
+        return cancelledState || outerDelegate.cancelled();
+      }
 
+      private void cancel() {
+        cancelledState = true;
+      }
+      
+    }
+    
     private final ClankDriver.ClankPreprocessorCallback delegate;
-    private final CharSequence path;
-    private final int stopAtIndex;
+    private final PreprocHandler ppHandler;
     private final ClankIncludeHandlerImpl includeHandler;
     private final ArrayList<ClankFileInfoImpl> includeStack = new ArrayList<ClankFileInfoImpl>(16);
+    private final CancellableInterrupter interrupter;
 
-    public ClankPPCallback(ClankIncludeHandlerImpl includeHandler,
-            CharSequence path, int stopAtIndex, raw_ostream traceOS, ClankDriver.ClankPreprocessorCallback delegate) {
+    public ClankPPCallback(PreprocHandler ppHandler, 
+            raw_ostream traceOS, 
+            ClankDriver.ClankPreprocessorCallback delegate,
+            ClankPPCallback.CancellableInterrupter interrupter) {
         super(traceOS);
-        this.includeHandler = includeHandler;
-        this.path = path;
-        this.stopAtIndex = stopAtIndex;
+        this.ppHandler = ppHandler;
+        this.includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
         this.delegate = delegate;
+        this.interrupter = interrupter;
     }
 
     @Override
@@ -87,8 +106,11 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
             traceOS.$out("Enter: " + fileInfo).$out("\n").flush();
         }
         if (fileInfo.isFile()) {
-          ClankFileInfoImpl cur = new ClankFileInfoImpl(fileInfo, includeHandler);
-          includeHandler.cacheTokens(new ClankDriver.APTTokenStreamCache(null, null, fileInfo.getIncludeIndex()));
+          ClankFileInfoImpl cur = new ClankFileInfoImpl(fileInfo, ppHandler);
+          ResolvedPath resolvedPath = cur.getResolvedPath();
+          includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(), 
+                  fileInfo.getLine(), fileInfo.getOffset(), resolvedPath.getIndex());
+          includeHandler.cacheTokens(cur);
           includeStack.add(cur);
           delegate.onEnter(cur);
         }
@@ -118,22 +140,29 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         if (fileInfo.isFile()) {
           assert includeStack.size() > 0 : "empty include stack?";
           ClankFileInfoImpl cur = includeStack.remove(includeStack.size() - 1);
-          delegate.onExit(cur);
+          cur.onExit();
+          includeHandler.popInclude();
+          includeHandler.cacheTokens(cur);
+          if (!delegate.onExit(cur)) {
+            interrupter.cancel();
+          }
         }
     }
 
-    public static final class ClankFileInfoImpl implements ClankDriver.ClankFileInfo {
-      final TrackIncludeInfoCallback.IncludeFileInfo current;
+    public static final class ClankFileInfoImpl implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
+      private final TrackIncludeInfoCallback.IncludeFileInfo current;
+      private final PreprocHandler ppHandler;
       private final StartEntry startEntry;
       private CharSequence currentPath;
       APTToken[] stolenTokens;
       ResolvedPath resolvedPath;
       
       public ClankFileInfoImpl(TrackIncludeInfoCallback.IncludeFileInfo current,
-              ClankIncludeHandlerImpl includeHandler) {
+              PreprocHandler ppHandler) {
         assert current != null;
         this.current = current;
-        this.startEntry = includeHandler.getStartEntry();
+        this.ppHandler = ppHandler;
+        this.startEntry = ppHandler.getIncludeHandler().getStartEntry();
       }
       
       public APTToken[] getStolenTokens() {
@@ -155,19 +184,19 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
       }
 
       @Override
-      public APTTokenStream getTokenStream() {
+      public TokenStream getTokenStream() {
         return new ArrayBasedAPTTokenStream(getStolenTokens());
       }
 
       @Override
-      public int getIncludeIndex() {
+      public int getFileIndex() {
         return current.getIncludeIndex();
       }
 
       @Override
       public ResolvedPath getResolvedPath() {
         if (resolvedPath == null) {
-          resolvedPath = createResolvedPath(currentPath);
+          resolvedPath = createResolvedPath(getFilePath());
         }
         return resolvedPath;
       }
@@ -188,6 +217,23 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
       public PreprocHandler getHandler() {
         throw new UnsupportedOperationException("Not supported yet.");
       }
+
+      @Override
+      public boolean hasTokenStream() {
+        return hasTokenStream;
+      }
+
+      private void onExit() {
+        hasTokenStream = true;
+      }
+      private boolean hasTokenStream = false;
+
+      @Override
+      public String toString() {
+        return "ClankFileInfoImpl{" + "current=" + current + ", startEntry=" + startEntry + ", currentPath=" + currentPath + ", resolvedPath=" + resolvedPath + ", hasTokenStream=" + hasTokenStream + '}';
+      }
+      
+      
     }
 }
 

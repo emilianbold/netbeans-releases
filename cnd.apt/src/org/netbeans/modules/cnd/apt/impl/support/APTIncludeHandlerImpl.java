@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
@@ -115,8 +114,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
 
     @Override
-    public IncludeState pushInclude(FileSystem fs, CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
-        return pushIncludeImpl(fs, path, aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedDirIndex);
+    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex) {
+        return pushIncludeImpl(fs, path, line, offset, resolvedDirIndex);
     }
 
     @Override

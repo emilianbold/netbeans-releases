@@ -57,49 +57,16 @@ public final class ClankDriver {
     private ClankDriver() {
     }
 
-    public static final class APTTokenStreamCache {
-      private final APTToken[] tokens;
-      private final int[] skippedRanges;
-      private final int fileIndex;
+    public interface APTTokenStreamCache {
 
-      public APTTokenStreamCache(ClankFileInfo fileInfo) {
-        assert fileInfo instanceof ClankPPCallback.ClankFileInfoImpl;
-        ClankPPCallback.ClankFileInfoImpl fileInfoImpl = (ClankPPCallback.ClankFileInfoImpl) fileInfo;
-        this.skippedRanges = fileInfoImpl.getSkippedRanges();
-        this.fileIndex = fileInfoImpl.getIncludeIndex();
-        this.tokens = fileInfoImpl.getStolenTokens();
-      }
+      int getFileIndex();
 
-      public APTTokenStreamCache(int[] skippedRanges, APTToken[] tokens, int fileIndex) {
-        this.skippedRanges = skippedRanges;
-        this.tokens = tokens;
-        this.fileIndex = fileIndex;
-      }
+      int[] getSkippedRanges();
 
-      public int getFileIndex() {
-        return fileIndex;
-      }
+      TokenStream getTokenStream();
 
-      public int[] getSkippedRanges() {
-          return skippedRanges;
-      }
+      boolean hasTokenStream();
 
-      public TokenStream getTokenStream() {
-          return new ClankDriverImpl.ArrayBasedAPTTokenStream(tokens);
-      }
-
-      public boolean hasTokenStream() {
-          return tokens != null;
-      }
-
-      @Override
-      public String toString() {
-        return "APTTokenStreamCache{" + "tokens=" + hasTokenStream() + "\nskippedRanges=" + skippedRanges + "\nfileIndex=" + fileIndex + '}';
-      }
-    }
-
-    public static void cacheTokenStream(PreprocHandler ppHandler, ClankDriver.APTTokenStreamCache toCache) {
-      ClankDriverImpl.cacheTokenStream(ppHandler, toCache);
     }
 
     public static APTTokenStreamCache extractTokenStream(PreprocHandler ppHandler) {
@@ -125,9 +92,10 @@ public final class ClankDriver {
     public interface ClankFileInfo {
       CharSequence getFilePath();
       PreprocHandler getHandler();
-      APTTokenStream getTokenStream();
-      int getIncludeIndex();
       ResolvedPath getResolvedPath();
+      boolean hasTokenStream();
+      TokenStream getTokenStream();
+      int getFileIndex();
       int[] getSkippedRanges();
     }
 }

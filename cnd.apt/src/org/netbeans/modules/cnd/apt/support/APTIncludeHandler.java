@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
-import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -53,42 +52,9 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public interface APTIncludeHandler extends PPIncludeHandler {
-    public enum IncludeState {
-        Success,
-        Fail,
-        Recursive
-    }
-    
-    /*
-     * 
-     * notify about inclusion
-     * @param path included file absolute path
-     * @param aptNode #include directive
-     * @param resolvedDirIndex index of resolved directory in lists of include paths
-     * @return IncludeState.Recursive if inclusion is recursive and was prohibited
-     */
-    public IncludeState pushInclude(FileSystem fs, CharSequence path, APTInclude aptNode, int resolvedDirIndex);
-    
-    /*
-     * notify about finished inclusion
-     */
-    public CharSequence popInclude();
-    
     /**
      * get resolver for path
      */
     public APTIncludeResolver getResolver(FileSystem fs, CharSequence path);
     
-    /**
-     * include stack entry
-     * - line where #include directive was
-     * - resolved #include directive as absolute included path
-     */
-    public interface IncludeInfo {
-        public FileSystem getFileSystem();
-        public CharSequence getIncludedPath();
-        public int getIncludeDirectiveLine();
-        public int getIncludeDirectiveOffset();
-        public int getIncludedDirIndex();
-    } 
 }
