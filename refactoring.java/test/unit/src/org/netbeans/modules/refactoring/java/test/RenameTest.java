@@ -637,6 +637,32 @@ public class RenameTest extends RefactoringTestBase {
 
     }
     
+    public void test234094() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public enum A {\n"
+                + "}"));
+        writeFilesAndWaitForScan(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class ATest extends TestCase {\n"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        props.setIsRenameTestClass(true);
+        performRename(src.getFileObject("t/A.java"), -1, -1, "B", props, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n" // XXX: Why use old filename, is it not renamed?
+                + "public enum B {\n"
+                + "}"));
+        verifyContent(test,
+                new File("t/BTest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class BTest extends TestCase {\n"
+                + "}"));
+    }
+    
     public void test200224() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
