@@ -547,19 +547,16 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     final List<? extends VariableTree> parameters = methodTree.getParameters();
                     LinkedList<VariableTree> newParameters;
                     VariableTree removedParameter = null;
-                    if (!method.getModifiers().contains(Modifier.STATIC)) {
-                        newParameters = new LinkedList<VariableTree>();
-                        for (int i = 0; i < parameters.size(); i++) {
-                            VariableTree variableTree = parameters.get(i);
-                            TypeMirror type = workingCopy.getTrees().getTypeMirror(TreePath.getPath(resolvedPath, variableTree));
-                            if (removedParameter == null && type != null && workingCopy.getTypes().isSameType(type, target.asType())) {
-                                removedParameter = variableTree;
-                            } else {
-                                newParameters.add(variableTree);
-                            }
+                    boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
+                    newParameters = new LinkedList<VariableTree>();
+                    for (int i = 0; i < parameters.size(); i++) {
+                        VariableTree variableTree = parameters.get(i);
+                        TypeMirror type = workingCopy.getTrees().getTypeMirror(TreePath.getPath(resolvedPath, variableTree));
+                        if (!isStatic && removedParameter == null && type != null && workingCopy.getTypes().isSameType(type, target.asType())) {
+                            removedParameter = variableTree;
+                        } else {
+                            newParameters.add(genUtils.importFQNs(variableTree));
                         }
-                    } else {
-                        newParameters = new LinkedList<VariableTree>(parameters);
                     }
                     // Scan the body and fix references
                     BlockTree body = methodTree.getBody();
