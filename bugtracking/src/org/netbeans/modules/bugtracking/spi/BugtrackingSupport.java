@@ -109,10 +109,14 @@ public final class BugtrackingSupport<R, Q, I> {
         }
         RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, issueStatusProvider, issueSchedulingProvider, issuePriorityProvider, issueFinder);
         RepositoryInfo info = impl.getInfo();
-        if(info != null && NBBugzillaUtils.isNbRepository(info.getUrl())) { 
+        if(info != null) {            
             // might be we just automatically generated a nb repository,
             // in such a case it also has to be added to the registry 
             // as otherwise it happens only on manual repositoy creation
+            // XXX this realy isn't the cleanest way how to do it, if possible - change 
+            // currently there are 2 impls taking atvantage of this hack:
+            // - hardcoded repository created for the netbeans bugzilla 
+            // - hardcoded repository for the inhouse bugdb tracker
             RepositoryRegistry registry = RepositoryRegistry.getInstance();
             if(getRepositoryImpl(r) == null) {
                 registry.addRepository(impl);
