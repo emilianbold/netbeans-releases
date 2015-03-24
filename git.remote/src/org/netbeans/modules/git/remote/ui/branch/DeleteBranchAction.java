@@ -89,7 +89,9 @@ public class DeleteBranchAction extends SingleRepositoryAction {
                         boolean cont;
                         do {
                             try {
-                                LOG.log(Level.FINE, "Deleting a branch: {0}/{1}", new Object[] { branchName, forceDelete }); //NOI18N
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "Deleting a branch: {0}/{1}", new Object[] { branchName, forceDelete }); //NOI18N
+                                }
                                 client.deleteBranch(branchName, forceDelete, getProgressMonitor());
                                 cont = false;
                             } catch (GitException.NotMergedException ex) {

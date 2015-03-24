@@ -240,7 +240,9 @@ public class PushAction extends SingleRepositoryAction {
                         toDelete.add(refSpec.substring(GitUtils.REF_SPEC_DEL_PREFIX.length()));
                     }
                 }
-                LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, target }); //NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, target }); //NOI18N
+                }
                 try {
                     GitClient client = getClient();
                     Map<String, GitBranch> localBranches = client.getBranches(false, getProgressMonitor());                    
@@ -298,8 +300,10 @@ public class PushAction extends SingleRepositoryAction {
                                                 GitBranch localBranch = localBranches.get(localBranchName);
                                                 if (localBranch != null && localBranch.getTrackedBranch() == null) {
                                                     // update tracking here
-                                                    LOG.log(Level.FINE, "Update tracking for {0} <-> {1}",
-                                                            new Object[] { localRefName, localBranchName });
+                                                    if (LOG.isLoggable(Level.FINE)) {
+                                                        LOG.log(Level.FINE, "Update tracking for {0} <-> {1}",
+                                                                new Object[] { localRefName, localBranchName });
+                                                    }
                                                     GitBranch b = client.updateTracking(localBranchName, localRefName, getProgressMonitor());
                                                     logTrackingUpdate(b);
                                                 }
@@ -637,12 +641,16 @@ public class PushAction extends SingleRepositoryAction {
                             GitRevisionInfo anc = client.getCommonAncestor(new String[] { commit, e.getKey() }, getProgressMonitor());
                             if (anc != null && commit.equals(anc.getRevision())) {
                                 localCommit = false;
-                                LOG.log(Level.FINE, "Commit {0} found in submodule's {1} branch {2}", //NOI18N
-                                        new Object[] { commit, repo, e.getKey() });
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "Commit {0} found in submodule's {1} branch {2}", //NOI18N
+                                            new Object[] { commit, repo, e.getKey() });
+                                }
                                 break;
                             }
-                            LOG.log(Level.FINE, "Commit {0} not in submodule's {1} branch {2}", //NOI18N
-                                    new Object[] { commit, repo, e.getKey() });
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.log(Level.FINE, "Commit {0} not in submodule's {1} branch {2}", //NOI18N
+                                        new Object[] { commit, repo, e.getKey() });
+                            }
                         }
                     }
                 } catch (GitException ex) {

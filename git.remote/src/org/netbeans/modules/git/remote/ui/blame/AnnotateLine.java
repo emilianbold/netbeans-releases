@@ -89,7 +89,9 @@ public class AnnotateLine {
             committer = lineDetails.getCommitter();
             String cont = lineDetails.getContent().replace("\r", "").replace("\n", ""); //NOI18N
             if (cont.length() != lineDetails.getContent().length()) {
-                AnnotationBar.LOG.log(Level.FINE, "AnnotateLine: line content contains '\\r' or '\\n': {0}:{1}", new Object[] { lineDetails.getSourceFile(), lineNumber }); //NOI18N
+                if (AnnotationBar.LOG.isLoggable(Level.FINE)) {
+                    AnnotationBar.LOG.log(Level.FINE, "AnnotateLine: line content contains '\\r' or '\\n': {0}:{1}", new Object[] { lineDetails.getSourceFile(), lineNumber }); //NOI18N
+                }
             }
             content = cont;
             file = lineDetails.getSourceFile();

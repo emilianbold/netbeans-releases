@@ -1122,7 +1122,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
     private void applyChange (FileStatusCache.ChangedEvent event) {
         if (context != null) {
-            LOG.log(Level.FINE, "Planning refresh for {0}", event.getFile());
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Planning refresh for {0}", event.getFile());
+            }
             boolean start = true;
             synchronized (changes) {
                 changes.put(event.getFile(), event);
@@ -1575,7 +1577,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             for (Iterator<FileStatusCache.ChangedEvent> it = events.iterator(); it.hasNext();) {
                 FileStatusCache.ChangedEvent evt = it.next();
                 if (!affectsView(evt)) {
-                    LOG.log(Level.FINE, "ApplyChanges: file {0} does not affect view", evt.getFile());
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "ApplyChanges: file {0} does not affect view", evt.getFile());
+                    }
                     it.remove();
                 }
             }

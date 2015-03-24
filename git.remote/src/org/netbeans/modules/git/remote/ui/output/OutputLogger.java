@@ -98,7 +98,9 @@ public class OutputLogger {
      */
     private InputOutput getLog() {
         if(log == null) {
-            LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRoot.getPath()); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRoot.getPath()); //NOI18N
+            }
             log = IOProvider.getDefault().getIO(repositoryRoot.getName() + " - " + repositoryRoot.getPath(), false); //NOI18N
             writable = true;
             if (!openWindows.contains(log)) {

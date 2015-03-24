@@ -167,7 +167,11 @@ public abstract class ExportDiffSupport {
         panel.addBrowseActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                onChooseFile(VCSFileProxySupport.getResource(files[0], panel.getOutputFileText()));
+                String file = panel.getOutputFileText().trim();
+                if (file.isEmpty()) {
+                    file = "/"; //NOI18N
+                }
+                onChooseFile(VCSFileProxySupport.getResource(files[0], file));
             }
         });
     }

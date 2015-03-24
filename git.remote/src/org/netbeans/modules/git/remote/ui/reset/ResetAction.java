@@ -86,7 +86,9 @@ public class ResetAction extends SingleRepositoryAction {
                             client.addNotificationListener(new DefaultFileListener(new VCSFileProxy[] { repository }));
                         }
                         client.addNotificationListener(new DefaultFileListener(new VCSFileProxy[] { repository }));
-                        LOG.log(Level.FINE, "Reset head, revision: {0}", reset.getRevision()); //NOI18N
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "Reset head, revision: {0}", reset.getRevision()); //NOI18N
+                        }
                         if (reset.getType() == GitClient.ResetType.HARD) {
                             GitUtils.runWithoutIndexing(new Callable<Void>() {
                                 @Override

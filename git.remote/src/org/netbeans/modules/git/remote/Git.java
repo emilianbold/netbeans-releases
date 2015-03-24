@@ -324,7 +324,9 @@ public final class Git {
             return null;
         }
         long t = System.currentTimeMillis();
-        LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        }
         if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
             return null;
         }
@@ -332,7 +334,9 @@ public final class Git {
             LOG.fine(" cached as unversioned");
             return null;
         }
-        LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        }
         VCSFileProxy parent = getKnownParent(file);
         if(parent != null) {
             LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent {0}", parent);
@@ -353,7 +357,9 @@ public final class Git {
         VCSFileProxy topmost = null;
         for (;file != null; file = file.getParentFile()) {
             if(unversionedParents.contains(file)) {
-                LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                }
                 break;
             }
             if (VersioningSupport.isExcluded(file)) {
@@ -362,14 +368,18 @@ public final class Git {
             // is the folder a special one where metadata should not be looked for?
             boolean forbiddenFolder = Utils.isForbiddenFolder(file.getPath());
             if (!forbiddenFolder && GitUtils.repositoryExistsFor(file)) {
-                LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
+                }
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by git
                 topmost =  file;
                 if (topmost.getParentFile() == null) {
                     LOG.log(Level.WARNING, "found managed root folder {0}", file); //NOI18N
                 }
             } else {
-                LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                }
                 if(file.exists()) { // could be created later ...
                     done.add(file);
                 }
