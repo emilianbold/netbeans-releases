@@ -58,6 +58,37 @@ public class InnerToOutterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test236189() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/F.java", "package t; public enum F {  A, B, C }\n"),
+                new File("t/A.java", "package t; public class A { int i; public class B { public void foo() { F f = F.A; switch(f) { case A: break; } } } }"));
+        performInnerToOuterTest(null);
+        verifyContent(src,
+                new File("t/F.java", "package t; public enum F {  A, B, C }\n"),
+                new File("t/B.java", "/*\n"
+                        + " * Refactoring License\n"
+                        + " */\n"
+                        + "\n"
+                        + "package t;\n"
+                        + "\n"
+                        + "/**\n"
+                        + " *\n"
+                        + " * @author junit\n"
+                        + " */\n"
+                        + "public class B {\n"
+                        + "\n"
+                        + "    public void foo() {\n"
+                        + "        F f = F.A;\n"
+                        + "        switch (f) {\n"
+                        + "            case A:\n"
+                        + "                break;\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "\n"
+                        + "}\n"),
+                new File("t/A.java", "package t; public class A { int i; }"));
+    }
+    
     public void test248745() throws Exception { // #248745 - Move Inner to outer Level does not alter static import of moved class
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n public class A {\n public static class B {\n }\n }"),
