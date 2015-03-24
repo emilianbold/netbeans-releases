@@ -548,10 +548,13 @@ public class Mercurial {
         if (!isAllowable(file)) {
             return null;
         }
-        long t = System.currentTimeMillis();
         if (Mercurial.LOG.isLoggable(Level.FINE)) {
             Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         }
+        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+            return null;
+        }
+        long t = System.currentTimeMillis();
         if(unversionedParents.contains(file)) {
             Mercurial.LOG.fine(" cached as unversioned");
             return null;

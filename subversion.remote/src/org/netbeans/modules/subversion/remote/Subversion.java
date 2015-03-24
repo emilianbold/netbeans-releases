@@ -483,12 +483,15 @@ public class Subversion {
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
         }
+        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+            return null;
+        }
         if(unversionedParents.contains(file)) {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.fine(" cached as unversioned");
             }
             return null;
-    }
+       }
         VCSFileProxy metadataRoot = null;
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
