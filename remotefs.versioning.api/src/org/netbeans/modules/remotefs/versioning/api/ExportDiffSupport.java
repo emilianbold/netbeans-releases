@@ -180,7 +180,7 @@ public abstract class ExportDiffSupport {
         assert panel != null;
         if (exportDiffProvider == null || panel.isFileOutputSelected()) {
             String path = panel.getOutputFileText().trim();
-            if (path.isEmpty() || !path.startsWith("/")) {
+            if (path.isEmpty() || !path.startsWith("/")) { //NOI18N
                 dd.setValid(false);
             } else {
                 VCSFileProxy f = VCSFileProxySupport.getResource(files[0], path);
