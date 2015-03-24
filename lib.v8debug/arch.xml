@@ -5,7 +5,7 @@
 
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author="mentlicher@netbeans.org"
 >
 
   &api-questions;
@@ -28,10 +28,8 @@
         </question>
 -->
  <answer id="arch-overall">
-  <p>
    The lib.v8debug API provides Java APIs representing the V8 debugging protocol.
    It contains both client-side and server-side communication support.
-  </p>
  </answer>
 
 
@@ -50,9 +48,7 @@
         </question>
 -->
  <answer id="arch-quality">
-  <p>
    The functionality is covered by unit tests.
-  </p>
  </answer>
 
 
@@ -69,9 +65,7 @@
         </question>
 -->
  <answer id="arch-time">
-  <p>
    The library implementation is finished.
-  </p>
  </answer>
 
 
@@ -124,9 +118,8 @@
         </question>
 -->
  <answer id="arch-what">
-  <p>
    This library is a Java implementation of V8 debugging protocol.
-  </p>
+   Provides <api name="v8debugLib" type="export" category="devel" url="@org-netbeans-lib-v8debug@/overview-summary.html" group="java"/>
  </answer>
 
 
@@ -159,9 +152,7 @@
         </question>
 -->
  <answer id="compat-deprecation">
-  <p>
-   XXX no answer for compat-deprecation
-  </p>
+   No deprecations so far.
  </answer>
 
 
@@ -177,9 +168,7 @@
         </question>
 -->
  <answer id="compat-i18n">
-  <p>
    No internationalized messages are necessary.
-  </p>
  </answer>
 
 
@@ -191,9 +180,7 @@
         </question>
 -->
  <answer id="compat-standards">
-  <p>
    The module implements V8 debugging protocol.
-  </p>
  </answer>
 
 
@@ -213,9 +200,7 @@
         </question>
 -->
  <answer id="compat-version">
-  <p>
    No settings are stores, therefore there are no compatibility issues.
-  </p>
  </answer>
 
 
@@ -231,9 +216,7 @@
         </question>
 -->
  <answer id="dep-jre">
-  <p>
    JRE 1.7
-  </p>
  </answer>
 
 
@@ -244,9 +227,7 @@
         </question>
 -->
  <answer id="dep-jrejdk">
-  <p>
    Do not require JDK, JRE is enough.
-  </p>
  </answer>
 
 
@@ -297,9 +278,7 @@
         </question>
 -->
  <answer id="dep-non-nb">
-  <p>
    The only dependency is on JSON simple library.
-  </p>
  </answer>
 
 
@@ -325,9 +304,7 @@
         </question>
 -->
  <answer id="dep-platform">
-  <p>
    This module does not depend on NetBeans platform.
-  </p>
  </answer>
 
 
@@ -349,9 +326,7 @@
         </question>
 -->
  <answer id="deploy-dependencies">
-  <p>
    This module does not have any additional dependencies.
-  </p>
  </answer>
 
 
@@ -377,9 +352,7 @@
         </question>
 -->
  <answer id="deploy-jar">
-  <p>
    The modules JAR file is enough.
-  </p>
  </answer>
 
 
@@ -393,9 +366,7 @@
         </question>
 -->
  <answer id="deploy-nbm">
-  <p>
    Yes.
-  </p>
  </answer>
 
 
@@ -414,9 +385,7 @@
         </question>
 -->
  <answer id="deploy-packages">
-  <p>
    Some packages are declared as friend.
-  </p>
  </answer>
 
 
@@ -432,9 +401,7 @@
         </question>
 -->
  <answer id="deploy-shared">
-  <p>
    Does not matter.
-  </p>
  </answer>
 
 
@@ -452,9 +419,7 @@
         </question>
 -->
  <answer id="exec-ant-tasks">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -468,9 +433,7 @@
         </question>
 -->
  <answer id="exec-classloader">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -491,9 +454,7 @@
         </question>
 -->
  <answer id="exec-component">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -511,9 +472,7 @@
         </question>
 -->
  <answer id="exec-introspection">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -529,9 +488,7 @@
         </question>
 -->
  <answer id="exec-privateaccess">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -547,9 +504,7 @@
         </question>
 -->
  <answer id="exec-process">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -575,9 +530,7 @@
         </question>
 -->
  <answer id="exec-property">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -593,9 +546,7 @@
         </question>
 -->
  <answer id="exec-reflection">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -625,9 +576,7 @@
         </question>
 -->
  <answer id="exec-threading">
-  <p>
    The library does not have any threading model.
-  </p>
  </answer>
 
 
@@ -644,9 +593,7 @@
         </question>
 -->
  <answer id="format-clipboard">
-  <p>
    This modules does not use clipboard.
-  </p>
  </answer>
 
 
@@ -662,9 +609,7 @@
         </question>
 -->
  <answer id="format-dnd">
-  <p>
    No drag-and-drop.
-  </p>
  </answer>
 
 
@@ -693,9 +638,7 @@
         </question>
 -->
  <answer id="format-types">
-  <p>
    This module transmits V8 debugging protocol.
-  </p>
  </answer>
 
 
@@ -725,9 +668,7 @@
         </question>
 -->
  <answer id="lookup-lookup">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -742,9 +683,7 @@
         </question>
 -->
  <answer id="lookup-register">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -759,9 +698,7 @@
         </question>
 -->
  <answer id="lookup-remove">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -772,9 +709,7 @@
         </question>
 -->
  <answer id="perf-exit">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -786,9 +721,7 @@
         </question>
 -->
  <answer id="perf-huge_dialogs">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -813,9 +746,7 @@
         </question>
 -->
  <answer id="perf-limit">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -827,9 +758,7 @@
         </question>
 -->
  <answer id="perf-mem">
-  <p>
-   XXX no answer for perf-mem
-  </p>
+   The memory consumption is proportional to the JSON message size.
  </answer>
 
 
@@ -849,9 +778,7 @@
         </question>
 -->
  <answer id="perf-menus">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -873,9 +800,7 @@
         </question>
 -->
  <answer id="perf-progress">
-  <p>
    Long-running tasks are executed by the client calls.
-  </p>
  </answer>
 
 
@@ -892,9 +817,7 @@
         </question>
 -->
  <answer id="perf-scale">
-  <p>
    None.
-  </p>
  </answer>
 
 
@@ -910,9 +833,7 @@
         </question>
 -->
  <answer id="perf-spi">
-  <p>
    Not applicable.
-  </p>
  </answer>
 
 
@@ -923,9 +844,7 @@
         </question>
 -->
  <answer id="perf-startup">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -937,9 +856,7 @@
         </question>
 -->
  <answer id="perf-wakeup">
-  <p>
    The code can wake up on an incoming network connection.
-  </p>
  </answer>
 
 
@@ -958,9 +875,7 @@
         </question>
 -->
  <answer id="resources-file">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -981,9 +896,7 @@
         </question>
 -->
  <answer id="resources-layer">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -1002,9 +915,7 @@
         </question>
 -->
  <answer id="resources-mask">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -1027,9 +938,7 @@
         </question>
 -->
  <answer id="resources-preferences">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -1047,9 +956,7 @@
         </question>
 -->
  <answer id="resources-read">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -1065,9 +972,7 @@
         </question>
 -->
  <answer id="security-grant">
-  <p>
    No.
-  </p>
  </answer>
 
 
@@ -1082,9 +987,7 @@
         </question>
 -->
  <answer id="security-policy">
-  <p>
    No.
-  </p>
  </answer>
 
 </api-answers>
