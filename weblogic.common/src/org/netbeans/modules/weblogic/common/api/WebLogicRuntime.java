@@ -73,6 +73,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.SSLSocketFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -490,7 +491,7 @@ public final class WebLogicRuntime {
 
         String host = config.getHost();
         int port = config.getPort();
-        return ping(host, port, CHECK_TIMEOUT, config.isRemote()); // is server responding?
+        return ping(host, port, CHECK_TIMEOUT, config.isRemote(), config.isSecured()); // is server responding?
     }
 
     public boolean isProcessRunning() {
@@ -601,29 +602,17 @@ public final class WebLogicRuntime {
         }
     }
 
-    private static boolean ping(String host, int port, int timeout, boolean remote) {
-        if (ping(host, port, timeout, "/console/login/LoginForm.jsp", remote)) {
+    private static boolean ping(String host, int port, int timeout, boolean remote, boolean secured) {
+        if (ping(host, port, timeout, "/console/login/LoginForm.jsp", remote, secured)) {
             return true;
         }
-        return ping(host, port, timeout, "/console", remote);
+        return ping(host, port, timeout, "/console", remote, secured);
     }
 
-    private static boolean ping(String host, int port, int timeout, String path, boolean remote) {
+    private static boolean ping(String host, int port, int timeout, String path, boolean remote, boolean secured) {
         // checking whether a socket can be created is not reliable enough, see #47048
-
-        Proxy proxy = Proxy.NO_PROXY;
-        if (remote) {
-            try {
-                List<Proxy> proxies = ProxySelector.getDefault().select(new URI("http://" + host + ":" + port + path)); // NOI18N
-                if (!proxies.isEmpty()) {
-                    proxy = proxies.get(0);
-                }
-            } catch (URISyntaxException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-        }
-        Socket socket = new Socket(proxy);
         try {
+            Socket socket = createSocket(host, port, path, remote, secured);
             try {
                 socket.connect(new InetSocketAddress(host, port), timeout); // NOI18N
                 socket.setSoTimeout(timeout);
@@ -638,11 +627,32 @@ public final class WebLogicRuntime {
                 socket.close();
             }
         } catch (IOException ioe) {
-            LOGGER.log(Level.FINE, null, ioe);
+            if (secured) {
+                LOGGER.log(Level.INFO, null, ioe);
+            } else {
+                LOGGER.log(Level.FINE, null, ioe);
+            }
             return false;
         }
     }
 
+    private static Socket createSocket(String host, int port, String path, boolean remote, boolean secured) throws IOException {
+        if (secured) {
+            return SSLSocketFactory.getDefault().createSocket();
+        }
+        Proxy proxy = Proxy.NO_PROXY;
+        if (remote) {
+            try {
+                List<Proxy> proxies = ProxySelector.getDefault().select(new URI("http://" + host + ":" + port + path)); // NOI18N
+                if (!proxies.isEmpty()) {
+                    proxy = proxies.get(0);
+                }
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        return new Socket(proxy);
+    }
     public static interface RunningCondition {
 
         boolean isRunning();
