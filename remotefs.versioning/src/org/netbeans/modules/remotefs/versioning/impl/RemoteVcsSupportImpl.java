@@ -65,6 +65,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.modules.remote.impl.fileoperations.spi.RemoteVcsSupportUtil;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.remotefs.versioning.spi.RemoteVcsSupportImplementation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
@@ -97,9 +98,18 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     @Override
     public VCSFileProxy getSelectedFile(JFileChooser chooser) {
         if (chooser instanceof FileChooserBuilder.JFileChooserEx) {
-            FileObject fo = ((FileChooserBuilder.JFileChooserEx) chooser).getSelectedFileObject();
+            final FileChooserBuilder.JFileChooserEx chooserEx = (FileChooserBuilder.JFileChooserEx) chooser;
+            FileObject fo = chooserEx.getSelectedFileObject();
             if (fo != null) {
                 return VCSFileProxy.createFileProxy(fo);
+            } else {
+                File file = chooser.getSelectedFile();
+                if (file != null) {
+                    String path = file.getPath();
+                    ExecutionEnvironment env = chooserEx.getExecutionEnvironment();
+                    FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
+                    return VCSFileProxy.createFileProxy(VCSFileProxy.createFileProxy(fileSystem.getRoot()), path);
+                }
             }
         } else {
             File file = chooser.getSelectedFile();

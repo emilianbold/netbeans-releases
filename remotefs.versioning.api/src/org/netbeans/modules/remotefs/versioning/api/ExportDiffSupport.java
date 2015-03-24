@@ -176,8 +176,12 @@ public abstract class ExportDiffSupport {
         assert panel != null;
         if (exportDiffProvider == null || panel.isFileOutputSelected()) {
             String path = panel.getOutputFileText().trim();
-            VCSFileProxy f = VCSFileProxySupport.getResource(files[0], path);
-            dd.setValid(!path.equals("") && !f.isDirectory());
+            if (path.isEmpty() || !path.startsWith("/")) {
+                dd.setValid(false);
+            } else {
+                VCSFileProxy f = VCSFileProxySupport.getResource(files[0], path);
+                dd.setValid(!f.isDirectory());
+            }
         } else {
             dd.setValid(exportDiffProvider.isValid());
         }
