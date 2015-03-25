@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.formatter;
 import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -205,7 +206,8 @@ public class JsFormatter implements Formatter {
                     boolean tokenProcessed = false;
                     if (processed.remove(token)) {
                         // we should format brace according to the user's code style
-                        if (token.getKind().isBraceMarker()) {
+                        // else/while/catch/finally keyword placement as well
+                        if (token.getKind().isBraceMarker() || token.getKind().isAlignmentMarker()) {
                             tokenProcessed = true;
                         } else {
                             // we can skip this token, since it has been already processed
@@ -253,6 +255,8 @@ public class JsFormatter implements Formatter {
                         }
                     } else if (started && token.getKind().isBraceMarker()) {
                         formatBrace(tokens, i, formatContext, codeStyle, initialIndent, continuationIndent, continuations, tokenProcessed);
+                    } else if (started && token.getKind().isAlignmentMarker()) {
+                        formatKeywordAlignment(tokens, i, formatContext, codeStyle, initialIndent, continuationIndent, continuations);
                     } else if (started && token.getKind().isSpaceMarker()) {
                         formatSpace(tokens, i, formatContext, codeStyle);
                     } else if (started && token.getKind().isLineWrapMarker()) {
@@ -424,7 +428,8 @@ public class JsFormatter implements Formatter {
         FormatToken token = tokens.get(index);
         CodeStyle.WrapStyle style = getLineWrap(token, formatContext, codeStyle);
         CodeStyle.BracePlacement bracePlacement = getBracePlacement(token, codeStyle);
-        if (style == null && bracePlacement == CodeStyle.BracePlacement.PRESERVE_EXISTING) {
+        boolean wrapAlignedKeyword = isKeywordOnNewline(token, codeStyle);
+        if (style == null && bracePlacement == CodeStyle.BracePlacement.PRESERVE_EXISTING && !wrapAlignedKeyword) {
             return;
         }
 
@@ -522,7 +527,8 @@ public class JsFormatter implements Formatter {
 
             if (style != CodeStyle.WrapStyle.WRAP_NEVER
                     || bracePlacement == CodeStyle.BracePlacement.NEW_LINE
-                    || bracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED) {
+                    || bracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED
+                    || wrapAlignedKeyword) {
                 if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
 
                     // we have to check the line length and wrap if needed
@@ -787,7 +793,7 @@ public class JsFormatter implements Formatter {
             }
             FormatToken endToken = FormatTokenStream.getNextImportant(token);
             if (canFormatBrace && startToken != null && endToken != null && endToken.getId() == JsTokenId.BRACKET_LEFT_CURLY) {
-                // set the character the before opening brace to the space or empty string according to the code style
+                // set the character before the opening brace to the space or empty string according to the code style
                 String spaceBeforeBrace = isSpace(token, formatContext, codeStyle) ? " " : ""; // NOI18N
                 formatContext.replace(startToken.getOffset() - formatContext.getOffsetDiff() + lastOffsetDiff,
                         endToken.getOffset() - startToken.getOffset() + formatContext.getOffsetDiff() - lastOffsetDiff, spaceBeforeBrace);
@@ -798,6 +804,50 @@ public class JsFormatter implements Formatter {
             // code style is set to "preserve existing" and brace token hasn't been process yet
             // format is as a space marker
             formatSpace(tokens, index, formatContext, codeStyle);
+        }
+    }
+
+    private void formatKeywordAlignment(List<FormatToken> tokens, int index, FormatContext formatContext, CodeStyle.Holder codeStyle,
+            int initialIndent, int continuationIndent, Stack<FormatContext.ContinuationBlock> continuations) {
+        FormatToken token = tokens.get(index);
+        final Set<JsTokenId> keywordIds = EnumSet.of(
+                JsTokenId.KEYWORD_ELSE,
+                JsTokenId.KEYWORD_CATCH,
+                JsTokenId.KEYWORD_FINALLY,
+                JsTokenId.KEYWORD_WHILE);
+
+        if (isKeywordOnNewline(token, codeStyle)) {
+            formatLineWrap(tokens, index, formatContext, codeStyle, initialIndent,
+                    continuationIndent, continuations);
+        } else {
+            boolean canReformat = true;
+
+            FormatToken startToken = null;
+            for (int j = index - 1; j >= 0; j--) {
+                FormatToken ft = tokens.get(j);
+                if (ft.getKind() != FormatToken.Kind.WHITESPACE
+                        && ft.getKind() != FormatToken.Kind.EOL) {
+                    if (ft.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                            || ft.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                        // comment that prevents from formatting on the same line
+                        canReformat = false;
+                    }
+                    break;
+                }
+                startToken = ft;
+            }
+            FormatToken endToken = FormatTokenStream.getNextImportant(token);
+            FormatToken lastBeforeStart = startToken != null ? startToken.previous() : null;
+            if (canReformat && startToken != null
+                    && lastBeforeStart != null && lastBeforeStart.getKind() == FormatToken.Kind.AFTER_END_BRACE
+                    && endToken != null && keywordIds.contains(endToken.getId())) {
+                // set the character before the keyword to the space or empty string according to the code style
+                String spaceBeforeBrace = isSpace(token, formatContext, codeStyle) ? " " : ""; // NOI18N
+                formatContext.replace(startToken.getOffset() - formatContext.getOffsetDiff() + lastOffsetDiff,
+                        endToken.getOffset() - startToken.getOffset() + formatContext.getOffsetDiff() - lastOffsetDiff, spaceBeforeBrace);
+            } else if (canReformat && !(lastBeforeStart != null && lastBeforeStart.getKind() == FormatToken.Kind.INDENTATION_DEC)) {
+                formatSpace(tokens, index, formatContext, codeStyle);
+            }
         }
     }
 
@@ -1259,6 +1309,21 @@ public class JsFormatter implements Formatter {
                 return codeStyle.withBracePlacement;
             default:
                 return CodeStyle.BracePlacement.PRESERVE_EXISTING;
+        }
+    }
+
+    private static boolean isKeywordOnNewline(FormatToken token, CodeStyle.Holder codeStyle) {
+        switch (token.getKind()) {
+            case BEFORE_ELSE_KEYWORD:
+                return codeStyle.placeElseOnNewLine;
+            case BEFORE_WHILE_KEYWORD:
+                return codeStyle.placeWhileOnNewLine;
+            case BEFORE_CATCH_KEYWORD:
+                return codeStyle.placeCatchOnNewLine;
+            case BEFORE_FINALLY_KEYWORD:
+                return codeStyle.placeFinallyOnNewLine;
+            default:
+                return false;
         }
     }
 

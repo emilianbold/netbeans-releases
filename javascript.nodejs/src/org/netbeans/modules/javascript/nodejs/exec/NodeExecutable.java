@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -292,7 +293,7 @@ public class NodeExecutable {
                 .run(getDescriptor(countDownTask));
         assert task != null : nodePath;
         try {
-            countDownLatch.await(15, TimeUnit.SECONDS);
+            countDownLatch.await(5, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
@@ -535,7 +536,7 @@ public class NodeExecutable {
         public List<ConvertedLine> convert(String line) {
             // debugger?
             if (debuggerStartTask != null
-                    && line.startsWith("Debugger listening on port")) { // NOI18N
+                    && line.toLowerCase(Locale.US).startsWith("debugger listening on port")) { // NOI18N
                 debuggerStartTask.run();
                 debuggerStartTask = null;
             }
