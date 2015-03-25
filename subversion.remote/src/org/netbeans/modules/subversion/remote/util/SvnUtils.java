@@ -77,6 +77,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.remotefs.versioning.api.FileObjectIndexingBridgeProvider;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.FileStatusCache;
 import org.netbeans.modules.subversion.remote.OutputLogger;
@@ -1888,7 +1889,7 @@ public class SvnUtils {
                         Subversion.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
                     }
                     indexingFiles.set(new HashSet<>(Arrays.asList(files)));
-                    return runWithoutIndexingImpl(callable, files);
+                    return FileObjectIndexingBridgeProvider.getInstance().runWithoutIndexing(callable, files);
                 } finally {
                     indexingFiles.remove();
                 }
@@ -1899,41 +1900,6 @@ public class SvnUtils {
             throw ex;
         } catch (Exception ex) {
             throw new SVNClientException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N
-        }
-    }
-
-    private static <T> T runWithoutIndexingImpl(Callable<T> operation, VCSFileProxy ... files) throws Exception  {
-        boolean refreshFS = true;
-        try {
-            return operation.call();
-        } finally {
-            final Set<VCSFileProxy> parents = new HashSet<VCSFileProxy>();
-            for (VCSFileProxy f : files) {
-                VCSFileProxy parent = f.getParentFile();
-                if (parent != null) {
-                    parents.add(parent);
-                    if ( Subversion.LOG.isLoggable(Level.FINE)) {
-                        Subversion.LOG.fine("scheduling for fs refresh: [" + parent + "]"); // NOI18N
-                    }
-                }
-            }
-
-            if (refreshFS && parents.size() > 0) {
-                // let's give the filesystem some time to wake up and to realize that the file has really changed
-                org.netbeans.modules.versioning.util.Utils.postParallel(new Runnable() {
-                    @Override
-                    public void run() {
-                        long t = System.currentTimeMillis();
-                        try {
-                            VersioningSupport.refreshFor(parents.toArray(new VCSFileProxy[parents.size()]));
-                        } finally {                                
-                            if ( Subversion.LOG.isLoggable(Level.FINE)) {
-                                Subversion.LOG.fine(" refreshing " + parents.size() + " parents took " + (System.currentTimeMillis() - t) + " millis.");
-                            }
-                        }
-                    }
-                }, 100); 
-            }
         }
     }
 
