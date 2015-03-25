@@ -649,12 +649,14 @@ public final class ExternalBrowserPlugin {
         Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );
         if (newURL != null) {
+            String url;
             try {
-                String u = reformatFileURL(newURL.toURI().toString());
-                params.put( "url", u ); // NOI18N
+                url = newURL.toURI().toASCIIString();
             } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+                url = newURL.toExternalForm();
             }
+            url = reformatFileURL(url);
+            params.put("url", url); // NOI18N
         }
         Message msg = new Message( Message.MessageType.RELOAD, params);
         return msg.toStringValue();

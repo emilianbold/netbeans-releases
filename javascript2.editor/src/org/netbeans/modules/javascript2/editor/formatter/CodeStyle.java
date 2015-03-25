@@ -502,23 +502,23 @@ public final class CodeStyle {
 //    public boolean alignMultilineArrayInit() {
 //        return preferences.getBoolean(alignMultilineArrayInit, provider.getDefaultAsBoolean(alignMultilineArrayInit));
 //    }
-//
-//    public boolean placeElseOnNewLine() {
-//        return preferences.getBoolean(placeElseOnNewLine, provider.getDefaultAsBoolean(placeElseOnNewLine));
-//    }
-//
-//    public boolean placeWhileOnNewLine() {
-//        return preferences.getBoolean(placeWhileOnNewLine, provider.getDefaultAsBoolean(placeWhileOnNewLine));
-//    }
-//
-//    public boolean placeCatchOnNewLine() {
-//        return preferences.getBoolean(placeCatchOnNewLine, provider.getDefaultAsBoolean(placeCatchOnNewLine));
-//    }
-//
-//    public boolean placeNewLineAfterModifiers() {
-//        return preferences.getBoolean(placeNewLineAfterModifiers, provider.getDefaultAsBoolean(placeNewLineAfterModifiers));
-//    }
-//
+
+    public boolean placeElseOnNewLine() {
+        return preferences.getBoolean(placeElseOnNewLine, provider.getDefaultAsBoolean(placeElseOnNewLine));
+    }
+
+    public boolean placeWhileOnNewLine() {
+        return preferences.getBoolean(placeWhileOnNewLine, provider.getDefaultAsBoolean(placeWhileOnNewLine));
+    }
+
+    public boolean placeCatchOnNewLine() {
+        return preferences.getBoolean(placeCatchOnNewLine, provider.getDefaultAsBoolean(placeCatchOnNewLine));
+    }
+
+    public boolean placeFinallyOnNewLine() {
+        return preferences.getBoolean(placeFinallyOnNewLine, provider.getDefaultAsBoolean(placeFinallyOnNewLine));
+    }
+
 //    public boolean groupMulitlineAssignment() {
 //        return preferences.getBoolean(groupAlignmentAssignment, provider.getDefaultAsBoolean(groupAlignmentAssignment));
 //    }
@@ -850,6 +850,11 @@ public final class CodeStyle {
 
         final CodeStyle.WrapStyle wrapProperties;
 
+        final boolean placeElseOnNewLine;
+        final boolean placeWhileOnNewLine;
+        final boolean placeCatchOnNewLine;
+        final boolean placeFinallyOnNewLine;
+
         private Holder(CodeStyle style) {
             expandTabsToSpaces = style.expandTabToSpaces();
             tabSize = style.getTabSize();
@@ -945,6 +950,11 @@ public final class CodeStyle {
             wrapStatementsOnTheSameLine = style.wrapStatementsOnTheSameLine();
             wrapObjects = style.wrapObjects();
             wrapProperties = style.wrapProperties();
+
+            placeElseOnNewLine = style.placeElseOnNewLine();
+            placeWhileOnNewLine = style.placeWhileOnNewLine();
+            placeCatchOnNewLine = style.placeCatchOnNewLine();
+            placeFinallyOnNewLine = style.placeFinallyOnNewLine();
         }
     }
 }

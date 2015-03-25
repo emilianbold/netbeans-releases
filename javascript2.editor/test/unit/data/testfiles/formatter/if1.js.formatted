@@ -10,8 +10,7 @@ alert("a");
 if (x) {
     "hello"
 
-}
-else {
+} else {
     "neco"
 
 }
