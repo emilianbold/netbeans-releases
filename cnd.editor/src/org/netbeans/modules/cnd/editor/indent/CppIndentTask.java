@@ -90,12 +90,12 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             return false;
         }
         TokenItem token = new TokenItem(ts, true);
-        if (codeStyle == null) {
-            codeStyle = CodeStyle.getDefault(doc);
-        }
         if (isMultiLineComment(token)) {
             if (caretOffset == token.getTokenSequence().offset()) {
                 return false;
+            }
+            if (codeStyle == null) {
+                codeStyle = CodeStyle.getDefault(doc);
             }
             // Indent the inner lines of the multi-line comment by one
             if (getFormatLeadingStarInComment()) {
@@ -119,12 +119,18 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             if (token.getTokenID() == CppTokenId.NEW_LINE) {
                 ts.movePrevious();
                 TokenItem prev = new TokenItem(ts, true);
-                int indent = getTokenColumn(prev);
-                String spaces = spaces(indent);
+
                 if (prev.getTokenID() == CppTokenId.DOXYGEN_LINE_COMMENT
                         && caretOffset - token.getTokenSequence().offset() == 3) {
                     Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
                     if (function != null) {
+                        if (codeStyle == null) {
+                            codeStyle = CodeStyle.getDefault(doc);
+                        }
+                        
+                        int indent = getTokenColumn(prev);
+                        String spaces = spaces(indent);
+                        
                         StringBuilder buf = new StringBuilder();
                         buf.append(" \n"); // NOI18N
                         for (Parameter p : function.getParametes()) {
