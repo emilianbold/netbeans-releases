@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
@@ -161,7 +162,8 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
     }
     
     private static String createAppendText(CsmMember item, CsmClass parent) {
-        StringBuilder appendItemText = new StringBuilder("\nvirtual "); //NOI18N
+        boolean isCpp11 = CsmFileInfoQuery.getDefault().isCpp11OrLater(parent.getContainingFile());
+        StringBuilder appendItemText = new StringBuilder();
         String type = "";
         if (item != null && !CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
@@ -184,8 +186,18 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
                 }
             }
         }
+        if (!isCpp11) {
+            appendItemText.append("\nvirtual "); //NOI18N
+        } else {
+            if (item == null || CsmKindUtilities.isDestructor(item)) {
+                appendItemText.append("\nvirtual "); //NOI18N
+            }
+        }
         appendItemText.append(type);
         addSignature(item, parent, appendItemText);
+        if (isCpp11 && item != null && !CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
+            appendItemText.append(" override"); //NOI18N
+        }
         if (item == null || CsmKindUtilities.isDestructor(item)) {
             appendItemText.append(" {\n\n}\n"); //NOI18N
         } else {

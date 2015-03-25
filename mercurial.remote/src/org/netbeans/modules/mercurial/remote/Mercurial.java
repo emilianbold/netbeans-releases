@@ -232,6 +232,7 @@ public class Mercurial {
             v = versions.get(fileSystem);
             if (v == null) {
                 v = new Version();
+                versions.put(fileSystem, v);
             }
         }
         return v;
