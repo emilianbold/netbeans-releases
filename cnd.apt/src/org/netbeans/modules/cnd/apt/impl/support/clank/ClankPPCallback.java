@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.ArrayList;
+import org.clang.basic.SrcMgr;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.TrackIncludeInfoCallback;
 import org.clank.support.Casts;
@@ -210,7 +211,9 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         FileSystem fileSystem = startEntry.getFileSystem();
         CharSequence folder = CndFileUtils.normalizeAbsolutePath(fileSystem, CndPathUtilities.getDirName(pathStr.toString()));
         folder = FilePathCache.getManager().getString(CharSequences.create(folder));
-        return new ResolvedPath(fileSystem, folder, pathStr, true, 0);
+        // FIXME: for now consider user path as isDefaultSearchPath
+        boolean isDefaultSearchPath = (current.getFileType() == SrcMgr.CharacteristicKind.C_User);
+        return new ResolvedPath(fileSystem, folder, pathStr, isDefaultSearchPath, 0);
       }
 
       @Override
