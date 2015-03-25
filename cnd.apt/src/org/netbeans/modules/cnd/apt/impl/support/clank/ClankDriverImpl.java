@@ -76,9 +76,12 @@ public class ClankDriverImpl {
             ClankDriver.APTTokenStreamCache cached = includeHandler.getCachedTokens();
             assert cached != null;
             assert !cached.hasTokenStream();
-            CharSequence path = buffer.getAbsolutePath();
             // TODO: prepare buffers mapping
-            byte[] bytes = toBytes(buffer.getCharBuffer());
+            CharSequence path = buffer.getAbsolutePath();
+            if (CndUtils.isDebugMode()) {
+              byte[] bytes = toBytes(buffer.getCharBuffer());
+              assert bytes != null;
+            }
             // prepare params to run preprocessor
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
