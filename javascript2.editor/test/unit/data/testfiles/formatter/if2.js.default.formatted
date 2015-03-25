@@ -5,8 +5,7 @@ else
 
 if (x) {
     "hello"
-}
-else {
+} else {
     "neco"
 
 }

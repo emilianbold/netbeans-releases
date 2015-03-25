@@ -192,7 +192,7 @@ public class FmtOptions {
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
     public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
     public static final String placeCatchOnNewLine = "placeCatchOnNewLine"; //NOI18N
-    public static final String placeNewLineAfterModifiers = "placeNewLineAfterModifiers"; //NOI18N
+    public static final String placeFinallyOnNewLine = "placeFinallyOnNewLine"; //NOI18N
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
     public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
     public static final String alignMultilineImplements = "alignMultilineImplements"; //NOI18N
@@ -379,7 +379,7 @@ public class FmtOptions {
             { placeElseOnNewLine, FALSE}, //NOI18N
             { placeWhileOnNewLine, FALSE}, //NOI18N
             { placeCatchOnNewLine, FALSE}, //NOI18N
-            { placeNewLineAfterModifiers, FALSE}, //NOI18N
+            { placeFinallyOnNewLine, FALSE}, //NOI18N
 
             {groupAlignmentArrayInit, FALSE},
             {groupAlignmentAssignment, FALSE},

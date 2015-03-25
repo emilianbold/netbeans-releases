@@ -1823,6 +1823,25 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/issue227007.js", options, ".noContinuation.formatted");
     }
 
+    // alignment options tests
+    public void testKeywordAlignmentSameLine() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.placeElseOnNewLine, false);
+        options.put(FmtOptions.placeWhileOnNewLine, false);
+        options.put(FmtOptions.placeCatchOnNewLine, false);
+        options.put(FmtOptions.placeFinallyOnNewLine, false);
+        reformatFileContents("testfiles/formatter/keywordPlacement.js", options, ".sameLine.formatted");
+    }
+
+    public void testKeywordAlignmentNewLine() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.placeElseOnNewLine, true);
+        options.put(FmtOptions.placeWhileOnNewLine, true);
+        options.put(FmtOptions.placeCatchOnNewLine, true);
+        options.put(FmtOptions.placeFinallyOnNewLine, true);
+        reformatFileContents("testfiles/formatter/keywordPlacement.js", options, ".newLine.formatted");
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {
