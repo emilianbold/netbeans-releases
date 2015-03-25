@@ -165,7 +165,8 @@ public final class ServerConnection {
         int[] fromPtr = new int[] { 0 };
         int readOffset = 0;
         String tools = null;
-        StringBuilder message = new StringBuilder();
+        byte[] emptyArray = new byte[] {};
+        byte[] messageBytes = emptyArray;
         while ((n = clientIn.read(buffer, readOffset, BUFFER_SIZE - readOffset)) > 0) {
             n += readOffset;
             int from = 0;
@@ -188,22 +189,23 @@ public final class ServerConnection {
                         from = fromPtr[0];
                     }
                 }
-                int length = Math.min(contentLength - message.length(), n - from);
-                message.append(new String(buffer, from, length, CHAR_SET));
+                int length = Math.min(contentLength - messageBytes.length, n - from);
+                messageBytes = Utils.joinArrays(messageBytes, buffer, from, length);
                 from += length;
-                if (message.length() == contentLength) {
+                if (messageBytes.length == contentLength) {
+                    String message = new String(messageBytes, CHAR_SET);
                     try {
-                        received(listener, tools, message.toString());
+                        received(listener, tools, message);
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (ParseException pex) {
                         throw new IOException(pex.getLocalizedMessage(), pex);
                     } catch (Throwable t) {
-                        LOG.log(Level.SEVERE, message.toString(), t);
+                        LOG.log(Level.SEVERE, message, t);
                     }
                     contentLength = -1;
                     tools = null;
-                    message.delete(0, message.length());
+                    messageBytes = emptyArray;
                 }
             } while (from < n);
             if (from < n) {

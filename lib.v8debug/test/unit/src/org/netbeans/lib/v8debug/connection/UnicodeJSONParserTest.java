@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,75 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+
 package org.netbeans.lib.v8debug.connection;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 /**
- *
+ * Test of parsing unicode characters.
+ * 
  * @author Martin Entlicher
  */
-final class Utils {
+public class UnicodeJSONParserTest {
     
-    /**
-     * Find an index of the pattern in an array.
-     * 
-     * @param pattern
-     * @param array
-     * @param from
-     * @param to
-     * @return The index, or -1.
-     */
-    public static int indexOf(byte[] pattern, byte[] array, int from, int to) {
-        byte first = pattern[0];
-        for (int i = from; i < to; i++) {
-            if (array[i] == first) {
-                boolean match = true;
-                for (int j = i+1; j < to && (j-i) < pattern.length; j++) {
-                    if (array[j] != pattern[j-i]) {
-                        match = false;
-                        break;
-                    }
-                }
-                if (match) {
-                    return i;
-                }
-            }
-        }
-        return -1;
+    public UnicodeJSONParserTest() {
+    }
+    
+    @BeforeClass
+    public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
     }
 
-    static byte[] joinArrays(byte[] array1, byte[] array2, int from, int length) {
-        int n = array1.length + length;
-        byte[] array = new byte[n];
-        if (array1.length == 0) {
-            System.arraycopy(array2, from, array, 0, length);
-        } else {
-            System.arraycopy(array1, 0, array, 0, array1.length);
-            System.arraycopy(array2, from, array, array1.length, length);
+    /**
+     * Test of parse method, of class JSONParser.
+     */
+    @Test
+    public void testParse() throws Exception {
+        System.out.println("parse");
+        String js1 = "{ \"name\": \"";
+        String js2 = "\" }";
+        int[] codePoints = new int[] { 0 };
+        JSONParser parser = new JSONParser();
+        for (int c = 32; c <= 0x10FFFF; c++) {
+            if ('\"' == c || '\\' == c) {
+                continue;
+            }
+            codePoints[0] = c;
+            String str = new String(codePoints, 0, 1);
+            String msg = js1 + str + js2;
+            Object result;
+            try {
+                result = parser.parse(msg);
+            } catch (ParseException pex) {
+                System.err.println("Error parsing "+msg);
+                throw pex;
+            }
+            assertTrue(result.toString(), result instanceof JSONObject);
+            Object value = ((JSONObject) result).get("name");
+            assertEquals(str, (String) value);
         }
-        return array;
     }
     
 }
