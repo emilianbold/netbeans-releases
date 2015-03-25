@@ -124,6 +124,6 @@ class WebSocketHandler75 extends AbstractWSHandler75<WebSocketServerImpl> {
         getWebSocketPoint().getWebSocketReadHandler().read(myKey, bytes, null);        
     }
     
-    private SelectionKey myKey;
+    private final SelectionKey myKey;
 
 }
