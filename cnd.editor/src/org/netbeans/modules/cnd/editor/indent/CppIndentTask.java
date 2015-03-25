@@ -90,12 +90,12 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             return false;
         }
         TokenItem token = new TokenItem(ts, true);
+        if (codeStyle == null) {
+            codeStyle = CodeStyle.getDefault(doc);
+        }
         if (isMultiLineComment(token)) {
             if (caretOffset == token.getTokenSequence().offset()) {
                 return false;
-            }
-            if (codeStyle == null) {
-                codeStyle = CodeStyle.getDefault(doc);
             }
             // Indent the inner lines of the multi-line comment by one
             if (getFormatLeadingStarInComment()) {
