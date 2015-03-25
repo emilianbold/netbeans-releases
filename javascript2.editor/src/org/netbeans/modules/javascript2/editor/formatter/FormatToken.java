@@ -557,10 +557,34 @@ public final class FormatToken {
         AFTER_TYPEOF_KEYWORD,
 
         // keywords with possible space before
-        BEFORE_WHILE_KEYWORD,
-        BEFORE_ELSE_KEYWORD,
-        BEFORE_CATCH_KEYWORD,
-        BEFORE_FINALLY_KEYWORD,
+        // or placed on the new line
+        BEFORE_WHILE_KEYWORD {
+            @Override
+            public boolean isAlignmentMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_ELSE_KEYWORD {
+            @Override
+            public boolean isAlignmentMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_CATCH_KEYWORD {
+            @Override
+            public boolean isAlignmentMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_FINALLY_KEYWORD {
+            @Override
+            public boolean isAlignmentMarker() {
+                return true;
+            }
+        },
 
         BEFORE_SEMICOLON,
         AFTER_SEMICOLON,
@@ -712,7 +736,11 @@ public final class FormatToken {
 
         public boolean isBraceMarker() {
             return false;
-    }
+        }
+
+        public boolean isAlignmentMarker() {
+            return false;
+        }
     }
 
 }

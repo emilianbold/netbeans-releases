@@ -4,8 +4,7 @@ if (x > 0)
     } else if (x < 0)
     {
         alert("< 0");
-    }
-else
+    } else
     {
         alert("zero");
     }
@@ -23,8 +22,7 @@ function process(x, y, repeat)
                             {
                                 repeat = false;
                                 handleException(e);
-                            }
-                        finally
+                            } finally
                             {
                                 cleanup();
                             }

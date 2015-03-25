@@ -235,8 +235,7 @@ Object.extend(String.prototype, {
                         hash[name] = [hash[name]];
                     if (value)
                         hash[name].push(value);
-                }
-                else
+                } else
                     hash[name] = value;
             }
             return hash;
@@ -838,8 +837,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
             if (!this.options.asynchronous && this.transport.overrideMimeType)
                 this.onStateChange();
 
-        }
-        catch (e) {
+        } catch (e) {
             this.dispatchException(e);
         }
     },
@@ -1847,8 +1845,7 @@ var Form = {
                         if (result[key].constructor != Array)
                             result[key] = [result[key]];
                         result[key].push(value);
-                    }
-                    else
+                    } else
                         result[key] = value;
                 }
             }
