@@ -535,7 +535,7 @@ public class NodeExecutable {
         public List<ConvertedLine> convert(String line) {
             // debugger?
             if (debuggerStartTask != null
-                    && line.startsWith("debugger listening on port")) { // NOI18N
+                    && line.startsWith("Debugger listening on port")) { // NOI18N
                 debuggerStartTask.run();
                 debuggerStartTask = null;
             }

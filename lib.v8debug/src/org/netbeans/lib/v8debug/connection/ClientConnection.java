@@ -140,7 +140,8 @@ public final class ClientConnection {
         int[] fromPtr = new int[] { 0 };
         int readOffset = 0;
         String tools = null;
-        StringBuilder message = new StringBuilder();
+        byte[] emptyArray = new byte[] {};
+        byte[] messageBytes = emptyArray;
         Map<String, String> header = null;
         int from = 0;
         while ((n = serverIn.read(buffer, readOffset, BUFFER_SIZE - readOffset)) > 0) {
@@ -176,24 +177,25 @@ public final class ClientConnection {
                 if (from >= n) {
                     break;
                 }
-                int length = Math.min(contentLength - message.length(), n - from);
+                int length = Math.min(contentLength - messageBytes.length, n - from);
                 //System.err.println("buffer.length = "+buffer.length+", from = "+from+", length = "+length);
                 //System.err.println("  appending: "+new String(buffer, from, length, CHAR_SET));
-                message.append(new String(buffer, from, length, CHAR_SET));
+                messageBytes = Utils.joinArrays(messageBytes, buffer, from, length);
                 from += length;
-                if (message.length() == contentLength) {
+                if (messageBytes.length == contentLength) {
+                    String message = new String(messageBytes, CHAR_SET);
                     try {
-                        received(listener, tools, message.toString());
+                        received(listener, tools, message);
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (ParseException pex) {
                         throw new IOException(pex.getLocalizedMessage()+" message = '"+message+"'", pex);
                     } catch (Throwable t) {
-                        LOG.log(Level.SEVERE, message.toString(), t);
+                        LOG.log(Level.SEVERE, message, t);
                     }
                     contentLength = -1;
                     tools = null;
-                    message.delete(0, message.length());
+                    messageBytes = emptyArray;
                 }
             } while (from < n);
             if (from < n) {
