@@ -86,17 +86,16 @@ class WebSocketHandler75 extends AbstractWSHandler75<WebSocketServerImpl> {
             builder.append( ((InetSocketAddress)getWebSocketPoint().getAddress()).getPort());
         }
         String request = getWebSocketPoint().getContext(myKey).getRequestString();
-        int index = request.indexOf(' ');
-        String url = null;
-        if ( index != -1 ){
-            request = request.substring(index).trim();
-            index = request.indexOf(' ');
-            if ( index !=-1 ){
-                url = request.substring( 0, index ).trim();
+        String url = "/"; // NOI18N
+        if (request != null) {
+            int index = request.indexOf(' ');
+            if ( index != -1 ){
+                request = request.substring(index).trim();
+                index = request.indexOf(' ');
+                if ( index !=-1 ){
+                    url = request.substring( 0, index ).trim();
+                }
             }
-        }
-        else {
-            url ="/";
         }
         builder.append( url );
         builder.append( Utils.CRLF );
