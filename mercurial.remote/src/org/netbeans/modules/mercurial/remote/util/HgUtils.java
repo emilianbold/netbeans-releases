@@ -49,7 +49,6 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -98,13 +97,12 @@ import org.netbeans.modules.mercurial.remote.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.ui.status.SyncFileNode;
+import org.netbeans.modules.remotefs.versioning.api.FileObjectIndexingBridgeProvider;
 import org.netbeans.modules.remotefs.versioning.api.FileSelector;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.diff.DiffUtils;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1944,16 +1942,8 @@ itor tabs #66700).
                         Mercurial.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
                     }
                     indexingFiles.set(new HashSet<VCSFileProxy>(Arrays.asList(files)));
-                    // TODO: see bug #250064
-                    //return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
-                    return callable.call();
+                    return FileObjectIndexingBridgeProvider.getInstance().runWithoutIndexing(callable, files);
                 } finally {
-                    Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            VersioningSupport.refreshFor(files);
-                        }
-                    }, 100);
                     indexingFiles.remove();
                 }
             }

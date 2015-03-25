@@ -98,10 +98,10 @@ import org.netbeans.modules.git.remote.ui.commit.CommitAction;
 import org.netbeans.modules.git.remote.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.remote.ui.status.StatusAction;
+import org.netbeans.modules.remotefs.versioning.api.FileObjectIndexingBridgeProvider;
 import org.netbeans.modules.remotefs.versioning.api.FileSelector;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -937,16 +937,8 @@ public final class GitUtils {
                         Git.LOG.log(Level.FINER, "Running block in indexing bridge: on {0}", Arrays.asList(files)); //NOI18N
                     }
                     indexingFiles.set(new HashSet<VCSFileProxy>(Arrays.asList(files)));
-                    // TODO: see bug #250064
-                    //return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
-                    return callable.call();
+                    return FileObjectIndexingBridgeProvider.getInstance().runWithoutIndexing(callable, files);
                 } finally {
-                    Git.getInstance().getRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            VersioningSupport.refreshFor(files);
-                        }
-                    }, 100);
                     indexingFiles.remove();
                 }
             }
