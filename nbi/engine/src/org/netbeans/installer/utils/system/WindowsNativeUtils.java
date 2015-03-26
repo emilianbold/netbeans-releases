@@ -232,7 +232,7 @@ public class WindowsNativeUtils extends NativeUtils {
             loadNativeLibrary(libraryPath);
         } catch (NativeException e) {
             // can`t live without the native library
-            ErrorManager.notifyCritical("Cannot load native library which is stricly necessary to work correctly.",e);
+            ErrorManager.notifyCritical("Cannot load native library which is strictly necessary to work correctly.",e);
         }
         //initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_WINDOWS);
         if(nativeLibraryLoaded) {
