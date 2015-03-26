@@ -104,10 +104,12 @@ public class WadlSaasResource implements Comparable<WadlSaasResource> {
         return new ArrayList<WadlSaasResource>(childResources);
     }
   
+    @Override
     public String toString() {
         return resource.getPath();
     }
     
+    @Override
     public int compareTo(WadlSaasResource saasResource) {
         String thisPath = resource.getPath();
         String thatPath = saasResource.getResource().getPath();
