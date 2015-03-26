@@ -58,6 +58,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -500,9 +501,9 @@ public class RepositoryInfo {
                 GitTag oldTag = e.getValue();
                 GitTag newTag = newTags.get(e.getKey());
                 if (!(/*oldTag.getMessage().equals(newTag.getMessage())
-                        &&*/ oldTag.getTagId().equals(newTag.getTagId())
-                        && oldTag.getTagName().equals(newTag.getTagName())
-                        && oldTag.getTaggedObjectId().equals(newTag.getTaggedObjectId())
+                        &&*/ Objects.equals(oldTag.getTagId(), newTag.getTagId())
+                        && Objects.equals(oldTag.getTagName(), newTag.getTagName())
+                        && Objects.equals(oldTag.getTaggedObjectId(), newTag.getTaggedObjectId())
                         /*&& oldTag.getTaggedObjectType().equals(newTag.getTaggedObjectType())
                         && oldTag.getTagger().toString().equals(newTag.getTagger().toString())*/ )) {
                     retval = false;

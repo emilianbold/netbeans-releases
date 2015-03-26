@@ -95,6 +95,14 @@ public abstract class CsmIncludeResolver {
      * @return - visibility of CSM object
      */
     public abstract boolean isObjectVisible(CsmFile currentFile, CsmObject item);
+
+    /**
+     * Get compilation unit close to header
+     * 
+     * @param file - header
+     * @return - correspondent source file
+     */
+    public abstract CsmFile getCloseTopParentFile(CsmFile file);
     
     /**
      * Finds best include directive for CSM object in format 
@@ -137,6 +145,11 @@ public abstract class CsmIncludeResolver {
         @Override
         public String getLocalIncludeDerectiveByFilePath(FSPath path, CsmObject item) {
             return "";
+        }
+
+        @Override
+        public CsmFile getCloseTopParentFile(CsmFile currentFile) {
+            return null;
         }
     }
 }

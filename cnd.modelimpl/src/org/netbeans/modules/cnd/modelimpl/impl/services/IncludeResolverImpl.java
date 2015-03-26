@@ -64,15 +64,22 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
@@ -372,6 +379,27 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
             System.err.println("not yet handled object " + item);
         }
         return false;
+    }
+
+    @Override
+    public CsmFile getCloseTopParentFile(CsmFile file) {
+        if (file.isHeaderFile()) {
+            String name = file.getName().toString();
+            if (name.indexOf('.') > 0) {
+                name = name.substring(0, name.lastIndexOf('.'));
+            }
+            GraphContainer.ParentFiles topParentFiles = ((ProjectBase) file.getProject()).getGraphStorage().getTopParentFiles(file);
+            for(CsmUID<CsmFile> uid : topParentFiles.getCompilationUnitsUids()) {
+                String aName = PathUtilities.getBaseName(UIDUtilities.getName(uid).toString());
+                if (aName.indexOf('.') > 0) {
+                    aName = aName.substring(0, aName.lastIndexOf('.'));
+                }
+                if (name.equals(aName)) {
+                    return UIDCsmConverter.UIDtoFile(uid);
+                }
+            }
+        }
+        return null;
     }
 
     // Says is variable visible in current file

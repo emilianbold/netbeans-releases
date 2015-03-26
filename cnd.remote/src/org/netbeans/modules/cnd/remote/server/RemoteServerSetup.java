@@ -131,7 +131,7 @@ public class RemoteServerSetup {
                 CndUtils.assertNotNullInConsole(entry, "Null entry"); //NOI18N
                 if (entry != null) {
                     if (entry.localFile == null) {
-                        RemoteUtil.LOGGER.severe("Can not find file " + entry.remotePath + " in IDE installation");
+                        RemoteUtil.LOGGER.severe("Can not find file " + entry.remotePath + " in IDE installation"); // NOI18N
                         continue;
                     }
                     File file = entry.localFile;

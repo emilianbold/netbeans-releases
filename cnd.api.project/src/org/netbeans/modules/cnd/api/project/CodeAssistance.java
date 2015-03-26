@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.project;
 
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
@@ -60,4 +61,5 @@ public interface CodeAssistance {
     Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> getHeaderLanguageFlavour(FileObject item);
     void addChangeListener(ChangeListener listener);
     void removeChangeListener(ChangeListener listener);
+    List<NativeFileItem> findHeaderComilationUnit(NativeFileItem item);
 }

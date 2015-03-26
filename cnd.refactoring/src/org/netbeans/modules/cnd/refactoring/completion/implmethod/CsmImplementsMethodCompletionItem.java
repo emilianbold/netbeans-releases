@@ -47,8 +47,10 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
@@ -67,8 +69,10 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -79,6 +83,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -128,15 +133,15 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.lengthReplacement = lengthReplacement;
     }
 
-    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmFunction item) {
+    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmFunction item, CsmScope insertScope) {
         String sortItemText = item.getName().toString();
-        String appendItemText = createAppendText(item, cls, "{\n\n}"); //NOI18N
+        String appendItemText = createAppendText(item, cls, "{\n\n}", insertScope); //NOI18N
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "implement.txt")); //NOI18N
         return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, false, 0, 0);
     }
 
-    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmFunction item) {
+    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmFunction item, CsmScope insertScope) {
         String sortItemText = item.getName().toString();
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N
@@ -199,7 +204,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                     String bodyText;
                     try {
                         bodyText = classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
-                        String appendItemText = createAppendText(item, cls, bodyText);
+                        String appendItemText = createAppendText(item, cls, bodyText, insertScope);
                         return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
                                 true, trueBodyStratOffset.get(), bodyText.length());
                     } catch (BadLocationException ex) {
@@ -235,7 +240,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         String bodyText;
         try {
             bodyText = classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
-            String appendItemText = createAppendText(item, cls, bodyText);
+            String appendItemText = createAppendText(item, cls, bodyText, insertScope);
             return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
                     true, trueBodyStratOffset.get(), bodyText.length());
         } catch (BadLocationException ex) {
@@ -270,7 +275,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         }
     }
     
-    private static String createAppendText(CsmFunction item, CsmClass parent, String bodyText) {
+    private static String createAppendText(CsmFunction item, CsmClass parent, String bodyText, CsmScope insertScope) {
         StringBuilder appendItemText = new StringBuilder("\n"); //NOI18N
         addTemplate(item, parent, appendItemText);
         String type = "";
@@ -299,7 +304,12 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         }
         appendItemText.append(type);
         if (!CsmKindUtilities.isFriendMethod(item)) {
-            appendItemText.append(parent.getName());
+            String scope = getQualifiedName(insertScope, parent);
+            if (scope.isEmpty()) {
+                appendItemText.append(parent.getName());
+            } else {
+                appendItemText.append(scope);
+            }
             if (CsmKindUtilities.isTemplate(parent)) {
                 final CsmTemplate template = (CsmTemplate)parent;
                 List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
@@ -322,6 +332,31 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         appendItemText.append(bodyText);
         appendItemText.append("\n"); //NOI18N
         return appendItemText.toString();
+    }
+        
+    private static String getQualifiedName(CsmScope from, CsmScope to) {
+        List<CsmScope> scopes = new ArrayList<>();
+        while (!Objects.equals(from, to) && CsmKindUtilities.isScopeElement(to)) {
+            scopes.add(0, to);
+            to = ((CsmScopeElement) to).getScope();
+        }
+        boolean first = true;
+        StringBuilder sb = new StringBuilder();
+        for (CsmScope scope : scopes) {
+            if (CsmKindUtilities.isNamedElement(scope)) {
+                CsmNamedElement named = (CsmNamedElement) scope;
+                if (!CharSequenceUtils.isNullOrEmpty(named.getName())) {
+                    if (!first) {
+                        sb.append("::"); // NOI18N
+                    } else {
+                        first = false;
+                    }
+                    // TODO: handle instantiations here
+                    sb.append(named.getName());
+                }
+            }
+        }
+        return sb.toString();
     }
 
     private static void addTemplate(CsmFunction item, CsmClass parent, StringBuilder sb) {
