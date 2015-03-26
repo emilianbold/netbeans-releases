@@ -823,7 +823,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         }
         if (localCompletionResult != null) {
             CompletionItem item = layout.getSelectedCompletionItem();
-            CharSequence commonText = item.getInsertPrefix();
+            CharSequence commonText = item != null ? item.getInsertPrefix() : null;
             int anchorOffset = -1;
 outer:      for (Iterator it = localCompletionResult.getResultSets().iterator(); it.hasNext();) {
                 CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
