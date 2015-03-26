@@ -89,7 +89,7 @@ public interface ImportantFilesImplementation {
 
         /**
          * Creates information for the given file.
-         * @param file file
+         * @param file file, cannot be a directory
          */
         public FileInfo(FileObject file) {
             this(file, null, null);
@@ -98,12 +98,15 @@ public interface ImportantFilesImplementation {
         /**
          * Creates information for the given file with custom display name
          * and/or custom description.
-         * @param file file
+         * @param file file, cannot be a directory
          * @param displayName custom display name, can be {@code null}
          * @param description custom description, can be {@code null}
          */
         public FileInfo(FileObject file, @NullAllowed String displayName, @NullAllowed String description) {
             Parameters.notNull("file", file); // NOI18N
+            if (file.isFolder()) {
+                throw new IllegalArgumentException("File cannot be a directory");
+            }
             this.file = file;
             this.displayName = displayName;
             this.description = description;
