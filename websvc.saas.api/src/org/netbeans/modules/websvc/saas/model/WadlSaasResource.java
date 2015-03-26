@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
