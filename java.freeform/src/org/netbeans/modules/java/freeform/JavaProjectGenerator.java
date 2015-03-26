@@ -1064,29 +1064,24 @@ public class JavaProjectGenerator {
     }
 
     private static int minimalNS(final JavaCompilationUnit unit) {
+        int min = 1;
         if (unit.isTests || (unit.javadoc != null && !unit.javadoc.isEmpty())) {
-            return 2;
+            min = 2;
         }
-        if (unit.classpath != null) {
-            for (JavaCompilationUnit.CP cp : unit.classpath) {
-                if ("processor".equals(cp.mode)) {  //NOI18N
-                    return 3;
-                }
-            }
+        if (unit.annotationPorocessing != null) {
+            min = 3;
         }
         if (unit.sourceLevel != null) {
+            final SpecificationVersion JAVA_6 = new SpecificationVersion("1.6");  //NOI18N
+            final SpecificationVersion JAVA_7 = new SpecificationVersion("1.7");  //NOI18N
             final SpecificationVersion JAVA_8 = new SpecificationVersion("1.8");  //NOI18N
             final SpecificationVersion current = new SpecificationVersion(unit.sourceLevel);
-            if (JAVA_8.compareTo(current) <= 0) {
-                return 4;
-            }
-            final SpecificationVersion JAVA_6 = new SpecificationVersion("1.6");  //NOI18N
-            final SpecificationVersion JAvA_7 = new SpecificationVersion("1.7");  //NOI18N
-            if (JAVA_6.equals(current) || JAvA_7.equals(current)) {
-                return 3;
+            if (JAVA_6.equals(current) || JAVA_7.equals(current)) {
+                min = 3;
+            } else if (JAVA_8.compareTo(current) <= 0) {
+                min = 4;
             }
         }
-        return 1;
+        return min;
     }
-    
 }
