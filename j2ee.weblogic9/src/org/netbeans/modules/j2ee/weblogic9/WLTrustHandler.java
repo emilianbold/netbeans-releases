@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -99,10 +100,12 @@ public class WLTrustHandler implements WebLogicTrustHandler {
 
     private static final int CHECK_TIMEOUT = 5000;
 
+    private static final SecureRandom random = new SecureRandom();
+
     @Override
     public void setup(WebLogicConfiguration config) throws GeneralSecurityException, IOException {
         SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
-        context.init(null, new TrustManager[]{getTrustManager(config)}, new SecureRandom());
+        context.init(null, new TrustManager[]{getTrustManager(config)}, random);
         SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket();
         try {
             // we just trigger the trust manager here
@@ -301,7 +304,9 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         File file = File.createTempFile("wlskeystore", null);
         OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
         try {
-            keystore.store(out, "weblogic".toCharArray());
+            // we generate random password as it protects the store and (for now)
+            // we won't write to it
+            keystore.store(out, new BigInteger(130, random).toString(32).toCharArray());
         } finally {
             out.close();
         }
@@ -309,7 +314,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
     }
 
     private static X509TrustManager createTrustManager(File file) throws GeneralSecurityException, IOException {
-        KeyStore ts = KeyStore.getInstance("JKS");
+        KeyStore ts = KeyStore.getInstance("JKS"); // NOI18N
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             ts.load(in, null);
