@@ -75,7 +75,7 @@ public class ClankDriverImpl {
             ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
             ClankDriver.APTTokenStreamCache cached = includeHandler.getCachedTokens();
             assert cached != null;
-            assert !cached.hasTokenStream();
+            CndUtils.assertTrueInConsole(!cached.hasTokenStream(), "Have to use ClankDriver.extractTokenStream(ppHandler) if TS is required");
             // TODO: prepare buffers mapping
             CharSequence path = buffer.getAbsolutePath();
             if (CndUtils.isDebugMode()) {

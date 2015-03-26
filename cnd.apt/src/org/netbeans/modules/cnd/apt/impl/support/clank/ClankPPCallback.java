@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
@@ -64,7 +65,7 @@ import org.openide.util.CharSequences;
  *
  * @author Vladimir Voskresensky
  */
-public class ClankPPCallback extends TrackIncludeInfoCallback {
+public final class ClankPPCallback extends TrackIncludeInfoCallback {
     public static final class CancellableInterrupter implements Interrupter {
       final org.netbeans.modules.cnd.support.Interrupter outerDelegate;
       private boolean cancelledState = false;
@@ -107,13 +108,26 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
             traceOS.$out("Enter: " + fileInfo).$out("\n").flush();
         }
         if (fileInfo.isFile()) {
-          ClankFileInfoImpl cur = new ClankFileInfoImpl(fileInfo, ppHandler);
-          ResolvedPath resolvedPath = cur.getResolvedPath();
-          includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(), 
-                  fileInfo.getLine(), fileInfo.getOffset(), resolvedPath.getIndex());
-          includeHandler.cacheTokens(cur);
-          includeStack.add(cur);
-          delegate.onEnter(cur);
+          ClankDriver.ClankFileInfo enteredFrom;
+          ClankFileInfoImpl enteredTo = new ClankFileInfoImpl(fileInfo, ppHandler);
+          // main file is not pushed as include, all others are
+          if (includeStack.isEmpty()) {
+            assert includeHandler.getStartEntry().getStartFile().toString().contentEquals(Casts.toCharSequence(fileInfo.getName())) :
+                    includeHandler.getStartEntry() + " vs. " + fileInfo; // NOI18N
+            assert includeHandler.getInclStackIndex() == 0 : " expected zero: " + includeHandler.getInclStackIndex();
+            assert enteredTo.getFileIndex() == 0 : " expected zero: " + enteredTo.getFileIndex();
+            enteredFrom = null;
+          } else {
+            ResolvedPath resolvedPath = enteredTo.getResolvedPath();
+            includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(),
+                    0/*should not be used by client*/, fileInfo.getIncludeOffset(), resolvedPath.getIndex());
+            includeHandler.cacheTokens(enteredTo);
+            enteredFrom = includeStack.get(includeStack.size() - 1);
+          }
+          // keep stack of active files
+          includeStack.add(enteredTo);
+          
+          delegate.onEnter(enteredFrom, enteredTo);
         }
     }
 
@@ -140,11 +154,22 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         }
         if (fileInfo.isFile()) {
           assert includeStack.size() > 0 : "empty include stack?";
-          ClankFileInfoImpl cur = includeStack.remove(includeStack.size() - 1);
-          cur.onExit();
-          includeHandler.popInclude();
-          includeHandler.cacheTokens(cur);
-          if (!delegate.onExit(cur)) {
+          ClankDriver.ClankFileInfo exitedTo;
+          ClankFileInfoImpl exitedFrom = includeStack.remove(includeStack.size() - 1);
+          assert exitedFrom.current == fileInfo;
+          // we cache possibly collected tokens in include handler
+          // to allow delegate to use them
+          includeHandler.cacheTokens(exitedFrom.onExit());
+          // init where we returned to
+          if (includeStack.isEmpty()) {
+            exitedTo = null;
+          } else {
+            exitedTo = includeStack.get(includeStack.size() - 1);
+            includeHandler.popInclude();
+          }
+
+          // ask if delegate wish to continue 
+          if (!delegate.onExit(exitedFrom, exitedTo)) {
             interrupter.cancel();
           }
         }
@@ -226,9 +251,11 @@ public class ClankPPCallback extends TrackIncludeInfoCallback {
         return hasTokenStream;
       }
 
-      private void onExit() {
+      private ClankDriver.APTTokenStreamCache onExit() {
         hasTokenStream = true;
+        return this;
       }
+      
       private boolean hasTokenStream = false;
 
       @Override

@@ -80,13 +80,21 @@ public final class ClankDriver {
     }
     
     public interface ClankPreprocessorCallback {
-      boolean onEnter(ClankFileInfo include);
       /**
-       * return true to continue or false to stop preprocessing and exit
-       * @param include
+       * 
+       * @param enteredFrom
+       * @param enteredTo
        * @return
        */
-      boolean onExit(ClankFileInfo include);
+      void onEnter(ClankFileInfo enteredFrom, ClankFileInfo enteredTo);
+      
+      /**
+       * return true to continue or false to stop preprocessing and exit
+       * @param exitedFrom
+       * @param exitedTo
+       * @return
+       */
+      boolean onExit(ClankFileInfo exitedFrom, ClankFileInfo exitedTo);
     }
 
     public interface ClankFileInfo {

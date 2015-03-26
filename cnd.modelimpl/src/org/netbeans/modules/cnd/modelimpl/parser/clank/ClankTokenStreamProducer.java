@@ -86,25 +86,25 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     @Override
     public TokenStream getTokenStream(boolean triggerParsingActivity, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
-        ClankDriver.APTTokenStreamCache extractTokenStream = ClankDriver.extractTokenStream(ppHandler);
-        assert extractTokenStream != null;
+        ClankDriver.APTTokenStreamCache tokStreamCache = ClankDriver.extractTokenStream(ppHandler);
+        assert tokStreamCache != null;
         FileImpl fileImpl = getMainFile();
-        if (!extractTokenStream.hasTokenStream()) {
+        if (!tokStreamCache.hasTokenStream()) {
           // do preprocessing
           MyClankPreprocessorCallback callback = new MyClankPreprocessorCallback(
                   ppHandler,
                   triggerParsingActivity,
-                  fileImpl, extractTokenStream.getFileIndex());
+                  fileImpl, tokStreamCache.getFileIndex());
           boolean tsFromClank = ClankDriver.preprocess(fileImpl.getBuffer(), ppHandler, callback, interrupter);
           if (!tsFromClank) {
               return null;
           }
-          extractTokenStream = callback.getPPOut();
-          if (extractTokenStream == null) {
+          tokStreamCache = callback.getPPOut();
+          if (tokStreamCache == null) {
             return null;
           }
         }
-        TokenStream tokenStream = extractTokenStream.getTokenStream();
+        TokenStream tokenStream = tokStreamCache.getTokenStream();
         if (tokenStream == null) {
           return null;
         }
@@ -146,12 +146,13 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
-        public boolean onEnter(ClankDriver.ClankFileInfo info) {
-            if (info.getFileIndex() == stopAtIndex) {
+        public void onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {
+            assert enteredTo != null;
+            if (enteredTo.getFileIndex() == stopAtIndex) {
               assert !alreadySeenInterestedFileEnter;
               alreadySeenInterestedFileEnter = true;
-              CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(info.getFilePath(), stopFileImpl.getAbsolutePath()),
-                      info + "\n vs. \n", stopFileImpl);
+              CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath()),
+                      enteredTo + "\n vs. \n", stopFileImpl);
               if (triggerParsingActivity) {
                 // we entered target file and after that we can
                 // handle inclusive #includes
@@ -161,10 +162,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               if (triggerParsingActivity) {
                 // let's keep stack of inner includes
                 // then onExit post process headers wthich should be parsed
-                ResolvedPath resolvedPath = info.getResolvedPath();
-                CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(resolvedPath.getPath(), info.getFilePath()),
-                        resolvedPath.getPath() + " vs. ", info.getFilePath());
-                assert ClankDriver.extractTokenStream(ppHandler).getFileIndex() == info.getFileIndex();
+                ResolvedPath resolvedPath = enteredTo.getResolvedPath();
+                CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(resolvedPath.getPath(), enteredTo.getFilePath()),
+                        resolvedPath.getPath() + " vs. ", enteredTo.getFilePath());
+                assert ClankDriver.extractTokenStream(ppHandler).getFileIndex() == enteredTo.getFileIndex();
                 FileImpl curFile = getCurFile(false);
                 CharSequence path = resolvedPath.getPath();
                 ProjectBase aStartProject = startProject;
@@ -198,7 +199,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 }
               }
             }
-            return true;
         }
 
         private FileImpl getCurFile(boolean pop) {
@@ -218,13 +218,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
-        public boolean onExit(ClankDriver.ClankFileInfo fileInfo) {
+        public boolean onExit(ClankDriver.ClankFileInfo exitedFrom, ClankDriver.ClankFileInfo exitedTo) {
+            assert exitedFrom != null;
             if (!alreadySeenInterestedFileEnter) {
               return true;
             }
-            if (stopAtIndex == fileInfo.getFileIndex()) {
-              CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(fileInfo.getFilePath(), stopFileImpl.getAbsolutePath()) ,
-                      "expected " + stopFileImpl.getAbsolutePath(), fileInfo);
+            if (stopAtIndex == exitedFrom.getFileIndex()) {
+              CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(exitedFrom.getFilePath(), stopFileImpl.getAbsolutePath()) ,
+                      "expected " + stopFileImpl.getAbsolutePath(), exitedFrom);
               foundTokens = ClankDriver.extractTokenStream(ppHandler);
               assert foundTokens.hasTokenStream();
               // stop all activity
@@ -246,13 +247,13 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project\n", inclPath, inclFileOwner.getName());
                     }
                   } else {
-                    FilePreprocessorConditionState pcState = CsmCorePackageAccessor.get().createPCState(inclPath, fileInfo.getSkippedRanges());
+                    FilePreprocessorConditionState pcState = CsmCorePackageAccessor.get().createPCState(inclPath, exitedFrom.getSkippedRanges());
                     PreprocessorStatePair ppStatePair = new PreprocessorStatePair(inclState, pcState);
                     inclFileOwner.postIncludeFile(aStartProject, currentInclusion, inclPath, ppStatePair, null);
                   }
                 }
               } catch (Exception ex) {
-                APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[]{fileInfo.getFilePath(), ex});
+                APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[]{exitedFrom.getFilePath(), ex});
                 DiagnosticExceptoins.register(ex);
               }
               

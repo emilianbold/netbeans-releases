@@ -89,7 +89,7 @@ import org.openide.util.CharSequences;
     private final int offset;
     private final CharSequence textID;
 
-    /*package*/ClankToAPTToken(Preprocessor PP, Token token) {
+    private ClankToAPTToken(Preprocessor PP, Token token) {
         assert PP != null;
         SourceManager SM = PP.getSourceManager();
         assert SM != null;
