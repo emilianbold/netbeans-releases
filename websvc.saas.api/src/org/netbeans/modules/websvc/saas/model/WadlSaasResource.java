@@ -110,6 +110,12 @@ public class WadlSaasResource implements Comparable<WadlSaasResource> {
     }
     
     public int compareTo(WadlSaasResource saasResource) {
-        return resource.getPath().compareTo(saasResource.getResource().getPath());
+        String thisPath = resource.getPath();
+        String thatPath = saasResource.getResource().getPath();
+        if (thisPath == null) {
+            return (thatPath == null) ? 0 : -1;
+        } else {
+            return (thatPath == null) ? 1 : thisPath.compareTo(thatPath);
+        }
     }
 }
