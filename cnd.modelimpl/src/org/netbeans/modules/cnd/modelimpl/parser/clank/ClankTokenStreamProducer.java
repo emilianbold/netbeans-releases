@@ -84,7 +84,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(boolean triggerParsingActivity, Interrupter interrupter) {
+    public TokenStream getTokenStream(boolean triggerParsingActivity,
+            boolean filterOutComments, boolean applyLanguageFilter, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
         ClankDriver.APTTokenStreamCache tokStreamCache = ClankDriver.extractTokenStream(ppHandler);
         assert tokStreamCache != null;
@@ -108,9 +109,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         if (tokenStream == null) {
           return null;
         }
-        APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppHandler.getState());
-        TokenStream filteredTokenStream = languageFilter.getFilteredStream(new APTCommentsFilter(tokenStream));
-        return filteredTokenStream;
+        if (applyLanguageFilter) {
+          APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppHandler.getState());
+          tokenStream = languageFilter.getFilteredStream(new APTCommentsFilter(tokenStream));
+        }
+        return tokenStream;
     }
 
     @Override

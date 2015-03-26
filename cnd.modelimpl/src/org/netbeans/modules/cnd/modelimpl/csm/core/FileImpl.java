@@ -97,7 +97,7 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
@@ -1071,7 +1071,7 @@ public final class FileImpl implements CsmFile,
         }
 
         public void prepare(PreprocHandler preprocHandler, String contextLanguage, String contextLanguageFlavor) {
-            this.tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor);
+            this.tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, false);
         }
     }
     
@@ -1172,26 +1172,29 @@ public final class FileImpl implements CsmFile,
             return false;
         }
         PreprocHandler.State ppState = preprocHandler.getState();
-        // ask for cache and pcBuilder as well
-        AtomicReference<APTFileCacheEntry> cacheEntry = new AtomicReference<>(null);
-        AtomicReference<APTBasedPCStateBuilder> pcBuilder = new AtomicReference<>(null);
-        TokenStream tokenStream = createParsingTokenStreamForHandler(preprocHandler, false, cacheEntry, pcBuilder);
+        TokenStreamProducer tsp = TokenStreamProducer.create(this, true, false);
+        if (tsp == null) {
+            // probably file was removed
+            return false;
+        }
+        String contextLanguage = this.getContextLanguage(ppState);
+        String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
+        tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
+        TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
         if (tokenStream == null) {
             return false;
         }
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         // after the next call builder will be ready to create pc state
         List<APTToken> tokens = APTUtils.toList(tokenStream);
-        // Only now we can create pcState
-        FilePreprocessorConditionState pcState = pcBuilder.get().build();        
-        // remember walk info
-        setAPTCacheEntry(ppState, cacheEntry.get(), false);
+        // Only now we can create pcState and cache if possible
+        FilePreprocessorConditionState pcState = tsp.release();
         // cache collected tokens associaited with PCState
         tsCache.cacheTokens(pcState, tokens, languageFilter);
         return true;
     }
     
-    private TokenStream createParsingTokenStreamForHandler(PreprocHandler preprocHandler, boolean filtered, 
+    private TokenStream createParsingTokenStreamForHandler(PreprocHandler preprocHandler, boolean filterOutComments,
             AtomicReference<APTFileCacheEntry> cacheOut, AtomicReference<APTBasedPCStateBuilder> pcBuilderOut) {
         APTFile apt = CsmCorePackageAccessor.get().getFileAPT(this, true);
         if (apt == null) {
@@ -1217,7 +1220,7 @@ public final class FileImpl implements CsmFile,
             cacheOut.set(cacheEntry);
         }
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder,cacheEntry);
-        return walker.getTokenStream(filtered);
+        return walker.getTokenStream(filterOutComments);
     }
     
     private static final class TokenStreamLock {}
@@ -1281,7 +1284,7 @@ public final class FileImpl implements CsmFile,
                 return file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
             }
             PreprocHandler.State thisFileStartState = includeContextPair.state;
-            LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(thisFileStartState);
+            LinkedList<PPIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(thisFileStartState);
             reverseInclStack.addLast(new IncludeInfoImpl(include, file.getFileSystem(), file.getAbsolutePath()));
             ProjectBase projectImpl = getProjectImpl(true);
             if (projectImpl == null) {
@@ -1299,7 +1302,7 @@ public final class FileImpl implements CsmFile,
         return null;
     }
     
-    private static class IncludeInfoImpl implements APTIncludeHandler.IncludeInfo {
+    private static class IncludeInfoImpl implements PPIncludeHandler.IncludeInfo {
 
         private final int line;
         private final CsmInclude include;
@@ -1478,7 +1481,7 @@ public final class FileImpl implements CsmFile,
                         "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
                 return null;
             }            
-            TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(parseParams.triggerParsingActivity, interrupter);
+            TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(parseParams.triggerParsingActivity, true, true, interrupter);
             if (filteredTokenStream == null) {
                 System.err.println(" null token stream for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                         "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N

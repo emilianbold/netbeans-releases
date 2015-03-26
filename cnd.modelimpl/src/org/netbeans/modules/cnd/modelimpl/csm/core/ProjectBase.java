@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -1799,7 +1800,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     // TODO: think over, what if we aready changed entry,
                     // but now deny parsing, because base, but not this project, is disposing?!
                     if (!isDisposing() && !startProject.isDisposing()) {
-                        csmFile.setAPTCacheEntry(newStatePair.state, aptCacheEntry, clean.get());
+                        assert !(APTTraceFlags.USE_CLANK && (aptCacheEntry != null)) : "aptCacheEntry must not be used in Clank Mode";
+                        if (aptCacheEntry != null) {
+                          csmFile.setAPTCacheEntry(newStatePair.state, aptCacheEntry, clean.get());
+                        }
                         if (!TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
                             ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean.get(),
                                     clean.get() ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);

@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  *
@@ -77,6 +79,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
     private final APTFile fullAPT;
     private PreprocHandler curPreprocHandler;
     private APTBasedPCStateBuilder pcBuilder;
+    private Pair<PreprocHandler.State, APTFileCacheEntry> cachePair;
     
     private APTTokenStreamProducer(FileImpl file, FileContent newFileContent, APTFile fullAPT) {
         super(file, newFileContent);
@@ -106,7 +109,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(boolean triggerParsingActivity, Interrupter interrupter) {
+    public TokenStream getTokenStream(boolean triggerParsingActivity, boolean filterOutComments, boolean applyLanguageFilter, Interrupter interrupter) {
         FileImpl fileImpl = getMainFile();
         PreprocHandler preprocHandler = getCurrentPreprocHandler();
         // use full APT for generating token stream
@@ -125,18 +128,32 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         pcBuilder = new APTBasedPCStateBuilder(fileImpl.getAbsolutePath());
         // ask for concurrent entry if absent
         APTFileCacheEntry aptCacheEntry = fileImpl.getAPTCacheEntry(ppState, Boolean.FALSE);
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, fullAPT, fileImpl, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
-        walker.setFileContent(getFileContent());
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, fullAPT, fileImpl, preprocHandler, triggerParsingActivity, pcBuilder, aptCacheEntry);
+        walker.setFileContent(getFileContent()); // NO
         if (TraceFlags.DEBUG) {
             System.err.println("doParse " + fileImpl.getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
         }
-
-        TokenStream filteredTokenStream = walker.getFilteredTokenStream(fileImpl.getLanguageFilter(ppState));
-        return filteredTokenStream;
+        TokenStream tsOut;
+        if (applyLanguageFilter) {
+            APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppState);
+            tsOut = walker.getFilteredTokenStream(languageFilter);
+        } else {
+            tsOut = walker.getTokenStream(filterOutComments);
+        }
+        if (isAllowedToCacheOnRelease()) {
+          cachePair = Pair.of(ppState, aptCacheEntry);
+        }
+        return tsOut;
     }
 
     @Override
     public FilePreprocessorConditionState release() {
+        if (isAllowedToCacheOnRelease()) {
+          assert cachePair != null;
+          // remember walk info
+          FileImpl fileImpl = getMainFile();
+          fileImpl.setAPTCacheEntry(cachePair.first(), cachePair.second(), false);
+        }
         return pcBuilder.build();
     }
     

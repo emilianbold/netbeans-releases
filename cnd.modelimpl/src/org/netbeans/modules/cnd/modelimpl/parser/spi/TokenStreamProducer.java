@@ -63,6 +63,7 @@ public abstract class TokenStreamProducer {
     private String languageFlavor = APTLanguageSupport.FLAVOR_UNKNOWN;
     private final FileImpl fileImpl;
     private final FileContent fileContent;
+    private boolean allowToCacheOnRelease;
 
     protected TokenStreamProducer(FileImpl fileImpl, FileContent newFileContent) {
         assert fileImpl != null : "null file is not allowed";        
@@ -80,18 +81,19 @@ public abstract class TokenStreamProducer {
         }
     }
     
-    public abstract TokenStream getTokenStream(boolean triggerParsingActivity, Interrupter interrupter);
+    public abstract TokenStream getTokenStream(boolean triggerParsingActivity, boolean filterOutComments, boolean applyLanguageFilter, Interrupter interrupter);
     
     /** must be called when TS was completely consumed */
     public abstract FilePreprocessorConditionState release();
 
-    public void prepare(PreprocHandler handler, String language, String languageFlavor) {
+    public void prepare(PreprocHandler handler, String language, String languageFlavor, boolean allowToCacheOnRelease) {
         assert handler != null : "null preprocHandler is not allowed";
         curPreprocHandler = handler;
         assert language != null : "null language is not allowed";
         this.language = language;
         assert languageFlavor != null : "null language flavor is not allowed";
         this.languageFlavor = languageFlavor;
+        this.allowToCacheOnRelease = allowToCacheOnRelease;
     }
     
     public PreprocHandler getCurrentPreprocHandler() {
@@ -113,5 +115,9 @@ public abstract class TokenStreamProducer {
     public FileContent getFileContent() {
         assert fileContent != null;
         return fileContent;
+    }
+
+    protected final boolean isAllowedToCacheOnRelease() {
+        return allowToCacheOnRelease;
     }
 }

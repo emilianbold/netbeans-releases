@@ -109,7 +109,7 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.createCleanPreprocState(orig);
     }
     
-    public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(PreprocHandler.State state) {
+    public static LinkedList<PPIncludeHandler.IncludeInfo> extractIncludeStack(PreprocHandler.State state) {
         return APTHandlersSupportImpl.extractIncludeStack(state);
     }
     

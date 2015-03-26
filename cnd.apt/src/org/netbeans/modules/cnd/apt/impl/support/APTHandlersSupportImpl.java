@@ -147,10 +147,10 @@ public class APTHandlersSupportImpl {
           return false;
         }
         if (includeHandler instanceof ClankIncludeHandlerImpl) {
-            assert !APTTraceFlags.USE_CLANK;
+            assert APTTraceFlags.USE_CLANK;
             return ((ClankIncludeHandlerImpl) includeHandler).isFirstLevel();
         } else {
-            assert APTTraceFlags.USE_CLANK;
+            assert !APTTraceFlags.USE_CLANK;
             return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
         }
     }
@@ -198,11 +198,11 @@ public class APTHandlersSupportImpl {
         return incl == null ? 0 : incl.getIncludeStackDepth();
     }
 
-    public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
+    public static LinkedList<PPIncludeHandler.IncludeInfo> extractIncludeStack(PreprocHandler.State state) {
         assert state != null;
-        Collection<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
+        Collection<PPIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
         // return copy to prevent modification of frozen state objects
-        return inclStack == null ? new LinkedList<APTIncludeHandler.IncludeInfo>() : new LinkedList<APTIncludeHandler.IncludeInfo>(inclStack);
+        return inclStack == null ? new LinkedList<PPIncludeHandler.IncludeInfo>() : new LinkedList<PPIncludeHandler.IncludeInfo>(inclStack);
     }
 
     public static StartEntry extractStartEntry(PreprocHandler.State state) {
@@ -227,7 +227,7 @@ public class APTHandlersSupportImpl {
         }
     }
     
-    private static Collection<APTIncludeHandler.IncludeInfo> getIncludeStack(PPIncludeHandler.State inclState) {
+    private static Collection<PPIncludeHandler.IncludeInfo> getIncludeStack(PPIncludeHandler.State inclState) {
         if (inclState == null) {
             return null;
         }
