@@ -3,4 +3,5 @@ p|;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      process                         [PUBLIC]   <font color=#999999>NodeJS</font>
+VARIABLE   paaa: Module path               [PUBLIC]   inFunction02.js
 VARIABLE   pes: Number                     [PRIVATE]  issue249500.js
