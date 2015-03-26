@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -341,6 +342,7 @@ public class NodeExecutable {
 
     private ExecutionDescriptor getDescriptor(@NullAllowed Runnable debuggerStartTask) {
         assert project != null;
+        final boolean rerunPossible = debuggerStartTask == null;
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .frontWindowOnError(false)
@@ -348,7 +350,21 @@ public class NodeExecutable {
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debuggerStartTask));
+                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debuggerStartTask))
+                .rerunCondition(new ExecutionDescriptor.RerunCondition() {
+                    @Override
+                    public void addChangeListener(ChangeListener listener) {
+                        // noop
+                    }
+                    @Override
+                    public void removeChangeListener(ChangeListener listener) {
+                        // noop
+                    }
+                    @Override
+                    public boolean isRerunPossible() {
+                        return rerunPossible;
+                    }
+                });
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {
