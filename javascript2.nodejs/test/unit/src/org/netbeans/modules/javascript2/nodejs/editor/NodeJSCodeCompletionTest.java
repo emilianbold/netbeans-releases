@@ -56,6 +56,7 @@ import org.netbeans.modules.javascript2.nodejs.TestProjectSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -78,6 +79,14 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
             super.setUp();
             isSetup = true;
         }
+        
+        File cached = Places.getCacheSubfile(NodeJsDataProvider.BACKUP_API_FILE);
+        if (!cached.exists()) {
+            FileObject apiFile = getTestFile("NodeJsRuntime/all.json");
+            File parent = cached.getParentFile();
+            FileUtil.copyFile(apiFile, FileUtil.toFileObject(parent), apiFile.getName());
+        }
+        
         FileObject folder = getTestFile("TestNavigation");
             Project testProject = new TestProjectSupport.TestProject(folder, null);
             List lookupAll = new ArrayList();
@@ -147,11 +156,28 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/cc01/issue249626.js", "require(\"./complexModule\").literalRef.propX.^iprop;", false);
     }
     
+    public void testIssue250346_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250346/modex/inFunction01.js", "paaa.^", false);
+    }
+    
+    public void testIssue250346_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250346/modex/inFunction02.js", "simpleLit.^", false);
+    }
+    
+    public void testIssue250346_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250346/modex/inFunction03.js", "simpleRef.^", false);
+    }
+    
+    public void testIssue250346_04() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250346/modex/inFunction04.js", "modFu.^", false);
+    }
+            
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();
 
         cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/TestNavigation/public_html/")));
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/NodeJsRuntime/")));
         return Collections.singletonMap(
                 JS_SOURCE_ID,
                 ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))

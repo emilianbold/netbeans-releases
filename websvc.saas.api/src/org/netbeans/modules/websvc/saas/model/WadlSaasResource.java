@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
@@ -105,11 +104,19 @@ public class WadlSaasResource implements Comparable<WadlSaasResource> {
         return new ArrayList<WadlSaasResource>(childResources);
     }
   
+    @Override
     public String toString() {
         return resource.getPath();
     }
     
+    @Override
     public int compareTo(WadlSaasResource saasResource) {
-        return resource.getPath().compareTo(saasResource.getResource().getPath());
+        String thisPath = resource.getPath();
+        String thatPath = saasResource.getResource().getPath();
+        if (thisPath == null) {
+            return (thatPath == null) ? 0 : -1;
+        } else {
+            return (thatPath == null) ? 1 : thisPath.compareTo(thatPath);
+        }
     }
 }
