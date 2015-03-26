@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.selenium2.server;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.BindException;
@@ -51,6 +49,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
@@ -63,7 +63,7 @@ import org.openide.util.Utilities;
  *
  * @author Theofanis Oikonomou
  */
-public class Selenium2ServerSupport implements Runnable, PropertyChangeListener {
+public class Selenium2ServerSupport implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(Selenium2ServerSupport.class.getName());
 
@@ -82,6 +82,19 @@ public class Selenium2ServerSupport implements Runnable, PropertyChangeListener 
     public static final String FIREFOX_PROFILE_TEMPLATE_DIR = "firefox.profile.template.dir"; //NOI18N
 
     private Selenium2ServerSupport() {
+        getPrefs().addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if (isRunning()) {
+                    action = Action.RELOAD;
+                    RequestProcessor.getDefault().post(INSTANCE);
+                } else try {
+                    initializeServer();
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, "Cannot re-initialize Selenium server after change of its configuration.", ex); //NOI18N
+                }
+            }
+        });
     }
 
     public static Selenium2ServerSupport getInstance() {
@@ -272,21 +285,8 @@ public class Selenium2ServerSupport implements Runnable, PropertyChangeListener 
                 newInstance(remoteControlConfigurationInstance);
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (PORT.equals(evt.getPropertyName())){
-            action = Action.RELOAD;
-            RequestProcessor.getDefault().post(INSTANCE);
-        }
-    }
-
     public static Preferences getPrefs() {
         return NbPreferences.forModule(Selenium2Customizer.class);
-    }
-
-    // listen on SeleniumProperties
-    static PropertyChangeListener getPropertyChangeListener() {
-        return INSTANCE;
     }
 
     private static enum Action {

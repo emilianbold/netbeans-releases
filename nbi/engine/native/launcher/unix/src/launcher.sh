@@ -1206,22 +1206,19 @@ checkJavaHierarchy() {
 	javaHierarchy=0
 	if [ -n "$tryJava" ] ; then
 		if [ -d "$tryJava" ] || [ $isSymlink "$tryJava" ] ; then # existing directory or a isSymlink        			
-			javaLib="$tryJava"/"lib"
+			javaBin="$tryJava"/"bin"
 	        
-			if [ -d "$javaLib" ] || [ $isSymlink "$javaLib" ] ; then
-				javaLibDtjar="$javaLib"/"dt.jar"
-				if [ -f "$javaLibDtjar" ] || [ -f "$javaLibDtjar" ] ; then
-					#definitely JDK as the JRE doesn`t have dt.jar
+			if [ -d "$javaBin" ] || [ $isSymlink "$javaBin" ] ; then
+				javaBinJavac="$javaBin"/"javac"
+				if [ -f "$javaBinJavac" ] || [ $isSymlink "$javaBinJavac" ] ; then
+					#definitely JDK as the JRE doesn`t contain javac
 					javaHierarchy=2				
 				else
 					#check if we inside JRE
-					javaLibJce="$javaLib"/"jce.jar"
-					javaLibCharsets="$javaLib"/"charsets.jar"					
-					javaLibRt="$javaLib"/"rt.jar"
-					if [ -f "$javaLibJce" ] || [ $isSymlink "$javaLibJce" ] || [ -f "$javaLibCharsets" ] || [ $isSymlink "$javaLibCharsets" ] || [ -f "$javaLibRt" ] || [ $isSymlink "$javaLibRt" ] ; then
+					javaBinJava="$javaBin"/"java"
+					if [ -f "$javaBinJava" ] || [ $isSymlink "$javaBinJava" ] ; then
 						javaHierarchy=1
-					fi
-					
+					fi					
 				fi
 			fi
 		fi
