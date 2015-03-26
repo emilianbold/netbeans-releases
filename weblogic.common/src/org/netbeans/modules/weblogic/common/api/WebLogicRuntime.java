@@ -55,7 +55,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.security.AccessController;
+import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +77,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -86,7 +92,9 @@ import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.modules.weblogic.common.RemoteLogInputReader;
+import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -602,14 +610,14 @@ public final class WebLogicRuntime {
         }
     }
 
-    private static boolean ping(String host, int port, int timeout, boolean remote, boolean secured) {
+    private boolean ping(String host, int port, int timeout, boolean remote, boolean secured) {
         if (ping(host, port, timeout, "/console/login/LoginForm.jsp", remote, secured)) {
             return true;
         }
         return ping(host, port, timeout, "/console", remote, secured);
     }
 
-    private static boolean ping(String host, int port, int timeout, String path, boolean remote, boolean secured) {
+    private boolean ping(String host, int port, int timeout, String path, boolean remote, boolean secured) {
         // checking whether a socket can be created is not reliable enough, see #47048
         try {
             Socket socket = createSocket(host, port, path, remote, secured);
@@ -636,10 +644,21 @@ public final class WebLogicRuntime {
         }
     }
 
-    private static Socket createSocket(String host, int port, String path, boolean remote, boolean secured) throws IOException {
+    private Socket createSocket(String host, int port, String path, boolean remote, boolean secured) throws IOException {
         if (secured) {
+            WebLogicTrustHandler provider = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+            if (provider != null) {
+                try {
+                    SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
+                    context.init(null, new TrustManager[] {provider.getTrustManager(config)}, new SecureRandom());
+                    return context.getSocketFactory().createSocket();
+                } catch (GeneralSecurityException ex) {
+                    throw new IOException(ex);
+                }
+            }
             return SSLSocketFactory.getDefault().createSocket();
         }
+
         Proxy proxy = Proxy.NO_PROXY;
         if (remote) {
             try {

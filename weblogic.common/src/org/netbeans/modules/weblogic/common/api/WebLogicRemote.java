@@ -52,6 +52,8 @@ import javax.management.remote.JMXServiceURL;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.weblogic.common.ProxyUtils;
+import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -71,6 +73,13 @@ public final class WebLogicRemote {
             String nonProxyHosts = ProxyUtils.getNonProxyHosts(nonProxy);
             if (nonProxyHosts != null) {
                 System.setProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS, nonProxyHosts);
+            }
+            WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+            if (handler != null) {
+                handler.setup(config);
+                for (Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
+                    System.setProperty(e.getKey(), e.getValue());
+                }
             }
 
             try {

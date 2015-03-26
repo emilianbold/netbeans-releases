@@ -54,11 +54,13 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -78,7 +80,10 @@ import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.netbeans.modules.weblogic.common.ProxyUtils;
+import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -690,47 +695,15 @@ public final class WebLogicDeployer {
         }
 
         if (config.isSecured()) {
-            boolean weblogicSpecific = false;
-            String[] sslProperties = new String[] {
-                "weblogic.security.TrustKeyStore", // NOI18N
-                "weblogic.security.JavaStandardTrustKeystorePassPhrase", // NOI18N
-                "weblogic.security.CustomTrustKeyStoreFileName", // NOI18N
-                "weblogic.security.TrustKeystoreType", // NOI18N
-                "weblogic.security.CustomTrustKeystorePassPhrase", // NOI18N
-                "weblogic.security.SSL.hostnameVerifier", // NOI18N
-                "weblogic.security.SSL.ignoreHostnameVerification", // NOI18N
-//                "javax.net.ssl.keyStore", // NOI18N
-//                "javax.net.ssl.keyStorePassword", // NOI18N
-//                "javax.net.ssl.keyStoreType", // NOI18N
-                "javax.net.ssl.trustStore", // NOI18N
-                "javax.net.ssl.trustStorePassword", // NOI18N
-                "javax.net.ssl.trustStoreType" // NOI18N
-            };
-
-            for (String prop : sslProperties) {
-                String value = System.getProperty(prop);
-                if (value != null) {
-                    arguments.add("-D" + prop + "=" + value); // NOI18N
-                    if (!weblogicSpecific && prop.startsWith("weblogic.security")) { // NOI18N
-                        weblogicSpecific = true;
-                    }
+            WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+            if (handler != null) {
+                try {
+                    handler.setup(config);
+                } catch (GeneralSecurityException | IOException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
                 }
-            }
-
-            if (!weblogicSpecific) {
-                String trustStore = System.getProperty("javax.net.ssl.trustStore"); // NOI18N
-                if (trustStore != null) {
-                    arguments.add("-Dweblogic.security.TrustKeyStore=CustomTrust"); // NOI18N
-                    arguments.add("-Dweblogic.security.CustomTrustKeyStoreFileName=" + trustStore); // NOI18N
-                    String pass = System.getProperty("javax.net.ssl.trustStorePassword"); // NOI18N
-                    if (pass != null) {
-                        arguments.add("-Dweblogic.security.CustomTrustKeystorePassPhrase=" + pass); // NOI18N
-                    }
-                } else {
-                    String pass = System.getProperty("javax.net.ssl.trustStorePassword"); // NOI18N
-                    if (pass != null) {
-                        arguments.add("-Dweblogic.security.JavaStandardTrustKeystorePassPhrase=" + pass); // NOI18N
-                    }
+                for(Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
+                    arguments.add("-D" + e.getKey() + "=" + e.getValue()); // NOI18N
                 }
             }
         }

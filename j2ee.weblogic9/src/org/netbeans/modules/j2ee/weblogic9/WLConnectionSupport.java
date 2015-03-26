@@ -54,6 +54,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -92,6 +94,14 @@ public final class WLConnectionSupport {
                 if (!nonProxyHosts.equals(originalNonProxyHosts)) {
                     nonProxyHostsChanged = true;
                     System.setProperty(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS, nonProxyHosts);
+                }
+            }
+
+            WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+            if (handler != null) {
+                handler.setup(deploymentManager.getCommonConfiguration());
+                for (Map.Entry<String, String> e : handler.getTrustProperties(deploymentManager.getCommonConfiguration()).entrySet()) {
+                    System.setProperty(e.getKey(), e.getValue());
                 }
             }
 
