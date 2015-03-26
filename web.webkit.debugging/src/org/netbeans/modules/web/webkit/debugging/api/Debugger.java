@@ -43,6 +43,7 @@ package org.netbeans.modules.web.webkit.debugging.api;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -386,7 +387,7 @@ public final class Debugger {
         }
         JSONObject params = new JSONObject();
         params.put("lineNumber", lineNumber);
-        params.put("url", url.replaceAll("/", "\\/")); //  XXX: not sure why but using backslash is necesssary here
+        params.put("urlRegex", createURLRegex(url));
         if (columnNumber != null) {
             params.put("columnNumber", columnNumber);
         }
@@ -421,6 +422,40 @@ public final class Debugger {
             }
         }
         return null;
+    }
+
+    private String createURLRegex(String url) {
+        String baseURL;
+        try {
+            URL u = new URL(url);
+            baseURL = u.getProtocol()+":"+
+                ((u.getAuthority() != null && u.getAuthority().length() > 0) ?
+                    "//"+u.getAuthority() : "")+
+                ((u.getPath() != null) ?
+                    u.getPath() : "");
+        } catch (MalformedURLException ex) {
+            baseURL = url;
+            int i = url.indexOf('?');
+            if (i > 0) {
+                baseURL = baseURL.substring(0, i);
+            }
+            i = url.indexOf('#');
+            if (i > 0) {
+                baseURL = baseURL.substring(0, i);
+            }
+        }
+        // Escape regex special characters:
+        baseURL = baseURL.replace("\\", "\\\\");
+        baseURL = baseURL.replace(".", "\\.");
+        baseURL = baseURL.replace("*", "\\*");
+        baseURL = baseURL.replace("+", "\\+");
+        baseURL = baseURL.replace("(", "\\(");
+        baseURL = baseURL.replace(")", "\\)");
+        baseURL = baseURL.replace("{", "\\{");
+        baseURL = baseURL.replace("}", "\\}");
+        baseURL = baseURL.replace("|", "\\|");
+        //System.err.println("Escaped baseURL = '"+baseURL+"'");
+        return "^"+baseURL+".*";
     }
 
     @SuppressWarnings("unchecked")    
