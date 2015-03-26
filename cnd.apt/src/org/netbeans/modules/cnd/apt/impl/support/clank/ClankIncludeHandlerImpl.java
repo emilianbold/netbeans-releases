@@ -167,7 +167,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return Collections.unmodifiableList(systemIncludePaths);
     }
 
-    /*package*/boolean isFirstLevel() {
+    public boolean isFirstLevel() {
         return inclStack == null || inclStack.isEmpty();
     }
     

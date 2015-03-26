@@ -143,11 +143,15 @@ public class APTHandlersSupportImpl {
     }
 
     public static boolean isFirstLevel(PPIncludeHandler includeHandler) {
-        assert !APTTraceFlags.USE_CLANK;
-        if (includeHandler != null) {
-            return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
+        if (includeHandler == null) {
+          return false;
+        }
+        if (includeHandler instanceof ClankIncludeHandlerImpl) {
+            assert !APTTraceFlags.USE_CLANK;
+            return ((ClankIncludeHandlerImpl) includeHandler).isFirstLevel();
         } else {
-            return false;
+            assert APTTraceFlags.USE_CLANK;
+            return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
         }
     }
 
