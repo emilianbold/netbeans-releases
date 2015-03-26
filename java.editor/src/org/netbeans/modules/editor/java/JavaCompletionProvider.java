@@ -408,8 +408,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             boolean camelCase = isCamelCasePrefix(prefix);
             for (Iterator<JavaCompletionItem> it = data.iterator(); it.hasNext();) {
                 CompletionItem itm = it.next();
-                if (org.netbeans.modules.java.completion.Utilities.startsWith(itm.getInsertPrefix().toString(), prefix)
-                        || (camelCase && org.netbeans.modules.java.completion.Utilities.startsWithCamelCase(itm.getInsertPrefix().toString(), prefix))) {
+                CharSequence cs = itm != null ? itm.getInsertPrefix() : null;
+                if (org.netbeans.modules.java.completion.Utilities.startsWith(cs != null ? cs.toString() : null, prefix)
+                        || (camelCase && org.netbeans.modules.java.completion.Utilities.startsWithCamelCase(cs != null ? cs.toString() : null, prefix))) {
                     ret.add(itm);
                 }
             }

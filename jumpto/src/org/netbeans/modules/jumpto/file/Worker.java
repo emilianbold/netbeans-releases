@@ -637,6 +637,10 @@ final class Worker implements Runnable {
                     indexQueryText = NameMatcherFactory.wildcardsToRegexp(request.getText(),true);
                     Pattern.compile(indexQueryText);    //Verify the pattern
                     break;
+                case CASE_INSENSITIVE_CAMEL_CASE:
+                    searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME;
+                    indexQueryText = request.getText();
+                    break;
                 case REGEXP:
                     searchField = FileIndexer.FIELD_NAME;
                     indexQueryText = NameMatcherFactory.wildcardsToRegexp(request.getText(),true);
