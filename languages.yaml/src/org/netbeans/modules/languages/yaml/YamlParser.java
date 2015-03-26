@@ -49,6 +49,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.jruby.util.ByteList;
 import org.jvyamlb.Composer;
@@ -165,12 +167,26 @@ public class YamlParser extends Parser {
         return source;
     }
 
+    private static String replaceInlineRegexBrackets(String source) {
+        // XXX this is just a workaround for issue #246787
+        // it is caused by jvyamlb yaml parser
+        Pattern p = Pattern.compile("\\^/.*?\\[.*?\\].*?,");
+        Matcher m = p.matcher(source);
+        while (m.find()) {
+            String found = m.group();
+            String replaced = found.replace('[', '_').replace(']', '_');
+            source = source.replace(found, replaced);
+        }
+        return source;
+    }
+
     // for test package private
 
     YamlParserResult parse(String source, Snapshot snapshot) {
 
         source = replacePhpFragments(source);
         source = replaceCommonSpecialCharacters(source);
+        source = replaceInlineRegexBrackets(source);
 
         try {
             if (isTooLarge(source)) {
