@@ -145,7 +145,7 @@ public final class AddCast implements ErrorRule<Void> {
                     TypeMirror expIfaceType = info.getTrees().getTypeMirror(path);
                     
                     // rule out weird errors
-                    if (expIfaceType.getKind() == TypeKind.DECLARED) {
+                    if (expIfaceType != null && expIfaceType.getKind() == TypeKind.DECLARED) {
                         Element el = info.getTypes().asElement(expIfaceType);
                         if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
                             for (Element m : el.getEnclosedElements()) {
