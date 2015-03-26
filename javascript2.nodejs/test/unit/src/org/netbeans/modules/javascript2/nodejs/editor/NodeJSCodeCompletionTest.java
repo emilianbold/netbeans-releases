@@ -56,6 +56,7 @@ import org.netbeans.modules.javascript2.nodejs.TestProjectSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -78,6 +79,14 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
             super.setUp();
             isSetup = true;
         }
+        
+        File cached = Places.getCacheSubfile(NodeJsDataProvider.BACKUP_API_FILE);
+        if (!cached.exists()) {
+            FileObject apiFile = getTestFile("NodeJsRuntime/all.json");
+            File parent = cached.getParentFile();
+            FileUtil.copyFile(apiFile, FileUtil.toFileObject(parent), apiFile.getName());
+        }
+        
         FileObject folder = getTestFile("TestNavigation");
             Project testProject = new TestProjectSupport.TestProject(folder, null);
             List lookupAll = new ArrayList();

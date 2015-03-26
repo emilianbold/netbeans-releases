@@ -117,6 +117,8 @@ public class NodeJsDataProvider {
     private static final String CACHE_FOLDER_NAME = "nodejs-doc"; //NOI18N
     private static final String API_ALL_JSON_FILE = "all.json"; //NOI18N
 
+    protected static final String BACKUP_API_FILE = new StringBuilder().append(CACHE_FOLDER_NAME).append('/')
+                    .append(DOC_VERSION).append('/').append(API_ALL_JSON_FILE).toString();
     private static final int URL_CONNECTION_TIMEOUT = 1000; //ms
     private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
 
@@ -621,8 +623,7 @@ public class NodeJsDataProvider {
             }
         }
         if (pathFile == null) {
-            pathFile = new StringBuilder().append(CACHE_FOLDER_NAME).append('/')
-                    .append(DOC_VERSION).append('/').append(API_ALL_JSON_FILE).toString();
+            pathFile = BACKUP_API_FILE;
         }
         File cacheFile = Places.getCacheSubfile(pathFile);
         return cacheFile;
