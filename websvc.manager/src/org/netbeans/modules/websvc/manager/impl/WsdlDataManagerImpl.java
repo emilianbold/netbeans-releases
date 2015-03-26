@@ -60,6 +60,8 @@ import org.openide.util.RequestProcessor;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager.class)
 public class WsdlDataManagerImpl implements WsdlDataManager {
+    /** Request processor for this class. */
+    private static final RequestProcessor RP = new RequestProcessor(WsdlDataManagerImpl.class);
 
     private int precedence;
 
@@ -87,7 +89,7 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
                 }
             }
         };
-        RequestProcessor.getDefault().post(addWsRunnable);
+        RP.post(addWsRunnable);
         return wsData;
     }
 
@@ -115,7 +117,7 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
                     }
                 }
             };
-            RequestProcessor.getDefault().post(addWsRunnable);
+            RP.post(addWsRunnable);
         }
     }
 
