@@ -4076,6 +4076,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     private static CharSequence createAssignToVarText(CompilationInfo info, TypeMirror type, String name) {
         name = adjustName(name);
+        type = SourceUtils.resolveCapturedType(info, type);
         StringBuilder sb = new StringBuilder();
         sb.append("${TYPE type=\""); //NOI18N
         sb.append(Utilities.getTypeName(info, type, true));
