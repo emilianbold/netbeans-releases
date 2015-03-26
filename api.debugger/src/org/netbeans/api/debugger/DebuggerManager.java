@@ -1511,12 +1511,13 @@ public final class DebuggerManager implements ContextProvider {
 
     
     // helper methods ....................................................
-    
+
     private Set<LazyDebuggerManagerListener> loadedListeners;
     private List<? extends LazyDebuggerManagerListener> listenersLookupList;
+    private final Object loadedListenersLock = new Object();
     
     private void initDebuggerManagerListeners () {
-        synchronized (listenersMap) {
+        synchronized (loadedListenersLock) {
             if (loadedListeners == null) {
                 loadedListeners = new HashSet<LazyDebuggerManagerListener>();
                 listenersLookupList = lookup.lookup (null, LazyDebuggerManagerListener.class);
@@ -1528,7 +1529,7 @@ public final class DebuggerManager implements ContextProvider {
                     }
                 });
             }
-            
+
         }
     }
     
