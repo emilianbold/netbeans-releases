@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
-import java.security.Certificate;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -68,10 +67,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
@@ -82,6 +82,7 @@ import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -91,6 +92,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = WebLogicTrustHandler.class)
 public class WLTrustHandler implements WebLogicTrustHandler {
+
+    private static final Logger LOGGER = Logger.getLogger(WLTrustHandler.class.getName());
 
     private static final RequestProcessor TRUST_MANAGER_ACCESS = new RequestProcessor(WLTrustHandler.class);
 
@@ -102,6 +105,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         context.init(null, new TrustManager[]{getTrustManager(config)}, new SecureRandom());
         SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket();
         try {
+            // we just trigger the trust manager here
             socket.connect(new InetSocketAddress(config.getHost(), config.getPort()), CHECK_TIMEOUT); // NOI18N
             socket.setSoTimeout(CHECK_TIMEOUT);
             PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true); // NOI18N
@@ -140,10 +144,10 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         }
 
         Map<String, String> result = new HashMap<String, String>();
-        result.put("weblogic.security.TrustKeyStore", "CustomTrust");
-        result.put("weblogic.security.CustomTrustKeyStoreType", "JKS");
-        result.put("weblogic.security.CustomTrustKeyStoreFileName", file.getAbsolutePath());
-        result.put("weblogic.security.SSL.ignoreHostnameVerification", "true");
+        result.put("weblogic.security.TrustKeyStore", "CustomTrust"); // NOI18N
+        result.put("weblogic.security.CustomTrustKeyStoreType", "JKS"); // NOI18N
+        result.put("weblogic.security.CustomTrustKeyStoreFileName", file.getAbsolutePath()); // NOI18N
+        result.put("weblogic.security.SSL.ignoreHostnameVerification", "true"); // NOI18N
         return result;
     }
 
@@ -176,7 +180,6 @@ public class WLTrustHandler implements WebLogicTrustHandler {
             for (int i = 0; i < tms.length; i++) {
                 if (tms[i] instanceof X509TrustManager) {
                     pkixTrustManager = (X509TrustManager) tms[i];
-                    //System.out.println("\tAccepted issuers count : " + pkixTrustManager.getAcceptedIssuers().length);
                     break;
                 }
             }
@@ -188,26 +191,20 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType)
                 throws CertificateException {
-            throw new CertificateException("TrustManager do not trust any client");
+            throw new CertificateException("TrustManager does not trust any client");
         }
 
         /*
          * Delegate to the default trust manager.
          */
+        @NbBundle.Messages("MSG_NotTrusted=The server certificate is not trusted. Add as an exception and proceed anyway?")
         @Override
         public void checkServerTrusted(final X509Certificate[] chain, final String authType)
                 throws CertificateException {
             try {
                 pkixTrustManager.checkServerTrusted(chain, authType);
             } catch (CertificateException excep) {
-                // hacky way for now
-                String url = WLDeploymentFactory.URI_PREFIX + config.getHost()
-                    + ":" + config.getPort() + ":" + config.getServerHome().getAbsolutePath(); // NOI18N
-                File domain = config.getDomainHome();
-                if (domain != null) {
-                    url += ":" + domain.getAbsolutePath(); // NOI18N;
-                }
-                final InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
+                final InstanceProperties ip = InstanceProperties.getInstanceProperties(WLDeploymentFactory.getUrl(config));
 
                 Future<Boolean> task = TRUST_MANAGER_ACCESS.submit(new Callable<Boolean>() {
 
@@ -222,18 +219,20 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                                     m.checkServerTrusted(chain, authType);
                                     return true;
                                 } catch (CertificateException ex) {
-
+                                    LOGGER.log(Level.FINE, null, ex);
                                 }
-                            } catch (Exception ex) {
+                            } catch (GeneralSecurityException ex) {
                                 // proceed to dialog
+                                LOGGER.log(Level.INFO, null, ex);
+                            } catch (IOException ex) {
+                                // proceed to dialog
+                                LOGGER.log(Level.INFO, null, ex);
                             }
                         }
 
-                        NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
-                                "The server certificate is not trusted. Proceed anyway?",
+                        NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(Bundle.MSG_NotTrusted(),
                                 NotifyDescriptor.YES_NO_OPTION);
                         X509Certificate[] sorted = sortChain(chain);
-                        System.out.println("XXX " + sorted[sorted.length - 1].getSubjectDN().getName());
                         Object result = DialogDisplayer.getDefault().notify(notDesc);
                         if (result == NotifyDescriptor.YES_OPTION) {
                             ip.setProperty("trustStore", createSingleTrustStore(sorted[sorted.length - 1]).getAbsolutePath());
@@ -255,9 +254,6 @@ public class WLTrustHandler implements WebLogicTrustHandler {
             }
         }
 
-        /*
-         * Merely pass this through.
-         */
         @Override
         public X509Certificate[] getAcceptedIssuers() {
             return pkixTrustManager.getAcceptedIssuers();
@@ -321,13 +317,11 @@ public class WLTrustHandler implements WebLogicTrustHandler {
             in.close();
         }
 
-        // initialize a new TMF with the ts we just loaded
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(
                         TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(ts);
 
-        // acquire X509 trust manager from factory
-        TrustManager tms[] = tmf.getTrustManagers();
+        TrustManager[] tms = tmf.getTrustManagers();
         for (int i = 0; i < tms.length; i++) {
             if (tms[i] instanceof X509TrustManager) {
                 return (X509TrustManager) tms[i];

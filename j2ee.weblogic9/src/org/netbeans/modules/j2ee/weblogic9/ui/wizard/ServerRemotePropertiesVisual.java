@@ -196,8 +196,7 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
     }
     
     private String getUrl(String host, int port) {
-        return WLDeploymentFactory.URI_PREFIX + host
-                + ":" + port + ":" + instantiatingIterator.getServerRoot(); // NOI18N
+        return WLDeploymentFactory.getUrl(host, port, instantiatingIterator.getServerRoot(), null);
     }
 
     /**

@@ -79,6 +79,14 @@ public final class URLWait {
 
     private static final Logger LOGGER = Logger.getLogger(URLWait.class.getName());
 
+    private static final HostnameVerifier EMPTY_VERIFIER = new HostnameVerifier() {
+
+        @Override
+        public boolean verify(String string, SSLSession ssls) {
+            return true;
+        }
+    };
+
     private URLWait() {
         super();
     }
@@ -157,15 +165,11 @@ public final class URLWait {
                             WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
                             if (handler != null) {
                                 SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
-                                context.init(null, new TrustManager[] {handler.getTrustManager(dm.getCommonConfiguration())}, new SecureRandom());
-                                ((HttpsURLConnection) con).setSSLSocketFactory((SSLSocketFactory) context.getSocketFactory());
-                                ((HttpsURLConnection) con).setHostnameVerifier(new HostnameVerifier() {
-
-                                    @Override
-                                    public boolean verify(String string, SSLSession ssls) {
-                                        return true;
-                                    }
-                                });
+                                context.init(null, new TrustManager[] {handler.getTrustManager(dm.getCommonConfiguration())},
+                                        new SecureRandom());
+                                ((HttpsURLConnection) con).setSSLSocketFactory(
+                                        (SSLSocketFactory) context.getSocketFactory());
+                                ((HttpsURLConnection) con).setHostnameVerifier(EMPTY_VERIFIER);
                             }
                         }
                     }
