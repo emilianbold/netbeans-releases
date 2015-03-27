@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.doctrine2;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
@@ -99,11 +98,6 @@ public final class Doctrine2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
         return Doctrine2Preferences.isEnabled(phpModule);
-    }
-
-    @Override
-    public File[] getConfigurationFiles(PhpModule phpModule) {
-        return new File[0];
     }
 
     @Override

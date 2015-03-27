@@ -42,8 +42,6 @@
 package org.netbeans.modules.php.nette2;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +60,7 @@ import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.phpmodule.ImportantFilesImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -107,33 +106,8 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public File[] getConfigurationFiles(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory != null) {
-            List<File> files = new ArrayList<>();
-            FileObject composer = sourceDirectory.getFileObject(Constants.COMPOSER_PATH);
-            if (composer != null) {
-                files.add(FileUtil.toFile(composer));
-            }
-            FileObject bootstrap = sourceDirectory.getFileObject(Constants.COMMON_BOOTSTRAP_PATH);
-            if (bootstrap != null) {
-                files.add(FileUtil.toFile(bootstrap));
-            }
-            FileObject commonIndex = sourceDirectory.getFileObject(Constants.COMMON_INDEX_PATH);
-            if (commonIndex != null) {
-                files.add(FileUtil.toFile(commonIndex));
-            }
-            FileObject extraIndex = sourceDirectory.getFileObject(Constants.EXTRA_INDEX_PATH);
-            if (extraIndex != null) {
-                files.add(FileUtil.toFile(extraIndex));
-            }
-            FileObject config = sourceDirectory.getFileObject(Constants.COMMON_CONFIG_PATH);
-            if (config != null && config.isFolder() && config.isValid()) {
-                files.addAll(Arrays.asList(FileUtil.toFile(config).listFiles()));
-            }
-            return files.toArray(new File[files.size()]);
-        }
-        return new File[0];
+    public ImportantFilesImplementation getConfigurationFiles2(PhpModule phpModule) {
+        return new ConfigurationFiles(phpModule);
     }
 
     @Override
