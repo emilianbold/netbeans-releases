@@ -180,6 +180,38 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/issue250333/test_02.js", "aaa.^", false);
     }
     
+    public void testIssue250329_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s1.js", "ut.^errorRespond();", false);
+    }
+    
+    public void testIssue250329_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s1.js", "ut2.^endsWith2();", false);
+    }
+    
+    public void testIssue250329_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s2.js", "ut.^errorRespond();", false);
+    }
+    
+    public void testIssue250329_04() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s2.js", "ut2.^endsWith2();", false);
+    }
+    
+    public void testIssue250329_05() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s3.js", "ut.^errorRespond();", false);
+    }
+    
+    public void testIssue250329_06() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s3.js", "ut2.^endsWith2();", false);
+    }
+    
+    public void testIssue250329_07() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s4.js", "ut.^errorRespond();", false);
+    }
+    
+    public void testIssue250329_08() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s4.js", "ut2.^endsWith2();", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();
