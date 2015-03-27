@@ -171,7 +171,15 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue250346_04() throws Exception {
         checkCompletion("TestNavigation/public_html/js/issue250346/modex/inFunction04.js", "modFu.^", false);
     }
-            
+     
+    public void testIssue250333_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250333/test_01.js", "aaa.^", false);
+    }
+    
+    public void testIssue250333_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250333/test_02.js", "aaa.^", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();
