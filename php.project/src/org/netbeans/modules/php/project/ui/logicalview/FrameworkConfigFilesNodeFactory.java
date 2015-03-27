@@ -42,54 +42,56 @@
 
 package org.netbeans.modules.php.project.ui.logicalview;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
+import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.ImportantFilesImplementation;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.StatusDecorator;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
-import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
-/**
- * @author Tomas Mysik
- */
-@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=250)
-public class FrameworkConfigFilesNodeFactory implements NodeFactory {
+@NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 250)
+public final class FrameworkConfigFilesNodeFactory implements NodeFactory {
+
     static final Logger LOGGER = Logger.getLogger(FrameworkConfigFilesNodeFactory.class.getName());
+
 
     public FrameworkConfigFilesNodeFactory() {
     }
@@ -97,42 +99,47 @@ public class FrameworkConfigFilesNodeFactory implements NodeFactory {
     @Override
     public NodeList<?> createNodes(Project p) {
         final PhpProject project = p.getLookup().lookup(PhpProject.class);
-        return new FrameworkConfigFilesChildrenList(project);
+        return new ConfigFilesNodeList(project);
     }
 
-    private static class FrameworkConfigFilesChildrenList implements NodeList<Node>, PropertyChangeListener {
+    //~ Inner classes
+
+    private static final class ConfigFilesNodeList implements NodeList<Node>, PropertyChangeListener, ChangeListener {
+
         private final PhpProject project;
-        private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final List<ImportantFilesImplementation> configFiles = new CopyOnWriteArrayList<>();
+        private final ConfigFilesChildren configFilesChildren;
+        final ChangeSupport changeSupport = new ChangeSupport(this);
 
-        public FrameworkConfigFilesChildrenList(PhpProject project) {
+        // @GuardedBy("thread")
+        private Node configFilesNode;
+
+
+        ConfigFilesNodeList(PhpProject project) {
+            assert project != null;
             this.project = project;
-        }
-
-        @Override
-        public void addNotify() {
-            ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, this);
-        }
-
-        @Override
-        public void removeNotify() {
+            configFilesChildren = new ConfigFilesChildren(project, configFiles);
         }
 
         @Override
         public List<Node> keys() {
-            if (project.hasConfigFiles()) {
-                return Collections.<Node>singletonList(new Nodes.DummyNode(new FrameworkConfigFilesRootNode(project, new FrameworkConfigFilesChildFactory(project))));
+            if (!configFilesChildren.hasConfigFiles()) {
+                return Collections.<Node>emptyList();
             }
-            return Collections.emptyList();
+            if (configFilesNode == null) {
+                configFilesNode = new ConfigFilesNode(configFilesChildren);
+            }
+            return Collections.<Node>singletonList(configFilesNode);
         }
 
         @Override
-        public void addChangeListener(ChangeListener l) {
-            changeSupport.addChangeListener(l);
+        public void addChangeListener(ChangeListener listener) {
+            changeSupport.addChangeListener(listener);
         }
 
         @Override
-        public void removeChangeListener(ChangeListener l) {
-            changeSupport.removeChangeListener(l);
+        public void removeChangeListener(ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
         }
 
         @Override
@@ -141,198 +148,270 @@ public class FrameworkConfigFilesNodeFactory implements NodeFactory {
         }
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
-                // avoid deadlocks
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        fireChange();
-                    }
-                });
-            }
-        }
-
-        void fireChange() {
-            changeSupport.fireChange();
-        }
-    }
-
-    private static class FrameworkConfigFilesRootNode extends AbstractNode implements PropertyChangeListener {
-
-        @StaticResource
-        private static final String CONFIG_BADGE_IMAGE = "org/netbeans/modules/php/project/ui/resources/config-badge.gif"; // NOI18N
-
-        final FrameworkConfigFilesChildFactory childFactory;
-
-
-        public FrameworkConfigFilesRootNode(PhpProject project, FrameworkConfigFilesChildFactory childFactory) {
-            super(Children.create(childFactory, true));
-
-            this.childFactory = childFactory;
-
+        public void addNotify() {
             ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, this);
+            listenOnFrameworks();
         }
 
         @Override
+        public void removeNotify() {
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            configFilesChildren.refreshConfigFiles();
+            fireChange();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
+                listenOnFrameworks();
+                fireChange();
+            }
+        }
+
+        private void fireChange() {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    changeSupport.fireChange();
+                }
+            });
+        }
+
+        // hmm, one listener can be added more times but should not be problem since frameworks in project do not change often...
+        private void listenOnFrameworks() {
+            List<PhpFrameworkProvider> frameworks = project.getFrameworks();
+            List<ImportantFilesImplementation> newConfigFiles = new ArrayList<>(frameworks.size());
+            PhpModule phpModule = project.getPhpModule();
+            for (PhpFrameworkProvider framework : frameworks) {
+                ImportantFilesImplementation configurationFiles = framework.getConfigurationFiles2(phpModule);
+                if (configurationFiles != null) {
+                    newConfigFiles.add(configurationFiles);
+                    configurationFiles.addChangeListener(WeakListeners.change(this, configurationFiles));
+                } else {
+                    File[] files = framework.getConfigurationFiles(phpModule);
+                    if (files.length > 0) {
+                        LOGGER.log(Level.INFO, "PHP framework {0} uses deprecated method, switch to PhpFrameworkProvider.getConfigurationFiles2()", framework.getIdentifier());
+                        ImportantFilesImplementation dummyConfigFiles = new ImportantFilesImplementationImpl(project, framework.getIdentifier(), files);
+                        newConfigFiles.add(dummyConfigFiles);
+                    }
+                }
+            }
+            configFiles.clear();
+            configFiles.addAll(newConfigFiles);
+        }
+
+    }
+
+    private static final class ConfigFilesNode extends AbstractNode {
+
+        @StaticResource
+        private static final String BADGE = "org/netbeans/modules/php/project/ui/resources/config-badge.gif"; // NOI18N
+
+        private final Node iconDelegate;
+
+
+        ConfigFilesNode(Children children) {
+            super(children);
+            iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
+        }
+
+        @NbBundle.Messages("ConfigFilesNode.name=Configuration Files")
+        @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(FrameworkConfigFilesNodeFactory.class, "LBL_FrameworkConfigFiles");
+            return Bundle.ConfigFilesNode_name();
         }
 
         @Override
         public Image getIcon(int type) {
-            return getIcon(true);
+            return ImageUtilities.mergeImages(iconDelegate.getIcon(type), ImageUtilities.loadImage(BADGE), 7, 7);
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return getIcon(false);
-        }
-
-        private Image getIcon(boolean opened) {
-            Image badge = ImageUtilities.loadImage(CONFIG_BADGE_IMAGE, false);
-            return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
+            return getIcon(type);
         }
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
-                childFactory.refresh();
-            }
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
+
     }
 
-    private static class FrameworkConfigFilesChildFactory extends ChildFactory.Detachable<Pair<PhpFrameworkProvider, FileObject>> {
+    private static final class ConfigFilesChildren extends Children.Keys<ImportantFilesImplementation.FileInfo> {
 
-        private static final RequestProcessor RP = new RequestProcessor(FrameworkConfigFilesChildFactory.class.getName(), Runtime.getRuntime().availableProcessors());
-        static final int FILE_CHANGE_DELAY = 300; // ms
+        private static final Logger LOGGER = Logger.getLogger(ConfigFilesChildren.class.getName());
 
         private final PhpProject project;
-        private final FileChangeListener fileChangeListener = new ImportantFilesListener();
-        final RequestProcessor.Task fsChange = RP.create(new Runnable() {
-            @Override
-            public void run() {
-                refresh();
-            }
-        });
+        private final List<ImportantFilesImplementation> configFiles;
 
-        public FrameworkConfigFilesChildFactory(PhpProject project) {
+
+        ConfigFilesChildren(PhpProject project, List<ImportantFilesImplementation> configFiles) {
+            super(true);
+            assert project != null;
+            assert configFiles != null;
             this.project = project;
+            this.configFiles = configFiles;
+        }
+
+        public boolean hasConfigFiles() {
+            return !getConfigFiles().isEmpty();
+        }
+
+        private void refreshConfigFiles() {
+            setKeys();
         }
 
         @Override
-        protected boolean createKeys(List<Pair<PhpFrameworkProvider, FileObject>> toPopulate) {
-            toPopulate.addAll(getImportantFiles());
-            return true;
-        }
-
-        @Override
-        protected Node createNodeForKey(Pair<PhpFrameworkProvider, FileObject> key) {
-            FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-            if (sourcesDirectory == null) {
-                // broken project
-                return null;
-            }
+        protected Node[] createNodes(ImportantFilesImplementation.FileInfo key) {
+            assert key != null;
             try {
-                return new FrameworkConfigFileNode(key, sourcesDirectory);
+                return new Node[] {new ImportantFileNode(project, key)};
             } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(Level.WARNING, ex.getMessage(), ex);
+                LOGGER.log(Level.WARNING, null, ex);
             }
-            return null;
-        }
-
-        public void refresh() {
-            refresh(false);
+            return new Node[0];
         }
 
         @Override
-        public void addNotify() {
-            attachListener();
+        protected void addNotify() {
+            setKeys();
         }
 
-        List<Pair<PhpFrameworkProvider, FileObject>> getImportantFiles() {
-            List<Pair<PhpFrameworkProvider, FileObject>> files = new LinkedList<>();
-
-            final PhpModule phpModule = project.getPhpModule();
-            final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
-            for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
-                for (File file : frameworkProvider.getConfigurationFiles(phpModule)) {
-                    final FileObject fileObject = FileUtil.toFileObject(file);
-                    // XXX non-existing files are simply ignored
-                    if (fileObject != null) {
-                        if (fileObject.isFolder()) {
-                            Exception ex = new IllegalStateException("No folders allowed among configuration files ["
-                                    + fileObject.getNameExt() + " for " + frameworkProvider.getIdentifier() + "]");
-                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                            continue;
-                        }
-                        if (phpVisibilityQuery.isVisible(fileObject)) {
-                            files.add(Pair.of(frameworkProvider, fileObject));
-                        } else {
-                            LOGGER.log(Level.INFO, "File {0} ignored (not visible)", fileObject.getPath());
-                        }
-                    }
-                }
-            }
-
-            return files;
+        @Override
+        protected void removeNotify() {
+            setKeys(Collections.<ImportantFilesImplementation.FileInfo>emptyList());
         }
 
-        private void attachListener() {
-            FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-            if (sourcesDirectory == null) {
-                // broken project
-                return;
-            }
-            try {
-                FileSystem fileSystem = sourcesDirectory.getFileSystem();
-                fileSystem.addFileChangeListener(FileUtil.weakFileChangeListener(fileChangeListener, fileSystem));
-            } catch (FileStateInvalidException exc) {
-                LOGGER.log(Level.WARNING, exc.getMessage(), exc);
-            }
+        private void setKeys() {
+            setKeys(getConfigFiles());
         }
 
-        void refreshNodes() {
-            fsChange.schedule(FILE_CHANGE_DELAY);
+        private List<ImportantFilesImplementation.FileInfo> getConfigFiles() {
+            Set<ImportantFilesImplementation.FileInfo> importantFiles = new LinkedHashSet<>();
+            for (ImportantFilesImplementation provider : configFiles) {
+                importantFiles.addAll(provider.getFiles());
+            }
+            return new ArrayList<>(importantFiles);
         }
 
-        private class ImportantFilesListener extends FileChangeAdapter {
-            @Override
-            public void fileRenamed(FileRenameEvent fe) {
-                fileChange();
-            }
-            @Override
-            public void fileDataCreated(FileEvent fe) {
-                fileChange();
-            }
-            @Override
-            public void fileDeleted(FileEvent fe) {
-                fileChange();
-            }
-            private void fileChange() {
-                refreshNodes();
-            }
-        };
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
-    private static final class FrameworkConfigFileNode extends FilterNode {
-        private final Pair<PhpFrameworkProvider, FileObject> pair;
-        private final FileObject sourceDir;
+    private static final class ImportantFileNode extends FilterNode {
 
-        public FrameworkConfigFileNode(Pair<PhpFrameworkProvider, FileObject> pair, FileObject sourceDir) throws DataObjectNotFoundException {
-            super(DataObject.find(pair.second()).getNodeDelegate());
-            this.pair = pair;
-            this.sourceDir = sourceDir;
+        private final PhpProject project;
+        private final ImportantFilesImplementation.FileInfo fileInfo;
+
+
+        ImportantFileNode(PhpProject project, ImportantFilesImplementation.FileInfo fileInfo) throws DataObjectNotFoundException {
+            super(DataObject.find(fileInfo.getFile()).getNodeDelegate());
+            assert project != null;
+            this.project = project;
+            this.fileInfo = fileInfo;
+        }
+
+        @Override
+        public String getDisplayName() {
+            String displayName = fileInfo.getDisplayName();
+            if (displayName != null) {
+                return displayName;
+            }
+            return super.getDisplayName();
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            String displayName = getDisplayName();
+            assert displayName != null : fileInfo;
+            StatusDecorator statusDecorator = getStatusDecorator();
+            if (statusDecorator != null) {
+                return statusDecorator.annotateNameHtml(displayName, Collections.singleton(fileInfo.getFile()));
+            }
+            return displayName;
         }
 
         @Override
         public String getShortDescription() {
-            String filepath = FileUtil.getRelativePath(sourceDir, pair.second());
-            if (filepath == null) {
-                filepath = FileUtil.getFileDisplayName(pair.second());
+            FileObject file = fileInfo.getFile();
+            String filepath = null;
+            FileObject sourceDir = ProjectPropertiesSupport.getSourcesDirectory(project);
+            if (sourceDir != null) {
+                filepath = FileUtil.getRelativePath(sourceDir, file);
             }
-            return NbBundle.getMessage(FrameworkConfigFileNode.class, "LBL_ImportantFileTooltip", filepath, pair.first().getName());
+            if (filepath == null) {
+                filepath = FileUtil.getRelativePath(project.getProjectDirectory(), file);
+            }
+            if (filepath == null) {
+                // should not happen usually
+                filepath = FileUtil.getFileDisplayName(file);
+            }
+            return filepath;
         }
+
+        @CheckForNull
+        private StatusDecorator getStatusDecorator() {
+            try {
+                return fileInfo.getFile().getFileSystem().getDecorator();
+            } catch (FileStateInvalidException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+            return null;
+        }
+
     }
+
+    private static final class ImportantFilesImplementationImpl implements ImportantFilesImplementation {
+
+        private final PhpVisibilityQuery phpVisibilityQuery;
+        private final String frameworkIdent;
+        private final List<File> files = new CopyOnWriteArrayList<>();
+
+
+        public ImportantFilesImplementationImpl(PhpProject project, String frameworkIdent, File[] files) {
+            assert project != null;
+            assert frameworkIdent != null;
+            assert files != null;
+            assert files.length > 0;
+            phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
+            this.frameworkIdent = frameworkIdent;
+            this.files.addAll(Arrays.asList(files));
+        }
+
+        @Override
+        public Collection<FileInfo> getFiles() {
+            List<FileInfo> result = new ArrayList<>(files.size());
+            for (File file : files) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    if (fo.isFolder()) {
+                        Exception ex = new IllegalStateException("No folders allowed among configuration files ["
+                                + fo.getNameExt() + " for " + frameworkIdent + "]");
+                        LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                        continue;
+                    }
+                    if (phpVisibilityQuery.isVisible(fo)) {
+                        result.add(new FileInfo(fo));
+                    } else {
+                        LOGGER.log(Level.INFO, "File {0} ignored (not visible)", fo.getPath());
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            // noop
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            // noop
+        }
+
+    }
+
 }
