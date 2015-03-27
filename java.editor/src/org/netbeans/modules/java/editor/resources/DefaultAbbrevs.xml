@@ -538,5 +538,18 @@ ${cursor}]]></code>
         </code>
     </codetemplate>
     
+    <!-- https://netbeans.org/bugzilla/show_bug.cgi?id=251158 -->
+    <codetemplate abbreviation="junit" contexts="CLASS">
+        <code><![CDATA[@${baseType type="org.junit.Test" default="Test" editable="false"}
+public void test${Method}() {
+    ${cursor}
+}]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="testng" contexts="CLASS">
+        <code><![CDATA[@${baseType type="org.testng.annotations.Test" default="Test" editable="false"}
+public void test${Method}() {
+    ${cursor}
+}]]></code>
+    </codetemplate>    
 
 </codetemplates>
