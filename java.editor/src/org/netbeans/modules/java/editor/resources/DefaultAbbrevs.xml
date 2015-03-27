@@ -552,4 +552,9 @@ public void test${Method}() {
 }]]></code>
     </codetemplate>    
 
+    <!-- https://netbeans.org/bugzilla/show_bug.cgi?id=148947 -->
+    <codetemplate abbreviation="systrace" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP,LAMBDA_EXPRESSION">
+        <code><![CDATA[System.out.println("${className currClassFQName editable="false"}.${methodName currMethodName editable="false"}()");]]></code>
+    </codetemplate>    
+
 </codetemplates>
