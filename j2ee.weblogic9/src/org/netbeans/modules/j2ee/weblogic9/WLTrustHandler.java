@@ -101,7 +101,9 @@ public class WLTrustHandler implements WebLogicTrustHandler {
 
     private static final String TRUST_STORE_PATH = "J2EE/TrustStores/wlstruststore.jks"; // NOI18N
 
-    private static final SecureRandom random = new SecureRandom();
+    private static final String TRUST_EXCEPTION_PROPERTY = "trustException"; // NOI18N
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Override
     public TrustManager getTrustManager(WebLogicConfiguration config) throws GeneralSecurityException {
@@ -119,7 +121,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         }
 
         final InstanceProperties ip = InstanceProperties.getInstanceProperties(WLDeploymentFactory.getUrl(config));
-        boolean trustException = Boolean.parseBoolean(ip.getProperty("trustException"));
+        boolean trustException = Boolean.parseBoolean(ip.getProperty(TRUST_EXCEPTION_PROPERTY));
         if (!trustException) {
             return Collections.emptyMap();
         }
@@ -142,7 +144,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
 
     private void setup(WebLogicConfiguration config) throws GeneralSecurityException, IOException {
         SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
-        context.init(null, new TrustManager[]{getTrustManager(config)}, random);
+        context.init(null, new TrustManager[]{getTrustManager(config)}, RANDOM);
         SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket();
         try {
             // we just trigger the trust manager here
@@ -216,7 +218,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
 
                     @Override
                     public Boolean call() throws GeneralSecurityException, IOException {
-                        boolean trustException = Boolean.parseBoolean(ip.getProperty("trustException"));
+                        boolean trustException = Boolean.parseBoolean(ip.getProperty(TRUST_EXCEPTION_PROPERTY));
                         if (trustException) {
                             FileObject fo = FileUtil.getConfigFile(TRUST_STORE_PATH);
                             if (fo != null) {
@@ -244,7 +246,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                         Object result = DialogDisplayer.getDefault().notify(notDesc);
                         if (result == NotifyDescriptor.YES_OPTION) {
                             addToTrustStore(url, sorted[sorted.length - 1]);
-                            ip.setProperty("trustException", "true");
+                            ip.setProperty(TRUST_EXCEPTION_PROPERTY, Boolean.TRUE.toString());
                             return true;
                         } else {
                             return false;
