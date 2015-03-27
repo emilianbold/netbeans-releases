@@ -657,16 +657,6 @@ public final class PhpProject implements Project {
         fireIgnoredFilesChange();
     }
 
-    public boolean hasConfigFiles() {
-        final PhpModule phpModule = getPhpModule();
-        for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
-            if (frameworkProvider.getConfigurationFiles(phpModule).length > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public List<PhpTestingProvider> getTestingProviders() {
         return testingProviders.getTestingProviders();
     }

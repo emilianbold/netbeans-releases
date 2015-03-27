@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.api.framework.registration;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.junit.NbTestCase;
@@ -112,10 +111,6 @@ public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
 
         @Override
         public boolean isInPhpModule(PhpModule phpModule) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public File[] getConfigurationFiles(PhpModule phpModule) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override

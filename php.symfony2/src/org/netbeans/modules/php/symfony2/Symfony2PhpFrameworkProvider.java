@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.symfony2;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
@@ -54,6 +53,7 @@ import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.phpmodule.ImportantFilesImplementation;
 import org.netbeans.modules.php.symfony2.annotations.extra.Symfony2ExtraAnnotationsProvider;
 import org.netbeans.modules.php.symfony2.annotations.security.Symfony2SecurityAnnotationsProvider;
 import org.netbeans.modules.php.symfony2.annotations.validators.Symfony2ValidatorsAnnotationsProvider;
@@ -62,7 +62,6 @@ import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
 import org.netbeans.modules.php.symfony2.preferences.Symfony2Preferences;
 import org.netbeans.modules.php.symfony2.ui.actions.Symfony2PhpModuleActionsExtender;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -73,7 +72,6 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     private static final Symfony2PhpFrameworkProvider INSTANCE = new Symfony2PhpFrameworkProvider();
     private static final String ICON_PATH = "org/netbeans/modules/php/symfony2/ui/resources/symfony_badge_8.png"; // NOI18N
-    private static final String CONFIG_DIRECTORY = "app/config"; // NOI18N
 
     private final BadgeIcon badgeIcon;
 
@@ -112,20 +110,8 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public File[] getConfigurationFiles(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
-            // broken project
-            return new File[0];
-        }
-        FileObject configDir = sourceDirectory.getFileObject(CONFIG_DIRECTORY);
-        if (configDir != null && configDir.isFolder() && configDir.isValid()) {
-            File[] configFiles = FileUtil.toFile(configDir).listFiles();
-            if (configFiles != null) {
-                return configFiles;
-            }
-        }
-        return new File[0];
+    public ImportantFilesImplementation getConfigurationFiles2(PhpModule phpModule) {
+        return new ConfigurationFiles(phpModule);
     }
 
     @Override
