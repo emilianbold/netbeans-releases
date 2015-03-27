@@ -65,6 +65,7 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLSharedState;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -134,6 +135,20 @@ public class WLDeploymentFactory implements DeploymentFactory {
             //DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
         }
         return instance;
+    }
+
+    public static String getUrl(WebLogicConfiguration config) {
+        File domain = config.getDomainHome();
+        return getUrl(config.getHost(), config.getPort(),
+                config.getServerHome().getAbsolutePath(), domain == null ? null : domain.getAbsolutePath());
+    }
+    public static String getUrl(String host, int port, String serverHome, String domainHome) {
+        StringBuilder sb = new StringBuilder(WLDeploymentFactory.URI_PREFIX);
+        sb.append(host).append(":").append(port).append(":").append(serverHome); // NOI18N
+        if (domainHome != null) {
+            sb.append(":").append(domainHome); // NOI18N;
+        }
+        return sb.toString();
     }
 
     @Override
