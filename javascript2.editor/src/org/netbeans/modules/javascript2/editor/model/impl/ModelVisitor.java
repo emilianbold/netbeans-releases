@@ -624,10 +624,12 @@ public class ModelVisitor extends PathNodeVisitor {
                             //XXX This is not right solution. The right solution would be to create new anonymous function
                             // and the recreate the object that has the same name as the function.
                             // See issue #246598
+                            removeFromPathTheLast();
                             return null;
                         }
                         JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
                         jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
+                        removeFromPathTheLast();
                         return null; 
                 }
             }
@@ -647,6 +649,7 @@ public class ModelVisitor extends PathNodeVisitor {
             previousUsage = (modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName());
             if ( previousUsage != null && previousUsage.isDeclared() && previousUsage instanceof JsFunction) {
                 // the function is alredy there
+                removeFromPathTheLast();
                 return null;
             }
             String funcName = functionNode.isAnonymous() ? functionNode.getName() : functionNode.getIdent().getName();

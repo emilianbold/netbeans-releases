@@ -153,18 +153,20 @@ public class ClientSideProject implements Project {
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
+    public final Env is;
     final CommonProjectHelper projectHelper;
     private final References referenceHelper;
     private final Values eval;
     private final Lookup lookup;
     private final CallbackImpl callbackImpl = new CallbackImpl();
+    private final ClientSideProjectBrowserProvider projectBrowserProvider;
     volatile String name;
-    private ClassPath sourcePath;
+    private volatile ClassPath sourcePath;
     volatile ClassPathProviderImpl.PathImpl pathImpl;
-    private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
-    private WebBrowser projectWebBrowser;
-    private ClientSideProjectBrowserProvider projectBrowserProvider;
-    public final Env is;
+    // @GuardedBy("mutex & this")
+    ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
+    // @GuardedBy("mutex & this")
+    WebBrowser projectWebBrowser;
 
     final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListenerImpl();
 
@@ -229,23 +231,18 @@ public class ClientSideProject implements Project {
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
+                assert ProjectManager.mutex().isWriteAccess();
                 if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
-                    // #249385 - 2 options here:
-                    //  (1) lock ordering: call getProjectWebBrowser() under read mutex, then synchronized
-                    //  (2) this method runs under write mutex, so replan it (more safe IMHO)
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            projectBrowserUsageLogger.reset();
-                            ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
-                            if (ebi != null) {
-                                ebi.deactivate();
-                            }
-                            projectEnhancedBrowserImpl = null;
-                            projectWebBrowser = null;
-                            projectBrowserProvider.activeBrowserHasChanged();
+                    projectBrowserUsageLogger.reset();
+                    synchronized (ClientSideProject.this) {
+                        ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
+                        if (ebi != null) {
+                            ebi.deactivate();
                         }
-                    });
+                        projectEnhancedBrowserImpl = null;
+                        projectWebBrowser = null;
+                    }
+                    projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
         });
@@ -264,11 +261,18 @@ public class ClientSideProject implements Project {
         projectBrowserUsageLogger.log(ClientSideProjectType.TYPE, webBrowser.getId(), webBrowser.getBrowserFamily().name());
     }
 
-    public synchronized ClientProjectEnhancedBrowserImplementation getEnhancedBrowserImpl() {
-        if (projectEnhancedBrowserImpl == null) {
-            projectEnhancedBrowserImpl = createEnhancedBrowserImpl(this, getProjectWebBrowser());
-        }
-        return projectEnhancedBrowserImpl;
+    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowserImpl() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<ClientProjectEnhancedBrowserImplementation>() {
+            @Override
+            public ClientProjectEnhancedBrowserImplementation run() {
+                synchronized (ClientSideProject.this) {
+                    if (projectEnhancedBrowserImpl == null) {
+                        projectEnhancedBrowserImpl = createEnhancedBrowserImpl(ClientSideProject.this, getProjectWebBrowser());
+                    }
+                    return projectEnhancedBrowserImpl;
+                }
+            }
+        });
     }
 
     public static ClientProjectEnhancedBrowserImplementation createEnhancedBrowserImpl(Project p, WebBrowser wb) {
@@ -281,17 +285,24 @@ public class ClientSideProject implements Project {
         return null;
     }
 
-    public synchronized WebBrowser getProjectWebBrowser() {
-        if (projectWebBrowser == null) {
-            String id = getSelectedBrowser();
-            if (id != null) {
-                projectWebBrowser = BrowserUISupport.getBrowser(id);
+    public WebBrowser getProjectWebBrowser() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<WebBrowser>() {
+            @Override
+            public WebBrowser run() {
+                synchronized (ClientSideProject.this) {
+                    if (projectWebBrowser == null) {
+                        String id = getSelectedBrowser();
+                        if (id != null) {
+                            projectWebBrowser = BrowserUISupport.getBrowser(id);
+                        }
+                        if (projectWebBrowser == null) {
+                            projectWebBrowser = BrowserUISupport.getDefaultBrowserChoice(false);
+                        }
+                    }
+                    return projectWebBrowser;
+                }
             }
-            if (projectWebBrowser == null) {
-                projectWebBrowser = BrowserUISupport.getDefaultBrowserChoice(false);
-            }
-        }
-        return projectWebBrowser;
+        });
     }
 
     private RefreshOnSaveListener getRefreshOnSaveListener() {

@@ -404,4 +404,9 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testCallBackDeclaration2() throws Exception {
         checkSemantic("testfiles/markoccurences/callbackDeclaration2.js"); 
     }
+    
+    public void testIssue248696_01() throws Exception {
+        checkSemantic("testfiles/hints/issue248696_01.js");
+    }
+
 }
