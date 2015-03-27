@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.smarty;
 
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -143,11 +142,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     public boolean isInPhpModule(final PhpModule phpModule) {
         Boolean enabled = getSmartyPropertyEnabled(phpModule);
         return enabled != null && enabled;
-    }
-
-    @Override
-    public File[] getConfigurationFiles(PhpModule phpModule) {
-        return new File[0];
     }
 
     @Override

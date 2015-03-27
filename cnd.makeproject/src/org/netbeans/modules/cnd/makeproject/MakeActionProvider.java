@@ -1032,7 +1032,7 @@ public final class MakeActionProvider implements ActionProvider {
                 name = name.substring(0, name.lastIndexOf('.'));
             }
             // included header
-            List<NativeFileItem> listCU = ca.findHeaderComilationUnit(item);
+            List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
             for(NativeFileItem i : listCU) {
                 if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
                    (i instanceof Item)) {
@@ -1494,7 +1494,7 @@ public final class MakeActionProvider implements ActionProvider {
                 CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
                 if (ca.hasCodeAssistance(item)) {
                     // included header
-                    List<NativeFileItem> listCU = ca.findHeaderComilationUnit(item);
+                    List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
                     for(NativeFileItem i : listCU) {
                         if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
                            (i instanceof Item)) {
@@ -1510,7 +1510,7 @@ public final class MakeActionProvider implements ActionProvider {
                 CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
                 if (ca.hasCodeAssistance(item)) {
                     // included header
-                    List<NativeFileItem> listCU = ca.findHeaderComilationUnit(item);
+                    List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
                     for(NativeFileItem i : listCU) {
                         if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
                            (i instanceof Item)) {

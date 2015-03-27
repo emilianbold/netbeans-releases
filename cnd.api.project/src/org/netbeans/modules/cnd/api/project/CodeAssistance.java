@@ -61,5 +61,5 @@ public interface CodeAssistance {
     Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> getHeaderLanguageFlavour(FileObject item);
     void addChangeListener(ChangeListener listener);
     void removeChangeListener(ChangeListener listener);
-    List<NativeFileItem> findHeaderComilationUnit(NativeFileItem item);
+    List<NativeFileItem> findHeaderCompilationUnit(NativeFileItem item);
 }

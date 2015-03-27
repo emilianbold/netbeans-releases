@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.spi.phpmodule;
 
 import java.util.Collection;
+import java.util.Comparator;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -82,6 +83,25 @@ public interface ImportantFilesImplementation {
      */
     final class FileInfo {
 
+        /**
+         * Case-insensitive comparator by {@link #getDisplayName()} if possible, {@link FileObject#getNameExt()} otherwise.
+         * @since 2.51
+         */
+        public static final Comparator<FileInfo> COMPARATOR = new Comparator<FileInfo>() {
+            @Override
+            public int compare(FileInfo o1, FileInfo o2) {
+                String name1 = o1.getDisplayName();
+                if (name1 == null) {
+                    name1 = o1.getFile().getNameExt();
+                }
+                String name2 = o2.getDisplayName();
+                if (name2 == null) {
+                    name2 = o2.getFile().getNameExt();
+                }
+                return name1.compareToIgnoreCase(name2);
+            }
+        };
+
         private final FileObject file;
         private final String displayName;
         private final String description;
@@ -89,7 +109,7 @@ public interface ImportantFilesImplementation {
 
         /**
          * Creates information for the given file.
-         * @param file file
+         * @param file file, cannot be a directory
          */
         public FileInfo(FileObject file) {
             this(file, null, null);
@@ -98,12 +118,15 @@ public interface ImportantFilesImplementation {
         /**
          * Creates information for the given file with custom display name
          * and/or custom description.
-         * @param file file
+         * @param file file, cannot be a directory
          * @param displayName custom display name, can be {@code null}
          * @param description custom description, can be {@code null}
          */
         public FileInfo(FileObject file, @NullAllowed String displayName, @NullAllowed String description) {
             Parameters.notNull("file", file); // NOI18N
+            if (file.isFolder()) {
+                throw new IllegalArgumentException("File cannot be a directory");
+            }
             this.file = file;
             this.displayName = displayName;
             this.description = description;
