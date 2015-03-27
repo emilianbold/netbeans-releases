@@ -53,8 +53,6 @@ import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
  */
 public interface WebLogicTrustHandler {
 
-    void setup(WebLogicConfiguration config) throws GeneralSecurityException, IOException;
-
     TrustManager getTrustManager(WebLogicConfiguration config) throws GeneralSecurityException;
 
     Map<String, String> getTrustProperties(WebLogicConfiguration config);

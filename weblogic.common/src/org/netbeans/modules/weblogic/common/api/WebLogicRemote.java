@@ -76,7 +76,6 @@ public final class WebLogicRemote {
             }
             WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
             if (handler != null) {
-                handler.setup(config);
                 for (Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
                     System.setProperty(e.getKey(), e.getValue());
                 }

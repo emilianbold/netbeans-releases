@@ -103,7 +103,39 @@ public class WLTrustHandler implements WebLogicTrustHandler {
     private static final SecureRandom random = new SecureRandom();
 
     @Override
-    public void setup(WebLogicConfiguration config) throws GeneralSecurityException, IOException {
+    public TrustManager getTrustManager(WebLogicConfiguration config) throws GeneralSecurityException {
+        return new DelegatingTrustManager(config);
+    }
+
+    @Override
+    public Map<String, String> getTrustProperties(WebLogicConfiguration config) {
+        try {
+            setup(config);
+        } catch (GeneralSecurityException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+
+        final InstanceProperties ip = InstanceProperties.getInstanceProperties(WLDeploymentFactory.getUrl(config));
+        String path = ip.getProperty("trustStore");
+        if (path == null) {
+            return Collections.emptyMap();
+        }
+        File file = new File(path);
+        if (!file.isFile()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> result = new HashMap<String, String>();
+        result.put("weblogic.security.TrustKeyStore", "CustomTrust"); // NOI18N
+        result.put("weblogic.security.CustomTrustKeyStoreType", "JKS"); // NOI18N
+        result.put("weblogic.security.CustomTrustKeyStoreFileName", file.getAbsolutePath()); // NOI18N
+        result.put("weblogic.security.SSL.ignoreHostnameVerification", "true"); // NOI18N
+        return result;
+    }
+
+    private void setup(WebLogicConfiguration config) throws GeneralSecurityException, IOException {
         SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
         context.init(null, new TrustManager[]{getTrustManager(config)}, random);
         SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket();
@@ -120,38 +152,6 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         } finally {
             socket.close();
         }
-    }
-
-    @Override
-    public TrustManager getTrustManager(WebLogicConfiguration config) throws GeneralSecurityException {
-        return new DelegatingTrustManager(config);
-    }
-
-    @Override
-    public Map<String, String> getTrustProperties(WebLogicConfiguration config) {
-        // hacky way for now
-        String url = WLDeploymentFactory.URI_PREFIX + config.getHost()
-            + ":" + config.getPort() + ":" + config.getServerHome().getAbsolutePath(); // NOI18N
-        File domain = config.getDomainHome();
-        if (domain != null) {
-            url += ":" + domain.getAbsolutePath(); // NOI18N;
-        }
-        final InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
-        String path = ip.getProperty("trustStore");
-        if (path == null) {
-            return Collections.emptyMap();
-        }
-        File file = new File(path);
-        if (!file.isFile()) {
-            return Collections.emptyMap();
-        }
-
-        Map<String, String> result = new HashMap<String, String>();
-        result.put("weblogic.security.TrustKeyStore", "CustomTrust"); // NOI18N
-        result.put("weblogic.security.CustomTrustKeyStoreType", "JKS"); // NOI18N
-        result.put("weblogic.security.CustomTrustKeyStoreFileName", file.getAbsolutePath()); // NOI18N
-        result.put("weblogic.security.SSL.ignoreHostnameVerification", "true"); // NOI18N
-        return result;
     }
 
     private static class DelegatingTrustManager implements X509TrustManager {
@@ -207,7 +207,8 @@ public class WLTrustHandler implements WebLogicTrustHandler {
             try {
                 pkixTrustManager.checkServerTrusted(chain, authType);
             } catch (CertificateException excep) {
-                final InstanceProperties ip = InstanceProperties.getInstanceProperties(WLDeploymentFactory.getUrl(config));
+                final InstanceProperties ip = InstanceProperties.getInstanceProperties(
+                        WLDeploymentFactory.getUrl(config));
 
                 Future<Boolean> task = TRUST_MANAGER_ACCESS.submit(new Callable<Boolean>() {
 
@@ -238,7 +239,8 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                         X509Certificate[] sorted = sortChain(chain);
                         Object result = DialogDisplayer.getDefault().notify(notDesc);
                         if (result == NotifyDescriptor.YES_OPTION) {
-                            ip.setProperty("trustStore", createSingleTrustStore(sorted[sorted.length - 1]).getAbsolutePath());
+                            ip.setProperty("trustStore",
+                                    createSingleTrustStore(sorted[sorted.length - 1]).getAbsolutePath());
                             return true;
                         } else {
                             return false;
@@ -298,10 +300,10 @@ public class WLTrustHandler implements WebLogicTrustHandler {
     }
 
     private static File createSingleTrustStore(X509Certificate cert) throws GeneralSecurityException, IOException {
-        KeyStore keystore = KeyStore.getInstance("JKS");
+        KeyStore keystore = KeyStore.getInstance("JKS"); // NOI18N
         keystore.load(null, null);
-        keystore.setCertificateEntry("single", cert);
-        File file = File.createTempFile("wlskeystore", null);
+        keystore.setCertificateEntry("single", cert); // NOI18N
+        File file = File.createTempFile("wlskeystore", null); // NOI18N
         OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
         try {
             // we generate random password as it protects the store and (for now)

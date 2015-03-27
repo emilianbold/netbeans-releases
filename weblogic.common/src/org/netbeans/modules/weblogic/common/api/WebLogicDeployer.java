@@ -54,7 +54,6 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,7 +81,6 @@ import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.netbeans.modules.weblogic.common.ProxyUtils;
 import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
 import org.openide.util.BaseUtilities;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -697,12 +695,7 @@ public final class WebLogicDeployer {
         if (config.isSecured()) {
             WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
             if (handler != null) {
-                try {
-                    handler.setup(config);
-                } catch (GeneralSecurityException | IOException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                }
-                for(Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
+                for (Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
                     arguments.add("-D" + e.getKey() + "=" + e.getValue()); // NOI18N
                 }
             }

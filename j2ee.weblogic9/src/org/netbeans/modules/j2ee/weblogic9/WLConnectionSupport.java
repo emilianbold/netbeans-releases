@@ -99,7 +99,6 @@ public final class WLConnectionSupport {
 
             WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
             if (handler != null) {
-                handler.setup(deploymentManager.getCommonConfiguration());
                 for (Map.Entry<String, String> e : handler.getTrustProperties(deploymentManager.getCommonConfiguration()).entrySet()) {
                     System.setProperty(e.getKey(), e.getValue());
                 }
