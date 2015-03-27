@@ -140,6 +140,7 @@ public interface CsmImageName {
     static final String NAMESPACE_ALIAS = RESOURCE_BASE+"namespace_alias.png"; // NOI18N
     static final String USING = RESOURCE_BASE+"using_namespace_16.png"; // NOI18N
     static final String USING_DECLARATION =  RESOURCE_BASE+"using_declaration_16.png"; // NOI18N
+    static final String C_CPP_KEYWORD = RESOURCE_BASE+"keyword.png"; // NOI18N
     
     static final String PROJECT =  RESOURCE_BASE+"project.png"; // NOI18N
     static final String PROJECT_OPENED =  RESOURCE_BASE+"project_open.png"; // NOI18N
