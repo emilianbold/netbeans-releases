@@ -44,14 +44,11 @@ package org.netbeans.modules.j2ee.weblogic9;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -83,6 +80,8 @@ import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -99,6 +98,8 @@ public class WLTrustHandler implements WebLogicTrustHandler {
     private static final RequestProcessor TRUST_MANAGER_ACCESS = new RequestProcessor(WLTrustHandler.class);
 
     private static final int CHECK_TIMEOUT = 5000;
+
+    private static final String TRUST_STORE_PATH = "J2EE/TrustStores/wlstruststore.jks"; // NOI18N
 
     private static final SecureRandom random = new SecureRandom();
 
@@ -118,12 +119,16 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         }
 
         final InstanceProperties ip = InstanceProperties.getInstanceProperties(WLDeploymentFactory.getUrl(config));
-        String path = ip.getProperty("trustStore");
-        if (path == null) {
+        boolean trustException = Boolean.parseBoolean(ip.getProperty("trustException"));
+        if (!trustException) {
             return Collections.emptyMap();
         }
-        File file = new File(path);
-        if (!file.isFile()) {
+        FileObject fo = FileUtil.getConfigFile(TRUST_STORE_PATH);
+        if (fo == null) {
+            return Collections.emptyMap();
+        }
+        File file = FileUtil.toFile(fo);
+        if (file == null) {
             return Collections.emptyMap();
         }
 
@@ -197,9 +202,6 @@ public class WLTrustHandler implements WebLogicTrustHandler {
             throw new CertificateException("TrustManager does not trust any client");
         }
 
-        /*
-         * Delegate to the default trust manager.
-         */
         @NbBundle.Messages("MSG_NotTrusted=The server certificate is not trusted. Add as an exception and proceed anyway?")
         @Override
         public void checkServerTrusted(final X509Certificate[] chain, final String authType)
@@ -207,30 +209,32 @@ public class WLTrustHandler implements WebLogicTrustHandler {
             try {
                 pkixTrustManager.checkServerTrusted(chain, authType);
             } catch (CertificateException excep) {
-                final InstanceProperties ip = InstanceProperties.getInstanceProperties(
-                        WLDeploymentFactory.getUrl(config));
+                final String url = WLDeploymentFactory.getUrl(config);
+                final InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
 
                 Future<Boolean> task = TRUST_MANAGER_ACCESS.submit(new Callable<Boolean>() {
 
                     @Override
                     public Boolean call() throws GeneralSecurityException, IOException {
-                        String path = ip.getProperty("trustStore");
-                        if (path != null) {
-                            File singleTrust = new File(path);
-                            try {
-                                X509TrustManager m = createTrustManager(singleTrust);
+                        boolean trustException = Boolean.parseBoolean(ip.getProperty("trustException"));
+                        if (trustException) {
+                            FileObject fo = FileUtil.getConfigFile(TRUST_STORE_PATH);
+                            if (fo != null) {
                                 try {
-                                    m.checkServerTrusted(chain, authType);
-                                    return true;
-                                } catch (CertificateException ex) {
-                                    LOGGER.log(Level.FINE, null, ex);
+                                    X509TrustManager m = createTrustManager(fo);
+                                    try {
+                                        m.checkServerTrusted(chain, authType);
+                                        return true;
+                                    } catch (CertificateException ex) {
+                                        LOGGER.log(Level.FINE, null, ex);
+                                    }
+                                } catch (GeneralSecurityException ex) {
+                                    // proceed to dialog
+                                    LOGGER.log(Level.INFO, null, ex);
+                                } catch (IOException ex) {
+                                    // proceed to dialog
+                                    LOGGER.log(Level.INFO, null, ex);
                                 }
-                            } catch (GeneralSecurityException ex) {
-                                // proceed to dialog
-                                LOGGER.log(Level.INFO, null, ex);
-                            } catch (IOException ex) {
-                                // proceed to dialog
-                                LOGGER.log(Level.INFO, null, ex);
                             }
                         }
 
@@ -239,8 +243,8 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                         X509Certificate[] sorted = sortChain(chain);
                         Object result = DialogDisplayer.getDefault().notify(notDesc);
                         if (result == NotifyDescriptor.YES_OPTION) {
-                            ip.setProperty("trustStore",
-                                    createSingleTrustStore(sorted[sorted.length - 1]).getAbsolutePath());
+                            addToTrustStore(url, sorted[sorted.length - 1]);
+                            ip.setProperty("trustException", "true");
                             return true;
                         } else {
                             return false;
@@ -299,25 +303,38 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         }
     }
 
-    private static File createSingleTrustStore(X509Certificate cert) throws GeneralSecurityException, IOException {
+    private static synchronized void addToTrustStore(String url, X509Certificate cert) throws GeneralSecurityException, IOException {
+        FileObject root = FileUtil.getConfigRoot();
+        FileObject ts = root.getFileObject(TRUST_STORE_PATH);
+        char[] password = "wlstruststore".toCharArray();
+
         KeyStore keystore = KeyStore.getInstance("JKS"); // NOI18N
-        keystore.load(null, null);
-        keystore.setCertificateEntry("single", cert); // NOI18N
-        File file = File.createTempFile("wlskeystore", null); // NOI18N
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+        InputStream is = (ts == null) ? null : new BufferedInputStream(ts.getInputStream());
         try {
-            // we generate random password as it protects the store and (for now)
-            // we won't write to it
-            keystore.store(out, new BigInteger(130, random).toString(32).toCharArray());
+            keystore.load(is, password);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+
+        keystore.setCertificateEntry(url, cert); // NOI18N
+
+        if (ts == null) {
+            ts = FileUtil.createData(root, TRUST_STORE_PATH);
+        }
+
+        OutputStream out = new BufferedOutputStream(ts.getOutputStream());
+        try {
+            keystore.store(out, password);
         } finally {
             out.close();
         }
-        return file;
     }
 
-    private static X509TrustManager createTrustManager(File file) throws GeneralSecurityException, IOException {
+    private static synchronized X509TrustManager createTrustManager(FileObject fo) throws GeneralSecurityException, IOException {
         KeyStore ts = KeyStore.getInstance("JKS"); // NOI18N
-        InputStream in = new BufferedInputStream(new FileInputStream(file));
+        InputStream in = new BufferedInputStream(fo.getInputStream());
         try {
             ts.load(in, null);
         } finally {
