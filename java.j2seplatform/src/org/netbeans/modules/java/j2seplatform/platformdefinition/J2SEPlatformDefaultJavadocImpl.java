@@ -53,13 +53,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultJavadoc;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -86,32 +85,11 @@ public final class J2SEPlatformDefaultJavadocImpl implements J2SEPlatformDefault
     @Override
     public Collection<URI> getDefaultJavadoc(@NonNull final JavaPlatform platform) {
         final List<URI> result = new ArrayList<>();
+        final JavadocFilter filter = new JavadocFilter();
         for (FileObject folder : platform.getInstallFolders()) {
-            // XXX should this rather be docs/api?
-            FileObject docs = folder.getFileObject("docs"); // NOI18N
-            if (docs != null && docs.isFolder() && docs.canRead()) {
-                result.add(docs.toURI());
-            }
-            if (Utilities.isMac()) {
-                try {
-                    final FileObject docsJar = folder.getFileObject("docs.jar"); //NOI18N
-                    //XXX: Verify zip integrity? But it's slow
-                    //Better not to do it, only test FileUtil.isArchoveFile
-                    if (docsJar != null && docsJar.canRead() && FileUtil.isArchiveFile(docsJar)) {
-                        final URL rootURL = FileUtil.getArchiveRoot(docsJar.toURL());
-                        result.add(new URL(rootURL.toExternalForm() + "docs/api/").toURI());        //NOI18N
-                        result.add(new URL(rootURL.toExternalForm() + "docs/jdk/api/").toURI());    //NOI18N
-                        result.add(new URL(rootURL.toExternalForm() + "docs/jre/api/").toURI());    //NOI18N
-                    }
-                    final FileObject appleDocsJar = folder.getFileObject("appledocs.jar");    //NOI18N
-                    //XXX: Verify zip integrity? But will slowdown the DefaultPlatform constructor.
-                    //Better not to do it, only test FileUtil.isArchoveFile
-                    if (appleDocsJar != null && appleDocsJar.canRead() && FileUtil.isArchiveFile(appleDocsJar)) {
-                        result.add(new URL (FileUtil.getArchiveRoot(appleDocsJar.toURL()).toExternalForm() + "appledoc/api/").toURI());    //NOI18N
-                    }
-                } catch (MalformedURLException | URISyntaxException e) {
-                    Exceptions.printStackTrace(e);
-                }
+            for (FileObject file : folder.getChildren()) {
+                final Collection<? extends URI> roots = filter.accept(file);
+                result.addAll(roots);
             }
         }
         if (!result.isEmpty()) {
@@ -132,4 +110,66 @@ public final class J2SEPlatformDefaultJavadocImpl implements J2SEPlatformDefault
         return Collections.emptyList();
     }
 
+    private static final class JavadocFilter {
+        private static final Pattern DOCS_FILE_PATTERN = Pattern.compile(".*docs.*\\.(zip|jar)",Pattern.CASE_INSENSITIVE);   //NOI18N
+        private static final Pattern JAVAFX_FILE_PATTERN = Pattern.compile(".*j(ava)?fx.*", Pattern.CASE_INSENSITIVE);  //NOI18N
+        private static final Collection<String> DOCS_PATHS;
+        static {
+            final List<String> paths = new ArrayList<>(3);
+            paths.add("docs/api/");     //NOI18N
+            paths.add("docs/jdk/api/"); //NOI18N
+            paths.add("docs/jre/api/"); //NOI18N
+            DOCS_PATHS = Collections.unmodifiableList(paths);
+        }
+        private static final Map<String,String> VENDOR_DOCS;
+        static {
+            Map<String,String> docs = new HashMap<>();
+            docs.put("appledocs.jar", "appledoc/api/");     //NOI18N
+            VENDOR_DOCS = Collections.unmodifiableMap(docs);
+        }
+
+        @NonNull
+        Collection<? extends URI> accept(@NonNull FileObject fo) {
+            if (fo.canRead()) {
+                if (fo.isFolder()) {
+                    if ("docs".equals(fo.getName())) {  //NOI18N
+                        return Collections.singleton(fo.toURI());
+                    }
+                } else if (fo.isData()) {
+                    final String nameExt = fo.getNameExt();
+                    final String vendorPath = VENDOR_DOCS.get(nameExt);
+                    if (vendorPath != null) {
+                        if (FileUtil.isArchiveFile(fo)) {
+                            try {
+                                return Collections.singleton(
+                                    new URL (FileUtil.getArchiveRoot(fo.toURL()).toExternalForm() + vendorPath).toURI());
+                            } catch (MalformedURLException | URISyntaxException e) {
+                                LOG.log(
+                                    Level.INFO,
+                                    "Invalid Javadoc URI for file : {0}, reason: {1}",
+                                    new Object[]{
+                                        FileUtil.getFileDisplayName(fo),
+                                        e.getMessage()
+                                });
+                                //pass
+                            }
+                        }
+                    } else if (DOCS_FILE_PATTERN.matcher(nameExt).matches() && !JAVAFX_FILE_PATTERN.matcher(nameExt).matches()) {
+                        final FileObject root = FileUtil.getArchiveRoot(fo);
+                        if (root != null) {
+                            final List<URI> roots = new ArrayList<>(DOCS_PATHS.size());
+                            for (String path : DOCS_PATHS) {
+                                final FileObject docRoot = root.getFileObject(path);
+                                if (docRoot != null) {
+                                    roots.add(docRoot.toURI());
+                                }
+                            }
+                            return Collections.unmodifiableCollection(roots);
+                        }
+                    }
+                }
+            }
+            return Collections.emptySet();
+        }
+    }
 }

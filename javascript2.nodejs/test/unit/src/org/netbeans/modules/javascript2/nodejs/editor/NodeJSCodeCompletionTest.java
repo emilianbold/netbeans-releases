@@ -141,7 +141,15 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     }
     
     public void testIssue249500_02() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "p^;", false);
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "k^;", false);
+    }
+    
+    public void testIssue249500_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "trip^; // test 1", false);
+    }
+    
+    public void testIssue249500_04() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "trip^; // test 2", false);
     }
     
     public void testIssue249626_01() throws Exception {
@@ -178,6 +186,58 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     
     public void testIssue250333_02() throws Exception {
         checkCompletion("TestNavigation/public_html/js/issue250333/test_02.js", "aaa.^", false);
+    }
+    
+    public void testIssue250329_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s1.js", "ut.^errorRespond();", false);
+    }
+    
+    public void testIssue250329_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s1.js", "ut2.^endsWith2();", false);
+    }
+    
+    public void testIssue250329_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s2.js", "ut.^errorRespond();", false);
+    }
+    
+    public void testIssue250329_04() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s2.js", "ut2.^endsWith2();", false);
+    }
+    
+    public void testIssue250329_05() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s3.js", "ut.^errorRespond();", false);
+    }
+    
+    public void testIssue250329_06() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s3.js", "ut2.^endsWith2();", false);
+    }
+    
+    public void testIssue250329_07() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s4.js", "ut.^errorRespond();", false);
+    }
+    
+    public void testIssue250329_08() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250329/s4.js", "ut2.^endsWith2();", false);
+    }
+    
+    public void testIssue250298_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test1", false);
+    }
+    
+    public void testIssue250298_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test2", false);
+    }
+    
+    public void testIssue250298_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test3", false);
+    }
+    
+    public void testIssue250298_04() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test4", false);
+    }
+    
+    public void testIssue250298_05() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test5", false);
     }
     
     @Override

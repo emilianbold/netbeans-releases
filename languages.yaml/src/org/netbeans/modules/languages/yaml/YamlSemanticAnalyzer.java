@@ -166,8 +166,7 @@ public class YamlSemanticAnalyzer extends SemanticAnalyzer {
                             addHighlights(ypr, o, highlights, seen, depth + 1);
                         }
                     }
-                } else {
-                    assert key instanceof PositionedScalarNode;
+                } else if (key instanceof PositionedScalarNode){
                     PositionedScalarNode scalar = (PositionedScalarNode) key;
                     Range r = scalar.getRange();
                     OffsetRange range = ypr.getAstRange(r);

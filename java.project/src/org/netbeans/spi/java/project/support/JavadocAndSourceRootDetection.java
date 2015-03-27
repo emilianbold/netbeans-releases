@@ -76,7 +76,8 @@ import org.openide.util.Parameters;
  */
 public class JavadocAndSourceRootDetection {
 
-    private static final int HOW_MANY_DIRS_TO_TRAVERSE_DEEP = 5;
+    private static final int JAVADOC_TRAVERSE_DEEPTH = 5;
+    private static final int SRC_TRAVERSE_DEEPTH = 50;
 
     private static final Logger LOG = Logger.getLogger(JavadocAndSourceRootDetection.class.getName());
     
@@ -193,7 +194,13 @@ public class JavadocAndSourceRootDetection {
 
     private static FileObject findAllSourceRoots(final FileObject folder, final Collection<? super FileObject> result,
             final AtomicBoolean canceled, final int depth) {
-        if (depth == 50) {
+        if (depth == SRC_TRAVERSE_DEEPTH) {
+            return null;
+        }
+        if (!VisibilityQuery.getDefault().isVisible(folder)) {
+            return null;
+        }
+        if (isRecursiveSymLink(folder)) {
             return null;
         }
         final FileObject[] children = folder.getChildren();
@@ -216,6 +223,21 @@ public class JavadocAndSourceRootDetection {
         return null;
     }
 
+    private static boolean isRecursiveSymLink(@NonNull final FileObject folder) {
+        try {
+            return FileUtil.isRecursiveSymbolicLink(folder);
+        } catch (IOException ioe) {
+            LOG.log(
+                Level.WARNING,
+                "Cannot read link: {0}, reason: {1}",       //NOI18N
+                new Object[]{
+                    FileUtil.getFileDisplayName(folder),
+                    ioe.getMessage()
+                });
+            return true;    //prevent O(a^n) growth
+        }
+    }
+
     private static boolean findAllJavadocRoots(
             @NonNull final FileObject folder,
             @NonNull final Collection<? super FileObject> result,
@@ -227,7 +249,7 @@ public class JavadocAndSourceRootDetection {
             result.add(folder);
             return singleRoot;
         }
-        if (depth == HOW_MANY_DIRS_TO_TRAVERSE_DEEP) {
+        if (depth == JAVADOC_TRAVERSE_DEEPTH) {
             return false;
         }
         if (cancel != null && cancel.get()) {
@@ -245,10 +267,13 @@ public class JavadocAndSourceRootDetection {
     }
 
     private static FileObject findJavaSourceFile(FileObject fo, int level) {
-        if (level == 999) { // ignore for now
+        if (level == SRC_TRAVERSE_DEEPTH) {
             return null;
         }
         if (!VisibilityQuery.getDefault().isVisible(fo)) {
+            return null;
+        }
+        if (isRecursiveSymLink(fo)) {
             return null;
         }
         // go through files first:

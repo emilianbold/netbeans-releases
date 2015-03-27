@@ -1,5 +1,5 @@
 Code completion result for source line:
-k|;
+trip|; // test 2
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-VARIABLE   kes: Number                     [PRIVATE]  issue249500.js
+VARIABLE   tripCtrl: Module tripCtrl       [PRIVATE]  issue249500.js

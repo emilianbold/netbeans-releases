@@ -91,6 +91,7 @@ import org.netbeans.modules.git.remote.ui.diff.DiffAction;
 import org.netbeans.modules.git.remote.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.remotefs.versioning.api.OpenInEditorAction;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.remotefs.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -527,6 +528,9 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
             Git git = Git.getInstance();
             VCSFileProxy[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
             for (VCSFileProxy f : interestingFiles) {
+                if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(f))) {
+                    return;
+                }
                 VCSFileProxy root = git.getRepositoryRoot(f);
                 if (root != null) {
                     if (f.equals(root)) {
