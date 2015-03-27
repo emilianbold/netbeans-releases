@@ -239,7 +239,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             if (cleanState && !other.isCleaned()) {
                 // first time cleaning
                 // own copy of include information and macro state
-                this.inclState = APTHandlersSupportImpl.copyIncludeState(other.inclState, true);
+                this.inclState = APTHandlersSupportImpl.copyCleanIncludeState(other.inclState);
                 this.macroState = APTHandlersSupportImpl.createCleanMacroState(other.macroState);
                 cleaned = true;
             } else {

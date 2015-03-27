@@ -133,7 +133,11 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         } else {
             return 0;
         }
-    }    
+    }
+
+    /*package*/void resetIncludeStack() {
+      inclStack = null;
+    }
     ////////////////////////////////////////////////////////////////////////////
     // manage state (save/restore)
     
@@ -145,8 +149,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     @Override
     public void setState(State state) {
         if (state instanceof StateImpl) {
-	    StateImpl stateImpl = ((StateImpl)state);
-	    assert ! stateImpl.isCleaned();
+            StateImpl stateImpl = ((StateImpl)state);
+            assert APTTraceFlags.USE_CLANK;
+            // can be cleaned in Clank mode
+            // assert !stateImpl.isCleaned();
             stateImpl.restoreTo(this);
         }
     }
@@ -209,6 +215,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         private static final IncludeInfo[] EMPTY_STACK = new IncludeInfo[0];
         private final IncludeInfo[] inclStack;        
         private int hashCode = 0;
+        private final boolean cleaned;
         
         protected StateImpl(ClankIncludeHandlerImpl handler) {
             this.systemIncludePaths = handler.systemIncludePaths;
@@ -224,10 +231,12 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             
             this.inclStackIndex = handler.inclStackIndex;
             this.cachedTokens = handler.cachedTokens;
+            this.cleaned = false;
             assert this.cachedTokens != null;
         }
         
         private StateImpl(StateImpl other, boolean cleanState) {
+            assert cleanState == true;
             // shared information
             this.startFile = other.startFile;
             
@@ -235,6 +244,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             this.inclStack = other.inclStack;
             
             this.inclStackIndex = other.inclStackIndex;
+            this.cleaned = cleanState;
             if (cleanState) {
                 this.systemIncludePaths = CLEANED_MARKER;
                 this.userIncludePaths = CLEANED_MARKER;
@@ -254,18 +264,23 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         }
         
         private void restoreTo(ClankIncludeHandlerImpl handler) {
-            handler.userIncludePaths = this.userIncludePaths;
-            handler.userIncludeFilePaths = this.userIncludeFilePaths;
-            handler.systemIncludePaths = this.systemIncludePaths;
-            handler.startFile = this.startFile;
+            // rewrite by what we kept, otherwise start entry
+            // was responsible to initialize paths correctly
+            if (this.cleaned) {
+              assert handler.startFile.equals(this.startFile) :
+                      "handler's startFile " + handler.startFile + // NOI18N
+                      " vs. state startFile " + this.startFile; // NOI18N
+            } else {
+              handler.userIncludePaths = this.userIncludePaths;
+              handler.userIncludeFilePaths = this.userIncludeFilePaths;
+              handler.systemIncludePaths = this.systemIncludePaths;
+              handler.startFile = this.startFile;
+            }
             
-            handler.inclStackIndex = this.inclStackIndex;
-            handler.cachedTokens = this.cachedTokens;
-            // do not restore include info if state is cleaned
-            if (!isCleaned()) {
-                if (this.inclStack.length > 0) {
-                    handler.inclStack = new LinkedList<IncludeInfo>();
-                    handler.inclStack.addAll(Arrays.asList(this.inclStack));
+            // TODO: if requested we restore (it is different from APT-based state)
+            if (this.inclStack.length > 0) {
+                handler.inclStack = new LinkedList<IncludeInfo>();
+                handler.inclStack.addAll(Arrays.asList(this.inclStack));
 //                    if (CHECK_INCLUDE_DEPTH < 0) {
 //                        handler.recurseIncludes = new HashMap<CharSequence, Integer>();
 //                        for (IncludeInfo includeInfo : this.inclStack) {
@@ -275,8 +290,9 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 //                            handler.recurseIncludes.put(path, counter);
 //                        }
 //                    }
-                }
             }
+            handler.inclStackIndex = this.inclStackIndex;
+            handler.cachedTokens = this.cachedTokens;
         }
 
         @Override
@@ -288,35 +304,6 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             assert output != null;
             startFile.write(output);
             
-            assert systemIncludePaths != null;
-            assert userIncludePaths != null;
-            
-            int size = systemIncludePaths.size();
-            output.writeInt(size);
-            for (int i = 0; i < size; i++) {
-                IncludeDirEntry inc = systemIncludePaths.get(i);
-                output.writeFileSystem(inc.getFileSystem());
-                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
-            }
-            
-            size = userIncludePaths.size();
-            output.writeInt(size);
-            
-            for (int i = 0; i < size; i++) {
-                IncludeDirEntry inc = userIncludePaths.get(i);
-                output.writeFileSystem(inc.getFileSystem());
-                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
-            }
-            
-            size = userIncludeFilePaths.size();
-            output.writeInt(size);
-            
-            for (int i = 0; i < size; i++) {
-                IncludeDirEntry inc = userIncludeFilePaths.get(i);
-                output.writeFileSystem(inc.getFileSystem());
-                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
-            }
-
             output.writeInt(inclStackIndex);
             
             output.writeInt(inclStack.length);
@@ -342,36 +329,18 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             assert input != null;
             
             startFile = new StartEntry(input);
-            
-            int size = input.readInt();
-            systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
-            for (int i = 0; i < size; i++) {
-                FileSystem fs = input.readFileSystem();
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
-                systemIncludePaths.add(i, path);
-            }
-            
-            size = input.readInt();
-            userIncludePaths = new ArrayList<IncludeDirEntry>(size);
-            for (int i = 0; i < size; i++) {
-                FileSystem fs = input.readFileSystem();
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
-                userIncludePaths.add(i, path);
-            }
 
-            size = input.readInt();
-            userIncludeFilePaths = new ArrayList<IncludeDirEntry>(size);
-            for (int i = 0; i < size; i++) {
-                FileSystem fs = input.readFileSystem();
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
-                userIncludeFilePaths.add(i, path);
-            }
-            
+            // read state is always clean
+            this.cleaned = true;
+            this.systemIncludePaths = CLEANED_MARKER;
+            this.userIncludePaths = CLEANED_MARKER;
+            this.userIncludeFilePaths = CLEANED_MARKER;
+
             inclStackIndex = input.readInt();
             cachedTokens = NO_TOKENS;
             assert this.cachedTokens != null;
             
-            size = input.readInt();
+            int size = input.readInt();
             
             if (size == 0) {
                 inclStack = EMPTY_STACK;
@@ -433,12 +402,13 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             return Arrays.asList(this.inclStack);
         }
         
-        public  boolean isCleaned() {
-            return this.userIncludeFilePaths == CLEANED_MARKER; // was created as clean state
-        }
+//        public  boolean isCleaned() {
+//            assert false : "must not be used, because it doesn't have any logic";
+//            return this.cleaned;
+//        }
         
-        public  ClankIncludeHandlerImpl.State copy(boolean cleanState) {
-            return new StateImpl(this, cleanState);
+        public  ClankIncludeHandlerImpl.State copyCleaned() {
+            return this.cleaned ? this : new StateImpl(this, true);
         }
         
         public  List<IncludeDirEntry> getSysIncludePaths() {
@@ -648,7 +618,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         if (inclStackIndex == 0) {
             retValue.append("<not from #include>"); // NOI18N
         } else {
-            retValue.append("from ").append(inclStackIndex).append("th #include "); // NOI18N
+            retValue.append("from inclStackIndex=").append(inclStackIndex); // NOI18N
+            if (inclStack != null && !inclStack.isEmpty()) {
+              retValue.append("\n"); // NOI18N
+            }
             for (Iterator<IncludeInfo>  it = inclStack.iterator(); it.hasNext();) {
                 IncludeInfo info = it.next();
                 retValue.append(info);
@@ -685,5 +658,12 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
       public boolean hasTokenStream() {
         return false;
       }
+
+      @Override
+      public String toString() {
+        return inclStackIndex == -1 ? "<DUMMY>" : "no cache for " + inclStackIndex; // NOI18N
+      }
+
+
     }
 }

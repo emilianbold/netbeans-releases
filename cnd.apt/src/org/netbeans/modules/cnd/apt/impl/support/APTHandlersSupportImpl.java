@@ -238,14 +238,14 @@ public class APTHandlersSupportImpl {
         }
     }
     
-    /*package*/ static PPIncludeHandler.State copyIncludeState(PPIncludeHandler.State inclState, boolean cleanState) {
+    /*package*/ static PPIncludeHandler.State copyCleanIncludeState(PPIncludeHandler.State inclState) {
         if (inclState == null) {
           return null;
         }      
         if (inclState instanceof ClankIncludeHandlerImpl.StateImpl) {
-            return ((ClankIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
+            return ((ClankIncludeHandlerImpl.StateImpl)inclState).copyCleaned();
         } else {
-            return ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
+            return ((APTIncludeHandlerImpl.StateImpl)inclState).copyCleaned();
         }
     }
 

@@ -101,14 +101,17 @@ public class ClankFileMacroMap extends ClankMacroMap {
             super(macroMap);
             this.sysMacros = macroMap.sysMacros;
         }
-        
+
+        private FileStateImpl(FileStateImpl other, boolean cleaned) {
+            super(other, cleaned);
+            this.sysMacros = other.sysMacros;
+        }
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 
         @Override
         public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
-            // TODO
         }
 
         public FileStateImpl(RepositoryDataInput input) throws IOException {
@@ -119,18 +122,27 @@ public class ClankFileMacroMap extends ClankMacroMap {
 
         protected void restoreTo(ClankFileMacroMap macroMap) {
             super.restoreTo(macroMap);
-            macroMap.sysMacros = this.sysMacros;
+            if (this.sysMacros != null) {
+                macroMap.sysMacros = this.sysMacros;
+            }
+        }
+
+        @Override
+        public State copyCleaned() {
+            return super.cleaned ? this : new FileStateImpl(this, true);
         }
 
         @Override
         public String toString() {
             StringBuilder retValue = new StringBuilder();
             retValue.append("FileState\n"); // NOI18N
-            retValue.append("Snapshot\n"); // NOI18N
+            retValue.append("Parent\n"); // NOI18N
             retValue.append(super.toString());
             retValue.append("\nSystem MacroMap\n"); // NOI18N
             if (System.getProperty("cnd.apt.macro.trace") != null) {
                 retValue.append(sysMacros);
+            } else if (sysMacros == null) {
+                retValue.append("null");
             } else {
                 retValue.append(System.identityHashCode(sysMacros));
             }

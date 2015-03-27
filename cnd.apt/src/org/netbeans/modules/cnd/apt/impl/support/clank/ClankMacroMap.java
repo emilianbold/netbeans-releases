@@ -105,10 +105,18 @@ public class ClankMacroMap implements PPMacroMap {
     public static class StateImpl implements State {
         private final List<String> macros;
         private long startCRC;
+        protected final boolean cleaned;
 
         protected StateImpl(ClankMacroMap macroMap) {
             this.macros = macroMap.macros;
             this.startCRC = macroMap.startCRC;
+            this.cleaned = false;
+        }
+
+        protected StateImpl(StateImpl other, boolean cleaned) {
+            this.macros = other.macros;
+            this.startCRC = other.startCRC;
+            this.cleaned = cleaned;
         }
         
         ////////////////////////////////////////////////////////////////////////
@@ -119,19 +127,22 @@ public class ClankMacroMap implements PPMacroMap {
             output.writeLong(this.startCRC);
         }
 
-        public StateImpl(RepositoryDataInput input) throws IOException {
+        protected StateImpl(RepositoryDataInput input) throws IOException {
             // TODO
             this.startCRC = input.readLong();
             this.macros = Collections.emptyList();
+            this.cleaned = true;
         }        
 
         protected void restoreTo(ClankMacroMap macroMap) {
-            macroMap.macros = this.macros;
+            if (!cleaned) {
+              macroMap.macros = this.macros;
+            }
             macroMap.startCRC = this.startCRC;
         }
 
         public State copyCleaned() {
-            return this;
+            return cleaned ? this : new StateImpl(this, true);
         }
 
         @Override

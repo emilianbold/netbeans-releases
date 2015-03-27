@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 import org.openide.util.Parameters;
@@ -215,6 +216,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
         
         private StateImpl(StateImpl other, boolean cleanState) {
+            assert cleanState == true;
             assert !APTTraceFlags.USE_CLANK;
             // shared information
             this.startFile = other.startFile;
@@ -268,6 +270,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         public void write(RepositoryDataOutput output) throws IOException {
             assert output != null;
+            CndUtils.assertTrueInConsole(isCleaned(), "we expect only clean states to be written in storage");
             startFile.write(output);
             
             assert systemIncludePaths != null;
@@ -412,8 +415,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return this.userIncludeFilePaths == CLEANED_MARKER; // was created as clean state
         }
         
-        /*package*/ APTIncludeHandler.State copy(boolean cleanState) {
-            return new StateImpl(this, cleanState);
+        /*package*/ APTIncludeHandler.State copyCleaned() {
+            return new StateImpl(this, true);
         }
         
         /*package*/ List<IncludeDirEntry> getSysIncludePaths() {

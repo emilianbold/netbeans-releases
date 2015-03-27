@@ -98,6 +98,9 @@ public final class ClankPPCallback extends TrackIncludeInfoCallback {
         super(traceOS);
         this.ppHandler = ppHandler;
         this.includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
+        // reset include stack;
+        // will be regenerated from scratch using onEnter/onExit
+        this.includeHandler.resetIncludeStack();
         this.delegate = delegate;
         this.interrupter = interrupter;
     }
@@ -165,12 +168,14 @@ public final class ClankPPCallback extends TrackIncludeInfoCallback {
             exitedTo = null;
           } else {
             exitedTo = includeStack.get(includeStack.size() - 1);
-            includeHandler.popInclude();
           }
 
           // ask if delegate wish to continue 
           if (!delegate.onExit(exitedFrom, exitedTo)) {
             interrupter.cancel();
+          }
+          if (exitedTo != null) {
+            includeHandler.popInclude();
           }
         }
     }
@@ -260,7 +265,10 @@ public final class ClankPPCallback extends TrackIncludeInfoCallback {
 
       @Override
       public String toString() {
-        return "ClankFileInfoImpl{" + "current=" + current + ", startEntry=" + startEntry + ", currentPath=" + currentPath + ", resolvedPath=" + resolvedPath + ", hasTokenStream=" + hasTokenStream + '}';
+        return "ClankFileInfoImpl{" + "hasTokenStream=" + hasTokenStream + ", current=" + current + ",\n"
+                + "startEntry=" + startEntry + ",\n"
+                + "currentPath=" + currentPath + ",\n"
+                + "resolvedPath=" + resolvedPath + '}';
       }
       
       

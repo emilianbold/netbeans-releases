@@ -3284,6 +3284,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private PreprocHandler restorePreprocHandler(CharSequence interestedFile, PreprocHandler preprocHandler, PreprocHandler.State state, Interrupter interrupter) {
         assert state != null;
         assert state.isCleaned();
+        if (APTTraceFlags.USE_CLANK) {
+            PreprocHandler ppHandler = getStartEntryInfo(preprocHandler, state).preprocHandler;
+            ppHandler.setState(state);
+            return ppHandler;
+        }
         // walk through include stack to restore preproc information
         LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
         assert (reverseInclStack != null);
