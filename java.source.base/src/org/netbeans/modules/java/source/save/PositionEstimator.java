@@ -900,6 +900,8 @@ public abstract class PositionEstimator {
         private List<String> append;
         private int minimalLeftPosition;
         private final boolean skipTrailingSemicolons;
+        private int sectionEnd;
+        private int sectionStart;
         
         public MembersEstimator(final List<? extends Tree> oldL, 
                                 final List<? extends Tree> newL, 
@@ -922,8 +924,20 @@ public abstract class PositionEstimator {
             this.skipTrailingSemicolons = skipTrailingSemicolons;
         }
         
+        private void findNextBoundary(Tree item, int start, int end) {
+            int off = Math.max(start, end -1);
+            this.sectionEnd = diffContext.blockSequences.findSectionEnd(off);
+            this.sectionStart = diffContext.blockSequences.findSectionStart(off);
+        }
+        
+        private JavaTokenId moveToSrcRelevantBounded(TokenSequence seq, Direction dir) {
+            int bound = dir == Direction.BACKWARD ? sectionStart : sectionEnd;
+            return moveToDifferentThan(seq, dir, nonRelevant, bound);
+        }
+        
         @Override()
         public void initialize() {
+            this.sectionEnd = diffContext.textLength;
             int size = oldL.size();
             data = new ArrayList<int[]>(size);
             append = new ArrayList<String>(size);
@@ -934,6 +948,8 @@ public abstract class PositionEstimator {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
                 
+                findNextBoundary(item, treeStart, treeEnd);
+                
                 // teribolak
                 if (item instanceof FieldGroupTree) { //
                     FieldGroupTree fgt = ((FieldGroupTree) item);
@@ -941,8 +957,8 @@ public abstract class PositionEstimator {
                     treeEnd = (int) positions.getEndPosition(compilationUnit, vars.get(vars.size()-1));
                 } else {
                     seq.move(treeEnd);
-                    if (seq.movePrevious() && nonRelevant.contains(seq.token().id())) {
-                        moveToSrcRelevant(seq, Direction.BACKWARD);
+                    if (seq.movePrevious() && seq.offset() >= sectionStart && nonRelevant.contains(seq.token().id())) {
+                        moveToSrcRelevantBounded(seq, Direction.BACKWARD);
                         seq.moveNext();
                         treeEnd = seq.offset();
                     }
@@ -953,10 +969,10 @@ public abstract class PositionEstimator {
 
                 if (isEnum(item)) {
                     seq.move(treeEnd);
-                    moveToSrcRelevant(seq, Direction.FORWARD);
+                    moveToSrcRelevantBounded(seq, Direction.FORWARD);
                     if (JavaTokenId.COMMA == seq.token().id()) {
                         treeEnd = seq.offset() + seq.token().length();
-                        moveToSrcRelevant(seq, Direction.FORWARD);
+                        moveToSrcRelevantBounded(seq, Direction.FORWARD);
                     }
                     if (JavaTokenId.SEMICOLON == seq.token().id()) {
                         seq.moveNext();
@@ -969,7 +985,7 @@ public abstract class PositionEstimator {
 
                 seq.move(treeStart);
                 seq.moveNext();
-                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
+                if (null != moveToSrcRelevantBounded(seq, Direction.BACKWARD)) {
                     seq.moveNext();
                 }
                 int previousEnd = seq.offset();
@@ -1019,7 +1035,7 @@ public abstract class PositionEstimator {
                         previousEnd = localResult;
                         break;
                     }
-                    if (!seq.moveNext()) break;
+                    if (!seq.moveNext() || seq.offset() >= sectionEnd) break;
                 }
                 if (localResult == -1) {
                     // fallback in case the statement is preceded just by whitespace. Its position will extend,
@@ -1047,7 +1063,7 @@ public abstract class PositionEstimator {
                 int maxLines = 0;
                 int newlines = 0;
                 boolean cont = true;
-                while (cont && seq.moveNext()) {
+                while (cont && seq.moveNext() && seq.offset() < sectionEnd) {
                     Token<JavaTokenId> t = seq.token();
                     switch(t.id()) {
                         case WHITESPACE:
@@ -1766,15 +1782,22 @@ public abstract class PositionEstimator {
     public static JavaTokenId moveToDifferentThan(
         TokenSequence<JavaTokenId> seq,
         Direction dir,
-        EnumSet<JavaTokenId> set)
+        EnumSet<JavaTokenId> set) {
+        return moveToDifferentThan(seq, dir, set, -1);
+    }
+    
+    public static JavaTokenId moveToDifferentThan(
+        TokenSequence<JavaTokenId> seq,
+        Direction dir,
+        EnumSet<JavaTokenId> set, int boundary) 
     {
         boolean notBound = false;
         switch (dir) {
             case BACKWARD:
-                while ((notBound = seq.movePrevious()) && set.contains(seq.token().id())) ;
+                while ((notBound = seq.movePrevious()) && (boundary == -1 || seq.offset() >= boundary) && set.contains(seq.token().id())) ;
                 break;
             case FORWARD:
-                while ((notBound = seq.moveNext()) && set.contains(seq.token().id())) ;
+                while ((notBound = seq.moveNext()) && (boundary == -1 || seq.offset() < boundary) && set.contains(seq.token().id())) ;
                 break;
         }
         return notBound ? seq.token().id() : null;
