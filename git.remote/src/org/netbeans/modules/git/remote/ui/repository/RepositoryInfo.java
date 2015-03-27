@@ -73,6 +73,7 @@ import org.netbeans.modules.git.remote.Git;
 import org.netbeans.modules.git.remote.client.GitClient;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.git.remote.utils.JGitUtils;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.RequestProcessor;
 
@@ -183,8 +184,10 @@ public class RepositoryInfo {
         VCSFileProxy root = rootRef.get();
         GitClient client = null;
         try {
-            if (root == null) {
+            if (root == null || !VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(root))) {
                 LOG.log(Level.WARNING, "refresh (): root is null, it has been collected in the meantime"); //NOI18N
+            } else if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(root))) {
+                LOG.log(Level.WARNING, "refresh (): file system is not connected"); //NOI18N
             } else {
                 LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
                 try {
