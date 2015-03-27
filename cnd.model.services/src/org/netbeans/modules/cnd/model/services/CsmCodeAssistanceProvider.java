@@ -196,7 +196,7 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
     }
 
     @Override
-    public List<NativeFileItem> findHeaderComilationUnit(NativeFileItem item) {
+    public List<NativeFileItem> findHeaderCompilationUnit(NativeFileItem item) {
         List<NativeFileItem> res = new ArrayList<NativeFileItem>();
         CsmFile csmFile = CsmUtilities.getCsmFile(item, false, false);
         if (csmFile != null) {

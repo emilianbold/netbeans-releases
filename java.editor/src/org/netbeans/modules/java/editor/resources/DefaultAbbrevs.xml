@@ -538,5 +538,23 @@ ${cursor}]]></code>
         </code>
     </codetemplate>
     
+    <!-- https://netbeans.org/bugzilla/show_bug.cgi?id=251158 -->
+    <codetemplate abbreviation="junit" contexts="CLASS">
+        <code><![CDATA[@${baseType type="org.junit.Test" default="Test" editable="false"}
+public void test${Method}() {
+    ${cursor}
+}]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="testng" contexts="CLASS">
+        <code><![CDATA[@${baseType type="org.testng.annotations.Test" default="Test" editable="false"}
+public void test${Method}() {
+    ${cursor}
+}]]></code>
+    </codetemplate>    
+
+    <!-- https://netbeans.org/bugzilla/show_bug.cgi?id=148947 -->
+    <codetemplate abbreviation="systrace" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP,LAMBDA_EXPRESSION">
+        <code><![CDATA[System.out.println("${className currClassFQName editable="false"}.${methodName currMethodName editable="false"}()");]]></code>
+    </codetemplate>    
 
 </codetemplates>
