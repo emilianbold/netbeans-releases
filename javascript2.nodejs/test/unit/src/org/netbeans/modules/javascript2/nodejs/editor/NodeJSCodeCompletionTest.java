@@ -141,7 +141,15 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     }
     
     public void testIssue249500_02() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "p^;", false);
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "k^;", false);
+    }
+    
+    public void testIssue249500_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "trip^; // test 1", false);
+    }
+    
+    public void testIssue249500_04() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "trip^; // test 2", false);
     }
     
     public void testIssue249626_01() throws Exception {
