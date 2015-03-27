@@ -123,12 +123,14 @@ public class CssIndexer extends EmbeddingIndexer {
             //support for caching the file dependencies
             int entriesHashCode = storeEntries(model.getImports(), document, IMPORTS_KEY);
             FileObject root = context.getRoot();
-            AtomicLong aggregatedHash = importsHashCodes.get(root);
-            if(aggregatedHash == null) {
-                aggregatedHash = new AtomicLong(0);
-                importsHashCodes.put(root, aggregatedHash);
-            } 
-            aggregatedHash.set(aggregatedHash.get() * 79 + entriesHashCode);
+            synchronized(importsHashCodes) {
+                AtomicLong aggregatedHash = importsHashCodes.get(root);
+                if (aggregatedHash == null) {
+                    aggregatedHash = new AtomicLong(0);
+                    importsHashCodes.put(root, aggregatedHash);
+                } 
+                aggregatedHash.set(aggregatedHash.get() * 79 + entriesHashCode);
+            }
             
             //this is a marker key so it's possible to find
             //all stylesheets easily
@@ -233,14 +235,18 @@ public class CssIndexer extends EmbeddingIndexer {
     
         @Override
         public boolean scanStarted(Context context) {
-            importsHashCodes.remove(context.getRoot()); //remove the computed hashcode for the given indexing root
+            synchronized(importsHashCodes) {
+                importsHashCodes.remove(context.getRoot()); //remove the computed hashcode for the given indexing root
+            }
             return super.scanStarted(context);
         }
 
         
         @Override
         public void scanFinished(Context context) {
-            computedImportsHashCodes = new HashMap<>(importsHashCodes); //shallow copy
+            synchronized(importsHashCodes) {
+                computedImportsHashCodes = new HashMap<>(importsHashCodes); //shallow copy
+            }
             FileObject root = context.getRoot();
             if(root != null) {
                 fireChange(root);
