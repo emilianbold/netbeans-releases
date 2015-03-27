@@ -212,6 +212,26 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/issue250329/s4.js", "ut2.^endsWith2();", false);
     }
     
+    public void testIssue250298_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test1", false);
+    }
+    
+    public void testIssue250298_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test2", false);
+    }
+    
+    public void testIssue250298_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test3", false);
+    }
+    
+    public void testIssue250298_04() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test4", false);
+    }
+    
+    public void testIssue250298_05() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250298/api/test250298.js", "mi.^listFiles(); // test5", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();
