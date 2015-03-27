@@ -52,9 +52,9 @@ public class AddElementHintTest extends HintsTestCase{
         editor = new EditorOperator(file);
         editor.setCaretPosition(72,1);
         new EventTool().waitNoEvent(750);
-        useHint("Create Field",new String[]{"Create Parameter a",
-        "Create Local Variable a",
-        "Create Field a in org.netbeans.test.java.hints.HintsTest.addHint"},
+        useHint("Create Field",new String[]{"Create Parameter \"a\"",
+        "Create Local Variable \"a\"",
+        "Create Field \"a\" in org.netbeans.test.java.hints.HintsTest.addHint"},
                 ".*private int a;.*");
     }
     
@@ -64,9 +64,9 @@ public class AddElementHintTest extends HintsTestCase{
         editor = new EditorOperator(file);
         editor.setCaretPosition(66,1);
         new EventTool().waitNoEvent(750);
-        useHint("Create Field",new String[]{"Create Parameter g",
-        "Create Local Variable g",
-        "Create Field g in org.netbeans.test.java.hints.HintsTest.addHint"},
+        useHint("Create Field",new String[]{"Create Parameter \"g\"",
+        "Create Local Variable \"g\"",
+        "Create Field \"g\" in org.netbeans.test.java.hints.HintsTest.addHint"},
                 ".*private LinkedList<String> g;.*");
     }
     
@@ -78,7 +78,7 @@ public class AddElementHintTest extends HintsTestCase{
         editor = new EditorOperator(file);
         editor.setCaretPosition(45,1);                
         new EventTool().waitNoEvent(750);
-        useHint("Create Field",new String[]{"Create Field field in org.netbeans.test.java.hints.HintsTest.Element1"},
+        useHint("Create Field",new String[]{"Create Field \"field\" in org.netbeans.test.java.hints.HintsTest.Element1"},
                 ".*int field;.*");
     }
     
@@ -90,7 +90,7 @@ public class AddElementHintTest extends HintsTestCase{
         editor = new EditorOperator(file);
         editor.setCaretPosition(46,1);                
         new EventTool().waitNoEvent(750);
-        useHint("Create Field",new String[]{"Create Field statField in org.netbeans.test.java.hints.HintsTest.Element1"},
+        useHint("Create Field",new String[]{"Create Field \"statField\" in org.netbeans.test.java.hints.HintsTest.Element1"},
                 ".*static String statField;.*");
     }
     

@@ -50,7 +50,7 @@ public class ImplAllAbstractTest extends HintsTestCase{
         String file = "AllAbs";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(4,1);
+        editor.setCaretPosition(42,1);
         new EventTool().waitNoEvent(750);
         String pattern = ".*public void run\\(\\) \\{.*throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*\\}.*";
         useHint("Implement",new String[]{"Implement all abstract methods"},pattern);
@@ -60,7 +60,7 @@ public class ImplAllAbstractTest extends HintsTestCase{
         String file = "AllAbs2";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(6,1);
+        editor.setCaretPosition(44,1);
         new EventTool().waitNoEvent(750);
         String pattern = ".*public int getRowCount\\(\\) \\{.*" +
                 "throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*" +
@@ -78,7 +78,7 @@ public class ImplAllAbstractTest extends HintsTestCase{
         String file = "AllAbs2";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(11,1);
+        editor.setCaretPosition(49,1);
         new EventTool().waitNoEvent(750);
         String pattern = ".*\\{.*public int compareTo\\(T o\\) \\{.*throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*\\}.*\\}.*";
         useHint("Implement",new String[]{"Implement all abstract methods"},pattern);
