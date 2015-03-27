@@ -44,11 +44,9 @@ package org.netbeans.modules.cnd.completion.keywords;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -84,15 +82,16 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
         if (TRACE) {
             System.err.println("typed text " + typedText);
         }
-        CompletionSupport sup = CompletionSupport.get(component);
-        if (sup == null) {
-            return 0;
-        }
-        int dot = component.getCaretPosition();
-        if (TRACE) {
-            System.err.println("keywords completion will be shown on " + dot); // NOI18N
-        }
-        return COMPLETION_QUERY_TYPE;
+        return 0;
+//        CompletionSupport sup = CompletionSupport.get(component);
+//        if (sup == null) {
+//            return 0;
+//        }
+//        int dot = component.getCaretPosition();
+//        if (TRACE) {
+//            System.err.println("keywords completion will be shown on " + dot); // NOI18N
+//        }
+//        return COMPLETION_QUERY_TYPE;
     }
 
     @Override
@@ -127,7 +126,8 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
     static {
         List<String> list = new ArrayList<String>();
         for(CppTokenId token : CppTokenId.values()) {
-            if (CppTokenId.KEYWORD_CATEGORY.equals(token.primaryCategory())) {
+            if (CppTokenId.KEYWORD_CATEGORY.equals(token.primaryCategory()) ||
+                CppTokenId.KEYWORD_DIRECTIVE_CATEGORY.equals(token.primaryCategory())) {
                 final String text = token.fixedText();
                 if (text != null && text.length() > 2) {
                     list.add(text);
