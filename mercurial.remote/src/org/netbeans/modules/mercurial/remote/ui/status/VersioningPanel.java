@@ -74,10 +74,13 @@ import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.logging.Level;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -139,7 +142,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             repaint();
         }
     }    
-    
         
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -176,10 +178,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */
     void setContext(VCSContext ctx) {
         context = ctx;
-        context = ctx;
-        if (context != null) {
-             HgModuleConfig.getDefault(HgUtils.getRootFile(context)).getPreferences().addPreferenceChangeListener(this);
-        }
+        addRemovePreferenceListener(0);
         if (EventQueue.isDispatchThread()) {
             syncTable.setTableModel(new SyncFileNode[0]);
         }
@@ -193,9 +192,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     @Override
     public void addNotify() {
         super.addNotify();
-        if (context != null) {
-            HgModuleConfig.getDefault(HgUtils.getRootFile(context)).getPreferences().addPreferenceChangeListener(this);
-        }
+        addRemovePreferenceListener(1);
         mercurial.getFileStatusCache().addPropertyChangeListener(this);        
         mercurial.addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
@@ -205,9 +202,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     @Override
     public void removeNotify() {
-        if (context != null) {
-            HgModuleConfig.getDefault(HgUtils.getRootFile(context)).getPreferences().removePreferenceChangeListener(this);
-        }
+        addRemovePreferenceListener(-1);
         mercurial.getFileStatusCache().removePropertyChangeListener(this);
         mercurial.removePropertyChangeListener(this);
         explorerManager.removePropertyChangeListener(this);
@@ -215,6 +210,37 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         super.removeNotify();
     }
     
+    private AtomicBoolean added = new AtomicBoolean(false);
+    private AtomicBoolean listen = new AtomicBoolean(false);
+    private void addRemovePreferenceListener(int state) {
+        if (state == 1) {
+            added.set(true);
+            if (context != null) {
+                VCSFileProxy rootFile = HgUtils.getRootFile(context);
+                if (rootFile != null) {
+                    HgModuleConfig.getDefault(rootFile).getPreferences().addPreferenceChangeListener(this);
+                    listen.set(true);
+                }
+            }
+        } else if (state == 0){
+            if (context != null && added.get() && !listen.get()) {
+                VCSFileProxy rootFile = HgUtils.getRootFile(context);
+                if (rootFile != null) {
+                    HgModuleConfig.getDefault(rootFile).getPreferences().addPreferenceChangeListener(this);
+                    listen.set(true);
+                }
+            }
+        } else if (state == -1){
+            added.set(false);
+            if (context != null) {
+                VCSFileProxy rootFile = HgUtils.getRootFile(context);
+                if (rootFile != null && listen.get()) {
+                    HgModuleConfig.getDefault(rootFile).getPreferences().removePreferenceChangeListener(this);
+                    listen.set(false);
+                }
+            }
+        }
+    }
     
     private void setVersioningComponent(JComponent component)  {
         Component [] children = getComponents();
@@ -277,6 +303,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             final String branchTitle;
             VCSFileProxy [] files = context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]);
             if (files == null || files.length == 0) {
+                return;
+            }
+            FileSystem fileSystem = VCSFileProxySupport.getFileSystem(files[0]);
+            if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
                 return;
             }
 
@@ -401,6 +431,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private void onRefreshAction() {
         LifecycleManager.getDefault().saveAll();
         if(context == null || context.getRootFiles().isEmpty()) {
+            return;
+        }
+        VCSFileProxy [] files = context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]);
+        FileSystem fileSystem = VCSFileProxySupport.getFileSystem(files[0]);
+        if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
             return;
         }
         refreshStatuses();
