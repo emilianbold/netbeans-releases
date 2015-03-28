@@ -15,10 +15,12 @@ ant check-sigtests-version -Dsigtest.fail.on.error=true || exit
 ant -Dtest-unit-sys-prop.ignore.random.failures=true localtest || exit
 ant -Dtest-unit-sys-prop.ignore.random.failures=true -Dtest.type=test-unit -Dtest.modules=\
 ant.freeform,\
+ant.htmlui,\
 api.java,\
 api.java.classpath,\
 api.progress,\
 api.progress.nb,\
+api.templates,\
 api.visual,\
 apisupport.ant,\
 apisupport.crudsample,\
@@ -113,6 +115,8 @@ spi.navigator,\
 spi.quicksearch,\
 tasklist.todo,\
 tasklist.ui,\
+templates,\
+templatesui,\
 uihandler,\
 versioning,\
 versioning.masterfs test || exit
