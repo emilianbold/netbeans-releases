@@ -68,6 +68,7 @@ import org.jdesktop.swingx.border.IconBorder;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 import org.jdesktop.swingx.table.TableColumnExt;
+import org.netbeans.modules.db.dataview.output.DataViewTableUIModel;
 
 /**
  * The class {@code JXTableRowHeader} is used to create a column which contains
@@ -91,22 +92,65 @@ public final class JXTableRowHeader extends JComponent {
         }
     }
 
-    private static class CountingTableModel implements TableModel {
+    private static class CountingTableModel implements TableModel, PropertyChangeListener, TableModelListener,RowSorterListener {
+        private static final String PROP_ROW_SORTER = "rowSorter";
+        private static final String PROP_SORTER = "sorter";
+        private static final String PROP_MODEL = "model";
         private int count;
-        
-        Set<TableModelListener> listeners = new HashSet<TableModelListener>();
+        private TableModel backingTableModel;
+        private RowSorter<?> backingSorter;
+        private final Set<TableModelListener> listeners = new HashSet<>();
+        private final JXTable backingTable;
 
-        public void setCount(int count) {
+        @Override
+        public void propertyChange(PropertyChangeEvent pce) {
+            String propertyName = pce.getPropertyName();
+            if (PROP_ROW_SORTER.equals(propertyName)
+                    || PROP_SORTER.equals(propertyName)) {
+                if (backingSorter != null) {
+                    backingSorter.removeRowSorterListener(this);
+                }
+                if (pce.getNewValue() != null) {
+                    backingSorter = (RowSorter) pce.getNewValue();
+                    backingSorter.addRowSorterListener(this);
+                }
+                tableDataChanged();
+            } else if (PROP_MODEL.equals(propertyName)) {
+                if (backingTableModel != null) {
+                    backingTableModel.removeTableModelListener(
+                            this);
+                }
+                backingTableModel = (TableModel) pce.getNewValue();
+                if (backingTableModel != null) {
+                    backingTableModel.addTableModelListener(this);
+                }
+                tableDataChanged();
+            }
+        }
+
+        public CountingTableModel(JXTable table) {
+            this.backingTable = table;
+            backingTable.addPropertyChangeListener(this);
+            this.backingTableModel = table.getModel();
+            this.backingTableModel.addTableModelListener(this);
+            setCount(backingTable.getRowCount());
+        }
+
+        private void fireTableDataChanged() {
+            for (TableModelListener tml : listeners) {
+                tml.tableChanged(new TableModelEvent(this));
+            }
+        }
+
+        private void setCount(int count) {
             // Only invoke tableChanged event if row count really changed
             // else the selection is cleared (see bug #240958)
             if (count != this.count) {
                 this.count = count;
-                for (TableModelListener tml : listeners) {
-                    tml.tableChanged(new TableModelEvent(this));
-                }
+                fireTableDataChanged();
             }
         }
-        
+
         @Override
         public void addTableModelListener(TableModelListener tl) {
             listeners.add(tl);
@@ -134,7 +178,22 @@ public final class JXTableRowHeader extends JComponent {
 
         @Override
         public Object getValueAt(int row, int col) {
-            return Integer.toString(row + 1);
+            if (backingTableModel instanceof DataViewTableUIModel) {
+                // The row passed into this model is the view row number of the
+                // backing table to get the right model coordinate in the table
+                // model the coordination transformation has to be done
+                try {
+                    int modelRow = backingTable.convertRowIndexToModel(row);
+                    return Integer.toString(
+                            ((DataViewTableUIModel) backingTableModel).getTotalRowOffset(modelRow)
+                            + 1
+                    );
+                } catch (IndexOutOfBoundsException ex) {
+                    return null;
+                }
+            } else {
+                return Integer.toString(row + 1);
+            }
         }
 
         @Override
@@ -151,63 +210,32 @@ public final class JXTableRowHeader extends JComponent {
         public void setValueAt(Object o, int i, int i1) {
             throw new NoSuchMethodError();
         }
+
+        private void tableDataChanged() {
+            setCount(backingTable.getRowCount());
+            fireTableDataChanged();
+        }
+
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            tableDataChanged();
+        }
+
+        @Override
+        public void sorterChanged(RowSorterEvent rse) {
+            tableDataChanged();
+        }
     }
 
     private final PropertyChangeListener backingTableListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent pce) {
-            JTable t = (JTable) pce.getSource();
-            if(pce.getPropertyName().equals("rowSorter") || pce.getPropertyName().equals("sorter")) {
-                if(backingSorter != null) {
-                    backingSorter.removeRowSorterListener(rowSorterListener);
-                }
-                if(pce.getNewValue() != null) {
-                    backingSorter = (RowSorter) pce.getNewValue();
-                    backingSorter.addRowSorterListener(rowSorterListener);
-                }
-                updateRowCount();
-            } else if (pce.getPropertyName().equals("rowHeight")) {
+            if (pce.getPropertyName().equals("rowHeight")) {
                 headerTable.setRowHeight((Integer) pce.getNewValue());
-            } else if ("model".equals(pce.getPropertyName())) {
-                if (backingTableModel != null) {
-                    backingTableModel.removeTableModelListener(
-                            tableModelListener);
-                }
-                backingTableModel = (TableModel) pce.getNewValue();
-                if (backingTableModel != null) {
-                    backingTableModel.addTableModelListener(tableModelListener);
-                }
-                updateRowCount();
             }
         }
     };
 
-    private void updateRowCount() {
-        // Run after all TableModelListeners are processed. We need the Row
-        // Sorter to contain valid values. Ugly solution, but works.
-        EventQueue.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                ctm.setCount(backingTable.getRowCount());
-            }
-        });
-    }
-
-    private TableModelListener tableModelListener = new TableModelListener() {
-        @Override
-        public void tableChanged(TableModelEvent e) {
-            updateRowCount();
-        }
-    };
-    
-    private RowSorterListener rowSorterListener = new RowSorterListener() {
-        @Override
-        public void sorterChanged(RowSorterEvent rse) {
-            updateRowCount();
-        }
-    };
-    
     public JTableHeader getTableHeader() {
         JTableHeader header = headerTable.getTableHeader();
         header.setReorderingAllowed(false);
@@ -215,7 +243,7 @@ public final class JXTableRowHeader extends JComponent {
         return header;
     }
 
-    private static Icon rightArrow = new Icon() {
+    private static final Icon rightArrow = new Icon() {
 
         @Override
         public int getIconWidth() {
@@ -234,7 +262,7 @@ public final class JXTableRowHeader extends JComponent {
             g.fillPolygon(new Polygon(new int[]{0, 5, 0}, new int[]{-5, 0, 5}, 3));
         }
     };
-    private IconBorder iconBorder = new IconBorder();
+    private final IconBorder iconBorder = new IconBorder();
 
     private class RowHeaderColumnRenderer extends DefaultTableRenderer {
 
@@ -258,31 +286,27 @@ public final class JXTableRowHeader extends JComponent {
     /**
      * The headerTable used to create the row header column.
      */
-    private final CountingTableModel ctm = new CountingTableModel();
+    private final CountingTableModel ctm;
     private final JXTable headerTable;
-    private JXTable backingTable;
-    private TableModel backingTableModel;
-    private RowSorter<?> backingSorter;
+    private final JXTable backingTable;
 
     /**
      * Create a row header from the given {@code JTable}. This row header will
      * have the same {@code TableModel} and {@code ListSelectionModel} as the
      * incoming table.
      *
-     * @param table
-     *            the table for which to produce a row header.
+     * @param table the table for which to produce a row header.
      */
     public JXTableRowHeader(JXTable table) {
         assert table != null : "JXTableRowHeader needs to be instanciated with a JXTable";
 
         this.backingTable = table;
-        this.backingTableModel = table.getModel();
-        this.backingTableModel.addTableModelListener(tableModelListener);
+
+        ctm = new CountingTableModel(backingTable);
 
         headerTable = new JXTableDecorator(ctm,
                 new JXTableRowHeader.InternalTableColumnModel());
 
-        ctm.setCount(backingTable.getRowCount());
         backingTable.addPropertyChangeListener(backingTableListener);
         headerTable.setRowHeight(backingTable.getRowHeight());
         headerTable.setSelectionModel(backingTable.getSelectionModel());
@@ -314,7 +338,7 @@ public final class JXTableRowHeader extends JComponent {
         this.headerTable.setGridColor(ResultSetJXTable.GRID_COLOR);
         this.headerTable.setHighlighters(
                 HighlighterFactory.createAlternateStriping(
-                ResultSetJXTable.ROW_COLOR, ResultSetJXTable.ALTERNATE_ROW_COLOR));
+                        ResultSetJXTable.ROW_COLOR, ResultSetJXTable.ALTERNATE_ROW_COLOR));
     }
 
     /**
