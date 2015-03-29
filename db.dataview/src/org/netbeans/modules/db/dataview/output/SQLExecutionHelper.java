@@ -115,10 +115,10 @@ class SQLExecutionHelper {
          */
         class Loader implements Runnable, Cancellable {
             // Indicate whether the execution is finished
-            public boolean finished = false;
+            private boolean finished = false;
             // Hold an exception if it is thrown in the body of the runnable
-            public SQLException ex = null;
-            Statement stmt = null;
+            private SQLException ex = null;
+            private Statement stmt = null;
 
             @Override
             public void run() {
@@ -402,12 +402,12 @@ class SQLExecutionHelper {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
 
         class DeleteElement {
-            public List<Object> values = new ArrayList<Object>();
-            public List<Integer> types = new ArrayList<Integer>();
+            public List<Object> values = new ArrayList<>();
+            public List<Integer> types = new ArrayList<>();
             public String sql;
         }
 
-        final List<DeleteElement> rows = new ArrayList<DeleteElement>();
+        final List<DeleteElement> rows = new ArrayList<>();
         for(int viewRow: rsTable.getSelectedRows()) {
             int modelRow = rsTable.convertRowIndexToModel(viewRow);
             DeleteElement de = new DeleteElement();
@@ -440,10 +440,10 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
+                        errorMsg += NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
                     } else if (rows > 1) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
+                        errorMsg += NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
                     }
                 } finally {
                     DataViewUtils.closeResources(pstmt);
@@ -476,16 +476,16 @@ class SQLExecutionHelper {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_update");
 
         class UpdateElement {
-            public List<Object> values = new ArrayList<Object>();
-            public List<Integer> types = new ArrayList<Integer>();
+            public List<Object> values = new ArrayList<>();
+            public List<Integer> types = new ArrayList<>();
             public String sql;
             public Integer key;
         }
 
-        final List<UpdateElement> updateSet = new ArrayList<UpdateElement>();
+        final List<UpdateElement> updateSet = new ArrayList<>();
 
         int[] viewRows = rsTable.getSelectedRows();
-        List<Integer> modelRows = new ArrayList<Integer>();
+        List<Integer> modelRows = new ArrayList<>();
         for(Integer viewRow: viewRows) {
             modelRows.add(rsTable.convertRowIndexToModel(viewRow));
         }
@@ -509,7 +509,7 @@ class SQLExecutionHelper {
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "", true) {
 
             private PreparedStatement pstmt;
-            Set<Integer> keysToRemove = new HashSet<Integer>();
+            Set<Integer> keysToRemove = new HashSet<>();
 
             @Override
             public void execute() throws SQLException, DBException {
@@ -535,10 +535,10 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_update");
+                        errorMsg += NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_update");
                     } else if (rows > 1) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
+                        errorMsg += NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");
                     }
                 } finally {
                     DataViewUtils.closeResources(pstmt);
@@ -746,7 +746,7 @@ class SQLExecutionHelper {
             startFrom = 0; // limit added to select, can start from first item
         }
 
-        final List<Object[]> rows = new ArrayList<Object[]>();
+        final List<Object[]> rows = new ArrayList<>();
         int colCnt = pageContext.getTableMetaData().getColumnCount();
         try {
             boolean hasNext = false;
@@ -824,13 +824,14 @@ class SQLExecutionHelper {
                 @Override
                 public void run() {
                     pageContext.getModel().setData(rows);
+                    pageContext.getModel().setRowOffset(pageContext.getCurrentPos() - 1);
                 }
             });
         }
     }
 
     private Statement prepareSQLStatement(Connection conn, String sql, boolean needTotal) throws SQLException {
-        Statement stmt = null;
+        Statement stmt;
         if (sql.startsWith("{")) { // NOI18N
             stmt = useScrollableCursors
                     ? conn.prepareCall(sql, resultSetScrollType, ResultSet.CONCUR_READ_ONLY)
@@ -960,11 +961,13 @@ class SQLExecutionHelper {
     }
 
     private boolean isSelectStatement(String queryString) {
-        return queryString.trim().toUpperCase().startsWith("SELECT") && queryString.trim().toUpperCase().indexOf("INTO") == -1; // NOI18N
+        String sqlUpperTrimmed = queryString.trim().toUpperCase();
+        return sqlUpperTrimmed.startsWith("SELECT")  // NOI18N
+                && (! sqlUpperTrimmed.contains("INTO")); // NOI18N
     }
 
     private boolean isLimitUsedInSelect(String sql) {
-        return sql.toUpperCase().indexOf(LIMIT_CLAUSE) != -1;
+        return sql.toUpperCase().contains(LIMIT_CLAUSE);
     }
 
     static boolean isGroupByUsedInSelect(String sql) {

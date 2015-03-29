@@ -64,6 +64,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
+import javax.swing.SortOrder;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -95,10 +96,10 @@ final class DataViewTableUI extends ResultSetJXTable {
 
     private JPopupMenu tablePopupMenu;
     private final DataViewUI dataviewUI;
-    private DataViewActionHandler handler;
+    private final DataViewActionHandler handler;
     private int selectedRow = -1;
     private int selectedColumn = -1;
-    private TableModelListener dataChangedListener = new TableModelListener() {
+    private final TableModelListener dataChangedListener = new TableModelListener() {
         @Override
         public void tableChanged(TableModelEvent e) {
             dataviewUI.handleColumnUpdated();
@@ -108,6 +109,9 @@ final class DataViewTableUI extends ResultSetJXTable {
     public DataViewTableUI(DataViewUI dataviewUI, DataViewActionHandler handler, DataView dataView, DataViewPageContext pageContext) {
         this.dataviewUI = dataviewUI;
         this.handler = handler;
+
+        // Make sure sorting can be disabled by taking unsorted into the sort order cycle
+        this.setSortOrderCycle(SortOrder.ASCENDING, SortOrder.DESCENDING, SortOrder.UNSORTED);
 
         TableSelectionListener listener = new TableSelectionListener(this);
         this.getSelectionModel().addListSelectionListener(listener);
@@ -120,22 +124,22 @@ final class DataViewTableUI extends ResultSetJXTable {
     @Override
     @SuppressWarnings({"unchecked"})
     public void setModel(TableModel dataModel) {
-        if(! (dataModel instanceof DataViewTableUIModel)) {
+        if (!(dataModel instanceof DataViewTableUIModel)) {
             throw new IllegalArgumentException("DataViewTableUI only supports"
                     + " instances of DataViewTableUIModel");
         }
         RowFilter<?, ?> oldFilter = getRowFilter();
-        if(getModel() != null) {
+        if (getModel() != null) {
             getModel().removeTableModelListener(dataChangedListener); // Remove ChangeListener on replace
         }
         super.setModel(dataModel);
         dataModel.addTableModelListener(dataChangedListener); // Add new change listener
         setRowFilter((RowFilter) oldFilter);
-        if(dataviewUI != null) {
+        if (dataviewUI != null) {
             dataviewUI.handleColumnUpdated();
         }
     }
-    
+
     @Override
     public DataViewTableUIModel getModel() {
         return (DataViewTableUIModel) super.getModel();
@@ -166,10 +170,11 @@ final class DataViewTableUI extends ResultSetJXTable {
     }
 
     private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
+
         static int borderThickness = 1;
         static Color selectedForeground;
         static Color unselectedForeground;
-        private JComponent holder = new JComponent() {};
+        private final JComponent holder = new JComponent() {};
 
         static {
             Color selectedFgFromMngr = UIManager.getColor(
@@ -183,6 +188,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     ? unselectedFgFromMngr
                     : new Color(0, 128, 0); // green color
         }
+
         public UpdatedResultSetCellRenderer() {
             holder.setLayout(new BorderLayout());
         }
@@ -255,7 +261,7 @@ final class DataViewTableUI extends ResultSetJXTable {
     private void setCellToNull(int row, int col) {
         int modelColumn = convertColumnIndexToModel(col);
         DBColumn dbcol = getModel().getColumn(modelColumn);
-        if ( dbcol.isGenerated() || !dbcol.isNullable()) {
+        if (dbcol.isGenerated() || !dbcol.isNullable()) {
             Toolkit.getDefaultToolkit().beep();
         } else {
             Class modelClass = getModel().getColumnClass(modelColumn);
@@ -271,17 +277,17 @@ final class DataViewTableUI extends ResultSetJXTable {
     private void setCellToDefault(int row, int col) {
         int modelColumn = convertColumnIndexToModel(col);
         DBColumn dbcol = getModel().getColumn(modelColumn);
-                Object val = getValueAt(row, col);
-                if (dbcol.isGenerated() || !dbcol.hasDefault()) {
-                    Toolkit.getDefaultToolkit().beep();
+        Object val = getValueAt(row, col);
+        if (dbcol.isGenerated() || !dbcol.hasDefault()) {
+            Toolkit.getDefaultToolkit().beep();
         } else if (val != null && val instanceof String
                 && ((String) val).equals("<DEFAULT>")) {
-                    setValueAt(null, row, col);
-                } else {
-                    setValueAt("<DEFAULT>", row, col);
-                }
-                setRowSelectionInterval(row, row);
-            }
+            setValueAt(null, row, col);
+        } else {
+            setValueAt("<DEFAULT>", row, col);
+        }
+        setRowSelectionInterval(row, row);
+    }
 
     private class TableSelectionListener implements ListSelectionListener {
 
@@ -297,7 +303,8 @@ final class DataViewTableUI extends ResultSetJXTable {
                 return;
             }
 
-            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
+            if (e.getSource() == table.getSelectionModel()
+                    && table.getRowSelectionAllowed()) {
                 boolean rowSelected = table.getSelectedRows().length > 0;
                 if (rowSelected && getModel().isEditable()) {
                     dataviewUI.enableDeleteBtn(!dataviewUI.isDirty());
@@ -320,7 +327,6 @@ final class DataViewTableUI extends ResultSetJXTable {
             }
         });
         tablePopupMenu.add(miInsertAction);
-
 
         final JMenuItem miDeleteAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_deleterow"));
         miDeleteAction.addActionListener(new ActionListener() {
@@ -543,7 +549,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     int modelColumn = convertColumnIndexToModel(col);
                     DBColumn dbcol = getModel().getColumn(modelColumn);
                     for (int row : getSelectedRows()) {
-                        if((!dbcol.isGenerated()) && dbcol.isNullable()) {
+                        if ((!dbcol.isGenerated()) && dbcol.isNullable()) {
                             setCellToNull(row, col);
                         }
                     }
@@ -551,7 +557,7 @@ final class DataViewTableUI extends ResultSetJXTable {
             }
         });
         tablePopupMenu.add(miSetNull);
-        
+
         final JMenuItem miSetDefault = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_set_cell_to_default"));
         miSetDefault.addActionListener(new ActionListener() {
 
@@ -561,7 +567,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     int modelColumn = convertColumnIndexToModel(col);
                     DBColumn dbcol = getModel().getColumn(modelColumn);
                     for (int row : getSelectedRows()) {
-                        if((!dbcol.isGenerated()) && dbcol.hasDefault()) {
+                        if ((!dbcol.isGenerated()) && dbcol.hasDefault()) {
                             setCellToDefault(row, col);
                         }
                     }
@@ -569,7 +575,7 @@ final class DataViewTableUI extends ResultSetJXTable {
             }
         });
         tablePopupMenu.add(miSetDefault);
-        
+
         addMouseListener(new MouseAdapter() {
 
             @Override
@@ -604,7 +610,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     boolean modelEditable = getModel().isEditable();
                     boolean rowsSelected = getSelectedRows().length > 0;
                     boolean cellUnderCursor = selectedColumn >= 0 && selectedRow >= 0;
-                    
+
                     miCommitAction.setEnabled(commitEnabled);
                     miCancelEdits.setEnabled(commitEnabled);
                     miUpdateScript.setEnabled(commitEnabled);
@@ -616,37 +622,37 @@ final class DataViewTableUI extends ResultSetJXTable {
                     miInsertSQLScript.setEnabled(modelEditable && rowsSelected);
                     miDeleteSQLScript.setEnabled(modelEditable && rowsSelected);
                     miDeleteAction.setEnabled(modelEditable && rowsSelected);
-                    
+
                     boolean enableSetToNull = false;
                     boolean enableSetToDefault = false;
-                    
-                    if(modelEditable && rowsSelected) {
-                        for(int col: getSelectedColumns()) {
+
+                    if (modelEditable && rowsSelected) {
+                        for (int col : getSelectedColumns()) {
                             int modelColumn = convertColumnIndexToModel(col);
                             DBColumn dbcol = getModel().getColumn(modelColumn);
-                            if(!dbcol.isGenerated()) {
-                                if(dbcol.isNullable()) {
+                            if (!dbcol.isGenerated()) {
+                                if (dbcol.isNullable()) {
                                     enableSetToNull = true;
                                 }
-                                if(dbcol.hasDefault()) {
+                                if (dbcol.hasDefault()) {
                                     enableSetToDefault = true;
                                 }
                             }
                         }
                     }
-                    
+
                     miSetDefault.setEnabled(enableSetToDefault);
                     miSetNull.setEnabled(enableSetToNull);
-                
+
                     // Enable copy if one or more rows are selected
                     miCopyRowValues.setEnabled(rowsSelected);
                     miCopyRowValuesH.setEnabled(rowsSelected);
 
                     miCopyValue.setEnabled(cellUnderCursor);
-     
+
                     tablePopupMenu.show(DataViewTableUI.this, e.getX(), e.getY());
                 }
             }
         });
     }
-                }
+}
