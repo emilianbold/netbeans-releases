@@ -44,20 +44,24 @@ package org.netbeans.modules.cnd.completion.keywords;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.completion.CompletionProvider;
+import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_ALL_QUERY_TYPE;
 import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_QUERY_TYPE;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -69,60 +73,145 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * @author alsimon
  */
 public class CsmKeywordsCompletionProvider implements CompletionProvider {
+    private static final boolean TRACE  = false;
 
     public CsmKeywordsCompletionProvider() {
         // default constructor to be created as lookup service
     }
 
-    private final static boolean TRACE = Boolean.getBoolean("cnd.completion.keywords.trace");
-
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (TRACE) {
-            System.err.println("typed text " + typedText);
-        }
         return 0;
-//        CompletionSupport sup = CompletionSupport.get(component);
-//        if (sup == null) {
-//            return 0;
-//        }
-//        int dot = component.getCaretPosition();
-//        if (TRACE) {
-//            System.err.println("keywords completion will be shown on " + dot); // NOI18N
-//        }
-//        return COMPLETION_QUERY_TYPE;
     }
 
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (TRACE) {
-            System.err.println("queryType = " + queryType); // NOI18N
-        }
         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
             int dot = component.getCaret().getDot();
-            if (TRACE) {
-                System.err.println("keywords completion task is created with offset " + dot); // NOI18N
+            if (!isPreprocessor(component.getDocument(), dot)) {
+                return new AsyncCompletionTask(new Query(dot, queryType), component);
             }
-            return new AsyncCompletionTask(new Query(dot), component);
         }
         return null;
     }
+    
+    private boolean isPreprocessor(final Document doc, final int offset) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
 
-    // method for tests
-    /*package*/ static Collection<CsmKeywordCompletionItem> getFilteredData(BaseDocument doc, int caretOffset, int queryType) {
-        Query query = new Query(caretOffset);
-        Collection<CsmKeywordCompletionItem> items = query.getItems(doc, caretOffset);
-        if (TRACE) {
-            System.err.println("Completion Items " + items.size());
-            for (CsmKeywordCompletionItem completionItem : items) {
-                System.err.println(completionItem.toString());
+            @Override
+            public void run() {
+                out.set(isInsideDirective(doc, offset));
+            }            
+        });
+        return out.get();
+    }
+    
+    private boolean isInsideDirective(Document doc, int offset) {
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
+        if (ts == null) {
+            return false;
+        }
+        if (ts.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+            @SuppressWarnings("unchecked")
+            TokenSequence<TokenId> embedded = (TokenSequence<TokenId>) ts.embedded();
+            if (CndTokenUtilities.moveToPreprocKeyword(embedded)) {
+                TokenId id = embedded.token().id();
+                if(id instanceof CppTokenId) {
+                    switch ((CppTokenId)id) {
+                        case PREPROCESSOR_DEFINE:
+                            return (embedded.offset() + embedded.token().length()) >= offset;
+                        default:
+                            return true;
+                    }
+                }
             }
         }
-        return items;
+        return false;
     }
 
-    private static final String[] keywords;
+    private static final String[] keywordsAll;
+    private static final CppTokenId[] keywordsFirst;
+            
     static {
+        keywordsFirst = new CppTokenId[] {
+            CppTokenId.ALIGNOF,
+//            CppTokenId.ASM,
+//            CppTokenId.AUTO,
+//            CppTokenId.BIT,
+//            CppTokenId.BOOL,
+//            CppTokenId.BREAK,
+//            CppTokenId.CASE,
+//            CppTokenId.CATCH,
+//            CppTokenId.CHAR,
+//            CppTokenId.CLASS,
+//            CppTokenId.CONST,
+            CppTokenId.CONST_CAST,
+            CppTokenId.CONTINUE,
+            CppTokenId.DEFAULT,
+            CppTokenId.DELETE,
+            CppTokenId.DOUBLE,
+            CppTokenId.DYNAMIC_CAST,
+//            CppTokenId.ELSE,
+//            CppTokenId.ENUM,
+            CppTokenId.EXPLICIT,
+            CppTokenId.EXPORT,
+            CppTokenId.EXTERN,
+            CppTokenId.FINALLY,
+//            CppTokenId.FLOAT,
+//            CppTokenId.FOR,
+            CppTokenId.FRIEND,
+//            CppTokenId.GOTO,
+            CppTokenId.INLINE,
+//            CppTokenId.INT,
+//            CppTokenId.LONG,
+            CppTokenId.MUTABLE,
+            CppTokenId.NAMESPACE,
+//            CppTokenId.NEW,
+            CppTokenId.OPERATOR,
+//            CppTokenId.PASCAL,
+            CppTokenId.PRIVATE,
+            CppTokenId.PROTECTED,
+            CppTokenId.PUBLIC,
+            CppTokenId.REGISTER,
+            CppTokenId.REINTERPRET_CAST,
+            CppTokenId.RESTRICT,
+            CppTokenId.RETURN,
+//            CppTokenId.SHORT,
+            CppTokenId.SIGNED,
+            CppTokenId.SIZEOF,
+            CppTokenId.STATIC,
+            CppTokenId.STATIC_CAST,
+            CppTokenId.STRUCT,
+            CppTokenId.SWITCH,
+            CppTokenId.TEMPLATE,
+//            CppTokenId.THIS,
+//            CppTokenId.THROW,
+//            CppTokenId.TRY,
+            CppTokenId.TYPEDEF,
+            CppTokenId.TYPEID,
+            CppTokenId.TYPENAME,
+            CppTokenId.TYPEOF,
+//            CppTokenId.UNION,
+            CppTokenId.UNSIGNED,
+//            CppTokenId.USING,
+            CppTokenId.VIRTUAL,
+//            CppTokenId.VOID,
+            CppTokenId.VOLATILE,
+            CppTokenId.WCHAR_T,
+//            CppTokenId.WHILE,
+//            CppTokenId.FINAL,
+            CppTokenId.OVERRIDE,
+            CppTokenId.CONSTEXPR,
+            CppTokenId.DECLTYPE,
+            CppTokenId.NULLPTR,
+            CppTokenId.THREAD_LOCAL,
+            CppTokenId.STATIC_ASSERT,
+            CppTokenId.ALIGNAS,
+            CppTokenId.CHAR16_T,
+            CppTokenId.CHAR32_T,
+            CppTokenId.NOEXCEPT
+        };        
         List<String> list = new ArrayList<String>();
         for(CppTokenId token : CppTokenId.values()) {
             if (CppTokenId.KEYWORD_CATEGORY.equals(token.primaryCategory()) ||
@@ -133,7 +222,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
                 }
             }
         }
-        keywords = list.toArray(new String[list.size()]);
+        keywordsAll = list.toArray(new String[list.size()]);
     }
     
     private static final class Query extends AsyncCompletionQuery {
@@ -142,17 +231,25 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
         private int creationCaretOffset;
         private int queryAnchorOffset;
         private String filterPrefix;
+        private final int queryType;
+        private boolean caseSensitive = false;
 
-        /*package*/ Query(int caretOffset) {
+        /*package*/ Query(int caretOffset, int queryType) {
+            if(TRACE)System.err.println("KW Query("+caretOffset+","+queryType+")");
+            this.queryType = queryType;
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
+        }
+        
+        @Override
+        protected void preQueryUpdate(JTextComponent component) {
+            String mimeType = CsmCompletionUtils.getMimeType(component);
+            caseSensitive = mimeType != null ? CsmCompletionUtils.isCaseSensitive(mimeType) : false;
         }
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if (TRACE) {
-                System.err.println("query on " + caretOffset + " anchor " + queryAnchorOffset); // NOI18N
-            }
+            if(TRACE)System.err.println("KW query("+caretOffset+")");
             Collection<CsmKeywordCompletionItem> items = getItems((BaseDocument) doc, caretOffset);
             if (this.queryAnchorOffset > 0) {
                 if (items != null && items.size() > 0) {
@@ -169,26 +266,25 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
 
         @Override
         protected boolean canFilter(JTextComponent component) {
+            if(TRACE)System.err.println("KW canFilter()");
             int caretOffset = component.getCaretPosition();
-            if (TRACE) {
-                System.err.println("canFilter on " + caretOffset + " anchor " + queryAnchorOffset); // NOI18N
-            }
             filterPrefix = null;
             if (queryAnchorOffset > -1 && caretOffset >= queryAnchorOffset) {
                 Document doc = component.getDocument();
                 try {
                     filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                    if (results == null || !isCppIdentifierPart(filterPrefix)) {
+                        filterPrefix = null;
+                    }
                 } catch (BadLocationException ex) {
-                    Completion.get().hideCompletion();
                 }
-            } else {
-                Completion.get().hideCompletion();
             }
             return filterPrefix != null;
         }
 
         @Override
         protected void filter(CompletionResultSet resultSet) {
+            if(TRACE)System.err.println("KW filter()");
             if (filterPrefix != null && results != null) {
                 resultSet.setAnchorOffset(queryAnchorOffset);
                 Collection<? extends CsmKeywordCompletionItem> items = getFilteredData(results, filterPrefix);
@@ -210,19 +306,29 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             return null;
         }
         
-        
         private Collection<CsmKeywordCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
             Collection<CsmKeywordCompletionItem> items = new ArrayList<CsmKeywordCompletionItem>();
             try {
                 if (init(doc, caretOffset)) {
                     Filter<CppTokenId> languageFilter = getLanguageFilter(doc);
-                    for (String string : keywords) {
-                        if (languageFilter != null) {
-                            if (languageFilter.check(string) == null) {
-                                continue;
+                    if (queryType == COMPLETION_ALL_QUERY_TYPE) {
+                        for (String string : keywordsAll) {
+                            if (languageFilter != null) {
+                                if (languageFilter.check(string) == null) {
+                                    continue;
+                                }
                             }
+                            items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, string));
                         }
-                        items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, string));
+                    } else {
+                        for (CppTokenId id : keywordsFirst) {
+                            if (languageFilter != null) {
+                                if (languageFilter.check(id.fixedText()) == null) {
+                                    continue;
+                                }
+                            }
+                            items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, id.fixedText()));
+                        }
                     }
                 }
             } catch (BadLocationException ex) {
@@ -243,6 +349,8 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
                 final TokenId id = ppTs.token().id();
                 if(id instanceof CppTokenId) {
                     switch ((CppTokenId)id) {
+                        case DOXYGEN_COMMENT:
+                        case BLOCK_COMMENT:
                         case NEW_LINE:
                         case WHITESPACE:
                             // use caret offset
@@ -250,7 +358,11 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
                             break;
                         default:
                             // use start of token
-                            queryAnchorOffset = ppTs.offset();
+                            if (isCppIdentifierPart(ppTs.token().text().toString())) {
+                                queryAnchorOffset = ppTs.offset();
+                            } else {
+                                queryAnchorOffset = caretOffset;
+                            }
                             break;
                     }
                 }
@@ -260,11 +372,16 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             } finally {
                 doc.readUnlock();
             }
-            if (TRACE) {
-                System.err.println(" anchorOffset=" + queryAnchorOffset + // NOI18N
-                        " filterPrefix=" + filterPrefix); // NOI18N
-            }
             return this.queryAnchorOffset >= 0;
+        }
+        
+        private boolean isCppIdentifierPart(String text) {
+            for (int i = 0; i < text.length(); i++) {
+                if (!(CndLexerUtilities.isCppIdentifierPart(text.charAt(i)))) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private Collection<CsmKeywordCompletionItem> getFilteredData(Collection<CsmKeywordCompletionItem> data, String prefix) {
@@ -274,7 +391,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             } else {
                 List<CsmKeywordCompletionItem> ret = new ArrayList<CsmKeywordCompletionItem>(data.size());
                 for (CsmKeywordCompletionItem itm : data) {
-                    if (matchPrefix(itm, prefix)) {
+                    if (matchPrefix(itm.getItemText(), prefix, caseSensitive)) {
                         ret.add(itm);
                     }
                 }
@@ -283,8 +400,14 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             return out;
         }
 
-        private boolean matchPrefix(CsmKeywordCompletionItem itm, String prefix) {
-            return itm.getItemText().startsWith(prefix);
+        private boolean matchPrefix(CharSequence text, String prefix, boolean caseSensitive) {
+            if (CharSequenceUtils.startsWith(text, prefix)) {
+                return true;
+            }
+            if (!caseSensitive) {
+                return CharSequenceUtils.startsWithIgnoreCase(text, prefix);
+            }
+            return false;
         }
     }
 }
