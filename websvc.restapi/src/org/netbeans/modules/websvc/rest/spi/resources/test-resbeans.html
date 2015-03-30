@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>TTL_TEST_RESBEANS</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -19,7 +19,7 @@
         <div class="outerBorder">
             <div class="header">
                 <div id="subheader" class="subheader"></div> <!-- sub-header -->
-                <div class="banner"><img src="./images/pname.png"/></div>
+                <div class="banner"><img src="./images/pname.png" alt="Test RESTful Web Services banner"/></div>
             </div> <!-- header -->
             <div id="main" class="main hide">
                 <table width="100%">
@@ -27,11 +27,11 @@
                         <td id="leftSidebar" valign="top" colspan="4"></td>
                         <td class="seperator" valign="top"></td>
                         <td id="content" class="content" valign="top" colspan="12">
-                            <div id="navigation" class="details"></div><hr>
-                            <div id="request">MSG_TEST_RESBEANS_INFO</div><hr>
+                            <div id="navigation" class="details"></div><hr/>
+                            <div id="request">MSG_TEST_RESBEANS_INFO</div><hr/>
                             <div id="testaction" class="ConMgn_sun4"></div>
                             <div id="testinput" class="ConMgn_sun4"></div>
-                            <hr>
+                            <hr/>
                             <div id="req_headers" class="ConMgn_sun4">
                                 <input id = "headers_btn" class="Btn1_sun4 Btn1Hov_sun4" type="button" name="" value="&uarr; Custom HTTP Headers" 
                                        onclick="toggleHeadersBlock('headers_block', 'headers_btn', 'Custom Request Headers');"/>
@@ -84,7 +84,7 @@
                     isDebug: true
             };
 	</script>-->
-        <script language="Javascript">
+        <script type="text/javascript">
             var ts = new TestSupport();
             ts.init();
             
