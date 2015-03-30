@@ -62,10 +62,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -754,7 +752,9 @@ public class NodeJsDataProvider {
         if (module != null) {
             JSONObject property = module;
             for (int i = 1; i < parts.length; i++) {
-                if ("prototype".equals(parts[i])) {
+                if (NodeJsUtils.PROTOTYPE.equals(parts[i])
+                        || NodeJsUtils.EXPORTS.equals(parts[i])
+                        || NodeJsUtils.MODULE.equals(parts[i])) {
                     continue;
                 }
                 property = findProperty(property, parts[i]);
