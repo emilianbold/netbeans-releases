@@ -86,7 +86,7 @@ public final class WildflyMessageDestinationManager implements MessageDestinatio
     private final FileObject configFile;
     private final WildflyDeploymentManager dm;
 
-    public WildflyMessageDestinationManager(WildflyDeploymentManager dm, boolean isAs7) {
+    public WildflyMessageDestinationManager(WildflyDeploymentManager dm) {
         this.dm = dm;
         InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
         String serverDirPath = ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
@@ -102,7 +102,6 @@ public final class WildflyMessageDestinationManager implements MessageDestinatio
             config = serverDir.getFileObject("configuration/domain.xml");
         }
         this.configFile = config;
-        this.isAs7 = isAs7;
     }
 
     @Override
