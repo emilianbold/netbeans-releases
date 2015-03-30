@@ -40,10 +40,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.api.htmlui;
+package org.netbeans.modules.htmlui;
 
-import org.netbeans.api.htmlui.OpenHTMLRegistration;
+import java.util.HashMap;
 import javax.swing.Action;
+import org.netbeans.api.htmlui.OpenHTMLRegistration;
+import org.netbeans.modules.htmlui.Pages;
 import org.openide.awt.ActionID;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,14 +62,17 @@ public class OpenHTMLRegistrationTest {
     }
 
     @ActionID(category = "Test", id="html.test")
-    @OpenHTMLRegistration(displayName = "Open me!", iconBase = "x.png", url = "empty.html")
+    @OpenHTMLRegistration(displayName = "Open me!",
+        iconBase = "x.png",
+        url = "empty.html",
+        techIds = { "uno", "duo", "tre" }
+    )
     public static void main() {
-        
     }
     
     @Test public void verifyRegistered() {
         final String path = "Actions/Test/html-test.instance";
-        FileObject fo = FileUtil.getConfigFile(path);
+        final FileObject fo = FileUtil.getConfigFile(path);
         assertNotNull(fo, "Registration found");
         Action a = FileUtil.getConfigObject(path, Action.class);
         assertNotNull(a, "Action found");
@@ -75,5 +80,20 @@ public class OpenHTMLRegistrationTest {
         
         assertEquals(fo.getAttribute("class"), OpenHTMLRegistrationTest.class.getCanonicalName(), "Fully qualified name");
         assertEquals(fo.getAttribute("method"), "main");
+        
+        class FOMap extends HashMap<String,Object> {
+
+            @Override
+            public Object get(Object key) {
+                return fo.getAttribute(key.toString());
+            }
+        }
+
+        Pages.R r = new Pages.R(new FOMap());
+        Object[] arr = r.getTechIds();
+        assertEquals(arr.length, 3, "Three different ids");
+        assertEquals(arr[0], "uno");
+        assertEquals(arr[1], "duo");
+        assertEquals(arr[2], "tre");
     }
 }

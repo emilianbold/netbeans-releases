@@ -185,7 +185,7 @@ implements Comparator<ExecutableElement> {
                         if (url == null) {
                             continue;
                         }
-                        generateDialog(w, ee, url);
+                        generateDialog(w, ee, url, reg.techIds());
                     }
                     if (comp != null) {
                         String url = findURL(comp.url(), ee);
@@ -204,7 +204,7 @@ implements Comparator<ExecutableElement> {
                         ) {
                             error("type() can be either Node.class or JComponent.class", ee);
                         }
-                        generateComponent(w, ee, t, url);
+                        generateComponent(w, ee, t, url, comp.techIds());
                     }
                 }
                 
@@ -237,7 +237,7 @@ implements Comparator<ExecutableElement> {
         return url;
     }
 
-    private void generateDialog(Writer w, ExecutableElement ee, String url) throws IOException {
+    private void generateDialog(Writer w, ExecutableElement ee, String url, String[] techIds) throws IOException {
         w.append("  public static String ").append(ee.getSimpleName());
         w.append("(");
         String sep = "";
@@ -249,6 +249,7 @@ implements Comparator<ExecutableElement> {
         
         w.append(") {\n");
         w.append("    return Builder.newDialog(\"").append(url).append("\").\n");
+        generateTechIds(w, techIds);
         w.append("      loadFinished(new Runnable() {\n");
         w.append("        public void run() {\n");
         w.append("          ").append(ee.getEnclosingElement().getSimpleName())
@@ -267,7 +268,7 @@ implements Comparator<ExecutableElement> {
     }
     
     private void generateComponent(
-        Writer w, ExecutableElement ee, String type, String url
+        Writer w, ExecutableElement ee, String type, String url, String[] techIds
     ) throws IOException {
         w.append("  public static ").append(type).append(" ").append(ee.getSimpleName());
         w.append("(");
@@ -280,6 +281,7 @@ implements Comparator<ExecutableElement> {
         
         w.append(") {\n");
         w.append("    return Builder.newDialog(\"").append(url).append("\").\n");
+        generateTechIds(w, techIds);
         w.append("      loadFinished(new Runnable() {\n");
         w.append("        public void run() {\n");
         w.append("          ").append(ee.getEnclosingElement().getSimpleName())
@@ -404,5 +406,21 @@ implements Comparator<ExecutableElement> {
         for (Element ee : e.getEnclosedElements()) {
             searchSubTree(ee, found, type);
         }
+    }
+
+    private void generateTechIds(Writer w, String[] techIds) throws IOException {
+        if (techIds.length == 0) {
+            return;
+        }
+        w.append("addTechIds(");
+        String sep = "";
+        for (String id : techIds) {
+            w.append(sep);
+            w.append('"');
+            w.append(id);
+            w.append('"');
+            sep = ", ";
+        }
+        w.append(").\n");
     }
 }

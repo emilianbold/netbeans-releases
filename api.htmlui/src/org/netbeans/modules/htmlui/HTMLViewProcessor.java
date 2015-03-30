@@ -117,6 +117,10 @@ public class HTMLViewProcessor extends LayerGeneratingProcessor {
                 }
                 actionFile.stringvalue("method", e.getSimpleName().toString());
                 actionFile.stringvalue("class", e.getEnclosingElement().asType().toString());
+                String[] techIds = reg.techIds();
+                for (int i = 0; i < techIds.length; i++) {
+                    actionFile.stringvalue("techId." + i, techIds[i]);
+                }
 //                actionFile.instanceAttribute("component", TopComponent.class, reg, null);
 //                if (reg.preferredID().length() > 0) {
 //                    actionFile.stringvalue("preferredID", reg.preferredID());

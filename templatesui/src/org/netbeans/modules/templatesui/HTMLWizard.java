@@ -43,6 +43,8 @@ package org.netbeans.modules.templatesui;
 
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +67,7 @@ public final class HTMLWizard extends AbstractWizard {
         this.def = definition;
     }
     
+    @Override
     protected Object initSequence(ClassLoader l) throws Exception {
         String clazz = (String) def.getAttribute("class");
         String method = (String) def.getAttribute("method");
@@ -73,6 +76,7 @@ public final class HTMLWizard extends AbstractWizard {
         Object ret = m.invoke(null);
         return ret;
     }
+    @Override
     protected URL initPage(ClassLoader l) {
         String page = (String) def.getAttribute("page");
         return l.getResource(page);
@@ -84,5 +88,19 @@ public final class HTMLWizard extends AbstractWizard {
             LOG.log(Level.SEVERE, "Problems initializing HTML wizard", t);
         }
         initializationDone.countDown();
+    }
+
+    @Override
+    protected String[] getTechIds() {
+        List<String> techIds = new ArrayList<>();
+        for (int i = 0;; i++) {
+            Object val = def.getAttribute("techId." + i);
+            if (val instanceof String) {
+                techIds.add((String) val);
+            } else {
+                break;
+            }
+        }
+        return techIds.toArray(new String[0]);
     }
 }

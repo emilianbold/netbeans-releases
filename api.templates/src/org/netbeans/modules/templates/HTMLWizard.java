@@ -43,7 +43,6 @@ package org.netbeans.modules.templates;
 
 import java.lang.reflect.InvocationTargetException;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public final class HTMLWizard {

@@ -97,7 +97,7 @@ public final class HtmlComponent extends TopComponent  {
         return v;
     }
     
-    public void loadFX(URL pageUrl, final Class<?> clazz, final String m) {
+    public void loadFX(URL pageUrl, final Class<?> clazz, final String m, Object... ctx) {
         initFX();
         ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
         if (loader == null) {
@@ -119,7 +119,7 @@ public final class HtmlComponent extends TopComponent  {
                     LOG.log(Level.WARNING, "Can't load " + m + " from " + clazz, ex);
                 }
             }
-        }, loader);
+        }, loader, ctx);
     }
     
 
