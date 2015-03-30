@@ -5842,4 +5842,59 @@ public class FormatterTestCase extends EditorBase {
                 "};\n"
                 );
     }
+    
+    public void test246062() {
+        setLoadDocumentText(
+                "class A {\n" +
+                "    int n, m = 0;\n" +
+                "public:\n" +
+                "\n" +
+                "    A(int o) : m{o}, n{0}\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    void foo();\n" +
+                "};\n" +
+                "\n" +
+                "void A::foo() {\n" +
+                "}\n" +
+                "\n" +
+                "int main() {\n" +
+                "    int m{11};\n" +
+                "    A a(11);\n" +
+                "    a.foo();\n" +
+                "    return 0;\n" +
+                "}\n"
+                );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+            put(EditorOptions.newLineBeforeBraceClass, 
+            CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+            put(EditorOptions.newLineBeforeBraceDeclaration, 
+            CodeStyle.BracePlacement.SAME_LINE.name());
+        reformat();
+        assertDocumentText("incorrect reformat brace-initialization",
+                "class A {\n" +
+                "    int n, m = 0;\n" +
+                "public:\n" +
+                "\n" +
+                "    A(int o) : m{o}, n{0}\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    void foo();\n" +
+                "};\n" +
+                "\n" +
+                "void A::foo() {\n" +
+                "}\n" +
+                "\n" +
+                "int main() {\n" +
+                "    int m{11};\n" +
+                "    A a(11);\n" +
+                "    a.foo();\n" +
+                "    return 0;\n" +
+                "}\n"
+                );
+    }    
 }
