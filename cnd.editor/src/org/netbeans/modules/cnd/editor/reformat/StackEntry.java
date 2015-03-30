@@ -92,6 +92,8 @@ class StackEntry {
             int paren = 0;
             int triangle = 0;
             boolean hasID = false;
+            Token<CppTokenId> id = ts.lookPreviousImportant();
+            boolean prevID = id != null && id.id() == IDENTIFIER;
             while (true) {
                 if (!ts.movePrevious()) {
                     return;
@@ -117,6 +119,14 @@ class StackEntry {
                     {
                         if (paren == 0 && triangle == 0) {
                             likeToFunction = true;
+                            Token<CppTokenId> next = ts.lookNextImportant();
+                            if (next != null) {
+                                if (next.id() == COLON && prevID) {
+                                    likeToArrayInitialization = true;
+                                    likeToFunction = false;
+                                    return;
+                                }
+                            }
                         }
                         paren++;
                         break;
