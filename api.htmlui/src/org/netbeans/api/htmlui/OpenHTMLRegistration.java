@@ -48,6 +48,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.html.context.spi.Contexts.Id;
 
 /** Registers an action to open an HTML (possibly with
  * {@link net.java.html.json.Model HTML for Java} integration). The essential
@@ -117,4 +118,13 @@ public @interface OpenHTMLRegistration {
      * @return the path to the base 16x16 icon
      */
     String iconBase() default "";
+    
+    /** Selects some of provided technologies. The HTML/Java API @ version 1.1
+     * supports {@link Id technology ids}. One can specify the preferred ones
+     * to use in this NetBeans component by using this attribute.
+     * 
+     * @return list of preferred technology ids
+     * @since 1.3
+     */
+    String[] techIds() default {};
 }

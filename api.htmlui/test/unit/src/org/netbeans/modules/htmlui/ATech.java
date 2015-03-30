@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.templatesui;
+package org.netbeans.modules.htmlui;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.openide.WizardDescriptor;
-import org.openide.loaders.TemplateWizard;
+import org.netbeans.html.context.spi.Contexts;
+import org.openide.util.lookup.ServiceProvider;
 
-public class ChooserPanelTest extends AbstractWizard {
-    @Test public void recognizesTargetChooserStep() {
-        TemplateWizard tw = new TemplateWizard();
-        List<WizardDescriptor.Panel<WizardDescriptor>> arr = new ArrayList<>();
-        
-        AbstractWizard.fillPanels(tw, this, arr, Arrays.asList("One", "targetChooser", "Three"));
-        
-        assertEquals("Three panels: " + arr, 3, arr.size());
-        assertTrue(arr.get(0) instanceof HTMLPanel);
-        assertEquals(tw.targetChooser(), arr.get(1));
-        assertTrue(arr.get(2) instanceof HTMLPanel);
+public interface ATech {
+    @Contexts.Id("first")
+    public static final class First implements ATech {
+    }
+    @Contexts.Id("second")
+    public static final class Second implements ATech {
     }
     
-
-    @Override
-    protected Object initSequence(ClassLoader l) throws Exception {
-        return null;
+    @ServiceProvider(service = Contexts.Provider.class)
+    public final static class Register implements Contexts.Provider {
+        @Override
+        public void fillContext(Contexts.Builder bldr, Class<?> type) {
+            bldr.register(ATech.class, new First(), 30);
+            bldr.register(ATech.class, new Second(), 50);
+        }
     }
-
-    @Override
-    protected URL initPage(ClassLoader l) {
-        return null;
-    }
-
-    @Override
-    protected void initializationDone(Throwable error) {
-    }
-
-    @Override
-    protected String[] getTechIds() {
-        return new String[0];
-    }
-    
 }
