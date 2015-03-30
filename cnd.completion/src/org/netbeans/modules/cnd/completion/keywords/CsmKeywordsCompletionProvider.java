@@ -57,7 +57,6 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_QUERY_TYPE;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -244,6 +243,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
                 final TokenId id = ppTs.token().id();
                 if(id instanceof CppTokenId) {
                     switch ((CppTokenId)id) {
+                        case NEW_LINE:
                         case WHITESPACE:
                             // use caret offset
                             queryAnchorOffset = caretOffset;

@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.spi.JavaScriptDebuggerFactory;
@@ -73,11 +74,12 @@ import org.openide.util.NbBundle;
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
 @NbBundle.Messages({"MSG_WILL_PAUSE=The debugger will suspend on next JavaScript execution."})
-@ActionsProvider.Registration(path="javascript-debuggerengine", activateForMIMETypes={ "text/html", "text/javascript" })
+@ActionsProvider.Registration(path="javascript-debuggerengine",
+                              activateForMIMETypes={ MiscEditorUtil.JAVASCRIPT_MIME_TYPE,
+                                                     MiscEditorUtil.HTML_MIME_TYPE,
+                                                     MiscEditorUtil.PHP_MIME_TYPE })
 public class DebuggerActionsProvider extends ActionsProviderSupport 
                                          implements Debugger.Listener {
-    static final String JAVASCRIPT_MIMETYPE = "text/javascript";
-    static final String HTML_MIMETYPE = "text/html";    
 
     // Supported Actions
     private static final Set<Object> ACTIONS =
@@ -213,9 +215,8 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             ActionsManager.ACTION_RUN_TO_CURSOR,
             editorPane != null &&
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
-            EditorContextDispatcher.getDefault().getCurrentLineNumber () >= 0 && 
-            ( editorPane.getContentType().equals(JAVASCRIPT_MIMETYPE) || 
-              editorPane.getContentType().equals(HTML_MIMETYPE) )
+            EditorContextDispatcher.getDefault().getCurrentLineNumber () >= 0 &&
+            MiscEditorUtil.isJSOrWrapperMIMEType(editorPane.getContentType())
         );
     }
     
