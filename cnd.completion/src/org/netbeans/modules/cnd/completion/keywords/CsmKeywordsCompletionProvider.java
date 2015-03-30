@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.completion.keywords;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -53,12 +54,14 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.completion.CompletionProvider;
+import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_ALL_QUERY_TYPE;
 import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_QUERY_TYPE;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -70,7 +73,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * @author alsimon
  */
 public class CsmKeywordsCompletionProvider implements CompletionProvider {
-    private static final boolean TRACE  = true;
+    private static final boolean TRACE  = false;
 
     public CsmKeywordsCompletionProvider() {
         // default constructor to be created as lookup service
@@ -85,9 +88,46 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
             int dot = component.getCaret().getDot();
-            return new AsyncCompletionTask(new Query(dot, queryType), component);
+            if (!isPreprocessor(component.getDocument(), dot)) {
+                return new AsyncCompletionTask(new Query(dot, queryType), component);
+            }
         }
         return null;
+    }
+    
+    private boolean isPreprocessor(final Document doc, final int offset) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                out.set(isInsideDirective(doc, offset));
+            }            
+        });
+        return out.get();
+    }
+    
+    private boolean isInsideDirective(Document doc, int offset) {
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
+        if (ts == null) {
+            return false;
+        }
+        if (ts.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+            @SuppressWarnings("unchecked")
+            TokenSequence<TokenId> embedded = (TokenSequence<TokenId>) ts.embedded();
+            if (CndTokenUtilities.moveToPreprocKeyword(embedded)) {
+                TokenId id = embedded.token().id();
+                if(id instanceof CppTokenId) {
+                    switch ((CppTokenId)id) {
+                        case PREPROCESSOR_DEFINE:
+                            return (embedded.offset() + embedded.token().length()) >= offset;
+                        default:
+                            return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static final String[] keywordsAll;
