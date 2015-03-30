@@ -84,7 +84,7 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
     
     @Override
     public HelpCtx getHelpCtx() {
-	return HelpCtx.DEFAULT_HELP;
+        return HelpCtx.DEFAULT_HELP;
     }
     
     @Override
@@ -154,14 +154,19 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
             e.printStackTrace(err);
         } finally {
             handle.finish();
-            out.printf("%s\n", cancelled.get() ? "Cancelled" : "Done"); //NOI18N
-            out.printf("%s took %d ms\n", taskName, System.currentTimeMillis() - time); // NOI18N
-
+            if (printTiming()) {
+              out.printf("%s\n", cancelled.get() ? "Cancelled" : "Done"); //NOI18N
+              out.printf("%s took %d ms\n", taskName, System.currentTimeMillis() - time); // NOI18N
+            }
             err.flush();
             out.flush();
             err.close();
             out.close();
         }
+    }
+
+    protected boolean printTiming() {
+      return true;
     }
     
     @Override

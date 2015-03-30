@@ -68,6 +68,11 @@ public class JClankTraceCompilationDBAction extends JClankTraceProjectAbstractAc
     }    
 
     @Override
+    protected boolean printTiming() {
+      return false;
+    }
+
+    @Override
     protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, 
             ProgressHandle progress, final AtomicBoolean cancelled) {
         raw_ostream llvm_out = new PrintWriter_ostream(out);

@@ -137,14 +137,14 @@ public final class CsmJClankSerivicesImpl {
         ClankPreprocessorServices.preprocess(Collections.singletonList(db), settings);
     }    
 
-    private static class CollectIncludeInfoCallback extends TrackIncludeInfoCallback {
+    private static class CollectIncludeInfoCallback extends FileInfoCallback {
 
         public CollectIncludeInfoCallback(raw_ostream llvm_err) {
             super(llvm_err);
         }
 
         @Override
-        public void onExit(IncludeFileInfo file) {
+        public void onExit(FileInfoCallback.FileInfo file) {
             if (file.isFile()) {
                 
             }
