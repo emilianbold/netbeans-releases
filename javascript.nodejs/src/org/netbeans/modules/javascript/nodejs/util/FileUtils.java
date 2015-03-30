@@ -330,9 +330,11 @@ public final class FileUtils {
             return false;
         }
         // unpack
+        boolean success = false;
         try {
             String foldername = decompressTarGz(archive, nodeSources, false);
-            new File(nodeSources, foldername).renameTo(new File(nodeSources, nodeVersion));
+            assert foldername != null : version;
+            success = new File(nodeSources, foldername).renameTo(new File(nodeSources, nodeVersion));
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, archive.getAbsolutePath(), ex);
             throw ex;
@@ -340,7 +342,7 @@ public final class FileUtils {
         if (!archive.delete()) {
             archive.deleteOnExit();
         }
-        return true;
+        return success;
     }
 
     private static void deleteExistingNodeSources(Version version) throws IOException {
@@ -402,9 +404,15 @@ public final class FileUtils {
                 }
                 File destPath = new File(destination, name);
                 if (tarEntry.isDirectory()) {
-                    destPath.mkdirs();
+                    if (!destPath.isDirectory()
+                            && !destPath.mkdirs()) {
+                        throw new IOException("Cannot create directory " + destPath);
+                    }
                 } else {
-                    destPath.createNewFile();
+                    if (!destPath.isFile()
+                            && !destPath.createNewFile()) {
+                        throw new IOException("Cannot create new file " + destPath);
+                    }
                     try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(destPath))) {
                         FileUtil.copy(tarInputStream, outputStream);
                     }
