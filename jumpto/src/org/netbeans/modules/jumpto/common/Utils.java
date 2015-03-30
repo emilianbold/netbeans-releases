@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.jumpto.common;
 
+import java.util.Locale;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
  *
@@ -85,6 +88,28 @@ public class Utils {
     }
 
     @NonNull
+    public static SearchType toSearchType(@NonNull final QuerySupport.Kind searchType) {
+        switch (searchType) {
+            case CAMEL_CASE:
+                return org.netbeans.spi.jumpto.type.SearchType.CAMEL_CASE;
+            case CASE_INSENSITIVE_CAMEL_CASE:
+                return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_CAMEL_CASE;
+            case CASE_INSENSITIVE_PREFIX:
+                return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_PREFIX;
+            case CASE_INSENSITIVE_REGEXP:
+                return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_REGEXP;
+            case EXACT:
+                return org.netbeans.spi.jumpto.type.SearchType.EXACT_NAME;
+            case PREFIX:
+                return org.netbeans.spi.jumpto.type.SearchType.PREFIX;
+            case REGEXP:
+                return org.netbeans.spi.jumpto.type.SearchType.REGEXP;
+            default:
+                throw new IllegalArgumentException(String.valueOf(searchType));
+        }
+    }
+
+    @NonNull
     public static String removeNonNeededWildCards(@NonNull final String text) {
         final StringBuilder sb = new StringBuilder();
         boolean  lastAny = false;
@@ -120,6 +145,44 @@ public class Utils {
             }
         }
         return true;
+    }
+
+    public static boolean isNarrowing(
+        @NonNull final SearchType origSearchType,
+        @NonNull final SearchType newSearchType,
+        @NonNull String origText,
+        @NonNull String newText) {
+        final boolean origCaseSensitive = isCaseSensitive(origSearchType);
+        final boolean newCaseSensitive = isCaseSensitive(newSearchType);
+        if (origCaseSensitive && !newCaseSensitive) {
+            return false;
+        }
+        if (!newCaseSensitive) {
+            origText = origText.toLowerCase();
+            newText = newText.toLowerCase();
+        }
+        if (newText.startsWith(origText)) {
+            return true;
+        }
+        //TODO: Regexp & CamelCase can add more rules
+        return false;
+    }
+
+    private static boolean isCaseSensitive(@NonNull final SearchType searchType) {
+        switch (searchType) {
+            case CAMEL_CASE:
+            case EXACT_NAME:
+            case PREFIX:
+            case REGEXP:
+                return true;
+            case CASE_INSENSITIVE_CAMEL_CASE:
+            case CASE_INSENSITIVE_EXACT_NAME:
+            case CASE_INSENSITIVE_PREFIX:
+            case CASE_INSENSITIVE_REGEXP:
+                return false;
+            default:
+                throw new IllegalArgumentException(String.valueOf(searchType));
+        }
     }
 
 }

@@ -101,7 +101,6 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     private final Project currentProject;
     private boolean containsScrollPane;
     private JLabel messageLabel;
-    private String oldText;
     private List<?> selectedItems;
     /* package */ long time;
 
@@ -313,12 +312,10 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     
     private void update() {
         time = System.currentTimeMillis();
-        final String text = getText();        
-        if ( oldText == null || oldText.trim().length() == 0 || !text.startsWith(oldText) ) {
+        final String text = getText();
+        if (contentProvider.setListModel(this, text)) {
             setListPanelContent(NbBundle.getMessage(FileSearchPanel.class, "TXT_Searching"),true);
         }
-        oldText = text;
-        contentProvider.setListModel(this, text);
     }
 
     private void setWarning(String warningMessage) {
@@ -590,7 +587,6 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
     
     /** Sets the initial text to find in case the user did not start typing yet. */
     public void setInitialText( final String text ) {
-        oldText = text;
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 String textInField = fileNameTextField.getText();
@@ -650,7 +646,7 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
                 @NonNull Document nameDocument,
                 @NonNull ButtonModel caseSensitive);
 
-        public void setListModel( FileSearchPanel panel, String text );
+        public boolean setListModel( FileSearchPanel panel, String text );
 
         public void closeDialog();
 
