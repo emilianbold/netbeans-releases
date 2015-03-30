@@ -752,7 +752,9 @@ public class NodeJsDataProvider {
         if (module != null) {
             JSONObject property = module;
             for (int i = 1; i < parts.length; i++) {
-                if ("prototype".equals(parts[i])) {
+                if (NodeJsUtils.PROTOTYPE.equals(parts[i])
+                        || NodeJsUtils.EXPORTS.equals(parts[i])
+                        || NodeJsUtils.MODULE.equals(parts[i])) {
                     continue;
                 }
                 property = findProperty(property, parts[i]);

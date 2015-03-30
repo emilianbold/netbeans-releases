@@ -244,6 +244,14 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/issue250011.js", "msg^26;", false);
     }
     
+    public void testIssue250200_01() throws Exception {
+        checkCompletionDocumentation("TestNavigation/public_html/js/documentation/issue250200.js", "ba.r^esolve();", false, "relative");
+    }
+    
+    public void testIssue250200_02() throws Exception {
+        checkCompletionDocumentation("TestNavigation/public_html/js/documentation/issue250200.js", "ba.r^esolve();", false, "resolve");
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();
