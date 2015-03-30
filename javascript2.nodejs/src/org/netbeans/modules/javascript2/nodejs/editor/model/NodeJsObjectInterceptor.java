@@ -88,7 +88,14 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
                     }
                 }
                 if (isThis) {
-                    exports = variable;
+                    variable.clearAssignments();
+                    for (TypeUsage type : assignments) {
+                        if (!NodeJsUtils.EXPORTS.equals(type.getType())) {
+                            variable.addAssignment(type, type.getOffset());
+                        }
+                    }
+                    exports = factory.newReference(exports.getName(), variable, true, true);
+                    exports.getParent().addProperty(exports.getName(), exports);
                     break;
                 }
             }

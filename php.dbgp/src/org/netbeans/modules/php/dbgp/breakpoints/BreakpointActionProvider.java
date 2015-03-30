@@ -110,6 +110,19 @@ public class BreakpointActionProvider extends ActionsProviderSupport implements 
     }
 
     @Override
+    public boolean isEnabled(Object action) {
+        boolean enabled = super.isEnabled(action);
+        if (ActionsManager.ACTION_TOGGLE_BREAKPOINT.equals(action)) {
+            if (enabled) {
+                // Check if the current line is also PHP:
+                Line line = Utils.getCurrentLine();
+                return line != null && Utils.isInPhpScript(line);
+            }
+        }
+        return enabled;
+    }
+    
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         // We need to push the state there :-(( instead of wait for someone to be interested in...
         boolean enabled = Utils.getCurrentLine() != null;
