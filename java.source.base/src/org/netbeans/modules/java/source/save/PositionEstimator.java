@@ -926,8 +926,8 @@ public abstract class PositionEstimator {
         
         private void findNextBoundary(Tree item, int start, int end) {
             int off = Math.max(start, end -1);
-            this.sectionEnd = diffContext.blockSequences.findSectionEnd(off);
-            this.sectionStart = diffContext.blockSequences.findSectionStart(off);
+            this.sectionEnd = diffContext.origText.length(); //diffContext.blockSequences.findSectionEnd(off);
+            this.sectionStart = 0; // diffContext.blockSequences.findSectionStart(start);
         }
         
         private JavaTokenId moveToSrcRelevantBounded(TokenSequence seq, Direction dir) {
@@ -1063,10 +1063,17 @@ public abstract class PositionEstimator {
                 int maxLines = 0;
                 int newlines = 0;
                 boolean cont = true;
-                while (cont && seq.moveNext() && seq.offset() < sectionEnd) {
+                // tokens after block boundary must be scanned, bcs right brace may be found, which will join all comments
+                // to the preceding statement. Otherwise, comments could be left dangling and end position could point in between
+                // an element and following guarded block end.
+                while (cont && seq.moveNext()) {
                     Token<JavaTokenId> t = seq.token();
                     switch(t.id()) {
                         case WHITESPACE:
+                            // ignore wsp after block boundary
+                            if (seq.offset() >= sectionEnd) {
+                                break;
+                            }
                             if (newlines == 0) {
                                 int indexOf = t.text().toString().indexOf('\n');
                                 if (indexOf > -1) {
@@ -1088,6 +1095,10 @@ public abstract class PositionEstimator {
                             break;
                         case LINE_COMMENT:
                         case BLOCK_COMMENT:
+                            // ignore wsp after block boundary
+                            if (seq.offset() >= sectionEnd) {
+                                break;
+                            }
                             if (wsEnd == -1) {
                                 wsEnd = wideEnd;
                             }
@@ -1108,6 +1119,7 @@ public abstract class PositionEstimator {
                             }
                             break;
                         case RBRACE:
+                            // end of block, assign all remaining comments to the preceding element.
                             maxLines = Integer.MAX_VALUE;
                         case JAVADOC_COMMENT:
                         default:
@@ -1794,10 +1806,20 @@ public abstract class PositionEstimator {
         boolean notBound = false;
         switch (dir) {
             case BACKWARD:
-                while ((notBound = seq.movePrevious()) && (boundary == -1 || seq.offset() >= boundary) && set.contains(seq.token().id())) ;
+                while ((notBound = seq.movePrevious()) /* && (boundary == -1 || seq.offset() >= boundary) */ && set.contains(seq.token().id())) {
+                    if (boundary != -1 && seq.offset() < boundary) {
+                        notBound = false;
+                        break;
+                    }
+                }
                 break;
             case FORWARD:
-                while ((notBound = seq.moveNext()) && (boundary == -1 || seq.offset() < boundary) && set.contains(seq.token().id())) ;
+                while ((notBound = seq.moveNext()) && /* (boundary == -1 || seq.offset() < boundary) && */ set.contains(seq.token().id())) {
+                    if (boundary != -1 && seq.offset() >= boundary) {
+                        notBound = false;
+                        break;
+                    }
+                }
                 break;
         }
         return notBound ? seq.token().id() : null;
