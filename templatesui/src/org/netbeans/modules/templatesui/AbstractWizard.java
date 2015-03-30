@@ -99,6 +99,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     protected abstract Object initSequence(ClassLoader l) throws Exception;
     protected abstract URL initPage(ClassLoader l);
     protected abstract void initializationDone(Throwable error);
+    protected abstract String[] getTechIds();
 
     @Override
     public Set<? extends Object> instantiate() throws IOException {
@@ -308,7 +309,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                                     initializationDone(ex);
                                 }
                             }
-                        });
+                        }, l, getTechIds());
                     }
                 }
             });

@@ -48,6 +48,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -76,6 +79,7 @@ public final class HTMLDialogImpl implements Runnable {
     
     private String url;
     private Runnable onPageLoad;
+    private List<String> techIds = new ArrayList<>();
     private boolean nestedLoop;
 
     public void setUrl(String url) {
@@ -84,6 +88,10 @@ public final class HTMLDialogImpl implements Runnable {
 
     public void setOnPageLoad(Runnable onPageLoad) {
         this.onPageLoad = onPageLoad;
+    }
+
+    public void addTechIds(String[] ids) {
+        this.techIds.addAll(Arrays.asList(ids));
     }
     
     @Override
@@ -198,7 +206,7 @@ public final class HTMLDialogImpl implements Runnable {
             throw new IllegalStateException(ex);
         }
         state = 2;
-        FXBrowsers.load(webView, pageUrl, this, loader);
+        FXBrowsers.load(webView, pageUrl, this, loader, techIds.toArray());
     }
 
     private void initPage() {
@@ -225,7 +233,7 @@ public final class HTMLDialogImpl implements Runnable {
         }
         if (type == Node.class) {
             WebView wv = new WebView();
-            FXBrowsers.load(wv, pageUrl, onPageLoad, loader);
+            FXBrowsers.load(wv, pageUrl, onPageLoad, loader, techIds.toArray());
             return type.cast(wv);
         } else if (type == JComponent.class) {
             final JFXPanel tmp = new JFXPanel();
@@ -234,7 +242,7 @@ public final class HTMLDialogImpl implements Runnable {
                 @Override
                 public void run() {
                     WebView wv = new WebView();
-                    FXBrowsers.load(wv, pageUrl, onPageLoad, l);
+                    FXBrowsers.load(wv, pageUrl, onPageLoad, l, techIds.toArray());
                     Scene s = new Scene(wv);
                     tmp.setScene(s);
                 }
