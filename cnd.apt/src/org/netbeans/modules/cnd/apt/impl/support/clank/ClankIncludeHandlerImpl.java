@@ -136,7 +136,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     }
 
     /*package*/void resetIncludeStack() {
-      inclStack = null;
+      this.inclStack = null;
+      this.inclStackIndex = 0;
     }
     ////////////////////////////////////////////////////////////////////////////
     // manage state (save/restore)
@@ -297,7 +298,9 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 
         @Override
         public String toString() {
-            return ClankIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, userIncludeFilePaths, inclStackIndex, Arrays.asList(inclStack));
+            return ClankIncludeHandlerImpl.toString(startFile.getStartFile(),
+                    systemIncludePaths, userIncludePaths, userIncludeFilePaths,
+                    inclStackIndex, Arrays.asList(inclStack), cachedTokens);
         }
         
         public void write(RepositoryDataOutput output) throws IOException {
@@ -589,7 +592,9 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     
     @Override
     public String toString() {
-        return ClankIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, userIncludeFilePaths, inclStackIndex, this.inclStack);
+        return ClankIncludeHandlerImpl.toString(startFile.getStartFile(),
+                systemIncludePaths, userIncludePaths, userIncludeFilePaths,
+                inclStackIndex, this.inclStack, this.cachedTokens);
     }    
     
     private static String toString(CharSequence startFile,
@@ -597,8 +602,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
                                     List<IncludeDirEntry> userIncludePaths,
                                     List<IncludeDirEntry> userIncludeFilePaths,
                                     int inclStackIndex,
-                                    Collection<IncludeInfo> inclStack) {
+                                    Collection<IncludeInfo> inclStack,
+                                    ClankDriver.APTTokenStreamCache cachedTokens) {
         StringBuilder retValue = new StringBuilder();
+        retValue.append(cachedTokens.toString()).append("\n");
         if (!userIncludeFilePaths.isEmpty()) {
             retValue.append("User File Includes:\n"); // NOI18N
             retValue.append(APTUtils.includes2String(userIncludeFilePaths));
