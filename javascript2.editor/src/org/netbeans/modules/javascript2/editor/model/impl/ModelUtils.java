@@ -290,7 +290,8 @@ public class ModelUtils {
                 while (deep) {
                     deep = false;
                     for (DeclarationScope innerScope : result.getChildrenScopes()) {
-                        if (((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
+                        if ((innerScope instanceof DeclarationScopeImpl)
+                                && ((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
                             result = innerScope;
                             deep = true;
                             break;
