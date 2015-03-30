@@ -250,6 +250,9 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
 
     private static final class StartKarmaServerAction extends BaseNodeAction {
 
+        public StartKarmaServerAction() {
+        }
+
         @Override
         protected void performAction(Project project) {
             KarmaServers.getInstance().startServer(project);
@@ -269,6 +272,9 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
     }
 
     private static final class StopKarmaServerAction extends BaseNodeAction {
+
+        public StopKarmaServerAction() {
+        }
 
         @Override
         protected void performAction(Project project) {
@@ -290,6 +296,9 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
 
     private static final class RestartKarmaServerAction extends BaseNodeAction {
 
+        public RestartKarmaServerAction() {
+        }
+
         @Override
         protected void performAction(Project project) {
             KarmaServers.getInstance().restartServer(project);
@@ -309,6 +318,9 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
     }
 
     private static final class DebugKarmaServerAction extends CallableSystemAction implements ContextAwareAction {
+
+        public DebugKarmaServerAction() {
+        }
 
         @NbBundle.Messages("DebugKarmaServerAction.name=Debug")
         @Override
@@ -367,6 +379,9 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
     }
 
     private static final class ActiveKarmaConfigAction extends CallableSystemAction implements ContextAwareAction {
+
+        public ActiveKarmaConfigAction() {
+        }
 
         @NbBundle.Messages("ActiveKarmaConfigAction.name=Set Configuration")
         @Override
@@ -461,6 +476,9 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
     }
 
     private static final class CustomizeKarmaAction extends BaseNodeAction {
+
+        public CustomizeKarmaAction() {
+        }
 
         @Override
         protected void performAction(Project project) {

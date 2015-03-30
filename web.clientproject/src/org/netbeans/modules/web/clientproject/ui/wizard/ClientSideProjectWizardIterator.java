@@ -617,7 +617,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             File projectDir = FileUtil.toFile(project.getProjectDirectory());
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
             File sources = (File) wizardDescriptor.getProperty(SOURCE_ROOT);
-            assert siteRoot != null || sources != null : siteRoot + " :: " + sources;
+            assert siteRoot != null || sources != null : String.valueOf(siteRoot) + " :: " + String.valueOf(sources);
             // #218736
             String testFolder;
             if (projectDir.equals(siteRoot)) {
