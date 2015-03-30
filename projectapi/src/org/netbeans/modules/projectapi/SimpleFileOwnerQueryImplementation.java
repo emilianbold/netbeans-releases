@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -127,6 +128,12 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     
     public Project getOwner(FileObject f) {
+        try {
+            // wait until prefs deserialize
+            externalLatch.await();
+        } catch (InterruptedException ex) {
+            LOG.log(Level.INFO, ex.getMessage(), ex);
+        }
         while (f != null) {
             synchronized (this) {
                 if (lastFoundKey != null && lastFoundKey.get() == f) {
@@ -218,9 +225,20 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     private static final Map<URI,FileObject> deserializedExternalOwners =
         Collections.synchronizedMap(new HashMap<URI,FileObject>());
     
+    /**
+     * Latch released when the serialized external roots load. All file queries
+     * must wait until the preferences reads. 
+     */
+    private static final CountDownLatch externalLatch = new CountDownLatch(1);
+    
     private static boolean externalRootsIncludeNonFolders = false;
     
-    
+    /**
+     * Deserializes stored cross-reference of external files to their projects.
+     * It is called from @OnStart, which runs asynchronously/in parallel, but 
+     * getOwner() queries require that the cross-ref is laoded so the answers are
+     * consistent in time.
+     */
     static void deserialize() {
         try {
             Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
@@ -236,6 +254,8 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners").removeNode();
         } catch (BackingStoreException ex) {
             LOG.log(Level.INFO, null, ex);
+        } finally {
+            externalLatch.countDown();
         }
     }
     
