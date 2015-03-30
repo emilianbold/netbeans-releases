@@ -103,6 +103,7 @@ public class NodeExecutable {
 
     static final Logger LOGGER = Logger.getLogger(NodeExecutable.class.getName());
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_ARRAY", justification = "Just internal usage")
     public static final String[] NODE_NAMES;
     public static final int DEFAULT_DEBUG_PORT = 9292;
 
@@ -169,7 +170,7 @@ public class NodeExecutable {
     @CheckForNull
     private static NodeExecutable forProjectInternal(@NullAllowed Project project, boolean showCustomizer) {
         if (project == null) {
-            return getDefault(project, showCustomizer);
+            return getDefault(null, showCustomizer);
         }
         NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
         if (preferences.isDefaultNode()) {

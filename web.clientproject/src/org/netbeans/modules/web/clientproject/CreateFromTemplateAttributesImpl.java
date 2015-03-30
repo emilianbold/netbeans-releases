@@ -111,6 +111,7 @@ class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
         }
         try {
             Project prj = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+            assert prj != null : helper.getProjectDirectory();
             ProjectInformation info = ProjectUtils.getInformation(prj);
             if (info != null) {
                 String pname = info.getName();

@@ -114,9 +114,7 @@ public class WildflyOptionalDeploymentManagerFactory extends OptionalDeploymentM
         if (!(dm instanceof WildflyDeploymentManager)) {
             throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
         }
-
-        WildflyDeploymentManager jbdm = ((WildflyDeploymentManager) dm);
-        return new WildflyMessageDestinationManager(jbdm, true);
+        return new WildflyMessageDestinationManager(((WildflyDeploymentManager) dm));
     }
 
     @Override
