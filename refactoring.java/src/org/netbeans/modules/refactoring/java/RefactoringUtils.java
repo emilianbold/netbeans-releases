@@ -434,7 +434,14 @@ public class RefactoringUtils {
      */
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = getRootFileObject(url);
-        return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
+        if(result == null) {
+            return null;
+        }
+        ClassPath classPath = ClassPath.getClassPath(result, ClassPath.SOURCE);
+        if(classPath == null) {
+            return null;
+        }
+        return classPath.findOwnerRoot(result);
     }
 
     /**
@@ -1021,7 +1028,7 @@ public class RefactoringUtils {
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
-        while (result == null) {
+        while (result == null && f != null) {
             result = FileUtil.toFileObject(f);
             f = f.getParentFile();
         }
