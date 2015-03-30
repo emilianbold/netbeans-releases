@@ -300,12 +300,15 @@ public class SiteTemplateWizard extends JPanel {
     public String prepareTemplate() {
         assert !EventQueue.isDispatchThread();
         final String templateName;
+        // #242666
+        final SiteTemplateImplementation siteTemplateRef;
         synchronized (siteTemplateLock) {
             if (siteTemplate.isPrepared()) {
                 // already prepared
                 return null;
             }
             templateName = siteTemplate.getName();
+            siteTemplateRef = siteTemplate;
         }
         // prepare
         ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
@@ -313,9 +316,7 @@ public class SiteTemplateWizard extends JPanel {
         try {
             for (;;) {
                 try {
-                    synchronized (siteTemplateLock) {
-                        siteTemplate.prepare();
-                    }
+                    siteTemplateRef.prepare();
                     break;
                 } catch (NetworkException ex) {
                     LOGGER.log(Level.INFO, null, ex.getCause());

@@ -114,6 +114,7 @@ extends Licenses implements CustomizerUtilities.LicensePanelContentHandler {
         licenseContent = text;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "DM_DEFAULT_ENCODING", justification = "No idea how to detect encoding properly, sorry")
     @Override
     public void saveLicenseFile() throws IOException {
         if (licenseContent != null) {
