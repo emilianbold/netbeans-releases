@@ -79,8 +79,19 @@ public final class ClankDriver {
             ClankPreprocessorCallback callback, Interrupter interrupter) {
         return ClankDriverImpl.preprocessImpl(buffer, ppHandler, callback, interrupter);
     }
-    
+
+    public interface ClankInclusionDirective {
+      ClankFileInfo getFileInfo();
+    }
+
     public interface ClankPreprocessorCallback {
+      /**
+       *
+       * @param directiveOwner
+       * @param directive
+       */
+      void onInclusionDirective(ClankFileInfo directiveOwner, ClankInclusionDirective directive);
+
       /**
        * 
        * @param enteredFrom
@@ -96,6 +107,10 @@ public final class ClankDriver {
        * @return
        */
       boolean onExit(ClankFileInfo exitedFrom, ClankFileInfo exitedTo);
+
+      boolean needTokens();
+      boolean needSkippedRanges();
+      boolean needMacroExpansion();
     }
 
     public interface ClankFileInfo {
@@ -105,6 +120,7 @@ public final class ClankDriver {
       boolean hasTokenStream();
       TokenStream getTokenStream();
       int getFileIndex();
+      int getInclusionDirectiveOffset();
       int[] getSkippedRanges();
     }
 }
