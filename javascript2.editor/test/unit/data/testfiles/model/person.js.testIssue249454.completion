@@ -3,7 +3,6 @@ this.|dirtFactor++;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      constructor                     [PUBLIC]   person.js
-CLASS      prototype                       [PUBLIC]   person.js
 METHOD     eat(): Number                   [PROTECTE  person.js
 METHOD     exercise(): Number              [PROTECTE  person.js
 METHOD     getAge(): Number                [PROTECTE  person.js

@@ -96,6 +96,7 @@ import org.openide.util.Utilities;
 public final class MiscEditorUtil {
 
     public static final String HTML_MIME_TYPE = "text/html";
+    public static final String PHP_MIME_TYPE = "text/x-php5";
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript";
 	
     
@@ -282,7 +283,7 @@ public final class MiscEditorUtil {
         if (fo == null) {
             return null;
         }
-        if (!MiscEditorUtil.isJavascriptSource(fo) && !MiscEditorUtil.isHTMLSource(fo)) {
+        if (!MiscEditorUtil.isJavascriptSource(fo) && !MiscEditorUtil.isJSWrapperSource(fo)) {
             return null;
         }
         return EditorContextDispatcher.getDefault().getCurrentLine();
@@ -322,13 +323,13 @@ public final class MiscEditorUtil {
                 List<TokenSequence<?>> tsl = th.tokenSequenceList(lp, offset, offset2);
                 for (TokenSequence ts : tsl) {
                     if (ts.moveNext()) {
-                        int to = ts.offset();
+                        /*int to = ts.offset();
                         if (LOG.isLoggable(Level.FINER)) {
                             LOG.finer("Token offset = "+to+", offsets = <"+offset+", "+offset2+">, mimeType = "+ts.language().mimeType());
                         }
                         if (!(offset <= to && to < offset2)) {
                             continue;
-                        }
+                        }*/
                         TokenSequence ets;
                         ets = ts.embedded();
                         if (ets != null) {
@@ -352,8 +353,12 @@ public final class MiscEditorUtil {
         return isJS != null && isJS;
     }
 
-    public static boolean isHTMLSource(final FileObject fo) {
-        return HTML_MIME_TYPE.equals(fo.getMIMEType());
+    /**
+     * Test if the FileObject is a JavaScript wrapper source, like HTML or PHP.
+     */
+    public static boolean isJSWrapperSource(final FileObject fo) {
+        String mimeType = fo.getMIMEType();
+        return HTML_MIME_TYPE.equals(mimeType) || PHP_MIME_TYPE.equals(mimeType);
     }
 
     /**
@@ -366,7 +371,20 @@ public final class MiscEditorUtil {
     public static boolean isJavascriptSource(final FileObject fo) {
         return JAVASCRIPT_MIME_TYPE.equals(fo.getMIMEType());
     }
-	
+
+    /**
+     * Checks whether the MIME type is JavaScript or a JavaScript wrapper source.
+     */
+    public static boolean isJSOrWrapperMIMEType(String mimeType) {
+        switch (mimeType) {
+            case JAVASCRIPT_MIME_TYPE:
+            case HTML_MIME_TYPE:
+            case PHP_MIME_TYPE:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     /**
      * Goes to editor location
