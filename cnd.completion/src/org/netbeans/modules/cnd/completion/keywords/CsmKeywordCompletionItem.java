@@ -73,7 +73,7 @@ public class CsmKeywordCompletionItem implements CompletionItem {
     private final int priority;
     private final String sortItemText;
     private final boolean supportInstantSubst;
-    private static final int PRIORITY = 150;
+    private static final int PRIORITY = 5000;
     private final String appendItemText;
     private final String htmlItemText;
 
