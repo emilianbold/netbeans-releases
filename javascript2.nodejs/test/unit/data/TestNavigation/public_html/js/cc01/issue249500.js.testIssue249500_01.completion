@@ -4,5 +4,5 @@ a|;
 ------------------------------------
 CLASS      ale                             [PRIVATE]  issue249500.js
 VARIABLE   aaa: Module newjavascript       [PUBLIC]   test_01.js
-VARIABLE   arguments: Arguments            [PRIVATE]  <font color=#999999>issue249500.js</font>
+VARIABLE   arguments: Arguments            [PRIVATE]  issue249500.js
 VARIABLE   as: Module address              [PUBLIC]   testAddress.js
