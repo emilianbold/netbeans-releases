@@ -57,6 +57,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractListModel;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.annotations.common.NonNull;
@@ -89,14 +91,22 @@ public final class Models {
         return new RefreshableListModel(model, convertor);
     }
 
-    public static <T> MutableListModel<T> mutable(@NullAllowed final Comparator<? super T> comparator) {
-        return new MutableListModelImpl(comparator);
+    public static <T> MutableListModel<T> mutable(
+            @NullAllowed final Comparator<? super T> comparator,
+            @NullAllowed final Filter<T> filter) {
+        return new MutableListModelImpl(comparator, filter);
     }
 
     // Exported types
     public interface MutableListModel<T> extends ListModel<T> {
         public void add(@NonNull Collection<? extends T> values);
         public void remove (@NonNull Collection<? extends T> values);
+    }
+
+    public interface Filter<T> {
+        public boolean accept(@NonNull T item);
+        public void addChangeListener(@NonNull ChangeListener listener);
+        public void remmoveChangeListener(@NonNull ChangeListener listener);
     }
 
     // Private innerclasses ----------------------------------------------------
@@ -239,26 +249,34 @@ public final class Models {
         }
     }
 
-    private static final class MutableListModelImpl<T> extends AbstractListModel<T> implements MutableListModel<T> {
+    private static final class MutableListModelImpl<T> extends AbstractListModel<T> implements MutableListModel<T>, ChangeListener {
 
         private final Comparator<T> comparator;
+        private final Filter<T> filter;
         private List<T> items;
+        private List<T> included;
 
-        MutableListModelImpl(@NullAllowed final Comparator<T> comparator) {
+        MutableListModelImpl(
+                @NullAllowed final Comparator<T> comparator,
+                @NullAllowed final Filter<T> filter) {
             this.comparator = comparator;
-            items = Collections.<T>emptyList();
+            this.filter = filter;
+            items = included = Collections.<T>emptyList();
+            if (this.filter != null) {
+                filter.addChangeListener(this);
+            }
         }
 
         @Override
         public int getSize() {
             assert SwingUtilities.isEventDispatchThread();
-            return items.size();
+            return included.size();
         }
 
         @Override
         public T getElementAt(int index) {
             assert SwingUtilities.isEventDispatchThread();
-            return items.get(index);
+            return included.get(index);
         }
 
         @Override
@@ -284,6 +302,11 @@ public final class Models {
             } while (!success);
         }
 
+        @Override
+        public void stateChanged(@NonNull final ChangeEvent e) {
+            filterData();
+        }
+
         private Pair<List<T>,List<T>> getData() {
             try {
                 return invokeInEDT(new Callable<Pair<List<T>,List<T>>>() {
@@ -307,7 +330,7 @@ public final class Models {
                         assert SwingUtilities.isEventDispatchThread();
                         if (items == expected) {
                             int oldSize = items.size();
-                            items = update;
+                            items = included = update;
                             int newSize = items.size();
                             fireContentsChanged(this, 0, Math.min(oldSize, newSize));
                             if (oldSize < newSize) {
@@ -323,6 +346,48 @@ public final class Models {
                 });
             }catch (InterruptedException | InvocationTargetException e) {
                 throw new RuntimeException(e);
+            }
+        }
+
+        private void filterData() {
+            if (filter != null) {
+                final Callable<Void> action = new Callable<Void>() {
+                    @Override
+                    public Void call() {
+                        assert SwingUtilities.isEventDispatchThread();
+                        final int oldSize = included.size();
+                        List<T> newIncluded = new ArrayList<>(items.size());
+                        for (T item : items) {
+                            if (filter.accept(item)) {
+                                newIncluded.add(item);
+                            }
+                        }
+                        included = newIncluded;
+                        final int newSize = included.size();
+                        fireContentsChanged(this, 0, Math.min(oldSize, newSize));
+                        if (oldSize < newSize) {
+                            fireIntervalAdded(this, oldSize, newSize);
+                        } else if (oldSize > newSize) {
+                            fireIntervalRemoved(this, newSize, oldSize);
+                        }
+                        return null;
+                    }
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    try {
+                        action.call();
+                    } catch (RuntimeException e) {
+                        throw e;
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    try {
+                        invokeInEDT(action);
+                    } catch (InterruptedException | InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
 
