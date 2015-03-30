@@ -177,11 +177,14 @@ public class SelectorUtils {
      */
     static public Node bundlesNode(Project prj, FileObject file, boolean includeFiles) {
         List<Node> nodes = new LinkedList<Node>();
-        if (prj == null)
+        if (prj == null) {
             prj = FileOwnerQuery.getOwner(file);
+        }
 
         ClassPath cp = ClassPath.getClassPath(file, ClassPath.EXECUTE);
-        if (cp != null) nodes.addAll(getRootNodes(prj, getRoots(ClassPath.getClassPath(file, ClassPath.SOURCE), cp), BUNDLES_FILTER, includeFiles));
+        if (cp != null) {
+            nodes.addAll(getRootNodes(prj, getRoots(ClassPath.getClassPath(file, ClassPath.SOURCE), cp), BUNDLES_FILTER, includeFiles));
+        }
         
         return createRootFor(nodes, prj);
     }
