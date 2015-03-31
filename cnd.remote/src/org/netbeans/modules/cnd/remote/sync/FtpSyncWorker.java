@@ -640,7 +640,7 @@ import org.openide.util.RequestProcessor;
         try  {
             String localFileName = files[0].getName();
             if (localFileName.length() < 3) {
-                localFileName = localFileName + ((localFileName.length() == 1) ? "_" : "__"); //NOI18N
+                localFileName = localFileName + ((localFileName.length() == 1) ? "__" : "_"); //NOI18N
             }
             zipFile = File.createTempFile(localFileName, ".zip", getTemp()); // NOI18N
             Zipper zipper = new Zipper(zipFile);
