@@ -175,7 +175,7 @@ public class RequireJsHtmlExtension extends HtmlExtension {
         if (value != null) {
             FileObject fo = info.getSnapshot().getSource().getFileObject();
             if (fo != null) {
-                String name = value + ".js";
+                String name = value.toLowerCase().endsWith(".js") ? value : value + ".js"; //NOI18N
                 FileObject targetFO = FSCompletionUtils.findFileObject(fo, name, true);
                 if (targetFO != null) {
                     return new DeclarationFinder.DeclarationLocation(targetFO, 0);

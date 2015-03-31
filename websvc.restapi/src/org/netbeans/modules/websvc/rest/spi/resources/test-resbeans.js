@@ -275,7 +275,10 @@ TestSupport.prototype = {
 
     doShowContentForId : function (ndx) {
         this.clearInput();
-        document.getElementById("req_headers").style.visibility="visible";
+        var elem = document.getElementById("req_headers");
+        if (elem) {
+            elem.style.visibility="visible";
+        }
         var cat = ts.allcat[ndx];
         var r = cat.r;
         var uri = cat.uri;
@@ -1999,7 +2002,7 @@ XHR.prototype = {
             }
         }
         
-        if (toggleHeadersBlock.cache) {
+        if (toggleHeadersBlock && toggleHeadersBlock.cache) {
             var req_hdr = ts.getRequestHeader('req_hdr_1');
             if (req_hdr.length > 0) {
                 xmlHttpReq.setRequestHeader(req_hdr, ts.getRequestHeader('req_hdr_val_1'));
