@@ -331,6 +331,11 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
         nameField.setText(oldName);
         nameField.selectAll();
+        nameField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                nameFieldFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -442,7 +447,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     }//GEN-LAST:event_renameGettersAndCheckersCheckBoxActionPerformed
 
 private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_renameTestClassCheckBoxStateChanged
-    parent.stateChanged(null);
+        parent.stateChanged(null);
 }//GEN-LAST:event_renameTestClassCheckBoxStateChanged
 
     private void renameTestClassMethodCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_renameTestClassMethodCheckBoxStateChanged
@@ -455,6 +460,10 @@ private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent e
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
         RefactoringModule.setOption("gettersAndSetters.rename", b); // NOI18N
     }//GEN-LAST:event_renameGettersAndCheckersCheckBoxItemStateChanged
+
+    private void nameFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusLost
+        parent.stateChanged(null);
+    }//GEN-LAST:event_nameFieldFocusLost
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
