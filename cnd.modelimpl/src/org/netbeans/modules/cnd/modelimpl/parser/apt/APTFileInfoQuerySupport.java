@@ -39,65 +39,35 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.parser.clank;
+package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
-import java.util.TreeSet;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class ClankFileInfoQuerySupport {
+public final class APTFileInfoQuerySupport {
 
-    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
-        List<CsmReference> out = Collections.<CsmReference>emptyList();
-        FileBuffer buffer = fileImpl.getBuffer();
-        Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
-        if (interrupter.cancelled()) {
-          return out;
-        }
-        CndUtils.assertTrueInConsole(false, "getClankMacroUsages Not yet implemented");
-        if (handlers.isEmpty()) {
-          DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + fileImpl.getAbsolutePath())); //NOI18N
-          return Collections.<CsmReference>emptyList();
-        } else if (handlers.size() == 1) {
-          PreprocHandler handler = handlers.iterator().next();
-          PreprocHandler.State state = handler.getState();
-        } else {
-          TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
-          for (PreprocHandler handler : handlers) {
-            // ask for concurrent entry if absent
-            PreprocHandler.State state = handler.getState();
-          }
-          out = new ArrayList<>(result);
-        }
-        return out;
-    }
+  private APTFileInfoQuerySupport() {
+  }
 
-    public static CsmOffsetable getGuardOffset(FileImpl fileImpl) {
-        assert APTTraceFlags.USE_CLANK;
-        CndUtils.assertTrueInConsole(false, "not yet");
-        return null;
-    }
+  public static List<CsmReference> getMacroUsages(FileImpl fileImpl, final Interrupter interrupter) throws IOException {
+      return APTFindMacrosWalker.getAPTMacroUsagesImpl(fileImpl, interrupter);
+  }
 
-    public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
-        assert APTTraceFlags.USE_CLANK;
-        CndUtils.assertTrueInConsole(false, "not yet");
-        return code;
-    }
+  public static CsmOffsetable getGuardOffset(FileImpl fileImpl) {
+      return APTFindMacrosWalker.getGuardOffsetImpl(fileImpl);
+  }
 
+  public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
+      return StopOnOffsetParseFileWalker.expandImpl(fileImpl, code, handler, base, offset);
+  }
 }

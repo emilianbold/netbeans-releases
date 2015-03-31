@@ -30,15 +30,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,27 +51,21 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
-import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFileInfoQuerySupport;
 import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankFileInfoQuerySupport;
 import org.netbeans.modules.cnd.modelimpl.platform.CndParserResult;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -296,7 +286,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         if (APTTraceFlags.USE_CLANK) {
                           out = ClankFileInfoQuerySupport.getMacroUsages(fileImpl, interrupter);
                         } else {
-                          out = APTFindMacrosWalker.getMacroUsages(fileImpl, interrupter);
+                          out = APTFileInfoQuerySupport.getMacroUsages(fileImpl, interrupter);
                         }
                         if (lastParsedTime == fileImpl.getLastParsedTime()) {
                             fileImpl.setLastMacroUsages(out);
@@ -319,35 +309,10 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public CsmOffsetable getGuardOffset(CsmFile file) {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-            try {
-                APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
-
-                GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
-                TokenStream ts = guardWalker.getTokenStream();
-                try {
-                    Token token = ts.nextToken();
-                    while (!APTUtils.isEOF(token)) {
-                        if (!APTUtils.isCommentToken(token)) {
-                            guardWalker.clearGuard();
-                            break;
-                        }
-                        token = ts.nextToken();
-                    }
-                } catch (TokenStreamException ex) {
-                    guardWalker.clearGuard();
-                }
-
-                Token guard = guardWalker.getGuard();
-                if (guard != null) {
-                    if (guard instanceof APTToken) {
-                        APTToken aptGuard = ((APTToken) guard);
-                        return new Offsetable(file, aptGuard.getOffset(), aptGuard.getEndOffset());
-                    }
-                }
-            } catch (FileNotFoundException ex) {
-                // file could be removed
-            } catch (IOException ex) {
-                System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
+            if (APTTraceFlags.USE_CLANK) {
+              return ClankFileInfoQuerySupport.getGuardOffset(fileImpl);
+            } else {
+              return APTFileInfoQuerySupport.getGuardOffset(fileImpl);
             }
         }
         return null;

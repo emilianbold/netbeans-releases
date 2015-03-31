@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
@@ -56,6 +57,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -65,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -85,6 +88,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
@@ -101,11 +105,7 @@ import org.openide.filesystems.FileSystem;
  * @author Sergey Grinev
  * @author Vladimir Voskresensky
  */
-public final class APTFindMacrosWalker extends APTSelfWalker {
-    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, final Interrupter interrupter) throws IOException {
-        return getAPTMacroUsagesImpl(fileImpl, interrupter);
-    }
-
+/*package*/ final class APTFindMacrosWalker extends APTSelfWalker {
     private final List<CsmReference> references = new ArrayList<>();
     private final CsmFile csmFile;
     private final Interrupter interrupter;
@@ -421,7 +421,7 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         }
     }
     
-    private static List<CsmReference> getAPTMacroUsagesImpl(FileImpl fileImpl, final Interrupter interrupter) throws IOException {
+    /*package*/ static List<CsmReference> getAPTMacroUsagesImpl(FileImpl fileImpl, final Interrupter interrupter) throws IOException {
       List<CsmReference> out = Collections.<CsmReference>emptyList();
       APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
       if (apt != null) {
@@ -456,5 +456,40 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         }
       }
       return out;
+    }
+    
+    /*package*/ static CsmOffsetable getGuardOffsetImpl(FileImpl fileImpl) {
+      assert !APTTraceFlags.USE_CLANK;
+        try {
+            APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
+
+            GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
+            TokenStream ts = guardWalker.getTokenStream();
+            try {
+                Token token = ts.nextToken();
+                while (!APTUtils.isEOF(token)) {
+                    if (!APTUtils.isCommentToken(token)) {
+                        guardWalker.clearGuard();
+                        break;
+                    }
+                    token = ts.nextToken();
+                }
+            } catch (TokenStreamException ex) {
+                guardWalker.clearGuard();
+            }
+
+            Token guard = guardWalker.getGuard();
+            if (guard != null) {
+                if (guard instanceof APTToken) {
+                    APTToken aptGuard = ((APTToken) guard);
+                    return new Offsetable(fileImpl, aptGuard.getOffset(), aptGuard.getEndOffset());
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            // file could be removed
+        } catch (IOException ex) {
+            System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
+        }
+        return null;
     }
 }
