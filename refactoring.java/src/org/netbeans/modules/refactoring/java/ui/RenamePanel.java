@@ -379,7 +379,13 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(updateReferencesCheckBox, gridBagConstraints);
 
+        renameGettersAndCheckersCheckBox.setSelected(((Boolean) RefactoringModule.getOption("gettersAndSetters.rename", Boolean.FALSE)).booleanValue());
         org.openide.awt.Mnemonics.setLocalizedText(renameGettersAndCheckersCheckBox, org.openide.util.NbBundle.getMessage(RenamePanel.class, "RenamePanel.renameGettersAndCheckersCheckBox.text")); // NOI18N
+        renameGettersAndCheckersCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                renameGettersAndCheckersCheckBoxItemStateChanged(evt);
+            }
+        });
         renameGettersAndCheckersCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renameGettersAndCheckersCheckBoxActionPerformed(evt);
@@ -442,6 +448,13 @@ private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent e
     private void renameTestClassMethodCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_renameTestClassMethodCheckBoxStateChanged
         parent.stateChanged(null);
     }//GEN-LAST:event_renameTestClassMethodCheckBoxStateChanged
+
+    private void renameGettersAndCheckersCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_renameGettersAndCheckersCheckBoxItemStateChanged
+        // used for change default value for gettersAndSetters check-box.                                                  
+        // The value is persisted and then used as default in next IDE run.
+        Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
+        RefactoringModule.setOption("gettersAndSetters.rename", b); // NOI18N
+    }//GEN-LAST:event_renameGettersAndCheckersCheckBoxItemStateChanged
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
