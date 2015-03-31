@@ -48,6 +48,7 @@ import java.awt.Toolkit;
 import java.util.Collection;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import static javax.lang.model.element.ElementKind.METHOD;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -70,6 +71,7 @@ import org.openide.util.NbBundle;
 public class ElementDescription {
     
     private static final String PKG_COLOR = Utilities.getHTMLColor(192, 192, 192);
+    private final ElementKind imageKind;
 
     private ClasspathInfo originalCPInfo;
     
@@ -82,6 +84,12 @@ public class ElementDescription {
     public ElementDescription(CompilationInfo info, Element element, boolean overriddenFlag) {
         this.originalCPInfo = info.getClasspathInfo();
         this.handle = ElementHandle.create(element);
+        if (METHOD.equals(element.getKind()) && null != element.getEnclosingElement()) {
+            //when showing the implementors/overriders of a method, show the type icon (not the method icon)
+            this.imageKind = element.getEnclosingElement().getKind();
+        } else {
+            this.imageKind = this.handle.getKind();
+        }
         this.outtermostElement = ElementHandle.create(SourceUtils.getOutermostEnclosingTypeElement(element));
         this.modifiers = element.getModifiers();
         this.displayName = overriddenFlag ? computeDisplayNameIsOverridden(element) : computeDisplayNameOverrides(element);
@@ -190,7 +198,7 @@ public class ElementDescription {
             badge = ImageUtilities.loadImage("org/netbeans/modules/java/editor/resources/overrides-badge.png");
         }
 
-        Image icon = ImageUtilities.icon2Image(ElementIcons.getElementIcon(handle.getKind(), modifiers));
+        Image icon = ImageUtilities.icon2Image(ElementIcons.getElementIcon(imageKind, modifiers));
 
         return ImageUtilities.image2Icon(ImageUtilities.mergeImages(icon, badge, 16, 0));
     }

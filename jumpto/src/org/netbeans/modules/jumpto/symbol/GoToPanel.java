@@ -96,20 +96,17 @@ import org.openide.util.NbBundle;
  * @author  Petr Hrebejk
  */
 public class GoToPanel extends javax.swing.JPanel {
-            
+
     private static Icon WAIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/wait.gif", false); // NOI18N
     private static Icon WARN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/warning.png", false); // NOI18N
-        
+
     private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private ContentProvider contentProvider;
     private boolean containsScrollPane;
     private JLabel messageLabel;
     private SymbolDescriptor selectedSymbol;
-    
-    private String oldText;
-    
     private volatile int textId;
-    
+
     // Time when the serach stared (for debugging purposes)
     long time = -1;
 
@@ -120,7 +117,7 @@ public class GoToPanel extends javax.swing.JPanel {
     // notify the DocumentListener because it will first call removeUpdate() and then inserteUpdate().
     // When removeUpdate() is called we should not call update() because it messes the messageLabel's text.
     private boolean pastedFromClipboard = false;
-    
+
     /** Creates new form GoToPanel */
     public GoToPanel( ContentProvider contentProvider ) throws IOException {
         this.contentProvider = contentProvider;
@@ -128,22 +125,21 @@ public class GoToPanel extends javax.swing.JPanel {
         containsScrollPane = true;
         ((AbstractDocument)nameField.getDocument()).setDocumentFilter(UiUtils.newUserInputFilter());
         matchesList.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
-        //matchesList.setPrototypeCellValue("12345678901234567890123456789012345678901234567890123456789012345678901234567890");        
         matchesList.addListSelectionListener(null);
-        
+
         Color bgColorBrighter = new Color(
                                     Math.min(getBackground().getRed() + BRIGHTER_COLOR_COMPONENT, 255),
                                     Math.min(getBackground().getGreen() + BRIGHTER_COLOR_COMPONENT, 255),
                                     Math.min(getBackground().getBlue() + BRIGHTER_COLOR_COMPONENT, 255)
                             );
-        
+
         messageLabel = new JLabel();
         messageLabel.setBackground(bgColorBrighter);
         messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         messageLabel.setEnabled(true);
         messageLabel.setText(NbBundle.getMessage(GoToPanel.class, "TXT_NoSymbolsFound")); // NOI18N
         messageLabel.setFont(matchesList.getFont());
-        
+
         // matchesList.setBackground( bgColorBrighter );
         // matchesScrollPane1.setBackground( bgColorBrighter );
         matchesList.setCellRenderer(
@@ -151,10 +147,10 @@ public class GoToPanel extends javax.swing.JPanel {
                 matchesList,
                 caseSensitive.getModel()));
         contentProvider.setListModel( this, null );
-        
+
         PatternListener pl = new PatternListener( this );
         nameField.getDocument().addDocumentListener(pl);
-        matchesList.addListSelectionListener(pl);   
+        matchesList.addListSelectionListener(pl);
         caseSensitive.setSelected(UiOptions.GoToSymbolDialog.getCaseSensitive());
         caseSensitive.addItemListener(pl);
 
@@ -166,11 +162,11 @@ public class GoToPanel extends javax.swing.JPanel {
         searchHistory.saveHistory();
         super.removeNotify();
     }
-    
+
     public boolean isCaseSensitive () {
         return this.caseSensitive.isSelected();
     }
-    
+
     /** Sets the model from different therad
      */
     public void setModel( final ListModel model, int id ) { 
@@ -198,10 +194,9 @@ public class GoToPanel extends javax.swing.JPanel {
            }
        });
     }
-    
+
     /** Sets the initial text to find in case the user did not start typing yet. */
     public void setInitialText( final String text ) {
-        oldText = text;
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 String textInField = nameField.getText();
@@ -214,11 +209,11 @@ public class GoToPanel extends javax.swing.JPanel {
             }
         });
     }
-    
+
     public void setSelectedSymbol() {
         selectedSymbol = ((SymbolDescriptor) matchesList.getSelectedValue());
     }
-    
+
     public SymbolDescriptor getSelectedSymbol() {
         return selectedSymbol;
     }
@@ -233,7 +228,7 @@ public class GoToPanel extends javax.swing.JPanel {
         }
         jLabelWarning.setText(warningMessage);
     }
-            
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -418,11 +413,11 @@ public class GoToPanel extends javax.swing.JPanel {
     private JScrollPane matchesScrollPane1;
     private JTextField nameField;
     // End of variables declaration//GEN-END:variables
-        
+
     public int getTextId() {
         return textId;
     }
-    
+
     private String getText() {
         try {
             String text = nameField.getDocument().getText(0, nameField.getDocument().getLength());
@@ -432,20 +427,20 @@ public class GoToPanel extends javax.swing.JPanel {
             return null;
         }
     }
-    
+
     private int getFontSize () {
         return this.jLabelList.getFont().getSize();
-    }        
-    
+    }
+
     void setListPanelContent( String message ,boolean waitIcon ) {
-        
+
         if ( message == null && !containsScrollPane ) {
            listPanel.remove( messageLabel );
            listPanel.add( matchesScrollPane1 );
            containsScrollPane = true;
            revalidate();
            repaint();
-        }        
+        }
         else if ( message != null ) { 
            jTextFieldLocation.setText(""); 
            messageLabel.setText(message);
@@ -457,9 +452,9 @@ public class GoToPanel extends javax.swing.JPanel {
            }
            revalidate();
            repaint();
-       }                
+       }
     }
-    
+
     private String listActionFor(KeyEvent ev) {
         InputMap map = matchesList.getInputMap();
         Object o = map.get(KeyStroke.getKeyStrokeForEvent(ev));
@@ -483,7 +478,7 @@ public class GoToPanel extends javax.swing.JPanel {
 
     private void delegateScrollingKey(KeyEvent ev) {
         String action = listActionFor(ev);
-        
+
         // Wrap around
         if ( "selectNextRow".equals(action) && 
             matchesList.getSelectedIndex() == matchesList.getModel().getSize() -1 ) {
@@ -498,8 +493,8 @@ public class GoToPanel extends javax.swing.JPanel {
             matchesList.ensureIndexIsVisible(last);
             return;
         }
-        
-        // Plain delegation        
+
+        // Plain delegation
         Action a = matchesList.getActionMap().get(action);
         if (a != null) {
             a.actionPerformed(new ActionEvent(matchesList, 0, action));
@@ -507,21 +502,21 @@ public class GoToPanel extends javax.swing.JPanel {
     }
 
     private static class PatternListener implements DocumentListener, ListSelectionListener, ItemListener {
-               
+
         private final GoToPanel dialog;
-        
-        
+
+
         PatternListener( GoToPanel dialog  ) {
             this.dialog = dialog;
         }
-        
+
         PatternListener( DocumentEvent e, GoToPanel dialog  ) {
             this.dialog = dialog;
         }
-        
+
         // DocumentListener ----------------------------------------------------
-        
-        public void changedUpdate( DocumentEvent e ) {            
+
+        public void changedUpdate( DocumentEvent e ) {
             update();
         }
 
@@ -538,14 +533,14 @@ public class GoToPanel extends javax.swing.JPanel {
         public void insertUpdate( DocumentEvent e ) {
             update();
         }
-        
+
         public void itemStateChanged(ItemEvent e) {
             UiOptions.GoToSymbolDialog.setCaseSensitive(dialog.isCaseSensitive());
             update();
         }
-                
+
         // ListSelectionListener -----------------------------------------------
-        
+
         @Override
         public void valueChanged(@NonNull final ListSelectionEvent ev) {
             // got "Not computed yet" text sometimes
@@ -558,30 +553,28 @@ public class GoToPanel extends javax.swing.JPanel {
                 dialog.jTextFieldLocation.setText("");  //NOI18N
             }
         }
-        
+
         private void update() {
             dialog.time = System.currentTimeMillis();
             String text = dialog.getText();
-            if ( dialog.oldText == null || dialog.oldText.trim().length() == 0 || !text.startsWith(dialog.oldText) ) {
+            dialog.textId++;
+            if (dialog.contentProvider.setListModel(dialog,text)) {
                 dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"),true); // NOI18N
             }
-            dialog.oldText = text;
-            dialog.textId++;
-            dialog.contentProvider.setListModel(dialog,text);            
-        }                                         
+        }
     }
-             
-    
+
+
     public static interface ContentProvider {
-        
+
         public ListCellRenderer getListCellRenderer(JList list,  ButtonModel caseSensitive);
-        
-        public void setListModel( GoToPanel panel, String text  );
-        
+
+        public boolean setListModel( GoToPanel panel, String text  );
+
         public void closeDialog();
-        
+
         public boolean hasValidContent ();
-                
+
     }
-    
+
 }
