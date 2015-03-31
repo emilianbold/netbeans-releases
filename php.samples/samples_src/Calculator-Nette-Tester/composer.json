@@ -11,10 +11,7 @@
 
     },
     "require-dev": {
-        "nette/tester": "v1.0.0"
-    },
-    "config": {
-        "vendor-dir": "src/vendor"
+        "nette/tester": "v1.4.0"
     },
     "autoload": {
         "classmap": ["src/"]
