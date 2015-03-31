@@ -212,7 +212,8 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                         <h3>This sample demonstrates the following features:</h3>
                         <ul class="p">
                             <li>unit testing using PHPUnit</li>
-                            <li>creating unit tests using PHPUnit_SkeletonGenerator</li>
+                            <li>creating unit tests using PHPUnit Skeleton Generator</li>
+                            <li>code coverage of project files</li>
                         </ul>
 
                         <h3>Requirements</h3>
@@ -220,8 +221,12 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                         <ul class="p">
                             <li>Install NetBeans IDE with PHP support</li>
                             <li>Install and configure PHP Runtime</li>
-                            <li>Install and configure <a href="https://github.com/sebastianbergmann/phpunit/" target="_blank">PHPUnit</a></li>
-                            <li>Install and configure <a href="https://github.com/sebastianbergmann/phpunit-skeleton-generator" target="_blank">PHPUnit_SkeletonGenerator</a></li>
+                            <li>Install all dependencies using <a href="https://getcomposer.org/">Composer</a>
+                                (click on project and invoke <i>Composer</i> &gt; <i>Install (dev)</i>)<br>
+                                <i>Note:</i> PHPUnit can also be installed <a href="https://github.com/sebastianbergmann/phpunit/#installation" target="_blank">globally as PHAR file</a></li>
+                            <li>Install and configure <a href="https://github.com/sebastianbergmann/phpunit-skeleton-generator" target="_blank">PHPUnit Skeleton Generator</a></li>
+                            <li>For debugging and code coverage, <a href="http://www.xdebug.org/">Xdebug</a> PHP extension is required</li>
+
                         </ul>
 
                         <h3>What is included?</h3>
@@ -232,24 +237,28 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                         <h3>Before the start</h3>
                         <ul class="p">
                             <li>If you want to try the sample out, follow <a href="#getting_started">Getting Started</a> guidelines.</li>
-                            <li>In case of you want to try debugging features of the NetBeans IDE,
+                            <li>In case if you want to try debugging features of the NetBeans IDE,
                                 follow the <a href="#debugging">Debugging</a> guidelines.</li>
                         </ul>
 
                         <h3 id="getting_started">Getting Started</h3>
                         <ol class="p">
                             <li>
-                                Firstly, create a unit test for Calculator class - open it in the editor
+                                For the very first run, PHPUnit must be installed via Composer
+                                and PHPUnit Skeleton Generator globally (see Requirements).
+                            </li>
+                            <li>
+                                Now, create a unit test for Calculator class - open it in the editor
                                 and select <i>Tools &gt; Create Tests</i>.
                             </li>
                             <li>
-                                Secondly, add<br><br>
-                                <code>require_once __DIR__ . '/../src/Calculator.php';</code><br><br>
-                                line to the top of the file, just after <i>&lt;? php</i>.
+                                Simply test the project. Right-click the project node and select <i>Test</i>.
+                                IDE will inform you about the test results (window with test results can be opened manually).
                             </li>
                             <li>
-                                Finally, test the project. Right-click the project node and select <i>Test</i>.
-                                IDE will inform you about the test results (window with test results can be opened manually).
+                                For code coverage, open its report (right-click the project node and select <i>Code Coverage &gt; Show Report...</i>)
+                                and <i>Run All Tests</i> if there are no data available yet. Open <i>Calculator.php</i> file from the list of the files
+                                to see which lines are and which lines are not tested.
                             </li>
                             <li>Play futher with the sample :)</li>
                         </ol>
@@ -257,7 +266,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                         <h3 id="debugging">Debugging</h3>
                         <p class="p">
                             These steps should enable you the debugging option at the sample project,
-                            <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">if you already have PHP debugger
+                            <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">if you already have PHP debugger (Xdebug)
                             installed and configured</a>.<br>
                             For demonstrating the PHP debugger in NetBeans, try the following:
                         </p>
