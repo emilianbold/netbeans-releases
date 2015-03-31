@@ -56,10 +56,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -73,6 +73,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.AbstractModelFilter;
+import org.netbeans.modules.jumpto.common.CurrentSearch;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
@@ -91,27 +93,39 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Zezula
  */
 final class ContentProviderImpl implements GoToPanel.ContentProvider {
-    
+
     private static final Logger LOG = Logger.getLogger(ContentProviderImpl.class.getName());
-    private static final Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
     private static final RequestProcessor rp = new RequestProcessor (ContentProviderImpl.class);
-        
+
     private final JButton okButton;
-    private final AtomicReference<Collection<? extends SymbolProvider>> typeProviders =
-            new AtomicReference<Collection<? extends SymbolProvider>>();
+    private final AtomicReference<Collection<? extends SymbolProvider>> typeProviders = new AtomicReference<>();
+    private final CurrentSearch<SymbolDescriptor> currentSearch = new CurrentSearch<>(
+        new Callable<AbstractModelFilter<SymbolDescriptor>>() {
+            @NonNull
+            @Override
+            public AbstractModelFilter<SymbolDescriptor> call() throws Exception {
+                return new AbstractModelFilter<SymbolDescriptor>() {
+                    @NonNull
+                    @Override
+                    protected String getItemValue(@NonNull final SymbolDescriptor item) {
+                        return item.getSymbolName();
+                    }
+                };
+            }
+        });
     //@GuardedBy("this")
     private RequestProcessor.Task task;
     //@GuardedBy("this")
     private Worker running;
     //threading: accessed only in EDT
     private Dialog dialog;
-    
+
 
     public ContentProviderImpl(final JButton okButton) {
         this.okButton = okButton;
     }
-    
-    
+
+
     void setDialog(final Dialog dialog) {
         this.dialog = dialog;
     }
@@ -127,7 +141,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
     }
 
     @Override
-    public void setListModel(GoToPanel panel, String text) {
+    public boolean setListModel(GoToPanel panel, String text) {
         if (okButton != null) {
             okButton.setEnabled (false);
         }
@@ -145,28 +159,36 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         if (taskToCancel != null) {
                 taskToCancel.cancel();
         }
-        
+
         if ( text == null ) {
+            currentSearch.resetFilter();
             panel.setModel(new DefaultListModel(), -1);
-            return;
+            return false;
         }
         final boolean exact = text.endsWith(" "); // NOI18N
-        final boolean isCaseSensitive = panel.isCaseSensitive();        
-        text = text.trim();        
+        final boolean isCaseSensitive = panel.isCaseSensitive();
+        text = text.trim();
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
+            currentSearch.resetFilter();
             panel.setModel(new DefaultListModel(), -1);
-            return;
+            return false;
         }
+        final SearchType searchType = getSearchType(text, exact, isCaseSensitive);
         // Compute in other thread
-        
-        synchronized( this ) {
-            running = new Worker(text, exact, isCaseSensitive, panel);
-            task = rp.post( running, 220);
-            if ( panel.time != -1 ) {
-                LOG.log(
-                   Level.FINE,
-                   "Worker posted after {0} ms.",   //NOI18N
-                   System.currentTimeMillis() - panel.time);                
+        synchronized(this) {
+            if (currentSearch.isNarrowing(searchType, text)) {
+                currentSearch.filter(searchType, text);
+                return false;
+            } else {
+                running = new Worker(text, searchType, panel);
+                task = rp.post( running, 220);
+                if ( panel.time != -1 ) {
+                    LOG.log(
+                       Level.FINE,
+                       "Worker posted after {0} ms.",   //NOI18N
+                       System.currentTimeMillis() - panel.time);
+                }
+                return true;
             }
         }
     }
@@ -187,16 +209,16 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
     public boolean hasValidContent() {
         return this.okButton.isEnabled();
     }
-    
+
     private void cleanUp() {
         for (SymbolProvider provider : getTypeProviders()) {
             provider.cleanup();
         }
     }
-            
+
     private Collection<? extends SymbolProvider> getTypeProviders() {
         Collection<? extends SymbolProvider> res = typeProviders.get();
-        if (res == null) {                   
+        if (res == null) {
             res = Arrays.asList(Lookup.getDefault().lookupAll(SymbolProvider.class).toArray(new SymbolProvider[0]));
             if (!typeProviders.compareAndSet(null, res)) {
                 res = typeProviders.get();
@@ -204,25 +226,25 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         }
         return res;
     }
-    
+
     private static class MyPanel extends JPanel {
-	
+
 	private SymbolDescriptor td;
-	
+
 	void setDescriptor(SymbolDescriptor td) {
 	    this.td = td;
-	    // since the same component is reused for dirrerent list itens, 
+	    // since the same component is reused for dirrerent list itens,
 	    // null the tool tip
 	    putClientProperty(TOOL_TIP_TEXT_KEY, null);
 	}
 
 	@Override
 	public String getToolTipText() {
-	    // the tool tip is gotten from the descriptor 
+	    // the tool tip is gotten from the descriptor
 	    // and cached in the standard TOOL_TIP_TEXT_KEY property
 	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
 	    if( text == null ) {
-                if( td != null ) {                    
+                if( td != null ) {
                     text = td.getFileDisplayPath();
                 }
                 putClientProperty(TOOL_TIP_TEXT_KEY, text);
@@ -230,31 +252,31 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 	    return text;
 	}
     }
-    
+
     private static class Renderer extends EntitiesListCellRenderer implements ActionListener {
 
         private final HighlightingNameFormatter symbolNameFormatter;
-         
+
         private MyPanel rendererComponent;
         private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlOwner = new JLabel();
         private JLabel jlPrj = new JLabel();
         private int DARKER_COLOR_COMPONENT = 15;
-        private int LIGHTER_COLOR_COMPONENT = 80;        
+        private int LIGHTER_COLOR_COMPONENT = 80;
         private Color fgColor;
         private Color fgColorLighter;
         private Color bgColor;
         private Color bgColorDarker;
         private Color bgSelectionColor;
         private Color fgSelectionColor;
-        
+
         private JList jList;
         private boolean caseSensitive;
-        
+
         public Renderer(
                 @NonNull final JList list,
                 @NonNull final ButtonModel caseSensitive) {
-            
+
             jList = list;
             this.caseSensitive = caseSensitive.isSelected();
             resetName();
@@ -263,7 +285,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 ((JViewport)container).addChangeListener(this);
                 stateChanged(new ChangeEvent(container));
             }
-            
+
             rendererComponent = new MyPanel();
             rendererComponent.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -272,7 +294,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;            
+            c.weightx = 0;
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (0,0,0,7);
             rendererComponent.add( jlName, c);
@@ -284,37 +306,37 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.1;            
+            c.weightx = 0.1;
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (0,0,0,7);
             rendererComponent.add( jlOwner, c);
-            
+
             c = new GridBagConstraints();
             c.gridx = 2;
             c.gridy = 0;
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;            
+            c.weightx = 0;
             c.anchor = GridBagConstraints.EAST;
             rendererComponent.add( jlPrj, c);
-            
-            
-            jlPrj.setOpaque(false);            
+
+
+            jlPrj.setOpaque(false);
             jlPrj.setFont(list.getFont());
-            
-            
+
+
             jlPrj.setHorizontalAlignment(RIGHT);
             jlPrj.setHorizontalTextPosition(LEFT);
-            
-            // setFont( list.getFont() );            
+
+            // setFont( list.getFont() );
             fgColor = list.getForeground();
-            fgColorLighter = new Color( 
+            fgColorLighter = new Color(
                                    Math.min( 255, fgColor.getRed() + LIGHTER_COLOR_COMPONENT),
                                    Math.min( 255, fgColor.getGreen() + LIGHTER_COLOR_COMPONENT),
                                    Math.min( 255, fgColor.getBlue() + LIGHTER_COLOR_COMPONENT)
                                   );
-                            
+
             bgColor = new Color( list.getBackground().getRGB() );
             bgColorDarker = new Color(
                                     Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
@@ -326,25 +348,25 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             symbolNameFormatter = HighlightingNameFormatter.createBoldFormatter();
             caseSensitive.addActionListener(this);
         }
-        
+
         public Component getListCellRendererComponent( JList list,
                                                        Object value,
                                                        int index,
                                                        boolean isSelected,
                                                        boolean hasFocus) {
-            
+
             // System.out.println("Renderer for index " + index );
-            
+
             int height = list.getFixedCellHeight();
             int width = list.getFixedCellWidth() - 1;
-            
+
             width = width < 200 ? 200 : width;
-            
+
             // System.out.println("w, h " + width + ", " + height );
-            
+
             Dimension size = new Dimension( width, height );
             rendererComponent.setMaximumSize(size);
-            rendererComponent.setPreferredSize(size);                        
+            rendererComponent.setPreferredSize(size);
             resetName();
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
@@ -358,10 +380,10 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 jlPrj.setForeground(fgColor);
                 rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
             }
-            
+
             if ( value instanceof SymbolDescriptor ) {
                 long time = System.currentTimeMillis();
-                SymbolDescriptor td = (SymbolDescriptor)value;                
+                SymbolDescriptor td = (SymbolDescriptor)value;
                 jlName.setIcon(td.getIcon());
                 final String formattedSymbolName = symbolNameFormatter.formatName(
                         td.getSymbolName(),
@@ -378,18 +400,18 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             else {
                 jlName.setText( value.toString() );
             }
-            
+
             return rendererComponent;
         }
-        
+
         public void stateChanged(ChangeEvent event) {
-            
+
             JViewport jv = (JViewport)event.getSource();
-            
+
             jlName.setText( "Sample" ); // NOI18N
             //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
             jlName.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/type/sample.png", false));
-            
+
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);
         }
@@ -408,84 +430,81 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         }
 
      }
-    
+
     private class Worker implements Runnable {
-        
+
         private final String text;
-        private final boolean exact;
-        private final boolean isCaseSensitive;
+        private final SearchType searchType;
         private final long createTime;
         private final GoToPanel panel;
-        
+
         private volatile boolean isCanceled = false;
         private volatile SymbolProvider current;
         private final int textId;
-        
+
         public Worker(
                 @NonNull final String text,
-                final boolean exact,
-                final boolean isCaseSensitive,
+                @NonNull final SearchType searchType,
                 @NonNull final GoToPanel panel ) {
             this.text = text;
-            this.exact = exact;
-            this.isCaseSensitive = isCaseSensitive;
+            this.searchType = searchType;
             this.panel = panel;
             this.createTime = System.currentTimeMillis();
             this.textId = panel.getTextId();
             LOG.log(
                 Level.FINE,
                 "Worker for {0} - created after {1} ms.", //NOI18N
-                new Object[]{text, System.currentTimeMillis() - panel.time});                
+                new Object[]{text, System.currentTimeMillis() - panel.time});
        }
-        
+
         @Override
         public void run() {
             LOG.log(
                 Level.FINE,
                 "Worker for {0} - started {1} ms.", //NOI18N
-                new Object[]{text, System.currentTimeMillis() - createTime});                
-            
+                new Object[]{text, System.currentTimeMillis() - createTime});
+
             final List<? extends SymbolDescriptor> types = getSymbolNames( text );
             if ( isCanceled ) {
                 LOG.log(
                     Level.FINE,
                     "Worker for {0} exited after cancel {1} ms.", //NOI18N
-                    new Object[]{text, System.currentTimeMillis() - createTime});                                
+                    new Object[]{text, System.currentTimeMillis() - createTime});
                 return;
             }
-            final ListModel fmodel = Models.fromList(types, null);
-            if ( isCanceled ) {            
+            final ListModel fmodel = Models.fromList(types, currentSearch.resetFilter());
+            if ( isCanceled ) {
                 LOG.log(
                     Level.FINE,
                     "Worker for {0} exited after cancel {1} ms.", //NOI18N
-                    new Object[]{text, System.currentTimeMillis() - createTime});                                
+                    new Object[]{text, System.currentTimeMillis() - createTime});
                 return;
             }
-            
-            if ( !isCanceled && fmodel != null ) {                
-                LOG.log(
-                    Level.FINE,
-                    "Worker for text {0} finished after {1} ms.", //NOI18N
-                    new Object[]{text, System.currentTimeMillis() - createTime});                
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
+
+            LOG.log(
+                Level.FINE,
+                "Worker for text {0} finished after {1} ms.", //NOI18N
+                new Object[]{text, System.currentTimeMillis() - createTime});
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    currentSearch.searchCompleted(searchType, text);
+                    if (!isCanceled) {
                         panel.setModel(fmodel, textId);
                         if (okButton != null && !types.isEmpty()) {
                             okButton.setEnabled (true);
                         }
                     }
-                });
-            }
-            
-            
+                }
+            });
         }
-        
+
         public void cancel() {
             if ( panel.time != -1 ) {
                 LOG.log(
                     Level.FINE,
                     "Worker for text {0} canceled after {1} ms.", //NOI18N
-                    new Object[]{text, System.currentTimeMillis() - createTime});                
+                    new Object[]{text, System.currentTimeMillis() - createTime});
             }
             SymbolProvider _provider;
             synchronized (this) {
@@ -503,7 +522,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             List<SymbolDescriptor> items;
             // Multiple providers: merge results
             items = new ArrayList<SymbolDescriptor>(128);
-            String[] message = new String[1];                        
+            String[] message = new String[1];
             for (SymbolProvider provider : getTypeProviders()) {
                 current = provider;
                 if (isCanceled) {
@@ -513,7 +532,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                     Level.FINE,
                     "Calling SymbolProvider: {0}", //NOI18N
                     provider);
-                final SearchType searchType = getSearchType(text, exact, isCaseSensitive);
                 if (searchType == SearchType.REGEXP || searchType == SearchType.CASE_INSENSITIVE_REGEXP) {
                     text = Utils.removeNonNeededWildCards(text);
                 }
@@ -522,7 +540,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 provider.computeSymbolNames(context, result);
                 current = null;
             }
-            if ( !isCanceled ) {   
+            if ( !isCanceled ) {
                 Collections.sort(items, new SymbolComparator());
                 panel.setWarning(message[0]);
                 return items;
