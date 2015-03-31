@@ -213,6 +213,11 @@ public final class TerminalSupportImpl {
 
                     final HostInfo hostInfo;
                     try {
+                        // There is still a chance of env being disconnected
+                        // (exception supressed in FetchHostInfoTask.compute)
+                        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                            return;
+                        }
                         hostInfo = HostInfoUtils.getHostInfo(env);
                         boolean isSupported = PtySupport.isSupportedFor(env);
                         if (!isSupported) {
