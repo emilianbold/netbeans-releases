@@ -268,7 +268,6 @@ public class MiscUtilities {
     public static String getContextRootURL(Project project) {
         String portNumber = "8080"; //NOI18N
         String host = "localhost"; //NOI18N
-        String contextRoot = "";
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         String serverInstanceID = provider.getServerInstanceID();
         if (serverInstanceID == null || MiscPrivateUtilities.DEVNULL.equals(serverInstanceID)) {
@@ -298,10 +297,14 @@ public class MiscUtilities {
             }
         }
         J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
+        String contextRoot = null;
         try {
             contextRoot = configSupport.getWebContextRoot();
         } catch (ConfigurationException e) {
             // TODO the context root value could not be read, let the user know about it
+        }
+        if (contextRoot == null) {
+            contextRoot = ""; // NOI18N
         }
         if (contextRoot.length() > 0 && contextRoot.startsWith("/")) { //NOI18N
             contextRoot = contextRoot.substring(1);
