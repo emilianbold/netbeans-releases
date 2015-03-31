@@ -532,8 +532,9 @@ public class MiscUtilities {
         if (srcLevel != null) {
             double sourceLevel = Double.parseDouble(srcLevel);
             return (sourceLevel >= 1.7);
-        } else
+        } else {
             return false;
+        }
     }
     
     /** Check if project is of Java EE 6 project type or higher
