@@ -6,11 +6,11 @@ CONSTRUCTO Car                             [PUBLIC]   complexModule.js
 CONSTRUCTO constr                          [PUBLIC]   complexModule.js
 CLASS      literal                         [PUBLIC]   complexModule.js
 METHOD     justCall(): Date                [PUBLIC]   complexModule.js
-METHOD     justCallLit(): Module complexM  [PUBLIC]   complexModule.js
-METHOD     justCallObj(): Module complexM  [PUBLIC]   complexModule.js
+METHOD     justCallLit(): complexModuleAn  [PUBLIC]   complexModule.js
+METHOD     justCallObj(): SampleClass      [PUBLIC]   complexModule.js
 METHOD     resolve()                       [PUBLIC]   <font color=#999999>NodeJS</font>
 FIELD      cache                           [PUBLIC]   <font color=#999999>NodeJS</font>
 FIELD      extensions                      [PUBLIC]   <font color=#999999>NodeJS</font>
-FIELD      inst: Module complexModule      [PUBLIC]   complexModule.js
+FIELD      inst: WizardInst                [PUBLIC]   complexModule.js
 FIELD      instRef                         [PUBLIC]   complexModule.js
-FIELD      literalRef: Module complexModu  [PUBLIC]   complexModule.js
+FIELD      literalRef: lRef                [PUBLIC]   complexModule.js
