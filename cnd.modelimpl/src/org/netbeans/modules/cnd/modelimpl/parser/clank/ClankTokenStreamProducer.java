@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
@@ -83,6 +84,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     
     public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean index) {
         return new ClankTokenStreamProducer(file, newFileContent);
+    }
+
+    @Override
+    public TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter) {
+      throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

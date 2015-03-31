@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -92,12 +91,10 @@ import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
@@ -105,7 +102,6 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
-import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
@@ -123,8 +119,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTBasedPCStateBuilder;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
@@ -1194,35 +1188,6 @@ public final class FileImpl implements CsmFile,
         return true;
     }
     
-    private TokenStream createParsingTokenStreamForHandler(PreprocHandler preprocHandler, boolean filterOutComments,
-            AtomicReference<APTFileCacheEntry> cacheOut, AtomicReference<APTBasedPCStateBuilder> pcBuilderOut) {
-        APTFile apt = CsmCorePackageAccessor.get().getFileAPT(this, true);
-        if (apt == null) {
-            return null;
-        }                
-        if (preprocHandler == null) {
-            return null;
-        }
-        PreprocHandler.State ppState = preprocHandler.getState();
-        ProjectBase startProject = Utils.getStartProject(ppState);
-        if (startProject == null) {
-            System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
-                    "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
-            return null;
-        }
-        APTBasedPCStateBuilder pcBuilder = new APTBasedPCStateBuilder(getAbsolutePath());
-        if (pcBuilderOut != null) {
-            pcBuilderOut.set(pcBuilder);
-        }
-        // ask for concurrent entry if absent
-        APTFileCacheEntry cacheEntry = getAPTCacheEntry(ppState, Boolean.FALSE);
-        if (cacheOut != null) {
-            cacheOut.set(cacheEntry);
-        }
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder,cacheEntry);
-        return walker.getTokenStream(filterOutComments);
-    }
-    
     private static final class TokenStreamLock {}
     private final Object tokStreamLock = new TokenStreamLock();
     private Reference<FileTokenStreamCache> tsRef = new SoftReference<>(null);
@@ -1283,17 +1248,13 @@ public final class FileImpl implements CsmFile,
             if (includeContextPair == null) {
                 return file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
             }
-            PreprocHandler.State thisFileStartState = includeContextPair.state;
-            LinkedList<PPIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(thisFileStartState);
-            reverseInclStack.addLast(new IncludeInfoImpl(include, file.getFileSystem(), file.getAbsolutePath()));
-            ProjectBase projectImpl = getProjectImpl(true);
-            if (projectImpl == null) {
+            TokenStreamProducer tsp = TokenStreamProducer.create(this, true, false);
+            if (tsp == null) {
+                // probably file was removed
                 return file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
             }
-            PreprocHandler preprocHandler = projectImpl.createEmptyPreprocHandler(getAbsolutePath());
-            PreprocHandler restorePreprocHandlerFromIncludeStack = projectImpl.restorePreprocHandlerFromIncludeStack(reverseInclStack, getAbsolutePath(), preprocHandler, thisFileStartState, Interrupter.DUMMY);
-            // using restored preprocessor handler, ask included file for parsing token stream filtered by language          
-            TokenStream includedFileTS = file.createParsingTokenStreamForHandler(restorePreprocHandlerFromIncludeStack, true, null, null);
+            PreprocHandler.State thisFileStartState = includeContextPair.state;
+            TokenStream includedFileTS = tsp.getTokenStreamOfIncludedFile(thisFileStartState, include, interrupter);
             if(includedFileTS != null) {
                 APTLanguageFilter languageFilter = file.getLanguageFilter(thisFileStartState);
                 return languageFilter.getFilteredStream(includedFileTS);
@@ -1302,51 +1263,6 @@ public final class FileImpl implements CsmFile,
         return null;
     }
     
-    private static class IncludeInfoImpl implements PPIncludeHandler.IncludeInfo {
-
-        private final int line;
-        private final CsmInclude include;
-        private final FileSystem fs;
-        private final CharSequence path;
-
-        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path) {
-            this.line = include.getStartPosition().getLine();
-            this.include = include;
-            this.fs = fs;
-            this.path = path;
-        }
-
-        @Override
-        public CharSequence getIncludedPath() {
-            return path;
-        }
-
-        @Override
-        public FileSystem getFileSystem() {
-            return fs;
-        }
-        
-        @Override
-        public int getIncludeDirectiveLine() {
-            return line;
-        }
-
-        @Override
-        public int getIncludeDirectiveOffset() {
-            return include.getStartOffset();
-        }
-
-        @Override
-        public int getIncludedDirIndex() {
-            return 0;
-        }
-
-        @Override
-        public String toString() {
-            return "restore " + include + " from line " + line + " in file " + include.getContainingFile(); // NOI18N
-        }
-    }
-
     /** For test purposes only */
     /*package*/ void testErrors(TraceModel.ErrorListener errorListener) {
         Collection<ParserError> parserErrors = new ArrayList<>();

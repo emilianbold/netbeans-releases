@@ -43,21 +43,32 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ParserQueue;
@@ -68,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
@@ -106,6 +118,134 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
             }  
         }
         return new APTTokenStreamProducer(file, newFileContent, fullAPT);
+    }
+
+    @Override
+    public TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter) {
+        FileImpl ownerFile = getMainFile();
+        FileImpl includedFile = (FileImpl) include.getIncludeFile();
+        LinkedList<PPIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(includeOwnerState);
+        CharSequence includedAbsPath = includedFile.getAbsolutePath();
+        reverseInclStack.addLast(new IncludeInfoImpl(include, includedFile.getFileSystem(), includedAbsPath));
+        ProjectBase projectImpl = includedFile.getProjectImpl(true);
+        if (projectImpl == null) {
+            return includedFile.getTokenStream(0, Integer.MAX_VALUE, 0, true);
+        }
+        CharSequence ownerAbsPath = ownerFile.getAbsolutePath();
+        PreprocHandler preprocHandler = projectImpl.createEmptyPreprocHandler(ownerAbsPath);
+        PreprocHandler restorePreprocHandlerFromIncludeStack = restorePreprocHandlerFromIncludeStack(projectImpl, reverseInclStack, ownerAbsPath, preprocHandler, includeOwnerState, Interrupter.DUMMY);
+        // using restored preprocessor handler, ask included file for parsing token stream filtered by language
+        TokenStream includedFileTS = createParsingTokenStreamForHandler(includedFile, restorePreprocHandlerFromIncludeStack, true);
+        return includedFileTS;
+    }
+
+    private static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && 
+            (DebugUtils.getBoolean("cnd.remember.restored", false) || ProjectBase.TRACE_PP_STATE_OUT);// NOI18N
+    private static volatile List<String> testRestoredFiles = null;
+    public static List<String> testGetRestoredFiles() {
+        return testRestoredFiles;
+    }
+    
+    public static PreprocHandler restorePreprocHandlerFromIncludeStack(ProjectBase project, LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack,
+            CharSequence interestedFile, PreprocHandler preprocHandler, PreprocHandler.State state, final Interrupter interrupter) {
+        // we need to reverse includes stack
+        assert (!reverseInclStack.isEmpty()) : "state of stack is " + reverseInclStack;
+        LinkedList<APTIncludeHandler.IncludeInfo> inclStack = Utils.reverse(reverseInclStack);
+        ProjectBase.StartEntryInfo sei = project.getStartEntryInfo(preprocHandler, state);
+        FileImpl csmFile = sei.csmFile;
+        ProjectBase startProject = sei.startProject;
+        preprocHandler = sei.preprocHandler;
+
+        APTFile aptLight = null;
+        try {
+            aptLight = csmFile == null ? null : getAPTLight(csmFile);
+        } catch (IOException ex) {
+            System.err.println("can't restore preprocessor state for " + interestedFile + //NOI18N
+                    "\nreason: " + ex.getMessage());//NOI18N
+            DiagnosticExceptoins.register(ex);
+        }
+        boolean ppStateRestored = false;
+        if (aptLight != null) {
+            // for testing remember restored file
+            long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
+            int stackSize = inclStack.size();
+            // create concurrent entry if absent
+            APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(state, Boolean.FALSE);
+            APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), cacheEntry) {
+
+                @Override
+                protected boolean isStopped() {
+                    return super.isStopped() || interrupter.cancelled();
+                }
+
+            };
+            walker.visit();
+            // we do not remember cache entry because it is stopped before end of file
+            // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
+
+            if (preprocHandler.isValid()) {
+                if (REMEMBER_RESTORED) {
+                    if (testRestoredFiles == null) {
+                        testRestoredFiles = new ArrayList<>();
+                    }
+                    FileImpl interestedFileImpl = project.getFile(interestedFile, false);
+                    assert interestedFileImpl != null;
+                    String msg = interestedFile + " [" + (interestedFileImpl.isHeaderFile() ? "H" : interestedFileImpl.isSourceFile() ? "S" : "U") + "]"; // NOI18N
+                    time = System.currentTimeMillis() - time;
+                    msg = msg + " within " + time + "ms" + " stack " + stackSize + " elems"; // NOI18N
+                    System.err.println("#" + testRestoredFiles.size() + " restored: " + msg); // NOI18N
+                    testRestoredFiles.add(msg);
+                }
+                if (ProjectBase.TRACE_PP_STATE_OUT) {
+                    System.err.println("after restoring " + preprocHandler); // NOI18N
+                }
+                ppStateRestored = true;
+            }
+        }
+        if (!ppStateRestored) {
+            // need to recover from the problem, when start file is invalid or absent
+            // try to find project who can create default handler with correct
+            // compiler settings
+            // preferences is start project
+            if (startProject == null) {
+                // otherwise use the project owner
+                startProject = project;
+            }
+            preprocHandler = startProject.createDefaultPreprocHandler(interestedFile);
+            // remember
+            // TODO: file container should accept all without checks
+            // otherwise state will not be replaced
+//                synchronized (getFileContainer().getLock(interestedFile)) {
+//                    if (state.equals(getPreprocState(interestedFile))) {
+//                        PreprocHandler.State recoveredState = preprocHandler.getState();
+//                        assert !recoveredState.isCompileContext();
+//                        putPreprocState(interestedFile, recoveredState);
+//                    }
+//                }
+        }
+        return preprocHandler;
+    }
+
+    private TokenStream createParsingTokenStreamForHandler(FileImpl fileImpl, PreprocHandler preprocHandler, boolean filterOutComments) {
+        APTFile apt = CsmCorePackageAccessor.get().getFileAPT(fileImpl, true);
+        if (apt == null) {
+            return null;
+        }
+        if (preprocHandler == null) {
+            return null;
+        }
+        PreprocHandler.State ppState = preprocHandler.getState();
+        ProjectBase startProject = Utils.getStartProject(ppState);
+        if (startProject == null) {
+            System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
+                    "\n while getting TS of file " + fileImpl.getAbsolutePath() + "\n of project " + fileImpl.getProject()); // NOI18N
+            return null;
+        }
+        pcBuilder = new APTBasedPCStateBuilder(fileImpl.getAbsolutePath());
+        // ask for concurrent entry if absent
+        APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(ppState, Boolean.FALSE);
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, fileImpl, preprocHandler, false, pcBuilder, cacheEntry);
+        return walker.getTokenStream(filterOutComments);
     }
 
     @Override
@@ -156,7 +296,20 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         }
         return pcBuilder.build();
     }
-    
+
+    final static APTFile getAPTLight(CsmFile csmFile) throws IOException {
+        FileImpl fileImpl = (FileImpl) csmFile;
+        APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(fileImpl, false);
+        if (aptLight != null && APTUtils.LOG.isLoggable(Level.FINE)) {
+            CharSequence guardMacro = aptLight.getGuardMacro();
+            if (guardMacro.length() == 0 && !fileImpl.isSourceFile()) {
+                APTUtils.LOG.log(Level.FINE, "FileImpl: file {0} does not have guard", new Object[]{fileImpl.getAbsolutePath()});// NOI18N
+            }
+        }
+
+        return aptLight;
+    }
+
     public static APTFile getFileAPT(FileImpl file, boolean full) {
         APTFile fileAPT = null;
         FileBufferDoc.ChangedSegment changedSegment = null;
@@ -181,5 +334,51 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
             }
         }
         return fileAPT;
-    }    
+    }
+
+    private static class IncludeInfoImpl implements PPIncludeHandler.IncludeInfo {
+
+        private final int line;
+        private final CsmInclude include;
+        private final FileSystem fs;
+        private final CharSequence path;
+
+        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path) {
+            this.line = include.getStartPosition().getLine();
+            this.include = include;
+            this.fs = fs;
+            this.path = path;
+        }
+
+        @Override
+        public CharSequence getIncludedPath() {
+            return path;
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
+            return fs;
+        }
+
+        @Override
+        public int getIncludeDirectiveLine() {
+            return line;
+        }
+
+        @Override
+        public int getIncludeDirectiveOffset() {
+            return include.getStartOffset();
+        }
+
+        @Override
+        public int getIncludedDirIndex() {
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            return "restore " + include + " from line " + line + " in file " + include.getContainingFile(); // NOI18N
+        }
+    }
+
 }
