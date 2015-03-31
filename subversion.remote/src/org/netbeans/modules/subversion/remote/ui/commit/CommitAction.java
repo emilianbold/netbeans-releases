@@ -150,6 +150,10 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
+        Context cachedContext = getCachedContext(nodes);
+        if (!VCSFileProxySupport.isConnectedFileSystem(cachedContext.getFileSystem())) {
+            return false;
+        }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if(!isSvnNodes(nodes) && !isDeepRefreshDisabledGlobally()) {
             // allway true as we have will accept and check for external changes
@@ -157,7 +161,7 @@ public class CommitAction extends ContextAction {
             return cache.ready();
         }
         // XXX could be a performace issue, maybe a msg box in commit would be enough
-        return cache.ready() && cache.containsFiles(getCachedContext(nodes), FileInformation.STATUS_LOCAL_CHANGE, true);
+        return cache.ready() && cache.containsFiles(cachedContext, FileInformation.STATUS_LOCAL_CHANGE, true);
     }
 
     /** Run commit action. Shows UI */
