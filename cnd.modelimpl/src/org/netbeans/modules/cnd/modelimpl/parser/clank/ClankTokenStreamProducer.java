@@ -88,7 +88,30 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     @Override
     public TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter) {
-      throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        FileImpl fileImpl = getMainFile();
+        ProjectBase projectImpl = fileImpl.getProjectImpl(true);
+        if (projectImpl == null) {
+          return null;
+        }
+        PreprocHandler ppHandler = projectImpl.createPreprocHandlerFromState(fileImpl.getAbsolutePath(), includeOwnerState);
+        int fileOwnerIndex = ClankDriver.extractTokenStream(ppHandler).getFileIndex();
+        // do preprocessing
+        IncludeDirectiveTokensStreamCallback callback =
+                new IncludeDirectiveTokensStreamCallback(ppHandler, fileOwnerIndex, include.getStartOffset());
+        boolean tsFromClank = ClankDriver.preprocess(fileImpl.getBuffer(), ppHandler, callback, interrupter);
+        if (!tsFromClank) {
+            return null;
+        }
+        ClankDriver.APTTokenStreamCache tokStreamCache = callback.getPPOut();
+        if (tokStreamCache == null) {
+          return null;
+        }
+        skipped = new int[0];
+        TokenStream tokenStream = tokStreamCache.getTokenStream();
+        if (tokenStream == null) {
+          return null;
+        }
+        return tokenStream;
     }
 
     @Override
@@ -100,7 +123,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         FileImpl fileImpl = getMainFile();
         if (!tokStreamCache.hasTokenStream()) {
           // do preprocessing
-          MyClankPreprocessorCallback callback = new MyClankPreprocessorCallback(
+          FileTokenStreamCallback callback = new FileTokenStreamCallback(
                   ppHandler,
                   triggerParsingActivity,
                   fileImpl, getFileContent(),
@@ -131,7 +154,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         return CsmCorePackageAccessor.get().createPCState(getMainFile().getAbsolutePath(), skipped);
     }
     
-    private static final class MyClankPreprocessorCallback implements ClankPreprocessorCallback {
+    private static final class FileTokenStreamCallback implements ClankPreprocessorCallback {
         private final ProjectBase startProject;
         private final FileImpl startFile;
         private final PreprocHandler ppHandler;
@@ -141,13 +164,18 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private final int stopAtIndex;
         private ClankDriver.APTTokenStreamCache foundTokens;
 
-        private boolean alreadySeenInterestedFileEnter = false;
+        private enum State {
+          INITIAL,
+          SEEN,
+          EXITED
+        }
+        private State alreadySeenInterestedFileEnter = State.INITIAL;
         private boolean insideInterestedFile = false;
         private final boolean triggerParsingActivity;
 
         private List<FileImpl> curFiles = new ArrayList<FileImpl>();
 
-        private MyClankPreprocessorCallback(
+        private FileTokenStreamCallback(
                 PreprocHandler ppHandler,
                 boolean triggerParsingActivity,
                 FileImpl stopFileImpl, 
@@ -194,8 +222,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         public void onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {
             assert enteredTo != null;
             if (enteredTo.getFileIndex() == stopAtIndex) {
-              assert !alreadySeenInterestedFileEnter;
-              alreadySeenInterestedFileEnter = true;
+              assert alreadySeenInterestedFileEnter == State.INITIAL;
+              alreadySeenInterestedFileEnter = State.SEEN;
               CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath()),
                       enteredTo + "\n vs. \n", stopFileImpl);
               if (triggerParsingActivity) {
@@ -204,7 +232,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 curFiles.add(stopFileImpl);
               }
             } else {
-              if (alreadySeenInterestedFileEnter && triggerParsingActivity) {
+              if ((alreadySeenInterestedFileEnter == State.SEEN) && triggerParsingActivity) {
                 // let's keep stack of inner includes
                 // then onExit post process headers wthich should be parsed
                 ResolvedPath resolvedPath = enteredTo.getResolvedPath();
@@ -267,7 +295,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         @Override
         public boolean onExit(ClankDriver.ClankFileInfo exitedFrom, ClankDriver.ClankFileInfo exitedTo) {
             assert exitedFrom != null;
-            if (!alreadySeenInterestedFileEnter) {
+            if (alreadySeenInterestedFileEnter == State.EXITED) {
+              return false;
+            } else if (alreadySeenInterestedFileEnter == State.INITIAL) {
               return true;
             }
             insideInterestedFile = (exitedTo != null) && (exitedTo.getFileIndex() == stopAtIndex);
@@ -277,10 +307,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               foundTokens = ClankDriver.extractTokenStream(ppHandler);
               assert foundTokens.hasTokenStream();
               // stop all activity
-              alreadySeenInterestedFileEnter = false;
+              alreadySeenInterestedFileEnter = State.EXITED;
               return false;
             } else if (triggerParsingActivity) {
-              assert alreadySeenInterestedFileEnter;
+              assert alreadySeenInterestedFileEnter == State.SEEN;
               try {
                 assert ClankDriver.extractTokenStream(ppHandler).hasTokenStream();
                 PreprocHandler.State inclState = ppHandler.getState();
@@ -309,7 +339,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: error on including {0}:\n{1}", new Object[]{exitedFrom.getFilePath(), ex});
                 DiagnosticExceptoins.register(ex);
               }
-              
             }
             return true;
         }        
@@ -332,12 +361,97 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             boolean system = !resolvedPath.isDefaultSearchPath();
             boolean broken = (includedFile == null);
             // FIXME: offsets
-            int startOffset = enteredTo.getInclusionDirectiveOffset();
-            int endOffset = startOffset + fileName.length();
-            startOffset -= "#include ".length();
+            int InclusionDirectiveOffset = enteredTo.getInclusionDirectiveOffset();
+            int startOffset = clankIncludeTomodel(InclusionDirectiveOffset);
+            int endOffset = InclusionDirectiveOffset + fileName.length();
             IncludeImpl incl = IncludeImpl.create(fileName, system, false, includedFile, curFile, startOffset, endOffset);
             parsingFileContent.addInclude(incl, broken);
           }
+        }
+    }
+    
+    private static final String INCLUDE = "#include ";
+    
+    private static int clankIncludeTomodel(int ClankFileInfoOffset) {
+      return ClankFileInfoOffset - INCLUDE.length();
+    }
+
+    private static int modelIncludeToClank(int IncludeStartOffset) {
+      return IncludeStartOffset + INCLUDE.length();
+    }
+
+    private static final class IncludeDirectiveTokensStreamCallback implements ClankPreprocessorCallback {
+        private final PreprocHandler ppHandler;
+
+        private final int includeFileOnwerIndex;
+        private final int interestedClankIncludeDirectiveOffset;
+        private ClankDriver.APTTokenStreamCache foundTokens = null;
+        private boolean insideInterestedFile = false;
+
+        private ClankDriver.ClankFileInfo includedFileInfo = null;
+
+        private IncludeDirectiveTokensStreamCallback(PreprocHandler ppHandler,
+                int includeFileOnwerIndex, int interestedIncludeDirectiveOffset) {
+            this.ppHandler = ppHandler;
+            this.includeFileOnwerIndex = includeFileOnwerIndex;
+            // adjust to Clank offset
+            this.interestedClankIncludeDirectiveOffset = modelIncludeToClank(interestedIncludeDirectiveOffset);
+        }
+
+        @Override
+        public boolean needTokens() {
+          return this.insideInterestedFile;
+        }
+
+        @Override
+        public boolean needMacroExpansion() {
+          return this.insideInterestedFile;
+        }
+
+        @Override
+        public boolean needSkippedRanges() {
+          return false;
+        }
+
+        @Override
+        public void onInclusionDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankInclusionDirective directive) {
+
+        }
+
+        @Override
+        public void onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {
+            assert enteredTo != null;
+            insideInterestedFile = false;
+            // TODO: we can collect all included recursively, but not now
+            if (enteredFrom != null && enteredFrom.getFileIndex() == includeFileOnwerIndex) {
+              // entering from file owner into include directive
+              if (enteredTo.getInclusionDirectiveOffset() == this.interestedClankIncludeDirectiveOffset) {
+                assert includedFileInfo == null : "seen twice? " + includedFileInfo;
+                includedFileInfo = enteredTo;
+                insideInterestedFile = true;
+              }
+            }
+        }
+
+        @Override
+        public boolean onExit(ClankDriver.ClankFileInfo exitedFrom, ClankDriver.ClankFileInfo exitedTo) {
+            if (foundTokens != null) {
+              return false;
+            }
+            assert exitedFrom != null;
+            if (exitedFrom == includedFileInfo) {
+              // stop all activity on exit from interested include directive
+              foundTokens = ClankDriver.extractTokenStream(ppHandler);
+              assert foundTokens.hasTokenStream();
+              return false;
+            }
+            // gather when come back to interested file
+            insideInterestedFile = (exitedTo == includedFileInfo);
+            return true;
+        }
+
+        private ClankDriver.APTTokenStreamCache getPPOut() {
+            return foundTokens;
         }
     }
 }

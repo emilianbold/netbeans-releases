@@ -1506,7 +1506,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return createPreprocHandlerFromState(absPath, statePair.state);
     }
 
-    /* package */ final PreprocHandler createPreprocHandlerFromState(CharSequence absPath, PreprocHandler.State state) {
+    public final PreprocHandler createPreprocHandlerFromState(CharSequence absPath, PreprocHandler.State state) {
         Collection<PreprocHandler> out = createPreprocHandlerFromStates(Collections.singleton(state), absPath, Interrupter.DUMMY);
         return out.iterator().next();
     }
