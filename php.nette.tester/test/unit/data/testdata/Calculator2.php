@@ -1,3 +1,4 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,56 +41,32 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.nette.tester.preferences;
+/**
+ * Simple class for our unit tests.
+ */
+class Calculator {
 
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.netbeans.modules.php.nette.tester.util.TesterUtils;
-
-public final class TesterPreferencesValidator {
-
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
+    public function plus($a, $b) {
+        return $a + $b;
     }
 
-    public TesterPreferencesValidator validate(PhpModule phpModule) {
-        validatePhpIni(TesterPreferences.isPhpIniEnabled(phpModule), TesterPreferences.getPhpIniPath(phpModule));
-        validateTester(TesterPreferences.isTesterEnabled(phpModule), TesterPreferences.getTesterPath(phpModule));
-        validateCoverageSourcePath(TesterPreferences.isCoverageSourcePathEnabled(phpModule), TesterPreferences.getCoverageSourcePath(phpModule));
-        return this;
+    public function minus($a, $b) {
+        return $a - $b;
     }
 
-    public TesterPreferencesValidator validatePhpIni(boolean phpIniEnabled, String phpIniPath) {
-        if (phpIniEnabled) {
-            String warning = TesterUtils.validatePhpIniPath(phpIniPath);
-            if (warning != null) {
-                result.addWarning(new ValidationResult.Message("php.ini.path", warning)); // NOI18N
-            }
+    public function multiply($a, $b) {
+        return $a * $b;
+    }
+
+    public function divide($a, $b) {
+        if ($b == 0) {
+            throw new InvalidArgumentException('Cannot divide by zero');
         }
-        return this;
+        return $a / $b;
     }
 
-    public TesterPreferencesValidator validateTester(boolean testerEnabled, String testerPath) {
-        if (testerEnabled) {
-            String warning = TesterUtils.validateTesterPath(testerPath);
-            if (warning != null) {
-                result.addWarning(new ValidationResult.Message("tester.path", warning)); // NOI18N
-            }
-        }
-        return this;
-    }
-
-    public TesterPreferencesValidator validateCoverageSourcePath(boolean sourcePathEnabled, String sourcePath) {
-        if (sourcePathEnabled) {
-            String warning = TesterUtils.validateCoverageSourcePath(sourcePath);
-            if (warning != null) {
-                result.addWarning(new ValidationResult.Message("coverage.source.path", warning)); // NOI18N
-            }
-        }
-        return this;
+    public function modulo($a, $b) {
+        return $a % $b;
     }
 
 }

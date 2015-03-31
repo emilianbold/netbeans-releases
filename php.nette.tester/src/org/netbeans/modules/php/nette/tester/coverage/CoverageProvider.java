@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.nette.tester.util;
+package org.netbeans.modules.php.nette.tester.coverage;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.nette.tester.commands.Tester;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
+import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 
-public final class TesterUtils {
+public final class CoverageProvider {
 
-    public static final List<String> BINARY_EXECUTABLES = Arrays.asList(null, "php-cgi", "php"); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(CoverageProvider.class.getName());
+
+    private final PhpModule phpModule;
 
 
-    private TesterUtils() {
+    public CoverageProvider(PhpModule phpModule) {
+        assert phpModule != null;
+        this.phpModule = phpModule;
     }
 
-    @NbBundle.Messages("TesterUtils.tester.label=Tester file")
     @CheckForNull
-    public static String validateTesterPath(String testerPath) {
-        return PhpExecutableValidator.validateCommand(testerPath, Bundle.TesterUtils_tester_label());
-    }
-
-    @NbBundle.Messages("TesterUtils.php.ini.error=Absolute path to file or directory must be set for php.ini.")
-    @CheckForNull
-    public static String validatePhpIniPath(@NullAllowed String phpIniPath) {
-        if (FileUtils.validateDirectory(phpIniPath, false) != null
-                && FileUtils.validateFile(phpIniPath, false) != null) {
-            return Bundle.TesterUtils_php_ini_error();
+    public Coverage getCoverage(TestRunInfo runInfo) {
+        assert runInfo.isCoverageEnabled();
+        Tester tester = Tester.getForPhpModule(phpModule, false);
+        if (tester == null) {
+            return null;
         }
-        return null;
-    }
-
-    @NbBundle.Messages("TesterUtils.coverage.source.path.error=Absolute path to directory must be set for coverage source path.")
-    @CheckForNull
-    public static String validateCoverageSourcePath(@NullAllowed String sourcePath) {
-        if (FileUtils.validateDirectory(sourcePath, false) != null) {
-            return Bundle.TesterUtils_coverage_source_path_error();
+        File coverageLog = tester.getCoverageLog();
+        if (coverageLog == null) {
+            // likely some error
+            return null;
+        }
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(coverageLog), StandardCharsets.UTF_8))) {
+            return new CoverageImpl(CloverLogParser.parse(reader));
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, null, exc);
         }
         return null;
     }

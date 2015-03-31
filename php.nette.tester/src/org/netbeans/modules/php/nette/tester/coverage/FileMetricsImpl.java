@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.nette.tester.util;
+package org.netbeans.modules.php.nette.tester.coverage;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.spi.testing.coverage.FileMetrics;
 
-public final class TesterUtils {
+public final class FileMetricsImpl implements FileMetrics {
 
-    public static final List<String> BINARY_EXECUTABLES = Arrays.asList(null, "php-cgi", "php"); // NOI18N
+    private final int lineCount;
+    private final int statements;
+    private final int coveredStatements;
 
 
-    private TesterUtils() {
+    public FileMetricsImpl(int lineCount, int statements, int coveredStatements) {
+        this.lineCount = lineCount;
+        this.statements = statements;
+        this.coveredStatements = coveredStatements;
     }
 
-    @NbBundle.Messages("TesterUtils.tester.label=Tester file")
-    @CheckForNull
-    public static String validateTesterPath(String testerPath) {
-        return PhpExecutableValidator.validateCommand(testerPath, Bundle.TesterUtils_tester_label());
+    @Override
+    public int getLineCount() {
+        return lineCount;
     }
 
-    @NbBundle.Messages("TesterUtils.php.ini.error=Absolute path to file or directory must be set for php.ini.")
-    @CheckForNull
-    public static String validatePhpIniPath(@NullAllowed String phpIniPath) {
-        if (FileUtils.validateDirectory(phpIniPath, false) != null
-                && FileUtils.validateFile(phpIniPath, false) != null) {
-            return Bundle.TesterUtils_php_ini_error();
-        }
-        return null;
+    @Override
+    public int getStatements() {
+        return statements;
     }
 
-    @NbBundle.Messages("TesterUtils.coverage.source.path.error=Absolute path to directory must be set for coverage source path.")
-    @CheckForNull
-    public static String validateCoverageSourcePath(@NullAllowed String sourcePath) {
-        if (FileUtils.validateDirectory(sourcePath, false) != null) {
-            return Bundle.TesterUtils_coverage_source_path_error();
-        }
-        return null;
+    @Override
+    public int getCoveredStatements() {
+        return coveredStatements;
     }
 
 }

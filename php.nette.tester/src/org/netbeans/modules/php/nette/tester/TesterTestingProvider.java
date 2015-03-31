@@ -48,6 +48,7 @@ import org.netbeans.modules.php.api.editor.PhpClass.Method;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.nette.tester.commands.Tester;
+import org.netbeans.modules.php.nette.tester.coverage.CoverageProvider;
 import org.netbeans.modules.php.nette.tester.create.TestCreator;
 import org.netbeans.modules.php.nette.tester.locate.TesterTestLocator;
 import org.netbeans.modules.php.nette.tester.run.TapParser;
@@ -113,6 +114,9 @@ public final class TesterTestingProvider implements PhpTestingProvider {
     @Override
     public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
         new TestRunner(phpModule).runTests(runInfo, testSession);
+        if (runInfo.isCoverageEnabled()) {
+            testSession.setCoverage(new CoverageProvider(phpModule).getCoverage(runInfo));
+        }
     }
 
     @Override
@@ -127,7 +131,7 @@ public final class TesterTestingProvider implements PhpTestingProvider {
 
     @Override
     public boolean isCoverageSupported(PhpModule phpModule) {
-        return false;
+        return true;
     }
 
     @Override
