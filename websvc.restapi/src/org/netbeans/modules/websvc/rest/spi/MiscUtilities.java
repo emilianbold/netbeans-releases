@@ -203,7 +203,6 @@ public class MiscUtilities {
 
     public static FileObject modifyFile(FileObject fo, Map<String, String> replace) throws IOException {
         StringWriter content = new StringWriter();
-        FileLock lock = null;
         BufferedWriter writer = null;
         BufferedReader reader = null;
         try {
@@ -230,7 +229,7 @@ public class MiscUtilities {
                 writer.close();
             }
             StringBuffer buffer = content.getBuffer();
-            lock = fo.lock();
+            FileLock lock = fo.lock();
             try {
                 OutputStream outputStream = fo.getOutputStream(lock);
                 writer = new BufferedWriter(new OutputStreamWriter(outputStream, Charset.forName("UTF-8")));
