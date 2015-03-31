@@ -575,4 +575,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testCallBackDeclaration2() throws Exception {
         checkStructure("testfiles/markoccurences/callbackDeclaration2.js"); 
     }
+    
+    public void testIssue250392() throws Exception {
+        checkStructure("testfiles/structure/issue250392.js");
+    }
 }

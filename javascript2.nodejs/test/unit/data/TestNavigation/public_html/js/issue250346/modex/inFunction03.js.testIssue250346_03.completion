@@ -4,5 +4,5 @@ simpleRef.|
 ------------------------------------
 CLASS      ox                              [PUBLIC]   literalRef.js
 FIELD      neco2: Number                   [PUBLIC]   literalRef.js
-FIELD      obj2: Module literalRef         [PUBLIC]   literalRef.js
+FIELD      obj2: Runner2                   [PUBLIC]   literalRef.js
 FIELD      pokus2: Date                    [PUBLIC]   literalRef.js
