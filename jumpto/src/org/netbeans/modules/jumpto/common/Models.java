@@ -75,8 +75,10 @@ public final class Models {
     }
 
 
-    public static <T> ListModel fromList( List<? extends T> list ) {
-        return new ListListModel<T>( list );
+    public static <T> ListModel fromList(
+            @NonNull final List<? extends T> list,
+            @NullAllowed final Filter<? super T> filter) {
+        return new ListListModel<>(list, filter);
     }
 
     /** Creates list model which translates the objects using a factory.
@@ -93,7 +95,7 @@ public final class Models {
 
     public static <T> MutableListModel<T> mutable(
             @NullAllowed final Comparator<? super T> comparator,
-            @NullAllowed final Filter<T> filter) {
+            @NullAllowed final Filter<? super T> filter) {
         return new MutableListModelImpl(comparator, filter);
     }
 
@@ -111,34 +113,83 @@ public final class Models {
 
     // Private innerclasses ----------------------------------------------------
 
-    private static class ListListModel<T> implements ListModel {
-    
-        private List<? extends T> list;
+    private static final class ListListModel<T> extends AbstractListModel implements ChangeListener {
+
+        private final List<? extends T> list;
+        private final Filter<? super T> filter;
+        private List<? extends T> included;
 
         /** Creates a new instance of IteratorList */
-        public ListListModel( List<? extends T> list ) {
-            this.list = list;
+        public ListListModel(
+                @NonNull final List<? extends T> list,
+                @NullAllowed final Filter<? super T> filter) {
+            this.list = this.included = list;
+            this.filter = filter;
+            if (this.filter != null) {
+                this.filter.addChangeListener(this);
+            }
         }
 
         // List implementataion ------------------------------------------------
 
+        @Override
         public T getElementAt(int index) {
-            // System.out.println("GE " + index );
-            return list.get( index );
+            assert SwingUtilities.isEventDispatchThread();
+            return included.get( index );
         }
 
-        public int getSize() {
-            return list.size();
+        @Override
+        public  int getSize() {
+            assert SwingUtilities.isEventDispatchThread();
+            return included.size();
         }
 
-        public void removeListDataListener(javax.swing.event.ListDataListener l) {
-            // Does nothing - unmodifiable
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            filterData();
         }
 
-        public void addListDataListener(javax.swing.event.ListDataListener l) {
-            // Does nothing - unmodifiable
+        private void filterData() {
+            if (filter != null) {
+                final Callable<Void> action = new Callable<Void>() {
+                    @Override
+                    public Void call() {
+                        assert SwingUtilities.isEventDispatchThread();
+                        final int oldSize = included.size();
+                        final List<T> newIncluded = new ArrayList<>();
+                        for (T item : list) {
+                            if (filter.accept(item)) {
+                                newIncluded.add(item);
+                            }
+                        }
+                        included = newIncluded;
+                        final int newSize = included.size();
+                        fireContentsChanged(this, 0, Math.min(oldSize, newSize));
+                        if (oldSize < newSize) {
+                            fireIntervalAdded(this, oldSize, newSize);
+                        } else if (oldSize > newSize) {
+                            fireIntervalRemoved(this, newSize, oldSize);
+                        }
+                        return null;
+                    }
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    try {
+                        action.call();
+                    } catch (RuntimeException e) {
+                        throw e;
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    try {
+                        invokeInEDT(action);
+                    } catch (InvocationTargetException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
         }
-
     }
 
     private static class TranslatingListModel<T,P> implements ListModel {
@@ -390,20 +441,20 @@ public final class Models {
                 }
             }
         }
+    }
 
-        private static <R> R invokeInEDT(@NonNull final Callable<R> call) throws InterruptedException, InvocationTargetException {
-            final AtomicReference<R> res = new AtomicReference<>();
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        res.set(call.call());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+    private static <R> R invokeInEDT(@NonNull final Callable<R> call) throws InterruptedException, InvocationTargetException {
+        final AtomicReference<R> res = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    res.set(call.call());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-            });
-            return res.get();
-        }
+            }
+        });
+        return res.get();
     }
 }

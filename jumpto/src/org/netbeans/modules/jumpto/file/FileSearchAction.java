@@ -49,6 +49,7 @@
 
 package org.netbeans.modules.jumpto.file;
 
+import org.netbeans.modules.jumpto.common.CurrentSearch;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -60,6 +61,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -91,12 +93,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.Factory;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlRenderer;
@@ -128,7 +132,19 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     private static final ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     //Threading: Throughput 1 required due to inherent sequential code in Work.Request.exclude
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
-    private final CurrentSearch currentSearch = new CurrentSearch();
+    private final CurrentSearch<FileDescriptor> currentSearch = new CurrentSearch(
+        new Callable<Models.Filter<FileDescriptor>>() {
+            @Override
+            public Models.Filter<FileDescriptor> call() throws Exception {
+                return new AbstractModelFilter<FileDescriptor>() {
+                    @NonNull
+                    @Override
+                    protected String getItemValue(@NonNull final FileDescriptor item) {
+                        return item.getFileName();
+                    }
+                };
+            }
+        });
     //@GuardedBy("this")
     private Worker[] running;
     //@GuardedBy("this")
@@ -231,8 +247,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         // Compute in other thread
         synchronized(this) {
-            if (currentSearch.isNarrowing(nameKind, text)) {
-                currentSearch.filter(nameKind, text);
+            final SearchType searchType = Utils.toSearchType(nameKind);
+            if (currentSearch.isNarrowing(searchType, text)) {
+                currentSearch.filter(searchType, text);
                 return false;
             } else {
                 final String searchText = text;
@@ -275,7 +292,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         @Override
                         public void run() {
                             panel.searchCompleted();
-                            currentSearch.searchCompleted(nameKind, searchText);
+                            currentSearch.searchCompleted(searchType, searchText);
                         }
                     },
                     panel.time);

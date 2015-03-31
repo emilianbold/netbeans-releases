@@ -39,72 +39,71 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.file;
+package org.netbeans.modules.jumpto.common;
 
+import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.jumpto.common.AbstractModelFilter;
-import org.netbeans.modules.jumpto.common.Models;
-import org.netbeans.modules.jumpto.common.Utils;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.type.SearchType;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-final  class CurrentSearch {
+public final class CurrentSearch<T> {
+
+    private final Callable<AbstractModelFilter<T>> filterFactory;
 
     //@GuardedBy("this")
     private String currentText;
     //@GuardedBy("this")
     private SearchType currentType;
     //@GuardedBy("this")
-    private FileModelFilter filter;
+    private AbstractModelFilter<T> filter;
 
-    CurrentSearch() {
+    public CurrentSearch(@NonNull final Callable<AbstractModelFilter<T>> filterFactory) {
+        Parameters.notNull("filterFactory", filterFactory); //NOI18N
+        this.filterFactory = filterFactory;
         resetFilter();
     }
 
-    synchronized boolean isNarrowing(
-            @NonNull final QuerySupport.Kind searchKind,
+    public synchronized boolean isNarrowing(
+            @NonNull final SearchType searchType,
             @NonNull final String searchText) {
         if (currentType == null || currentText == null) {
             return false;
         }
         return Utils.isNarrowing(
                 currentType,
-                Utils.toSearchType(searchKind),
+                searchType,
                 currentText,
                 searchText);
     }
 
-    synchronized void filter(
-            @NonNull final QuerySupport.Kind searchKind,
+    public synchronized void filter(
+            @NonNull final SearchType searchType,
             @NonNull final String searchText) {
-        this.filter.configure(Utils.toSearchType(searchKind), searchText);
+        this.filter.configure(searchType, searchText);
     }
 
     @NonNull
-    synchronized Models.Filter<FileDescriptor> resetFilter() {
+    public synchronized Models.Filter<T> resetFilter() {
         this.currentType = null;
         this.currentText = null;
-        this.filter = new FileModelFilter();
+        try {
+            this.filter = filterFactory.call();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return this.filter;
     }
 
-    synchronized void searchCompleted(
-            @NonNull final QuerySupport.Kind searchKind,
+    public synchronized void searchCompleted(
+            @NonNull final SearchType searchType,
             @NonNull final String searchText) {
-        this.currentType = Utils.toSearchType(searchKind);
+        this.currentType = searchType;
         this.currentText = searchText;
-    }
-
-    private static class FileModelFilter extends AbstractModelFilter<FileDescriptor> {
-        @NonNull
-        @Override
-        protected String getItemValue(@NonNull final FileDescriptor item) {
-            return item.getFileName();
-        }
     }
 }

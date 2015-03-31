@@ -453,7 +453,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                     new Object[]{text, System.currentTimeMillis() - createTime});                                
                 return;
             }
-            final ListModel fmodel = Models.fromList(types);
+            final ListModel fmodel = Models.fromList(types, null);
             if ( isCanceled ) {            
                 LOG.log(
                     Level.FINE,
