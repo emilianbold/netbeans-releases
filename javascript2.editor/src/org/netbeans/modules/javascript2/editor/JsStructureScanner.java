@@ -99,7 +99,7 @@ public class JsStructureScanner implements StructureScanner {
             return collectedItems;
         } else if (jsObject instanceof JsReference) {
             JsObject original = ((JsReference) jsObject).getOriginal();
-            boolean isOrginalReachable = !original.isAnonymous();
+            boolean isOrginalReachable = !original.isAnonymous() && !original.getName().equals(jsObject.getName());
             JsObject parent = original.getParent();
             while (parent != null && isOrginalReachable) {
                 if (parent.isAnonymous() && !(parent.getParent() != null && parent.getParent().getParent() == null)) {
