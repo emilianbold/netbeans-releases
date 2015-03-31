@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.nodejs.editor.model;
+package org.netbeans.modules.javascript2.nodejs.editor;
 
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.spi.model.TypeDisplayNameConvertor;
-import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
+import java.io.IOException;
+import org.netbeans.modules.javascript2.editor.JsStructureScannerTest;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-@TypeDisplayNameConvertor.Registration(priority=200)
-public class NodeJsTypeDisplayNameConvertor implements TypeDisplayNameConvertor {
-    private static String REQUIRE_MODULE_NAME = NodeJsUtils.REQUIRE_METHOD_NAME + "." + NodeJsUtils.FAKE_OBJECT_NAME_PREFIX;
+public class NodeJsStructureTest extends JsTestBase {
+
+    public NodeJsStructureTest(String testName) {
+        super(testName);
+    }
     
     @Override
-    public String getDisplayName(Type type) {
-        String typeString = type.getType();
-        String displayName = null;
-        if (typeString != null 
-                && (typeString.startsWith(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX)
-                || typeString.startsWith(REQUIRE_MODULE_NAME))) {
-            displayName = typeString.substring(typeString.indexOf(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX) + NodeJsUtils.FAKE_OBJECT_NAME_PREFIX.length());
-            if (displayName.endsWith(NodeJsUtils.EXPORTS)) {
-                int index = displayName.indexOf('.');
-                if (index > 0) {
-                    displayName = "Module " + displayName.substring(0, index); //NOI18N
-                }
-            } else {
-                int index = displayName.lastIndexOf('.');
-                if (index > 0) {
-                    displayName = displayName.substring(index + 1);  
-                } else {
-                    displayName = "Module " + displayName; //NOI18N
-                }
-            }
-        }
-        return displayName;
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    }
+    
+    public void testIssue247449_01() throws Exception {
+        checkStructure("testfiles/structure/issue247449_01.js");
+    }
+    
+    public void testIssue247449_02() throws Exception {
+        checkStructure("testfiles/structure/issue247449_02.js");
     }
     
 }

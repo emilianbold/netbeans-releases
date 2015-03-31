@@ -398,7 +398,7 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
             int row = table.rowAtPoint(p);
             int col = table.columnAtPoint(p);
             Object value = table.getValueAt(row, col);
-            if (value instanceof LocalPathCell) {
+            if (isSupportEnabled && value instanceof LocalPathCell) {
                 Rectangle cellRect = table.getCellRect(row, col, false);
                 LocalPathCell localPathCell = (LocalPathCell) value;
                 JButton button = localPathCell.getButton();

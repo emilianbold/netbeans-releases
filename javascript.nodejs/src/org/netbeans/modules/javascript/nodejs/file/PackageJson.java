@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.nodejs.file;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,8 +83,13 @@ public final class PackageJson {
 
 
     public PackageJson(FileObject directory) {
+        this(directory, FILE_NAME);
+    }
+
+    // for unit tests
+    PackageJson(FileObject directory, String filename) {
         assert directory != null;
-        packageJson = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.create()
+        packageJson = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
                 .add(PROP_NAME, FIELD_NAME)
                 .add(PROP_SCRIPTS_START, FIELD_SCRIPTS, FIELD_START)
                 .add(PROP_DEPENDENCIES, FIELD_DEPENDENCIES)
@@ -135,11 +141,25 @@ public final class PackageJson {
     }
 
     public PackageJson.NpmDependencies getDependencies() {
-        Map<String, String> dependencies = getContentValue(Map.class, FIELD_DEPENDENCIES);
-        Map<String, String> devDependencies = getContentValue(Map.class, FIELD_DEV_DEPENDENCIES);
-        Map<String, String> peerDependencies = getContentValue(Map.class, FIELD_PEER_DEPENDENCIES);
-        Map<String, String> optionalDependencies = getContentValue(Map.class, FIELD_OPTIONAL_DEPENDENCIES);
-        return new NpmDependencies(dependencies, devDependencies, peerDependencies, optionalDependencies);
+        Map<Object, Object> dependencies = getContentValue(Map.class, FIELD_DEPENDENCIES);
+        Map<Object, Object> devDependencies = getContentValue(Map.class, FIELD_DEV_DEPENDENCIES);
+        Map<Object, Object> peerDependencies = getContentValue(Map.class, FIELD_PEER_DEPENDENCIES);
+        Map<Object, Object> optionalDependencies = getContentValue(Map.class, FIELD_OPTIONAL_DEPENDENCIES);
+        return new NpmDependencies(sanitizeDependencies(dependencies), sanitizeDependencies(devDependencies),
+                sanitizeDependencies(peerDependencies), sanitizeDependencies(optionalDependencies));
+    }
+
+    @CheckForNull
+    private Map<String, String> sanitizeDependencies(@NullAllowed Map<Object, Object> data) {
+        if (data == null
+                || data.isEmpty()) {
+            return null;
+        }
+        Map<String, String> sanitized = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            sanitized.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        return sanitized;
     }
 
     //~ Inner classes
