@@ -332,7 +332,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
     
     private FileIncludeOutParams includeFileWithTokens(FileIncludeInParams params) throws IOException {
-        APTFile aptFile = getCsmCorePackageAccessor().getFileAPT(params.includedFile, true);
+        APTFile aptFile = APTTokenStreamProducer.getFileAPT(params.includedFile, true);
         if (aptFile != null) {
             PreprocHandler.State ppIncludeState = params.preprocHandler.getState();
             // ask for exclusive entry if absent
@@ -394,7 +394,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
         // if not found in caches => visit include file
         if (!foundInCache) {
-            APTFile aptLight = getCsmCorePackageAccessor().getFileAPT(params.includedFile, false);
+            APTFile aptLight = APTTokenStreamProducer.getFileAPT(params.includedFile, false);
             if (aptLight == null) {
                 // in the case file was just removed
                 Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", params.includedPath); //NOI18N

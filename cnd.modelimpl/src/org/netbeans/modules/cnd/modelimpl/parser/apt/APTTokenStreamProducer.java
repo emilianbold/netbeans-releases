@@ -227,7 +227,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
     }
 
     private TokenStream createParsingTokenStreamForHandler(FileImpl fileImpl, PreprocHandler preprocHandler, boolean filterOutComments) {
-        APTFile apt = CsmCorePackageAccessor.get().getFileAPT(fileImpl, true);
+        APTFile apt = APTTokenStreamProducer.getFileAPT(fileImpl, true);
         if (apt == null) {
             return null;
         }
@@ -299,7 +299,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
 
     final static APTFile getAPTLight(CsmFile csmFile) throws IOException {
         FileImpl fileImpl = (FileImpl) csmFile;
-        APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(fileImpl, false);
+        APTFile aptLight = APTTokenStreamProducer.getFileAPT(fileImpl, false);
         if (aptLight != null && APTUtils.LOG.isLoggable(Level.FINE)) {
             CharSequence guardMacro = aptLight.getGuardMacro();
             if (guardMacro.length() == 0 && !fileImpl.isSourceFile()) {

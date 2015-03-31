@@ -112,7 +112,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 if (!inclStack.isEmpty()) {
                     // this is not the target
                     // need to continue restoring in sub-#includes
-                    APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(csmFile, false);
+                    APTFile aptLight = APTTokenStreamProducer.getFileAPT(csmFile, false);
                     if (aptLight != null) {
                         PreprocHandler preprocHandler = getPreprocHandler();
                         // only ask for cached entry
@@ -134,7 +134,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 }
             } else {
                 // usual gathering macro map without check on #include directives
-                APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(csmFile, false);
+                APTFile aptLight = APTTokenStreamProducer.getFileAPT(csmFile, false);
                 if (aptLight != null) {
                     PreprocHandler preprocHandler = getPreprocHandler();
                     // only ask for cached entry and visit with it #include directive

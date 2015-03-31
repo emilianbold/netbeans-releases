@@ -240,7 +240,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       curFiles.add(curFile);
                     }
                 } else {
-                    APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: file {0} without project!!!", new Object[]{path});// NOI18N
+                    APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: file {0} without project!!!", new Object[]{path});// NOI18N
                     curFiles.add(curFile);
                 }
               }
@@ -306,7 +306,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   }
                 }
               } catch (Exception ex) {
-                APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[]{exitedFrom.getFilePath(), ex});
+                APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: error on including {0}:\n{1}", new Object[]{exitedFrom.getFilePath(), ex});
                 DiagnosticExceptoins.register(ex);
               }
               

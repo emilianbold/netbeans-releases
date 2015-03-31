@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.accessors;
 
-import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
@@ -102,7 +101,6 @@ public abstract class CsmCorePackageAccessor {
     //  access to FileImpl methods
     ////////////////////////////////////////////////////////////////////////////
 
-    public abstract APTFile getFileAPT(FileImpl file, boolean full);
     public abstract int getErrorCount(FileImpl fileImpl);
     public abstract FileContent getFileContent(CsmParserProvider.CsmParserParameters descr);
     public abstract FileContent prepareLazyStatementParsingContent(FileImpl fileImpl);
