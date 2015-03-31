@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.gsf.testrunner.ui.spi.TestCreatorConfigurationProvider;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -62,6 +63,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Theofanis Oikonomou
  */
+// XXX should be in php.phpunit module, not here
 @ServiceProvider(service=TestCreatorConfigurationProvider.class, position=20)
 public class PhpUnitTestCreatorConfigurationProvider extends TestCreatorConfigurationProvider {
 
@@ -88,7 +90,9 @@ public class PhpUnitTestCreatorConfigurationProvider extends TestCreatorConfigur
             for (ClassPathProvider provider : providers) {
                 ClassPath cp = provider.findClassPath(fileObj, PhpSourcePath.SOURCE_CP);
                 if (cp != null) {
-                    result[0] =  cp.getResourceName(fileObj, '.', false);
+                    String fqn = cp.getResourceName(fileObj, '?', false); // NOI18N
+                    List<String> parts = StringUtils.explode(fqn, "?"); // NOI18N
+                    result[0] = parts.get(parts.size() - 1);
                     result[1] = result[0].concat(TestCreatorProvider.TEST_CLASS_SUFFIX);
                 }
             }
