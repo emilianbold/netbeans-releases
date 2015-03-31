@@ -105,7 +105,7 @@ import org.openide.util.NbBundle;
 /**
  * The purpose of this class is to trim down RestSupport and WebRestSupport down and
  * as such it contains bunch of random static utility methods which previously
- * were polluting and bloating RestSupport. They should be further rafactored and
+ * were polluting and bloating RestSupport. They should be further refactored and
  * moved to right places.
  */
 public class MiscUtilities {
