@@ -70,6 +70,10 @@ public final class ClankDriver {
 
     }
 
+    public static int extractFileIndex(PreprocHandler ppHandler) {
+      return ClankDriverImpl.extractFileIndex(ppHandler);
+    }
+
     public static APTTokenStreamCache extractTokenStream(PreprocHandler ppHandler) {
       return ClankDriverImpl.extractTokenStream(ppHandler);
     }
@@ -104,7 +108,7 @@ public final class ClankDriver {
        * return true to continue or false to stop preprocessing and exit
        * @param exitedFrom
        * @param exitedTo
-       * @return
+       * @return true to continue, false to cancel
        */
       boolean onExit(ClankFileInfo exitedFrom, ClankFileInfo exitedTo);
 

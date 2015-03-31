@@ -72,10 +72,6 @@ public class ClankDriverImpl {
             final ClankDriver.ClankPreprocessorCallback callback,
             final org.netbeans.modules.cnd.support.Interrupter interrupter) {
         try {
-            ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
-            ClankDriver.APTTokenStreamCache cached = includeHandler.getCachedTokens();
-            assert cached != null;
-            CndUtils.assertTrueInConsole(!cached.hasTokenStream(), "Have to use ClankDriver.extractTokenStream(ppHandler) if TS is required");
             // TODO: prepare buffers mapping
             CharSequence path = buffer.getAbsolutePath();
             if (CndUtils.isDebugMode()) {
@@ -115,6 +111,11 @@ public class ClankDriverImpl {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
         ClankDriver.APTTokenStreamCache cached = includeHandler.getCachedTokens();
         return cached;
+    }
+
+    public static int extractFileIndex(PreprocHandler ppHandler) {
+        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
+        return includeHandler.getInclStackIndex();
     }
 
     public static final class ArrayBasedAPTTokenStream implements APTTokenStream, TokenStream {
