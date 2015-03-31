@@ -270,7 +270,6 @@ public class MiscUtilities {
         String host = "localhost"; //NOI18N
         String contextRoot = "";
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
         String serverInstanceID = provider.getServerInstanceID();
         if (serverInstanceID == null || MiscPrivateUtilities.DEVNULL.equals(serverInstanceID)) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
