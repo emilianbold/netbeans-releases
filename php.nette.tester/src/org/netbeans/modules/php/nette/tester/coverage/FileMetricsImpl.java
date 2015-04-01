@@ -1,8 +1,7 @@
-<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,20 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+package org.netbeans.modules.php.nette.tester.coverage;
 
-use Tester\Assert;
-use Tester\Environment;
+import org.netbeans.modules.php.spi.testing.coverage.FileMetrics;
 
-Environment::setup();
+public final class FileMetricsImpl implements FileMetrics {
 
-$calculator = new Calculator();
+    private final int lineCount;
+    private final int statements;
+    private final int coveredStatements;
 
-Assert::same(0, $calculator->multiply(0, 0));
-Assert::same(0, $calculator->multiply(0, 1));
-Assert::same(0, $calculator->multiply(1, 0));
-Assert::same(1, $calculator->multiply(1, 1));
-Assert::same(6, $calculator->multiply(3, 2));
+
+    public FileMetricsImpl(int lineCount, int statements, int coveredStatements) {
+        this.lineCount = lineCount;
+        this.statements = statements;
+        this.coveredStatements = coveredStatements;
+    }
+
+    @Override
+    public int getLineCount() {
+        return lineCount;
+    }
+
+    @Override
+    public int getStatements() {
+        return statements;
+    }
+
+    @Override
+    public int getCoveredStatements() {
+        return coveredStatements;
+    }
+
+}

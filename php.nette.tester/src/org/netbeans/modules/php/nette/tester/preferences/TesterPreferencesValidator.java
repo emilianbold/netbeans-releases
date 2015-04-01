@@ -58,6 +58,7 @@ public final class TesterPreferencesValidator {
     public TesterPreferencesValidator validate(PhpModule phpModule) {
         validatePhpIni(TesterPreferences.isPhpIniEnabled(phpModule), TesterPreferences.getPhpIniPath(phpModule));
         validateTester(TesterPreferences.isTesterEnabled(phpModule), TesterPreferences.getTesterPath(phpModule));
+        validateCoverageSourcePath(TesterPreferences.isCoverageSourcePathEnabled(phpModule), TesterPreferences.getCoverageSourcePath(phpModule));
         return this;
     }
 
@@ -76,6 +77,16 @@ public final class TesterPreferencesValidator {
             String warning = TesterUtils.validateTesterPath(testerPath);
             if (warning != null) {
                 result.addWarning(new ValidationResult.Message("tester.path", warning)); // NOI18N
+            }
+        }
+        return this;
+    }
+
+    public TesterPreferencesValidator validateCoverageSourcePath(boolean sourcePathEnabled, String sourcePath) {
+        if (sourcePathEnabled) {
+            String warning = TesterUtils.validateCoverageSourcePath(sourcePath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("coverage.source.path", warning)); // NOI18N
             }
         }
         return this;

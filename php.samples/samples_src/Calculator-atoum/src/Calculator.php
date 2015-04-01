@@ -65,4 +65,8 @@ class Calculator {
         return $a / $b;
     }
 
+    public function modulo($a, $b) {
+        return $a % $b;
+    }
+
 }

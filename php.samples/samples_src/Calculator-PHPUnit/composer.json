@@ -1,6 +1,6 @@
 {
-    "name": "netbeans/calculator-nette-tester",
-    "description": "Simple project using Nette Tester.",
+    "name": "netbeans/calculator-phpunit",
+    "description": "Simple project using PHPUnit.",
     "authors": [
         {
             "name": "NetBeans",
@@ -11,7 +11,7 @@
 
     },
     "require-dev": {
-        "nette/tester": "v1.4.0"
+        "phpunit/phpunit": "4.5.*"
     },
     "autoload": {
         "classmap": ["src/"]

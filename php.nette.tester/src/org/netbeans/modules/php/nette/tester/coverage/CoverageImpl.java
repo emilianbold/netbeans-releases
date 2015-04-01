@@ -1,8 +1,7 @@
-<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,20 +37,83 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+package org.netbeans.modules.php.nette.tester.coverage;
 
-use Tester\Assert;
-use Tester\Environment;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
+import org.netbeans.modules.php.spi.testing.coverage.FileMetrics;
 
-Environment::setup();
+public final class CoverageImpl implements Coverage {
 
-$calculator = new Calculator();
+    private final List<File> files;
 
-Assert::same(0, $calculator->multiply(0, 0));
-Assert::same(0, $calculator->multiply(0, 1));
-Assert::same(0, $calculator->multiply(1, 0));
-Assert::same(1, $calculator->multiply(1, 1));
-Assert::same(6, $calculator->multiply(3, 2));
+
+    public CoverageImpl(List<File> files) {
+        this.files = files;
+    }
+
+    @Override
+    public List<File> getFiles() {
+        return Collections.unmodifiableList(files);
+    }
+
+    //~ Inner classes
+
+    static final class FileImpl implements File {
+
+        private final String path;
+        private final FileMetrics fileMetrics;
+        private final List<Line> lines;
+
+
+        public FileImpl(String path, FileMetrics fileMetrics, List<Line> lines) {
+            this.path = path;
+            this.fileMetrics = fileMetrics;
+            this.lines = lines;
+        }
+
+        @Override
+        public String getPath() {
+            return path;
+        }
+
+        @Override
+        public FileMetrics getMetrics() {
+            return fileMetrics;
+        }
+
+        @Override
+        public List<Line> getLines() {
+            return Collections.unmodifiableList(lines);
+        }
+
+    }
+
+    static final class LineImpl implements Line {
+
+        private final int number;
+        private final int count;
+
+
+        public LineImpl(int number, int count) {
+            this.number = number;
+            this.count = count;
+        }
+
+        @Override
+        public int getNumber() {
+            return number;
+        }
+
+        @Override
+        public int getHitCount() {
+            return count;
+        }
+
+    }
+
+}
