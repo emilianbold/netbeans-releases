@@ -136,12 +136,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           if (tokStreamCache == null) {
             return null;
           }
-          skipped = callback.getSkippedRanges();
         }
         TokenStream tokenStream = tokStreamCache.getTokenStream();
         if (tokenStream == null) {
           return null;
         }
+        skipped = tokStreamCache.getSkippedRanges();
         if (applyLanguageFilter) {
           APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppHandler.getState());
           tokenStream = languageFilter.getFilteredStream(new APTCommentsFilter(tokenStream));
@@ -347,10 +347,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return foundTokens;
         }
 
-        private int[] getSkippedRanges() {
-          return foundTokens.getSkippedRanges();
-        }
-
         private static final boolean CLEAN_STATE = false;
         
         private void addInclude(FileImpl curFile, FileImpl includedFile, ClankDriver.ClankFileInfo enteredTo) {
@@ -363,7 +359,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             // FIXME: offsets
             int InclusionDirectiveOffset = enteredTo.getInclusionDirectiveOffset();
             int startOffset = clankIncludeTomodel(InclusionDirectiveOffset);
-            int endOffset = InclusionDirectiveOffset + fileName.length();
+            int endOffset = InclusionDirectiveOffset + fileName.length() + "<>".length();
             IncludeImpl incl = IncludeImpl.create(fileName, system, false, includedFile, curFile, startOffset, endOffset);
             parsingFileContent.addInclude(incl, broken);
           }
