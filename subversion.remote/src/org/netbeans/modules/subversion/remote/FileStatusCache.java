@@ -831,6 +831,9 @@ public class FileStatusCache {
             LOG.log(Level.WARNING, "Cache contains too many entries: {0}", (Integer) modifiedFiles.length); //NOI18N
         }
         for (VCSFileProxy file : modifiedFiles) {
+            if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+                continue;
+            }
             FileInformation info = getCachedStatus(file);
             if (info != null && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
                 refresh(file, REPOSITORY_STATUS_UNKNOWN);

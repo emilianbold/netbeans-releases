@@ -540,6 +540,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     
     private void onDisplayedStatusChanged() {
+        if(!Subversion.getInstance().checkClientAvailable(context)) {            
+            return;
+        }          
         if (tgbLocal.isSelected()) {
             modeKeeper.setMode(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Local")); // NOI18N

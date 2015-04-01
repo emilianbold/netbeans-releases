@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.completion.keywords;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,26 +89,26 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
             int dot = component.getCaret().getDot();
-            if (!isPreprocessor(component.getDocument(), dot)) {
+            if (showKeywordCompletion(component.getDocument(), dot)) {
                 return new AsyncCompletionTask(new Query(dot, queryType), component);
             }
         }
         return null;
     }
     
-    private boolean isPreprocessor(final Document doc, final int offset) {
+    private boolean showKeywordCompletion(final Document doc, final int offset) {
         final AtomicBoolean out = new AtomicBoolean(false);
         doc.render(new Runnable() {
 
             @Override
             public void run() {
-                out.set(isInsideDirective(doc, offset));
+                out.set(showKeywordCompletionImpl(doc, offset));
             }            
         });
         return out.get();
     }
     
-    private boolean isInsideDirective(Document doc, int offset) {
+    private boolean showKeywordCompletionImpl(Document doc, int offset) {
         TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
             return false;
@@ -120,7 +121,47 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
                 if(id instanceof CppTokenId) {
                     switch ((CppTokenId)id) {
                         case PREPROCESSOR_DEFINE:
-                            return (embedded.offset() + embedded.token().length()) >= offset;
+                            return (embedded.offset() + embedded.token().length()) < offset;
+                        default:
+                            return false;
+                    }
+                }
+            }
+        } else {
+            if (CndTokenUtilities.shiftToNonWhite(ts, true)) {
+                TokenId id = ts.token().id();
+                if(id instanceof CppTokenId) {
+                    switch ((CppTokenId)id) {
+                        case NAMESPACE:
+                            // next name
+                            return false;
+                        case GOTO:
+                            // next label
+                            return false;
+                        case NEW:
+                        case SCOPE:
+                        case ARROW:
+                        case ARROWMBR:
+                        case DOT:
+                        case DOTMBR:
+                            // auto completion
+                            return false;
+                        case IF:
+                        case WHILE:
+                        case FOR:
+                        case SWITCH:
+                        case CATCH:
+                        case ALIGNAS:
+                        case ALIGNOF:
+                        case DECLTYPE:
+                            // next "("
+                            return false;
+                        case STATIC_CAST:
+                        case CONST_CAST:
+                        case REINTERPRET_CAST:
+                        case TEMPLATE:
+                            // next "<"
+                            return false;
                         default:
                             return true;
                     }
@@ -130,11 +171,11 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
         return false;
     }
 
-    private static final String[] keywordsAll;
-    private static final CppTokenId[] keywordsFirst;
+    private static final List<CppTokenId> keywordsAll;
+    private static final List<CppTokenId> keywordsFirst;
             
     static {
-        keywordsFirst = new CppTokenId[] {
+        keywordsFirst = Arrays.asList(
             CppTokenId.ALIGNOF,
 //            CppTokenId.ASM,
 //            CppTokenId.AUTO,
@@ -211,18 +252,17 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             CppTokenId.CHAR16_T,
             CppTokenId.CHAR32_T,
             CppTokenId.NOEXCEPT
-        };        
-        List<String> list = new ArrayList<String>();
+        );
+        keywordsAll = new ArrayList<CppTokenId>();
         for(CppTokenId token : CppTokenId.values()) {
             if (CppTokenId.KEYWORD_CATEGORY.equals(token.primaryCategory()) ||
                 CppTokenId.KEYWORD_DIRECTIVE_CATEGORY.equals(token.primaryCategory())) {
                 final String text = token.fixedText();
                 if (text != null && text.length() > 2) {
-                    list.add(text);
+                    keywordsAll.add(token);
                 }
             }
         }
-        keywordsAll = list.toArray(new String[list.size()]);
     }
     
     private static final class Query extends AsyncCompletionQuery {
@@ -311,24 +351,13 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             try {
                 if (init(doc, caretOffset)) {
                     Filter<CppTokenId> languageFilter = getLanguageFilter(doc);
-                    if (queryType == COMPLETION_ALL_QUERY_TYPE) {
-                        for (String string : keywordsAll) {
-                            if (languageFilter != null) {
-                                if (languageFilter.check(string) == null) {
-                                    continue;
-                                }
+                    for (CppTokenId id : keywordsAll) {
+                        if (languageFilter != null) {
+                            if (languageFilter.check(id.fixedText()) == null) {
+                                continue;
                             }
-                            items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, string));
                         }
-                    } else {
-                        for (CppTokenId id : keywordsFirst) {
-                            if (languageFilter != null) {
-                                if (languageFilter.check(id.fixedText()) == null) {
-                                    continue;
-                                }
-                            }
-                            items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, id.fixedText()));
-                        }
+                        items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, id, keywordsFirst.contains(id)));
                     }
                 }
             } catch (BadLocationException ex) {
@@ -372,6 +401,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             } finally {
                 doc.readUnlock();
             }
+            if(TRACE)System.err.println("KW init("+caretOffset+")->"+filterPrefix);
             return this.queryAnchorOffset >= 0;
         }
         
@@ -386,16 +416,24 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
 
         private Collection<CsmKeywordCompletionItem> getFilteredData(Collection<CsmKeywordCompletionItem> data, String prefix) {
             Collection<CsmKeywordCompletionItem> out;
-            if (prefix == null) {
-                out = data;
-            } else {
-                List<CsmKeywordCompletionItem> ret = new ArrayList<CsmKeywordCompletionItem>(data.size());
-                for (CsmKeywordCompletionItem itm : data) {
-                    if (matchPrefix(itm.getItemText(), prefix, caseSensitive)) {
-                        ret.add(itm);
+            if (prefix == null || prefix.isEmpty()) {
+                if (queryType == COMPLETION_ALL_QUERY_TYPE) {
+                    out = data;
+                } else {
+                    out = new ArrayList<CsmKeywordCompletionItem>(data.size());
+                    for (CsmKeywordCompletionItem itm : data) {
+                        if (itm.isFistCompletion()) {
+                            out.add(itm);
+                        }
                     }
                 }
-                out = ret;
+            } else {
+                out = new ArrayList<CsmKeywordCompletionItem>(data.size());
+                for (CsmKeywordCompletionItem itm : data) {
+                    if (matchPrefix(itm.getItemText(), prefix, caseSensitive)) {
+                        out.add(itm);
+                    }
+                }
             }
             return out;
         }

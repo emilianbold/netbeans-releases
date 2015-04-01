@@ -235,5 +235,7 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
 
     @Override
     public void disconnected(FileSystem fs) {
+        Subversion.getInstance().versionedFilesChanged();
+        VersioningSupport.versionedRootsChanged();        
     }
 }
