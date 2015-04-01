@@ -300,6 +300,7 @@ public final class FrameworkConfigFilesNodeFactory implements NodeFactory {
 
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "No need to override these methods")
     private static final class ImportantFileNode extends FilterNode {
 
         private final PhpProject project;
