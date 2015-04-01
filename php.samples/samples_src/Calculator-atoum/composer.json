@@ -1,6 +1,6 @@
 {
-    "name": "netbeans/calculator-nette-tester",
-    "description": "Simple project using Nette Tester.",
+    "name": "netbeans/calculator-atoum",
+    "description": "Simple project using atoum.",
     "authors": [
         {
             "name": "NetBeans",
@@ -11,7 +11,7 @@
 
     },
     "require-dev": {
-        "nette/tester": "v1.4.0"
+        "atoum/atoum": "2.0.x"
     },
     "autoload": {
         "classmap": ["src/"]

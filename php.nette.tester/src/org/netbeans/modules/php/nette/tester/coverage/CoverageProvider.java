@@ -1,8 +1,7 @@
-<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,20 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+package org.netbeans.modules.php.nette.tester.coverage;
 
-use Tester\Assert;
-use Tester\Environment;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.nette.tester.commands.Tester;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
+import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 
-Environment::setup();
+public final class CoverageProvider {
 
-$calculator = new Calculator();
+    private static final Logger LOGGER = Logger.getLogger(CoverageProvider.class.getName());
 
-Assert::same(0, $calculator->multiply(0, 0));
-Assert::same(0, $calculator->multiply(0, 1));
-Assert::same(0, $calculator->multiply(1, 0));
-Assert::same(1, $calculator->multiply(1, 1));
-Assert::same(6, $calculator->multiply(3, 2));
+    private final PhpModule phpModule;
+
+
+    public CoverageProvider(PhpModule phpModule) {
+        assert phpModule != null;
+        this.phpModule = phpModule;
+    }
+
+    @CheckForNull
+    public Coverage getCoverage(TestRunInfo runInfo) {
+        assert runInfo.isCoverageEnabled();
+        Tester tester = Tester.getForPhpModule(phpModule, false);
+        if (tester == null) {
+            return null;
+        }
+        File coverageLog = tester.getCoverageLog();
+        if (coverageLog == null) {
+            // likely some error
+            return null;
+        }
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(coverageLog), StandardCharsets.UTF_8))) {
+            return new CoverageImpl(CloverLogParser.parse(reader));
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, null, exc);
+        }
+        return null;
+    }
+
+}
