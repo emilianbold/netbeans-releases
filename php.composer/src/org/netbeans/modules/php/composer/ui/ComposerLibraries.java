@@ -382,6 +382,9 @@ public final class ComposerLibraries {
 
 
         ComposerLibraryInfo(Image icon, String name, String descrition) {
+            assert icon != null;
+            assert name != null;
+            assert descrition != null;
             this.icon = icon;
             this.name = name;
             this.description = descrition;
@@ -390,6 +393,25 @@ public final class ComposerLibraries {
         @Override
         public int compareTo(ComposerLibraryInfo other) {
             return name.compareToIgnoreCase(other.name);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + Objects.hashCode(this.name);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ComposerLibraryInfo other = (ComposerLibraryInfo) obj;
+            return name.equalsIgnoreCase(other.name);
         }
 
     }
