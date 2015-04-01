@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2014 Oracle and/or its affiliates.
+Copyright &copy; 2007, 2015 Oracle and/or its affiliates.
 -->
 <html>
   <head>
@@ -22,15 +22,16 @@ Copyright &copy; 2007, 2014 Oracle and/or its affiliates.
     </p>
     <p>
        By default, a file inherits the code assistance properties, include directories, preprocessor definitions, and
-      C/C++&nbsp;standard&nbsp;from the project. You can choose to have a file not inherit these
-      properties.
+      C/C++&nbsp;standard&nbsp;from the project. You can set properties for one or several files independently.
     </p>
     <p>
-       <b>To modify a file property:</b>
+       <b>To modify file properties:</b>
     </p>
     <ol>
       <li>
-        In the Projects window, right-click the file and choose Properties.
+        In the Projects window, select one or more files whose properties you want to change. Press Shift 
+        to select more than one.</li>
+      <li>Right-click on the selected files and choose Properties.
       </li>
       <li>
         In the File Properties dialog box, select the configuration for which you want to set a
@@ -45,41 +46,12 @@ Copyright &copy; 2007, 2014 Oracle and/or its affiliates.
        The General node shows the following properties for a specific file in addition to the name and file path:
     </p>
     <p><b>Has Code Assistance.</b> Indicates the code assistance state and is dynamically determined. </p>
-    <p><b>Add to Parse.</b> Select this option to enforce parsing of the file. This can be used to parse extra 
-        headers not included by any compilation units or to manually add the file as an extra compilation unit.</p>
+    <p><b>Excluded From Build.</b> Select this option to prevent the file from building in the selected
+        project configuration. </p>
     
-    <p>The Compiler node shows the following properties:</p>
-    <p>
-       <b>Include Directories.</b> Type the absolute or relative path to the
-      directories containing headers for your project, or click the button to browse to the
-      directories and add them. On the file browser dialog box, you can specify Absolute or
-      Relative path.
-    </p>
-      <p>
-       <b>Include Headers.</b> Type the filename of the header file to include or click the button 
-       to browse to the file and add it. This option causes
-       the compiler to treat the header file as if it appears in your source files as an #include 
-       directive.
-    </p>
-    <p>
-       <b>Preprocessor Definitions.</b> Add definitions for macros used by the project. Click the
-      text field or the button to open the Preprocessor Definitions dialog box to add definitions.
-    </p>
-    <p>
-       <b>Preprocessor Undefined.</b> Add definitions for macros used by the project. Click the
-      text field or the button to open the Preprocessor Definitions dialog box to add definitions.
-    </p>
-    <p>
-       <b>C Standard.</b> Specifies whether project sources should be parsed as&nbsp;C89, 
-       C99, or C11 code. When set to Default, use the compiler's default C standard.
-    </p>
-    <p>
-       <b>C++ Standard.</b> Specifies whether project sources should be parsed as&nbsp;C++98 code
-      or C++11 code. When set to Default, use the compiler's default C++ standard.
-    </p>
-    <p>
-       &nbsp;
-    </p>
+    <p>See  <a href="ProjectPropsCompilerGeneral.html">C/C++ Project Properties Dialog Box: Compiler
+          </a> for information about the Compiler node properties.</p>
+    
     <table width="303">
       <tr>
         <th colspan="2" width="297" align="left">
