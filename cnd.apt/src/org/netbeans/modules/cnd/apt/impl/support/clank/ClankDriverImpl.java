@@ -49,6 +49,7 @@ import org.clang.tools.services.ClankRunPreprocessorSettings;
 import org.clang.tools.services.support.Interrupter;
 import org.clank.support.NativePointer;
 import org.llvm.support.llvm;
+import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -88,7 +89,8 @@ public class ClankDriverImpl {
             settings.TraceClankStatistics = false;
             ClankPPCallback.CancellableInterrupter canceller = new ClankPPCallback.CancellableInterrupter(interrupter);
             settings.cancelled = canceller;
-            ClankPPCallback fileTokensCallback = new ClankPPCallback(ppHandler, llvm.errs(), callback, canceller);
+            raw_ostream traceOS = CndUtils.isUnitTestMode() ? llvm.nulls() : llvm.errs();
+            ClankPPCallback fileTokensCallback = new ClankPPCallback(ppHandler, traceOS, callback, canceller);
             settings.IncludeInfoCallbacks = fileTokensCallback;
             ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
             ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
