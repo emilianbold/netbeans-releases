@@ -99,6 +99,7 @@ import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -150,6 +151,11 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
+        Context cachedContext = getCachedContext(nodes);
+        final FileSystem fileSystem = cachedContext.getFileSystem();
+        if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
+            return false;
+        }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if(!isSvnNodes(nodes) && !isDeepRefreshDisabledGlobally()) {
             // allway true as we have will accept and check for external changes
@@ -157,7 +163,7 @@ public class CommitAction extends ContextAction {
             return cache.ready();
         }
         // XXX could be a performace issue, maybe a msg box in commit would be enough
-        return cache.ready() && cache.containsFiles(getCachedContext(nodes), FileInformation.STATUS_LOCAL_CHANGE, true);
+        return cache.ready() && cache.containsFiles(cachedContext, FileInformation.STATUS_LOCAL_CHANGE, true);
     }
 
     /** Run commit action. Shows UI */

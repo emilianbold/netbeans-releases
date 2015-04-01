@@ -60,6 +60,8 @@ import org.netbeans.modules.subversion.remote.client.PanelProgressSupport;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -142,7 +144,8 @@ class BranchPicker {
             @Override
             protected void perform () {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(null, repositoryFile.getRepositoryUrl());
+                    final Context context = new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
+                    SvnClient client = Subversion.getInstance().getClient(context, repositoryFile.getRepositoryUrl());
                     final Map<String, ISVNDirEntry[]> entries = new HashMap<>(2);
                     for (String pathName : new String[] { PREFIX_BRANCHES, PREFIX_TAGS }) {
                         if (isCanceled()) {
