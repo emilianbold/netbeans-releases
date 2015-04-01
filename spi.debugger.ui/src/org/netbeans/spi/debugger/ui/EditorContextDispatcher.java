@@ -304,6 +304,15 @@ public final class EditorContextDispatcher {
     
     Set<String> getMIMETypesOnLine(Line line) {
         EditorCookie editorCookie = line.getLookup().lookup(EditorCookie.class);
+        if (editorCookie == null) {
+            DataObject dobj = line.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                editorCookie = dobj.getLookup().lookup(EditorCookie.class);
+            }
+            if (editorCookie == null) {
+                return Collections.emptySet();
+            }
+        }
         StyledDocument document = editorCookie.getDocument();
         Set<String> mimeTypes = null;
         ((AbstractDocument) document).readLock();
@@ -351,7 +360,7 @@ public final class EditorContextDispatcher {
         } finally {
             ((AbstractDocument) document).readUnlock();
         }
-        return mimeTypes;
+        return (mimeTypes != null) ? mimeTypes : Collections.<String>emptySet();
         
     }
     

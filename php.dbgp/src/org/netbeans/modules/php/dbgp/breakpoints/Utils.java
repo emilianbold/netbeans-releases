@@ -218,6 +218,15 @@ public final class Utils {
             return false;
         }
         EditorCookie editorCookie = line.getLookup().lookup(EditorCookie.class);
+        if (editorCookie == null) {
+            DataObject dobj = line.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                editorCookie = dobj.getLookup().lookup(EditorCookie.class);
+            }
+            if (editorCookie == null) {
+                return false;
+            }
+        }
         StyledDocument document = editorCookie.getDocument();
         Boolean isPhp = null;
         ((AbstractDocument) document).readLock();
