@@ -226,7 +226,8 @@ public class Subversion {
     }
 
     public boolean checkClientAvailable(Context context) {
-        if (!VCSFileProxySupport.isConnectedFileSystem(context.getFileSystem())) {
+        final FileSystem fileSystem = context.getFileSystem();
+        if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
             return false;
         }
         try {
