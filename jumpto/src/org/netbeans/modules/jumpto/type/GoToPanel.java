@@ -99,7 +99,6 @@ public class GoToPanel extends javax.swing.JPanel {
     JLabel messageLabel;
     private Iterable<? extends TypeDescriptor> selectedTypes = Collections.emptyList();
     private volatile int textId = 0;
-    private String oldText;
     private String oldMessage;
     
     // Time when the serach stared (for debugging purposes)
@@ -189,7 +188,6 @@ public class GoToPanel extends javax.swing.JPanel {
     
     /** Sets the initial text to find in case the user did not start typing yet. */
     public void setInitialText( final String text ) {
-        oldText = text;
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 String textInField = nameField.getText();
@@ -441,13 +439,11 @@ public class GoToPanel extends javax.swing.JPanel {
     }
 
     void updateMessage(@NullAllowed final String message) {
-        final String text = getText();
-        if (oldText == null || oldText.trim().length() == 0 || !text.startsWith(oldText) ||
-        (message == null ? oldMessage != null : !message.equals(oldMessage))) {
+        if (message == null ? oldMessage != null : !message.equals(oldMessage)) {
             setListPanelContent(message,true); // NOI18N
         }
     }
-    
+
     void setListPanelContent( String message ,boolean waitIcon ) {
         assert SwingUtilities.isEventDispatchThread();
         oldMessage = message;
@@ -575,32 +571,30 @@ public class GoToPanel extends javax.swing.JPanel {
                 dialog.jTextFieldLocation.setText("");      //NOI18N
             }
         }
-        
+
         private void update() {
             dialog.time = System.currentTimeMillis();
-            dialog.updateMessage(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"));
-            String text = dialog.getText();            
-            dialog.oldText = text;
+            final String text = dialog.getText();
             dialog.textId++;
-            dialog.contentProvider.setListModel(dialog,text);            
+            if (dialog.contentProvider.setListModel(dialog, text)) {
+                dialog.updateMessage(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"));
+            }
         }
-                                         
     }
-             
-        
+
+
     public static interface ContentProvider {
 
         @NonNull
         public ListCellRenderer getListCellRenderer(
                 @NonNull JList list,
                 @NonNull ButtonModel caseSensitive);
-        
-        public void setListModel( GoToPanel panel, String text );
-        
+
+        public boolean setListModel( GoToPanel panel, String text );
+
         public void closeDialog();
-        
+
         public boolean hasValidContent ();
-                
     }
 
 }

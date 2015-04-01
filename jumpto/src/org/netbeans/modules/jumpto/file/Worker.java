@@ -68,6 +68,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.modules.jumpto.common.Models;
+import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
@@ -431,27 +432,6 @@ final class Worker implements Runnable {
         final boolean isCancelled() {
             return cancelled;
         }
-
-        static SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {
-            switch (searchType) {
-                case CAMEL_CASE:
-                    return org.netbeans.spi.jumpto.type.SearchType.CAMEL_CASE;
-                case CASE_INSENSITIVE_CAMEL_CASE:
-                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_CAMEL_CASE;
-                case CASE_INSENSITIVE_PREFIX:
-                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_PREFIX;
-                case CASE_INSENSITIVE_REGEXP:
-                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_REGEXP;
-                case EXACT:
-                    return org.netbeans.spi.jumpto.type.SearchType.EXACT_NAME;
-                case PREFIX:
-                    return org.netbeans.spi.jumpto.type.SearchType.PREFIX;
-                case REGEXP:
-                    return org.netbeans.spi.jumpto.type.SearchType.REGEXP;
-                default:
-                    throw new IllegalArgumentException();
-            }
-        }
     }
 
     private static final class ProviderStrategy extends Strategy {
@@ -466,7 +446,7 @@ final class Worker implements Runnable {
                 return;
             }
             final List<FileDescriptor> files = new ArrayList<>();
-            final SearchType jumpToSearchType = toJumpToSearchType(request.getSearchKind());
+            final SearchType jumpToSearchType = Utils.toSearchType(request.getSearchKind());
             final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(
                 request.getText(),
                 jumpToSearchType,
@@ -676,7 +656,7 @@ final class Worker implements Runnable {
             if (isCancelled()) {
                 return;
             }
-            final SearchType jumpToSearchType = toJumpToSearchType(request.getSearchKind());
+            final SearchType jumpToSearchType = Utils.toSearchType(request.getSearchKind());
             //Looking for matching files in all found folders
             final NameMatcher matcher = NameMatcherFactory.createNameMatcher(
                     request.getText(),

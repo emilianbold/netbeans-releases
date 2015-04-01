@@ -49,6 +49,7 @@
 
 package org.netbeans.modules.jumpto.file;
 
+import org.netbeans.modules.jumpto.common.CurrentSearch;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -60,6 +61,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -91,12 +93,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.Factory;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlRenderer;
@@ -128,6 +132,19 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     private static final ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     //Threading: Throughput 1 required due to inherent sequential code in Work.Request.exclude
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
+    private final CurrentSearch<FileDescriptor> currentSearch = new CurrentSearch(
+        new Callable<Models.Filter<FileDescriptor>>() {
+            @Override
+            public Models.Filter<FileDescriptor> call() throws Exception {
+                return new AbstractModelFilter<FileDescriptor>() {
+                    @NonNull
+                    @Override
+                    protected String getItemValue(@NonNull final FileDescriptor item) {
+                        return item.getFileName();
+                    }
+                };
+            }
+        });
     //@GuardedBy("this")
     private Worker[] running;
     //@GuardedBy("this")
@@ -176,7 +193,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
 
     @Override
-    public void setListModel(final FileSearchPanel panel, String text ) {
+    public boolean setListModel(final FileSearchPanel panel, String text ) {
         if (openBtn != null) {
             openBtn.setEnabled (false);
         }
@@ -185,13 +202,15 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         if ( text == null ) {
             panel.setModel(EMPTY_LIST_MODEL, true);
-            return;
+            currentSearch.resetFilter();
+            return false;
         }
         boolean exact = text.endsWith(" "); // NOI18N
         text = text.trim();
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
             panel.setModel(EMPTY_LIST_MODEL, true);
-            return;
+            currentSearch.resetFilter();
+            return false;
         }
 
         //Extract linenumber from search text
@@ -209,7 +228,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         } else {
             lineNr = -1;
         }
-        QuerySupport.Kind nameKind;
+        final QuerySupport.Kind nameKind;
         int wildcard = Utils.containsWildCard(text);
         if (exact) {
             //nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.EXACT : QuerySupport.Kind.CASE_INSENSITIVE_EXACT;
@@ -228,64 +247,74 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         // Compute in other thread
         synchronized(this) {
-            final Models.MutableListModel baseListModel = Models.mutable(
-                    new FileComarator(
-                        panel.isPreferedProject(),
-                        panel.isCaseSensitive()));
-            panel.setModel(Models.refreshable(
-                    baseListModel,
-                    new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
-                        @Override
-                        public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
-                            return new AsyncFileDescriptor(param.first(), param.second());
-                        }
-                    }),
-                    false);
-            final Worker.Request request = Worker.newRequest(
-                text,
-                nameKind,
-                panel.getCurrentProject(),
-                lineNr);
-            final Worker.Collector collector = Worker.newCollector(
-                baseListModel,
-                new Runnable(){
-                    @Override
-                    public void run() {
-                        SwingUtilities.invokeLater(new Runnable() {
+            final SearchType searchType = Utils.toSearchType(nameKind);
+            if (currentSearch.isNarrowing(searchType, text)) {
+                currentSearch.filter(searchType, text);
+                return false;
+            } else {
+                final String searchText = text;
+                final Models.MutableListModel baseListModel = Models.mutable(
+                        new FileComarator(
+                            panel.isPreferedProject(),
+                            panel.isCaseSensitive()),
+                        currentSearch.resetFilter());
+                panel.setModel(Models.refreshable(
+                        baseListModel,
+                        new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
                             @Override
-                            public void run() {
-                                panel.searchProgress();
-                                if (openBtn != null && baseListModel.getSize() > 0) {
-                                    openBtn.setEnabled (true);
-                                }
+                            public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
+                                return new AsyncFileDescriptor(param.first(), param.second());
                             }
-                        });
-                    }
-                },
-                new Runnable(){
-                    @Override
-                    public void run() {
-                        panel.searchCompleted();
-                    }
-                },
-                panel.time);
-            final Worker.Type[] wts = Worker.Type.values();
-            final Worker[] workers = new Worker[wts.length];
-            //Threading: All workers need to be created before they are scheduled
-            for (int i = 0; i < wts.length; i++) {
-                workers[i] = Worker.newWorker(request, collector, wts[i]);
-            }
-            running = workers;
-            final RequestProcessor.Task[] tasks = new RequestProcessor.Task[workers.length];
-            for (int i = 0; i < workers.length; i++) {
-                tasks[i] = rp.post(workers[i], 220);
-            }
-            scheduledTasks = tasks;
-            if ( panel.time != -1 ) {
-                LOGGER.log(
-                    Level.FINE,
-                    "Worker posted after {0} ms.",  //NOI18N
-                    System.currentTimeMillis() - panel.time );
+                        }),
+                        false);
+                final Worker.Request request = Worker.newRequest(
+                    searchText,
+                    nameKind,
+                    panel.getCurrentProject(),
+                    lineNr);
+                final Worker.Collector collector = Worker.newCollector(
+                    baseListModel,
+                    new Runnable(){
+                        @Override
+                        public void run() {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.searchProgress();
+                                    if (openBtn != null && baseListModel.getSize() > 0) {
+                                        openBtn.setEnabled (true);
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    new Runnable(){
+                        @Override
+                        public void run() {
+                            panel.searchCompleted();
+                            currentSearch.searchCompleted(searchType, searchText);
+                        }
+                    },
+                    panel.time);
+                final Worker.Type[] wts = Worker.Type.values();
+                final Worker[] workers = new Worker[wts.length];
+                //Threading: All workers need to be created before they are scheduled
+                for (int i = 0; i < wts.length; i++) {
+                    workers[i] = Worker.newWorker(request, collector, wts[i]);
+                }
+                running = workers;
+                final RequestProcessor.Task[] tasks = new RequestProcessor.Task[workers.length];
+                for (int i = 0; i < workers.length; i++) {
+                    tasks[i] = rp.post(workers[i], 220);
+                }
+                scheduledTasks = tasks;
+                if ( panel.time != -1 ) {
+                    LOGGER.log(
+                        Level.FINE,
+                        "Worker posted after {0} ms.",  //NOI18N
+                        System.currentTimeMillis() - panel.time );
+                }
+                return true;
             }
         }
     }
