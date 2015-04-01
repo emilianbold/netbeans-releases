@@ -99,6 +99,7 @@ import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -151,7 +152,8 @@ public class CommitAction extends ContextAction {
     @Override
     protected boolean enable(Node[] nodes) {
         Context cachedContext = getCachedContext(nodes);
-        if (!VCSFileProxySupport.isConnectedFileSystem(cachedContext.getFileSystem())) {
+        final FileSystem fileSystem = cachedContext.getFileSystem();
+        if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
             return false;
         }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
