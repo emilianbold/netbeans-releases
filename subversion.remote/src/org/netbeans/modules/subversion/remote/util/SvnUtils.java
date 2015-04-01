@@ -1309,7 +1309,10 @@ public class SvnUtils {
         if (folder == null) {
             return;
         }
-        refreshParents(folder.getParentFile());
+        // Performance problem on remote FS when refresh all parents to root.
+        // Do not see needs to refresh all parents.
+        // So do not refresh all parents.
+        //refreshParents(folder.getParentFile());
         Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
 
