@@ -85,6 +85,9 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jersey2/ext/asm-all-repackaged-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/jersey2/ext/cglib-2.2.0-b21.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/jersey2/ext/guava-14.0.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
