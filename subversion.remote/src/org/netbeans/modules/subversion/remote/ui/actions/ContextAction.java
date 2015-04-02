@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.subversion.remote.ui.actions;
 
-import com.sun.org.apache.xerces.internal.utils.Objects;
 import java.awt.event.ActionEvent;
 import java.text.DateFormat;
 import java.text.MessageFormat;
