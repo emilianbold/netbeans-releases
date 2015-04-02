@@ -223,7 +223,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         @Override
         public boolean includes(URL root, String resource) {
             if (matcher == null) {
-                File rootFile = Utilities.toFile(URI.create(root.toExternalForm()));
+                // #246390
+                File rootFile = FileUtil.normalizeFile(Utilities.toFile(URI.create(root.toExternalForm())));
                 matcher = new PathMatcher(
                         null,
                         computeExcludes(rootFile),
