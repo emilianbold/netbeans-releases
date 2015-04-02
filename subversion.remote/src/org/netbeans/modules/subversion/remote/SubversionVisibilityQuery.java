@@ -127,9 +127,12 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
      * are removed from disk immediately.
      */
     private boolean containsMetadata (VCSFileProxy folder) {
-        for(VCSFileProxy child : folder.listFiles()) {
-            if (SvnUtils.isAdministrative(child.getName())) {
-                return true;
+        final VCSFileProxy[] listFiles = folder.listFiles();
+        if (listFiles != null) {
+            for(VCSFileProxy child : listFiles) {
+                if (SvnUtils.isAdministrative(child.getName())) {
+                    return true;
+                }
             }
         }
         return false;

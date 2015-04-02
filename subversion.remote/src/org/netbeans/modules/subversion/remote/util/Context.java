@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileSystem;
@@ -95,6 +96,13 @@ public class Context {
     public FileSystem getFileSystem() {
         for (VCSFileProxy root : rootFiles) {
             return VCSFileProxySupport.getFileSystem(root);
+        }
+        return null;
+    }
+
+    public VCSFileProxy getTopFolder() {
+        for (VCSFileProxy root : rootFiles) {
+            return Subversion.getInstance().getTopmostManagedAncestor(root);
         }
         return null;
     }

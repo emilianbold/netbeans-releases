@@ -144,9 +144,12 @@ class FilesystemInterceptor extends VCSInterceptor {
             }
             children.clear();
             retval = gitFolderEventsHandler.refreshAdminFolder(dir);
-            for(VCSFileProxy ch : dir.listFiles()) {
-                if (REFS_FILE_NAME.equals(ch.getName())) {
-                    children.add(ch);
+            final VCSFileProxy[] listFiles = dir.listFiles();
+            if (listFiles != null) {
+                for(VCSFileProxy ch : listFiles) {
+                    if (REFS_FILE_NAME.equals(ch.getName())) {
+                        children.add(ch);
+                    }
                 }
             }
         } else if (GitUtils.isPartOfGitMetadata(dir)) {

@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
@@ -103,7 +104,7 @@ public class BridgeImpl implements BridgeInterface {
     /** Number of milliseconds to wait before forcibly halting a runaway process. */
     private static final int STOP_TIMEOUT = 10000;
     
-    private static boolean classpathInitialized = false;
+    private final AtomicBoolean classpathInitialized = new AtomicBoolean();
     
     /**
      * Index of loggers by active thread.
@@ -166,10 +167,10 @@ public class BridgeImpl implements BridgeInterface {
     @Override
     public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties,
             Set<? extends String> concealedProperties, int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io) {
-        if (!classpathInitialized) {
-            classpathInitialized = true;
+        if (classpathInitialized.compareAndSet(false, true)) {
             // #46171: Ant expects this path to have itself and whatever else you loaded with it,
             // or AntClassLoader.getResources will not be able to find anything in the Ant loader.
+            //Proabably not needed anymore: https://bz.apache.org/bugzilla/show_bug.cgi?id=30161
             Path.systemClasspath = new Path(null, AntBridge.getMainClassPath());
         }
         
@@ -185,7 +186,6 @@ public class BridgeImpl implements BridgeInterface {
         ClassLoader newCCL = Project.class.getClassLoader();
         LOG.log(Level.FINER, "Fixing CCL: {0} -> {1}", new Object[] {oldCCL, newCCL});
         Thread.currentThread().setContextClassLoader(newCCL);
-        AntBridge.fakeJavaClassPath();
         try {
         
         final Project project;
@@ -309,7 +309,6 @@ public class BridgeImpl implements BridgeInterface {
         RP.post(new PostRun(project, logger));
         
         } finally {
-            AntBridge.unfakeJavaClassPath();
             LOG.log(Level.FINER, "Restoring CCL: {0}", oldCCL);
             Thread.currentThread().setContextClassLoader(oldCCL);
         }

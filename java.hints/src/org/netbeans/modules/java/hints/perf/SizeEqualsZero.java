@@ -99,17 +99,27 @@ public class SizeEqualsZero {
             return null;
         }
 
-        boolean hasIsEmpty = false;
+        Element isEmptyFound = null;
 
-        for (ExecutableElement method : ElementFilter.methodsIn(el.getEnclosedElements())) {
-            if (method.getSimpleName().contentEquals("isEmpty") && method.getParameters().isEmpty() && method.getTypeParameters().isEmpty()) {
-                hasIsEmpty = true;
+        
+        for (ExecutableElement method : ElementFilter.methodsIn(ctx.getInfo().getElementUtilities().getMembers(subjType, null))) {
+            if (method.getSimpleName().contentEquals("isEmpty") && method.getParameters().isEmpty() && method.getTypeParameters().isEmpty()) { // NOI18N
+                isEmptyFound = method;
                 break;
             }
         }
 
-        if (!hasIsEmpty) {
+        if (isEmptyFound == null) {
             return null;
+        }
+        
+        // #247190: check that the replacement is NOT done in the isEmpty method of the target type itself
+        TreePath enclMethod = org.netbeans.modules.java.hints.errors.Utilities.findEnclosingMethodOrConstructor(subj);
+        if (enclMethod != null) {
+            Element enclMethodEl = ctx.getInfo().getTrees().getElement(enclMethod);
+            if (enclMethodEl == isEmptyFound) {
+                return null;
+            }
         }
 
         String fixDisplayName = NbBundle.getMessage(SizeEqualsZero.class, not ? "FIX_UseIsEmptyNeg" : "FIX_UseIsEmpty");

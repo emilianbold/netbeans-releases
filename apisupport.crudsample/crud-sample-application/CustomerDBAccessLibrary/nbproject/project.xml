@@ -7,33 +7,51 @@
             <suite-component/>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide.execution</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
+                    <code-name-base>org.netbeans.modules.derbyclientlibrary</code-name-base>
                     <run-dependency>
-                        <specification-version>1.17</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.execution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.0</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages>
                 <package>demo</package>
-                <package>javax.persistence</package>
-                <package>javax.persistence.criteria</package>
-                <package>javax.persistence.metamodel</package>
-                <package>javax.persistence.spi</package>
                 <package>org.netbeans.modules.customerdb</package>
+                <package>javax.persistence.spi</package>
+                <package>javax.persistence.criteria</package>
+                <package>javax.persistence</package>
+                <package>javax.persistence.metamodel</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/CustomerDBAccess.jar</runtime-relative-path>
                 <binary-origin>../CustomerDBAccess/dist/CustomerDBAccess.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/persistence/org.eclipse.persistence.jpa.jpql_2.5.2.v20140319-9ad6abd.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.persistence.jpa.jpql_2.5.2.v20140319-9ad6abd.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/persistence/eclipselink.jar</runtime-relative-path>
+                <binary-origin>external/eclipselink.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/persistence/javax.persistence_2.1.0.v201304241213.jar</runtime-relative-path>
+                <binary-origin>external/javax.persistence_2.1.0.v201304241213.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

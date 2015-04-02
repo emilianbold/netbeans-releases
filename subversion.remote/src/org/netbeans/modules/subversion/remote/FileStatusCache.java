@@ -1122,10 +1122,13 @@ public class FileStatusCache {
         if(exists && VCSFileProxySupport.isMac(file) && parent != null) {
             // handle case on mac, "fileA".exists() is the same as "filea".exists but svn client understands the difference
             exists = false;
-            for(VCSFileProxy child : parent.listFiles()) {
-                if (child.getName().equals(file.getName())) {
-                    exists = true;
-                    break;
+            final VCSFileProxy[] listFiles = parent.listFiles();
+            if (listFiles != null) {
+                for(VCSFileProxy child : listFiles) {
+                    if (child.getName().equals(file.getName())) {
+                        exists = true;
+                        break;
+                    }
                 }
             }
         } 

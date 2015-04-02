@@ -473,21 +473,29 @@ public class JavaTypeProvider implements TypeProvider {
         return textForQuery;
     }
 
-    @NonNull
+    @CheckForNull
     private static Pattern createPackageRegExp(@NonNull String pkgName) {
         final StringBuilder sb = new StringBuilder();
         sb.append("(.*\\.)?");  //NOI18N
+        boolean valid = false;
         for (int i=0; i< pkgName.length(); i++) {
             char c = pkgName.charAt(i);
             if (Character.isJavaIdentifierPart(c)) {
                 sb.append(c);
+                valid = true;
             } else if (c == '.') {  //NOI18N
                 sb.append(".*\\."); //NOI18N
             }
         }
-        sb.append(".*(\\..*)?");  //NOI18N
-        LOGGER.log(Level.FINE, "Package pattern: {0}", sb); //NOI18N
-        return Pattern.compile(sb.toString());
+        final Pattern p;
+        if (valid) {
+            sb.append(".*(\\..*)?");  //NOI18N
+            p = Pattern.compile(sb.toString());
+        } else {
+            p = null;
+        }
+        LOGGER.log(Level.FINE, "Package pattern: {0}", p); //NOI18N
+        return p;
     }
 
     /**

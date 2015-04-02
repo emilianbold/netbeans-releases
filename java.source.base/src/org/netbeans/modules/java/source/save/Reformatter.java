@@ -4257,8 +4257,8 @@ public class Reformatter implements ReformatTask {
             col += start;
             boolean preserveNewLines = true;
             boolean firstLine = true;
-            boolean enableCommentFormatting = javadocTokens != null ? cs.enableJavadocFormatting() : (!bof && cs.enableBlockCommentFormatting());
-            boolean noFormat = false;
+            boolean enableCommentFormatting = javadocTokens != null ? cs.enableJavadocFormatting() : cs.enableBlockCommentFormatting();
+            boolean noFormat = bof;
             int align = -1;
             for (int i = start; i < text.length(); i++) {
                 char c = text.charAt(i);
