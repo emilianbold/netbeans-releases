@@ -416,9 +416,15 @@ public class BugtrackingOwnerSupport {
     private RepositoryImpl getRepositoryByUrl(String requestedUrl) {
         Collection<RepositoryImpl> repositories = RepositoryRegistry.getInstance().getRepositories();
         for (RepositoryImpl repository : repositories) {
-            String repositoryUrl = FileToRepoMappingStorage.cutTrailingSlashes(repository.getUrl());
-            if (repositoryUrl.equals(requestedUrl)) {
-                return repository;
+            String url = repository.getUrl();
+            if(url != null) {
+                String repositoryUrl = FileToRepoMappingStorage.cutTrailingSlashes(url);
+                if (repositoryUrl.equals(requestedUrl)) {
+                    return repository;
+                }
+            } else {
+                // XXX how could this happen? see also issue #249959
+                BugtrackingManager.LOG.log(Level.WARNING, "NULL url in repository [{0},{1},{2}]", new Object[]{repository.getConnectorId(), repository.getId(), repository.getDisplayName()});
             }
         }
         return null;
