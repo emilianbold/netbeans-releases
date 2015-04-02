@@ -163,11 +163,12 @@ public class BlameAction extends ContextAction {
         final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
         ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
 
+        Context ctx = new Context(file);
         SVNUrl repository;
         try {
-            repository = SvnUtils.getRepositoryRootUrl(file);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }
 

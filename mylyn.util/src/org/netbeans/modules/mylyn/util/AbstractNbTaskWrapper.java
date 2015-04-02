@@ -271,6 +271,13 @@ public abstract class AbstractNbTaskWrapper {
                     }
                     model = task.getTaskDataModel();
                 }
+                if(model == null) {
+                    // issue #247877 
+                    // something went wrong, not much we can do about it at this place. 
+                    // lets avoid at least the NPE
+                    LOG.log(Level.WARNING, "no model even after synchronizing {0}", task.getTaskId());
+                    return false;
+                }
                 model.addNbTaskDataModelListener(list);
             }
             try {

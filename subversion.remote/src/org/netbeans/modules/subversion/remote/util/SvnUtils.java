@@ -597,6 +597,10 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */
     public static SVNUrl getRepositoryRootUrl(VCSFileProxy file) throws SVNClientException {
+        return getRepositoryRootUrl(file, false);
+    }
+    
+    public static SVNUrl getRepositoryRootUrl(VCSFileProxy file, boolean knownToBeManaged) throws SVNClientException {
         final Context context = new Context(file);
         SvnClient client = Subversion.getInstance().getClient(false, context);
 
@@ -604,7 +608,7 @@ public class SvnUtils {
         boolean fileIsManaged = false;
         VCSFileProxy lastManaged = file;
         SVNClientException e = null;
-        while (isManaged(file)) {
+        while (knownToBeManaged || isManaged(file)) {
             fileIsManaged = true;
             ISVNInfo info = null;
             try {
@@ -631,7 +635,7 @@ public class SvnUtils {
 
             VCSFileProxy parent = file.getParentFile();
             lastManaged = file;
-            if (parent == null) {
+            if (parent == null || knownToBeManaged) {
                 // .svn in root folder
                 break;
             } else {

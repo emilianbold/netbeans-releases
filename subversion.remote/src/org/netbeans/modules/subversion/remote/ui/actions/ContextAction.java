@@ -134,12 +134,17 @@ public abstract class ContextAction extends NodeAction {
     }
 
     protected SVNUrl getSvnUrl(Node[] nodes) throws SVNClientException {
-        return getSvnUrl(getContext(nodes)); 
+        return ContextAction.getSvnUrl(getContext(nodes)); 
     }
 
     public static SVNUrl getSvnUrl(Context ctx) throws SVNClientException {
         VCSFileProxy[] roots = ctx.getRootFiles();
-        return roots.length == 0 ? null : SvnUtils.getRepositoryRootUrl(roots[0]);        
+        if (roots.length == 0) {
+            return null;
+        }
+        SVNUrl cachedUrl = Subversion.getInstance().getTopmostRepositoryUrl(roots[0]);
+        //assert Objects.equals(cachedUrl, SvnUtils.getRepositoryRootUrl(roots[0]));
+        return cachedUrl;
     }
 
     protected abstract void performContextAction(Node[] nodes);
@@ -355,7 +360,7 @@ public abstract class ContextAction extends NodeAction {
     protected RequestProcessor createRequestProcessor(Context ctx) {
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
         }
@@ -398,7 +403,7 @@ public abstract class ContextAction extends NodeAction {
                         LOG.log(Level.FINE, "Running a task with an empty context.", new Exception()); //NOI18N
                     }
                 }
-                url = getSvnUrl(actionContext);
+                url = ContextAction.getSvnUrl(actionContext);
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
             }                    

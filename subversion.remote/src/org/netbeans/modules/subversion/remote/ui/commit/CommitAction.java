@@ -234,7 +234,7 @@ public class CommitAction extends ContextAction {
         // start backround prepare
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
@@ -413,7 +413,7 @@ public class CommitAction extends ContextAction {
 
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }

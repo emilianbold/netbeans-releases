@@ -126,7 +126,7 @@ public class SupportedAnnotationTypesCompletion implements Processor {
         for (ElementHandle<TypeElement> eh : ci.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, EnumSet.of(SearchScope.DEPENDENCIES, SearchScope.SOURCE))) {
             if (eh.getKind() != ElementKind.ANNOTATION_TYPE) continue;
             
-            result.add(new CompletionImpl(eh.getQualifiedName()));
+            result.add(new CompletionImpl('\"' + eh.getQualifiedName() + '\"'));
         }
 
         return result;
@@ -159,15 +159,9 @@ public class SupportedAnnotationTypesCompletion implements Processor {
     private final class CompletionImpl implements Completion {
 
         private final String value;
-        private final String message;
 
         public CompletionImpl(String value) {
-            this(value, null);
-        }
-
-        public CompletionImpl(String value, String message) {
             this.value = value;
-            this.message = message;
         }
 
         public String getValue() {
@@ -175,7 +169,7 @@ public class SupportedAnnotationTypesCompletion implements Processor {
         }
 
         public String getMessage() {
-            return message;
+            return null;
         }
     }
 
