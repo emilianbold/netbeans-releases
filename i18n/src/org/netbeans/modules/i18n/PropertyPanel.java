@@ -546,6 +546,9 @@ public class PropertyPanel extends JPanel {
     }
 
     private void browseButtonActionPerformed(ActionEvent evt) {
+        if(file == null) {
+            return; // Panel has not initialised fully yet.
+        }
         ResourceHolder rh = i18nString.getSupport().getResourceHolder();
         DataObject template;
         try {

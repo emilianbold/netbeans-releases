@@ -357,8 +357,6 @@ public final class AntBridge {
         }
         return b.toString();
     }
-    
-    private static String originalJavaClassPath = System.getProperty("java.class.path"); // NOI18N
     /**
      * Get the equivalent of java.class.path for the main Ant loader.
      * Includes everything in the main class loader.
@@ -1027,33 +1025,4 @@ public final class AntBridge {
         }
 
     }
-    
-    // Faking the system property java.class.path for the benefit of a few tasks
-    // that expect it to be equal to the Ant class loader path.
-    
-    private static int fakingJavaClassPath = 0;
-    
-    /**
-     * Fake the system property java.class.path temporarily.
-     * Must be followed by {@link unfakeJavaClassPath} in a finally block.
-     * Reentrant.
-     */
-    public static synchronized void fakeJavaClassPath() {
-        if (fakingJavaClassPath++ == 0) {
-            String cp = getMainClassPath();
-            LOG.log(Level.FINER, "Faking java.class.path={0}", cp);
-            System.setProperty("java.class.path", cp); // NOI18N
-        }
-    }
-    
-    /**
-     * Reverse the effect of {@link fakeJavaClassPath}.
-     */
-    public static synchronized void unfakeJavaClassPath() {
-        if (--fakingJavaClassPath == 0) {
-            LOG.log(Level.FINER, "Restoring java.class.path={0}", originalJavaClassPath);
-            System.setProperty("java.class.path", originalJavaClassPath); // NOI18N
-        }
-    }
-
 }

@@ -302,8 +302,8 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         }
         Map<String, String> dep2version = new HashMap<String, String> ();
         dep2version.put("org.netbeans.modules.derbyclientlibrary", "1.1"); // NOI18N
-        dep2version.put("org.openide.execution", "1.17"); // NOI18N
-        dep2version.put("org.openide.util", "8.2"); // NOI18N
+        dep2version.put("org.openide.execution", "9.0"); // NOI18N
+        dep2version.put("org.openide.util", "9.3"); // NOI18N
         generateLibraryModuleTemplate(projectXMLFO, "org.netbeans.modules.customerdb", // NOI18N
                 publicPackages,
                 cp2origin,

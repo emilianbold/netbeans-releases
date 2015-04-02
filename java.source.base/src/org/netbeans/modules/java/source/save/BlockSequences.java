@@ -170,6 +170,61 @@ public final class BlockSequences {
     }
     
     /**
+     * Returns boundaries of section that contains the anchor.
+     * Returns 2-item array that contain start-end positions of the section.
+     * There's an implicit section that contains the head / tail of the document 
+     * (before/after first/last defined section) or the whole document, if no
+     * sections are defined.
+     * 
+     * @param anchor the inspected position
+     * @return start & end of the containing section
+     */
+    public int[] getContainingSection(int anchor) {
+        if (boundOffsets == null) {
+            return new int[] { 0, len };
+        }
+        int index = Arrays.binarySearch(boundOffsets, 0, max, anchor);
+        if (index >= 0) {
+            return new int[] {
+                index == 0 ? 0 : boundOffsets[index],
+                index == max - 1 ? len : boundOffsets[index + 1]
+            };
+        } else if (index == -1) {
+            return new int[] {
+                0, boundOffsets[0]
+            };
+        }
+        index = -(index + 1) - 1;
+        return new int[] {
+            boundOffsets[index],
+            index == max - 1 ? len : boundOffsets[index + 1]
+        };
+    }
+    
+    /**
+     * Returns start of section that contains the anchor.
+     * If there are no sections, 0 is returned (start of text). If the anchor
+     * matches some section boundary, that boundary is returned (start of the
+     * section).
+     * 
+     * @param anchor the anchor position
+     * @return Start of the containing section.
+     */
+    public int findSectionStart(int anchor) {
+        if (boundOffsets == null) {
+            return 0;
+        }
+        int index = Arrays.binarySearch(boundOffsets, 0, max, anchor);
+        if (index >= 0) {
+            return boundOffsets[index];
+        } else if (index == -1) {
+            return 0;
+        }
+        index = -(index + 1) - 1;
+        return boundOffsets[index];
+    }
+    
+    /**
      * Returns the end of a section that contains the given offset.
      * If no sections are defined, the document end is returned (whole document forms one section).
      * 
@@ -186,12 +241,13 @@ public final class BlockSequences {
         if (anchor < s) {
             return s;
         }
-        int e = boundOffsets[index];
-        if (anchor < e) {
-            return e;
-        } else {
-            return len;
+        if (index < max) {
+            int e = boundOffsets[index + 1];
+            if (e > anchor) {
+                return e;
+            }
         }
+        return len;
     }
     
     /**
