@@ -57,7 +57,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -128,12 +127,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     
     public Project getOwner(FileObject f) {
-        try {
-            // wait until prefs deserialize
-            externalLatch.await();
-        } catch (InterruptedException ex) {
-            LOG.log(Level.INFO, ex.getMessage(), ex);
-        }
+        deserialize();
         while (f != null) {
             synchronized (this) {
                 if (lastFoundKey != null && lastFoundKey.get() == f) {
@@ -224,15 +218,17 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     private static final Map<URI,FileObject> deserializedExternalOwners =
         Collections.synchronizedMap(new HashMap<URI,FileObject>());
-    
-    /**
-     * Latch released when the serialized external roots load. All file queries
-     * must wait until the preferences reads. 
-     */
-    private static final CountDownLatch externalLatch = new CountDownLatch(1);
-    
+
     private static boolean externalRootsIncludeNonFolders = false;
-    
+
+    private static enum ExternalRootsState {
+        NEW,
+        LOADING,
+        LOADED
+    }
+
+    //@GuardedBy("SimpleFileOwnerQueryImplementation.class")
+    private static ExternalRootsState externalRootsState = ExternalRootsState.NEW;
     /**
      * Deserializes stored cross-reference of external files to their projects.
      * It is called from @OnStart, which runs asynchronously/in parallel, but 
@@ -240,6 +236,47 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
      * consistent in time.
      */
     static void deserialize() {
+        boolean needsToLoad = false;
+        synchronized (SimpleFileOwnerQueryImplementation.class) {
+            LOG.log(Level.FINEST, "External Roots State: {0}", externalRootsState); //NOI18N    - unit tests
+            switch (externalRootsState) {
+                case NEW:
+                    externalRootsState = ExternalRootsState.LOADING;
+                    needsToLoad = true;
+                    break;
+                case LOADING:
+                    while (externalRootsState == ExternalRootsState.LOADING) {
+                        try {
+                            SimpleFileOwnerQueryImplementation.class.wait();
+                        } catch (InterruptedException ie) {
+                            LOG.log(Level.INFO, null, ie);
+                            break;
+                        }
+                    }
+                    break;
+                case LOADED:
+                    break;
+                default:
+                    throw new IllegalStateException(String.format(
+                        "Unknown external roots state: %s",    //NOI18N
+                        externalRootsState));
+            }
+        }
+        if (needsToLoad) {
+            try {
+                deserializeImpl();
+                LOG.log(Level.FINEST, "External Roots Deserialized"); //NOI18N    - unit tests
+            } finally {
+                synchronized (SimpleFileOwnerQueryImplementation.class) {
+                    assert externalRootsState == ExternalRootsState.LOADING;
+                    externalRootsState = ExternalRootsState.LOADED;
+                    SimpleFileOwnerQueryImplementation.class.notifyAll();
+                }
+            }
+        }
+    }
+
+    private static void deserializeImpl() {
         try {
             Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
             for (String name : p.keys()) {
@@ -254,11 +291,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners").removeNode();
         } catch (BackingStoreException ex) {
             LOG.log(Level.INFO, null, ex);
-        } finally {
-            externalLatch.countDown();
         }
     }
-    
+
     static void serialize() {
         try {
             Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
