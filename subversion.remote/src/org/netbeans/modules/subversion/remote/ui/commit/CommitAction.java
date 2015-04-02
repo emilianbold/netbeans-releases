@@ -1123,7 +1123,7 @@ public class CommitAction extends ContextAction {
             VCSFileProxy file = fileNode.getFile();
             if(file.isDirectory()) {
                 VCSFileProxy[] children = file.listFiles();
-                if(children != null || children.length > 0) {
+                if(children != null && children.length > 0) {
                     for (VCSFileProxy child : children) {
                         final FileStatusCache cache = Subversion.getInstance().getStatusCache();
                         FileInformation info = cache.getStatus(child);

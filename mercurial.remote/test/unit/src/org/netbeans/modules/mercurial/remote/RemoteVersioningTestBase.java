@@ -461,9 +461,12 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     }
         
     protected boolean isParentHasChild(VCSFileProxy toFolder) {
-        for(VCSFileProxy child : toFolder.getParentFile().listFiles()) {
-            if (child.getName().equals(toFolder.getName())) {
-                return true;
+        final VCSFileProxy[] listFiles = toFolder.getParentFile().listFiles();
+        if (listFiles != null) {
+            for(VCSFileProxy child : listFiles) {
+                if (child.getName().equals(toFolder.getName())) {
+                    return true;
+                }
             }
         }
         return false;
