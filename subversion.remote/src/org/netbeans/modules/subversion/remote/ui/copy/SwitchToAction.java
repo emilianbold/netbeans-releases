@@ -123,7 +123,7 @@ public class SwitchToAction extends ContextAction {
 
         SVNUrl rootUrl = null, fileUrl = null;
         try {            
-            rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
+            rootUrl = ContextAction.getSvnUrl(ctx);
             fileUrl = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             if (rootUrl == null) {

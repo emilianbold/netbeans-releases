@@ -120,7 +120,7 @@ public class UpgradeAction extends ContextAction {
         for (VCSFileProxy root : roots) {
             boolean needsUpgrade = false;
             try {
-                SvnUtils.getRepositoryRootUrl(root);
+                ContextAction.getSvnUrl(new Context(root));
             } catch (SVNClientException ex) {
                 String msg = ex.getMessage().toLowerCase();
                 if (SvnClientExceptionHandler.isTooOldWorkingCopy(msg) && (
@@ -161,6 +161,7 @@ public class UpgradeAction extends ContextAction {
                                 Subversion.getInstance().getStatusCache().refreshAsync(Subversion.getInstance().getStatusCache().listFiles(
                                         new VCSFileProxy[] { Subversion.getInstance().getTopmostManagedAncestor(wcRoot) }, FileInformation.STATUS_LOCAL_CHANGE));
                                 StatusDisplayer.getDefault().setStatusText(Bundle.MSG_UpgradeAction_statusBar_upgraded(root.getPath()));
+                                Subversion.getInstance().refreshTopmostRepositoryUrl(root);
                             } catch (SVNClientException ex) {
                                 String msg = ex.getMessage().toLowerCase();
                                 if (msg.contains("as it is not a pre-1.7 working copy root")) { //NOI18N
