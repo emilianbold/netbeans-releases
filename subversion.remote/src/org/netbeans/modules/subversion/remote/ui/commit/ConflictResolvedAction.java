@@ -135,7 +135,7 @@ public class ConflictResolvedAction extends ContextAction {
                 }
             }
         };
-        SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
+        SVNUrl url =  ContextAction.getSvnUrl(new Context(file));
         support.start(Subversion.getInstance().getRequestProcessor(url), url, NbBundle.getMessage(ConflictResolvedAction.class, "LBL_ResolvingConflicts")); //NOI18N
     }
 

@@ -135,7 +135,7 @@ public abstract class ContextAction extends NodeAction {
     }
 
     protected SVNUrl getSvnUrl(Node[] nodes) throws SVNClientException {
-        return getSvnUrl(getContext(nodes)); 
+        return ContextAction.getSvnUrl(getContext(nodes)); 
     }
 
     public static SVNUrl getSvnUrl(Context ctx) throws SVNClientException {
@@ -361,7 +361,7 @@ public abstract class ContextAction extends NodeAction {
     protected RequestProcessor createRequestProcessor(Context ctx) {
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
         }
@@ -404,7 +404,7 @@ public abstract class ContextAction extends NodeAction {
                         LOG.log(Level.FINE, "Running a task with an empty context.", new Exception()); //NOI18N
                     }
                 }
-                url = getSvnUrl(actionContext);
+                url = ContextAction.getSvnUrl(actionContext);
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
             }                    

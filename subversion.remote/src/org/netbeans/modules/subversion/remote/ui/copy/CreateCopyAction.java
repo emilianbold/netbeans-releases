@@ -121,7 +121,7 @@ public class CreateCopyAction extends ContextAction {
         final SVNUrl repositoryUrl; 
         final SVNUrl fileUrl;        
         try {            
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(interestingFile); // XXX
+            repositoryUrl = ContextAction.getSvnUrl(ctx); // XXX
             fileUrl = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);

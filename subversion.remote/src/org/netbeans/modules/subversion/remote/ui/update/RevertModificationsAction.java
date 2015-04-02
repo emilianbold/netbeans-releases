@@ -132,7 +132,7 @@ public class RevertModificationsAction extends ContextAction {
         final SVNUrl url;
         
         try {
-            rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
+            rootUrl = ContextAction.getSvnUrl(ctx);
             url = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);

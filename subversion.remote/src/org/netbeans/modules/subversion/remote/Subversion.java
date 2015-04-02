@@ -697,6 +697,15 @@ public class Subversion {
         return out.getTopmostRepositoryUrl();
     }
     
+    public void refreshTopmostRepositoryUrl(VCSFileProxy file) {
+        VCSFileProxy topmost = getTopmostManagedAncestor(file);
+        if (topmost == null) {
+            return;
+        }
+        GlobalInfo out = topmostInfo.get(topmost);
+        out.refresh();
+    }
+    
     private final ConcurrentMap<VCSFileProxy, GlobalInfo> topmostInfo = new ConcurrentHashMap<>();
     private void cacheIfNeededAllForTopmost(VCSFileProxy topmost) {
         if (topmost != null) {
@@ -715,10 +724,11 @@ public class Subversion {
 
     private final class GlobalInfo implements Runnable {
         private boolean inited = false;
-        private SVNUrl result = null;
+        private SVNUrl result;
         private final VCSFileProxy topmost;
-        private SVNClientException ex = null;
-        RequestProcessor.Task runner = null;
+        private SVNClientException ex;
+        RequestProcessor.Task runner;
+        
         private GlobalInfo(VCSFileProxy topmost) {
             this.topmost = topmost;
         }
@@ -728,8 +738,8 @@ public class Subversion {
                 if (!inited) {
                     if (runner == null) {
                         runner = getParallelRequestProcessor().create(this);
+                        runner.run();
                     }
-                    runner.run();
                     runner.waitFinished();
                 }
                 if (ex != null) {
@@ -747,6 +757,20 @@ public class Subversion {
                 this.ex = ex;
             }
             inited = true;
+        }
+
+        private void refresh() {
+            synchronized(this) {
+                inited = false;
+                ex = null;
+                runner = null;
+                result = null;
+            }
+            try {
+                getTopmostRepositoryUrl();
+            } catch (SVNClientException ex) {
+                // will be thrown when getting url next time
+            }
         }
     }
 }

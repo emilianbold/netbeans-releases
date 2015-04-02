@@ -358,7 +358,7 @@ public class UpdateAction extends ContextAction {
         }
         SVNUrl repository;
         try {
-            repository = getSvnUrl(context);
+            repository = ContextAction.getSvnUrl(context);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
@@ -387,25 +387,24 @@ public class UpdateAction extends ContextAction {
             return;
         }
 
-        SVNUrl repository;
+        final SVNUrl repository;
         try {
-            repository = SvnUtils.getRepositoryRootUrl(file);
+            repository = ContextAction.getSvnUrl(context);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
-        final SVNUrl repositoryUrl = repository;
 
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport(context.getFileSystem()) {
             @Override
             public void perform() {
 //                FileStatusCache cache = Subversion.getInstance().getStatusCache();
 //                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                update(new VCSFileProxy[] {file}, this, file.getPath(), repositoryUrl, null);
+                update(new VCSFileProxy[] {file}, this, file.getPath(), repository, null);
             }
         };
-        support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
     
     private static List<VCSFileProxy> patchFilesRecursively (VCSFileProxy root, SVNRevision.Number revision, int maxReturnFiles) {
