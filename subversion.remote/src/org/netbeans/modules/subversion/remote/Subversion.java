@@ -53,6 +53,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -75,6 +77,7 @@ import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Parameters;
@@ -325,6 +328,7 @@ public class Subversion {
     }
 
     public void versionedFilesChanged() {
+        topmostInfo.clear();
         unversionedParents.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
@@ -557,6 +561,7 @@ public class Subversion {
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "returning managed parent {0}", new Object[] { topmost });
         }
+        cacheIfNeededAllForTopmost(topmost);
         return topmost;
     }
 
@@ -680,6 +685,66 @@ public class Subversion {
             }
         }
         return false;
+    }
+
+    public SVNUrl getTopmostRepositoryUrl(VCSFileProxy file) throws SVNClientException {
+        VCSFileProxy topmost = getTopmostManagedAncestor(file);
+        if (topmost == null) {
+            return null;
+        }
+        GlobalInfo out = topmostInfo.get(topmost);
+        assert out != null;
+        return out.getTopmostRepositoryUrl();
+    }
+    
+    private final ConcurrentMap<VCSFileProxy, GlobalInfo> topmostInfo = new ConcurrentHashMap<>();
+    private void cacheIfNeededAllForTopmost(VCSFileProxy topmost) {
+        try {
+            GlobalInfo info = topmostInfo.get(topmost);
+            if (info == null) {
+                topmostInfo.putIfAbsent(topmost, new GlobalInfo(topmost));
+                info = topmostInfo.get(topmost);
+                info.getTopmostRepositoryUrl();
+            }
+        } catch (SVNClientException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static final class GlobalInfo implements Runnable {
+        private boolean inited = false;
+        private SVNUrl result = null;
+        private final VCSFileProxy topmost;
+        private SVNClientException ex = null;
+        RequestProcessor.Task runner = null;
+        private GlobalInfo(VCSFileProxy topmost) {
+            this.topmost = topmost;
+        }
+
+        private SVNUrl getTopmostRepositoryUrl() throws SVNClientException {
+            synchronized (this) {
+                if (!inited) {
+                    if (runner == null) {
+                        runner = RequestProcessor.getDefault().create(this);
+                    }
+                    runner.waitFinished();
+                }
+                if (ex != null) {
+                    throw ex;
+                }
+                return result;
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                result = SvnUtils.getRepositoryRootUrl(topmost, true);
+            } catch (SVNClientException ex) {
+                this.ex = ex;
+            }
+            inited = true;
+        }
     }
 }
 
