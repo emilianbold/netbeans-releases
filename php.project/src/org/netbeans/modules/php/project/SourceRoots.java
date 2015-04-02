@@ -248,7 +248,7 @@ public final class SourceRoots {
                         for (String srcProp : getRootProperties()) {
                             String prop = evaluator.getProperty(srcProp);
                             if (prop != null) {
-                                File f = helper.getAntProjectHelper().resolveFile(prop);
+                                File f = FileUtil.normalizeFile(helper.getAntProjectHelper().resolveFile(prop));
                                 try {
                                     URL url = Utilities.toURI(f).toURL();
                                     if (!f.exists()) {
