@@ -81,8 +81,9 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private final PropertyEvaluator evaluator;
     private List<PathResourceImplementation> resources;
     private final SourceRoots sources;
-    private SourceRoots tests;
-    private SourceRoots selenium;
+    private final SourceRoots tests;
+    private final SourceRoots selenium;
+
 
     public SourcePathImplementation(PhpProject project, SourceRoots sources) {
         this(project, sources, null, null);
@@ -105,7 +106,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     public List<PathResourceImplementation> getResources() {
         synchronized (this) {
             if (resources != null) {
-                return resources;
+                return Collections.unmodifiableList(resources);
             }
         }
         final URL[] urls = sources.getRootURLs();
@@ -117,7 +118,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 }
                 resources = Collections.unmodifiableList(result);
             }
-            return resources;
+            return Collections.unmodifiableList(resources);
         }
     }
 
@@ -222,7 +223,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         @Override
         public boolean includes(URL root, String resource) {
             if (matcher == null) {
-                File rootFile = Utilities.toFile(URI.create(root.toExternalForm()));
+                // #246390
+                File rootFile = FileUtil.normalizeFile(Utilities.toFile(URI.create(root.toExternalForm())));
                 matcher = new PathMatcher(
                         null,
                         computeExcludes(rootFile),
