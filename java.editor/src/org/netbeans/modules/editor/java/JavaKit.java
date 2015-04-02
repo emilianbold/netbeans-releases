@@ -163,9 +163,6 @@ public class JavaKit extends NbEditorKit {
                   }
               }
           );
-	  
-	  //do not ask why, fire bug in the IZ:
-	  CodeTemplateManager.get(doc);
       }
     
     private static final String[] getSetIsPrefixes = new String[] {
