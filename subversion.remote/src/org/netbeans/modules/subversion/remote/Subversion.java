@@ -708,7 +708,7 @@ public class Subversion {
                     info.getTopmostRepositoryUrl();
                 }
             } catch (SVNClientException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, "Cannot get repository URL for "+topmost.getPath(), ex); //NOI18N
             }
         }
     }
