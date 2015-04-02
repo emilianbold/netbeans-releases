@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.ui.actions;
 
+import com.sun.org.apache.xerces.internal.utils.Objects;
 import java.awt.event.ActionEvent;
 import java.text.DateFormat;
 import java.text.MessageFormat;
@@ -139,7 +140,12 @@ public abstract class ContextAction extends NodeAction {
 
     public static SVNUrl getSvnUrl(Context ctx) throws SVNClientException {
         VCSFileProxy[] roots = ctx.getRootFiles();
-        return roots.length == 0 ? null : SvnUtils.getRepositoryRootUrl(roots[0]);        
+        if (roots.length == 0) {
+            return null;
+        }
+        SVNUrl cachedUrl = Subversion.getInstance().getTopmostRepositoryUrl(roots[0]);
+        //assert Objects.equals(cachedUrl, SvnUtils.getRepositoryRootUrl(roots[0]));
+        return cachedUrl;
     }
 
     protected abstract void performContextAction(Node[] nodes);

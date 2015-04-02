@@ -699,19 +699,21 @@ public class Subversion {
     
     private final ConcurrentMap<VCSFileProxy, GlobalInfo> topmostInfo = new ConcurrentHashMap<>();
     private void cacheIfNeededAllForTopmost(VCSFileProxy topmost) {
-        try {
-            GlobalInfo info = topmostInfo.get(topmost);
-            if (info == null) {
-                topmostInfo.putIfAbsent(topmost, new GlobalInfo(topmost));
-                info = topmostInfo.get(topmost);
-                info.getTopmostRepositoryUrl();
+        if (topmost != null) {
+            try {
+                GlobalInfo info = topmostInfo.get(topmost);
+                if (info == null) {
+                    topmostInfo.putIfAbsent(topmost, new GlobalInfo(topmost));
+                    info = topmostInfo.get(topmost);
+                    info.getTopmostRepositoryUrl();
+                }
+            } catch (SVNClientException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (SVNClientException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
-    private static final class GlobalInfo implements Runnable {
+    private final class GlobalInfo implements Runnable {
         private boolean inited = false;
         private SVNUrl result = null;
         private final VCSFileProxy topmost;
@@ -725,8 +727,9 @@ public class Subversion {
             synchronized (this) {
                 if (!inited) {
                     if (runner == null) {
-                        runner = RequestProcessor.getDefault().create(this);
+                        runner = getParallelRequestProcessor().create(this);
                     }
+                    runner.run();
                     runner.waitFinished();
                 }
                 if (ex != null) {
