@@ -337,20 +337,6 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             importPanel.repositoryPathTextField.setEditable(editable);
         }
 
-        private void deleteDirectory(VCSFileProxy file) {
-             VCSFileProxy[] files = file.listFiles();
-             if(files !=null || files.length > 0) {
-                 for (int i = 0; i < files.length; i++) {
-                     if(files[i].isDirectory()) {
-                         deleteDirectory(files[i]);
-                     } else {
-                        VCSFileProxySupport.delete(files[i]);
-                     }
-                 }
-             }
-             VCSFileProxySupport.delete(file);
-        }
-
         /**
          * Checks if the target folder already exists in the repository.
          * If it does exist, user will be asked to confirm the import into the existing folder.

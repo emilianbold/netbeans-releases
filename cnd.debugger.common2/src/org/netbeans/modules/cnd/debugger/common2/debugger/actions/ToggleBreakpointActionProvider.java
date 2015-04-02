@@ -171,7 +171,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 	} 
         
         // prevent double click on not yet handled previous file:line breakpoint
-        if (debugger.bm().hasBreakpointJobAt(fileName, lineNo)) {
+        if (debugger != null && debugger.bm().hasBreakpointJobAt(fileName, lineNo)) {
             // there is no way to dispose a pending breakpoint
             return;
         }
