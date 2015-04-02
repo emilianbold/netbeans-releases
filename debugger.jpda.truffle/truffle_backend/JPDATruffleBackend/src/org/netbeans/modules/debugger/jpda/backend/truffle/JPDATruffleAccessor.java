@@ -58,7 +58,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.Breakpoint;
-import com.oracle.truffle.debug.LineBreakpoint;
+import com.oracle.truffle.debug.impl.LineBreakpoint;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.io.File;
 import java.io.IOException;
@@ -116,6 +116,9 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static void stopAccessLoop() {
+        if (debugManager != null) {
+            debugManager.dispose();
+        }
         accessLoopRunning = false;
         //accessLoopRunnable = null;
         if (accessLoopThread != null) {
@@ -323,11 +326,11 @@ public class JPDATruffleAccessor extends Object {
         LineLocation bpLineLocation = source.createLineLocation(line);
         LineBreakpoint lb;
         if (oneShot) {
-            lb = debugManager.setOneShotLineBreakpoint(bpLineLocation);
+            lb = debugManager.setOneShotLineBreakpoint(0, 0, bpLineLocation);
         } else {
-            lb = debugManager.setLineBreakpoint(bpLineLocation);
+            lb = debugManager.setLineBreakpoint(0, 0, bpLineLocation);
         }
-        //System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+        System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
         return lb;
     }
     
@@ -344,7 +347,7 @@ public class JPDATruffleAccessor extends Object {
             return null;
         }
         Visualizer visualizer = debugManager.getContext().getVisualizer();
-        String strValue = visualizer.displayValue(debugManager.getContext(), value);
+        String strValue = visualizer.displayValue(debugManager.getContext(), value, TruffleObject.DISPLAY_TRIM);
         //System.err.println("evaluate("+expression+") = "+strValue);
         return strValue;
     }
@@ -359,7 +362,7 @@ public class JPDATruffleAccessor extends Object {
         }
         ExecutionContext context = debugManager.getContext();
         Visualizer visualizer = context.getVisualizer();
-        String strValue = visualizer.displayValue(context, value);
+        String strValue = visualizer.displayValue(context, value, TruffleObject.DISPLAY_TRIM);
         TruffleObject to = new TruffleObject(context, strValue, value);
         return to;
     }
@@ -374,7 +377,7 @@ public class JPDATruffleAccessor extends Object {
         }
         ExecutionContext context = debugManager.getContext();
         Visualizer visualizer = context.getVisualizer();
-        String strValue = visualizer.displayValue(context, value);
+        String strValue = visualizer.displayValue(context, value, TruffleObject.DISPLAY_TRIM);
         TruffleObject to = new TruffleObject(context, strValue, value);
         return to;
     }

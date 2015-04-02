@@ -51,13 +51,10 @@ import static com.oracle.truffle.api.instrument.StandardSyntaxTag.STATEMENT;
 import static com.oracle.truffle.api.instrument.StandardSyntaxTag.THROW;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeVisitor;
-import com.oracle.truffle.debug.impl.AbstractDebugManager;
-import com.oracle.truffle.debug.instrument.DebugInstrumentCallback;
 import com.oracle.truffle.js.nodes.JavaScriptNode;
 import com.oracle.truffle.js.nodes.control.BlockNode;
 import com.oracle.truffle.js.nodes.control.ThrowNode;
 import com.oracle.truffle.js.nodes.function.JSFunctionCallNode;
-import com.oracle.truffle.js.runtime.JSContext;
 
 /**
  * JavaScript - specific node prober
