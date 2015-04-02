@@ -169,8 +169,7 @@ import org.openide.util.RequestProcessor;
     @Override
     public void inject(String cmd) {
         final char[] cmda = cmd.toCharArray();
-
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 // echo
@@ -190,7 +189,12 @@ import org.openide.util.RequestProcessor;
                     }
                 });
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
     }
 
     /*package*/ void printError(String errMsg) {

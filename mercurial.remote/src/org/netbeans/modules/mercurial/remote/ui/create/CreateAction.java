@@ -273,15 +273,17 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
                     }
                     // children can't be versioned
                     VCSFileProxy[] children = dir.listFiles();
-                    for (VCSFileProxy f : children) {
-                        VCSFileProxy repoRoot = null;
-                        if (f.isDirectory() && (repoRoot = Mercurial.getInstance().getRepositoryRoot(f)) != null) {
-                            valid = false;
-                            if (Mercurial.LOG.isLoggable(Level.FINE) && dir.exists()) {
-                                Mercurial.LOG.fine("CreateAction.selectRootToManage.validateTask: file is versioned: " + f + ", root: " + repoRoot); //NOI18N
+                    if (children != null) {
+                        for (VCSFileProxy f : children) {
+                            VCSFileProxy repoRoot = null;
+                            if (f.isDirectory() && (repoRoot = Mercurial.getInstance().getRepositoryRoot(f)) != null) {
+                                valid = false;
+                                if (Mercurial.LOG.isLoggable(Level.FINE) && dir.exists()) {
+                                    Mercurial.LOG.fine("CreateAction.selectRootToManage.validateTask: file is versioned: " + f + ", root: " + repoRoot); //NOI18N
+                                }
+                                errorMessage = NbBundle.getMessage(CreateAction.class, "LBL_Create_Panel_Error_Versioned"); //NOI18N
+                                break;
                             }
-                            errorMessage = NbBundle.getMessage(CreateAction.class, "LBL_Create_Panel_Error_Versioned"); //NOI18N
-                            break;
                         }
                     }
                 }

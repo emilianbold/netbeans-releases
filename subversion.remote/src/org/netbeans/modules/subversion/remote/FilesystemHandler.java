@@ -241,9 +241,11 @@ class FilesystemHandler extends VCSInterceptor {
             }
         }
         VCSFileProxy[] files = from.listFiles();
-        for (VCSFileProxy file : files) {
-            if (!SvnUtils.isAdministrative(file)) {
-                svnMoveImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
+        if (files != null) {
+            for (VCSFileProxy file : files) {
+                if (!SvnUtils.isAdministrative(file)) {
+                    svnMoveImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
+                }
             }
         }
     }
@@ -268,9 +270,11 @@ class FilesystemHandler extends VCSInterceptor {
             }
         }
         VCSFileProxy[] files = from.listFiles();
-        for (VCSFileProxy file : files) {
-            if (!SvnUtils.isAdministrative(file)) {
-                svnCopyImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
+        if (files != null) {
+            for (VCSFileProxy file : files) {
+                if (!SvnUtils.isAdministrative(file)) {
+                    svnCopyImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
+                }
             }
         }
     }

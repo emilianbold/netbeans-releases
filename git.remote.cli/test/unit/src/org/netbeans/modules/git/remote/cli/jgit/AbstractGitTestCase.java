@@ -248,8 +248,10 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         VCSFileProxySupport.mkdirs(target.getParentFile());
         if (source.isDirectory()) {
             VCSFileProxy[] children = source.listFiles();
-            for (VCSFileProxy child : children) {
-                copyFile(child, VCSFileProxy.createFileProxy(target, child.getName()));
+            if (children != null) {
+                for (VCSFileProxy child : children) {
+                    copyFile(child, VCSFileProxy.createFileProxy(target, child.getName()));
+                }
             }
         } else if (source.isFile()) {
             VCSFileProxySupport.createNew(target);
