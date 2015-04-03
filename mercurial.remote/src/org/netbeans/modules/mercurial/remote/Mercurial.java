@@ -276,6 +276,9 @@ public class Mercurial {
      * @return
      */
     public boolean isAvailable (VCSFileProxy root, boolean forceCheck, boolean notifyUI) {
+        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(root))) {
+            return false;
+        }
         Version v = getV(root);
         synchronized(this) {
             if (!v.gotVersion) {
