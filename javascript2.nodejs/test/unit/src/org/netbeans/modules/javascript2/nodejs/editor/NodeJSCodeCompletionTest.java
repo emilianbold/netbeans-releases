@@ -260,6 +260,30 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/issue249439/test249439.js", "wn.^create();", false);
     }
     
+    public void testIssue250603_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250603/issue250603.js", "if (this.^)", false);
+    }
+    
+    public void testIssue250338_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250338/issue250338_01.js", "require('../cc01/complexModule').^", false);
+    }
+    
+    public void testIssue250338_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250338/issue250338_02.js", "require('../cc01/complexModule').^", false);
+    }
+    
+    public void testIssue250338_03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250338/issue250338_03.js", "require('../cc01/complexModule').^", false);
+    }
+    
+    public void testIssue250322_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250322.js", "ht.^; // cc here", false);
+    }
+    
+    public void testIssue250322_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue250322.js", "fs.^; // cc here", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();

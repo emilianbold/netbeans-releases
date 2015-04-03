@@ -201,8 +201,8 @@ class SearchExecutor extends SvnProgressSupport {
             };
             currentSearch.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")).waitFinished(); // NOI18N
         } else {
-            for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
-                final SVNUrl rootUrl = (SVNUrl) i.next();
+            for (Iterator<SVNUrl> i = workFiles.keySet().iterator(); i.hasNext();) {
+                final SVNUrl rootUrl = i.next();
                 final Set<VCSFileProxy> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
                 currentSearch = new SvnProgressSupport(fileSystem) {

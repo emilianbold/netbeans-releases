@@ -310,6 +310,7 @@ public final class PhpProject implements Project {
             public void propertyChange(PropertyChangeEvent evt) {
                 removeSourceDirListener();
                 addSourceDirListener();
+                resetFrameworks();
             }
         });
         frameworksListener = new ChangeListener() {

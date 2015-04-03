@@ -54,7 +54,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.templates.CreateDescriptor;
 import org.netbeans.api.templates.CreateFromTemplateAttributes;
 import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Utilities;
@@ -121,6 +123,10 @@ class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
                 String pdname = info.getDisplayName();
                 if (pdname != null) {
                     values.put("displayName", pdname);// NOI18N
+                }
+                for (FileObject webRoot: ProjectWebRootQuery.getWebRoots(prj)) {
+                    values.put("webRootName", webRoot.getNameExt()); // NOI18N
+                    break;
                 }
             }
         } catch (Exception ex) {

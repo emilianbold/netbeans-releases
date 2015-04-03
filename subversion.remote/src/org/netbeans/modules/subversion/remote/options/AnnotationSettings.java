@@ -380,7 +380,7 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);             
         dialog.setVisible(true);        
-        return dd.getValue() == dd.OK_OPTION;        
+        return dd.getValue() == DialogDescriptor.OK_OPTION;        
     }            
     
     private boolean isValid(EditAnnotationPanel editPanel) {

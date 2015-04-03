@@ -1102,7 +1102,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (descriptorVersion < 46) {
             host = HostInfoUtils.LOCALHOST;
         } else {
-            host = CppUtils.getDefaultDevelopmentHost();
+            host = CppUtils.getDefaultDevelopmentHost(projectDirectory);
         }
         FSPath fsPath;
         try {

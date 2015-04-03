@@ -123,7 +123,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
-        panel.cbBuildHost.setModel(new DefaultComboBoxModel(fileSystems));
+        panel.cbBuildHost.setModel(new DefaultComboBoxModel<FileSystem>(fileSystems));
         panel.fileSystemChanged(fileSystem);
         panel.textPaneClient.addHyperlinkListener(new HyperlinkListener() {
             @Override
@@ -165,7 +165,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         } else {
             fileSystem = null;
         }
-        panel.cbBuildHost.setModel(new DefaultComboBoxModel(fileSystems));
+        panel.cbBuildHost.setModel(new DefaultComboBoxModel<FileSystem>(fileSystems));
         if (fileSystem == null) {
             return;
         }
