@@ -180,11 +180,11 @@ public class Context {
     }
     
     public boolean contains(VCSFileProxy file) {
-        outter : for (Iterator i = rootFiles.iterator(); i.hasNext();) {
-            VCSFileProxy root = (VCSFileProxy) i.next();
+        outter : for (Iterator<VCSFileProxy> i = rootFiles.iterator(); i.hasNext();) {
+            VCSFileProxy root = i.next();
             if (SvnUtils.isParentOrEqual(root, file)) {
-                for (Iterator j = exclusions.iterator(); j.hasNext();) {
-                    VCSFileProxy excluded = (VCSFileProxy) j.next();
+                for (Iterator<VCSFileProxy> j = exclusions.iterator(); j.hasNext();) {
+                    VCSFileProxy excluded = j.next();
                     if (VCSFileProxySupport.isAncestorOrEqual(excluded, file)) {
                         continue outter;
                     }

@@ -327,7 +327,7 @@ public class SvnUtils {
      */
     public static boolean isVersionedProject(Node node, boolean checkStatus) {
         Lookup lookup = node.getLookup();
-        Project project = (Project) lookup.lookup(Project.class);
+        Project project = lookup.lookup(Project.class);
         return isVersionedProject(project, checkStatus);
     }
 
@@ -546,10 +546,10 @@ public class SvnUtils {
                         throw ex;
                     }
 
-                    Iterator it = path.iterator();
+                    Iterator<String> it = path.iterator();
                     StringBuilder sb = new StringBuilder();
                     while (it.hasNext()) {
-                        String segment = (String) it.next();
+                        String segment = it.next();
                         sb.append("/"); // NOI18N
                         sb.append(segment);
                     }

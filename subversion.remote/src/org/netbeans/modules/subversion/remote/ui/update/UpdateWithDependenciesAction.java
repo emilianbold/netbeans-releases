@@ -116,11 +116,11 @@ public class UpdateWithDependenciesAction extends ContextAction {
             if (!SvnUtils.isVersionedProject(node, true)) {
                 continue;
             }
-            Project project =  (Project) node.getLookup().lookup(Project.class);
+            Project project =  node.getLookup().lookup(Project.class);
             projectsToUpdate.add(project);
             //mkleint: see subprojectprovider for official contract, see #210465
             // do we care if all or just the direct subprojects are included?
-            SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+            SubprojectProvider deps = project.getLookup().lookup(SubprojectProvider.class);
             if(deps != null) {
                 Set<? extends Project> children = deps.getSubprojects();
                 for (Project child : children) {

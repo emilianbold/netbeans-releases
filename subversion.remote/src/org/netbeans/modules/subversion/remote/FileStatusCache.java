@@ -386,8 +386,8 @@ public class FileStatusCache {
             // filter exclusions
             if (context.getExclusions().size() > 0) {
                 for (VCSFileProxy excluded : context.getExclusions()) {
-                    for (Iterator i = set.iterator(); i.hasNext();) {
-                        VCSFileProxy file = (VCSFileProxy) i.next();
+                    for (Iterator<VCSFileProxy> i = set.iterator(); i.hasNext();) {
+                        VCSFileProxy file = i.next();
                         if (SvnUtils.isParentOrEqual(excluded, file)) {
                             i.remove();
                         }
@@ -435,11 +435,11 @@ public class FileStatusCache {
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
         }
-        Map files = getScannedFiles(dir);
+        Map<VCSFileProxy, FileInformation> files = getScannedFiles(dir);
         if (files == NOT_MANAGED_MAP) {
             return FILE_INFORMATION_NOTMANAGED;
         }
-        FileInformation fi = (FileInformation) files.get(file);
+        FileInformation fi = files.get(file);
         if (fi != null) {
             return fi;            
         }
@@ -853,10 +853,10 @@ public class FileStatusCache {
      * @param dir directory to refresh
      */
     void directoryContentChanged(VCSFileProxy dir) {
-        Map originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
+        Map<VCSFileProxy, FileInformation> originalFiles = (Map<VCSFileProxy, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (originalFiles != null) {
-            for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
-                VCSFileProxy file = (VCSFileProxy) i.next();
+            for (Iterator<VCSFileProxy> i = originalFiles.keySet().iterator(); i.hasNext();) {
+                VCSFileProxy file = i.next();
                 refresh(file, REPOSITORY_STATUS_UNKNOWN);
             }
         }
@@ -894,8 +894,8 @@ public class FileStatusCache {
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
         assert files.containsKey(dir) == false : "Dir " + dir + "contains " + files.toString(); //NOI18N
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            VCSFileProxy file = (VCSFileProxy) i.next();
+        for (Iterator<VCSFileProxy> i = files.keySet().iterator(); i.hasNext();) {
+            VCSFileProxy file = i.next();
             FileInformation info = files.get(file);
             if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                 fireFileStatusChanged(file, null, info);
@@ -968,9 +968,9 @@ public class FileStatusCache {
                 }
             }
 
-            Iterator it = localFiles.iterator();
+            Iterator<VCSFileProxy> it = localFiles.iterator();
             while (it.hasNext()) {
-                VCSFileProxy localFile = (VCSFileProxy) it.next();
+                VCSFileProxy localFile = it.next();
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(localFile);
                 if (fi.isDirectory() || topmost == null || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE

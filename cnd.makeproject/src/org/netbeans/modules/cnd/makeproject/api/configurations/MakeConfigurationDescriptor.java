@@ -545,7 +545,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public Configuration defaultConf(String name, int type, String customizerId) {
-        String defaultHost = CppUtils.getDefaultDevelopmentHost();
+        String defaultHost = CppUtils.getDefaultDevelopmentHost(projectDirFO);
         Project proj = getProject();
         if (proj != null) {
             ExecutionEnvironment sourceHost = MakeProjectUtils.getSourceFileSystemHost(project);

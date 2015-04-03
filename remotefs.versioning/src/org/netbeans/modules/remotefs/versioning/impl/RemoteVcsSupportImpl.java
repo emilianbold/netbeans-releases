@@ -248,6 +248,19 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         }
     }
 
+    private void reportHostInfoNotAvailable(ExecutionEnvironment env) {
+        // TODO: is this correct error processing?
+        IllegalStateException ex = new IllegalStateException("Host info is not available for " + env); //NOI18N
+        Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    
+    private VCSFileProxy getFakeHome(FileSystem fs) {
+        // TODO: is this correct error processing?
+        VCSFileProxy root = VCSFileProxy.createFileProxy(fs.getRoot());
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+        return VCSFileProxy.createFileProxy(root, "/home/" + env.getUser()); //NOI18N
+    }
+    
     @Override
     public VCSFileProxy getHome(VCSFileProxy proxy) {
         File file = proxy.toFile();
@@ -263,14 +276,14 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     return VCSFileProxy.createFileProxy(root, userDir);
                 } catch (IOException ex) {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
+                    return getFakeHome(fs);
                 } catch (ConnectionManager.CancellationException ex) {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
+                    return getFakeHome(fs);
                 }
             } else {
-                // TODO: what to return here???
-                return null;
+                reportHostInfoNotAvailable(env);
+                return getFakeHome(fs);
             }
         }     
     }
@@ -294,7 +307,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     return false;
                 }
             } else {
-                // TODO: what to return here???
+                reportHostInfoNotAvailable(env);
                 return false;
             }
         }     
@@ -319,7 +332,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     return false;
                 }
             } else {
-                // TODO: what to return here???
+                reportHostInfoNotAvailable(env);
                 return false;
             }
         }
@@ -354,8 +367,8 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
                     return false;
                 }
-            } else {
-                // TODO: what to return here???
+            } else {                
+                reportHostInfoNotAvailable(env);
                 return false;
             }
         }     
