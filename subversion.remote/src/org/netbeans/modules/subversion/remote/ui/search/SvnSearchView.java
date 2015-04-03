@@ -73,7 +73,7 @@ class SvnSearchView implements ComponentListener {
 
 
     public SvnSearchView() {
-        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
+        FontColorSettings fcs = MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
 
         resultsList = new JList(new SvnSearchListModel());

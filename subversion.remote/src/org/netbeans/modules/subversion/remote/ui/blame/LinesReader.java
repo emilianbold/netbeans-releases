@@ -56,7 +56,7 @@ import java.util.List;
  */
 public final class LinesReader extends  Reader {
 
-    private final List lines;
+    private final List<AnnotateLine> lines;
     private int lineIndex;
     private int columnIndex;
     private boolean closed;
@@ -64,7 +64,7 @@ public final class LinesReader extends  Reader {
     /**
      * Creates reader from list of AnnotateLine objects.
      */
-    LinesReader(List lines) {
+    LinesReader(List<AnnotateLine> lines) {
         this.lines = lines;
     }
 
@@ -86,7 +86,7 @@ public final class LinesReader extends  Reader {
             return -1;
         }
 
-        AnnotateLine aline = (AnnotateLine) lines.get(lineIndex);
+        AnnotateLine aline = lines.get(lineIndex);
         String line = aline.getContent() + "\n"; // NOI18N
         int lineLen = line.length();
         int unread =  lineLen - columnIndex;

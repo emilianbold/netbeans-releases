@@ -206,11 +206,6 @@ public final class PropertiesClient {
         }
     }
 
-    /** Not implemented. */
-    public Map getProperties(int revision) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
     private static boolean hasOldMetadata (VCSFileProxy file) {
         if (file.isDirectory()) {
             if (VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR))) {

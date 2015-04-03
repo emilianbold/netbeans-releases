@@ -145,9 +145,9 @@ public class KVFile {
         Map<String, byte[]> stringValue = new HashMap<>(keyValue.size());
         Iterator<Map.Entry<Key, byte[]>> it = keyValue.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry next = it.next();
+            Map.Entry<Key, byte[]> next = it.next();
             // getKey().toString() == the normalization
-            stringValue.put(next.getKey().toString(), (byte[]) next.getValue());
+            stringValue.put(next.getKey().toString(), next.getValue());
         }
         return stringValue;
     }
@@ -261,8 +261,8 @@ public class KVFile {
                 VCSFileProxySupport.mkdirs(parent);
             }
             os = VCSFileProxySupport.getOutputStream(file);
-            for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {
-                Key key = (Key) it.next();
+            for (Iterator<Key> it = getMap().keySet().iterator(); it.hasNext();) {
+                Key key = it.next();
                 byte[] value = getMap().get(key);                
                 
                 StringBuffer sb = new StringBuffer();
@@ -303,7 +303,7 @@ public class KVFile {
     /**
      * Represents a key
      */
-    protected static class Key implements Comparable {
+    protected static class Key implements Comparable<Key> {
         /** the key index */
         private final int idx;
         /** the keys name */
@@ -335,11 +335,7 @@ public class KVFile {
             return sb.toString().hashCode();
         }
         @Override
-        public int compareTo(Object obj) {
-            if( !(obj instanceof Key) ) {
-                return 0;
-            }
-            Key key = (Key) obj;
+        public int compareTo(Key key) {
             if (key.getIndex() < getIndex()) {
                 return 1;
             } else if (key.getIndex() > getIndex()) {
