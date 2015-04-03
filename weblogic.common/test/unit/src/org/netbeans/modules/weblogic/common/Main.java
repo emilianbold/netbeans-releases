@@ -60,13 +60,11 @@ import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        String serverHome = "/home/sickboy/software/wls12120/wlserver";//args[0];
-        String domainHome = "/home/sickboy/software/wls12120/user_projects/domains/mydomain";//;args[1];
+        String serverHome = "/home/petr/software/wls12130/wlserver";//args[0];
+        String domainHome = "/home/petr/software/wls12130/user_projects/domains/mydomain";//;args[1];
         //String artifact = args[2];
-//        WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(
-//                new File(serverHome), new File(domainHome), "weblogic", "welcome1");
-        WebLogicConfiguration config = WebLogicConfiguration.forRemoteDomain(
-                new File(serverHome), "192.168.56.101", 7001, false, new WebLogicConfiguration.Credentials() {
+        WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(
+                new File(serverHome), new File(domainHome), new WebLogicConfiguration.Credentials() {
 
             @Override
             public String getUsername() {
@@ -78,6 +76,19 @@ public class Main {
                 return "welcome1";
             }
         });
+//        WebLogicConfiguration config = WebLogicConfiguration.forRemoteDomain(
+//                new File(serverHome), "192.168.56.101", 7001, false, new WebLogicConfiguration.Credentials() {
+//
+//            @Override
+//            public String getUsername() {
+//                return "weblogic";
+//            }
+//
+//            @Override
+//            public String getPassword() {
+//                return "welcome1";
+//            }
+//        });
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(config);
         runtime.startAndWait(new DefaultFactory(), new DefaultFactory(), null);
