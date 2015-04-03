@@ -180,9 +180,9 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         System.err.println("name: " + host.getHostDisplayName(true));
         System.err.println("key: " + host.getHostKey());
 
-        System.err.println("DefaultDevelopmentHostID " + CppUtils.getDefaultDevelopmentHost());
+        System.err.println("DefaultDevelopmentHostID " + CppUtils.getDefaultDevelopmentHost(folderBaseFO));
         
-        env = ExecutionEnvironmentFactory.fromUniqueID(CppUtils.getDefaultDevelopmentHost());
+        env = ExecutionEnvironmentFactory.fromUniqueID(CppUtils.getDefaultDevelopmentHost(folderBaseFO));
         System.err.println("DefaultExecutionEnvironment " + env);
         System.err.println("host: " + env.getHost());
         System.err.println("host address: " + env.getHostAddress());

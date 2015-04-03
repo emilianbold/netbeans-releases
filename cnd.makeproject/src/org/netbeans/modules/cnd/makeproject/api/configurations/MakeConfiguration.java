@@ -199,7 +199,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
 
     private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(fsPath, name);
-        hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
+        hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost(fsPath.getFileSystem()) : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
         } else if (configurationTypeValue == TYPE_APPLICATION || configurationTypeValue == TYPE_DYNAMIC_LIB || configurationTypeValue == TYPE_STATIC_LIB) {
