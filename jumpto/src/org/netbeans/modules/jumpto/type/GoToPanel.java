@@ -160,32 +160,27 @@ public class GoToPanel extends javax.swing.JPanel {
 
     /** Sets the model from different therad
      */
-    public void setModel( final ListModel model, final int id ) { 
-        // XXX measure time here
-        final int fid;
-        // -1 only from EDT
-        fid = id == -1 ? textId : id;
-        SwingUtilities.invokeLater(new Runnable() {
-           public void run() {
-               if (fid != textId) {
-                   return;
-               }
-               if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
-                   matchesList.setModel(model);
-                   matchesList.setSelectedIndex(0);
-                   setListPanelContent(null,false);
-                   if ( time != -1 ) {
-                       GoToTypeAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
-                       time = -1;
-                   }
-               }
-               else {
-                   setListPanelContent( NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
-               }
+    boolean setModel( final ListModel model) {
+        assert SwingUtilities.isEventDispatchThread();
+       if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
+           matchesList.setModel(model);
+           matchesList.setSelectedIndex(0);
+           setListPanelContent(null,false);
+           if ( time != -1 ) {
+               GoToTypeAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
+               time = -1;
            }
-       });
+           return true;
+       } else {
+           setListPanelContent( NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
+           return false;
+       }
     }
-    
+
+    boolean revalidateModel () {
+        return setModel(matchesList.getModel());
+    }
+
     /** Sets the initial text to find in case the user did not start typing yet. */
     public void setInitialText( final String text ) {
         SwingUtilities.invokeLater( new Runnable() {
