@@ -194,9 +194,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
     @Override
     public boolean setListModel(final FileSearchPanel panel, String text ) {
-        if (openBtn != null) {
-            openBtn.setEnabled (false);
-        }
+        enableOK(false);
 
         cancel();
 
@@ -250,6 +248,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             final SearchType searchType = Utils.toSearchType(nameKind);
             if (currentSearch.isNarrowing(searchType, text)) {
                 currentSearch.filter(searchType, text);
+                enableOK(panel.searchCompleted());
                 return false;
             } else {
                 final String searchText = text;
@@ -281,9 +280,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                                 @Override
                                 public void run() {
                                     panel.searchProgress();
-                                    if (openBtn != null && baseListModel.getSize() > 0) {
-                                        openBtn.setEnabled (true);
-                                    }
+                                    enableOK(baseListModel.getSize() > 0);
                                 }
                             });
                         }
@@ -291,8 +288,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     new Runnable(){
                         @Override
                         public void run() {
-                            panel.searchCompleted();
                             currentSearch.searchCompleted(searchType, searchText);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.searchCompleted();
+                                }
+                            });
                         }
                     },
                     panel.time);
@@ -331,6 +333,12 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
 
     // Private methods ---------------------------------------------------------
+
+    private void enableOK(final boolean enable) {
+        if (openBtn != null) {
+            openBtn.setEnabled (enable);
+        }
+    }
 
     private FileDescriptor[] getSelectedFiles() {
         FileDescriptor[] result = null;
