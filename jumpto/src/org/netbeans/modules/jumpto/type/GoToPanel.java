@@ -98,7 +98,6 @@ public class GoToPanel extends javax.swing.JPanel {
     private boolean containsScrollPane;
     JLabel messageLabel;
     private Iterable<? extends TypeDescriptor> selectedTypes = Collections.emptyList();
-    private volatile int textId = 0;
     private String oldMessage;
     
     // Time when the serach stared (for debugging purposes)
@@ -410,11 +409,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane matchesScrollPane1;
     javax.swing.JTextField nameField;
     // End of variables declaration//GEN-END:variables
-        
-    public int getTextId() {
-        return textId;
-    }
-    
+
     private String getText() {
         try {
             String text = nameField.getDocument().getText(0, nameField.getDocument().getLength());
@@ -535,7 +530,6 @@ public class GoToPanel extends javax.swing.JPanel {
             // handling http://netbeans.org/bugzilla/show_bug.cgi?id=203512
             if (dialog.pastedFromClipboard) {
                 dialog.pastedFromClipboard = false;
-                dialog.textId++;
             } else {
                 update();
             }
@@ -570,7 +564,6 @@ public class GoToPanel extends javax.swing.JPanel {
         private void update() {
             dialog.time = System.currentTimeMillis();
             final String text = dialog.getText();
-            dialog.textId++;
             if (dialog.contentProvider.setListModel(dialog, text)) {
                 dialog.updateMessage(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"));
             }

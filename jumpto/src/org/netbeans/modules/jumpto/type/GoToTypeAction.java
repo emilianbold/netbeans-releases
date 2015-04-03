@@ -334,7 +334,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             enableOK(panel.revalidateModel());
             return false;
         } else {
-            running = new Worker( text , panel.isCaseSensitive(), panel.getTextId());
+            running = new Worker( text , panel.isCaseSensitive());
             task = rp.post( running, 220);
             if ( panel.time != -1 ) {
                 LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
@@ -472,13 +472,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private final boolean caseSensitive;
         private final long createTime;
 
-        private final int textId;
-
-        public Worker( String text, final boolean caseSensitive, int textId) {
+        public Worker( String text, final boolean caseSensitive) {
             this.text = text;
             this.caseSensitive = caseSensitive;
             this.createTime = System.currentTimeMillis();
-            this.textId = textId;
             LOGGER.log( Level.FINE, "Worker for {0} - created after {1} ms.",   //NOI18N
                     new Object[]{
                         text,

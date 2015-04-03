@@ -445,7 +445,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 
         private volatile boolean isCanceled = false;
         private volatile SymbolProvider current;
-        private final int textId;
 
         public Worker(
                 @NonNull final String text,
@@ -455,7 +454,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             this.searchType = searchType;
             this.panel = panel;
             this.createTime = System.currentTimeMillis();
-            this.textId = panel.getTextId();
             LOG.log(
                 Level.FINE,
                 "Worker for {0} - created after {1} ms.", //NOI18N
