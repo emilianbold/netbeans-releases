@@ -18,23 +18,23 @@ public class CordovaPlugin {
     private static final Map<String, String> wellKnowNames = new HashMap<String, String>();
     
     static {
-        wellKnowNames.put("org.apache.cordova.device", "Device API");
-        wellKnowNames.put("org.apache.cordova.network-information", "Network Connection");
-        wellKnowNames.put("org.apache.cordova.battery-status", "Battery Events");
-        wellKnowNames.put("org.apache.cordova.device-motion", "Acceleromatter");
-        wellKnowNames.put("org.apache.cordova.device-orientation", "Compass");
-        wellKnowNames.put("org.apache.cordova.geolocation", "Geolocation");
-        wellKnowNames.put("org.apache.cordova.camera", "Camera");
-        wellKnowNames.put("org.apache.cordova.media-capture", "Media Capture");
-        wellKnowNames.put("org.apache.cordova.AudioHandler", "Media Playback");
-        wellKnowNames.put("org.apache.cordova.file", "File API");
-        wellKnowNames.put("org.apache.cordova.file-transfer", "File Transfer");
-        wellKnowNames.put("org.apache.cordova.dialogs", "Dialogs (Notifications)");
-        wellKnowNames.put("org.apache.cordova.vibration", "Vibration");
-        wellKnowNames.put("org.apache.cordova.contacts", "Contacts");
-        wellKnowNames.put("org.apache.cordova.globalization", "Globalization");
-        wellKnowNames.put("org.apache.cordova.splashscreen", "Splashscreen");
-        wellKnowNames.put("org.apache.cordova.console", "Debugger Console");
+        wellKnowNames.put("cordova-plugin-device", "Device API");
+        wellKnowNames.put("cordova-plugin-network-information", "Network Connection");
+        wellKnowNames.put("cordova-plugin-battery-status", "Battery Events");
+        wellKnowNames.put("cordova-plugin-device-motion", "Acceleromatter");
+        wellKnowNames.put("cordova-plugin-device-orientation", "Compass");
+        wellKnowNames.put("cordova-plugin-geolocation", "Geolocation");
+        wellKnowNames.put("cordova-plugin-camera", "Camera");
+        wellKnowNames.put("cordova-plugin-media-capture", "Media Capture");
+        wellKnowNames.put("cordova-plugin-media", "Media");
+        wellKnowNames.put("cordova-plugin-file", "File API");
+        wellKnowNames.put("cordova-plugin-file-transfer", "File Transfer");
+        wellKnowNames.put("cordova-plugin-dialogs", "Dialogs (Notifications)");
+        wellKnowNames.put("cordova-plugin-vibration", "Vibration");
+        wellKnowNames.put("cordova-plugin-contacts", "Contacts");
+        wellKnowNames.put("cordova-plugin-globalization", "Globalization");
+        wellKnowNames.put("cordova-plugin-splashscreen", "Splashscreen");
+        wellKnowNames.put("cordova-plugin-console", "Debugger Console");
    }
 
     public CordovaPlugin(String id, String url) {
