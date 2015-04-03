@@ -92,6 +92,10 @@ public class NodeJsCodeCompletionWithJsRunTimeTest extends JsCodeCompletionBase 
         checkCompletion("TestNavigation/public_html/js/cc01/issue249630.js", "rfnc.rinn.rda.getM^onth();", false);
     }
     
+    public void testIssue248499_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue248499.js", "modul.instRef.dateOfSpell().getD^", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
