@@ -227,7 +227,7 @@ public class RfsSetupProvider implements SetupProvider {
 
         int version = -1;
         try {
-            version = Integer.valueOf(result);
+            version = Integer.parseInt(result);
         } catch (NumberFormatException e) {
             return -1;
         }

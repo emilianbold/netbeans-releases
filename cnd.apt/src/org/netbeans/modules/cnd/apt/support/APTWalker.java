@@ -347,9 +347,7 @@ public abstract class APTWalker {
             }
         } else {
             if (curAPT.getType() == APT.Type.ENDIF) {
-                APT endif = curAPT;
                 // end of condition block
-                curAPT = endif;
             } else if( curAPT.getType() == APT.Type.ERROR ) {
 		if (stopOnErrorDirective()) {
 		    stop();

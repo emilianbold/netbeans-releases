@@ -292,7 +292,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), false, false, isExplicit(), isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //StringBuilder clsTemplateSuffix = new StringBuilder();
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 

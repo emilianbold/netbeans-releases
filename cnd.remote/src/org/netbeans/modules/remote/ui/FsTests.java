@@ -142,7 +142,6 @@ public class FsTests {
         InputStream is = fo.getInputStream();
         BufferedReader rdr = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
         try {
-            StringBuilder sb = new StringBuilder();
             String line;
             while ((line = rdr.readLine()) != null) {
                 // nothing
