@@ -40,16 +40,26 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-
-@TemplateRegistration(folder = "ClientSide",
-        content = "../resources/bower.json",
-        scriptEngine = "freemarker",
-        position = 700,
-        displayName = "#Templates.bower.json",
-        description = "../resources/BowerJsonDescription.html",
-        targetName = "bower",
-        category = "html5")
+@TemplateRegistrations({
+    @TemplateRegistration(folder = "ClientSide",
+            content = "../resources/bower.json",
+            scriptEngine = "freemarker",
+            position = 700,
+            displayName = "#Templates.bower.json",
+            description = "../resources/BowerJsonDescription.html",
+            targetName = "bower",
+            category = "html5"),
+    @TemplateRegistration(folder = "ClientSide",
+            content = "../resources/.bowerrc",
+            scriptEngine = "freemarker",
+            position = 701,
+            displayName = "#Templates.bowerrc",
+            description = "../resources/BowerrcDescription.html",
+            targetName = ".bowerrc",
+            category = "html5"),
+})
 
 package org.netbeans.modules.javascript.bower.ui.wizard;
 
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;

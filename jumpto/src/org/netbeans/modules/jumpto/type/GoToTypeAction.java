@@ -261,9 +261,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     @Override
     public boolean setListModel( GoToPanel panel, String text ) {
         assert SwingUtilities.isEventDispatchThread();
-        if (okButton != null) {
-            okButton.setEnabled (false);
-        }
+        enableOK(false);
         //handling http://netbeans.org/bugzilla/show_bug.cgi?id=178555
         //add a MouseListener to the messageLabel JLabel so that the search can be cancelled without exiting the dialog
         final GoToPanel goToPanel = panel;
@@ -288,7 +286,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 
         if ( text == null ) {
             currentSearch.resetFilter();
-            panel.setModel(EMPTY_LIST_MODEL, -1);
+            panel.setModel(EMPTY_LIST_MODEL);
             return false;
         }
 
@@ -298,7 +296,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
             currentSearch.resetFilter();
-            panel.setModel(EMPTY_LIST_MODEL, -1);
+            panel.setModel(EMPTY_LIST_MODEL);
             return false;
         }
 
@@ -333,9 +331,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         final SearchType searchType = nameKinds.iterator().next();
         if (currentSearch.isNarrowing(searchType, text)) {
             currentSearch.filter(searchType, text);
+            enableOK(panel.revalidateModel());
             return false;
         } else {
-            running = new Worker( text , panel.isCaseSensitive(), panel.getTextId());
+            running = new Worker( text , panel.isCaseSensitive());
             task = rp.post( running, 220);
             if ( panel.time != -1 ) {
                 LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
@@ -455,6 +454,12 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
     }
 
+    private void enableOK(final boolean enable) {
+        if (okButton != null) {
+            okButton.setEnabled (enable);
+        }
+    }
+
     // Private classes ---------------------------------------------------------
 
 
@@ -467,13 +472,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private final boolean caseSensitive;
         private final long createTime;
 
-        private final int textId;
-
-        public Worker( String text, final boolean caseSensitive, int textId) {
+        public Worker( String text, final boolean caseSensitive) {
             this.text = text;
             this.caseSensitive = caseSensitive;
             this.createTime = System.currentTimeMillis();
-            this.textId = textId;
             LOGGER.log( Level.FINE, "Worker for {0} - created after {1} ms.",   //NOI18N
                     new Object[]{
                         text,
@@ -555,10 +557,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                                     currentSearch.searchCompleted(searchType, text);
                                 }
                                 if (fmodel != null && !isCanceled) {
-                                    panel.setModel(fmodel, textId);
-                                    if (okButton != null && !types.isEmpty()) {
-                                        okButton.setEnabled (true);
-                                    }
+                                    enableOK(panel.setModel(fmodel));
                                 }
                             }
                         });

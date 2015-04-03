@@ -661,23 +661,26 @@ public final class ActionsManager {
     }
 
     private void initActionImpls () {
-        aps = lookup.lookup(null, ActionsProvider.class);
-        providersChangeListener = new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    logger.log(Level.FINE, "{0} Providers lookup changed, aps = {1}", new Object[] { this, aps });
-                    synchronized (actionProvidersLock) {
-                        actionProviders.clear();
+        try {
+            aps = lookup.lookup(null, ActionsProvider.class);
+            providersChangeListener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        logger.log(Level.FINE, "{0} Providers lookup changed, aps = {1}", new Object[] { this, aps });
+                        synchronized (actionProvidersLock) {
+                            actionProviders.clear();
+                        }
+                        registerActionsProviders(aps);
                     }
-                    registerActionsProviders(aps);
-                }
-        };
-        logger.log(Level.FINE, "{0}.initActionImpls(): Add ProvidersChangeListener to {1}", new Object[] { this, aps });
-        ((Customizer) aps).addPropertyChangeListener(providersChangeListener);
-        registerActionsProviders(aps);
-        synchronized (actionProvidersInitialized) {
-            actionProvidersInitialized.set(true);
-            actionProvidersInitialized.notifyAll();
+            };
+            logger.log(Level.FINE, "{0}.initActionImpls(): Add ProvidersChangeListener to {1}", new Object[] { this, aps });
+            ((Customizer) aps).addPropertyChangeListener(providersChangeListener);
+            registerActionsProviders(aps);
+        } finally {
+            synchronized (actionProvidersInitialized) {
+                actionProvidersInitialized.set(true);
+                actionProvidersInitialized.notifyAll();
+            }
         }
     }
 

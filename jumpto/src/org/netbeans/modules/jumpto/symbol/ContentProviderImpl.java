@@ -142,9 +142,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 
     @Override
     public boolean setListModel(GoToPanel panel, String text) {
-        if (okButton != null) {
-            okButton.setEnabled (false);
-        }
+        enableOK(false);
         final Worker workToCancel;
         final RequestProcessor.Task  taskToCancel;
         synchronized (this) {
@@ -162,7 +160,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 
         if ( text == null ) {
             currentSearch.resetFilter();
-            panel.setModel(new DefaultListModel(), -1);
+            panel.setModel(new DefaultListModel());
             return false;
         }
         final boolean exact = text.endsWith(" "); // NOI18N
@@ -170,7 +168,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         text = text.trim();
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
             currentSearch.resetFilter();
-            panel.setModel(new DefaultListModel(), -1);
+            panel.setModel(new DefaultListModel());
             return false;
         }
         final SearchType searchType = getSearchType(text, exact, isCaseSensitive);
@@ -178,6 +176,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         synchronized(this) {
             if (currentSearch.isNarrowing(searchType, text)) {
                 currentSearch.filter(searchType, text);
+                enableOK(panel.revalidateModel());
                 return false;
             } else {
                 running = new Worker(text, searchType, panel);
@@ -208,6 +207,12 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
     @Override
     public boolean hasValidContent() {
         return this.okButton.isEnabled();
+    }
+
+    private void enableOK(final boolean enabled) {
+        if (okButton != null) {
+            okButton.setEnabled (enabled);
+        }
     }
 
     private void cleanUp() {
@@ -440,7 +445,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 
         private volatile boolean isCanceled = false;
         private volatile SymbolProvider current;
-        private final int textId;
 
         public Worker(
                 @NonNull final String text,
@@ -450,7 +454,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             this.searchType = searchType;
             this.panel = panel;
             this.createTime = System.currentTimeMillis();
-            this.textId = panel.getTextId();
             LOG.log(
                 Level.FINE,
                 "Worker for {0} - created after {1} ms.", //NOI18N
@@ -490,10 +493,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 public void run() {
                     currentSearch.searchCompleted(searchType, text);
                     if (!isCanceled) {
-                        panel.setModel(fmodel, textId);
-                        if (okButton != null && !types.isEmpty()) {
-                            okButton.setEnabled (true);
-                        }
+                        enableOK(panel.setModel(fmodel));
                     }
                 }
             });
