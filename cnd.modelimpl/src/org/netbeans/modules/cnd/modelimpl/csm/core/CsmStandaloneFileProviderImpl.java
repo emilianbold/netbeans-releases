@@ -813,7 +813,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private void checkAbsolute(List<FSPath> orig) {
-            List<FSPath> result = new ArrayList<>(orig.size());
             for (FSPath path : orig) {
                 CndUtils.assertAbsolutePathInConsole(path.getPath());
             }

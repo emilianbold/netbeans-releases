@@ -334,6 +334,11 @@ public class InfoCommand extends SvnCommand {
         public int getDepth() {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public String toString() {
+            return getPath();
+        }
     }
 
 //    Path: file

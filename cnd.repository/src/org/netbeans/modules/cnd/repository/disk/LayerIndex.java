@@ -266,7 +266,7 @@ public final class LayerIndex {
 
     int registerFileSystem(FileSystem fileSystem) {
         synchronized (fileSystems) {
-            int index = fileSystems.indexOf(fileSystems);
+            int index = fileSystems.indexOf(fileSystem);
             if (index == -1) {
                 index = fileSystems.size();
                 fileSystems.add(fileSystem);

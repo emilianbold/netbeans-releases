@@ -516,7 +516,7 @@ public class MakeLogReader {
             boolean found = m.find();
             if (found && m.start() == 0) {
                 String levelString = m.group(1);
-                int level = levelString == null ? 0 : Integer.valueOf(levelString);
+                int level = levelString == null ? 0 : Integer.parseInt(levelString);
                 int baseLavel = peekLevel();
                 workDir = m.group(2);
                 workDir = convertPath(workDir);

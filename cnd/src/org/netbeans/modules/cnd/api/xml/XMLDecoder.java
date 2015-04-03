@@ -168,7 +168,7 @@ public abstract class XMLDecoder {
         int version = 0;
         String versionString = atts.getValue("version");        // NOI18N
         if (versionString != null) {
-            version = new Integer(versionString).intValue();
+            version = Integer.parseInt(versionString);
         }
         return version;
     }

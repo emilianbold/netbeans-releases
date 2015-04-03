@@ -93,7 +93,7 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
     private static RequestProcessor RP = new RequestProcessor(ToolTipView.class.getName());
     
     private ActionListener listener;
-    public static int ON_DISPOSE = 0;
+    public static final int ON_DISPOSE = 0;
     
     public static ToolTipView getDefault() {
         return INSTANCE;

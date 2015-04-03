@@ -510,5 +510,10 @@ public class StatusCommand extends SvnCommand {
         public SVNConflictDescriptor getConflictDescriptor() {
             return null;
         }
+
+        @Override
+        public String toString() {
+            return path+"("+wcStatus+")";
+        }
     }
 }
