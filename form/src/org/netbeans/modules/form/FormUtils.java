@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeModelListener;
@@ -534,6 +535,11 @@ public class FormUtils
         if (o.getClass() == Font.class || o.getClass() == FontUIResource.class) {
             return o;
         }
+
+        if (o instanceof ImageIcon) {
+            return o; // no need to clone images
+        }
+
         // Issue 49973 & 169933
         if (o.getClass() == TitledBorder.class) {
             TitledBorder border = (TitledBorder)o;
@@ -624,8 +630,21 @@ public class FormUtils
                     tableModel.addTableModelListener(listener);
                 }
             }
+        } // note TableModelEditor.NbTableModel takes care of its serialization
+        if (o instanceof AbstractSpinnerModel) {
+            AbstractSpinnerModel spinnerModel = (AbstractSpinnerModel) o;
+            ChangeListener[] listeners = spinnerModel.getChangeListeners();
+            for (ChangeListener l : listeners) {
+                spinnerModel.removeChangeListener(l);
+            }
+            try {
+                return cloneBeanInstance(o, null, formModel);
+            } finally {
+                for (ChangeListener l : listeners) {
+                    spinnerModel.addChangeListener(l);
+                }
+            }
         }
-        // note TableModelEditor.NbTableModel takes care of its serialization
 
         if (o instanceof Serializable) {
             return cloneBeanInstance(o, null, formModel);
