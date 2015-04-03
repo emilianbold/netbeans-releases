@@ -1119,8 +1119,16 @@ public class SourceUtils {
 
         if (tm.getKind() == TypeKind.ARRAY) {
             ArrayType at = (ArrayType) tm;
-
-            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
+            TypeMirror componentType = resolveCapturedTypeInt(info, at.getComponentType());
+            switch (componentType.getKind()) {
+                case VOID:
+                case EXECUTABLE:
+                case WILDCARD:  // heh!
+                case PACKAGE:
+                    break;
+                default:
+                    return info.getTypes().getArrayType(componentType);
+            }
         }
         
         return tm;

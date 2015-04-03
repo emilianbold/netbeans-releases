@@ -284,8 +284,10 @@ public final class Utils {
     public static void deleteRecursively(VCSFileProxy file) {
         if (file.isDirectory()) {
             VCSFileProxy [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursively(files[i]);
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    deleteRecursively(files[i]);
+                }
             }
         }
         VCSFileProxySupport.delete(file);

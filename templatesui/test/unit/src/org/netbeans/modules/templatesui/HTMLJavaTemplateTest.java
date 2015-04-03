@@ -76,7 +76,8 @@ public class HTMLJavaTemplateTest {
         scriptEngine = "js",
         folder = "JavaTest", iconBase = "org/netbeans/modules/templatesui/x.png",
         page = "x.html",
-        content = "x.js"
+        content = "x.js", 
+        techIds = { "ein", "zwei", "drei" }
     )
     static XModel myMethod() {
         return new XModel(0, "One", "One", "Two", "Three");
@@ -154,6 +155,11 @@ public class HTMLJavaTemplateTest {
         FileObject created = ((DataObject)dObj).getPrimaryFile();
         
         assertTrue("Error: " + created.asText(), created.asText().contains("Hello from Finished"));
+        
+        assertEquals("Three techIds", it.getTechIds().length, 3);
+        assertEquals("ein", it.getTechIds()[0]);
+        assertEquals("zwei", it.getTechIds()[1]);
+        assertEquals("drei", it.getTechIds()[2]);
     }
     
     private static void awaitFX() throws Exception {

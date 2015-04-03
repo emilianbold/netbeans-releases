@@ -3,7 +3,6 @@ gk.showLegs(); lk.|showLegs();                 //Both share the common 'Person.p
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      constructor                     [PUBLIC]   person.js
-CLASS      prototype                       [PUBLIC]   person.js
 METHOD     amputate(): undefined           [PUBLIC]   person.js
 METHOD     beCool(): undefined             [PUBLIC]   person.js
 METHOD     eat(): Number                   [PROTECTE  person.js

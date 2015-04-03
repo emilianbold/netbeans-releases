@@ -5,4 +5,4 @@ require("./complexModule").literalRef.|propX.iprop;
 CLASS      fooX                            [PUBLIC]   complexModule.js
 CLASS      propX                           [PUBLIC]   complexModule.js
 FIELD      denX: Date                      [PUBLIC]   complexModule.js
-FIELD      obX: Module complexModule       [PUBLIC]   complexModule.js
+FIELD      obX: Runner1                    [PUBLIC]   complexModule.js

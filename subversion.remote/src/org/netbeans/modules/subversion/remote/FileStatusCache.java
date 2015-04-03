@@ -831,6 +831,9 @@ public class FileStatusCache {
             LOG.log(Level.WARNING, "Cache contains too many entries: {0}", (Integer) modifiedFiles.length); //NOI18N
         }
         for (VCSFileProxy file : modifiedFiles) {
+            if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+                continue;
+            }
             FileInformation info = getCachedStatus(file);
             if (info != null && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
                 refresh(file, REPOSITORY_STATUS_UNKNOWN);
@@ -1119,10 +1122,13 @@ public class FileStatusCache {
         if(exists && VCSFileProxySupport.isMac(file) && parent != null) {
             // handle case on mac, "fileA".exists() is the same as "filea".exists but svn client understands the difference
             exists = false;
-            for(VCSFileProxy child : parent.listFiles()) {
-                if (child.getName().equals(file.getName())) {
-                    exists = true;
-                    break;
+            final VCSFileProxy[] listFiles = parent.listFiles();
+            if (listFiles != null) {
+                for(VCSFileProxy child : listFiles) {
+                    if (child.getName().equals(file.getName())) {
+                        exists = true;
+                        break;
+                    }
                 }
             }
         } 

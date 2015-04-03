@@ -1241,37 +1241,45 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 && property.getJSKind() != JsElement.Kind.CALLBACK) {
             if (!(name.equals(request.prefix) && !property.isDeclared() && request.anchor == property.getOffset())) { // don't include just the prefix
                 List<JsElement> elements = addedProperties.get(name);
-                if (elements == null || elements.isEmpty()) {
-                    List<JsElement> properties = new ArrayList<JsElement>(1);
-                    properties.add(property);
-                    addedProperties.put(name, properties);
-                } else {
-                    if (!ModelUtils.PROTOTYPE.equals(name) && property.isDeclared()) {
-                        boolean addAsNew = true;
-                        if (!elements.isEmpty()) {
-                            for (int i = 0; i < elements.size(); i++) {
-                                JsElement element = elements.get(i);
-                                FileObject fo = element.getFileObject();
-                                if (!element.isDeclared() || (fo != null && fo.equals(property.getFileObject()))) {
-                                    if (!element.isDeclared() || (element.getOffsetRange() == OffsetRange.NONE && property.getOffsetRange() != OffsetRange.NONE)) {
-                                        elements.remove(i);
-                                        elements.add(property);
-                                        addAsNew = false;
-                                        break;
-                                    } else if (fo != null && fo.equals(property.getFileObject())) {
+                if (!ModelUtils.PROTOTYPE.equals(name)) {
+                    if (elements == null || elements.isEmpty()) {
+                        List<JsElement> properties = new ArrayList<JsElement>(1);
+                        properties.add(property);
+                        addedProperties.put(name, properties);
+                    } else {
+                        if (property.isDeclared()) {
+                            boolean addAsNew = true;
+                            if (!elements.isEmpty()) {
+                                for (int i = 0; i < elements.size(); i++) {
+                                    JsElement element = elements.get(i);
+                                    FileObject fo = element.getFileObject();
+                                    if (!element.isDeclared() || (fo != null && fo.equals(property.getFileObject()))) {
+                                        if (!element.isDeclared() || (element.getOffsetRange() == OffsetRange.NONE && property.getOffsetRange() != OffsetRange.NONE)) {
+                                            elements.remove(i);
+                                            elements.add(property);
+                                            addAsNew = false;
+                                            break;
+                                        } else if (fo != null && fo.equals(property.getFileObject())) {
+                                            addAsNew = false;
+                                            break;
+                                        }
+                                    } else if (element.isPlatform() && property.isPlatform()) {
                                         addAsNew = false;
                                         break;
                                     }
-                                } else if (element.isPlatform() && property.isPlatform()) {
-                                    addAsNew = false;
-                                    break;
                                 }
                             }
+                            if (addAsNew) {
+                                // expect that all items are declaration -> so just add the next declaraiton
+                                elements.add(property);
+                            }
                         }
-                        if (addAsNew) {
-                            // expect that all items are declaration -> so just add the next declaraiton
-                            elements.add(property);
-                        }
+                    }
+                } else {
+                    if (elements == null && property.isPlatform()) {
+                        List<JsElement> properties = new ArrayList<JsElement>(1);
+                        properties.add(property);
+                        addedProperties.put(name, properties);
                     }
                 }
             }

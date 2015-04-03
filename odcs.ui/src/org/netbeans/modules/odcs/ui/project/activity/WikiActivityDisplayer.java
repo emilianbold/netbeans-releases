@@ -75,7 +75,7 @@ public class WikiActivityDisplayer extends ActivityDisplayer {
         LinkLabel linkPage = new LinkLabel(activity.getActivity().getPage().getPath()) {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(activity.getActivity().getPage().getUrl());
+                Utils.openBrowser(Utils.getWebUrl(activity.getActivity().getPage().getUrl()));
             }
         };
         panel.add(linkPage, gbc);

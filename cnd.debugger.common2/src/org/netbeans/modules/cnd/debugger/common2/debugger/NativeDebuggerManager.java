@@ -1067,6 +1067,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
                 ndi.setAction(this.getAction());
             }
         }
+        
+        String symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(ndi.getDbgProfile().getOptions());
+        symbolFile = ((MakeConfiguration) conf).expandMacros(symbolFile);
+        ndi.setSymbolFile(symbolFile);
 
         if (isStandalone()) {
             startDebugger(getExistingDebugger(ndi), ndi);
@@ -1295,7 +1299,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         ndi.setCorefile(dt.getCorefile());
         ndi.setConfiguration(conf);
         ndi.setAction(CORE);
-
+        
         if (isStandalone()) {
             startDebugger(getExistingDebugger(ndi), ndi);
         } else {

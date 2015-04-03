@@ -42,7 +42,7 @@
  */
 namespace tests\unit;
 
-require_once __DIR__ . '/../src/Calculator.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use \mageekguy\atoum;
 use \Calculator as TestedClass;

@@ -98,8 +98,6 @@ public class GoToPanel extends javax.swing.JPanel {
     private boolean containsScrollPane;
     JLabel messageLabel;
     private Iterable<? extends TypeDescriptor> selectedTypes = Collections.emptyList();
-    private volatile int textId = 0;
-    private String oldText;
     private String oldMessage;
     
     // Time when the serach stared (for debugging purposes)
@@ -161,35 +159,29 @@ public class GoToPanel extends javax.swing.JPanel {
 
     /** Sets the model from different therad
      */
-    public void setModel( final ListModel model, final int id ) { 
-        // XXX measure time here
-        final int fid;
-        // -1 only from EDT
-        fid = id == -1 ? textId : id;
-        SwingUtilities.invokeLater(new Runnable() {
-           public void run() {
-               if (fid != textId) {
-                   return;
-               }
-               if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
-                   matchesList.setModel(model);
-                   matchesList.setSelectedIndex(0);
-                   setListPanelContent(null,false);
-                   if ( time != -1 ) {
-                       GoToTypeAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
-                       time = -1;
-                   }
-               }
-               else {
-                   setListPanelContent( NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
-               }
+    boolean setModel( final ListModel model) {
+        assert SwingUtilities.isEventDispatchThread();
+       if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
+           matchesList.setModel(model);
+           matchesList.setSelectedIndex(0);
+           setListPanelContent(null,false);
+           if ( time != -1 ) {
+               GoToTypeAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
+               time = -1;
            }
-       });
+           return true;
+       } else {
+           setListPanelContent( NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
+           return false;
+       }
     }
-    
+
+    boolean revalidateModel () {
+        return setModel(matchesList.getModel());
+    }
+
     /** Sets the initial text to find in case the user did not start typing yet. */
     public void setInitialText( final String text ) {
-        oldText = text;
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 String textInField = nameField.getText();
@@ -417,11 +409,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane matchesScrollPane1;
     javax.swing.JTextField nameField;
     // End of variables declaration//GEN-END:variables
-        
-    public int getTextId() {
-        return textId;
-    }
-    
+
     private String getText() {
         try {
             String text = nameField.getDocument().getText(0, nameField.getDocument().getLength());
@@ -441,13 +429,11 @@ public class GoToPanel extends javax.swing.JPanel {
     }
 
     void updateMessage(@NullAllowed final String message) {
-        final String text = getText();
-        if (oldText == null || oldText.trim().length() == 0 || !text.startsWith(oldText) ||
-        (message == null ? oldMessage != null : !message.equals(oldMessage))) {
+        if (message == null ? oldMessage != null : !message.equals(oldMessage)) {
             setListPanelContent(message,true); // NOI18N
         }
     }
-    
+
     void setListPanelContent( String message ,boolean waitIcon ) {
         assert SwingUtilities.isEventDispatchThread();
         oldMessage = message;
@@ -544,7 +530,6 @@ public class GoToPanel extends javax.swing.JPanel {
             // handling http://netbeans.org/bugzilla/show_bug.cgi?id=203512
             if (dialog.pastedFromClipboard) {
                 dialog.pastedFromClipboard = false;
-                dialog.textId++;
             } else {
                 update();
             }
@@ -575,32 +560,29 @@ public class GoToPanel extends javax.swing.JPanel {
                 dialog.jTextFieldLocation.setText("");      //NOI18N
             }
         }
-        
+
         private void update() {
             dialog.time = System.currentTimeMillis();
-            dialog.updateMessage(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"));
-            String text = dialog.getText();            
-            dialog.oldText = text;
-            dialog.textId++;
-            dialog.contentProvider.setListModel(dialog,text);            
+            final String text = dialog.getText();
+            if (dialog.contentProvider.setListModel(dialog, text)) {
+                dialog.updateMessage(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"));
+            }
         }
-                                         
     }
-             
-        
+
+
     public static interface ContentProvider {
 
         @NonNull
         public ListCellRenderer getListCellRenderer(
                 @NonNull JList list,
                 @NonNull ButtonModel caseSensitive);
-        
-        public void setListModel( GoToPanel panel, String text );
-        
+
+        public boolean setListModel( GoToPanel panel, String text );
+
         public void closeDialog();
-        
+
         public boolean hasValidContent ();
-                
     }
 
 }

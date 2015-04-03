@@ -66,7 +66,7 @@ import org.openide.util.WeakListeners;
  */
 @ActionsProvider.Registration(actions={"toggleBreakpoint"}, 
         //activateForMIMETypes={MiscEditorUtil.JAVASCRIPT_MIME_TYPE, MiscEditorUtil.HTML_MIME_TYPE})
-        activateForMIMETypes={MiscEditorUtil.HTML_MIME_TYPE})
+        activateForMIMETypes={ MiscEditorUtil.HTML_MIME_TYPE, MiscEditorUtil.PHP_MIME_TYPE })
 public class BreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener 
 {
@@ -78,6 +78,9 @@ public class BreakpointActionProvider extends ActionsProviderSupport
 //                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
         EditorContextDispatcher.getDefault().addPropertyChangeListener(
                 MiscEditorUtil.HTML_MIME_TYPE,
+                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(
+                MiscEditorUtil.PHP_MIME_TYPE,
                 WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
     }
 
@@ -134,7 +137,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
         FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
         setEnabled (
             ActionsManager.ACTION_TOGGLE_BREAKPOINT,
-            (fo != null && MiscEditorUtil.isHTMLSource(fo))
+            (fo != null && MiscEditorUtil.isJSWrapperSource(fo))
         );
     }
 

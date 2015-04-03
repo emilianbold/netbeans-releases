@@ -46,7 +46,6 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -57,14 +56,10 @@ import com.oracle.truffle.api.instrument.Probe;
 import com.oracle.truffle.api.instrument.SyntaxTag;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.debug.DebugClient;
-import com.oracle.truffle.debug.LineBreakpoint;
-import com.oracle.truffle.debug.impl.AbstractDebugManager;
-import com.oracle.truffle.debug.impl.DebugException;
-import com.oracle.truffle.debug.instrument.DebugInstrumentCallback;
+import com.oracle.truffle.debug.impl.AbstractDebugEngine;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import com.oracle.truffle.js.nodes.JavaScriptNode;
 import com.oracle.truffle.js.nodes.ScriptNode;
@@ -72,9 +67,7 @@ import com.oracle.truffle.js.parser.JSEngine;
 import com.oracle.truffle.js.parser.env.Environment;
 import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +80,7 @@ import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSDebugProber;
  *
  * @author martin
  */
-class JPDATruffleDebugManager extends AbstractDebugManager {
+class JPDATruffleDebugManager extends AbstractDebugEngine {
     
     //private static final JSNodeProberDelegate nodeProberDelegate = new JSNodeProberDelegate();
     
@@ -101,6 +94,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         this.context = context;
         this.topFrameHolder = new TopFrameHolder();
         ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
+        startExecution(null, null);
         //nodeProberDelegate.addNodeProber(
         //        new JPDAJSDebugProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback, context)));
         //System.err.println("new JPDATruffleDebugManager("+engine+")");
@@ -129,9 +123,9 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
     }
     
     @Override
-    public void run(Source source) {
+    public void run(Source source, SyntaxTag stepIntoTag) {
         //System.err.println("JPDATruffleDebugManager.run("+source+")");
-        startExecution(source);
+        startExecution(source, stepIntoTag);
         try {
             final ScriptNode scriptNode = JSEngine.getInstance().getParser().parseScriptNode((JSContext) context, source);
             scriptNode.run();
@@ -147,7 +141,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
     @Override
     public Object eval(Source source, Node node, MaterializedFrame frame) {
         //System.err.println("JPDATruffleDebugManager.eval("+source+", "+node+", "+frame+")");
-        startExecution(source);
+        startExecution(source, null);
         try {
             if (frame == null) {
                 return engine.eval(source.getCode());
@@ -179,6 +173,10 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         String path = source.getPath();
         String code = source.getCode();
         return new SourcePosition(source, name, path, line, code);
+    }
+
+    void dispose() {
+        endExecution(null);
     }
 
     /*
@@ -251,6 +249,11 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
 
         private void setTopFrameHolder(TopFrameHolder topFrameHolder) {
             this.topFrameHolder = topFrameHolder;
+        }
+
+        @Override
+        public ExecutionContext getExecutionContext() {
+            return context;
         }
         
     }

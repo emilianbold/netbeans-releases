@@ -99,6 +99,7 @@ import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -150,6 +151,11 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
+        Context cachedContext = getCachedContext(nodes);
+        final FileSystem fileSystem = cachedContext.getFileSystem();
+        if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
+            return false;
+        }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if(!isSvnNodes(nodes) && !isDeepRefreshDisabledGlobally()) {
             // allway true as we have will accept and check for external changes
@@ -157,7 +163,7 @@ public class CommitAction extends ContextAction {
             return cache.ready();
         }
         // XXX could be a performace issue, maybe a msg box in commit would be enough
-        return cache.ready() && cache.containsFiles(getCachedContext(nodes), FileInformation.STATUS_LOCAL_CHANGE, true);
+        return cache.ready() && cache.containsFiles(cachedContext, FileInformation.STATUS_LOCAL_CHANGE, true);
     }
 
     /** Run commit action. Shows UI */
@@ -228,7 +234,7 @@ public class CommitAction extends ContextAction {
         // start backround prepare
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
@@ -407,7 +413,7 @@ public class CommitAction extends ContextAction {
 
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
@@ -1117,7 +1123,7 @@ public class CommitAction extends ContextAction {
             VCSFileProxy file = fileNode.getFile();
             if(file.isDirectory()) {
                 VCSFileProxy[] children = file.listFiles();
-                if(children != null || children.length > 0) {
+                if(children != null && children.length > 0) {
                     for (VCSFileProxy child : children) {
                         final FileStatusCache cache = Subversion.getInstance().getStatusCache();
                         FileInformation info = cache.getStatus(child);

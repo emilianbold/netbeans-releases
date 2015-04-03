@@ -53,6 +53,7 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
@@ -73,23 +74,25 @@ public class CsmKeywordCompletionItem implements CompletionItem {
     private final int priority;
     private final String sortItemText;
     private final boolean supportInstantSubst;
-    private static final int PRIORITY = 150;
+    private static final int PRIORITY = 5000;
     private final String appendItemText;
     private final String htmlItemText;
+    private final boolean firstCompletion;
 
     private CsmKeywordCompletionItem(int substitutionOffset, int priority,
-            String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst) {
+            String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst, boolean firstCompletion) {
         this.substitutionOffset = substitutionOffset;
         this.priority = priority;
         this.supportInstantSubst = supportInstantSubst;
         this.sortItemText = sortItemText;
         this.appendItemText = appendItemText;
         this.htmlItemText = htmlItemText;
+        this.firstCompletion = firstCompletion;
     }
 
-    public static CsmKeywordCompletionItem createItem(int substitutionOffset, int priority, String item) {
+    public static CsmKeywordCompletionItem createItem(int substitutionOffset, int priority, CppTokenId item, boolean firstCompletion) {
         String appendItemText = "";
-        String sortItemText = item;
+        String sortItemText = item.fixedText();
         String coloredItemText;
         if (CndUtils.isUnitTestMode()) {
             coloredItemText = sortItemText;
@@ -97,7 +100,7 @@ public class CsmKeywordCompletionItem implements CompletionItem {
             AttributeSet keywordsColor = ((FontColorSettings) MimeLookup.getLookup(MimePath.get(MIMENames.CPLUSPLUS_MIME_TYPE)).lookup(FontColorSettings.class)).getTokenFontColors("keyword"); //NOI18N
             coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, keywordsColor);
         }
-        return new CsmKeywordCompletionItem(substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true);
+        return new CsmKeywordCompletionItem(substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, firstCompletion);
     }
 
     public String getItemText() {
@@ -221,5 +224,9 @@ public class CsmKeywordCompletionItem implements CompletionItem {
                 }
             }
         });
+    }
+    
+    boolean isFistCompletion() {
+        return firstCompletion;
     }
 }

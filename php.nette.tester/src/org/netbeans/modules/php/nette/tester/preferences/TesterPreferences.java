@@ -63,6 +63,8 @@ public final class TesterPreferences {
     private static final String TESTER_PATH = "tester.path"; // NOI18N
     private static final String BINARY_ENABLED = "binary.enabled"; // NOI18N
     private static final String BINARY_EXECUTABLE = "binary.executable"; // NOI18N
+    private static final String COVERAGE_SOURCE_PATH_ENABLED = "coverage.source.path.enabled"; // NOI18N
+    private static final String COVERAGE_SOURCE_PATH = "coverage.source.path"; // NOI18N
 
 
     private TesterPreferences() {
@@ -121,6 +123,23 @@ public final class TesterPreferences {
         } else {
             getPreferences(phpModule).put(BINARY_EXECUTABLE, binaryExecutable);
         }
+    }
+
+    public static boolean isCoverageSourcePathEnabled(PhpModule phpModule) {
+        return getPreferences(phpModule).getBoolean(COVERAGE_SOURCE_PATH_ENABLED, false);
+    }
+
+    public static void setCoverageSourcePathEnabled(PhpModule phpModule, boolean pathEnabled) {
+        getPreferences(phpModule).putBoolean(COVERAGE_SOURCE_PATH_ENABLED, pathEnabled);
+    }
+
+    @CheckForNull
+    public static String getCoverageSourcePath(PhpModule phpModule) {
+        return resolvePath(phpModule, getPreferences(phpModule).get(COVERAGE_SOURCE_PATH, null));
+    }
+
+    public static void setCoverageSourcePath(PhpModule phpModule, String sourcePath) {
+        getPreferences(phpModule).put(COVERAGE_SOURCE_PATH, relativizePath(phpModule, sourcePath));
     }
 
     private static Preferences getPreferences(PhpModule module) {

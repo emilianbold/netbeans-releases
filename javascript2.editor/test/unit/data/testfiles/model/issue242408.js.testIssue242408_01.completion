@@ -2,5 +2,4 @@ Code completion result for source line:
 cube.|foo();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      prototype                       [PUBLIC]   issue242408.js
 METHOD     foo(name): undefined            [PUBLIC]   issue242408.js

@@ -97,15 +97,14 @@ public class ResultSetJXTable extends JXTableDecorator {
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
     private static final Logger mLogger = Logger.getLogger(ResultSetJXTable.class.getName());
     private static final int MAX_COLUMN_WIDTH = 25;
-
+    private static final DateFormat timeFormat = new SimpleDateFormat(TimeType.DEFAULT_FOMAT_PATTERN);
+    private static final DateFormat dateFormat = new SimpleDateFormat(DateType.DEFAULT_FOMAT_PATTERN);
+    private static final DateFormat timestampFormat = new SimpleDateFormat(TimestampType.DEFAULT_FORMAT_PATTERN);
+    
     private final int multiplier;
 
-    private DateFormat timeFormat = new SimpleDateFormat(TimeType.DEFAULT_FOMAT_PATTERN);
-    private DateFormat dateFormat = new SimpleDateFormat(DateType.DEFAULT_FOMAT_PATTERN);
-    private DateFormat timestampFormat = new SimpleDateFormat(TimestampType.DEFAULT_FORMAT_PATTERN);
-
     // If structure changes, enforce relayout
-    private TableModelListener dataExchangedListener = new TableModelListener() {
+    private final TableModelListener dataExchangedListener = new TableModelListener() {
         @Override
         public void tableChanged(TableModelEvent e) {
             if(e.getFirstRow() == TableModelEvent.HEADER_ROW) {
@@ -273,8 +272,7 @@ public class ResultSetJXTable extends JXTableDecorator {
             StringBuilder sb = new StringBuilder();
             sb.append("<html>");                                    //NOI18N
             if (col.getDisplayName() != null) {
-                sb.append(DataViewUtils.escapeHTML(
-                        col.getDisplayName().toString()));
+                sb.append(DataViewUtils.escapeHTML(col.getDisplayName()));
             }
             sb.append("</html>");                                  // NOI18N
             tc.setHeaderValue(sb.toString());
@@ -288,7 +286,7 @@ public class ResultSetJXTable extends JXTableDecorator {
     }
 
     private List<Integer> getColumnWidthList(DBColumn[] columns) {
-        List<Integer> result = new ArrayList<Integer>();
+        List<Integer> result = new ArrayList<>();
 
         for (DBColumn col : columns) {
             int fieldWidth = col.getDisplaySize();
@@ -310,10 +308,16 @@ public class ResultSetJXTable extends JXTableDecorator {
         if (getCellEditor(row, column) instanceof AlwaysEnable) {
             return true;
         }
-        if(getModel() != null) {
-            int modelRow = convertRowIndexToModel(row);
-            int modelColumn = convertColumnIndexToModel(column);
-            return getModel().isCellEditable(modelRow, modelColumn);
+        try {
+            if (getModel() != null) {
+                int modelRow = convertRowIndexToModel(row);
+                int modelColumn = convertColumnIndexToModel(column);
+                return getModel().isCellEditable(modelRow, modelColumn);
+            }
+        } catch (IndexOutOfBoundsException ex) {
+            // Swallow it silently - its unclear under which circumstances
+            // the problem happens, but in case an illegal row/column combination
+            // is requested its saver/saner to just mark cell as not editable
         }
         return false;
     }
@@ -361,11 +365,17 @@ public class ResultSetJXTable extends JXTableDecorator {
             } catch (SQLException ex) {
             }
         } else if (o instanceof java.sql.Time) {
-            return timeFormat.format((java.util.Date) o);
+            synchronized(timeFormat) {
+                return timeFormat.format((java.util.Date) o);
+            }
         } else if (o instanceof java.sql.Date) {
-            return dateFormat.format((java.util.Date) o);
+            synchronized(dateFormat) {
+                return dateFormat.format((java.util.Date) o);
+            }
         } else if (o instanceof java.util.Date) {
-            return timestampFormat.format((java.util.Date) o);
+            synchronized(timestampFormat) {
+                return timestampFormat.format((java.util.Date) o);
+            }
         } else if (o == null) {
             return "";  //NOI18N
         }

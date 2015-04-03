@@ -239,6 +239,10 @@ public final class Atoum {
                 File atoumDir = new File(atoumPath)
                         .getParentFile() // bin/
                         .getParentFile(); // atoum dir
+                if (!"atoum".equals(atoumDir.getName())) { // NOI18N
+                    // vendor/bin/atoum?
+                    atoumDir = new File(atoumDir, "atoum/atoum"); // NOI18N
+                }
                 command = new File(atoumDir, COVERAGE_SCRIPT_RELATIVE_PATH).getAbsolutePath();
                 assert new File(command).isFile() : "Coverage script should exist: " + command;
             }

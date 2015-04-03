@@ -80,7 +80,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -106,7 +105,7 @@ import org.openide.util.NbBundle;
 /**
  * The purpose of this class is to trim down RestSupport and WebRestSupport down and
  * as such it contains bunch of random static utility methods which previously
- * were polluting and bloating RestSupport. They should be further rafactored and
+ * were polluting and bloating RestSupport. They should be further refactored and
  * moved to right places.
  */
 public class MiscUtilities {
@@ -204,7 +203,6 @@ public class MiscUtilities {
 
     public static FileObject modifyFile(FileObject fo, Map<String, String> replace) throws IOException {
         StringWriter content = new StringWriter();
-        FileLock lock = null;
         BufferedWriter writer = null;
         BufferedReader reader = null;
         try {
@@ -231,7 +229,7 @@ public class MiscUtilities {
                 writer.close();
             }
             StringBuffer buffer = content.getBuffer();
-            lock = fo.lock();
+            FileLock lock = fo.lock();
             try {
                 OutputStream outputStream = fo.getOutputStream(lock);
                 writer = new BufferedWriter(new OutputStreamWriter(outputStream, Charset.forName("UTF-8")));
@@ -268,9 +266,7 @@ public class MiscUtilities {
     public static String getContextRootURL(Project project) {
         String portNumber = "8080"; //NOI18N
         String host = "localhost"; //NOI18N
-        String contextRoot = "";
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
         String serverInstanceID = provider.getServerInstanceID();
         if (serverInstanceID == null || MiscPrivateUtilities.DEVNULL.equals(serverInstanceID)) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -299,10 +295,14 @@ public class MiscUtilities {
             }
         }
         J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
+        String contextRoot = null;
         try {
             contextRoot = configSupport.getWebContextRoot();
         } catch (ConfigurationException e) {
             // TODO the context root value could not be read, let the user know about it
+        }
+        if (contextRoot == null) {
+            contextRoot = ""; // NOI18N
         }
         if (contextRoot.length() > 0 && contextRoot.startsWith("/")) { //NOI18N
             contextRoot = contextRoot.substring(1);
@@ -532,8 +532,9 @@ public class MiscUtilities {
         if (srcLevel != null) {
             double sourceLevel = Double.parseDouble(srcLevel);
             return (sourceLevel >= 1.7);
-        } else
+        } else {
             return false;
+        }
     }
     
     /** Check if project is of Java EE 6 project type or higher

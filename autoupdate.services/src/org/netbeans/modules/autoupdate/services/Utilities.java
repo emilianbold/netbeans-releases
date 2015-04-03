@@ -725,31 +725,34 @@ public class Utilities {
             DependencyAggregator deco = DependencyAggregator.getAggregator(d);
             int type = d.getType();
             String name = d.getName();
-            for (ModuleInfo depMI : deco.getDependening()) {
-                Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
-                if (depM == null) {
-                    continue;
-                }
-                if (!depM.getProblems().isEmpty()) {
-                    // skip this module because it has own problems already
-                    continue;
-                }
-                for (Dependency toTry : depM.getDependencies()) {
-                    // check only relevant deps
-                    if (type == toTry.getType() && name.equals(toTry.getName())
-                            && !DependencyChecker.checkDependencyModule(toTry, mi)) {
-                        UpdateUnit tryUU = UpdateManagerImpl.getInstance().getUpdateUnit(depM.getCodeNameBase());
-                        if (!tryUU.getAvailableUpdates().isEmpty()) {
-                            UpdateElement tryUE = tryUU.getAvailableUpdates().get(0);
+            Collection<ModuleInfo> dependings = deco.getDependening();
+            synchronized (dependings) {
+                for (ModuleInfo depMI : dependings) {
+                    Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
+                    if (depM == null) {
+                        continue;
+                    }
+                    if (!depM.getProblems().isEmpty()) {
+                        // skip this module because it has own problems already
+                        continue;
+                    }
+                    for (Dependency toTry : depM.getDependencies()) {
+                        // check only relevant deps
+                        if (type == toTry.getType() && name.equals(toTry.getName())
+                                && !DependencyChecker.checkDependencyModule(toTry, mi)) {
+                            UpdateUnit tryUU = UpdateManagerImpl.getInstance().getUpdateUnit(depM.getCodeNameBase());
+                            if (!tryUU.getAvailableUpdates().isEmpty()) {
+                                UpdateElement tryUE = tryUU.getAvailableUpdates().get(0);
 
-                            ModuleInfo tryUpdated = ((ModuleUpdateElementImpl) Trampoline.API.impl(tryUE)).getModuleInfo();
-                            Set<Dependency> deps = new HashSet<Dependency>(tryUpdated.getDependencies());
-                            Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo>(forInstall);
-                            Set<Dependency> newones;
-                            while (!(newones = processDependencies(deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive, null, false)).isEmpty()) {
-                                deps = newones;
+                                ModuleInfo tryUpdated = ((ModuleUpdateElementImpl) Trampoline.API.impl(tryUE)).getModuleInfo();
+                                Set<Dependency> deps = new HashSet<Dependency>(tryUpdated.getDependencies());
+                                Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo>(forInstall);
+                                Set<Dependency> newones;
+                                while (!(newones = processDependencies(deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive, null, false)).isEmpty()) {
+                                    deps = newones;
+                                }
+                                moreRequested.add(tryUE);
                             }
-                            moreRequested.add(tryUE);
                         }
                     }
                 }
@@ -958,7 +961,9 @@ public class Utilities {
             // Dependency.TYPE_MODULE
             for (Dependency d : Dependency.create (Dependency.TYPE_MODULE, mi.getCodeName ())) {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                for (ModuleInfo depMI : deco.getDependening ()) {
+                Collection<ModuleInfo> dependings = deco.getDependening();
+                synchronized (dependings) {
+                    for (ModuleInfo depMI : dependings) {
                         //Module depM = Utilities.toModule (depMI);
                         Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                         if (depM == null) {
@@ -975,6 +980,7 @@ public class Utilities {
                                 brokenDependencies.add (toTry);
                             }
                         }
+                    }
                 }
             }
             // Dependency.TYPE_REQUIRES
@@ -988,7 +994,9 @@ public class Utilities {
                 deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, tok));
                 for (Dependency d : deps) {
                     DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                    for (ModuleInfo depMI : deco.getDependening ()) {
+                    Collection<ModuleInfo> dependings = deco.getDependening();
+                    synchronized (dependings) {
+                        for (ModuleInfo depMI : dependings) {
                             //Module depM = Utilities.toModule (depMI);
                             Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                             if (depM == null) {
@@ -1005,6 +1013,7 @@ public class Utilities {
                                 }
                             }
                         }
+                    }
                 }
             }
         }

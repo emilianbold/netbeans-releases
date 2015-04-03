@@ -201,7 +201,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     public void opened() {
-        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+            Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        }
         loading = true;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
@@ -219,18 +221,24 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
-        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+            Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
+        }
     }
 
     public void closed () {
-        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+            Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
+        }
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 editorClosed();
             }
         });
-        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) {
+            Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
+        }
     }
 
     public String getDisplayName() {
@@ -265,86 +273,86 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     public static ColumnDescriptor[] getColumnDescriptors(BugzillaRepository repository) {
         ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
         JTable t = new JTable();
-        List<ColumnDescriptor<String>> ret = new LinkedList<ColumnDescriptor<String>>();
+        List<ColumnDescriptor<String>> ret = new LinkedList<>();
         
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_ID, String.class,
                                               loc.getString("CTL_Issue_ID_Title"),                // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"),                 // NOI18N
                                               UIUtils.getColumnWidthInPixels(6, t)));
-            ret.add(new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
+            ret.add(new ColumnDescriptor<>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")));          // NOI18N
             ret.add(NBBugzillaUtils.isNbRepository(repository.getUrl())
                                         ?
-                                              new ColumnDescriptor<String>(LABEL_NAME_ISSUE_TYPE, String.class,
+                                              new ColumnDescriptor<>(LABEL_NAME_ISSUE_TYPE, String.class,
                                               loc.getString("CTL_Issue_Issue_Type_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Issue_Type_Desc"),         // NOI18N
                                               0)
                                         :
-                                              new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
+                                              new ColumnDescriptor<>(LABEL_NAME_SEVERITY, String.class,
                                               loc.getString("CTL_Issue_Severity_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Severity_Desc"),           // NOI18N
                                               0));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_PRIORITY, String.class,
                                               loc.getString("CTL_Issue_Priority_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Priority_Desc"),           // NOI18N
                                               0));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_STATUS, String.class,
                                               loc.getString("CTL_Issue_Status_Title"),            // NOI18N
                                               loc.getString("CTL_Issue_Status_Desc"),             // NOI18N
                                               0));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_RESOLUTION, String.class,
                                               loc.getString("CTL_Issue_Resolution_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Resolution_Desc"),         // NOI18N
                                               0));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_ASSIGNED_TO, String.class,
                                               loc.getString("CTL_Issue_Assigned_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Assigned_Desc"),           // NOI18N
                                               0));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PRODUCT, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_PRODUCT, String.class,
                                               loc.getString("CTL_Issue_Product_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Product_Desc"),           // NOI18N
                                               0, false));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_COMPONENT, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_COMPONENT, String.class,
                                               loc.getString("CTL_Issue_Component_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Component_Desc"),           // NOI18N
                                               0, false));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_VERSION, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_VERSION, String.class,
                                               loc.getString("CTL_Issue_Version_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Version_Desc"),           // NOI18N
                                               0, false));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_OS, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_OS, String.class,
                                               loc.getString("CTL_Issue_OS_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_OS_Desc"),           // NOI18N
                                               0, false));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PLATFORM, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_PLATFORM, String.class,
                                               loc.getString("CTL_Issue_Platform_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Platform_Desc"),           // NOI18N
                                               0, false));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_MILESTONE, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_MILESTONE, String.class,
                                               loc.getString("CTL_Issue_Milestone_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Milestone_Desc"),           // NOI18N
                                               0, false));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_REPORTER, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_REPORTER, String.class,
                                               loc.getString("CTL_Issue_Reporter_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Reporter_Desc"),           // NOI18N
                                               0, false));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_MODIFICATION, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_MODIFICATION, String.class,
                                               loc.getString("CTL_Issue_Modification_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Modification_Desc"),           // NOI18N
                                               0, false));
             if(BugzillaUtil.showQAContact(repository)) {
-                ret.add(new ColumnDescriptor<String>(LABEL_NAME_QA_CONTACT, String.class,
+                ret.add(new ColumnDescriptor<>(LABEL_NAME_QA_CONTACT, String.class,
                                               loc.getString("CTL_Issue_QA_Contact_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_QA_Contact_Desc"),           // NOI18N
                                               0, false));
             }
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_KEYWORDS, String.class,
+            ret.add(new ColumnDescriptor<>(LABEL_NAME_KEYWORDS, String.class,
                                               loc.getString("CTL_Issue_Keywords_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Keywords_Desc"),           // NOI18N
                                               0, false));
             if(BugzillaUtil.showStatusWhiteboard(repository)) {
-                ret.add(new ColumnDescriptor<String>(LABEL_NAME_WHITEBOARD, String.class,
+                ret.add(new ColumnDescriptor<>(LABEL_NAME_WHITEBOARD, String.class,
                                               loc.getString("CTL_Issue_Whiteboard_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Whiteboard_Desc"),           // NOI18N
                                               0, false));
@@ -588,7 +596,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                 return Collections.emptyList();
             }
         } else {
-            List<String> ret = new ArrayList<String>();
+            List<String> ret = new ArrayList<>();
             ret.add(getFieldValue(taskData, f));
             return ret;
         }
@@ -844,7 +852,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                         // check for other preselections
                         Properties p = System.getProperties();
                         Enumeration<Object> keys = p.keys();
-                        List<String> keyList = new LinkedList<String>();
+                        List<String> keyList = new LinkedList<>();
                         while(keys.hasMoreElements()) {
                             Object key = keys.nextElement();
                             if(key.toString().startsWith(VCSHOOK_BUGZILLA_FIELD)) {
@@ -1248,7 +1256,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                 if (taskDataState != null) {
                     TaskData repositoryData = taskDataState.getRepositoryData();
                     TaskData lastReadData = taskDataState.getLastReadData();
-                    List<IssueField> changedFields = new ArrayList<IssueField>();
+                    List<IssueField> changedFields = new ArrayList<>();
                     for (IssueField f : getRepository().getConfiguration().getFields()) {
                         if (f==IssueField.MODIFICATION
                                 || f==IssueField.REPORTER_NAME

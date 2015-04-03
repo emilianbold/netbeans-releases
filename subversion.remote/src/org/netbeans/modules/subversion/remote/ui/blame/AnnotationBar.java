@@ -86,6 +86,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
@@ -609,7 +610,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         final SVNUrl url;
         try {
-            url = SvnUtils.getRepositoryRootUrl(file);
+            url = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
@@ -638,7 +639,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final SVNRevision svnRev;
         final Context context = new Context(file);
         try {
-            repoUrl = SvnUtils.getRepositoryRootUrl(file);
+            repoUrl = ContextAction.getSvnUrl(context);
             fileUrl = SvnUtils.getRepositoryUrl(file);
             svnRev = SVNRevision.getRevision(revision);
         } catch (SVNClientException ex) {
@@ -664,7 +665,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final SVNUrl repositoryUrl;
         final Context context = new Context(file);
         try {
-            repositoryRoot = SvnUtils.getRepositoryRootUrl(file);
+            repositoryRoot = ContextAction.getSvnUrl(context);
             repositoryUrl = SvnUtils.getRepositoryUrl(file);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);

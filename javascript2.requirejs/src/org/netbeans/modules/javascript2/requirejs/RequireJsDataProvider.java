@@ -231,6 +231,10 @@ public class RequireJsDataProvider {
             result = getFileContent(cacheFile);
         } catch (URISyntaxException | IOException ex) {
             loadingStarted = false;
+            if (progress != null) {
+                progress.finish();
+                progress = null;
+            }
             LOG.log(Level.INFO, "Cannot load RequireJS documentation from \"{0}\".", new Object[]{API_URL}); //NOI18N
             LOG.log(Level.INFO, "", ex);
         }

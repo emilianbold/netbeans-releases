@@ -52,6 +52,7 @@ import javafx.scene.web.WebView;
 import java.awt.event.ActionEvent;
 import net.java.html.json.Model;
 import net.java.html.json.Property;
+import org.netbeans.html.context.spi.Contexts.Id;
 import org.netbeans.modules.htmlui.HTMLDialogImpl;
 
 /** Generates method that opens an HTML based modal dialog. Sample of a typical 
@@ -141,6 +142,15 @@ public @interface HTMLDialog {
      * @return name of class to generate
      */
     String className() default "Pages";
+
+    /** Selects some of provided technologies. The HTML/Java API @ version 1.1
+     * supports {@link Id technology ids}. One can specify the preferred ones
+     * to use in this NetBeans component by using this attribute.
+     * 
+     * @return list of preferred technology ids
+     * @since 1.3
+     */
+    String[] techIds() default {};
     
     /** Rather than using this class directly, consider 
      * {@link HTMLDialog}. The {@link HTMLDialog} annotation 
@@ -176,6 +186,19 @@ public @interface HTMLDialog {
          */
         public Builder loadFinished(Runnable run) {
             impl.setOnPageLoad(run);
+            return this;
+        }
+        
+        /** Requests some of provided technologies. The HTML/Java API @ version 1.1
+         * supports {@link Id technology ids}. One can specify the preferred ones
+         * to use in this NetBeans component by using calling this method.
+         * 
+         * @param ids list of preferred technology ids to add to the builder
+         * @return instance of the builder
+         * @since 1.3
+         */
+        public Builder addTechIds(String... ids) {
+            impl.addTechIds(ids);
             return this;
         }
 

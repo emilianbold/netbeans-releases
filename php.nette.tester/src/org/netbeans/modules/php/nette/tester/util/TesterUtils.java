@@ -74,4 +74,13 @@ public final class TesterUtils {
         return null;
     }
 
+    @NbBundle.Messages("TesterUtils.coverage.source.path.error=Absolute path to directory must be set for coverage source path.")
+    @CheckForNull
+    public static String validateCoverageSourcePath(@NullAllowed String sourcePath) {
+        if (FileUtils.validateDirectory(sourcePath, false) != null) {
+            return Bundle.TesterUtils_coverage_source_path_error();
+        }
+        return null;
+    }
+
 }

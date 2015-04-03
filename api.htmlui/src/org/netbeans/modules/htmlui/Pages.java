@@ -45,11 +45,12 @@ package org.netbeans.modules.htmlui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javafx.application.Platform;
 import javax.swing.Action;
 import org.openide.awt.Actions;
-import org.openide.util.Lookup;
 
 /** API for controlling HTML like UI from Java language.
  *
@@ -60,47 +61,68 @@ public final class Pages {
     }
     
     public static Action openAction(final Map<?,?> map) {
-        class R implements ActionListener, Runnable {
-            private String m;
-            private Class<?> clazz;
-            private HtmlComponent tc;
-            private URL pageUrl;
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    String u = (String) map.get("url");
-                    String c = (String) map.get("class");
-                    m = (String) map.get("method");
-
-                    clazz = HtmlComponent.loadClass(c);
-                    URL url = clazz.getResource("/" + u);
-                    if (url == null) {
-                        url = new URL(u);
-                    }
-                    pageUrl = url;
-                    
-                    tc = new HtmlComponent();
-                    tc.open();
-                    tc.requestActive();
-
-                    Platform.runLater(this);
-                } catch (Exception ex) {
-                    throw new IllegalStateException(ex);
-                }
-            }
-
-            @Override
-            public void run() {
-                tc.loadFX(pageUrl, clazz, m);
-            }
-        }
-        
-        R r = new R();
+        R r = new R(map);
         return Actions.alwaysEnabled(
                 r,
                 (String) map.get("displayName"), // NOI18N
                 (String) map.get("iconBase"), // NOI18N
                 Boolean.TRUE.equals(map.get("noIconInMenu")) // NOI18N
         );
+    }
+    static class R implements ActionListener, Runnable {
+        private final Map<?,?> map;
+        private String m;
+        private Class<?> clazz;
+        private HtmlComponent tc;
+        private URL pageUrl;
+        private List<String> techIds;
+
+        public R(Map<?, ?> map) {
+            this.map = map;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                String u = (String) map.get("url");
+                String c = (String) map.get("class");
+                m = (String) map.get("method");
+
+                clazz = HtmlComponent.loadClass(c);
+                URL url = clazz.getResource("/" + u);
+                if (url == null) {
+                    url = new URL(u);
+                }
+                pageUrl = url;
+
+                tc = new HtmlComponent();
+                tc.open();
+                tc.requestActive();
+
+                Platform.runLater(this);
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+
+        @Override
+        public void run() {
+            tc.loadFX(pageUrl, clazz, m, getTechIds());
+        }
+
+        final Object[] getTechIds() {
+            if (techIds == null) {
+                techIds = new ArrayList<>();
+                for (int i = 0;; i++) {
+                    Object val = map.get("techId." + i);
+                    if (val instanceof String) {
+                        techIds.add((String) val);
+                    } else {
+                        break;
+                    }
+                }
+            }
+            return techIds.toArray();
+        }
     }
 }

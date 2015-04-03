@@ -2,7 +2,6 @@ Code completion result for source line:
 '|proto/localization',
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      prototype                       [PUBLIC]   require.js
 OTHER      order!                                     
 OTHER      text!                                      
 FILE       app                                        

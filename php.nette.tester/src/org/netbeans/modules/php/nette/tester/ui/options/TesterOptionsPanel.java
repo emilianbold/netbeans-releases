@@ -162,143 +162,143 @@ public class TesterOptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        testerPathLabel = new JLabel();
-        testerPathTextField = new JTextField();
-        browseTesterButton = new JButton();
-        searchTesterButton = new JButton();
-        testerPathHintLabel = new JLabel();
-        phpIniLabel = new JLabel();
-        phpIniTextField = new JTextField();
-        phpIniBrowseButton = new JButton();
-        binaryExecutableLabel = new JLabel();
-        binaryExecutableComboBox = new JComboBox<String>();
-        noteLabel = new JLabel();
-        minVersionLabel = new JLabel();
-        installLabel = new JLabel();
-        learnMoreLabel = new JLabel();
-        errorLabel = new JLabel();
+        testerPathLabel = new javax.swing.JLabel();
+        testerPathTextField = new javax.swing.JTextField();
+        browseTesterButton = new javax.swing.JButton();
+        searchTesterButton = new javax.swing.JButton();
+        testerPathHintLabel = new javax.swing.JLabel();
+        phpIniLabel = new javax.swing.JLabel();
+        phpIniTextField = new javax.swing.JTextField();
+        phpIniBrowseButton = new javax.swing.JButton();
+        binaryExecutableLabel = new javax.swing.JLabel();
+        binaryExecutableComboBox = new javax.swing.JComboBox<String>();
+        noteLabel = new javax.swing.JLabel();
+        minVersionLabel = new javax.swing.JLabel();
+        installLabel = new javax.swing.JLabel();
+        learnMoreLabel = new javax.swing.JLabel();
+        errorLabel = new javax.swing.JLabel();
 
         testerPathLabel.setLabelFor(testerPathTextField);
-        Mnemonics.setLocalizedText(testerPathLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.testerPathLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(testerPathLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.testerPathLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(browseTesterButton, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.browseTesterButton.text")); // NOI18N
-        browseTesterButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(browseTesterButton, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.browseTesterButton.text")); // NOI18N
+        browseTesterButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseTesterButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(searchTesterButton, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.searchTesterButton.text")); // NOI18N
-        searchTesterButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(searchTesterButton, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.searchTesterButton.text")); // NOI18N
+        searchTesterButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 searchTesterButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(testerPathHintLabel, "HINT"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(testerPathHintLabel, "HINT"); // NOI18N
 
         phpIniLabel.setLabelFor(phpIniTextField);
-        Mnemonics.setLocalizedText(phpIniLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.phpIniLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(phpIniLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.phpIniLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(phpIniBrowseButton, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.phpIniBrowseButton.text")); // NOI18N
-        phpIniBrowseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(phpIniBrowseButton, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.phpIniBrowseButton.text")); // NOI18N
+        phpIniBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 phpIniBrowseButtonActionPerformed(evt);
             }
         });
 
         binaryExecutableLabel.setLabelFor(binaryExecutableComboBox);
-        Mnemonics.setLocalizedText(binaryExecutableLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.binaryExecutableLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(binaryExecutableLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.binaryExecutableLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.noteLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(noteLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.noteLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(minVersionLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.minVersionLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(minVersionLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.minVersionLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(installLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.installLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(installLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.installLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.learnMoreLabel.text")); // NOI18N
-        learnMoreLabel.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(learnMoreLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.learnMoreLabel.text")); // NOI18N
+        learnMoreLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
                 learnMoreLabelMouseEntered(evt);
             }
-            public void mousePressed(MouseEvent evt) {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
                 learnMoreLabelMousePressed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(testerPathLabel)
                     .addComponent(phpIniLabel))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testerPathTextField)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseTesterButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(searchTesterButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testerPathHintLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(phpIniTextField)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(phpIniBrowseButton))))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(minVersionLabel)
                     .addComponent(installLabel)
-                    .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(binaryExecutableLabel)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(binaryExecutableComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(errorLabel))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseTesterButton, phpIniBrowseButton, searchTesterButton});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {browseTesterButton, phpIniBrowseButton, searchTesterButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(searchTesterButton)
                     .addComponent(browseTesterButton)
-                    .addComponent(testerPathTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testerPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(testerPathLabel))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(testerPathHintLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(phpIniLabel)
-                    .addComponent(phpIniTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(phpIniTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(phpIniBrowseButton))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(binaryExecutableLabel)
-                    .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(binaryExecutableComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(minVersionLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(installLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -376,21 +376,21 @@ public class TesterOptionsPanel extends JPanel {
     }//GEN-LAST:event_phpIniBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox<String> binaryExecutableComboBox;
-    private JLabel binaryExecutableLabel;
-    private JButton browseTesterButton;
-    private JLabel errorLabel;
-    private JLabel installLabel;
-    private JLabel learnMoreLabel;
-    private JLabel minVersionLabel;
-    private JLabel noteLabel;
-    private JButton phpIniBrowseButton;
-    private JLabel phpIniLabel;
-    private JTextField phpIniTextField;
-    private JButton searchTesterButton;
-    private JLabel testerPathHintLabel;
-    private JLabel testerPathLabel;
-    private JTextField testerPathTextField;
+    private javax.swing.JComboBox<String> binaryExecutableComboBox;
+    private javax.swing.JLabel binaryExecutableLabel;
+    private javax.swing.JButton browseTesterButton;
+    private javax.swing.JLabel errorLabel;
+    private javax.swing.JLabel installLabel;
+    private javax.swing.JLabel learnMoreLabel;
+    private javax.swing.JLabel minVersionLabel;
+    private javax.swing.JLabel noteLabel;
+    private javax.swing.JButton phpIniBrowseButton;
+    private javax.swing.JLabel phpIniLabel;
+    private javax.swing.JTextField phpIniTextField;
+    private javax.swing.JButton searchTesterButton;
+    private javax.swing.JLabel testerPathHintLabel;
+    private javax.swing.JLabel testerPathLabel;
+    private javax.swing.JTextField testerPathTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

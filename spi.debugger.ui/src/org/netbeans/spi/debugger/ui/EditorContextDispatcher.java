@@ -51,9 +51,11 @@ import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -62,13 +64,16 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -287,6 +292,76 @@ public final class EditorContextDispatcher {
         } catch (IndexOutOfBoundsException ex) {
             return null;
         }
+    }
+    
+    Set<String> getMIMETypesOnCurrentLine() {
+        Line line = getCurrentLine();
+        if (line == null) {
+            return Collections.EMPTY_SET;
+        }
+        return getMIMETypesOnLine(line);
+    }
+    
+    Set<String> getMIMETypesOnLine(Line line) {
+        EditorCookie editorCookie = line.getLookup().lookup(EditorCookie.class);
+        if (editorCookie == null) {
+            DataObject dobj = line.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                editorCookie = dobj.getLookup().lookup(EditorCookie.class);
+            }
+            if (editorCookie == null) {
+                return Collections.emptySet();
+            }
+        }
+        StyledDocument document = editorCookie.getDocument();
+        Set<String> mimeTypes = null;
+        ((AbstractDocument) document).readLock();
+        try {
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document) document);
+            int ln = line.getLineNumber();
+            int offset = NbDocument.findLineOffset(document, ln);
+            int maxOffset = document.getLength() - 1;
+            int maxLine = NbDocument.findLineNumber(document, maxOffset);
+            int offset2;
+            if (ln + 1 > maxLine) {
+                offset2 = maxOffset;
+            } else {
+                offset2 = NbDocument.findLineOffset(document, ln+1) - 1;
+            }
+            // The line has offsets <offset, offset2>
+            Set<LanguagePath> languagePaths = th.languagePaths();
+            for (LanguagePath lp : languagePaths) {
+                List<TokenSequence<?>> tsl = th.tokenSequenceList(lp, offset, offset2);
+                for (TokenSequence ts : tsl) {
+                    if (ts.moveNext()) {
+                        //int to = ts.offset();
+                        //if (!(offset <= to && to < offset2)) {
+                        //    continue;
+                        //}
+                        TokenSequence ets;
+                        ets = ts.embedded();
+                        if (ets != null) {
+                            ts = ets;
+                        }
+                        String mimeType = ts.language().mimeType();
+                        if (mimeType != null) {
+                            if (mimeTypes == null) {
+                                mimeTypes = Collections.singleton(mimeType);
+                            } else {
+                                if (mimeTypes.size() == 1) {
+                                    mimeTypes = new HashSet<String>(mimeTypes);
+                                }
+                                mimeTypes.add(mimeType);
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            ((AbstractDocument) document).readUnlock();
+        }
+        return (mimeTypes != null) ? mimeTypes : Collections.<String>emptySet();
+        
     }
     
     /**

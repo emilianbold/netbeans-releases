@@ -238,8 +238,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     @Override
     public boolean moveProperty(String name, JsObject newParent) {
         JsObject property = getProperty(name);
-        if (property != null) {
-            correctDeclarationScope(property, this, new HashSet<String>());
+        if (property != null && (newParent instanceof DeclarationScope)) {
+            correctDeclarationScope(property, (DeclarationScope)newParent, new HashSet<String>());
         }
         return super.moveProperty(name, newParent); 
     }
@@ -248,11 +248,16 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         if (!done.contains(where.getFullyQualifiedName())) {
             done.add(where.getFullyQualifiedName());
             if (where instanceof DeclarationScope) {
-                DeclarationScope scope = (DeclarationScope)where;
-                if (scope.getParentScope() != null) {
-                    scope.getParentScope().getChildrenScopes().remove(scope);
+                if (where.isDeclared()) {
+                    DeclarationScope scope = (DeclarationScope)where;
+                    if (scope.getParentScope() != null) {
+                        scope.getParentScope().getChildrenScopes().remove(scope);
+                        if (scope instanceof DeclarationScopeImpl) {
+                            ((DeclarationScopeImpl)scope).setParentScope(newScope);
+                        }
+                    }
+                    newScope.addDeclaredScope(scope);
                 }
-                newScope.addDeclaredScope(scope);
             } else {
                 for (JsObject property : where.getProperties().values()) {
                     correctDeclarationScope(property, newScope, done);

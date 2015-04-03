@@ -80,6 +80,7 @@ import org.openide.util.RequestProcessor;
  * Action for creating new PHP Unit tests.
  * @author Tomas Mysik
  */
+// XXX this is common test creator, not phpunit specific one
 @TestCreatorProvider.Registration(displayName=TestCreatorProvider.FRAMEWORK_PHPUNIT)
 public final class PhpUnitTestCreatorProvider extends TestCreatorProvider {
 

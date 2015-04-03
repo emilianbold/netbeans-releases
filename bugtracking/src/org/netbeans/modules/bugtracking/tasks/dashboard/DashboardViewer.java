@@ -717,7 +717,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
-                    updateCategoryNode(mapRepositoryToUnsubmittedNode.get(repository));
+                    synchronized(mapRepositoryToUnsubmittedNode) {
+                        updateCategoryNode(mapRepositoryToUnsubmittedNode.get(repository));
+                    }
                 }
             });
         }
@@ -1017,11 +1019,13 @@ public final class DashboardViewer implements PropertyChangeListener {
     private List<CategoryNode> loadUnsubmitedCategories() {
         Collection<RepositoryImpl> allRepositories = DashboardUtils.getRepositories();
         List<CategoryNode> catNodes = new ArrayList<CategoryNode>(allRepositories.size());
-        mapRepositoryToUnsubmittedNode.clear();
-        for (RepositoryImpl repository : allRepositories) {
-            UnsubmittedCategoryNode unsubmittedCategoryNode = createUnsubmittedCategoryNode(repository);
-            mapRepositoryToUnsubmittedNode.put(repository, unsubmittedCategoryNode);
-            catNodes.add(unsubmittedCategoryNode);
+        synchronized(mapRepositoryToUnsubmittedNode) {
+            mapRepositoryToUnsubmittedNode.clear();
+            for (RepositoryImpl repository : allRepositories) {
+                UnsubmittedCategoryNode unsubmittedCategoryNode = createUnsubmittedCategoryNode(repository);
+                mapRepositoryToUnsubmittedNode.put(repository, unsubmittedCategoryNode);
+                catNodes.add(unsubmittedCategoryNode);
+            }
         }
         return catNodes;
     }
@@ -1029,19 +1033,23 @@ public final class DashboardViewer implements PropertyChangeListener {
     private void updateUnsubmitedCategories(List<RepositoryNode> toRemove, List<RepositoryNode> toAdd) {
         synchronized (LOCK_CATEGORIES) {
             for (RepositoryNode repositoryNode : toRemove) {
-                CategoryNode categoryNode = mapRepositoryToUnsubmittedNode.remove(repositoryNode.getRepository());
-                mapCategoryToNode.remove(categoryNode.getCategory());
-                categoryNodes.remove(categoryNode);
-                model.removeRoot(categoryNode);
+                synchronized(mapRepositoryToUnsubmittedNode) {
+                    CategoryNode categoryNode = mapRepositoryToUnsubmittedNode.remove(repositoryNode.getRepository());
+                    mapCategoryToNode.remove(categoryNode.getCategory());
+                    categoryNodes.remove(categoryNode);
+                    model.removeRoot(categoryNode);
+                }
             }
 
             for (RepositoryNode newRepository : toAdd) {
                 UnsubmittedCategoryNode categoryNode = createUnsubmittedCategoryNode(newRepository.getRepository());
-                mapRepositoryToUnsubmittedNode.put(newRepository.getRepository(), categoryNode);
-                mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
-                categoryNodes.add(categoryNode);
-                if (isCategoryInFilter(categoryNode)) {
-                    addCategoryToModel(categoryNode);
+                synchronized(mapRepositoryToUnsubmittedNode) {
+                    mapRepositoryToUnsubmittedNode.put(newRepository.getRepository(), categoryNode);
+                    mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
+                    categoryNodes.add(categoryNode);
+                    if (isCategoryInFilter(categoryNode)) {
+                        addCategoryToModel(categoryNode);
+                    }
                 }
             }
         }

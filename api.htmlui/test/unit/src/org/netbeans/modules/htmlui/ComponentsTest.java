@@ -49,7 +49,9 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import net.java.html.BrwsrCtx;
 import org.netbeans.api.htmlui.HTMLComponent;
+import org.netbeans.html.context.spi.Contexts;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -99,20 +101,28 @@ public class ComponentsTest {
 
     @HTMLComponent(
         url = "simple.html", className = "TestPages",
-        type = JComponent.class
+        type = JComponent.class, 
+        techIds = "second"
     ) 
     static void getSwing(int param, CountDownLatch called) {
         assertEquals(param, 10, "Correct value passed in");
         called.countDown();
+        ATech t = Contexts.find(BrwsrCtx.findDefault(ComponentsTest.class), ATech.class);
+        assertNotNull(t, "A technology found");
+        assertEquals(t.getClass(), ATech.Second.class);
     }
 
     @HTMLComponent(
         url = "simple.html", className = "TestPages",
-        type = Node.class
+        type = Node.class,
+        techIds = "first"
     ) 
     static void getFX(int param, CountDownLatch called) {
         assertEquals(param, 10, "Correct value passed in");
         called.countDown();
+        ATech t = Contexts.find(BrwsrCtx.findDefault(ComponentsTest.class), ATech.class);
+        assertNotNull(t, "A technology found");
+        assertEquals(t.getClass(), ATech.First.class);
     }
-
+    
 }
