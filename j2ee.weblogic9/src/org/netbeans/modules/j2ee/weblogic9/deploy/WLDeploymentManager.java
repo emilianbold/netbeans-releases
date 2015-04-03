@@ -767,20 +767,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         } else {
             config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), credentials);
         }
-//        Deployment.getDefault().addInstanceListener(new InstanceListener() {
-//
-//            @Override
-//            public void instanceAdded(String serverInstanceID) {
-//            }
-//
-//            @Override
-//            public void instanceRemoved(String serverInstanceID) {
-//                if (serverInstanceID.equals(dm.getUri())) {
-//                    WebLogicRuntime.clear(config);
-//                    Deployment.getDefault().removeInstanceListener(this);
-//                }
-//            }
-//        });
         return config;
     }
 
