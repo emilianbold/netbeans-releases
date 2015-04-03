@@ -46,6 +46,7 @@ package org.netbeans.modules.git.remote.ui.init;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
@@ -309,9 +310,18 @@ public class InitAction implements ActionListener, HelpCtx.Provider {
     }
 
     private boolean isEnabled() {
+        Set<VCSFileProxy> rootFiles = ctx.getRootFiles();
+        if (rootFiles.isEmpty()) {
+            return false;
+        }
+        VCSFileProxy root = rootFiles.iterator().next();
+        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(root))) {
+            notifyImportImpossible(NbBundle.getMessage(InitAction.class, "MSG_FileSystemDisconnected")); // NOI18N
+            return false;
+        }
         boolean ret = !GitUtils.isFromGitRepository(ctx);
         if(!ret) {
-            notifyImportImpossible(NbBundle.getMessage(InitAction.class, "MSG_AlreadyVersioned"));            
+            notifyImportImpossible(NbBundle.getMessage(InitAction.class, "MSG_AlreadyVersioned")); // NOI18N
         }
         return ret;
     }

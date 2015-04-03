@@ -121,6 +121,9 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if(!isEnabled()) {
+            return;
+        }
         
         Utils.logVCSActionEvent("Git"); //NOI18N
         String cloneFromPath = null;
@@ -362,6 +365,18 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             return destination;
         }
         return null;
+    }
+    
+    private boolean isEnabled() {
+        Set<VCSFileProxy> rootFiles = ctx.getRootFiles();
+        if (rootFiles.isEmpty()) {
+            return false;
+        }
+        VCSFileProxy root = rootFiles.iterator().next();
+        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(root))) {
+            return false;
+        }
+        return true;
     }
     
     private static class CloneRemoteConfig {
