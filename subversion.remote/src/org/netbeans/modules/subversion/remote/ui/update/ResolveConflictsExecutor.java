@@ -106,7 +106,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
 
     public void exec() {
         assert SwingUtilities.isEventDispatchThread();
-        MergeVisualizer merge = (MergeVisualizer) Lookup.getDefault().lookup(MergeVisualizer.class);
+        MergeVisualizer merge = Lookup.getDefault().lookup(MergeVisualizer.class);
         if (merge == null) {
             throw new IllegalStateException("No Merge engine found."); // NOI18N
         }

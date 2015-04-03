@@ -456,9 +456,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
      * revision ranges. XXX move this logic to clients?
      */
     @Override
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         if (results == null) {
-            return Collections.EMPTY_SET;
+            return Collections.<Setup>emptySet();
         }
         if (tbDiff.isSelected()) {
             return diffView.getSetups();
@@ -819,7 +819,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private void initializeFilter () {
-        DefaultComboBoxModel filterModel = new DefaultComboBoxModel();
+        DefaultComboBoxModel<FilterKind> filterModel = new DefaultComboBoxModel<>();
         filterModel.addElement(FilterKind.ALL);
         filterModel.addElement(FilterKind.ID);
         filterModel.addElement(FilterKind.MESSAGE);

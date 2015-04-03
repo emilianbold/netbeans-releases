@@ -455,10 +455,6 @@ public class Annotator extends VCSAnnotator {
         return SvnUtils.getComparableStatus(a.getStatus()) < SvnUtils.getComparableStatus(b.getStatus());
     }
 
-    String annotateName(String name, Set files) {
-        return null;
-    }
-
     /**
      * Returns array of versioning actions that may be used to construct a popup menu. These actions
      * will act on the supplied context.
@@ -673,8 +669,8 @@ public class Annotator extends VCSAnnotator {
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
         List<VCSFileProxy> filesToRefresh = new LinkedList<>();
-        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
-            VCSFileProxy file = (VCSFileProxy) i.next();
+        for (Iterator<VCSFileProxy> i = context.getRootFiles().iterator(); i.hasNext();) {
+            VCSFileProxy file = i.next();
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 filesToRefresh.add(file);

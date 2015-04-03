@@ -51,6 +51,7 @@ import java.util.*;
 import java.awt.BorderLayout;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -149,7 +150,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
 
     @Override
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         return shp.getSetups();
     }
 

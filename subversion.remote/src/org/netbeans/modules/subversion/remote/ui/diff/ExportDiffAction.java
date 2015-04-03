@@ -204,8 +204,8 @@ public class ExportDiffAction extends ContextAction {
                 }
             }
             List<VCSFileProxy> setupFiles = new ArrayList<>(setups.size());
-            for (Iterator i = setups.iterator(); i.hasNext();) {
-                Setup setup = (Setup) i.next();
+            for (Iterator<Setup> i = setups.iterator(); i.hasNext();) {
+                Setup setup = i.next();
                 setupFiles.add(setup.getBaseFile()); 
             }
             root = getCommonParent(setupFiles.toArray(new VCSFileProxy[setupFiles.size()]));
@@ -328,7 +328,7 @@ public class ExportDiffAction extends ContextAction {
     /** Writes contextual diff into given stream.*/
     private void exportDiff(Setup setup, String relativePath, OutputStream out) throws IOException {
         setup.initSources();
-        DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
+        DiffProvider diff = Lookup.getDefault().lookup(DiffProvider.class);
 
         Reader r1 = null;
         Reader r2 = null;

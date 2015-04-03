@@ -60,7 +60,7 @@ final class AnnotationMarkProvider extends MarkProvider {
     private List<Mark> marks = Collections.emptyList();
 
     public void setMarks(List<AnnotationMark> marks) {
-        List old = this.marks;
+        List<Mark> old = this.marks;
         this.marks = new ArrayList<Mark>(marks);        
         firePropertyChange(PROP_MARKS, old, marks);
     }
