@@ -240,4 +240,16 @@ public class Context {
             exclusions.add(root);
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        for(VCSFileProxy root : rootFiles) {
+            if (buf.length()>0) {
+                buf.append('\n');
+            }
+            buf.append(root.getPath());
+        }
+        return buf.toString();
+    }
 }

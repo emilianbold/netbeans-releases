@@ -166,7 +166,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
     }
     
     private void setPermissionCheckBoxes(String ch, JCheckBox cb1, JCheckBox cb2, JCheckBox cb3) {
-        int val = new Integer(ch);
+        int val = Integer.parseInt(ch);
         cb1.setSelected((val & 4) == 4);
         cb2.setSelected((val & 2) == 2);
         cb3.setSelected((val & 1) == 1);

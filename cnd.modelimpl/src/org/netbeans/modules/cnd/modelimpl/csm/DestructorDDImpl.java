@@ -176,7 +176,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
             DestructorDDImpl method = new DestructorDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //StringBuilder clsTemplateSuffix = new StringBuilder();
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 

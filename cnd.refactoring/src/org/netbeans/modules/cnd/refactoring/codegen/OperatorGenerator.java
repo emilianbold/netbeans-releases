@@ -343,7 +343,6 @@ public class OperatorGenerator implements CodeGenerator {
         }
 
         private void init() {
-            StringBuilder buf = new StringBuilder();
             switch (kind) {
                 case MOD_EQ:
                     name = "operator %="; // NOI18N
