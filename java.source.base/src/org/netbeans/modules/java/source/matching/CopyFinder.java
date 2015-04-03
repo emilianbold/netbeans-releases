@@ -320,6 +320,34 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             currentPath = null;
         }
     }
+    
+    private boolean typeMatches(TreePath currentPath, String placeholderName) {
+        TypeMirror designed = designedTypeHack != null ? designedTypeHack.get(placeholderName) : null;
+
+        boolean bind;
+
+        if (designed != null && designed.getKind() != TypeKind.ERROR) {
+            TypeMirror real = info.getTrees().getTypeMirror(currentPath);
+            if (real != null && !IGNORE_KINDS.contains(real.getKind())) {
+                // special hack: if the designed type is DECLARED (assuming a boxed primitive) and the real type is 
+                // not DECLARED or is null (assuming a real primitive), do not treat them as assignable.
+                // this will stop matching constraint to boxed types against primitive subexpressions. Exclude j.l.Object
+                // which will allow to match raw type parameters
+                if (designed.getKind() == TypeKind.DECLARED &&
+                    real.getKind().ordinal() <= TypeKind.DOUBLE.ordinal() &&
+                    !((TypeElement)((DeclaredType)designed).asElement()).getQualifiedName().contentEquals("java.lang.Object")) { //NOI18N
+                    bind = false;
+                } else {
+                    bind = info.getTypes().isAssignable(real, designed);
+                }
+            } else {
+                bind = false;
+            }
+        } else {
+            bind = designed == null;
+        }
+        return bind;
+    }
 
     @Override
     public Boolean scan(Tree node, TreePath p) {
@@ -360,31 +388,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 }
 
                 TreePath currentPath = new TreePath(getCurrentPath(), node);
-                TypeMirror designed = designedTypeHack != null ? designedTypeHack.get(treeName) : null;//info.getTrees().getTypeMirror(p);
-
-                boolean bind;
-
-                if (designed != null && designed.getKind() != TypeKind.ERROR) {
-                    TypeMirror real = info.getTrees().getTypeMirror(currentPath);
-                    if (real != null && !IGNORE_KINDS.contains(real.getKind())) {
-                        // special hack: if the designed type is DECLARED (assuming a boxed primitive) and the real type is 
-                        // not DECLARED or is null (assuming a real primitive), do not treat them as assignable.
-                        // this will stop matching constraint to boxed types against primitive subexpressions. Exclude j.l.Object
-                        // which will allow to match raw type parameters
-                        if (designed.getKind() == TypeKind.DECLARED &&
-                            real.getKind().ordinal() <= TypeKind.DOUBLE.ordinal() &&
-                            !((TypeElement)((DeclaredType)designed).asElement()).getQualifiedName().contentEquals("java.lang.Object")) { //NOI18N
-                            bind = false;
-                        } else {
-                            bind = info.getTypes().isAssignable(real, designed);
-                        }
-                    } else {
-                        bind = false;
-                    }
-                } else {
-                    bind = designed == null;
-                }
-
+                boolean bind = typeMatches(currentPath, treeName);
                 if (bind) {
                     TreePath original = bindState.variables.get(treeName);
 
@@ -1529,6 +1533,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         String name = t.getName().toString();
 
         if (name.startsWith("$")) { //XXX: there should be a utility method for this check
+            // check whether there's a type constraint and if it is, check it for a match
+            if (!typeMatches(getCurrentPath(), name)) {
+                return false;
+            }
             String existingName = bindState.variables2Names.get(name);
             String currentName = node.getName().toString();
 
