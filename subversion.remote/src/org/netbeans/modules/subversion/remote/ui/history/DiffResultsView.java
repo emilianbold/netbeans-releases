@@ -238,7 +238,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                         }
                     }
                 } else {
-                    revOlder = (RepositoryRevision.Event) selectedNodes[1].getLookup().lookup(RepositoryRevision.Event.class);
+                    revOlder = selectedNodes[1].getLookup().lookup(RepositoryRevision.Event.class);
                 }
                 if (r1 == null || revOlder == null || revOlder.getFile() == null) {
                     error = true;

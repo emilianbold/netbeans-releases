@@ -248,7 +248,7 @@ class RevisionSetupsSupport {
     private List<Setup> addPropertySetups (SvnClient client, SVNUrl leftFileUrl, SVNRevision leftRevision,
             SVNUrl rightFileUrl, SVNRevision rightRevision) throws SVNClientException {
         List<Setup> propSetups = new ArrayList<>();
-        DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
+        DiffProvider diffAlgorithm = Lookup.getDefault().lookup(DiffProvider.class);
         try {
             Map<String, byte[]> leftProps = leftFileUrl == null
                     ? Collections.<String, byte[]>emptyMap()

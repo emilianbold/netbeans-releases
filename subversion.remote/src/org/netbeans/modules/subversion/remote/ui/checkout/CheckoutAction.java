@@ -101,7 +101,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
     private VCSFileProxy performCheckout (final boolean wait) {
         assert !wait || !EventQueue.isDispatchThread(); // cannot wait in AWT
         final FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
-        if (defaultFileSystem == null) {
+        if (defaultFileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(defaultFileSystem)) {
             return null;
         }
         CheckoutWizard wizard = new CheckoutWizard(defaultFileSystem);
