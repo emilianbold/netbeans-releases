@@ -196,11 +196,7 @@ public final class EditorContextSupport {
                     if (ci == null) {
                         return;
                     }
-                    if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                        LOG.warning(
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                    if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     }
                     Elements elms = ci.getElements();
@@ -360,11 +356,7 @@ public final class EditorContextSupport {
                     if (ci == null) {
                         return;
                     }
-                    if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                        LOG.warning(
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                    if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     }
                     TypeElement classElement = EditorContextSupport.getTypeElement(ci, className, classExcludeNames);
@@ -577,11 +569,7 @@ public final class EditorContextSupport {
                     if (ci == null) {
                         return;
                     }
-                    if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                        LOG.warning(
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                    if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     }
                     TypeElement classElement = EditorContextSupport.getTypeElement(ci, className, classExcludeNames);
@@ -693,11 +681,7 @@ public final class EditorContextSupport {
                     if (ci == null) {
                         return;
                     }
-                    if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                        LOG.warning(
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                    if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     }
                     LineMap lineMap = ci.getCompilationUnit().getLineMap();
@@ -776,11 +760,7 @@ public final class EditorContextSupport {
                 }
                 @Override
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                        LOG.warning(
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                    if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     }
                     int offset = currentOffset;
@@ -916,11 +896,7 @@ public final class EditorContextSupport {
                 }
                 @Override
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                        LOG.warning(
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                    if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     }
                     int offset = currentOffset;
@@ -1032,11 +1008,7 @@ public final class EditorContextSupport {
                                                               int lineNumber,
                                                               EditorContext.BytecodeProvider bytecodeProvider,
                                                               ASTOperationCreationDelegate opCreationDelegate) throws IOException {
-        if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-            LOG.warning(
-                    "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                    "\nDiagnostics = "+ci.getDiagnostics()+
-                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+        if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {//TODO: ELEMENTS_RESOLVED may be sufficient
             return new EditorContext.Operation[] {};
         }
         // We need the enclosing statement/block
@@ -1198,11 +1170,7 @@ public final class EditorContextSupport {
                                                           ASTOperationCreationDelegate opCreationDelegate)
                                                             throws IOException {
         EditorContext.MethodArgument args[];
-        if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
-            LOG.warning(
-                    "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                    "\nDiagnostics = "+ci.getDiagnostics()+
-                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+        if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
             return null;
         }
         int offset = operation.getMethodEndPosition().getOffset();
@@ -1227,11 +1195,7 @@ public final class EditorContextSupport {
                                                           ASTOperationCreationDelegate opCreationDelegate)
                                                             throws IOException {
         MethodArgument args[];
-        if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
-            LOG.warning(
-                    "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                    "\nDiagnostics = "+ci.getDiagnostics()+
-                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+        if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
             return null;
         }
         Scope scope = ci.getTreeUtilities().scopeFor(offset);
@@ -1288,11 +1252,7 @@ public final class EditorContextSupport {
                 }
                 @Override
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                        LOG.warning(
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                    if (!PreferredCCParser.toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     }
                     Element el = null;
