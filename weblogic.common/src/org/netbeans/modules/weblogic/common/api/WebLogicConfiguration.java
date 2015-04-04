@@ -77,7 +77,8 @@ public final class WebLogicConfiguration {
     // @GuardedBy("this")
     private WebLogicRemote remote;
 
-    private WebLogicConfiguration(File serverHome, File domainHome, String host, Integer port, Credentials credentials) {
+    private WebLogicConfiguration(File serverHome, File domainHome, DomainConfiguration config,
+            String host, Integer port, Credentials credentials) {
         this.serverHome = serverHome;
         this.domainHome = domainHome;
         this.host = host;
@@ -85,26 +86,32 @@ public final class WebLogicConfiguration {
         this.credentials = credentials;
 
         if (domainHome != null) {
+            assert config != null;
             id = serverHome + ":" + domainHome;
-            // FIXME null config
-            config = DomainConfiguration.getInstance(domainHome, true);
+            this.config = config;
         } else {
             id = host + ":" + port;
-            config = null;
+            this.config = null;
         }
     }
 
+    @CheckForNull
     public static WebLogicConfiguration forLocalDomain(File serverHome, File domainHome,
             Credentials credentials) {
-        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, domainHome, null, null, credentials);
+        DomainConfiguration config = DomainConfiguration.getInstance(domainHome, true);
+        if (config == null) {
+            return null;
+        }
+        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, domainHome, config, null, null, credentials);
         synchronized (INSTANCES) {
             return INSTANCES.putIfAbsent(instance);
         }
     }
 
+    @NonNull
     public static WebLogicConfiguration forRemoteDomain(File serverHome, String host, int port,
             Credentials credentials) {
-        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, null, host, port, credentials);
+        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, null, null, host, port, credentials);
         synchronized (INSTANCES) {
             return INSTANCES.putIfAbsent(instance);
         }
