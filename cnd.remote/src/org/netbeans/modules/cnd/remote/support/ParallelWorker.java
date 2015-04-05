@@ -65,7 +65,9 @@ public abstract class ParallelWorker implements Runnable {
             runImpl();
         } finally {
             Thread.currentThread().setName(oldName);
-            latch.countDown();
+            if (latch != null) {
+                latch.countDown();
+            }
         }
     }
 

@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
@@ -67,6 +68,8 @@ import org.openide.util.Exceptions;
     private int nextSet;
     private String platform;
     private Process process;
+    
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     public CompilerSetScriptManager(ExecutionEnvironment env) {
         super(env);
@@ -91,11 +94,41 @@ import org.openide.util.Exceptions;
                 HostInfo hinfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
                 process = pb.call();
-                process.getOutputStream().write(ToolchainScriptGenerator.generateScript(null, hinfo).getBytes());
-                process.getOutputStream().close();
 
+                long time = System.currentTimeMillis();
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager generating script started", //NOI18N
+                            new Object[]{System.currentTimeMillis()});
+                }                
+                final String script = ToolchainScriptGenerator.generateScript(null, hinfo);
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager generating script finished in {1} ms", //NOI18N
+                            new Object[]{System.currentTimeMillis(), System.currentTimeMillis() - time});
+                }
+                
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager feeding script started", //NOI18N
+                            new Object[]{System.currentTimeMillis()});
+                }                
+                time = System.currentTimeMillis();
+                process.getOutputStream().write(script.getBytes());
+                process.getOutputStream().close();
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager feeding script finished in {1} ms", //NOI18N
+                            new Object[]{System.currentTimeMillis(), System.currentTimeMillis() - time});
+                }
+
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager reading response started", //NOI18N
+                            new Object[]{System.currentTimeMillis()});
+                }    
+                time = System.currentTimeMillis();
                 List<String> lines = ProcessUtils.readProcessOutput(process);
                 int status = -1;
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager reading response finished in {1} ms", //NOI18N
+                            new Object[]{System.currentTimeMillis(), System.currentTimeMillis() - time});
+                }
 
                 try {
                     status = process.waitFor();

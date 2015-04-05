@@ -201,7 +201,7 @@ public class RemoteServerRecord implements ServerRecord {
         Object ostate = state;
         setState(State.INITIALIZING);        
         final RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
-        CountDownLatch latch = new CountDownLatch(2);
+        CountDownLatch latch = new CountDownLatch(1);
         requestProcessor.post(new ParallelWorker("Updating remote binaries at " + getExecutionEnvironment(), latch) { //NOI18N
             @Override
             protected void runImpl() {
@@ -221,7 +221,7 @@ public class RemoteServerRecord implements ServerRecord {
             }
         });
 
-        requestProcessor.post(new ParallelWorker("Initializing path map at " + getExecutionEnvironment(), latch) { //NOI18N
+        requestProcessor.post(new ParallelWorker("Initializing path map at " + getExecutionEnvironment(), null) { //NOI18N
             @Override
             protected void runImpl() {
                 StopWatch sw;
