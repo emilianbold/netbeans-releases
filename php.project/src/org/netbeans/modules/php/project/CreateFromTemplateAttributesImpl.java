@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -131,10 +132,7 @@ class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
                 if (pdname != null) {
                     values.put("displayName", pdname); // NOI18N
                 }
-                for (FileObject webRoot: ProjectWebRootQuery.getWebRoots(prj)) {
-                    values.put("webRootName", webRoot.getNameExt()); // NOI18N
-                    break;
-                }
+                values.put("webRootPath", getWebRootPath(prj)); // NOI18N
             }
         } catch (Exception ex) {
             // not really important, just log.
@@ -145,6 +143,14 @@ class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
             return null;
         }
         return Collections.singletonMap("project", values); // NOI18N
+    }
+
+    @CheckForNull
+    private static String getWebRootPath(Project project) {
+        for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
+            return FileUtil.getRelativePath(project.getProjectDirectory(), webRoot);
+        }
+        return null;
     }
 
 }

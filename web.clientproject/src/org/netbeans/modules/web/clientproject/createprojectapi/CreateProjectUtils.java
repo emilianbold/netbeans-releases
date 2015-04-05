@@ -125,17 +125,16 @@ public final class CreateProjectUtils {
             throw new IllegalArgumentException("toolsPanel must be created by #createToolsWizardPanel() method");
         }
         Set<FileObject> files = new HashSet<>();
-        FileObject folder = findBestToolsFolder(project);
+        FileObject folder = project.getProjectDirectory();
         assert folder != null;
         Tools tools = ((ToolsPanel) toolsPanel).getTools();
         if (tools.isBower()) {
             files.add(createFile(folder, "bower.json", "Templates/ClientSide/bower.json")); // NOI18N
             // #251608
-            FileObject webRoot = getWebRoot(project);
-            if (webRoot != null
-                    && !webRoot.equals(project.getProjectDirectory())) {
+            String webRootPath = getWebRootPath(project);
+            if (webRootPath != null) {
                 files.add(createFile(folder, ".bowerrc", "Templates/ClientSide/.bowerrc", // NOI18N
-                        Collections.<String, Object>singletonMap("project", Collections.singletonMap("webRootName", webRoot.getNameExt())))); // NOI18N
+                        Collections.<String, Object>singletonMap("project", Collections.singletonMap("webRootPath", webRootPath)))); // NOI18N
             }
         }
         if (tools.isNpm()) {
@@ -150,19 +149,10 @@ public final class CreateProjectUtils {
         return files;
     }
 
-    private static FileObject findBestToolsFolder(Project project) {
-        // XXX ???
-        /*Sources sources = ProjectUtils.getSources(project);
-        for (SourceGroup sourceGroup : sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)) {
-            return sourceGroup.getRootFolder();
-        }*/
-        return project.getProjectDirectory();
-    }
-
     @CheckForNull
-    private static FileObject getWebRoot(Project project) {
+    private static String getWebRootPath(Project project) {
         for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
-            return webRoot;
+            return FileUtil.getRelativePath(project.getProjectDirectory(), webRoot);
         }
         return null;
     }
