@@ -223,7 +223,12 @@ class SearchExecutor extends SvnProgressSupport {
 
     private void search(SVNUrl rootUrl, Set<VCSFileProxy> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths, int limit) {
         SvnClient client;
-        Context context = new Context(files.toArray(new VCSFileProxy[files.size()]));
+        Context context;
+        if (files != null) {
+            context = new Context(files.toArray(new VCSFileProxy[files.size()]));
+        } else {
+            context = new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
+        }
         try {
             client = Subversion.getInstance().getClient(context, rootUrl, progressSupport);
         } catch (SVNClientException ex) {

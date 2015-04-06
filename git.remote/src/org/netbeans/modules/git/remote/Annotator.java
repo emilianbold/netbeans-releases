@@ -110,7 +110,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.complementOf(
             EnumSet.of(Status.NOTVERSIONED_EXCLUDED, Status.NOTVERSIONED_NOTMANAGED, Status.UNKNOWN)
     );
-    private static String projectFormat;
+    private String projectFormat;
     static {
         STATUS_IS_IMPORTANT.addAll(FileInformation.STATUS_LOCAL_CHANGES);
         STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.UPTODATE, FileInformation.Status.NOTVERSIONED_EXCLUDED));
@@ -611,7 +611,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         return AnnotationColorProvider.getInstance();
     }
 
-    private static String getAnnotationProjectFormat () {
+    private String getAnnotationProjectFormat () {
         if (projectFormat == null) {
             String format = GitModuleConfig.getDefault().getProjectAnnotationFormat();
             format = Utils.skipUnsupportedVariables(format, PROJECT_ANNOTATION_VARIABLES.toPatterns());

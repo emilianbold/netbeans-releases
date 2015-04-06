@@ -411,7 +411,7 @@ public class SvnClientExceptionHandler {
             }
             if(!directWorks) {
                 proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
-                proxySocket.connect(new InetSocketAddress(proxyHost, Integer.valueOf(proxyPort)));
+                proxySocket.connect(new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort)));
                 String username = NetworkSettings.getAuthenticationUsername(uri);
                 String password = null;
                 if (username != null) {

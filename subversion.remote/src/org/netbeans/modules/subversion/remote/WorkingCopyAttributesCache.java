@@ -70,7 +70,7 @@ public final class WorkingCopyAttributesCache {
      * Returns (and creates if needed) an instance.
      * @return an instance of this class
      */
-    public static WorkingCopyAttributesCache getInstance () {
+    public static synchronized WorkingCopyAttributesCache getInstance () {
         if (instance == null) {
             instance = new WorkingCopyAttributesCache();
             instance.init();

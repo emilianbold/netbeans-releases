@@ -59,7 +59,7 @@ public class RootsToFile {
     private final Map<VCSFileProxy, VCSFileProxy> files = new LinkedHashMap<VCSFileProxy, VCSFileProxy>() {
         @Override
         protected boolean removeEldestEntry (Map.Entry<VCSFileProxy, VCSFileProxy> eldest) {
-            return size() > 1500;
+            return super.size() > 1500;
         }
     };
     private long cachedAccesCount = 0;

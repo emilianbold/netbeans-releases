@@ -260,9 +260,6 @@ public class RemoteVcsSupportUtil {
                 parentPath = PathUtilities.getDirName(parentPath);
                 parentFO = (parentPath == null) ? fileSystem.getRoot() : fileSystem.findResource(parentPath);
             }
-            if (parentFO == null) {
-                throw new IOException("Null root file object? " + fileSystem + ':' + path); //NOI18N
-            }
             parentFO.refresh();
             if (refreshed != null) {
                 refreshed.set(true);
