@@ -479,7 +479,7 @@ public class EntriesCache {
         return entries;
     }
 
-    private class EntriesFile {
+    private static class EntriesFile {
         long ts;
         long size;
         EntryAttributes attributes;
@@ -490,21 +490,21 @@ public class EntriesCache {
         }
     }
 
-    private class Entries extends LinkedHashMap<String, EntriesFile> {
+    private static class Entries extends LinkedHashMap<String, EntriesFile> {
         @Override
         protected boolean removeEldestEntry(Entry<String, EntriesFile> eldest) {
             return MAX_SIZE > -1 && size() > MAX_SIZE;
         }
     };
 
-    private class EntryAttributes extends HashMap<String, Map<String, String>> {
+    private static class EntryAttributes extends HashMap<String, Map<String, String>> {
         public EntryAttributes() {}
         public EntryAttributes(int initialCapacity) {
             super(initialCapacity);
         }
     };
 
-    private class AttributePool {        
+    private static class AttributePool {        
         private Map<String, String> m = new WeakHashMap<>();
         public String get(String str) {
             if(str == null ) return null;

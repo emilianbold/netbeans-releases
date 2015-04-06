@@ -71,7 +71,7 @@ public class CommitTableModel extends AbstractTableModel {
     private final int STATUS_DELETED = FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
     private final int STATUS_NEW = FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
 
-    private class RootFile {
+    private static class RootFile {
         String repositoryPath;
         String rootLocalPath;
     }

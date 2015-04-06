@@ -391,7 +391,7 @@ public class MasterDetailView extends TopComponent {
 	return null;
     }
 
-    private class EscapeKeyAction extends AbstractAction {
+    private static class EscapeKeyAction extends AbstractAction {
         public void actionPerformed(ActionEvent evt) {
         }
     }

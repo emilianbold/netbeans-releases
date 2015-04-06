@@ -255,7 +255,7 @@ abstract public class CsmCompletionQuery {
         return query(component, doc, offset, openingSource, sort, instantiateTypes, tooltip);
     }
     
-    class QueryObjectsTask implements QueryTask {
+    static class QueryObjectsTask implements QueryTask {
         
         private Collection<CsmObject> objects;
 
@@ -302,7 +302,7 @@ abstract public class CsmCompletionQuery {
         return task.getObjects();
     }
     
-    class QueryTypeTask implements QueryTask {
+    static class QueryTypeTask implements QueryTask {
         
         private final ResolvedTypeHandler resolvedHandler;
 

@@ -315,7 +315,7 @@ public class HistoryProvider implements VCSHistoryProvider {
         }
     }
     
-    private class RollbackAction extends HistoryActionVCSProxyBased {
+    private static class RollbackAction extends HistoryActionVCSProxyBased {
         @Override
         protected void perform(final HistoryEntry entry, final Set<VCSFileProxy> files) {
             final VCSFileProxy file = files.iterator().next();

@@ -312,7 +312,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
-    private class LabelVariable {
+    private static class LabelVariable {
         private final String description;
         private final String variable;
 

@@ -1950,7 +1950,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
     /*************** HELPER CLASSES ***************/
 
-    private class IconIndenter implements Icon {
+    private static class IconIndenter implements Icon {
         final static int space = 10;
         Icon icon = null;
         int depth = 0;
@@ -2164,7 +2164,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     /**
      * Render different type sizes and styles.
      */
-    private class FilterComboBoxRenderer extends JLabel implements ListCellRenderer, UIResource {
+    private static class FilterComboBoxRenderer extends JLabel implements ListCellRenderer, UIResource {
 
         public FilterComboBoxRenderer() {
             setOpaque(true);
@@ -2891,7 +2891,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     }
 
 
-    private class LoadingNode extends DefaultMutableTreeNode {
+    private static class LoadingNode extends DefaultMutableTreeNode {
         LoadingNode() {
             super();
             final DefaultMutableTreeNode defaultMutableTreeNode = new DefaultMutableTreeNode(NbBundle.getMessage(FileChooserUIImpl.class, "LOADING"), false);

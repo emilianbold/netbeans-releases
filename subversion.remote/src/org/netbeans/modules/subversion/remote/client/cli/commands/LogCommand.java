@@ -376,7 +376,7 @@ public class LogCommand extends SvnCommand {
         }        
     }        
     
-    private class LogMessage implements ISVNLogMessage {
+    private static class LogMessage implements ISVNLogMessage {
         private final String msg;
         private final SVNRevision.Number rev;
         private final String author;

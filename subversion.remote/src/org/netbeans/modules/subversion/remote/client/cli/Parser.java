@@ -72,7 +72,7 @@ public class Parser {
         return null;
     }
     
-    public class Line {
+    public static class Line {
         private final String path;
         private final long revision;
         public Line(String path, long revision) {

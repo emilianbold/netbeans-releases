@@ -116,7 +116,7 @@ public class SvnClientExceptionHandler {
     
     private String methodName;
     
-    private class CertificateFailure {
+    private static class CertificateFailure {
         int mask;
         String error;
         String message;

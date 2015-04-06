@@ -194,7 +194,7 @@ public class HistoryProvider implements VCSHistoryProvider {
         });
     }
 
-    private class RevisionProviderImpl implements RevisionProvider {
+    private static class RevisionProviderImpl implements RevisionProvider {
         private final String revision;
 
         public RevisionProviderImpl(String revision) {

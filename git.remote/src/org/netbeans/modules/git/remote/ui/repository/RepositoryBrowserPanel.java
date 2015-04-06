@@ -2246,7 +2246,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
-    private class RemoteUri {
+    private static class RemoteUri {
         final String uri;
         final boolean push;
 

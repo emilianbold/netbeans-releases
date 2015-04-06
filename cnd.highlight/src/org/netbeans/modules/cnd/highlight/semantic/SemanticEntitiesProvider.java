@@ -54,7 +54,6 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
@@ -248,12 +247,8 @@ public final class SemanticEntitiesProvider {
         @Override
         public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
             CsmReference ref = (CsmReference) obj;
-            CsmFunction fun = (CsmFunction) ref.getReferencedObject();
-            if (fun == null) {
-                return getColor(mimePath);
-            }
             // check if we are in the function declaration
-            if (CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
                 return getColor(mimePath);
             } else {
                 return funUsageColors.get(mimePath);
@@ -307,12 +302,8 @@ public final class SemanticEntitiesProvider {
         @Override
         public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
             CsmReference ref = (CsmReference) obj;
-            CsmFunction fun = (CsmFunction) ref.getReferencedObject();
-            if (fun == null) {
-                return getColor(mimePath);
-            }
             // check if we are in the function declaration
-            if (CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
                 return getColor(mimePath);
             } else {
                 return funUsageColors.get(mimePath);

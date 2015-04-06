@@ -44,6 +44,8 @@
 package org.netbeans.modules.cnd.refactoring.actions;
 
 import java.awt.Color;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.lang.ref.Reference;
@@ -108,7 +110,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author Jan Lahoda
  * @author Vladimir Voskresensky
  */
-public class InstantRenamePerformer implements DocumentListener, KeyListener {
+public class InstantRenamePerformer implements DocumentListener, KeyListener, FocusListener {
     private static final String POSITION_BAG = "CndInstantRenamePerformer"; // NOI18N
 
     private SyncDocumentRegion region;
@@ -170,10 +172,11 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 //                l.undoableEditHappened(new UndoableEditEvent(doc, undo));
 //            }            
         }
-        
-	target.addKeyListener(InstantRenamePerformer.this);
-	
-	target.putClientProperty(InstantRenamePerformer.class, InstantRenamePerformer.this);
+        target.addFocusListener(InstantRenamePerformer.this);
+
+        target.addKeyListener(InstantRenamePerformer.this);
+
+        target.putClientProperty(InstantRenamePerformer.class, InstantRenamePerformer.this);
 	
         getHighlightsBag(doc).setHighlights(bag);
         
@@ -308,31 +311,46 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     @Override
     public synchronized void insertUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
-	inSync = true;
-	region.sync(0);
-        getHighlightsBag(doc).setHighlights(bag);
-	inSync = false;
-	target.repaint();
+        if (inSync) {
+            return;
+        }
+        updateOnInsertRemove();
     }
 
     @Override
     public synchronized void removeUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
+        if (inSync) {
+            return ;
+        }
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
         //after the insert anyway.
         if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) != null) {
             return ;
         }
-        
-	inSync = true;
-	region.sync(0);
-        getHighlightsBag(doc).setHighlights(bag);
-	inSync = false;
-	target.repaint();
+
+        updateOnInsertRemove();
+    }
+
+    private void updateOnInsertRemove() {
+      inSync = true;
+      JTextComponent aTarget = target;
+      if (region.sync(0)) {
+          getHighlightsBag(doc).setHighlights(bag);
+      } else {
+          release();
+      }
+      inSync = false;
+      aTarget.repaint();
+    }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+        release();
     }
 
     @Override
@@ -372,16 +390,17 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return;
         }
         
-	target.putClientProperty(InstantRenamePerformer.class, null);
+        target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).removePostModificationDocumentListener(this);
         }
-	target.removeKeyListener(this);
+        target.removeKeyListener(this);
+        target.removeFocusListener(this);
         getHighlightsBag(doc).clear();
 
-	region = null;
-	doc = null;
-	target = null;
+        region = null;
+        doc = null;
+        target = null;
         instance = null;
     }
 
@@ -395,7 +414,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         return bag;
     }
-    
+
     private static class CancelInstantRenameUndoableEdit extends AbstractUndoableEdit {
 
         private final Reference<InstantRenamePerformer> performer;

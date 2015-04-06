@@ -447,7 +447,7 @@ public class Dwarf {
         CompilationUnitInterface next() throws IOException;
     }
     
-    private class JoinIterator implements  CompilationUnitIterator {
+    private static class JoinIterator implements  CompilationUnitIterator {
 
         private final CompilationUnitIterator[] delegates;
         private int curr;

@@ -368,7 +368,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         annotationSettings.show(labelFormat != null && labelFormat.indexOf("{folder}") > -1); //NOI18N         
     }
 
-    private class LabelVariable {
+    private static class LabelVariable {
         private String description;
         private String variable;
          
