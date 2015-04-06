@@ -230,12 +230,14 @@ public class DwarfMacroInfoSection extends ElfSection {
                     } else {
                         index = reader.readLong();
                     }
-                    long savePosition = reader.getFilePointer();
-                    if (indirect.contains(savePosition)) {
-                        System.err.println("infinite indirection in macro section of "+reader.getFileName()); // NOI18N
-                    } else {
-                        indirect.push(savePosition);
-                        reader.seek(header.getSectionOffset() + index + headerSize);
+                    if (index > 0) {
+                        long savePosition = reader.getFilePointer();
+                        if (indirect.contains(savePosition)) {
+                            System.err.println("infinite indirection in macro section of "+reader.getFileName()); // NOI18N
+                        } else {
+                            indirect.push(savePosition);
+                            reader.seek(header.getSectionOffset() + index + headerSize);
+                        }
                     }
                     break;
                 }
@@ -266,6 +268,7 @@ public class DwarfMacroInfoSection extends ElfSection {
             if ((bitness & 1)==1) {
                 offstSize = 8;
             }
+            headerSize = reader.getFilePointer() - (header.getSectionOffset() + offset);
             if ((bitness & 2)==2) {
                 if (offstSize == 4) {
                     labelSectionAdress = reader.readInt();
@@ -324,7 +327,9 @@ public class DwarfMacroInfoSection extends ElfSection {
                     lineNum = reader.readUnsignedLEB128();
                     reader.readString();
                     break;
+                case DW_MACRO_define_indirect_alt:
                 case DW_MACRO_define_indirect:
+                case DW_MACRO_undef_indirect_alt:
                 case DW_MACRO_undef_indirect:
                     lineNum = reader.readUnsignedLEB128();
                     long adress;
@@ -334,6 +339,17 @@ public class DwarfMacroInfoSection extends ElfSection {
                         adress = reader.readLong();
                     }
                     break;
+                case DW_MACRO_transparent_include_alt:
+                {
+                    long index;
+                    if (offstSize == 4) {
+                        index = reader.readInt();
+                    } else {
+                        index = reader.readLong();
+                    }
+                    //TODO: read from alt strings?
+                    break;
+                }
                 case DW_MACRO_transparent_include:
                     long index;
                     if (offstSize == 4) {
@@ -341,9 +357,15 @@ public class DwarfMacroInfoSection extends ElfSection {
                     } else {
                         index = reader.readLong();
                     }
-                    long savePosition = reader.getFilePointer();
-                    indirect.push(savePosition);
-                    reader.seek(header.getSectionOffset() + offset + index + headerSize);
+                    if (index > 0) {
+                        long savePosition = reader.getFilePointer();
+                        if (indirect.contains(savePosition)) {
+                            System.err.println("infinite indirection in macro section of "+reader.getFileName()); // NOI18N
+                        } else {
+                            indirect.push(savePosition);
+                            reader.seek(header.getSectionOffset() + offset + index + headerSize);
+                        }
+                    }
                     break;
             }
         }
