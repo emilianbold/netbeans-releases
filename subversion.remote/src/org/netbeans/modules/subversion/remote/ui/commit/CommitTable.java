@@ -80,7 +80,7 @@ import org.openide.awt.Mnemonics;
  */
 public class CommitTable implements AncestorListener, TableModelListener, MouseListener {
 
-    public static String [] COMMIT_COLUMNS = new String [] {
+    static final String [] COMMIT_COLUMNS = new String [] {
                                             CommitTableModel.COLUMN_NAME_COMMIT,
                                             CommitTableModel.COLUMN_NAME_NAME,
                                             CommitTableModel.COLUMN_NAME_STATUS,
@@ -88,7 +88,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                                             CommitTableModel.COLUMN_NAME_PATH
                                         };
 
-    public static String [] IMPORT_COLUMNS = new String [] {
+    public static final String [] IMPORT_COLUMNS = new String [] {
                                             CommitTableModel.COLUMN_NAME_COMMIT,
                                             CommitTableModel.COLUMN_NAME_NAME,
                                             CommitTableModel.COLUMN_NAME_ACTION,

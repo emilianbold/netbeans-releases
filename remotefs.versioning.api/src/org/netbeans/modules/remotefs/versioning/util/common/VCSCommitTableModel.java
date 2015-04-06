@@ -70,7 +70,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
     public static final String COLUMN_NAME_PATH    = "path"; // NOI18N
     public static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
 
-    public static String [] COMMIT_COLUMNS = new String [] {
+    static final String [] COMMIT_COLUMNS = new String [] {
                                             VCSCommitTableModel.COLUMN_NAME_COMMIT,
                                             VCSCommitTableModel.COLUMN_NAME_NAME,
                                             VCSCommitTableModel.COLUMN_NAME_STATUS,
