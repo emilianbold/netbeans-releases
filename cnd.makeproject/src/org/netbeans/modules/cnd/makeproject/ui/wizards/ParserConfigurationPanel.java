@@ -555,24 +555,4 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     private static String getString(String s) {
         return NbBundle.getMessage(PanelProjectLocationVisual.class, s);
     }
-    
-    private class LogFileFilter extends javax.swing.filechooser.FileFilter {
-        public LogFileFilter() {
-        }
-        @Override
-        public String getDescription() {
-            return(getString("FILECHOOSER_BUILD_LOG_FILEFILTER")); // NOI18N
-        }
-        @Override
-        public boolean accept(File f) {
-            if (f != null) {
-                if (f.isDirectory()) {
-                    return true;
-                }
-                return f.getName().endsWith(".log"); // NOI18N
-            }
-            return false;
-        }
-    }
-
 }

@@ -516,7 +516,7 @@ public final class WatchModel extends VariableModel
     /**
      * An item displayed at the end of watches that can be used to enter new watch expressions.
      */
-    class EmptyWatch {
+    static class EmptyWatch {
         public void setExpression(String expr) {
             String infoStr = Catalog.get("CTL_WatchesModel_Empty_Watch_Hint"); //NOI18N
             infoStr = "<" + infoStr + ">"; // NOI18N

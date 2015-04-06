@@ -1405,7 +1405,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
     }
 
-    protected final class InstBreakpointModel implements BreakpointModel {
+    protected static final class InstBreakpointModel implements BreakpointModel {
 
         public class Bpt {
 

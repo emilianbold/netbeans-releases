@@ -2760,7 +2760,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         });
     }
     
-    private final class ModelChangeListenerImpl implements ModelListener {
+    private static final class ModelChangeListenerImpl implements ModelListener {
         @Override
         public void modelChanged(ModelEvent event) {
             if (event instanceof ModelEvent.NodeChanged) {

@@ -348,7 +348,7 @@ final class SelectHostVisualPanel extends javax.swing.JPanel {
     }
     // End of variables declaration
 
-    private final class HostListCellRenderer extends DefaultListCellRenderer {
+    private static final class HostListCellRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

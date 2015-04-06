@@ -83,7 +83,7 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
         return Collections.singletonList(new ErrorsHighlighter());
     }
 
-    private final class ErrorsHighlighter extends IndexingAwareParserResultTask<Parser.Result> {
+    private static final class ErrorsHighlighter extends IndexingAwareParserResultTask<Parser.Result> {
         private final CancelSupport cancel = CancelSupport.create(this);
         private InterrupterImpl interrupter = new InterrupterImpl();
         private Parser.Result lastParserResult;

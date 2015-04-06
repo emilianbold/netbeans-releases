@@ -119,7 +119,7 @@ public class GlobalOptionSet extends OptionSetSupport {
     /** Have we read in the options already? (reverse logic actually) */
     private boolean needOpen = true;
     
-    class GOXMLWriter extends XMLDocWriter implements UserdirFile.Writer {
+    static class GOXMLWriter extends XMLDocWriter implements UserdirFile.Writer {
 	private UserdirFile userdirFile;
 	private OptionSetXMLCodec encoder;
 
@@ -161,7 +161,7 @@ public class GlobalOptionSet extends OptionSetSupport {
 	needSave = false;
     }
     
-    class GOXMLReader extends XMLDocReader implements UserdirFile.Reader {
+    static class GOXMLReader extends XMLDocReader implements UserdirFile.Reader {
 	private UserdirFile userdirFile;
 
 	GOXMLReader(UserdirFile userdirFile, OptionSet optionSet) {

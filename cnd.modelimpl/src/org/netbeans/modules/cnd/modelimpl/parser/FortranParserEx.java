@@ -85,7 +85,7 @@ public class FortranParserEx {
         return parser.getNumberOfSyntaxErrors();
     }
     
-    public class ProgramData {
+    public static class ProgramData {
         public String name;
         public int startOffset;
         public int endOffset;
@@ -93,7 +93,7 @@ public class FortranParserEx {
         public List<Object> members = null;
     }
 
-    public class SubroutineData {
+    public static class SubroutineData {
         public String name;
         public int startOffset;
         public int endOffset;
@@ -101,7 +101,7 @@ public class FortranParserEx {
         public List<String> args = null;
     }
 
-    public class ModuleData {
+    public static class ModuleData {
         public String name;
         public int startOffset;
         public int endOffset;

@@ -121,7 +121,7 @@ public class SvnConfigFiles {
      *
      * Also sets password-stores to empty value. We currently handle password stores poorly and occasionally non-empty values cause a deadlock (see #178122).
      */
-    private class ConfigIniFilePatcher implements IniFilePatcher {
+    private static class ConfigIniFilePatcher implements IniFilePatcher {
         @Override
         public void patch(Ini file) {
             // patch store-auth-creds to "no"

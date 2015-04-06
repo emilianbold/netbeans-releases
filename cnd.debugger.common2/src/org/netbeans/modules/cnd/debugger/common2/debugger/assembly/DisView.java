@@ -247,7 +247,7 @@ public class DisView {
      * Show src code corresponding to this assembly code.
      * This is the reverse of DisassemblerWindowAction.
      */
-    class GoToSourceAction extends AbstractAction {
+    static class GoToSourceAction extends AbstractAction {
 	public GoToSourceAction() {
 	    super(Catalog.get("Dis_ACT_Go_To_Source"), 		// NOI18N
 		new ImageIcon("open.gif"));			// NOI18N
@@ -350,7 +350,7 @@ public class DisView {
 	}
     }
 
-    private class CachedFontMetrics {
+    private static class CachedFontMetrics {
 	private int ascent;
 	private int descent;
 	private int height;

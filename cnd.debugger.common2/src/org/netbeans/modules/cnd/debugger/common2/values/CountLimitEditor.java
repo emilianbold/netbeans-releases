@@ -106,7 +106,7 @@ public class CountLimitEditor extends /* OLD Enhanced */ AsyncEditor
     }
 
 
-    private class CountLimitEditorComponent
+    private static class CountLimitEditorComponent
 	extends JPanel implements ActionListener,
 				  PopupMenuListener,
 				  InplaceEditor {

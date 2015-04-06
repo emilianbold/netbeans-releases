@@ -77,7 +77,7 @@ public class PerformanceLogger {
         return CPU_TIME_AVAILABLE;
     }
 
-    public final class PerformaceAction {
+    public static final class PerformaceAction {
 
         /**
          * Log event.

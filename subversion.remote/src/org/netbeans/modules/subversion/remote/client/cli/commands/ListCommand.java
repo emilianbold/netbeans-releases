@@ -294,7 +294,7 @@ public class ListCommand extends SvnCommand {
         }
     }       
     
-    private class DirEntry implements ISVNDirEntry {
+    private static class DirEntry implements ISVNDirEntry {
 
         private final String path;
         private final Date lastChangedDate;

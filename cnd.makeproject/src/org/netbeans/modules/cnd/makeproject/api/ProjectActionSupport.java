@@ -279,7 +279,7 @@ public class ProjectActionSupport {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    private final class ProjectFileOperationsNotifier {
+    private static final class ProjectFileOperationsNotifier {
 
         private final NativeProjectChangeSupport npcs;
         private final ProjectActionEvent startPAE;
@@ -296,7 +296,7 @@ public class ProjectActionSupport {
         }
     }
 
-    private final class FileOperationsNotifier {
+    private static final class FileOperationsNotifier {
 
         private final Map<Project, ProjectFileOperationsNotifier> prjNotifier;
 

@@ -1101,7 +1101,7 @@ public class CommandlineClient implements SvnClient {
         throw new UnsupportedOperationException();
     }
 
-    class NotificationHandler extends SVNNotificationHandler {
+    static class NotificationHandler extends SVNNotificationHandler {
 
    }
 

@@ -604,7 +604,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
-    private class CommandUsageLogger {
+    private static class CommandUsageLogger {
 
         private final Map<VCSFileProxy, Events> events = new HashMap<>();
 
@@ -1348,7 +1348,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
-    public class GitSearchHistorySupport extends SearchHistorySupport {
+    public static class GitSearchHistorySupport extends SearchHistorySupport {
         public GitSearchHistorySupport(VCSFileProxy file) {
             super(file);
         }
