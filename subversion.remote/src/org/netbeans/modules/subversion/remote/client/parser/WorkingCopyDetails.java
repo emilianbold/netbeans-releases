@@ -299,14 +299,8 @@ public class WorkingCopyDetails {
     public boolean textModified() throws IOException {
         if (file.exists()) {
             VCSFileProxy baseFile = getTextBaseFile();
-            if ((file == null) && (baseFile != null)) {
+            if (baseFile == null) {
                 return true;
-            }
-            if ((file != null) && (baseFile == null)) {
-                return true;
-            }
-            if ((file == null) && (baseFile == null)) {
-                return false;
             }
             Map<String, byte[]> workingSvnProps = getWorkingSvnProperties();
             if(workingSvnProps != null) {                

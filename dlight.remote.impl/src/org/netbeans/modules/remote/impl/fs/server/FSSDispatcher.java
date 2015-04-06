@@ -753,7 +753,7 @@ import org.openide.util.RequestProcessor;
             ps.printf("\t[pid=%d] state=%s ", pid,  process.getState()); //NOI18N
             try {
                 ProcessStatusEx exitStatusEx = process.getExitStatusEx();
-                ps.printf("\trc=%d signalled=%b termSignal=%d ", //NOI18N
+                ps.printf("\trc=%d signalled=%b termSignal=%s ", //NOI18N
                         exitStatusEx.getExitCode(),
                         exitStatusEx.ifSignalled(),
                         exitStatusEx.termSignal());

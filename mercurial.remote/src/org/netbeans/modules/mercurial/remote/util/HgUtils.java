@@ -161,7 +161,7 @@ public class HgUtils {
     public static final String HG_FOLDER_NAME = ".hg";                 //NOI18N
     public static final String WLOCK_FILE = "wlock"; //NOI18N
     private static int repositoryValidityCheckRounds = 0;
-    public static String PREFIX_VERSIONING_MERCURIAL_URL = "versioning.mercurial.url."; //NOI18N
+    public static final String PREFIX_VERSIONING_MERCURIAL_URL = "versioning.mercurial.url."; //NOI18N
 
     /**
      * addDaysToDate - add days (+days) or subtract (-days) from the given date

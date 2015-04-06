@@ -222,7 +222,7 @@ public abstract class RemoteFileObjectBase {
         if (fo1 == null || fo1.listeners.isEmpty()) {
             return (fo2 == null) ? Collections.<FileChangeListener>emptyEnumeration() : fo2.getListeners();
         } else if (fo2 == null || fo2.listeners.isEmpty()) {
-            return (fo1 == null) ? Collections.<FileChangeListener>emptyEnumeration() : fo1.getListeners();
+            return fo1.getListeners();
         } else {
             List<FileChangeListener> result = new ArrayList<FileChangeListener>(fo1.listeners.size() + fo2.listeners.size());
             result.addAll(fo1.listeners);

@@ -636,9 +636,7 @@ public final class VCSFileProxySupport {
 
     private static boolean refreshPairImpl(VCSFileProxy fromParent, VCSFileProxy toParent) {
         if (fromParent != null && toParent != null) { // paranoidal check
-            if (fromParent == null) {
-                return refreshImpl(toParent);
-            } else if (toParent == null || toParent.equals(fromParent)) {
+            if (toParent.equals(fromParent)) {
                 return refreshImpl(fromParent);
             } else {
                 return refreshImpl(fromParent, toParent);
@@ -685,16 +683,8 @@ public final class VCSFileProxySupport {
         // ancestor: /home/dil
         // file:     /home/dil1/dil2
         for (; file != null; file = file.getParentFile()) {
-            if(ancestor == null) {
-                // XXX have to rely on path because of fileproxy being created from
-                // io.file even if it was originaly stored from a remote
-                if (file.getPath().equals(ancestorPath)) {
-                    return true;
-                }
-            } else {
-                if (file.equals(ancestor)) {
-                    return true;
-                }
+            if (file.equals(ancestor)) {
+                return true;
             }
         }
         return false;

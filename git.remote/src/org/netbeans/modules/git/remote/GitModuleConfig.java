@@ -388,6 +388,7 @@ public final class GitModuleConfig {
                 }
             } catch (URISyntaxException ex) {
                 Git.LOG.log(Level.WARNING, rcOldString, ex);
+                continue;
             }
             if(guriString.equals(guriOld.toString())) {
                 Utils.removeFromArray(prefs, RECENT_GURI, rcOldString);

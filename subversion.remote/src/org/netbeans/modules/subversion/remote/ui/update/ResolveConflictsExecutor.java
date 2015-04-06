@@ -153,7 +153,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     
     private boolean handleMergeFor(final VCSFileProxy file, FileObject fo, FileLock lock,
                                 final MergeVisualizer merge) throws IOException {
-        String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
+        String mimeType = fo.getMIMEType();
         String ext = "."+fo.getExt(); // NOI18N
         
         VCSFileProxy f1 = VCSFileProxySupport.createTempFile(file, TMP_PREFIX, ext, true);
@@ -181,10 +181,10 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         String originalLeftFileRevision = leftFileRevision;
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) {
-            leftFileRevision.trim();
+            leftFileRevision = leftFileRevision.trim();
         }
         if (rightFileRevision != null) {
-            rightFileRevision.trim();
+            rightFileRevision = rightFileRevision.trim();
         }
         if (leftFileRevision == null || leftFileRevision.equals(LOCAL_FILE_SUFFIX) || leftFileRevision.equals(WORKING_FILE_SUFFIX)) { // NOI18N
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
