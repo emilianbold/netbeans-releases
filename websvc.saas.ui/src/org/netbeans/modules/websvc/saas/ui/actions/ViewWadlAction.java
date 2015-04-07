@@ -43,13 +43,8 @@
  */
 package org.netbeans.modules.websvc.saas.ui.actions;
 
-import java.net.URL;
-import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -58,53 +53,48 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
+ * Action that displays WADL for a selected web service.
  *
- * @author  nam
+ * @author nam
+ * @author Jan Stola
  */
 public class ViewWadlAction extends NodeAction {
 
-    /** Creates a new instance of ViewWSDLAction */
-    public ViewWadlAction() {
-        super();
-    }
-
+    @Override
     protected boolean enable(Node[] nodes) {
         return true;
     }
 
-    private WadlSaas getWadlSaas(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return null;
-        }
-        return nodes[0].getLookup().lookup(WadlSaas.class);
-    }
-
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_WADL");
+        return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_WADL"); // NOI18N
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
-        WadlSaas saas = getWadlSaas(activatedNodes);
-
-        if (saas != null) {
-            saas.toStateReady(true);
-
-            if (saas.getLocalWadlFile() != null) {
-                try {
-                    DataObject wadlDataObject = DataObject.find(saas.getLocalWadlFile());
-                    EditorCookie editorCookie = wadlDataObject.getCookie(EditorCookie.class);
-                    editorCookie.open();
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
+        for (Node node : activatedNodes) {
+            WadlSaas saas = node.getLookup().lookup(WadlSaas.class);
+            if (saas != null) {
+                saas.toStateReady(true);
+                if (saas.getLocalWadlFile() != null) {
+                    try {
+                        DataObject wadlDataObject = DataObject.find(saas.getLocalWadlFile());
+                        EditorCookie editorCookie = wadlDataObject.getLookup().lookup(EditorCookie.class);
+                        editorCookie.open();
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
             }
         }
     }
 
+    @Override
     public boolean asynchronous() {
         return true;
     }
