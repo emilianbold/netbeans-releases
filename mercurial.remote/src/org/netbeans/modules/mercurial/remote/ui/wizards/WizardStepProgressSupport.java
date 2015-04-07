@@ -57,7 +57,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
-import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
@@ -67,7 +66,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public abstract class WizardStepProgressSupport extends HgProgressSupport implements Runnable, Cancellable {   
+public abstract class WizardStepProgressSupport extends HgProgressSupport {   
 
     private JComponent progressComponent;
     private JLabel progressLabel;
