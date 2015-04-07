@@ -499,7 +499,7 @@ public class Mercurial {
     }
 
     public void clearRequestProcessor(HgURL url) {
-        if(processorsToUrl != null & url != null) {
+        if(processorsToUrl != null && url != null) {
              processorsToUrl.remove(url);
         }
     }

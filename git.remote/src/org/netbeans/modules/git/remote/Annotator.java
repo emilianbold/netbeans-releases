@@ -620,7 +620,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 for (LabelVariable var : PROJECT_ANNOTATION_VARIABLES) {
                     format = format.replaceAll("\\{" + var.getVariable() + "\\}", "\\{" + i++ + "\\}"); // NOI18N
                 }
-                MessageFormat f = new MessageFormat(format);
                 projectFormat = format;
             } catch (IllegalArgumentException ex) {
                 Logger.getLogger(Annotator.class.getName()).log(Level.INFO, "Invalid annotation format: {0}", //NOI18N

@@ -869,20 +869,20 @@ public class CommitAction extends ContextAction {
                     } catch (HgException.HgTooLongArgListException e) {
                         Mercurial.LOG.log(Level.INFO, null, e);
                         List<VCSFileProxy> reducedCommitCandidates;
-                        String offeredFileNames = "";                       //NOI18N
+                        StringBuilder offeredFileNames = new StringBuilder();
                         Set<VCSFileProxy> roots = rootFilesPerRepository.get(repository);
                         if (roots != null && roots.size() < 5) {
                             reducedCommitCandidates = new ArrayList<VCSFileProxy>(roots);
                             refreshFiles = new HashSet<VCSFileProxy>(roots);
                             for (VCSFileProxy f : reducedCommitCandidates) {
-                                offeredFileNames += "\n" + f.getName();     //NOI18N
+                                offeredFileNames.append('\n').append(f.getName());     //NOI18N
                             }
                         } else {
                             reducedCommitCandidates = Collections.<VCSFileProxy>emptyList();
                             refreshFiles = Collections.singleton(repository);
-                            offeredFileNames = "\n" + repository.getName(); //NOI18N
+                            offeredFileNames.append('\n').append(repository.getName()); //NOI18N
                         }
-                        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_QUERY", offeredFileNames)); //NOI18N
+                        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_QUERY", offeredFileNames.toString())); //NOI18N
                         descriptor.setTitle(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_TITLE")); //NOI18N
                         descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
                         descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);

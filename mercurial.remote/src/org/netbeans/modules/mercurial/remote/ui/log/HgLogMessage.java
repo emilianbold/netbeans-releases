@@ -333,8 +333,8 @@ public class HgLogMessage {
 
     private HgRevision createRevision (String revisionString) {
         String[] ps1 = revisionString.split(":"); // NOI18N
-        String revisionNumber = ps1 != null && ps1.length >= 1 ? ps1[0] : null;
-        String changesetId = ps1 != null && ps1.length >= 2 ? ps1[1] : revisionNumber;
+        String revisionNumber = ps1.length >= 1 ? ps1[0] : null;
+        String changesetId = ps1.length >= 2 ? ps1[1] : revisionNumber;
         return revisionNumber == null ? null : new HgRevision(changesetId, revisionNumber);
     }
 

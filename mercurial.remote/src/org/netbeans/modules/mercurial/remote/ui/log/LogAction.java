@@ -140,7 +140,7 @@ public class LogAction extends SearchHistoryAction {
                     return;
                 }
                 outputSearchContextTab(repositoryRoot, files, "MSG_Log_Title"); //NOI18N
-                final boolean startSearch = files != null && (files.length == 1 && !files[0].isDirectory() || files.length > 1 && VCSFileProxySupport.shareCommonDataObject(files));
+                final boolean startSearch = (files.length == 1 && !files[0].isDirectory() || files.length > 1 && VCSFileProxySupport.shareCommonDataObject(files));
                 final String branchName;
                 if (revision != null && !revision.isEmpty()) {
                     branchName = ""; //NOI18N

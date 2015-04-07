@@ -164,7 +164,7 @@ public class AnnotateLine {
             String shortened = null;
             String email = author.getEmailAddress();
             int pos;
-            if (email != null && (pos = email.indexOf("@")) > -1) {
+            if (email != null && (pos = email.indexOf('@')) > -1) {
                 shortened = email.substring(0, pos);
             }
             if (shortened == null) {
