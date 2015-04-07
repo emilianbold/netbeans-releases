@@ -231,125 +231,235 @@ public final class ClankToAPTUtils {
                 //   WCHARSUPPORT - This is a keyword if 'wchar_t' is a built-in type
                 //
             case tok.TokenKind.kw_auto:
+              return APTTokenTypes.LITERAL_auto;
             case tok.TokenKind.kw_break:
+              return APTTokenTypes.LITERAL_break;
             case tok.TokenKind.kw_case:
+              return APTTokenTypes.LITERAL_case;
             case tok.TokenKind.kw_char:
+              return APTTokenTypes.LITERAL_char;
             case tok.TokenKind.kw_const:
+              return APTTokenTypes.LITERAL_const;
             case tok.TokenKind.kw_continue:
+              return APTTokenTypes.LITERAL_continue;
             case tok.TokenKind.kw_default:
+              return APTTokenTypes.LITERAL_default;
             case tok.TokenKind.kw_do:
+              return APTTokenTypes.LITERAL_do;
             case tok.TokenKind.kw_double:
+              return APTTokenTypes.LITERAL_double;
             case tok.TokenKind.kw_else:
+              return APTTokenTypes.LITERAL_else;
             case tok.TokenKind.kw_enum:
+              return APTTokenTypes.LITERAL_enum;
             case tok.TokenKind.kw_extern:
+              return APTTokenTypes.LITERAL_extern;
             case tok.TokenKind.kw_float:
+              return APTTokenTypes.LITERAL_float;
             case tok.TokenKind.kw_for:
+              return APTTokenTypes.LITERAL_for;
             case tok.TokenKind.kw_goto:
+              return APTTokenTypes.LITERAL_goto;
             case tok.TokenKind.kw_if:
+              return APTTokenTypes.LITERAL_if;
             case tok.TokenKind.kw_inline:
+              return APTTokenTypes.LITERAL_inline;
             case tok.TokenKind.kw_int:
+              return APTTokenTypes.LITERAL_int;
             case tok.TokenKind.kw_long:
+              return APTTokenTypes.LITERAL_long;
             case tok.TokenKind.kw_register:
+              return APTTokenTypes.LITERAL_register;
             case tok.TokenKind.kw_restrict:
+              return APTTokenTypes.LITERAL_restrict;
             case tok.TokenKind.kw_return:
+              return APTTokenTypes.LITERAL_return;
             case tok.TokenKind.kw_short:
+              return APTTokenTypes.LITERAL_short;
             case tok.TokenKind.kw_signed:
+              return APTTokenTypes.LITERAL_signed;
             case tok.TokenKind.kw_sizeof:
+              return APTTokenTypes.LITERAL_sizeof;
             case tok.TokenKind.kw_static:
+              return APTTokenTypes.LITERAL_static;
             case tok.TokenKind.kw_struct:
+              return APTTokenTypes.LITERAL_struct;
             case tok.TokenKind.kw_switch:
+              return APTTokenTypes.LITERAL_switch;
             case tok.TokenKind.kw_typedef:
+              return APTTokenTypes.LITERAL_typedef;
             case tok.TokenKind.kw_union:
+              return APTTokenTypes.LITERAL_union;
             case tok.TokenKind.kw_unsigned:
+              return APTTokenTypes.LITERAL_unsigned;
             case tok.TokenKind.kw_void:
+              return APTTokenTypes.LITERAL_void;
             case tok.TokenKind.kw_volatile:
+              return APTTokenTypes.LITERAL_volatile;
             case tok.TokenKind.kw_while:
+              return APTTokenTypes.LITERAL_while;
             case tok.TokenKind.kw__Alignas:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Alignas;
             case tok.TokenKind.kw__Alignof:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Alignof;
             case tok.TokenKind.kw__Atomic:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Atomic;
             case tok.TokenKind.kw__Bool:
+              return APTTokenTypes.LITERAL__Bool;
             case tok.TokenKind.kw__Complex:
+              return APTTokenTypes.LITERAL__Complex;
             case tok.TokenKind.kw__Generic:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Generic;
             case tok.TokenKind.kw__Imaginary:
+              return APTTokenTypes.LITERAL__Imaginary;
             case tok.TokenKind.kw__Noreturn:
+              return APTTokenTypes.LITERAL__Noreturn;
             case tok.TokenKind.kw__Static_assert:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Static_assert;
             case tok.TokenKind.kw__Thread_local:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Thread_local;
             case tok.TokenKind.kw___func__:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___func__;
             case tok.TokenKind.kw___objc_yes:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___objc_yes;
             case tok.TokenKind.kw___objc_no:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___objc_no;
 
                 // C++ 2.11p1: Keywords.
             case tok.TokenKind.kw_asm:
+              return APTTokenTypes.LITERAL_asm;
             case tok.TokenKind.kw_bool:
+              return APTTokenTypes.LITERAL_bool;
             case tok.TokenKind.kw_catch:
+              return APTTokenTypes.LITERAL_catch;
             case tok.TokenKind.kw_class:
+              return APTTokenTypes.LITERAL_class;
             case tok.TokenKind.kw_const_cast:
+              return APTTokenTypes.LITERAL_const_cast;
             case tok.TokenKind.kw_delete:
+              return APTTokenTypes.LITERAL_delete;
             case tok.TokenKind.kw_dynamic_cast:
+              return APTTokenTypes.LITERAL_dynamic_cast;
             case tok.TokenKind.kw_explicit:
+              return APTTokenTypes.LITERAL_explicit;
             case tok.TokenKind.kw_export:
+              return APTTokenTypes.LITERAL_export;
             case tok.TokenKind.kw_false:
+              return APTTokenTypes.LITERAL_false;
             case tok.TokenKind.kw_friend:
+              return APTTokenTypes.LITERAL_friend;
             case tok.TokenKind.kw_mutable:
+              return APTTokenTypes.LITERAL_mutable;
             case tok.TokenKind.kw_namespace:
+              return APTTokenTypes.LITERAL_namespace;
             case tok.TokenKind.kw_new:
+              return APTTokenTypes.LITERAL_new;
             case tok.TokenKind.kw_operator:
+              return APTTokenTypes.LITERAL_OPERATOR;
             case tok.TokenKind.kw_private:
+              return APTTokenTypes.LITERAL_private;
             case tok.TokenKind.kw_protected:
+              return APTTokenTypes.LITERAL_protected;
             case tok.TokenKind.kw_public:
+              return APTTokenTypes.LITERAL_public;
             case tok.TokenKind.kw_reinterpret_cast:
+              return APTTokenTypes.LITERAL_reinterpret_cast;
             case tok.TokenKind.kw_static_cast:
+              return APTTokenTypes.LITERAL_static_cast;
             case tok.TokenKind.kw_template:
+              return APTTokenTypes.LITERAL_template;
             case tok.TokenKind.kw_this:
+              return APTTokenTypes.LITERAL_this;
             case tok.TokenKind.kw_throw:
+              return APTTokenTypes.LITERAL_throw;
             case tok.TokenKind.kw_true:
+              return APTTokenTypes.LITERAL_true;
             case tok.TokenKind.kw_try:
+              return APTTokenTypes.LITERAL_try;
             case tok.TokenKind.kw_typename:
+              return APTTokenTypes.LITERAL_typename;
             case tok.TokenKind.kw_typeid:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL_typeid;
             case tok.TokenKind.kw_using:
+              return APTTokenTypes.LITERAL_using;
             case tok.TokenKind.kw_virtual:
+              return APTTokenTypes.LITERAL_virtual;
             case tok.TokenKind.kw_wchar_t:
+              return APTTokenTypes.LITERAL_wchar_t;
 
                 // C++11 keywords
             case tok.TokenKind.kw_alignas:
+              return APTTokenTypes.LITERAL_alignas;
             case tok.TokenKind.kw_alignof:
+              return APTTokenTypes.LITERAL_alignof;
             case tok.TokenKind.kw_char16_t:
+              return APTTokenTypes.LITERAL_char16_t;
             case tok.TokenKind.kw_char32_t:
+              return APTTokenTypes.LITERAL_char32_t;
             case tok.TokenKind.kw_constexpr:
+              return APTTokenTypes.LITERAL_constexpr;
             case tok.TokenKind.kw_decltype:
+              return APTTokenTypes.LITERAL_decltype;
             case tok.TokenKind.kw_noexcept:
+              return APTTokenTypes.LITERAL_noexcept;
             case tok.TokenKind.kw_nullptr:
+              return APTTokenTypes.LITERAL_nullptr;
             case tok.TokenKind.kw_static_assert:
+              return APTTokenTypes.LITERAL_static_assert;
             case tok.TokenKind.kw_thread_local:
+              return APTTokenTypes.LITERAL_thread_local;
 
                 // GNU Extensions (in impl-reserved namespace)
             case tok.TokenKind.kw__Decimal32:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal32;
             case tok.TokenKind.kw__Decimal64:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal64;
             case tok.TokenKind.kw__Decimal128:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal128;
             case tok.TokenKind.kw___null:
+              return APTTokenTypes.LITERAL___null;
             case tok.TokenKind.kw___alignof:
+              return APTTokenTypes.LITERAL___alignof;
             case tok.TokenKind.kw___attribute:
+              return APTTokenTypes.LITERAL___attribute;
             case tok.TokenKind.kw___builtin_choose_expr:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_choose_expr;
             case tok.TokenKind.kw___builtin_offsetof:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_offsetof;
             case tok.TokenKind.kw___builtin_types_compatible_p:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_types_compatible_p;
             case tok.TokenKind.kw___builtin_va_arg:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_va_arg;
             case tok.TokenKind.kw___extension__:
+              return APTTokenTypes.LITERAL___extension__;
             case tok.TokenKind.kw___imag:
+              return APTTokenTypes.LITERAL___imag;
             case tok.TokenKind.kw___int128:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___int128;
             case tok.TokenKind.kw___label__:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___label__;
             case tok.TokenKind.kw___real:
+              return APTTokenTypes.LITERAL___real;
             case tok.TokenKind.kw___thread:
+              return APTTokenTypes.LITERAL___thread;
             case tok.TokenKind.kw___FUNCTION__:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCTION__;
             case tok.TokenKind.kw___PRETTY_FUNCTION__:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___PRETTY_FUNCTION__;
 
                 // GNU Extensions (outside impl-reserved namespace)
             case tok.TokenKind.kw_typeof:
+              return APTTokenTypes.LITERAL_typeof;
 
                 // MS Extensions
             case tok.TokenKind.kw___FUNCDNAME__:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCDNAME__;
             case tok.TokenKind.kw_L__FUNCTION__:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL_L__FUNCTION__;
             case tok.TokenKind.kw___is_interface_class:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___is_interface_class;
             case tok.TokenKind.kw___is_sealed:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___is_sealed;
 
                 // GNU and MS Type Traits
             case tok.TokenKind.kw___has_nothrow_assign:
@@ -424,15 +534,23 @@ public final class ClankToAPTUtils {
                 // Apple Extension.
             case tok.TokenKind.kw___private_extern__:
             case tok.TokenKind.kw___module_private__:
+              return APTTokenTypes.IDENT;
 
                 // Microsoft Extension.
             case tok.TokenKind.kw___declspec:
+              return APTTokenTypes.LITERAL___declspec;
             case tok.TokenKind.kw___cdecl:
+              return APTTokenTypes.LITERAL___cdecl;
             case tok.TokenKind.kw___stdcall:
+              return APTTokenTypes.LITERAL___stdcall;
             case tok.TokenKind.kw___fastcall:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___fastcall;
             case tok.TokenKind.kw___thiscall:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___thiscall;
             case tok.TokenKind.kw___forceinline:
+              return APTTokenTypes.LITERAL___forceinline;
             case tok.TokenKind.kw___unaligned:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___unaligned;
 
                 // OpenCL-specific keywords
             case tok.TokenKind.kw___kernel:
@@ -487,7 +605,8 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw___multiple_inheritance:
             case tok.TokenKind.kw___virtual_inheritance:
             case tok.TokenKind.kw___interface:
-
+                return APTTokenTypes.IDENT;
+              
                 // Clang Extensions.
             case tok.TokenKind.kw___builtin_convertvector:
 

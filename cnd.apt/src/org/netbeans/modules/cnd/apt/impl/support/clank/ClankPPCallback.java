@@ -218,8 +218,7 @@ public final class ClankPPCallback extends FileInfoCallback {
       private boolean stealTokensIfAny() {
         if (current.hasTokens()) {
           // have to be called before stealing tokens
-          int nrTokens = current.getNrTokens();
-          stolenTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.stealTokens(), nrTokens);
+          stolenTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.getTokens());
           return true;
         } else {
           return false;

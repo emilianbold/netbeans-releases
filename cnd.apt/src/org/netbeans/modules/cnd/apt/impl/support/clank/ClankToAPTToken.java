@@ -45,7 +45,9 @@ import org.clang.basic.IdentifierInfo;
 import org.clang.basic.SourceManager;
 import org.clang.basic.tok;
 import org.clang.lex.Preprocessor;
+import org.clang.lex.SmallVectorToken;
 import org.clang.lex.Token;
+import org.clank.java.std;
 import static org.clank.java.std.$second_uint;
 import org.clank.support.Casts;
 import org.clank.support.Unsigned;
@@ -53,12 +55,18 @@ import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringMapEntryBase;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVectorChar;
+import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteIdToken;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteLiteralToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
+import org.clank.support.aliases.*;
+import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -68,66 +76,124 @@ import org.openide.util.CharSequences;
 
     private static final CharSequence COMMENT_TEXT_ID = CharSequences.create("/*COMMENT*/");
 
-    static APTToken[] convertToAPT(Preprocessor PP, Token[] tokens, int nrTokens) {
-      APTToken[] out = new APTToken[nrTokens];
-      for (int i = 0; i < nrTokens; i++) {
-        out[i] = ClankToAPTToken.convert(PP, tokens[i]);
-      }
-      return out;
+    static APTToken[] convertToAPT(Preprocessor PP, SmallVectorToken toks) {
+        int nrTokens = toks.size();
+        Token[] tokens = toks.$array();
+        APTToken[] out = new APTToken[nrTokens];
+        SmallVectorChar spell = new SmallVectorChar(1024);
+        for (int i = 0; i < nrTokens; i++) {
+            assert PP != null;
+            SourceManager SM = PP.getSourceManager();
+            assert SM != null;
+            Token token = tokens[i];
+            long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedExpansionLoc(token.getRawLocation());
+            int offset = Unsigned.long2uint($second_uint(decomposedLoc));
+            out[i] = ClankToAPTToken.convert(PP, token, offset, spell);
+        }
+        return out;
     }
 
-    private static APTToken convert(Preprocessor PP, Token token) {
-      if (token.is(tok.TokenKind.eof)) {
-        return APTUtils.EOF_TOKEN;
-      } else {
-        return new ClankToAPTToken(PP, token);
-      }
+    static APTToken convert(Preprocessor PP, Token token, /*uint*/int offset, SmallVectorChar spell) {
+        if (token.is(tok.TokenKind.eof)) {
+            return APTUtils.EOF_TOKEN;
+        } else {
+            int aptTokenType = ClankToAPTUtils.convertClankToAPTTokenKind(token.getKind());
+            if (APTLiteConstTextToken.isApplicable(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE)) {
+                APTToken out = new APTLiteConstTextToken(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE);
+                return out;
+            } else if (APTLiteLiteralToken.isApplicable(APTTokenTypes.IDENT, offset, FAKE_COLUMN, FAKE_LINE, aptTokenType)) {
+                // create IDENT token
+                IdentifierInfo II = token.getIdentifierInfo();
+                assert (II != null);
+                StringMapEntryBase entry = II.getEntry();
+                assert entry != null;
+                CharSequence LiteText = APTConstTextToken.getConstTextID(aptTokenType);
+                // check if spelling in clang the same as our token, then reuse
+                // APTLiteLiteralToken otherwise create APTLiteIdToken with known textID
+                if (std.memcmp_null_termed(LiteText, entry.getKeyArray(), entry.getKeyArrayIndex(), LiteText.length()) == 0) {
+                    return new APTLiteLiteralToken(offset, FAKE_COLUMN, FAKE_LINE, aptTokenType);
+                } else {
+                    return new APTLiteIdToken(offset, FAKE_COLUMN, FAKE_LINE, LiteText);
+                }
+            } else if (aptTokenType == APTTokenTypes.COMMENT) {
+                APTCommentToken out = new APTCommentToken();
+                out.setOffset(offset);
+                out.setTextLength(offset + token.getLength());
+                out.setColumn(FAKE_COLUMN);
+                out.setLine(FAKE_LINE);
+                return out;
+            } else {
+                // all remainings
+                CharSequence textID;
+                IdentifierInfo II = token.getIdentifierInfo();
+                if (II != null) {
+                    StringMapEntryBase entry = II.getEntry();
+                    assert entry != null;
+                    textID = CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
+                } else {
+                    textID = null;
+                    char$ptr SpellingData = null;
+                    int SpellingLen = 0;
+                    if (token.isLiteral()) {
+                        char$ptr literalData = token.getLiteralData();
+                        if (literalData == null) {
+                            // i.e. the case of lazy calculated DATE and TIME based strings
+                            StringRef spelling = PP.getSpelling(token, spell);
+                            SpellingData = spelling.begin();
+                            SpellingLen = spelling.size();
+                        } else {
+                            SpellingData = literalData;
+                            SpellingLen = token.getLength();
+                        }
+                    } else {
+                        assert token.is(tok.TokenKind.raw_identifier) : "unexpected " + token;
+                        byte[] $CharPtrData = token.$CharPtrData();
+                        if ($CharPtrData != null) {
+                            textID = CharSequences.create($CharPtrData, token.$CharPtrDataIndex(), token.getLength());
+                        } else {
+                            SpellingData = token.getRawIdentifierData();
+                            SpellingLen = token.getLength();
+                        }
+                    }
+                    if (textID == null) {
+                        assert SpellingData != null;
+                        if (SpellingData instanceof char$ptr$array) {
+                            textID = CharSequences.create(SpellingData.$array(), SpellingData.$index(), SpellingLen);
+                        } else {
+                            textID = Casts.toCharSequence(SpellingData, SpellingLen);
+                        }
+                    }
+                }
+                assert textID != null;
+                if (APTLiteIdToken.isApplicable(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE)){
+                  return new APTLiteIdToken(offset, FAKE_COLUMN, FAKE_LINE, textID);
+                } else {
+                  return new ClankToAPTToken(token, aptTokenType, offset, textID);
+                }
+            }
+        }
     }
+    private static final int FAKE_LINE = 333;
+    private static final int FAKE_COLUMN = 111;
 
     private final int endOffset;
     private final int aptTokenType;
     private final int offset;
     private final CharSequence textID;
 
-    private ClankToAPTToken(Preprocessor PP, Token token) {
-        assert PP != null;
-        SourceManager SM = PP.getSourceManager();
-        assert SM != null;
-        long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedExpansionLoc(token.getRawLocation());
-        this.offset = Unsigned.long2uint($second_uint(decomposedLoc));
-        this.endOffset = this.offset + token.getLength();
+    private ClankToAPTToken(Token token, int tokenType, int offset, CharSequence text) {
+        this.offset = offset;
         assert offset >= 0 : "negative " + offset + " for " + token;
-        this.aptTokenType = ClankToAPTUtils.convertClankToAPTTokenKind(token.getKind());
-        if (APTLiteConstTextToken.isLiteConstTextType(aptTokenType)) {
-            textID = APTLiteConstTextToken.toTextID(aptTokenType);
-        } else {
-            IdentifierInfo II = token.getIdentifierInfo();
-            if (II != null) {
-                StringMapEntryBase entry = II.getEntry();
-                assert entry != null;
-                CharSequence txt = CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
-                textID = TextCache.getManager().getString(txt);
-            } else if (token.isLiteral()) {
-                CharSequence charSeq;
-                char$ptr literalData = token.getLiteralData();
-                if (literalData == null) {
-                  // i.e. the case of lazy calculated DATE and TIME based strings
-                  SmallVectorChar spell = new SmallVectorChar(token.getLength());
-                  StringRef spelling = PP.getSpelling(token, spell);
-                  charSeq = Casts.toCharSequence(spelling.begin(), spelling.size());
-                } else {
-                  CndUtils.assertTrueInConsole(literalData != null, "null literal " + token);
-                  charSeq = Casts.toCharSequence(literalData, token.getLength());
-                }
-                textID = CharSequences.create(charSeq);
-            } else if (token.is(tok.TokenKind.comment)) {
-                textID = COMMENT_TEXT_ID;
-            } else {
-                assert token.is(tok.TokenKind.raw_identifier) : "unexpected " + token;
-                textID = TextCache.getManager().getString(CharSequences.create(Casts.toCharSequence(token.getRawIdentifierData(), token.getLength())));
-            }
-        }
-        assert textID.length() <= token.getLength() || token.is(tok.TokenKind.comment) || token.is(tok.TokenKind.eof): textID + "\n vs. \n" + token;
+        this.endOffset = this.offset + token.getLength();
+        this.aptTokenType = tokenType;
+        assert !(APTLiteConstTextToken.isLiteConstTextType(aptTokenType));
+        assert !(APTLiteLiteralToken.isApplicable(APTTokenTypes.IDENT, offset, FAKE_COLUMN, FAKE_LINE, aptTokenType));
+        assert !(APTLiteIdToken.isApplicable(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE));
+        assert (text != null);
+        assert CharSequences.isCompact(text);
+        assert (token.isNot(tok.TokenKind.comment));
+        textID = TextCache.getManager().getString(text);
+        assert textID.length() <= token.getLength(): textID + "\n vs. \n" + token;
     }
 
     @Override
@@ -137,9 +203,6 @@ import org.openide.util.CharSequences;
 
     @Override
     public String getText() {
-        if (APTLiteConstTextToken.isLiteConstTextType(aptTokenType)) {
-            return APTLiteConstTextToken.toText(aptTokenType);
-        }
         return getTextID().toString();
     }
 
@@ -205,7 +268,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int getColumn() {
-        return 111;
+        return FAKE_COLUMN;
     }
 
     @Override
@@ -215,7 +278,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int getLine() {
-        return 333;
+        return FAKE_LINE;
     }
 
     @Override
