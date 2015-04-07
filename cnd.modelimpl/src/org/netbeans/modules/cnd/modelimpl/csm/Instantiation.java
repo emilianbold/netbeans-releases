@@ -479,10 +479,10 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     public static <T extends CsmInstantiation> CsmUID<?> createInstantiationUID(CsmInstantiation inst) {
         if(CsmKindUtilities.isClass(inst) && inst.getTemplateDeclaration() instanceof ClassImpl) {
             final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();        
-            boolean persistable = !mapping.keySet().isEmpty();
+            boolean persistable = !mapping.isEmpty();
             if (persistable) {
-                for (CsmTemplateParameter param : mapping.keySet()) {
-                    CsmSpecializationParameter specParam = mapping.get(param);
+                for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> param : mapping.entrySet()) {
+                    CsmSpecializationParameter specParam = param.getValue();
                     if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
                         if (!PersistentUtils.isPersistable(((CsmTypeBasedSpecializationParameter)specParam).getType())) {
                             persistable = false;

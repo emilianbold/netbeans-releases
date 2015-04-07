@@ -270,7 +270,7 @@ public class Diagnostic {
     }
     
     public static void trace(PrintStream out, Object arg) {
-        if( TraceFlags.DEBUG | needStatistics()) {
+        if( TraceFlags.DEBUG || needStatistics()) {
             out.println(indentBuffer.toString() + arg);
         }
     }

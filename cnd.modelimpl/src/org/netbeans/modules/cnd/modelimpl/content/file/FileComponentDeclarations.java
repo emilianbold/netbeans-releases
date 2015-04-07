@@ -51,6 +51,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -606,5 +607,35 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             }
             return res;
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 89 * hash + this.start;
+            hash = 89 * hash + Objects.hashCode(this.name);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NameKey other = (NameKey) obj;
+            if (this.start != other.start) {
+                return false;
+            }
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            return true;
+        }
+        
     }
 }

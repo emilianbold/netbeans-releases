@@ -157,7 +157,7 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
     private synchronized void onDispose() {
         if (this.scopeRef == null) {
             // restore container from it's UID if not directly initialized
-            this.scopeRef = this.scopeRef != null ? this.scopeRef : UIDCsmConverter.UIDtoScope(this.scopeUID);
+            this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
         }
     }
