@@ -109,7 +109,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
      * -David Botterill 4/21/2004
      */
     private URLClassLoader runtimeClassLoader;
-    private DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
+    private final DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
     private DefaultMutableTreeNode resultRootNode = new DefaultMutableTreeNode();
     private final WsdlSaas wsData;
     private final WSPort port;
@@ -556,9 +556,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         return parameterRootNode;
     }
 
-    private void setParameterRootNode(DefaultMutableTreeNode inNode) {
-        parameterRootNode = inNode;
-    }
     private DefaultMutableTreeNode getResultRootNode() {
         return resultRootNode;
     }
