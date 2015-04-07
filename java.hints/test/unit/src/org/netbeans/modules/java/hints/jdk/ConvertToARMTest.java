@@ -288,7 +288,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:173-0:175:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } }}");
     }
 
@@ -314,7 +314,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:179-0:181:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } }}");
     }
 
@@ -343,7 +343,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:173-0:175:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } catch (Exception e) { throw e; }finally { System.gc(); } }}");
     }
 
@@ -374,7 +374,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:173-0:175:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } catch (Exception e) { throw e; }finally { System.gc(); } }}");
     }
 
@@ -397,7 +397,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:173-0:175:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\"));InputStream in2 = new FileInputStream(new File(\"a\"))){ in.read(); } }}");
     }
 
@@ -423,7 +423,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:245-0:247:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } }}");
     }
 
@@ -453,7 +453,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:245-0:247:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } catch (Exception e) { throw e; } finally { System.gc(); } }}");
     }
 
@@ -479,7 +479,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:251-0:253:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } }}");
     }
 
@@ -502,7 +502,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:245-0:247:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } }}");
     }
 
@@ -525,7 +525,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:245-0:247:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } catch (Exception e) { throw e;} finally { System.gc(); } }}");
     }
 
@@ -548,7 +548,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:251-0:253:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } }}");
     }
 
@@ -574,7 +574,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:246-0:248:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"b\"))) { in.read(); } }}");
     }
 
@@ -600,7 +600,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:246-0:248:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"b\"))) { in.read(); }catch(Exception e) { throw e;} finally {System.exit(1);} }}");
     }
 
@@ -835,7 +835,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:348-0:352:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try (OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { in.close(); } }}");
         HintTest
                 .create()
@@ -843,7 +843,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:291-0:293:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } }}");
     }
 
@@ -892,7 +892,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:343-0:347:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1)) { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } }}");
         HintTest
                 .create()
@@ -922,7 +922,7 @@ public class ConvertToARMTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(ConvertToARM.class)
                 .findWarning("0:401-0:405:verifier:TXT_ConvertToARM")
-                .applyFix("TXT_ConvertToARM")
+                .applyFix("FIX_MergeTryResources")
                 .assertOutput("package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test {public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try ( InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } }}}");
     }
 

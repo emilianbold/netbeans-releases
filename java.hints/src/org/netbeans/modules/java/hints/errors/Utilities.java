@@ -1933,4 +1933,72 @@ public class Utilities {
         }
         return to.getKind().ordinal() < from.getKind().ordinal();
     }
+
+    /**
+     * Finds conflicting declarations of methods within type.
+     * Given a class `clazz' and a set of methods, finds possible conflicts in the class. For each method,
+     * the class is inspected for declarations with the same name, and the same erased types.
+     * <p/>
+     * Empty Map is returned if no conflicts are found.
+     * 
+     * @param clazz target class
+     * @param methods methods to check
+     * @return detected conflicts.
+     */
+    public static Map<? extends ExecutableElement, ? extends ExecutableElement>  findConflictingMethods(CompilationInfo info, TypeElement clazz, Iterable<? extends ExecutableElement> methods) {
+        final Map<Name, Collection<ExecutableElement>> currentByName = new HashMap<>();
+        Map<ExecutableElement, ExecutableElement> ret = new HashMap<>();
+        
+        for (Element e : clazz.getEnclosedElements()) {
+            if (e.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement ee = (ExecutableElement)e;
+            Name n = ee.getSimpleName();
+            Collection<ExecutableElement> named = currentByName.get(n);
+            if (named == null) {
+                named = new ArrayList<>(3);
+                currentByName.put(n, named);
+            }
+            named.add(ee);
+        }
+        oneMethod: for(ExecutableElement method : methods) {
+            DeclaredType asMemberOf = (DeclaredType)clazz.asType();
+            ExecutableType et;
+            try {
+                et = (ExecutableType)info.getTypes().asMemberOf(asMemberOf, method);
+            } catch (IllegalArgumentException iae) {
+                continue;
+            }
+            Collection<ExecutableElement> candidates = currentByName.get(method.getSimpleName());
+            if (candidates != null) {
+                check: for (ExecutableElement e : candidates) {
+                    if (e.getKind() != ElementKind.METHOD) {
+                        continue;
+                    }
+                    ExecutableElement ee = (ExecutableElement)e;
+                    if (!ee.getSimpleName().equals(method.getSimpleName())) {
+                        continue;
+                    }
+                    if (ee.getParameters().size() != et.getParameterTypes().size()) {
+                        continue;
+                    }
+                    for (int i = 0; i < ee.getParameters().size(); i++) {
+                        TypeMirror t1 = ee.getParameters().get(i).asType();
+                        TypeMirror t2 = et.getParameterTypes().get(i);
+                        if (!info.getTypes().isSameType(
+                                info.getTypes().erasure(t1),
+                                info.getTypes().erasure(t2)
+                        )) {
+                            continue check;
+                        }
+                    }
+                    // skip
+                    ret.put(method, e);
+                }
+            }
+        }
+        return ret;
+    }
+
 }

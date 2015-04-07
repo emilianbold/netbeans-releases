@@ -406,7 +406,7 @@ public class CodeGenerator {
             if (superClass == null) return null;
             if (superClass.getKind() == TypeKind.NONE) return null; //for j.l.Object
             TypeElement jlObject = wc.getElements().getTypeElement("java.lang.Object"); //NOI18N
-            if (wc.getTypes().isSameType(superClass, jlObject.asType())) return null; //for extends j.l.Object
+            if (jlObject != null && wc.getTypes().isSameType(superClass, jlObject.asType())) return null; //for extends j.l.Object
 
             return make.Type(superClass);
         }
