@@ -60,84 +60,82 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
+ * Action that displays WSDL for a selected web service.
  *
- * @author  nam
+ * @author nam
+ * @author Jan Stola
  */
 public class ViewWSDLAction extends NodeAction {
-    
-    /** Creates a new instance of ViewWSDLAction */
-    public ViewWSDLAction() {
-    }
-    
+
+    @Override
     protected boolean enable(Node[] nodes) {
-        WsdlSaas saas = getWsdlSaas(nodes);
-        if (saas != null) {
-            return saas.getState() == Saas.State.RETRIEVED ||
-                   saas.getState() == Saas.State.READY;
+        boolean enabled = true;
+        for (Node node : nodes) {
+            WsdlSaas saas = getWsdlSaas(node);
+            if (saas == null || (saas.getState() != Saas.State.RETRIEVED
+                    && saas.getState() != Saas.State.READY)) {
+                enabled = false;
+                break;
+            }
         }
-        return false;
+        return enabled;
     }
-    
+
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
-    public String getName() {
-        return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_WSDL");
-    }
-    
-    private WsdlSaas getWsdlSaas(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return null;
-        }
 
-        WsdlSaas saas = nodes[0].getLookup().lookup(WsdlSaas.class);
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_WSDL"); // NOI18N
+    }
+
+    private WsdlSaas getWsdlSaas(Node node) {
+        WsdlSaas saas = node.getLookup().lookup(WsdlSaas.class);
         if (saas == null) {
-            WsdlSaasPort port = nodes[0].getLookup().lookup(WsdlSaasPort.class);
+            WsdlSaasPort port = node.getLookup().lookup(WsdlSaasPort.class);
             if (port != null) {
                 saas = port.getParentSaas();
             }
         }
         if (saas == null) {
-            WsdlSaasMethod method = nodes[0].getLookup().lookup(WsdlSaasMethod.class);
+            WsdlSaasMethod method = node.getLookup().lookup(WsdlSaasMethod.class);
             if (method != null) {
                 saas = method.getSaas();
             }
         }
         return saas;
     }
-    
+
+    @Override
     protected void performAction(Node[] nodes) {
-        WsdlSaas saas = getWsdlSaas(nodes);
-        if (saas == null) {
-            throw new IllegalArgumentException("No nodes assoaciated WsdlSaas in lookup.");
-        }
-        if (saas.getState() != Saas.State.RETRIEVED && 
-            saas.getState() != Saas.State.READY) {
-            throw new IllegalStateException("Unexpected state: " + saas.getState());
-        }
+        for (Node node :  nodes) {
+            WsdlSaas saas = getWsdlSaas(node);
+            String location = saas.getWsdlData().getWsdlFile();
+            FileObject wsdlFileObject = saas.getLocalWsdlFile();
 
-        String location = saas.getWsdlData().getWsdlFile();
-        FileObject wsdlFileObject = saas.getLocalWsdlFile();
+            if (wsdlFileObject == null) {
+                String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", location); // NOI18N
+                NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                DialogDisplayer.getDefault().notify(d);
+                continue;
+            }
 
-        if (null == wsdlFileObject) {
-            String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", location);
-            NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-            DialogDisplayer.getDefault().notify(d);
-            return;
-        }
-
-        //TODO: open in read-only mode
-        try {
-            DataObject wsdlDataObject = DataObject.find(wsdlFileObject);
-            EditorCookie editorCookie = wsdlDataObject.getCookie(EditorCookie.class);
-            editorCookie.open();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            //TODO: open in read-only mode
+            try {
+                DataObject wsdlDataObject = DataObject.find(wsdlFileObject);
+                EditorCookie editorCookie = wsdlDataObject.getLookup().lookup(EditorCookie.class);
+                editorCookie.open();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
         }
     }
-    
+
+    @Override
     public boolean asynchronous() {
         return true;
     }
+
 }
