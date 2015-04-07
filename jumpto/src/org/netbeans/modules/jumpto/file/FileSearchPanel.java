@@ -77,7 +77,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.modules.jumpto.common.UiUtils;
@@ -262,19 +261,22 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     boolean searchCompleted() {
         assert SwingUtilities.isEventDispatchThread();
         setWarning(null);
+        String msg = null;
+        boolean res = true;
         if (resultList.getModel().getSize() == 0) {
             try {
                Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
-               setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
+               msg = NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound");
            } catch (PatternSyntaxException pse) {
-               setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex()) ,false ); // NOI18N
+               msg = NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex());
            }
-            return false;
+           res = false;
         }
-        return true;
+        setListPanelContent(msg, false);
+        return res;
     }
 
-    void setListPanelContent( String message, boolean waitIcon ) {
+    private void setListPanelContent( String message, boolean waitIcon ) {
         if ( message == null && !containsScrollPane ) {
            listPanel.remove( messageLabel );
            listPanel.add( resultScrollPane );
