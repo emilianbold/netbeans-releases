@@ -492,12 +492,12 @@ public class AstRenderer {
             if (child != null) {
                 name = child.getFirstChild();
             }
-        } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+        } else if (child != null && child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
             if (!isAbstractDeclarator(child.getNextSibling())) {
                 return false;
             }
             name = child.getFirstChild();
-        } else if(child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+        } else if(child != null && child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
             return true;
         }
 

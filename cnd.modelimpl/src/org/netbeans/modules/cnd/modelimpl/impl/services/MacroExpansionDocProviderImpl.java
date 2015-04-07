@@ -1644,7 +1644,6 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     column = APTUtils.getExpandedToken(fileToken).getColumn();
                 }
                 StringBuilder prefix = null;
-                StringBuilder suffix = null;
                 if (aLine > 0) {
                     if (line > 0 && aLine != line) {
                         prefix = new StringBuilder();
@@ -1657,10 +1656,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     }
                     line = aLine;
                 }
-                if (prefix == null && suffix == null) {
+                if (prefix == null) {
                     return null;
                 }
-                return Pair.of(prefix, suffix);
+                return Pair.of(prefix, null);
             }
         }
 
