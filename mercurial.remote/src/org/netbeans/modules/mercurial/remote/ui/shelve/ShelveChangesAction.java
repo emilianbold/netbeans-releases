@@ -199,7 +199,7 @@ public class ShelveChangesAction extends ContextAction {
         }
     };
     
-    public static ShelveChangesActionProvider getProvider () {
+    public static synchronized ShelveChangesActionProvider getProvider () {
         if (ACTION_PROVIDER == null) {
             ACTION_PROVIDER = new ShelveChangesActionProvider() {
                 @Override

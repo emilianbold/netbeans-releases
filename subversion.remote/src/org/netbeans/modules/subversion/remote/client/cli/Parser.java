@@ -55,7 +55,7 @@ public class Parser {
     private  Parser() {
     }        
     
-    public static Parser getInstance() {
+    public static synchronized Parser getInstance() {
         if(instance == null) {
             instance = new Parser();            
         }
@@ -87,7 +87,7 @@ public class Parser {
         }
     }         
             
-    private class LinePattern {
+    private static class LinePattern {
         private final int pathIdx;
         private final int revisionIdx;
         private final Pattern pattern;

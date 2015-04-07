@@ -178,7 +178,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
             rightFileRevision = rightFileRevision.trim();
         }
         List<HgLogMessage> parentRevisions = null;
-        if (leftFileRevision.equals(LOCAL)) {
+        if (LOCAL.equals(leftFileRevision)) {
             try {
                 parentRevisions = HgCommand.getParents(Mercurial.getInstance().getRepositoryRoot(file), file, null);
             } catch (HgException ex) {

@@ -45,7 +45,7 @@
  * Contributor(s): Robert Greig.
  */
 
-package org.netbeans.modules.mercurial.remote.config;
+package org.netbeans.modules.remotefs.versioning.api;
 
 import org.netbeans.modules.proxy.Base64Encoder;
 
@@ -65,7 +65,7 @@ public class Scrambler {
     /**
      * The single instance of this class (Singleton design pattern)
      */
-    public static Scrambler instance;
+    private static Scrambler instance;
 
     /**
      * Do not instantiate the scrambler directly. Use the getInstance() method
@@ -307,15 +307,15 @@ public class Scrambler {
     /**
      * Get an instance of the standard scrambler
      */
-    public static Scrambler getInstance() {
+    public static synchronized Scrambler getInstance() {
         if (instance == null) {
             instance = new Scrambler();
         }
         return instance;
     }
-
+    
     public String descramble(String scrambledText) {        
-        StringBuffer buf = new StringBuffer(); 
+        StringBuilder buf = new StringBuilder(); 
         if (scrambledText != null) {            
             byte[] decoded = decode(scrambledText); 
             for (int i = 1; i < decoded.length; ++i) {                

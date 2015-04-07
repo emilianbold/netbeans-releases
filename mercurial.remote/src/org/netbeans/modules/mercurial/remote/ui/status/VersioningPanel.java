@@ -580,9 +580,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private class ToolbarLayout implements LayoutManager {
         
         /** Expected border height */
-        private final int TOOLBAR_HEIGHT_ADJUSTMENT = 4;
+        private static final int TOOLBAR_HEIGHT_ADJUSTMENT = 4;
         
-        private final int TOOLBAR_SEPARATOR_MIN_WIDTH = 12;
+        private static final int TOOLBAR_SEPARATOR_MIN_WIDTH = 12;
         
         /** Cached toolbar height */
         private int toolbarHeight = -1;

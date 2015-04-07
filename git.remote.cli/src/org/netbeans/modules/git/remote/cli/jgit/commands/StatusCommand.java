@@ -372,8 +372,6 @@ public class StatusCommand extends StatusCommandBase {
             GitStatus.Status statusHeadIndex = GitStatus.Status.STATUS_IGNORED;
             switch (first) {
                 case 'A':
-                    statusHeadIndex = GitStatus.Status.STATUS_ADDED;
-                    break;
                 case 'C':
                     statusHeadIndex = GitStatus.Status.STATUS_ADDED;
                     break;

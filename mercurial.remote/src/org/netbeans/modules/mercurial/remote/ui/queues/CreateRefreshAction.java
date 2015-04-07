@@ -310,19 +310,19 @@ abstract class CreateRefreshAction extends ContextAction {
                 } catch (HgException.HgTooLongArgListException e) {
                     Mercurial.LOG.log(Level.INFO, null, e);
                     List<VCSFileProxy> reducedCommitCandidates;
-                    String offeredFileNames = "";                       //NOI18N
+                    StringBuilder offeredFileNames = new StringBuilder();
                     if (rootFiles != null && rootFiles.size() < 5) {
                         reducedCommitCandidates = new ArrayList<VCSFileProxy>(rootFiles);
                         files = new HashSet<VCSFileProxy>(rootFiles);
                         for (VCSFileProxy f : reducedCommitCandidates) {
-                            offeredFileNames += "\n" + f.getName();     //NOI18N
+                            offeredFileNames.append('\n').append(f.getName());     //NOI18N
                         }
                     } else {
                         reducedCommitCandidates = Collections.<VCSFileProxy>emptyList();
                         files = Collections.singleton(repository);
-                        offeredFileNames = "\n" + repository.getName(); //NOI18N
+                        offeredFileNames.append('\n').append(repository.getName()); //NOI18N
                     }
-                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CreateRefreshAction.class, "MSG_LONG_COMMAND_QUERY." + bundleKeyPostfix, offeredFileNames)); //NOI18N
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CreateRefreshAction.class, "MSG_LONG_COMMAND_QUERY." + bundleKeyPostfix, offeredFileNames.toString())); //NOI18N
                     descriptor.setTitle(NbBundle.getMessage(CreateRefreshAction.class, "MSG_LONG_COMMAND_TITLE")); //NOI18N
                     descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
                     descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);

@@ -225,7 +225,7 @@ public class SvnModuleConfig {
     }
 
     public RepositoryConnection getRepositoryConnection(String url) {
-        RepositoryConnection rc = getRepositoryConnectionIntern(url.toString());
+        RepositoryConnection rc = getRepositoryConnectionIntern(url);
         if (rc == null) {
             try {
                 // this will remove username from the hostname
@@ -304,8 +304,8 @@ public class SvnModuleConfig {
                     }
                     rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), (char[])creds[2], rc.getSshPortNumber());
                 } else if (!EventQueue.isDispatchThread()) {
-                    char[] password = rc.getSavePassword() ? KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString()) : null;
-                    char[] certPassword = rc.getCertFile().isEmpty() ? null : KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl().toString());
+                    char[] password = rc.getSavePassword() ? KeyringSupport.read(KEY_PASSWORD, rc.getUrl()) : null;
+                    char[] certPassword = rc.getCertFile().isEmpty() ? null : KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl());
                     rc = new RepositoryConnection(rc.getUrl(), rc.getUsername(), password, rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), certPassword, rc.getSshPortNumber());
                 }
                 ret.add(rc);

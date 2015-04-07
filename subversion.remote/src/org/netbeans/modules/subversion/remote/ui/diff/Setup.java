@@ -320,7 +320,7 @@ public final class Setup extends AbstractDiffSetup {
                     headTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_RemoteModified"), new Object [] { firstRevision });
                 } else {
                     firstRevision = REVISION_HEAD;
-                    headTitle = REVISION_HEAD.toString();
+                    headTitle = REVISION_HEAD;
                 }
         firstSource = new DiffStreamSource(baseFile, propertyName, REVISION_HEAD, headTitle);
         secondSource = new DiffStreamSource(baseFile, propertyName, REVISION_CURRENT, REVISION_CURRENT);

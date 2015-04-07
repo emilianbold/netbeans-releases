@@ -274,11 +274,9 @@ public class HgExtProperties implements ActionListener, DocumentListener {
     
     private void validateUserInput(DocumentEvent event) {
         
-        Document doc = event.getDocument();
         String name = panel.getComboName().getEditor().getItem().toString().trim();
-        String value = panel.getTxtAreaValue().getText().trim();
         
-        if (name.length() == 0 || name.indexOf(" ") > 0) { // NOI18N
+        if (name.length() == 0 || name.indexOf(' ') > 0) { // NOI18N
             panel.getBtnAdd().setEnabled(false);
         } else {
             panel.getBtnAdd().setEnabled(true);

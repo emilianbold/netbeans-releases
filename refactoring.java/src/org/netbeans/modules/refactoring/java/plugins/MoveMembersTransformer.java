@@ -541,7 +541,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     // Change Modifiers
                     final MethodTree methodTree = (MethodTree) member;
                     ExecutableElement method = (ExecutableElement) resolvedElement;
-                    ModifiersTree modifiers = changeModifiers(methodTree.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
+                    ModifiersTree modifiers = changeModifiers(genUtils.importFQNs(methodTree.getModifiers()), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
 
                     // Find and remove a usable parameter
                     final List<? extends VariableTree> parameters = methodTree.getParameters();
@@ -716,7 +716,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     // Make a new Variable (Field) tree
                 } else if (member.getKind() == Tree.Kind.VARIABLE) {
                     VariableTree field = (VariableTree) member;
-                    ModifiersTree modifiers = changeModifiers(field.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
+                    ModifiersTree modifiers = changeModifiers(genUtils.importFQNs(field.getModifiers()), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
 
                     // Scan the initializer and fix references
                     ExpressionTree initializer = field.getInitializer();
@@ -940,7 +940,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 newModifiers.add(Modifier.PRIVATE);
                 break;
         }
-        ModifiersTree modifiers = make.Modifiers(newModifiers);
+        ModifiersTree modifiers = make.Modifiers(newModifiers, modifiersTree.getAnnotations());
         return modifiers;
     }
 

@@ -418,7 +418,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
                 }
                 if (directChild == null) {
                     file = file.getParentFile();
-                    int pos = directChildPath.lastIndexOf("/"); //NOI18N
+                    int pos = directChildPath.lastIndexOf('/'); //NOI18N
                     if (pos == -1) {
                         if (LOG.isLoggable(Level.INFO)) {
                             LOG.log(Level.WARNING, "Suspicious notified file: {0} - {1} for {2}", new Object[] { file, relativePath, Arrays.asList(roots) } ); //NOI18N

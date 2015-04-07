@@ -231,6 +231,7 @@ public final class BranchSynchronizer {
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, false);
                     }
+                    break;
                 case NOT_ATTEMPTED:
                     sb.append(Bundle.MSG_SyncBranchAction_result_notAttempted(current.getName()));
                     break;

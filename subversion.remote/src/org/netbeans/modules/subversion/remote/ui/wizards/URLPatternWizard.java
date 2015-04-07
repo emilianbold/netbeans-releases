@@ -138,13 +138,12 @@ public final class URLPatternWizard implements ChangeListener {
         }
         @Override
         protected WizardDescriptor.Panel[] initializePanels() {
-            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[2];
             repositoryStep = new RepositoryStep(fileSystem, Repository.FLAG_ACCEPT_REVISION, RepositoryStep.URL_PATTERN_HELP_ID);
             repositoryStep.addChangeListener(URLPatternWizard.this);            
             urlPatternStep = new URLPatternStep(fileSystem);            
             urlPatternStep.addChangeListener(URLPatternWizard.this);
             
-            panels = new  WizardDescriptor.Panel[] {repositoryStep, urlPatternStep};
+            WizardDescriptor.Panel[] panels = new  WizardDescriptor.Panel[] {repositoryStep, urlPatternStep};
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -156,7 +155,7 @@ public final class URLPatternWizard implements ChangeListener {
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i); // NOI18N
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                     // Turn on subtitle creation on each step

@@ -221,9 +221,7 @@ public class ProcessUtils  {
                 first = false;
             }
         } finally {
-            if (br != null) {
-                br.close();
-            }
+            br.close();
         }
 
         return result.toString();

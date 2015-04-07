@@ -83,7 +83,7 @@ public class ListRemoteTagsCommand extends TransportCommand {
         super.prepare();
         addArgument(0, "ls-remote"); //NOI18N
         addArgument(0, "--tags"); //NOI18N
-        addArgument(0, remoteUrl.toString());
+        addArgument(0, remoteUrl);
     }
 
     @Override

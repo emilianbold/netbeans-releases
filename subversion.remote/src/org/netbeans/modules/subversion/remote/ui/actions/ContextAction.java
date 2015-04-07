@@ -255,18 +255,18 @@ public abstract class ContextAction extends NodeAction {
                 }
             }
             return MessageFormat.format(NbBundle.getBundle(this.getClass()).getString(baseName + "_Context"),  // NOI18N
-                                            new Object [] { name });
+                                            name);
         } else {
             if (projectsOnly) {
                 try {
                     return MessageFormat.format(NbBundle.getBundle(this.getClass()).getString(baseName + "_Projects"),  // NOI18N
-                                                new Object [] { new Integer(objectCount) });
+                                                objectCount);
                 } catch (MissingResourceException ex) {
                     // ignore use files alternative bellow
                 }
             }
             return MessageFormat.format(NbBundle.getBundle(this.getClass()).getString(baseName + "_Context_Multiple"),  // NOI18N
-                                        new Object [] { new Integer(objectCount) });
+                                        objectCount);
         }
     }
     
@@ -321,13 +321,13 @@ public abstract class ContextAction extends NodeAction {
             if (projectsOnly) {
                 try {
                     return MessageFormat.format(NbBundle.getBundle(ContextAction.class).getString("MSG_ActionContext_MultipleProjects"),  // NOI18N
-                                                new Object [] { new Integer(objectCount) });
+                                                objectCount);
                 } catch (MissingResourceException ex) {
                     // ignore use files alternative bellow
                 }
             }
             return MessageFormat.format(NbBundle.getBundle(ContextAction.class).getString("MSG_ActionContext_MultipleFiles"),  // NOI18N
-                                        new Object [] { new Integer(objectCount) });
+                                        objectCount);
         }
     }    
         

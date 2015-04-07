@@ -294,10 +294,10 @@ public class IgnoreAction extends ContextAction {
     }
 
     private static String getPatternsAsString(List<String> patterns) {
-        String value = "";                                              //NOI18N
+        StringBuilder value = new StringBuilder();
         for (String pattern : patterns) {
-            value += pattern + "\n";                                    //NOI18N
+            value.append(pattern).append('\n');
         }
-        return value;
+        return value.toString();
     }
 }

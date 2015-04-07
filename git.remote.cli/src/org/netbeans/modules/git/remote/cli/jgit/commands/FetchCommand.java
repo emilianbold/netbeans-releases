@@ -151,7 +151,7 @@ public class FetchCommand extends TransportCommand {
                 line = line.substring(0, i).trim();
                 if (line.startsWith("[new branch]")) {
                     details.newBranch = "new branch";
-                    details.localBranch = line.substring(line.indexOf("]")+1).trim();
+                    details.localBranch = line.substring(line.indexOf(']')+1).trim();
                 } else {
                     String[] s = line.split("\\s+");
                     if (s.length == 2) {
