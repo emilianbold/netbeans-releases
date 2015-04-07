@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
-import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.actions.NodeAction;
@@ -57,11 +56,13 @@ import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
 /**
+ * Deletes a user-defined web service.
  * 
  * @author  nam
  */
 public class DeleteServiceAction extends NodeAction {
 
+    @Override
     protected boolean enable(Node[] nodes) {
         for (Node n : nodes) {
             Saas saas = n.getLookup().lookup(Saas.class);
@@ -72,34 +73,35 @@ public class DeleteServiceAction extends NodeAction {
         return true;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/websvc/saas/ui/resources/ActionIcon.gif";
+        return "org/netbeans/modules/websvc/saas/ui/resources/ActionIcon.gif"; // NOI18N
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getMessage(DeleteServiceAction.class, "DELETE");
+        return NbBundle.getMessage(DeleteServiceAction.class, "DELETE"); // NOI18N
     }
 
+    @Override
     protected void performAction(Node[] nodes) {
         final List<Saas> saases = new ArrayList<Saas>();
         for (Node n : nodes) {
             Saas saas = n.getLookup().lookup(Saas.class);
-            if (saas == null || !saas.isUserDefined()) {
-                throw new IllegalArgumentException("Some nodes have no associated Saas");
-            }
             saases.add(saas);
         }
 
-        String msg = NbBundle.getMessage(this.getClass(), "WS_DELETE", saases);
+        String msg = NbBundle.getMessage(this.getClass(), "WS_DELETE", saases); // NOI18N
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
         Object response = DialogDisplayer.getDefault().notify(d);
-        if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
+        if (NotifyDescriptor.YES_OPTION.equals(response)) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     for (Saas saas : saases) {
                         SaasServicesModel.getInstance().removeService(saas);
