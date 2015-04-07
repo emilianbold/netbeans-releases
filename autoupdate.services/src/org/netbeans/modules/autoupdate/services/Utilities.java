@@ -773,9 +773,15 @@ public class Utilities {
     private static Reference<Set<UpdateElement>> cachedResultReference = null;
     
     private static Set<UpdateElement> handleBackwardCompatability (Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
-        if (cachedInfosReference != null && cachedInfosReference.get() != null && cachedInfosReference.get().equals(forInstall)) {
-            if (cachedResultReference != null && cachedResultReference.get() != null) {
-                return cachedResultReference.get();
+        if (cachedInfosReference != null) {
+            Set<ModuleInfo> cir = cachedInfosReference.get();
+            if (cir != null && cir.equals(forInstall) ) {
+                if (cachedResultReference != null) {
+                    Set<UpdateElement> crr = cachedResultReference.get();
+                    if (crr != null) {
+                        return crr;
+                    }
+                }
             }
         }
         cachedInfosReference = new WeakReference<Set<ModuleInfo>>(forInstall);

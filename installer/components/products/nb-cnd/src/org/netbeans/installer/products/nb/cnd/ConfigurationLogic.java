@@ -51,6 +51,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     // Constants
     private static final String CND_CLUSTER = 
             "{cnd-cluster}"; // NOI18N
+    private static final String CNDEXT_CLUSTER = 
+            "{cndext-cluster}"; // NOI18N
     private static final String DLIGHT_CLUSTER = 
             "{dlight-cluster}"; // NOI18N
     private static final String ID = 
@@ -61,6 +63,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     // Instance
     public ConfigurationLogic() throws InitializationException {
         super(new String[]{
-            CND_CLUSTER,DLIGHT_CLUSTER}, ID);
+            CND_CLUSTER, CNDEXT_CLUSTER, DLIGHT_CLUSTER}, ID);
     }
 }
