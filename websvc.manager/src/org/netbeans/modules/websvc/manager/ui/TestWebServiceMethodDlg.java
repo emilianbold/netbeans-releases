@@ -154,16 +154,13 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
              * First add the URL to the jar wsdlFile for this web service.
              */
             try {
-                List<URL> urlList = null;
                 WsdlData wsdlData = wsData.getWsdlData();
 
                 boolean isRPCEncoded = isRPCEncoded(wsdlData);
 
-                urlList = TypeUtil.buildClasspath(null, isRPCEncoded ? false : true); // NOI18N
+                List<URL> urlList = TypeUtil.buildClasspath(null, !isRPCEncoded);
 
-                WsdlServiceProxyDescriptor descriptor = null;
-
-
+                WsdlServiceProxyDescriptor descriptor;
                 if (isRPCEncoded) {
                     descriptor = wsdlData.getJaxRpcDescriptor();
                 } else {
@@ -390,7 +387,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         /**
          * specify the wrapper client class name for this method.
          */
-        String clientClassName = null;
+        String clientClassName;
         if(isRPCEncoded(wsData.getWsdlData())){
             clientClassName = wsData.getWsdlModel().getJavaName() + "_Impl";
         }else{
@@ -728,9 +725,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
         private void notifyListeners(Object returnedObject) {
             Iterator listenerIterator = listeners.iterator();
-            MethodTaskListener currentListener = null;
             while(listenerIterator.hasNext()) {
-                currentListener = (MethodTaskListener)listenerIterator.next();
+                MethodTaskListener currentListener = (MethodTaskListener)listenerIterator.next();
                 currentListener.methodFinished(returnedObject, paramList);
             }
         }
@@ -740,7 +736,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             /**
              * Now invoke the method using the ReflectionHelper.
              */
-            Object returnObject=null;
+            Object returnObject;
             try {
                 returnObject = ReflectionHelper.callMethodWithParams(clientClassName, paramList, javaMethod,urlClassLoader, wsData.getWsdlData(), port);
             } catch (Exception wsre) {
