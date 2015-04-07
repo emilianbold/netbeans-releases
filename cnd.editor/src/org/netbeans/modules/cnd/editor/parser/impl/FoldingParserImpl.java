@@ -85,18 +85,7 @@ public class FoldingParserImpl {
         try {
             FoldingParserImpl parser = getParser(ts);
             parser.filters.clear();
-            String separator = null;
-            Object attribute = fo.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
-            if (attribute instanceof String) {
-                separator = (String) attribute;
-            }
-            if (separator == null) {
-                separator = System.getProperty("line.separator"); //NOI18N
-            }
-            if (separator == null) {
-                separator = "\n"; //NOI18N
-            }
-            parser.filters.add(new CommentTokenFilter(separator));
+            parser.filters.add(new CommentTokenFilter());
             parser.filters.add(new PreprocessorFilter(ts));
             parser.translation_unit();
             return new ArrayList<CppFoldRecord>(parser.getFolders());

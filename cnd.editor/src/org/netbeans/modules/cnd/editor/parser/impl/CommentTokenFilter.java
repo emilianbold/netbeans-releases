@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.editor.parser.impl;
 
+import java.nio.CharBuffer;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,16 +64,10 @@ public class CommentTokenFilter implements TokenFilter {
 
     private int state = BEFORE_FIRST_TOKEN_STATE;
 
-    private final String separator;
-
     // folds
     private CppFoldRecord initialCommentFold = null;
     private final List<CppFoldRecord> blockCommentFolds = new ArrayList<CppFoldRecord>();
     private final List<CppFoldRecord> lineCommentFolds = new ArrayList<CppFoldRecord>();
-
-    CommentTokenFilter(String separator) {
-        this.separator = separator;
-    }
 
     @Override
     public void visit(Token<CppTokenId> token) {
@@ -182,7 +177,19 @@ public class CommentTokenFilter implements TokenFilter {
         return new CppFoldRecord(folderKind, begin.offset(null), end.offset(null) + end.length());
     }
 
+    /**
+     * A line is considered to be terminated by any one
+     * of a line feed ('\n'), a carriage return ('\r'), or a carriage return
+     * followed immediately by a linefeed.
+     */
     private boolean isMultilineToken(Token token) {
-        return token.text().toString().contains(separator);
+        CharSequence text = token.text();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\n' || c == '\r') {
+                return true;
+            }
+        }
+        return false;
     }
 }
