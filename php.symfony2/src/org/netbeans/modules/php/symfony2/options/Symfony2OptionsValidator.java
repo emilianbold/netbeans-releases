@@ -43,6 +43,7 @@ package org.netbeans.modules.php.symfony2.options;
 
 import java.io.File;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.util.NbBundle;
@@ -53,7 +54,32 @@ public final class Symfony2OptionsValidator {
 
 
     public Symfony2OptionsValidator validate() {
-        return validateSandbox();
+        if (Symfony2Options.getInstance().isUseInstaller()) {
+            validateInstaller();
+        } else {
+            validateSandbox();
+        }
+        return this;
+    }
+
+    public Symfony2OptionsValidator validate(boolean useInstaller, String installer, String sandbox) {
+        if (useInstaller) {
+            return validateInstaller(installer);
+        }
+        return validateSandbox(sandbox);
+    }
+
+    public Symfony2OptionsValidator validateInstaller() {
+        return validateInstaller(Symfony2Options.getInstance().getInstaller());
+    }
+
+    @NbBundle.Messages("Symfony2OptionsValidator.installer=Installer")
+    public Symfony2OptionsValidator validateInstaller(String installer) {
+        String warning = PhpExecutableValidator.validateCommand(installer, Bundle.Symfony2OptionsValidator_installer());
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message(Symfony2Options.INSTALLER, warning));
+        }
+        return this;
     }
 
     public Symfony2OptionsValidator validateSandbox() {
@@ -61,17 +87,15 @@ public final class Symfony2OptionsValidator {
     }
 
     @NbBundle.Messages({
-        "Symfony2OptionsValidator.symfony.sandbox=Symfony",
-        "Symfony2OptionsValidator.symfony.notZip=Symfony is not ZIP file."
+        "Symfony2OptionsValidator.sandbox=Sandbox",
+        "Symfony2OptionsValidator.sandbox.notZip=Sandbox is not ZIP file."
     })
     public Symfony2OptionsValidator validateSandbox(@NullAllowed String sandbox) {
-        String warning = FileUtils.validateFile(Bundle.Symfony2OptionsValidator_symfony_sandbox(), sandbox, false);
+        String warning = FileUtils.validateFile(Bundle.Symfony2OptionsValidator_sandbox(), sandbox, false);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message(Symfony2Options.SANDBOX, warning));
-            return this;
-        }
-        if (!new File(sandbox).getName().toLowerCase().endsWith(".zip")) { // NOI18N
-            result.addWarning(new ValidationResult.Message(Symfony2Options.SANDBOX, Bundle.Symfony2OptionsValidator_symfony_notZip()));
+        } else if (!new File(sandbox).getName().toLowerCase().endsWith(".zip")) { // NOI18N
+            result.addWarning(new ValidationResult.Message(Symfony2Options.SANDBOX, Bundle.Symfony2OptionsValidator_sandbox_notZip()));
         }
         return this;
     }

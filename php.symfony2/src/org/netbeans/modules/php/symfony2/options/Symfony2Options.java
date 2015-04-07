@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.php.symfony2.options;
 
+import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.symfony2.commands.InstallerExecutable;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -60,10 +64,14 @@ public final class Symfony2Options {
     private static final Symfony2Options INSTANCE = new Symfony2Options();
 
     // properties
-    private static final String SANDBOX = "sandbox"; // NOI18N
+    static final String INSTALLER = "installer"; // NOI18N
+    static final String SANDBOX = "sandbox"; // NOI18N
+    private static final String NEW_PROJECT_METHOD = "new.project.method"; // NOI18N
     private static final String IGNORE_CACHE = "ignore.cache"; // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private volatile boolean installerSearched = false;
 
 
     private Symfony2Options() {
@@ -87,12 +95,39 @@ public final class Symfony2Options {
         changeSupport.removeChangeListener(listener);
     }
 
+    @CheckForNull
+    public String getInstaller() {
+        String path = getPreferences().get(INSTALLER, null);
+        if (path == null
+                && !installerSearched) {
+            installerSearched = true;
+            List<String> files = FileUtils.findFileOnUsersPath(InstallerExecutable.NAME);
+            if (!files.isEmpty()) {
+                path = files.get(0);
+                setInstaller(path);
+            }
+        }
+        return path;
+    }
+
+    public void setInstaller(String installer) {
+        getPreferences().put(INSTALLER, installer);
+    }
+
     public String getSandbox() {
         return getPreferences().get(SANDBOX, null);
     }
 
     public void setSandbox(String sandbox) {
         getPreferences().put(SANDBOX, sandbox);
+    }
+
+    public boolean isUseInstaller() {
+        return getPreferences().get(NEW_PROJECT_METHOD, INSTALLER).equals(INSTALLER);
+    }
+
+    public void setUseInstaller(boolean useInstaller) {
+        getPreferences().put(NEW_PROJECT_METHOD, useInstaller ? INSTALLER : SANDBOX);
     }
 
     public boolean getIgnoreCache() {
