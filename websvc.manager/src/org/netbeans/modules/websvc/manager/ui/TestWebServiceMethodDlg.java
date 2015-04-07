@@ -219,7 +219,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
         dlg = new DialogDescriptor(this, NbBundle.getMessage(this.getClass(), "TEST_WEB_SERVICE_METHOD"),
                 false, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
+                DialogDescriptor.DEFAULT_ALIGN, HelpCtx.DEFAULT_HELP, this);
         dlg.setOptions(new Object[]{okButton});
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
         /**
@@ -259,10 +259,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
 
         dialog.show();
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_test_websvcdb");
     }
 
     /** This method is called from within the constructor to
