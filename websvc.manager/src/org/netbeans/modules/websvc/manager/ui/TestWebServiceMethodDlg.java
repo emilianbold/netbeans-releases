@@ -228,10 +228,12 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         final JPanel thisPanel = this;
         dialog.addWindowListener(new WindowAdapter() {
 
+            @Override
             public void windowOpened(WindowEvent e) {
                 SwingUtilities.invokeLater(
                         new Runnable() {
 
+                            @Override
                             public void run() {
                                 btnSubmit.requestFocus();
                                 thisPanel.getRootPane().setDefaultButton(btnSubmit);
@@ -414,6 +416,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         methodThread.start();
     }
     
+    @Override
     public void methodFinished(final Object inReturnedObject,final LinkedList inParamList) {
         if ( SwingUtilities.isEventDispatchThread()){
             doMethodFinished(inReturnedObject, inParamList);
@@ -528,6 +531,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private void addFocusListener(final JTable table) {
         // fixes tab cycle when the table is empty
         table.addFocusListener(new FocusListener() {
+            @Override
             public void focusGained(FocusEvent evt) {
                 Container cycleRoot = table.getFocusCycleRootAncestor();
                 FocusTraversalPolicy policy = table.getFocusTraversalPolicy();
@@ -547,6 +551,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 }
             }
 
+            @Override
             public void focusLost(FocusEvent evt) {
             }
         });
@@ -658,6 +663,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     }
 
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         String actionCommand = evt.getActionCommand();
         if(actionCommand.equalsIgnoreCase(okString)) {
@@ -731,6 +737,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             }
         }
 
+        @Override
         public void run() {
             /**
              * Now invoke the method using the ReflectionHelper.
@@ -769,10 +776,12 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             normalCursor = inNormalCursor;
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
             e.getComponent().setCursor(normalCursor);
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
     }
