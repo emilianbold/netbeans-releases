@@ -57,7 +57,7 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Tomas Stupka
  */
-public abstract class PanelProgressSupport extends SvnProgressSupport implements Runnable {
+public abstract class PanelProgressSupport extends SvnProgressSupport {
 
     private JPanel progressComponent;
     private JLabel progressLabel;

@@ -216,7 +216,7 @@ public class CreateBranch implements DocumentListener {
                 if (e.getValue().isRemote() && e.getKey().equals(revision)) {
                     // selected revision is a remote branch
                     // offer the usual local branch name
-                    String localBranch = revision.substring(revision.indexOf("/") + 1); //NOI18N
+                    String localBranch = revision.substring(revision.indexOf('/') + 1); //NOI18N
                     panel.branchNameField.setText(localBranch);
                 }
             }

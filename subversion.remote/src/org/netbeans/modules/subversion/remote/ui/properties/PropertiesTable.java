@@ -217,7 +217,7 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int rowIndex, int columnIndex) {
             int newLinePos;
-            if (value instanceof String && (newLinePos = ((String) value).indexOf("\n")) > -1) { //NOI18N
+            if (value instanceof String && (newLinePos = ((String) value).indexOf('\n')) > -1) { //NOI18N
                 value = ((String) value).substring(0, newLinePos) + "..."; //NOI18N
             }
             Component renderer =  super.getTableCellRendererComponent(table, value, hasFocus, hasFocus, rowIndex, columnIndex);

@@ -100,7 +100,7 @@ public final class GitModuleConfig {
     private String lastCanceledCommitMessage;
     private static final String DEFAULT_ANNOTATION_PROJECT = Annotator.DEFAULT_ANNOTATION_PROJECT;
     
-    public static GitModuleConfig getDefault () {
+    public static synchronized GitModuleConfig getDefault () {
         if (instance == null) {
             instance = new GitModuleConfig();
         }

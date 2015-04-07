@@ -70,7 +70,7 @@ public class MakeTemplateListener implements OperationListener {
 
     private static final String ADD_TO_LOGICAL_FOLDER_ATTRIBUTE = "addToLogicalFolder"; // NOI18N
     
-    public static MakeTemplateListener INSTANCE;
+    static MakeTemplateListener INSTANCE;
     private Project contextProject;
     private MakeConfigurationDescriptor contextCD;
 

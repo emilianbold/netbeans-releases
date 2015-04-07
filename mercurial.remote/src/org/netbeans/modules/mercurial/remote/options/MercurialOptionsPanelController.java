@@ -247,7 +247,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         }
         String execpath = panel.executablePathTextField.getText();
         String hgExecutableParent = null;
-        if ((hgExecutableParent == null) && execpath.endsWith(HG_COMMAND)) {
+        if (execpath.endsWith(HG_COMMAND)) {
             hgExecutableParent = execpath.substring(0, execpath.length() - HG_COMMAND.length());
         }   
         if (hgExecutableParent == null) {

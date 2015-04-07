@@ -477,7 +477,7 @@ public class Merge extends CopyDialog implements ItemListener {
         @Override
         public RepositoryFile getMergeStartRepositoryFile() {
             // in this case its the same folder url
-            return getMergeEndRepositoryFile();
+            return super.getMergeEndRepositoryFile();
         }
 
         @Override

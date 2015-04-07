@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  * @author ondra
  */
 public final class BranchSelector {
-    protected final SelectBranchPanel panel;
+    private final SelectBranchPanel panel;
     private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;

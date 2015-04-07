@@ -102,9 +102,7 @@ class ConflictDescriptionParser {
                     throw new IOException("Error parsing description: " + description); //NOI18N
                 }
                 ParserConflictDescriptor conflict = readConflict(sr);
-                if (conflict != null) {
-                    conflicts.add(conflict);
-                }
+                conflicts.add(conflict);
             }
         }
     }

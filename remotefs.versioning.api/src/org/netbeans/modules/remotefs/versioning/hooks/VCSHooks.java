@@ -61,7 +61,7 @@ public class VCSHooks {
     private VCSHooks() {
     }
 
-    public static VCSHooks getInstance() {
+    public synchronized static VCSHooks getInstance() {
         if (instance == null) {
             instance = new VCSHooks();
         }
@@ -88,7 +88,6 @@ public class VCSHooks {
         if(hooksResult == null) {
             return Collections.EMPTY_LIST;
         }
-        Collection<VCSHookFactory> c = (Collection<VCSHookFactory>) Lookup.getDefault().lookupAll(VCSHookFactory.class);
         return hooksResult.allInstances();
     }
 

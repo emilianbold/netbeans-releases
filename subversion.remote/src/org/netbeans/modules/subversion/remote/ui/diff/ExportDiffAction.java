@@ -298,7 +298,7 @@ public class ExportDiffAction extends ContextAction {
                 }
             }
             if (success) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExportDiffAction.class, "BK3004", new Integer(exportedFiles)));
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExportDiffAction.class, "BK3004", exportedFiles));
                 if (exportedFiles == 0) {
                     VCSFileProxySupport.delete(destination);
                 } else {

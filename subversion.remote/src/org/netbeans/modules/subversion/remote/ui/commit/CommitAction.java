@@ -216,7 +216,6 @@ public class CommitAction extends ContextAction {
     private static void commitChanges(String contentTitle, final Context ctx, boolean deepScanEnabled) {
         final CommitPanel panel = new CommitPanel(ctx.getFileSystem());
         Collection<SvnHook> hooks = VCSHooks.getInstance().getHooks(SvnHook.class);
-        VCSFileProxy file = ctx.getRootFiles()[0];
         // SvnHookContext is java.io.File oriented.
         // TODO pass file in hook
         //panel.setHooks(hooks, new SvnHookContext(new VCSFileProxy[] { file }, null, null));

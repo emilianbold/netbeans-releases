@@ -70,7 +70,7 @@ public class CommitTableModel extends AbstractTableModel {
     public static final String COLUMN_NAME_PATH    = "path"; // NOI18N
     public static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
 
-    private class RootFile {
+    private static class RootFile {
         String repositoryPath;
         String rootLocalPath;
     }
@@ -201,7 +201,6 @@ public class CommitTableModel extends AbstractTableModel {
             // XXX this is a mess
             if(rootFile != null) {
                 // must convert from native separators to slashes
-                String relativePath = nodes[rowIndex].getFile().getPath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath;
             } else {
                 shortPath = HgUtils.getRelativePath(nodes[rowIndex].getFile());
