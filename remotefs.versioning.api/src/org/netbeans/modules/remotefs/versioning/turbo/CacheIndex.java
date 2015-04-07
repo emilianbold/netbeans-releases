@@ -73,7 +73,9 @@ public abstract class CacheIndex {
     protected abstract boolean isManaged(VCSFileProxy file);
 
     public VCSFileProxy[] get(VCSFileProxy key) {
-        LOG.log(Level.FINE, "get({0})", new Object[]{key});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "get({0})", new Object[]{key});
+        }
 
         if(key == null) {
             return new VCSFileProxy[0];
@@ -82,11 +84,15 @@ public abstract class CacheIndex {
         synchronized(this) {
             Set<VCSFileProxy> ret = index.get(key);
             if(ret == null) {
-                LOG.log(Level.FINE, " get({0}) returns no files", new Object[]{key});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, " get({0}) returns no files", new Object[]{key});
+                }
                 return new VCSFileProxy[0];
             }
 
-            LOG.log(Level.FINE, " get({0}) returns {1}", new Object[]{key, ret.size()});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, " get({0}) returns {1}", new Object[]{key, ret.size()});
+            }
             if(LOG.isLoggable(Level.FINER)) {
                 LOG.finer("   " + ret);
             }
@@ -96,7 +102,9 @@ public abstract class CacheIndex {
     }
 
     public VCSFileProxy[] getAllValues() {
-        LOG.fine("getAllValues()");
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("getAllValues()");
+        }
         
         List<Set<VCSFileProxy>> values;
         synchronized(this) {
@@ -112,7 +120,9 @@ public abstract class CacheIndex {
             }
         }
 
-        LOG.log(Level.FINE, " getAllValues() returns {0}", new Object[]{ret.size()});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, " getAllValues() returns {0}", new Object[]{ret.size()});
+        }
         if(LOG.isLoggable(Level.FINER)) {
             LOG.finer("   " + ret);
         }
@@ -121,7 +131,9 @@ public abstract class CacheIndex {
     }
 
     public void add(VCSFileProxy file) {
-        LOG.log(Level.FINE, "add({0})", new Object[]{file});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "add({0})", new Object[]{file});
+        }
 
         assert file != null;
         if(file == null) {
@@ -140,7 +152,9 @@ public abstract class CacheIndex {
         synchronized(this) {
             Set<VCSFileProxy> set = index.get(parent);
             if(set == null) {
-                LOG.log(Level.FINER, "  add({0}) - creating new file entry", new Object[]{file});
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "  add({0}) - creating new file entry", new Object[]{file});
+                }
                 set = Collections.synchronizedSet(new HashSet<VCSFileProxy>());
                 set.add(file);
                 index.put(parent, set);
@@ -153,7 +167,9 @@ public abstract class CacheIndex {
     }
 
     public void add(VCSFileProxy file, Set<VCSFileProxy> files) {
-        LOG.log(Level.FINE, "add({0}, Set<File>)", new Object[]{file});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "add({0}, Set<File>)", new Object[]{file});
+        }
         if(LOG.isLoggable(Level.FINER)) {
             LOG.finer("   " + files);
         }
@@ -175,7 +191,9 @@ public abstract class CacheIndex {
             }
             newSet.addAll(files);
 
-            LOG.log(Level.FINE, "  add({0}, Set<File>) - add entries", new Object[]{file});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "  add({0}, Set<File>) - add entries", new Object[]{file});
+            }
             index.put(file, Collections.synchronizedSet(newSet));
             if(newSet.size() > 0) {
                 ensureParents(file);
@@ -188,29 +206,43 @@ public abstract class CacheIndex {
 
     private void ensureParents(VCSFileProxy file) {
         VCSFileProxy pFile = file;
-        LOG.log(Level.FINE, "  ensureParents({0})", new Object[]{pFile});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "  ensureParents({0})", new Object[]{pFile});
+        }
 
         while (true) {
             VCSFileProxy parent = file.getParentFile();
-            LOG.log(Level.FINE, "  ensureParents({0}) - parent {1}", new Object[]{pFile, parent});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "  ensureParents({0}) - parent {1}", new Object[]{pFile, parent});
+            }
             if (parent == null) {
-                LOG.log(Level.FINE, "  ensureParents({0}) - done", new Object[]{pFile, parent});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "  ensureParents({0}) - done", new Object[]{pFile});
+                }
                 break;
             }
 
             synchronized(this) {
                 Set<VCSFileProxy> set = index.get(parent);
                 if (set == null) {
-                    LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - no entry" , new Object[]{pFile, parent});
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - no entry" , new Object[]{pFile, parent});
+                    }
                     if (!isManaged(parent)) {
-                        LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - not managed - done!", new Object[]{pFile, parent});
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - not managed - done!", new Object[]{pFile, parent});
+                        }
                         break;
                     }
                     set = new HashSet<VCSFileProxy>();
-                    LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - creating parent node", new Object[]{pFile, parent});
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - creating parent node", new Object[]{pFile, parent});
+                    }
                     index.put(parent, set);
                 }
-                LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - adding file {2}", new Object[]{pFile, parent, file});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "  ensureParents({0}) - parent {1} - adding file {2}", new Object[]{pFile, parent, file});
+                }
                 set.add(file);
             }
             file = parent;
@@ -219,29 +251,41 @@ public abstract class CacheIndex {
 
     private void cleanUpParents(VCSFileProxy file) {
         VCSFileProxy pFile = file;
-        LOG.log(Level.FINE, "  cleanUpParents({0})", new Object[]{pFile});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "  cleanUpParents({0})", new Object[]{pFile});
+        }
 
         Set<VCSFileProxy> set = index.get(file);
         if(set != null && set.size() > 0) {
-            LOG.log(Level.FINE, "  cleanUpParents({0}) - children underneath. stop.", new Object[]{pFile});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "  cleanUpParents({0}) - children underneath. stop.", new Object[]{pFile});
+            }
             return;
         }
 
-        LOG.log(Level.FINE, "  cleanUpParents({0}) - removing node", new Object[]{pFile});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "  cleanUpParents({0}) - removing node", new Object[]{pFile});
+        }
         index.remove(file);
         while(true) {
             VCSFileProxy parent = file.getParentFile();
-            LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1}", new Object[]{pFile, parent});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1}", new Object[]{pFile, parent});
+            }
 
             if (parent == null) {
-                LOG.log(Level.FINE, "  cleanUpParents({0}) - done", new Object[]{pFile, parent});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "  cleanUpParents({0}) - done", new Object[]{pFile});
+                }
                 break;
             }
 
             synchronized(this) {
                 set = index.get(parent);
                 if(set == null) {
-                    LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} empty - stop", new Object[]{pFile, parent});
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} empty - stop", new Object[]{pFile, parent});
+                    }
                     break;
                 }
 
@@ -249,13 +293,17 @@ public abstract class CacheIndex {
                     VCSFileProxy lastLonelyFile = set.iterator().next();
                     if(file.equals(lastLonelyFile) && index.get(lastLonelyFile) == null) { // remove the last node only when it indeed equals the removing file
                         // file under parent point to nowhere -> remove whole parent node
-                        LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} size 1 - remove", new Object[]{pFile, parent});
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} size 1 - remove", new Object[]{pFile, parent});
+                        }
                         index.remove(parent);
                     } else {
                         break;
                     }
                 } else {
-                    LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} - remove file {2}", new Object[]{pFile, parent, file});
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} - remove file {2}", new Object[]{pFile, parent, file});
+                    }
                     // more then one file under parent node -> remove only file from parents children if it's pointing to nowhere
                     if(index.get(file) == null) {
                         set.remove(file);

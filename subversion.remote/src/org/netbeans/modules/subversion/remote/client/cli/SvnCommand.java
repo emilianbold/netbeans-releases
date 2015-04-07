@@ -484,7 +484,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
             }
             add("--force-log"); //NOI18N
             add("-F"); //NOI18N             
-            String msgFile = createTempCommandFile((message != null) ? message : ""); //NOI18N
+            String msgFile = createTempCommandFile(message);
             add(msgFile);                               		
         }
         

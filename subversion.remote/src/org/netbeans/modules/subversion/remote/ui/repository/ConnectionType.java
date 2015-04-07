@@ -446,10 +446,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
         public void onSelectedRepositoryChange(String urlString) {
             if(urlString.startsWith("svn+")) { //NOI18N
                 String tunnelName = SvnUtils.getTunnelName(urlString).trim();
-                if( panel.tunnelCommandTextField.getText().trim().equals("") && //NOI18N
-                    tunnelName != null &&
-                    !tunnelName.equals("") ) //NOI18N
-                {
+                if( panel.tunnelCommandTextField.getText().trim().equals("") && !tunnelName.isEmpty()) {
                     panel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance(fileSystem).getExternalCommand(tunnelName));
                 }
             }

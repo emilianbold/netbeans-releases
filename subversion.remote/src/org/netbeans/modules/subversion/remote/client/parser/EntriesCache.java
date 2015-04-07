@@ -159,7 +159,7 @@ public class EntriesCache {
         cachedConflicts = new WeakHashMap<>(5);
     }
 
-    static EntriesCache getInstance() {
+    static synchronized EntriesCache getInstance() {
         if(instance == null) {
             instance = new EntriesCache();
         }

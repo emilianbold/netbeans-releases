@@ -217,7 +217,7 @@ public class RepositoryConnection {
     private void parseUrlString(String urlString) throws MalformedURLException {
         int idx = urlString.lastIndexOf('@');
         int hostIdx = urlString.indexOf("://");                         // NOI18N
-        int firstSlashIdx = urlString.indexOf("/", hostIdx + 3);        // NOI18N
+        int firstSlashIdx = urlString.indexOf('/', hostIdx + 3);        // NOI18N
         if (urlString.contains("\\")) { //NOI18N
             throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_InvalidSvnUrl", urlString)); //NOI18N
         }
@@ -322,9 +322,9 @@ public class RepositoryConnection {
                 certPassword == null ? null : certPassword.toCharArray(), portNumber);
     }
 
-    private static String ripUserFromHost (String hostname) {
+    private static synchronized String ripUserFromHost (String hostname) {
         if (keepUserInHostname == null) {
-            keepUserInHostname = new Boolean("false".equals(System.getProperty("subversion.ripUserFromHostnames", "true"))); //NOI18N
+            keepUserInHostname = Boolean.valueOf("false".equals(System.getProperty("subversion.ripUserFromHostnames", "true"))); //NOI18N
         }
         return keepUserInHostname.booleanValue() ? hostname : SvnUtils.ripUserFromHost(hostname);
     }

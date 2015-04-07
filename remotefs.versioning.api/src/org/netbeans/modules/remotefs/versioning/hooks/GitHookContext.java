@@ -53,7 +53,6 @@ public class GitHookContext extends VCSHookContext {
 
     private final String msg;
     private final LogEntry[] logEntry;
-    private String warning;
 
     public GitHookContext(VCSFileProxy[] files, String msg, LogEntry... logEntry) {
         super(files);
@@ -67,14 +66,6 @@ public class GitHookContext extends VCSHookContext {
 
     public LogEntry[] getLogEntries() {
         return logEntry;
-    }
-
-    public String getWarning() {
-        return ""; 
-    }
-
-    public void setWarning(String warning) {
-        this.warning = warning;
     }
 
     public static class LogEntry {

@@ -150,13 +150,12 @@ public final class CheckoutWizard implements ChangeListener {
 
         @Override
         protected WizardDescriptor.Panel[] initializePanels() {
-            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
             repositoryStep = new RepositoryStep(fileSystem, Repository.FLAG_ACCEPT_REVISION, RepositoryStep.CHECKOUT_HELP_ID);
             repositoryStep.addChangeListener(CheckoutWizard.this);
             checkoutStep = new CheckoutStep(fileSystem);            
             checkoutStep.addChangeListener(CheckoutWizard.this);
             
-            panels = new  WizardDescriptor.Panel[] {repositoryStep, checkoutStep};
+            WizardDescriptor.Panel[] panels = new  WizardDescriptor.Panel[] {repositoryStep, checkoutStep};
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -168,7 +167,7 @@ public final class CheckoutWizard implements ChangeListener {
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i); // NOI18N
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                     // Turn on subtitle creation on each step

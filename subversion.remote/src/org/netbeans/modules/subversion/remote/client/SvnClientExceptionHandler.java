@@ -230,7 +230,6 @@ public class SvnClientExceptionHandler {
 
     @NbBundle.Messages("CTL_Action_Cancel=Cancel")
     public boolean handleAuth (SVNUrl url) {
-        String sUrl = url.toString();
         Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
         repository.selectUrl(url, true);
 
@@ -363,7 +362,7 @@ public class SvnClientExceptionHandler {
             if(idxL < 0) {
                 continue;
             }
-            int idxR = exceptionMessage.indexOf(")", idxL + errorMessage.length()); //NOI18N
+            int idxR = exceptionMessage.indexOf(')', idxL + errorMessage.length()); //NOI18N
             if(idxR < 0) {
                 continue;
             }
@@ -448,7 +447,7 @@ public class SvnClientExceptionHandler {
                 return null;
             }
             String certFile = rc.getCertFile();
-            if(certFile == null || certFile.trim().equals("")) {                            // NOI18N
+            if(certFile.trim().isEmpty()) {
                 return null;
             }               
             char[] certPasswordChars = rc.getCertPassword();

@@ -189,7 +189,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
         
         String text = getWorkdirText();
-        if (text == null || text.length() == 0) {
+        if (text.isEmpty()) {
             invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2014"), true));// NOI18N
             return false;
         }                
@@ -266,7 +266,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     private VCSFileProxy defaultWorkingDirectory() {
         VCSFileProxy defaultDir = null;
         String current = getWorkdirText();
-        if (current != null && !(current.trim().equals(""))) {  // NOI18N
+        if (!current.trim().isEmpty()) {
             VCSFileProxy currentFile = VCSFileProxySupport.getResource(fileSystem, current);
             while (currentFile != null && !currentFile.exists()) {
                 currentFile = currentFile.getParentFile();

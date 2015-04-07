@@ -64,7 +64,7 @@ public class Scrambler {
     /**
      * The single instance of this class (Singleton design pattern)
      */
-    public static Scrambler instance;
+    private static Scrambler instance;
 
     /**
      * Do not instantiate the scrambler directly. Use the getInstance() method
@@ -306,7 +306,7 @@ public class Scrambler {
     /**
      * Get an instance of the standard scrambler
      */
-    public static Scrambler getInstance() {
+    public static synchronized Scrambler getInstance() {
         if (instance == null) {
             instance = new Scrambler();
         }
