@@ -41,32 +41,19 @@
  */
 package org.netbeans.modules.javascript2.nodejs.editor;
 
-import java.io.IOException;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class NodeJsStructureTest extends JsTestBase {
+public class NodeJsSemanticTest extends JsTestBase {
 
-    public NodeJsStructureTest(String testName) {
+    public NodeJsSemanticTest(String testName) {
         super(testName);
     }
     
-    @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    public void testIssue251672() throws Exception {
+        checkSemantic("testfiles/semantic/issue251672.js"); 
     }
-    
-    public void testIssue247449_01() throws Exception {
-        checkStructure("testfiles/structure/issue247449_01.js");
-    }
-    
-    public void testIssue247449_02() throws Exception {
-        checkStructure("testfiles/structure/issue247449_02.js");
-    }
-    
 }
