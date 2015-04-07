@@ -78,12 +78,17 @@ public final class ExpressPanelVisual extends JPanel implements PreferenceChange
     }
 
     private void init() {
+        // ui
         enableExpressCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 lessCheckBox.setEnabled(e.getStateChange() == ItemEvent.SELECTED);
             }
         });
+        // validation
+        DefaultItemListener defaultItemListener = new DefaultItemListener();
+        enableExpressCheckBox.addItemListener(defaultItemListener);
+        lessCheckBox.addItemListener(defaultItemListener);
     }
 
     boolean isExpressEnabled() {
@@ -95,6 +100,9 @@ public final class ExpressPanelVisual extends JPanel implements PreferenceChange
     }
 
     String getErrorMessage() {
+        if (!isExpressEnabled()) {
+            return null;
+        }
         ValidationResult result = new NodeJsOptionsValidator()
                 .validateExpress()
                 .getResult();
@@ -195,5 +203,16 @@ public final class ExpressPanelVisual extends JPanel implements PreferenceChange
     private JCheckBox lessCheckBox;
     private JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            fireChange();
+        }
+
+    }
 
 }
