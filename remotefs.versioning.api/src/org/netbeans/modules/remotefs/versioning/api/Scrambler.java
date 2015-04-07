@@ -1,4 +1,4 @@
-/*****************************************************************************
+/**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
@@ -18,14 +18,14 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
-
+ *
  * The Original Software is the CVS Client Library.
  * The Initial Developer of the Original Software is Robert Greig.
  * Portions created by Robert Greig are Copyright (C) 2000.
@@ -41,10 +41,11 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
-
+ *
  * Contributor(s): Robert Greig.
- *****************************************************************************/
-package org.netbeans.modules.subversion.remote.config;
+ */
+
+package org.netbeans.modules.remotefs.versioning.api;
 
 import org.netbeans.modules.proxy.Base64Encoder;
 

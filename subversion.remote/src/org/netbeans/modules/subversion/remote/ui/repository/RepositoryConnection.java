@@ -48,7 +48,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
-import org.netbeans.modules.subversion.remote.config.Scrambler;
+import org.netbeans.modules.remotefs.versioning.api.Scrambler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.util.NbBundle;
 
