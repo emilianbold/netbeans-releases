@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript.nodejs.ui.wizard;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -85,7 +86,7 @@ public final class ExpressPanel implements WizardDescriptor.FinishablePanel<Wiza
     public boolean isValid() {
         // error
         String error = getComponent().getErrorMessage();
-        if (error != null && !error.isEmpty()) {
+        if (StringUtilities.hasText(error)) {
             setErrorMessage(error);
             return false;
         }
