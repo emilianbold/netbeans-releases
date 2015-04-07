@@ -53,7 +53,7 @@ public final class PhingOptionsValidator {
 
 
     public PhingOptionsValidator validate() {
-        return PhingOptionsValidator.this.validatePhing();
+        return validatePhing();
     }
 
     public PhingOptionsValidator validatePhing() {
