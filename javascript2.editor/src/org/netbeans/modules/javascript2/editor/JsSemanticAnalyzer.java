@@ -245,10 +245,10 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                     }
                                 } else if (object.getModifiers().contains(Modifier.PRIVATE) || object.getModifiers().contains(Modifier.PROTECTED)) {
                                     OffsetRange decOffset = object.getDeclarationName().getOffsetRange();
-                                    highlights.put(LexUtilities.getLexerOffsets(result, decOffset), LOCAL_VARIABLE_DECLARATION);
+                                    addColoring(result, highlights, decOffset, LOCAL_VARIABLE_DECLARATION);
                                     for(Occurrence occurence: object.getOccurrences()) {
                                         if (occurence.getOffsetRange().getLength() > 0 && !occurence.getOffsetRange().equals(decOffset)) {
-                                            highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), LOCAL_VARIABLE_USE);
+                                            addColoring(result, highlights, occurence.getOffsetRange(), LOCAL_VARIABLE_USE);
                                         }
                                     }
                                 }
