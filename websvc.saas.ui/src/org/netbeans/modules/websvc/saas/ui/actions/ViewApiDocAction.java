@@ -44,12 +44,8 @@
 package org.netbeans.modules.websvc.saas.ui.actions;
 
 import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.net.URL;
 import org.netbeans.modules.websvc.saas.model.Saas;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -58,60 +54,47 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
+ * Displays the documentation of a web service.
  *
- * @author  nam
+ * @author nam
+ * @author Jan Stola
  */
 public class ViewApiDocAction extends NodeAction {
 
-    /** Creates a new instance of ViewWSDLAction */
-    public ViewApiDocAction() {
-        super();
-    }
-
+    @Override
     protected boolean enable(Node[] nodes) {
-        return getApiDocUrl(nodes) != null && HtmlBrowser.URLDisplayer.getDefault() != null;
+        return (nodes.length == 1) && (getApiDocUrl(nodes[0]) != null);
     }
 
-    private String getApiDocUrl(Node[] nodes) {
-        if (nodes != null && nodes.length == 1) {
-            Saas saas = nodes[0].getLookup().lookup(Saas.class);
-            if (saas != null) {
-                return saas.getApiDoc();
-            }
-        }
-        return null;
+    private String getApiDocUrl(Node node) {
+        Saas saas = node.getLookup().lookup(Saas.class);
+        return (saas == null) ? null : saas.getApiDoc();
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_API_Action");
+        return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_API_Action"); // NOI18N
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
-        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
-        if (displayer == null) {
-            String msg = NbBundle.getMessage(ViewApiDocAction.class, "MSG_NoDefaultBrowser");
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
-
-        String apiUrl = getApiDocUrl(activatedNodes);
-        if (apiUrl == null) {
-            throw new IllegalArgumentException("ViewApiDoc should not be allowed without a api doc URL");
-        }
-        
-        try {
-            URL href = new URL(apiUrl);
-            displayer.showURL(href);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+        for (Node node : activatedNodes) {
+            try {
+                String apiUrl = getApiDocUrl(node);
+                URL href = new URL(apiUrl);
+                HtmlBrowser.URLDisplayer.getDefault().showURL(href);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
+    @Override
     public boolean asynchronous() {
         return true;
     }
