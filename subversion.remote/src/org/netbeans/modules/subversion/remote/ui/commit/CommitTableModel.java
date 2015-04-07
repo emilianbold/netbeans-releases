@@ -202,7 +202,6 @@ public class CommitTableModel extends AbstractTableModel {
             // XXX this is a mess
             if(rootFile != null) {
                 // must convert from native separators to slashes
-                String relativePath = nodes[rowIndex].getFile().getPath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath + '/';
             } else {
                 shortPath = nodes[rowIndex].getLocation();

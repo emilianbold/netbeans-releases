@@ -178,7 +178,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Request processor to create threads that may be cancelled.
      */
-    static RequestProcessor requestProcessor = null;
+    private static RequestProcessor requestProcessor;
     
     /**
      * Latest annotation comment fetching task launched.
@@ -373,7 +373,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     void setSVNClienListener(ISVNNotifyListener svnClientListener) {
         this.svnClientListener = svnClientListener;
         
-        VCSFileProxy file = getCurrentFile();        
         Subversion.getInstance().addSVNNotifyListener(svnClientListener);        
     }
 
@@ -506,9 +505,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (revisionPerLine != null) {
-                    if (getPreviousRevision(revisionPerLine) != null) {
-                        DiffAction.diff(file, getPreviousRevision(revisionPerLine), revisionPerLine);
-                    }
+                    DiffAction.diff(file, getPreviousRevision(revisionPerLine), revisionPerLine);
                 }
             }
         });
@@ -588,14 +585,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         diffMenu.setVisible(false);
         revertMenu.setVisible(false);
         if (revisionPerLine != null) {
-            String previousRevision;
-            if ((previousRevision = getPreviousRevision(revisionPerLine)) != null) {
-                String format = loc.getString("CTL_MenuItem_DiffToRevision");
-                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, getPreviousRevision(revisionPerLine) }));
-                diffMenu.setVisible(true);
-                previousAnnotationsMenu.setText(loc.getString("CTL_MenuItem_ShowAnnotationsPrevious")); //NOI18N
-                previousAnnotationsMenu.setVisible(file != null);
-            }
+            String previousRevision = getPreviousRevision(revisionPerLine);
+            String format = loc.getString("CTL_MenuItem_DiffToRevision");
+            diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, previousRevision }));
+            diffMenu.setVisible(true);
+            previousAnnotationsMenu.setText(loc.getString("CTL_MenuItem_ShowAnnotationsPrevious")); //NOI18N
+            previousAnnotationsMenu.setVisible(file != null);
             revertMenu.setVisible(true);
             rollbackMenu.setText(Bundle.MSG_RollbackTo_menuItem(revisionPerLine));
             rollbackMenu.setVisible(true);
@@ -713,7 +708,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Gets a request processor which is able to cancel tasks.
      */
-    private RequestProcessor getRequestProcessor() {
+    private synchronized RequestProcessor getRequestProcessor() {
         if (requestProcessor == null) {
             requestProcessor = new RequestProcessor("AnnotationBarRP", 1, true);  // NOI18N
         }

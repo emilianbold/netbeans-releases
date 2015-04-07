@@ -99,7 +99,7 @@ public class SvnWcUtils {
         if (inputValue != null) {              
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); //NOI18N
             dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT")); //NOI18N
-            int idx = inputValue.lastIndexOf("."); //NOI18N
+            int idx = inputValue.lastIndexOf('.'); //NOI18N
             if(idx > 0) {
                 idx = (idx + 4 > inputValue.length()) ? inputValue.length() : idx + 4; // parse as mili-, not microseconds
                 inputValue = inputValue.substring(0, idx) + "Z"; //NOI18N

@@ -789,7 +789,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
         String prefix = "";
         if (nodes.length > 0) {
             prefix = nodes[0].getFileNode().getRelativePath();
-            int index = prefix.lastIndexOf("/"); //NOI18N
+            int index = prefix.lastIndexOf('/'); //NOI18N
             if (index == -1) {
                 prefix = "";
             } else {
@@ -801,7 +801,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
             String location = n.getFileNode().getRelativePath();
             while (!location.startsWith(prefix)) {
                 slashNeeded = false;
-                int index = prefix.lastIndexOf("/"); //NOI18N
+                int index = prefix.lastIndexOf('/'); //NOI18N
                 if (index == -1) {
                     prefix = "";
                 } else {

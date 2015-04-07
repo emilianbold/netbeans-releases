@@ -377,14 +377,6 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         return Box.createVerticalStrut(height);
     }
 
-    private static Component makeFlexibleHorizontalStrut(int minWidth,
-                                                  int prefWidth,
-                                                  int maxWidth) {
-        return new Box.Filler(new Dimension(minWidth,  0),
-                              new Dimension(prefWidth, 0),
-                              new Dimension(maxWidth,  0));
-    }
-
     static Component makeHorizontalStrut(JComponent compA,
                                               JComponent compB,
                                               ComponentPlacement relatedUnrelated,
@@ -404,10 +396,6 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
                                                                null);
     }
 
-    private static String getMessage(String msgKey) {
-        return NbBundle.getMessage(VCSCommitPanel.class, msgKey);
-    }
-    
     ListenersSupport listenerSupport = new ListenersSupport(this);
     public void addVersioningListener(VersioningListener listener) {
         listenerSupport.addListener(listener);

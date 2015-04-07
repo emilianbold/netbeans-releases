@@ -272,8 +272,6 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }
 
     private void searchRepository() {
-        SVNRevision revision = getRevision();     
-        
         final SvnSearch svnSearch;
         try {
             RepositoryFile[] repositoryFiles = getRepositoryFiles();
@@ -307,7 +305,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
 
         // handle results
         if (DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {       
-            revision = svnSearch.getSelectedRevision();
+            SVNRevision revision = svnSearch.getSelectedRevision();
             if(revision != null) {
                 if(revision.equals(SVNRevision.HEAD) ) {
                     setRevisionTextField(""); // NOI18N
@@ -363,9 +361,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         boolean oldValue = this.valid;
         boolean valid = true;
 
-        RepositoryFile[] files = null;
         try {
-            files = getRepositoryFiles();
+            getRepositoryFiles();
         } catch (NumberFormatException ex) {
             valid = false;
         } catch (MalformedURLException ex) {            

@@ -56,13 +56,12 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.RepositoryStep;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Cancellable;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class WizardStepProgressSupport extends SvnProgressSupport implements Runnable, Cancellable {   
+public abstract class WizardStepProgressSupport extends SvnProgressSupport {   
 
     private JPanel progressComponent;
     private JLabel progressLabel;

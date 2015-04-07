@@ -216,7 +216,7 @@ public class LogCommand extends SvnCommand {
         
     }
     
-    private class XmlEntriesHandler extends DefaultHandler {
+    private static class XmlEntriesHandler extends DefaultHandler {
 
         //<logentry revision="6">
         //  <author>geronimo</author>

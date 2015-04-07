@@ -1496,10 +1496,12 @@ public class SvnUtils {
             return true;
         }
 
-        if( (l1 == null && l2 != null && l2.size() > 0) ||
-            (l2 == null && l1 != null && l1.size() > 0) )
-        {
-            return false;
+        if(l1 != null && l2 == null) {
+            return l1.isEmpty();
+        }
+
+        if(l1 == null && l2 != null) {
+            return l2.isEmpty();
         }
 
         if(l1.size() != l2.size()) {
@@ -1619,7 +1621,7 @@ public class SvnUtils {
     }
 
     private static Logger TY9_LOG = null;
-    public static void logT9Y(String msg) {
+    public static synchronized void logT9Y(String msg) {
         if(TY9_LOG == null) {
             TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.t9y"); //NOI18N
         }
@@ -1735,7 +1737,7 @@ public class SvnUtils {
      */
     public static String getTunnelName(String urlString) {
         assert urlString.startsWith("svn+");                            //NOI18N
-        int idx = urlString.indexOf(":", 4);                            //NOI18N
+        int idx = urlString.indexOf(':', 4);                            //NOI18N
         if (idx < 0) {
             idx = urlString.length();
         }

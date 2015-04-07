@@ -169,7 +169,6 @@ public final class ImportWizard implements ChangeListener {
 
         @Override
         protected WizardDescriptor.Panel[] initializePanels() {
-            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];            
             repositoryStep = new RepositoryStep(fileSystem, 0, RepositoryStep.IMPORT_HELP_ID);
             repositoryStep.addChangeListener(ImportWizard.this);
 
@@ -179,7 +178,7 @@ public final class ImportWizard implements ChangeListener {
 
             importPreviewStep = new ImportPreviewStep(context);
 
-            panels = new  WizardDescriptor.Panel[] {repositoryStep, importStep, importPreviewStep};
+            WizardDescriptor.Panel[] panels = new  WizardDescriptor.Panel[] {repositoryStep, importStep, importPreviewStep};
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -191,7 +190,7 @@ public final class ImportWizard implements ChangeListener {
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                     // Turn on subtitle creation on each step

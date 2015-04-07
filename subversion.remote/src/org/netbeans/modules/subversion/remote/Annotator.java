@@ -204,7 +204,7 @@ public class Annotator extends VCSAnnotator {
         if (annotationsVisible && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             fileSystem = VCSFileProxySupport.getFileSystem(file);
             AnnotationFormat af = getAnnotationFormat(fileSystem);
-            if (af != null && af.format != null) {
+            if (af.format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
                 String lockString = getLockString(info.getStatus());

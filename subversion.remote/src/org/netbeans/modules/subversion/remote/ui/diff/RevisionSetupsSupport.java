@@ -465,7 +465,7 @@ class RevisionSetupsSupport {
                     suffix = suffix.substring(1);
                 }
                 list.add(new SVNDiffSummary(suffix, s.getDiffKind(), s.propsChanged(), s.getNodeKind()));
-                int index = path.lastIndexOf("/"); //NOI18N
+                int index = path.lastIndexOf('/'); //NOI18N
                 if (index > -1) {
                     path = path.substring(0, index);
                 } else if (!path.isEmpty()) {
@@ -521,7 +521,7 @@ class RevisionSetupsSupport {
             if (!deletedPaths.contains(filePath)) {
                 return false;
             }
-            int pos = filePath.lastIndexOf("/"); //NOI18N
+            int pos = filePath.lastIndexOf('/'); //NOI18N
             if (pos > -1) {
                 filePath = filePath.substring(0, pos);
             } else {
