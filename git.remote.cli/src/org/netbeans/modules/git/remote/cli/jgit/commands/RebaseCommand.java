@@ -138,7 +138,7 @@ public class RebaseCommand extends GitCommand {
                 VCSFileProxy orig = VCSFileProxy.createFileProxy(getRepository().getLocation(), ".git/rebase-apply/original-commit");
                 if (orig.exists()) {
                     String read = read(orig);
-                    if (read != null && !read.isEmpty()) {
+                    if (!read.isEmpty()) {
                         status.currentCommit = read;
                     }
                 }

@@ -420,9 +420,7 @@ public class PushAction extends SingleRepositoryAction {
                         }
                     }
                 } finally {
-                    if (client != null) {
-                        client.release();
-                    }
+                    client.release();
                 }
                 return revisionList;
             }
@@ -441,9 +439,7 @@ public class PushAction extends SingleRepositoryAction {
                         }
                     }
                 } finally {
-                    if (client != null) {
-                        client.release();
-                    }
+                    client.release();
                 }
                 return revisionList;
             }

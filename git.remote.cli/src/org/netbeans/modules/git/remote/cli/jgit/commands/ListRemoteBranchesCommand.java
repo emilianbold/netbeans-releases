@@ -87,7 +87,7 @@ public class ListRemoteBranchesCommand extends TransportCommand {
         super.prepare();
         addArgument(0, "ls-remote"); //NOI18N
         addArgument(0, "--heads"); //NOI18N
-        addArgument(0, remoteUrl.toString());
+        addArgument(0, remoteUrl);
     }
 
     @Override

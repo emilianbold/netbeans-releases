@@ -78,14 +78,6 @@ public class CommitCommand extends GitCommand {
     }
 
     @Override
-    protected boolean prepareCommand() throws GitException {
-        boolean retval = super.prepareCommand();
-        if (retval) {
-        }
-        return retval;
-    }
-    
-    @Override
     protected void prepare() throws GitException {
         setCommandsNumber(2);
         super.prepare();
@@ -306,7 +298,7 @@ public class CommitCommand extends GitCommand {
         for (String line : output.split("\n")) { //NOI18N
             if (line.startsWith("committer")) {
                 String s = line.substring(9).trim();
-                int i = s.indexOf(">");
+                int i = s.indexOf('>');
                 if (i > 0) {
                     status.commiterAndMail = s.substring(0,i+1);
                     status.commiterTime = s.substring(i+1).trim();
@@ -327,7 +319,7 @@ public class CommitCommand extends GitCommand {
             }
             if (line.startsWith("author")) {
                 String s = line.substring(6).trim();
-                int i = s.indexOf(">");
+                int i = s.indexOf('>');
                 if (i > 0) {
                     status.autorAndMail = s.substring(0,i+1);
                     status.autorTime = s.substring(i+1).trim();

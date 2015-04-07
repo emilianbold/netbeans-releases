@@ -43,7 +43,6 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
 
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitRefUpdateResult;
-import org.netbeans.modules.git.remote.cli.GitTag.TagContainer;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;

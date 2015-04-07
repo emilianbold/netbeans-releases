@@ -173,7 +173,7 @@ public class ListTagCommand extends GitCommand {
                         ref = rest.substring(0,i);
                         first = false;
                     }
-                    i = ref.lastIndexOf("/");
+                    i = ref.lastIndexOf('/');
                     String tag;
                     if (i > 0) {
                         tag = ref.substring(i+1);
