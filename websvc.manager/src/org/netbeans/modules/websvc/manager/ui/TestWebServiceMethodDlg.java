@@ -131,13 +131,11 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
     private boolean isRPCEncoded(WsdlData wsdlData) {
         File wsdlFile = new File(wsdlData.getWsdlFile());
-        if (wsdlFile != null) {
-            try {
-                wsdlFile = wsdlFile.getCanonicalFile();
-                return wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        try {
+            wsdlFile = wsdlFile.getCanonicalFile();
+            return wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return false;
     }
