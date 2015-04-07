@@ -100,7 +100,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
     private Dialog dialog;
     private DialogDescriptor dlg = null;
-    private String okString = NbBundle.getMessage(this.getClass(), "CLOSE");
+    private final String okString = NbBundle.getMessage(this.getClass(), "CLOSE");
     /**
      * The runtimeClassLoader should be used when running the web service client.  This classloader
      * only includes the necessary runtime jars for JAX-RPC to run.  The classloader does NOT have a
@@ -699,18 +699,18 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private javax.swing.JScrollPane scrollPaneResults;
     // End of variables declaration//GEN-END:variables
 
-    private JButton okButton = new JButton();
+    private final JButton okButton = new JButton();
     private Outline parameterOutline;
     private Outline resultOutline;
     private Cursor normalCursor;
 
     class MethodTask implements Runnable {
 
-        private String clientClassName;
-        private LinkedList paramList;
-        private JavaMethod javaMethod;
-        private URLClassLoader urlClassLoader;
-        private ArrayList listeners = new ArrayList();
+        private final String clientClassName;
+        private final LinkedList paramList;
+        private final JavaMethod javaMethod;
+        private final URLClassLoader urlClassLoader;
+        private final List listeners = new ArrayList();
         private boolean cancelled=false;
 
 
@@ -770,7 +770,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     }
 
     private static class BusyMouseAdapter extends MouseAdapter {
-        private Cursor normalCursor;
+        private final Cursor normalCursor;
 
         public BusyMouseAdapter(Cursor inNormalCursor) {
             normalCursor = inNormalCursor;
