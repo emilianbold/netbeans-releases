@@ -196,6 +196,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         ChannelStreams sh_channels = null;
 
         try {
+            log.log(Level.FINEST, "Getting remote host info for {0}", execEnv); // NOI18N
             sh_channels = JschSupport.startCommand(execEnv, "/bin/sh -s", null); // NOI18N
 
             long localStartTime = System.currentTimeMillis();
@@ -299,8 +300,10 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
             activityID = RemoteStatistics.startChannelActivity("UnixHostInfoProvider", execEnv.getDisplayName()); // NOI18N
             if (nbstart != null && envPath != null) {
+                // dumping environment to file, later we'll restore it for each newly created remote process
                 login_shell_channels.in.write((nbstart + " --dumpenv " + envPath + "\n").getBytes()); // NOI18N
             }
+            // printing evnironment to stdout to fill host info map
             login_shell_channels.in.write(("/usr/bin/env || /bin/env\n").getBytes()); // NOI18N
             login_shell_channels.in.flush();
             login_shell_channels.in.close();
