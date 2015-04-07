@@ -77,7 +77,6 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -109,11 +108,11 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     // Ensures DO's created for newly registered drivers cannot be garbage-collected
     // before they are recognized by FolderLookup. This makes sure the FolderLookup
     // will return the originally registered driver instance.
-    private static final WeakHashMap<JDBCDriver, DataObject> newDriver2DO = new WeakHashMap<JDBCDriver, DataObject>();
+    private static final WeakHashMap<JDBCDriver, DataObject> newDriver2DO = new WeakHashMap<>();
 
     // Helps ensure that when recognizing a new DO for a newly registered driver,
     // the DO will hold the originally registered driver instance instead of creating a new one.
-    private static final Map<FileObject, JDBCDriver> newFile2Driver = new ConcurrentHashMap<FileObject, JDBCDriver>();
+    private static final Map<FileObject, JDBCDriver> newFile2Driver = new ConcurrentHashMap<>();
     
     private final Reference holder;
 
@@ -122,7 +121,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
      */
     private Lookup lookup;
 
-    Reference refDriver = new WeakReference(null);
+    private Reference refDriver = new WeakReference(null);
 
     private static synchronized JDBCDriverConvertor createProvider() {
         JDBCDriverConvertor provider = null;
@@ -156,7 +155,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     }
     
     // Environment.Provider methods
-    
+    @Override
     public Lookup getEnvironment(DataObject obj) {
         JDBCDriver existingInstance = newFile2Driver.remove(obj.getPrimaryFile());
         if (existingInstance != null) {
@@ -167,20 +166,23 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     }
     
     // InstanceCookie.Of methods
-
+    @Override
     public String instanceName() {
         XMLDataObject obj = getHolder();
         return obj == null ? "" : obj.getName();
     }
     
+    @Override
     public Class instanceClass() {
         return JDBCDriver.class;
     }
     
+    @Override
     public boolean instanceOf(Class type) {
         return (type.isAssignableFrom(JDBCDriver.class));
     }
 
+    @Override
     public Object instanceCreate() throws IOException, ClassNotFoundException {
         synchronized (this) {
             Object o = refDriver.get();
@@ -215,7 +217,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         try {
             XMLReader reader = XMLUtil.createXMLReader();
             InputSource is = new InputSource(fo.getInputStream());
-            is.setSystemId(fo.getURL().toExternalForm());
+            is.setSystemId(fo.toURL().toExternalForm());
             reader.setContentHandler(handler);
             reader.setErrorHandler(handler);
             reader.setEntityResolver(EntityCatalog.getDefault());
@@ -247,7 +249,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
      * Creates the XML file describing the specified JDBC driver.
      */
     public static DataObject create(JDBCDriver drv) throws IOException {
-        FileObject fo = FileUtil.getConfigFile(DRIVERS_PATH);
+        FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), DRIVERS_PATH);
         DataFolder df = DataFolder.findFolder(fo);
 
         String fileName = drv.getClassName().replace('.', '_'); //NOI18N
@@ -265,10 +267,9 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         String urlString = url.toExternalForm();
         int colon = urlString.indexOf(':');
         int pound = urlString.indexOf('#');
-        String part = null;
         String fragment = null;
         
-        part = urlString.substring(colon + 1, pound != -1 ? pound : urlString.length());
+        String part = urlString.substring(colon + 1, pound != -1 ? pound : urlString.length());
         if (pound != -1) {
             fragment = urlString.substring(pound + 1, urlString.length());
         }
@@ -281,25 +282,30 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     public static void remove(JDBCDriver drv) throws IOException {
         String name = drv.getName();
         FileObject fo = FileUtil.getConfigFile(DRIVERS_PATH); //NOI18N
+        // If DRIVERS_PATH can't be found (getConfigFile returns null)
+        // its useless to try to delete any driver
+        if(fo == null) {
+            return;
+        }
         DataFolder folder = DataFolder.findFolder(fo);
         DataObject[] objects = folder.getChildren();
         
         for (int i = 0; i < objects.length; i++) {
             InstanceCookie ic = (InstanceCookie)objects[i].getCookie(InstanceCookie.class);
             if (ic != null) {
-                Object obj = null;
                 try {
-                    obj = ic.instanceCreate();
+                    Object obj = ic.instanceCreate();
+                    if (obj instanceof JDBCDriver) {
+                        JDBCDriver driver = (JDBCDriver) obj;
+                        if (driver.getName().equals(name)) {
+                            objects[i].delete();
+                            break;
+                        }
+                    }
                 } catch (ClassNotFoundException e) {
                     continue;
                 }
-                if (obj instanceof JDBCDriver) {
-                    JDBCDriver driver = (JDBCDriver)obj;
-                    if (driver.getName().equals(name)) {
-                        objects[i].delete();
-                        break;
-                    }
-                }
+
             }
         }
     }
@@ -335,6 +341,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             this.parent = parent;
         }
 
+        @Override
         public void run() throws java.io.IOException {
             FileLock lck;
             FileObject data;
@@ -349,13 +356,11 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 lck = data.lock();
             }
 
-            try {
-                OutputStream ostm = data.getOutputStream(lck);
-                PrintWriter writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
+            try (OutputStream ostm = data.getOutputStream(lck);
+                    PrintWriter writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
+                    ) {
                 write(writer);
                 writer.flush();
-                writer.close();
-                ostm.close();
             } finally {
                 lck.releaseLock();
             }
@@ -401,12 +406,15 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         String clazz;
         LinkedList urls = new LinkedList();
 
+        @Override
         public void startDocument() throws SAXException {
         }
 
+        @Override
         public void endDocument() throws SAXException {
         }
 
+        @Override
         public void startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException {
             if (ELEMENT_NAME.equals(qName)) {
                 name = attrs.getValue(ATTR_PROPERTY_VALUE);

@@ -202,7 +202,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             try {
                 XMLReader reader = XMLUtil.createXMLReader();
                 InputSource is = new InputSource(obj.getPrimaryFile().getInputStream());
-                is.setSystemId(connectionFO.getURL().toExternalForm());
+                is.setSystemId(connectionFO.toURL().toExternalForm());
                 reader.setContentHandler(handler);
                 reader.setErrorHandler(handler);
                 reader.setEntityResolver(EntityCatalog.getDefault());
@@ -267,7 +267,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      * Creates the XML file describing the specified database connection.
      */
     public static DataObject create(DatabaseConnection dbconn) throws IOException {
-        FileObject fo = FileUtil.getConfigFile(CONNECTIONS_PATH);
+        FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), CONNECTIONS_PATH);
         DataFolder df = DataFolder.findFolder(fo);
 
         AtomicWriter writer = new AtomicWriter(dbconn, df, convertToFileName(dbconn.getName()));
@@ -285,6 +285,11 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     public static void remove(DatabaseConnection dbconn) throws IOException {
         String name = dbconn.getName();
         FileObject fo = FileUtil.getConfigFile(CONNECTIONS_PATH); //NOI18N
+        // If CONNECTIONS_PATH can't be found (getConfigFile returns null)
+        // its useless to try to delete any connection
+        if (fo == null) {
+            return;
+        }
         DataFolder folder = DataFolder.findFolder(fo);
         DataObject[] objects = folder.getChildren();
         
@@ -375,13 +380,11 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 lck = data.lock();
             }
 
-            try {
-                OutputStream ostm = data.getOutputStream(lck);
-                PrintWriter writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
+            try (OutputStream ostm = data.getOutputStream(lck);
+                    PrintWriter writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
+                    ) {
                 write(writer, data.getNameExt());
                 writer.flush();
-                writer.close();
-                ostm.close();
             } finally {
                 lck.releaseLock();
             }
@@ -529,18 +532,17 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 } catch (IllegalArgumentException e) {
                     LOGGER.log(Level.WARNING,
                             "Illegal Base 64 string in password for connection " 
-                            + connectionFileName + ", cause: " + e); // NOI18N
-                    
+                            + connectionFileName, e); // NOI18N
                         // no password stored => this will require the user to re-enter the password
                 }
                 if (bytes != null) {
                     try {
-                        LOGGER.log(Level.FINE, "Reading old settings from " + connectionFileName);
+                        LOGGER.log(Level.FINE, "Reading old settings from {0}", connectionFileName);
                         DatabaseConnection.storePassword(connectionFileName, decodePassword(bytes).toCharArray());
                     } catch (CharacterCodingException e) {
                         LOGGER.log(Level.WARNING,
-                                "Illegal UTF-8 bytes in password for connection " 
-                                + connectionFileName + ", cause: " + e); // NOI18N
+                                "Illegal UTF-8 bytes in password for connection "
+                                + connectionFileName, e); // NOI18N
                         // no password stored => this will require the user to re-enter the password
                     }
                 }
