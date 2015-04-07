@@ -43,17 +43,16 @@ package org.netbeans.modules.php.symfony2.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.symfony2.options.Symfony2Options;
+import org.netbeans.modules.php.symfony2.options.Symfony2OptionsValidator;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * Symfony2 IDE options.
@@ -109,30 +108,22 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public boolean isValid() {
+        // errors
+        ValidationResult result = new Symfony2OptionsValidator()
+                .validateSandbox(symfony2OptionsPanel.getSandbox())
+                .getResult();
+        if (result.hasErrors()) {
+            symfony2OptionsPanel.setError(result.getErrors().get(0).getMessage());
+            return false;
+        }
         // warnings
-        String warning = validateSandbox(symfony2OptionsPanel.getSandbox());
-        if (warning != null) {
-            symfony2OptionsPanel.setWarning(warning);
+        if (result.hasWarnings()) {
+            symfony2OptionsPanel.setWarning(result.getWarnings().get(0).getMessage());
             return true;
         }
-
         // everything ok
         symfony2OptionsPanel.setError(" "); // NOI18N
         return true;
-    }
-
-    @NbBundle.Messages({
-        "Symfony2OptionsPanelController.symfony.sandbox=Symfony",
-        "Symfony2OptionsPanelController.symfony.notZip=Symfony is not Zip file."
-    })
-    public static String validateSandbox(String sandbox) {
-        String warning = FileUtils.validateFile(Bundle.Symfony2OptionsPanelController_symfony_sandbox(), sandbox, false);
-        if (warning == null) {
-            if (!new File(sandbox).getName().toLowerCase().endsWith(".zip")) { // NOI18N
-                warning = Bundle.Symfony2OptionsPanelController_symfony_notZip();
-            }
-        }
-        return warning;
     }
 
     @Override

@@ -54,7 +54,9 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.symfony2.options.Symfony2Options;
+import org.netbeans.modules.php.symfony2.options.Symfony2OptionsValidator;
 import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -97,7 +99,18 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
     }
 
     public String getErrorMessage() {
-        return Symfony2OptionsPanelController.validateSandbox(Symfony2Options.getInstance().getSandbox());
+        // treat all as errors here
+        ValidationResult result = new Symfony2OptionsValidator()
+                .validate()
+                .getResult();
+        if (result.hasErrors()) {
+            return result.getErrors().get(0).getMessage();
+        }
+        // warnings
+        if (result.hasWarnings()) {
+            return result.getWarnings().get(0).getMessage();
+        }
+        return null;
     }
 
     private void init() {
