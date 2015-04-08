@@ -153,7 +153,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.toString(remote));
-        props.put(WLPluginProperties.SECURED_ATTR, remote ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+        props.put(WLPluginProperties.SECURED_ATTR, Boolean.toString(ssl));
         props.put(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.toString(remoteDebug));
         props.put(WLPluginProperties.PROXY_ENABLED, DEFAULT_PROXY_ENABLED);
         if (remoteDebug) {
@@ -161,14 +161,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         } else {
             props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
         }
-        
+
         if (Utilities.isMac()) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
         }
 
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, username, password, displayName, props);
-        
+
         return ip;
     }
 
@@ -195,6 +195,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String debugPort;
     private String host;
     private boolean remote;
+    private boolean ssl;
     private boolean remoteDebug;
     private Version serverVersion;
 
@@ -326,6 +327,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
     public void setRemote(boolean remote) {
         this.remote = remote;
+    }
+
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    public void setSsl(boolean ssl) {
+        this.ssl = ssl;
     }
 
     public boolean isRemoteDebug() {

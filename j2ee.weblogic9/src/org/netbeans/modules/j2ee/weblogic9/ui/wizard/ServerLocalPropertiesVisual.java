@@ -214,6 +214,7 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
         instantiatingIterator.setDomainName(instance.getDomainName());
         instantiatingIterator.setHost(instance.getHost());
         instantiatingIterator.setRemote(false);
+        instantiatingIterator.setSsl(false);
         return true;
     }
 
