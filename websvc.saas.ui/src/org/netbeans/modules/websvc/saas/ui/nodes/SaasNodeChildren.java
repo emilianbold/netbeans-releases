@@ -59,7 +59,7 @@ import org.openide.util.WeakListeners;
  * @author nam
  */
 public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements PropertyChangeListener {
-    protected Saas saas;
+    private Saas saas;
     
     public SaasNodeChildren(Saas saas) {
         this.saas = saas;
@@ -67,6 +67,7 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
         model.addPropertyChangeListener(WeakListeners.propertyChange(this, model));
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == saas && evt.getPropertyName().equals(Saas.PROP_STATE)) {
             updateKeys();
@@ -96,7 +97,7 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
     protected static final Object[] WAIT_HOLDER = new Object[] { new Object() };
     protected static Node[] getWaitNode() {
         AbstractNode wait = new AbstractNode(Children.LEAF);
-        wait.setName(NbBundle.getMessage(WsdlSaasNodeChildren.class, "NODE_LOAD_MSG"));
+        wait.setName(NbBundle.getMessage(WsdlSaasNodeChildren.class, "NODE_LOAD_MSG")); // NOI18N
         wait.setIconBaseWithExtension("org/netbeans/modules/websvc/saas/ui/resources/wait.gif"); // NOI18N
         return new Node[] { wait };
     }

@@ -44,17 +44,13 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.CustomSaas;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
-import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -62,12 +58,10 @@ import org.openide.util.datatransfer.PasteType;
  * @author nam
  */
 public class SaasMethodNode extends AbstractNode {
-    CustomSaas saas;
-    SaasMethod method;
+    private final SaasMethod method;
     
     public SaasMethodNode(CustomSaas saas, SaasMethod method) {
         super(Children.LEAF);
-        this.saas = saas;
         this.method = method;
     }
     
@@ -81,7 +75,7 @@ public class SaasMethodNode extends AbstractNode {
         return method.getDocumentation();
     }
 
-    static private final Image ICON = ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/ui/resources/method.png");
+    static private final Image ICON = ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/ui/resources/method.png"); // NOI18N
     
     @Override
     public Image getIcon(int type){

@@ -66,6 +66,7 @@ public class CustomSaasNode extends SaasNode {
     private static final java.awt.Image ICON =
        ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/custom_service.png" ); //NOI18N
     
+    @Override
     protected java.awt.Image getGenericIcon(int type) {
         return ICON;
     }
