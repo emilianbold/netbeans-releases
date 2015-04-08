@@ -223,8 +223,8 @@ public class JsConventionRule extends JsAstRule {
                     //try to find ; or , after
                     Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                     id = next.id();
-                    if (id == JsTokenId.IDENTIFIER) {
-                       // probably we are at the beginning of the next expression
+                    if (id == JsTokenId.IDENTIFIER || id == JsTokenId.BRACKET_RIGHT_CURLY) {
+                       // probably we are at the beginning of the next expression or at the end of the context
                        ts.movePrevious();
                     }
                 }

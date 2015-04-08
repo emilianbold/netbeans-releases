@@ -787,4 +787,14 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
     
+    public void testAndWithWhen() {
+        String source = ".mixin-filled(@delta:0%) {\n"
+                + "	& when (@delta > 0%) {\n"
+                + "		background:lighten(@mixin-boxcolor, @delta);\n"
+                + "	}\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
 }

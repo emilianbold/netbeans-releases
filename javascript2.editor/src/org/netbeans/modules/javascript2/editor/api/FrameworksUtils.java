@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.javascript2.editor.api;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 
 /**
  *
@@ -55,4 +57,17 @@ public class FrameworksUtils {
     public static final String HTML5_CLIENT_PROJECT = "org.netbeans.modules.web.clientproject"; //NOI18N
     public static final String PHP_PROJECT = "org-netbeans-modules-php-project"; //NOI18N
     public static final String MAVEN_PROJECT = "org-netbeans-modules-maven";    //NOI18N
+
+    /**
+     * It change the declaration scope of the input object to the new scope. 
+     * If the where object is not a function (Declaration Scope), then it's all the properties are
+     * scanned recursively to change the declaration scope to the new one. It doesn't change the parents
+     * of the objects, just the declaration scope. Usually is used, when you need wrap the object to the
+     * new virtual function. 
+     * @param where the object which is moved from one declaration scope to another one. 
+     * @param newScope new declaration scope 
+     */
+    public static void changeDeclarationScope(JsObject where, DeclarationScope newScope) {
+        ModelUtils.changeDeclarationScope(where, newScope);
+    }
 }

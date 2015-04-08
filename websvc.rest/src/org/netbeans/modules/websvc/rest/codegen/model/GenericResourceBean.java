@@ -204,7 +204,7 @@ public class GenericResourceBean {
     }
 
     public String getQualifiedClassName() {
-        return getPackageName() + "." + getName();
+        return (getPackageName() == null) ? getName() : getPackageName() + "." + getName(); // NOI18N
     }
     
     public void addSubResource(GenericResourceBean bean) {

@@ -1642,4 +1642,30 @@ public class ModelUtils {
             }
         }
     }
+    
+    public static void changeDeclarationScope(JsObject where, DeclarationScope newScope) {
+        changeDeclarationScope(where, newScope, new HashSet<String>());
+    }
+    
+    private static void changeDeclarationScope(JsObject where, DeclarationScope newScope, Set<String> done) {
+        if (!done.contains(where.getFullyQualifiedName())) {
+            done.add(where.getFullyQualifiedName());
+            if (where instanceof DeclarationScope) {
+                if (where.isDeclared()) {
+                    DeclarationScope scope = (DeclarationScope)where;
+                    if (scope.getParentScope() != null) {
+                        scope.getParentScope().getChildrenScopes().remove(scope);
+                        if (scope instanceof DeclarationScopeImpl) {
+                            ((DeclarationScopeImpl)scope).setParentScope(newScope);
+                        }
+                    }
+                    newScope.addDeclaredScope(scope);
+                }
+            } else {
+                for (JsObject property : where.getProperties().values()) {
+                    changeDeclarationScope(property, newScope, done);
+                }
+            }
+        }
+    }
 }
