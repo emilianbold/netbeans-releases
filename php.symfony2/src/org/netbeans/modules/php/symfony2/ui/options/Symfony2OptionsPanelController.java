@@ -43,17 +43,16 @@ package org.netbeans.modules.php.symfony2.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.symfony2.options.Symfony2Options;
+import org.netbeans.modules.php.symfony2.options.Symfony2OptionsValidator;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * Symfony2 IDE options.
@@ -67,7 +66,7 @@ import org.openide.util.NbBundle;
 public class Symfony2OptionsPanelController extends OptionsPanelController implements ChangeListener {
 
     static final String ID = "Symfony2"; // NOI18N
-    public static final String OPTIONS_SUBPATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+ID; // NOI18N
+    public static final String OPTIONS_SUBPATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH + "/" + ID; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -82,8 +81,10 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void update() {
-        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if (firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
             firstOpening = false;
+            symfony2OptionsPanel.setUseInstaller(getOptions().isUseInstaller());
+            symfony2OptionsPanel.setInstaller(getOptions().getInstaller());
             symfony2OptionsPanel.setSandbox(getOptions().getSandbox());
             symfony2OptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
         }
@@ -93,6 +94,8 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void applyChanges() {
+        getOptions().setUseInstaller(symfony2OptionsPanel.isUseInstaller());
+        getOptions().setInstaller(symfony2OptionsPanel.getInstaller());
         getOptions().setSandbox(symfony2OptionsPanel.getSandbox());
         getOptions().setIgnoreCache(symfony2OptionsPanel.getIgnoreCache());
 
@@ -102,6 +105,8 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
     @Override
     public void cancel() {
         if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            symfony2OptionsPanel.setUseInstaller(getOptions().isUseInstaller());
+            symfony2OptionsPanel.setInstaller(getOptions().getInstaller());
             symfony2OptionsPanel.setSandbox(getOptions().getSandbox());
             symfony2OptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
         }
@@ -109,38 +114,40 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public boolean isValid() {
+        ValidationResult result = new Symfony2OptionsValidator()
+                .validate(symfony2OptionsPanel.isUseInstaller(), symfony2OptionsPanel.getInstaller(), symfony2OptionsPanel.getSandbox())
+                .getResult();
+        // errors
+        if (result.hasErrors()) {
+            symfony2OptionsPanel.setError(result.getErrors().get(0).getMessage());
+            return false;
+        }
         // warnings
-        String warning = validateSandbox(symfony2OptionsPanel.getSandbox());
-        if (warning != null) {
-            symfony2OptionsPanel.setWarning(warning);
+        if (result.hasWarnings()) {
+            symfony2OptionsPanel.setWarning(result.getWarnings().get(0).getMessage());
             return true;
         }
-
         // everything ok
         symfony2OptionsPanel.setError(" "); // NOI18N
         return true;
     }
 
-    @NbBundle.Messages({
-        "Symfony2OptionsPanelController.symfony.sandbox=Symfony",
-        "Symfony2OptionsPanelController.symfony.notZip=Symfony is not Zip file."
-    })
-    public static String validateSandbox(String sandbox) {
-        String warning = FileUtils.validateFile(Bundle.Symfony2OptionsPanelController_symfony_sandbox(), sandbox, false);
-        if (warning == null) {
-            if (!new File(sandbox).getName().toLowerCase().endsWith(".zip")) { // NOI18N
-                warning = Bundle.Symfony2OptionsPanelController_symfony_notZip();
-            }
-        }
-        return warning;
-    }
-
     @Override
     public boolean isChanged() {
-        String saved = getOptions().getSandbox();
-        String current = symfony2OptionsPanel.getSandbox().trim();
-        return (saved == null ? !current.isEmpty() : !saved.equals(current))
-                || getOptions().getIgnoreCache() != symfony2OptionsPanel.getIgnoreCache();
+        if (getOptions().isUseInstaller() != symfony2OptionsPanel.isUseInstaller()) {
+            return true;
+        }
+        String saved = getOptions().getInstaller();
+        String current = symfony2OptionsPanel.getInstaller().trim();
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getOptions().getSandbox();
+        current = symfony2OptionsPanel.getSandbox().trim();
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        return getOptions().getIgnoreCache() != symfony2OptionsPanel.getIgnoreCache();
     }
 
     @Override
@@ -154,7 +161,7 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(Symfony2Options.class.getName());
+        return new HelpCtx("org.netbeans.modules.php.symfony2.options.Symfony2Options"); // NOI18N
     }
 
     @Override

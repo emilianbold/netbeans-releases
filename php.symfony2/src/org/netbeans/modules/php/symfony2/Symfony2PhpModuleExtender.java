@@ -45,6 +45,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -53,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
+import org.netbeans.modules.php.symfony2.commands.InstallerExecutable;
 import org.netbeans.modules.php.symfony2.options.Symfony2Options;
 import org.netbeans.modules.php.symfony2.ui.wizards.NewProjectConfigurationPanel;
 import org.openide.filesystems.FileObject;
@@ -64,6 +69,8 @@ import org.openide.util.NbBundle;
  * Symfony2 PHP module extender.
  */
 public class Symfony2PhpModuleExtender extends PhpModuleExtender {
+
+    private static final Logger LOGGER = Logger.getLogger(Symfony2PhpModuleExtender.class.getName());
 
     static final String SYMFONY_ZIP_ENTRY_PREFIX = "Symfony/"; // NOI18N
 
@@ -106,21 +113,63 @@ public class Symfony2PhpModuleExtender extends PhpModuleExtender {
         return null;
     }
 
-    @NbBundle.Messages("MSG_NotExtended=<html>Symfony2 project not created!<br>(verify Symfony Edition in Tools > Options > PHP > Symfony2 or review IDE log)")
+    @NbBundle.Messages("MSG_NotExtended=<html>Symfony2 project not created!<br>(verify Symfony2 options in Tools > Options > PHP > Symfony2 or review IDE log)")
     @Override
     public Set<FileObject> extend(PhpModule phpModule) throws ExtendingException {
-        try {
-            unpackSandbox(phpModule);
-        } catch (IOException ex) {
-            Logger.getLogger(Symfony2PhpModuleExtender.class.getName())
-                    .log(Level.INFO, "Cannot unpack Symfony Standard Edition.", ex);
-            throw new ExtendingException(Bundle.MSG_NotExtended(), ex);
+        if (Symfony2Options.getInstance().isUseInstaller()) {
+            // use installer
+            final InstallerExecutable installer = InstallerExecutable.getDefault(phpModule, false);
+            assert installer != null;
+            Future<Integer> task = installer.run(getPanel().isUseLts());
+            try {
+                task.get(30, TimeUnit.MINUTES);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException | TimeoutException ex) {
+                LOGGER.log(Level.INFO, "Symfony installer failed.", ex);
+                throw new ExtendingException(Bundle.MSG_NotExtended(), ex);
+            }
+            // move created files to project dir
+            File sf2Directory = installer.getSymfony2Dir();
+            LOGGER.log(Level.INFO, "Using Symfony2 files from {0}", sf2Directory);
+            FileObject sf2Dir = FileUtil.toFileObject(sf2Directory);
+            assert sf2Dir != null : sf2Directory;
+            final FileObject sourceDirectory = phpModule.getSourceDirectory();
+            assert sourceDirectory != null : phpModule.getProjectDirectory();
+            try {
+                copyFiles(sf2Dir, sourceDirectory);
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Moving Symfony files failed.", ex);
+                throw new ExtendingException(Bundle.MSG_NotExtended(), ex);
+            } finally {
+                sourceDirectory.refresh();
+            }
+        } else {
+            // use sandbox
+            try {
+                unpackSandbox(phpModule);
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Cannot unpack Symfony Sandbox.", ex);
+                throw new ExtendingException(Bundle.MSG_NotExtended(), ex);
+            }
         }
 
         // prefetch commands
         Symfony2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).refreshFrameworkCommandsLater(null);
 
         return getInitialFiles(phpModule);
+    }
+
+    private void copyFiles(FileObject source, FileObject destination) throws IOException {
+        for (FileObject child : source.getChildren()) {
+            if (child.isFolder()) {
+                copyFiles(child, FileUtil.createFolder(destination, child.getName()));
+            } else {
+                assert child.isData() : child;
+                assert destination.isFolder() : destination;
+                FileUtil.copyFile(child, destination, child.getName());
+            }
+        }
     }
 
     private void unpackSandbox(PhpModule phpModule) throws IOException {
