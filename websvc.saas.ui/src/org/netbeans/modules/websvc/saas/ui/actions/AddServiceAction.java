@@ -63,7 +63,7 @@ public class AddServiceAction extends NodeAction {
             SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
             return g != null;
         }
-        return true;
+        return false;
     }
     
     @Override
