@@ -56,11 +56,13 @@ import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
 /**
+ * Action that deletes a web service group.
  * 
  * @author  nam
  */
 public class DeleteGroupAction extends NodeAction {
 
+    @Override
     protected boolean enable(Node[] nodes) {
         for (Node n : nodes) {
             SaasGroup group = n.getLookup().lookup(SaasGroup.class);
@@ -71,6 +73,7 @@ public class DeleteGroupAction extends NodeAction {
         return true;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -80,25 +83,25 @@ public class DeleteGroupAction extends NodeAction {
         return "org/netbeans/modules/websvc/saas/ui/resources/ActionIcon.gif"; // NOI18N
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getMessage(DeleteServiceAction.class, "DELETE");
+        return NbBundle.getMessage(DeleteServiceAction.class, "DELETE"); // NOI18N
     }
 
+    @Override
     protected void performAction(Node[] nodes) {
         final List<SaasGroup> groups = new ArrayList<SaasGroup>();
         for (Node n : nodes) {
             SaasGroup group = n.getLookup().lookup(SaasGroup.class);
-            if (group == null || !group.isUserDefined()) {
-                throw new IllegalArgumentException("Some node has no associated SaasGroup");
-            }
             groups.add(group);
         }
         
         String msg = NbBundle.getMessage(getClass(), "WS_DELETE_GROUP") + " " + groups;
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
         Object response = DialogDisplayer.getDefault().notify(d);
-        if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
+        if (NotifyDescriptor.YES_OPTION.equals(response)) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     for (SaasGroup group : groups) {
                         SaasServicesModel.getInstance().removeGroup(group);
@@ -108,6 +111,7 @@ public class DeleteGroupAction extends NodeAction {
         }
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
