@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -75,6 +76,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
@@ -102,6 +104,8 @@ public class WLTrustHandler implements WebLogicTrustHandler {
     private static final String TRUST_STORE_PATH = "J2EE/TrustStores/wlstruststore.jks"; // NOI18N
 
     private static final String TRUST_EXCEPTION_PROPERTY = "trustException"; // NOI18N
+
+    private static final String TRUST_PASSWORD_KEY = "nb_weblogic_truststore"; // NOI18N
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -308,12 +312,21 @@ public class WLTrustHandler implements WebLogicTrustHandler {
     private static synchronized void addToTrustStore(String url, X509Certificate cert) throws GeneralSecurityException, IOException {
         FileObject root = FileUtil.getConfigRoot();
         FileObject ts = root.getFileObject(TRUST_STORE_PATH);
-        char[] password = "wlstruststore".toCharArray();
+
+        char[] password = Keyring.read(TRUST_PASSWORD_KEY);
+        if (password == null) {
+            password = new BigInteger(130, RANDOM).toString(32).toCharArray();
+            Keyring.save(TRUST_PASSWORD_KEY, password, null);
+        }
 
         KeyStore keystore = KeyStore.getInstance("JKS"); // NOI18N
         InputStream is = (ts == null) ? null : new BufferedInputStream(ts.getInputStream());
         try {
             keystore.load(is, password);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            // start from scratch
+            keystore.load(null, null);
         } finally {
             if (is != null) {
                 is.close();
