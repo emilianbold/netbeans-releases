@@ -48,6 +48,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -114,7 +115,9 @@ public class MagicCache {
                 Exceptions.printStackTrace(ex);
             } catch (UnsupportedEncodingException ex) {
                 Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
+            } catch (InterruptedIOException ex) {
+                // don't report interruptions
+            } catch (IOException ex) {                
                 Exceptions.printStackTrace(ex);
             }
         }
