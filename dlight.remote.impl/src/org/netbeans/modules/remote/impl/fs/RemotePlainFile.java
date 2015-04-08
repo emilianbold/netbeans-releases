@@ -451,6 +451,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             boolean refreshParent = false;
             boolean updateStat = false;
             boolean fireChangedRO = false;
+            boolean removeCache = false;
             DirEntry newEntry = null;
             try {
                 newEntry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), getPath());
@@ -467,15 +468,20 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 if (oldEntry.isSameType(newEntry)) {
                    if (!newEntry.isSameLastModified(oldEntry)) {
                        updateStat = true;
+                       removeCache = true;
                    } else if (newEntry.getSize() != oldEntry.getSize()) {
                        updateStat = true;
-                   } else if (!newEntry.isSameAccess(oldEntry)) {
-                       updateStat = true;
-                       fireChangedRO = true;
+                       removeCache = true;
                    } else if (newEntry.getDevice() != oldEntry.getDevice()) {
                        updateStat = true;
+                       removeCache = true;
                    } else if (newEntry.getINode()!= oldEntry.getINode()) {
                        updateStat = true;
+                       removeCache = true;
+                   } else if (!newEntry.isSameAccess(oldEntry)) {
+                       updateStat = true;
+                       removeCache = false;
+                       fireChangedRO = true;
                    }
                 } else {
                     refreshParent = true;
@@ -484,7 +490,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             if (refreshParent) {
                 getParent().refreshImpl(false, antiLoop, expected, refreshMode);            
             } else if (updateStat) {
-                getCache().delete();
+                if (removeCache) {
+                    getCache().delete();
+                }
                 updateStatAndSendEvents(newEntry, fireChangedRO);
             }
             RemoteLogger.getInstance().log(Level.FINE, "Refreshing {0} took {1} ms", new Object[] { getPath(), System.currentTimeMillis() - time });
@@ -504,7 +512,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         if (parent != null) {
             ev = new FileEvent(parent.getOwnerFileObject(), getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
             parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);
-            fireReadOnlyChangedEvent();
+            if (fireChangedRO) {
+                fireReadOnlyChangedEvent();
+            }
         }
     }
 
