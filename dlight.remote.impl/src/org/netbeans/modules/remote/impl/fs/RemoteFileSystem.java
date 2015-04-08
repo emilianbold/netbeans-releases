@@ -447,7 +447,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             fileOtputStream = new FileOutputStream(attr);
             table.store(fileOtputStream, "Set attribute "+attrName); // NOI18N
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace(new IOException(
+                    "Can not set attribute for " + file + "; attr. cache is " + attr, ex)); // NOI18N
         } finally {
             if (fileOtputStream != null) {
                 try {
