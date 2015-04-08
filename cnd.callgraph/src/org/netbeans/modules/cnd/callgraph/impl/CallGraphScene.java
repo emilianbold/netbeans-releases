@@ -491,7 +491,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                 } else {
                     if (dx > 0) {
                         bottommap.put(entry, (float) dy / (float) dx);
-                    } else if (dy < 0) {
+                    } else if (dx < 0) {
                         topmap.put(entry, (float) -dy / (float) dx);
                     } else {
                         topmap.put(entry, dy < 0 ? Float.MAX_VALUE : Float.MIN_VALUE);
