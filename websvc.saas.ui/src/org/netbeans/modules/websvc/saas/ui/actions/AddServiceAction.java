@@ -51,11 +51,13 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 
 /**
+ * Add web service action.
  * 
  * @author  nam
  */
 public class AddServiceAction extends NodeAction {
     
+    @Override
     protected boolean enable(org.openide.nodes.Node[] nodes) {
         if (nodes != null && nodes.length == 1) {
             SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
@@ -64,31 +66,28 @@ public class AddServiceAction extends NodeAction {
         return true;
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new HelpCtx(AddServiceAction.class);
+        return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public String getName() {
-        return NbBundle.getMessage(AddServiceAction.class, "ADD_WEB_SERVICE_Action");
+        return NbBundle.getMessage(AddServiceAction.class, "ADD_WEB_SERVICE_Action"); // NOI18N
     }
     
+    @Override
     protected void performAction(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return;
-        }
-
         SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
-        if (g == null) {
-            throw new IllegalArgumentException("Node has no SaasGroup in lookup");
-        }
-
         new AddWebServiceDlg(g).displayDialog();
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
     
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/websvc/manager/resources/webservice.png"; // NOI18N
     }
