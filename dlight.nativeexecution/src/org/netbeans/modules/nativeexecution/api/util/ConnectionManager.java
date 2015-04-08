@@ -449,6 +449,7 @@ public final class ConnectionManager {
                 }
             }
 
+            log.log(Level.FINEST, "Getting host info for {0}", env); // NOI18N
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
 
