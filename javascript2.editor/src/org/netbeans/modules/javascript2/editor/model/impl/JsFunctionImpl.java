@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.api.FrameworksUtils;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.openide.filesystems.FileObject;
@@ -239,33 +240,11 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     public boolean moveProperty(String name, JsObject newParent) {
         JsObject property = getProperty(name);
         if (property != null && (newParent instanceof DeclarationScope)) {
-            correctDeclarationScope(property, (DeclarationScope)newParent, new HashSet<String>());
+            FrameworksUtils.changeDeclarationScope(property, (DeclarationScope)newParent);
         }
         return super.moveProperty(name, newParent); 
     }
 
-    private static void correctDeclarationScope(JsObject where, DeclarationScope newScope, Set<String> done) {
-        if (!done.contains(where.getFullyQualifiedName())) {
-            done.add(where.getFullyQualifiedName());
-            if (where instanceof DeclarationScope) {
-                if (where.isDeclared()) {
-                    DeclarationScope scope = (DeclarationScope)where;
-                    if (scope.getParentScope() != null) {
-                        scope.getParentScope().getChildrenScopes().remove(scope);
-                        if (scope instanceof DeclarationScopeImpl) {
-                            ((DeclarationScopeImpl)scope).setParentScope(newScope);
-                        }
-                    }
-                    newScope.addDeclaredScope(scope);
-                }
-            } else {
-                for (JsObject property : where.getProperties().values()) {
-                    correctDeclarationScope(property, newScope, done);
-                }
-            }
-        }
-    }
-    
     @Override
     public void resolveTypes(JsDocumentationHolder docHolder) {
         super.resolveTypes(docHolder);
