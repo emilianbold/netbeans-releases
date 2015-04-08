@@ -450,6 +450,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             final DirEntry oldEntry = getParent().getDirEntry(getNameExt());
             boolean refreshParent = false;
             boolean updateStat = false;
+            boolean fireChangedRO = false;
             DirEntry newEntry = null;
             try {
                 newEntry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), getPath());
@@ -470,6 +471,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                        updateStat = true;
                    } else if (!newEntry.isSameAccess(oldEntry)) {
                        updateStat = true;
+                       fireChangedRO = true;
                    } else if (newEntry.getDevice() != oldEntry.getDevice()) {
                        updateStat = true;
                    } else if (newEntry.getINode()!= oldEntry.getINode()) {
@@ -483,7 +485,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 getParent().refreshImpl(false, antiLoop, expected, refreshMode);            
             } else if (updateStat) {
                 getCache().delete();
-                updateStatAndSendEvents(newEntry);
+                updateStatAndSendEvents(newEntry, fireChangedRO);
             }
             RemoteLogger.getInstance().log(Level.FINE, "Refreshing {0} took {1} ms", new Object[] { getPath(), System.currentTimeMillis() - time });
         }
@@ -494,7 +496,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         return FileType.fromChar(fileTypeChar);
     }
 
-    private void updateStatAndSendEvents(DirEntry dirEntry) {
+    private void updateStatAndSendEvents(DirEntry dirEntry, boolean fireChangedRO) {
         getParent().updateStat(this, dirEntry);
         FileEvent ev = new FileEvent(getOwnerFileObject(), getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
         getOwnerFileObject().fireFileChangedEvent(getListeners(), ev);
@@ -502,6 +504,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         if (parent != null) {
             ev = new FileEvent(parent.getOwnerFileObject(), getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
             parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);
+            fireReadOnlyChangedEvent();
         }
     }
 
@@ -559,7 +562,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 try {
                     DirEntry dirEntry = RemoteFileSystemTransport.uploadAndRename(
                             RemotePlainFile.this.getExecutionEnvironment(), RemotePlainFile.this.getCache(), pathToUpload, pathToRename);                    
-                    updateStatAndSendEvents(dirEntry);
+                    updateStatAndSendEvents(dirEntry, false);
                 } catch (InterruptedException ex) {
                     throw newIOException(ex);
                 } catch (ExecutionException ex) {
