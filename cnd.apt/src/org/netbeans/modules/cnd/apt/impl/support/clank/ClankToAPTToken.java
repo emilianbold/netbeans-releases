@@ -67,6 +67,7 @@ import org.openide.util.CharSequences;
 import org.clank.support.aliases.*;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
@@ -101,20 +102,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
             if (APTLiteConstTextToken.isApplicable(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE)) {
                 APTToken out = new APTLiteConstTextToken(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE);
                 return out;
-            } else if (APTLiteLiteralToken.isApplicable(APTTokenTypes.IDENT, offset, FAKE_COLUMN, FAKE_LINE, aptTokenType)) {
-                // create IDENT token
-                IdentifierInfo II = token.getIdentifierInfo();
-                assert (II != null);
-                StringMapEntryBase entry = II.getEntry();
-                assert entry != null;
-                CharSequence LiteText = APTConstTextToken.getConstTextID(aptTokenType);
-                // check if spelling in clang the same as our token, then reuse
-                // APTLiteLiteralToken otherwise create APTLiteIdToken with known textID
-                if (std.memcmp_null_termed(LiteText, entry.getKeyArray(), entry.getKeyArrayIndex(), LiteText.length()) == 0) {
-                    return new APTLiteLiteralToken(offset, FAKE_COLUMN, FAKE_LINE, aptTokenType);
-                } else {
-                    return new APTLiteIdToken(offset, FAKE_COLUMN, FAKE_LINE, LiteText);
-                }
             } else if (aptTokenType == APTTokenTypes.COMMENT) {
                 APTCommentToken out = new APTCommentToken();
                 out.setOffset(offset);
@@ -141,22 +128,30 @@ import org.netbeans.modules.cnd.utils.CndUtils;
                             StringRef spelling = PP.getSpelling(token, spell);
                             SpellingData = spelling.begin();
                             SpellingLen = spelling.size();
+                            spell.set_size(0);
                         } else {
                             SpellingData = literalData;
                             SpellingLen = token.getLength();
                         }
                     } else {
-                        assert token.is(tok.TokenKind.raw_identifier) : "unexpected " + token;
-                        byte[] $CharPtrData = token.$CharPtrData();
-                        if ($CharPtrData != null) {
-                            textID = CharSequences.create($CharPtrData, token.$CharPtrDataIndex(), token.getLength());
-                        } else {
-                            SpellingData = token.getRawIdentifierData();
-                            SpellingLen = token.getLength();
+                        if (token.is(tok.TokenKind.raw_identifier)) {
+                          byte[] $CharPtrData = token.$CharPtrData();
+                          if ($CharPtrData != null) {
+                              textID = CharSequences.create($CharPtrData, token.$CharPtrDataIndex(), token.getLength());
+                          } else {
+                              SpellingData = token.getRawIdentifierData();
+                              SpellingLen = token.getLength();
+                          }
                         }
                     }
                     if (textID == null) {
-                        assert SpellingData != null;
+                        if (SpellingData == null) {
+                            StringRef spelling = PP.getSpelling(token, spell);
+                            SpellingData = spelling.begin();
+                            SpellingLen = spelling.size();
+                            spell.set_size(0);
+                        }
+                        assert SpellingData != null : "" + token;
                         if (SpellingData instanceof char$ptr$array) {
                             textID = CharSequences.create(SpellingData.$array(), SpellingData.$index(), SpellingLen);
                         } else {
@@ -164,7 +159,19 @@ import org.netbeans.modules.cnd.utils.CndUtils;
                         }
                     }
                 }
-                assert textID != null;
+                assert textID != null : "" + token;
+                int literalType = aptTokenType;
+                if (aptTokenType > APTTokenTypes.FIRST_LITERAL_TOKEN && aptTokenType < APTTokenTypes.LAST_LITERAL_TOKEN) {
+                    aptTokenType = APTTokenTypes.IDENT;
+                }
+                if (APTLiteLiteralToken.isApplicable(APTTokenTypes.IDENT, offset, FAKE_COLUMN, FAKE_LINE, literalType)) {
+                  CharSequence LiteText = APTConstTextToken.getConstTextID(literalType);
+                  // check if spelling in clang the same as our token, then reuse
+                  // APTLiteLiteralToken otherwise create fallback to APTLiteIdToken with known textID
+                  if (CharSequences.comparator().compare(textID, LiteText) == 0) {
+                      return new APTLiteLiteralToken(offset, FAKE_COLUMN, FAKE_LINE, literalType);
+                  }
+                }
                 if (APTLiteIdToken.isApplicable(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE)){
                   return new APTLiteIdToken(offset, FAKE_COLUMN, FAKE_LINE, textID);
                 } else {
