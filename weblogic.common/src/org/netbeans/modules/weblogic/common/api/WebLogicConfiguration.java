@@ -67,6 +67,8 @@ public final class WebLogicConfiguration {
 
     private final Integer port;
 
+    private final Boolean secured;
+
     private final DomainConfiguration config;
 
     private final Credentials credentials;
@@ -78,11 +80,12 @@ public final class WebLogicConfiguration {
     private WebLogicRemote remote;
 
     private WebLogicConfiguration(File serverHome, File domainHome, DomainConfiguration config,
-            String host, Integer port, Credentials credentials) {
+            String host, Integer port, Boolean secured, Credentials credentials) {
         this.serverHome = serverHome;
         this.domainHome = domainHome;
         this.host = host;
         this.port = port;
+        this.secured = secured;
         this.credentials = credentials;
 
         if (domainHome != null) {
@@ -102,16 +105,16 @@ public final class WebLogicConfiguration {
         if (config == null) {
             return null;
         }
-        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, domainHome, config, null, null, credentials);
+        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, domainHome, config, null, null, null, credentials);
         synchronized (INSTANCES) {
             return INSTANCES.putIfAbsent(instance);
         }
     }
 
     @NonNull
-    public static WebLogicConfiguration forRemoteDomain(File serverHome, String host, int port,
-            Credentials credentials) {
-        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, null, null, host, port, credentials);
+    public static WebLogicConfiguration forRemoteDomain(File serverHome, String host,
+            int port, boolean secured, Credentials credentials) {
+        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, null, null, host, port, secured, credentials);
         synchronized (INSTANCES) {
             return INSTANCES.putIfAbsent(instance);
         }
@@ -154,12 +157,21 @@ public final class WebLogicConfiguration {
         return config.getPort();
     }
 
+    public boolean isSecured() {
+        if (secured != null) {
+            return secured;
+        }
+        return config.isSecured();
+    }
+
     @NonNull
     public String getAdminURL() {
         if (config == null) {
-            return "t3://" + host + ":" + port;
+            return getAdminURL(host, port, secured);
         }
-        return config.getAdminURL();
+        synchronized (config) {
+            return getAdminURL(config.getHost(), config.getPort(), config.isSecured());
+        }
     }
 
     @NullUnknown
@@ -235,6 +247,17 @@ public final class WebLogicConfiguration {
             return false;
         }
         return true;
+    }
+
+    private static String getAdminURL(String host, int port, boolean secured) {
+        StringBuilder sb = new StringBuilder();
+        if (secured) {
+            sb.append("t3s://"); // NOI18N
+        } else {
+            sb.append("t3://"); // NOI18N
+        }
+        sb.append(host).append(":").append(port); // NOI18N
+        return sb.toString();
     }
 
     public static interface Credentials {
