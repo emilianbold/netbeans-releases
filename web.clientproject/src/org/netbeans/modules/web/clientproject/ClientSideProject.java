@@ -231,17 +231,22 @@ public class ClientSideProject implements Project {
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                assert ProjectManager.mutex().isWriteAccess();
                 if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
                     projectBrowserUsageLogger.reset();
-                    synchronized (ClientSideProject.this) {
-                        ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
-                        if (ebi != null) {
-                            ebi.deactivate();
+                    ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                        @Override
+                        public Void run() {
+                            synchronized (ClientSideProject.this) {
+                                ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
+                                if (ebi != null) {
+                                    ebi.deactivate();
+                                }
+                                projectEnhancedBrowserImpl = null;
+                                projectWebBrowser = null;
+                            }
+                            return null;
                         }
-                        projectEnhancedBrowserImpl = null;
-                        projectWebBrowser = null;
-                    }
+                    });
                     projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
