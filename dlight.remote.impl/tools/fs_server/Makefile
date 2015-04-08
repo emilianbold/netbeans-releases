@@ -13,12 +13,16 @@ endif
 
 ifeq (armv, $(shell expr substr `arch` 1 4))
     OS_ARCH = $(OS)-arm
-else ifeq (sun4, $(ARCH))
-  OS_ARCH = $(OS)-sparc
-else ifeq (sparc64, $(ARCH))
-  OS_ARCH = $(OS)-sparc
-else
-  OS_ARCH = $(OS)-x86
+else 
+  ifeq (sun4, $(ARCH))
+    OS_ARCH = $(OS)-sparc
+  else 
+    ifeq (sparc64, $(ARCH))
+      OS_ARCH = $(OS)-sparc
+    else
+      OS_ARCH = $(OS)-x86
+    endif
+  endif
 endif
 
 ifdef 64BITS
