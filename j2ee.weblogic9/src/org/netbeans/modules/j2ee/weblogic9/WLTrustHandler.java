@@ -146,6 +146,36 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         return result;
     }
 
+    public static synchronized void removeFromTrustStore(String url) throws GeneralSecurityException, IOException {
+        FileObject root = FileUtil.getConfigRoot();
+        FileObject ts = root.getFileObject(TRUST_STORE_PATH);
+        if (ts == null) {
+            return;
+        }
+
+        char[] password = Keyring.read(TRUST_PASSWORD_KEY);
+
+        KeyStore keystore = KeyStore.getInstance("JKS"); // NOI18N
+        InputStream is = new BufferedInputStream(ts.getInputStream());
+        try {
+            keystore.load(is, password);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return;
+        } finally {
+            is.close();
+        }
+
+        keystore.deleteEntry(url);
+
+        OutputStream out = new BufferedOutputStream(ts.getOutputStream());
+        try {
+            keystore.store(out, password);
+        } finally {
+            out.close();
+        }
+    }
+
     private void setup(WebLogicConfiguration config) throws GeneralSecurityException, IOException {
         SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
         context.init(null, new TrustManager[]{getTrustManager(config)}, RANDOM);

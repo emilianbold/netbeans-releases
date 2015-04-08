@@ -45,6 +45,7 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,13 +54,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLTrustHandler;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -71,6 +76,8 @@ import org.openide.util.Utilities;
  * @author Kirill Sorokin
  */
 public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingIterator {
+
+    private static final Logger LOGGER = Logger.getLogger(WLInstantiatingIterator.class.getName());
 
     /**
      * Since the WizardDescriptor does not expose the property name for the
@@ -166,6 +173,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
         }
 
+        try {
+            // remove the certificate from the struststore - safety catch
+            WLTrustHandler.removeFromTrustStore(url);
+        } catch (GeneralSecurityException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, username, password, displayName, props);
 
