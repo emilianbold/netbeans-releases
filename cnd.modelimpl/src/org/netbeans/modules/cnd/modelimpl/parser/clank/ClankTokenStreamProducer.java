@@ -356,10 +356,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             String fileName = CndPathUtilities.getBaseName(resolvedPath.getPath().toString());
             boolean system = !resolvedPath.isDefaultSearchPath();
             boolean broken = (includedFile == null);
-            // FIXME: offsets
-            int InclusionDirectiveOffset = enteredTo.getInclusionDirectiveOffset();
-            int startOffset = clankIncludeTomodel(InclusionDirectiveOffset);
-            int endOffset = InclusionDirectiveOffset + fileName.length() + "<>".length();
+            int startOffset = enteredTo.getInclusionDirectiveStartOffset();
+            int endOffset = enteredTo.getInclusionDirectiveEndOffset();
             IncludeImpl incl = IncludeImpl.create(fileName, system, false, includedFile, curFile, startOffset, endOffset);
             parsingFileContent.addInclude(incl, broken);
           }
@@ -367,14 +365,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
     
     private static final String INCLUDE = "#include ";
-    
-    private static int clankIncludeTomodel(int ClankFileInfoOffset) {
-      return ClankFileInfoOffset - INCLUDE.length();
-    }
-
-    private static int modelIncludeToClank(int IncludeStartOffset) {
-      return IncludeStartOffset + INCLUDE.length();
-    }
 
     private static final class IncludeDirectiveTokensStreamCallback implements ClankPreprocessorCallback {
         private final PreprocHandler ppHandler;
@@ -391,7 +381,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             this.ppHandler = ppHandler;
             this.includeFileOnwerIndex = includeFileOnwerIndex;
             // adjust to Clank offset
-            this.interestedClankIncludeDirectiveOffset = modelIncludeToClank(interestedIncludeDirectiveOffset);
+            this.interestedClankIncludeDirectiveOffset = interestedIncludeDirectiveOffset;
         }
 
         @Override
@@ -421,7 +411,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             // TODO: we can collect all included recursively, but not now
             if (enteredFrom != null && enteredFrom.getFileIndex() == includeFileOnwerIndex) {
               // entering from file owner into include directive
-              if (enteredTo.getInclusionDirectiveOffset() == this.interestedClankIncludeDirectiveOffset) {
+              if (enteredTo.getInclusionDirectiveStartOffset() == this.interestedClankIncludeDirectiveOffset) {
                 assert includedFileInfo == null : "seen twice? " + includedFileInfo;
                 includedFileInfo = enteredTo;
                 insideInterestedFile = true;

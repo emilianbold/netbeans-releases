@@ -46,6 +46,8 @@ import org.clang.basic.SrcMgr;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
 import org.clank.support.Casts;
+import org.llvm.adt.StringRef;
+import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
@@ -105,6 +107,21 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
+    public void onInclusionDirective(InclusionDirectiveInfo directive) {
+        
+    }
+
+    @Override
+    public void onSkippedInclusionDirective(InclusionDirectiveInfo directive) {
+      super.onSkippedInclusionDirective(directive);
+    }
+
+    @Override
+    public boolean onNotFoundInclusionDirective(InclusionDirectiveInfo directive, StringRef FileName, SmallVectorImplChar RecoveryPath) {
+      return super.onNotFoundInclusionDirective(directive, FileName, RecoveryPath);
+    }
+
+    @Override
     public void onEnter(FileInfoCallback.FileInfo fileInfo) {
         if (ClankDriverImpl.TRACE) {
             traceOS.$out("Enter: " + fileInfo).$out("\n").flush();
@@ -122,7 +139,7 @@ public final class ClankPPCallback extends FileInfoCallback {
           } else {
             ResolvedPath resolvedPath = enteredTo.getResolvedPath();
             includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(),
-                    0/*should not be used by client*/, fileInfo.getIncludeOffset(), resolvedPath.getIndex());
+                    0/*should not be used by client*/, fileInfo.getIncludeStartOffset(), resolvedPath.getIndex());
             includeHandler.cacheTokens(enteredTo);
             enteredFrom = includeStack.get(includeStack.size() - 1);
           }
@@ -245,8 +262,13 @@ public final class ClankPPCallback extends FileInfoCallback {
       }
 
       @Override
-      public int getInclusionDirectiveOffset() {
-        return current.getIncludeOffset();
+      public int getInclusionDirectiveStartOffset() {
+        return current.getIncludeStartOffset();
+      }
+
+      @Override
+      public int getInclusionDirectiveEndOffset() {
+        return current.getIncludeEndOffset();
       }
 
       @Override

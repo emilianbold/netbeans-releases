@@ -124,7 +124,8 @@ public final class ClankDriver {
       boolean hasTokenStream();
       TokenStream getTokenStream();
       int getFileIndex();
-      int getInclusionDirectiveOffset();
+      int getInclusionDirectiveStartOffset();
+      int getInclusionDirectiveEndOffset();
       int[] getSkippedRanges();
     }
 }
