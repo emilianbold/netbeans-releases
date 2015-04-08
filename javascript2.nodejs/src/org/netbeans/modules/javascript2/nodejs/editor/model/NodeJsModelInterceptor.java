@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.javascript2.nodejs.editor.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;

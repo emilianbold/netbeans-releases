@@ -288,6 +288,14 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/cc01/issue248155.js", "util.ins^;", false);
     }
     
+    public void testIssue251643_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue251643.js", "sa^;// cc here", false);
+    }
+    
+    public void testIssue251643_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue251643.js", "path.^;", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();
