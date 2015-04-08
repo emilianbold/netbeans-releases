@@ -75,12 +75,12 @@ public class ResourceNode extends AbstractNode {
     
     @Override
     public String getDisplayName() {
-        return "[" + getResource().getPath() + "]";
+        return "[" + getResource().getPath() + "]"; // NOI18N
     }
     
     @Override
     public String getShortDescription() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         WadlSaasResource r = resource;
         while (r != null) {
             sb.insert(0, '/');

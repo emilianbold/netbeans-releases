@@ -49,7 +49,6 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
-import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
@@ -57,8 +56,6 @@ import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -94,6 +91,7 @@ public class WsdlPortNode extends AbstractNode {
         return actions.toArray(new Action[actions.size()]);
     }
     
+    @Override
     public Action getPreferredAction() {
         Action[] actions = getActions(true);
         return actions.length > 0 ? actions[0] : null;
@@ -131,16 +129,17 @@ public class WsdlPortNode extends AbstractNode {
         if (ss == null) {
             ss = new Set();
             ss.setName("data");  // NOI18N
-            ss.setDisplayName(NbBundle.getMessage(WsdlPortNode.class, "WS_INFO"));
-            ss.setShortDescription(NbBundle.getMessage(WsdlPortNode.class, "WS_INFO"));
+            ss.setDisplayName(NbBundle.getMessage(WsdlPortNode.class, "WS_INFO")); // NOI18N
+            ss.setShortDescription(NbBundle.getMessage(WsdlPortNode.class, "WS_INFO")); // NOI18N
             sheet.put(ss);
         }
         
         // Port name (from the wsdl)
         ss.put( new PropertySupport.ReadOnly( "port", // NOI18N
                 String.class,
-                NbBundle.getMessage(WsdlPortNode.class, "PORT_NAME_IN_WSDL"),
-                NbBundle.getMessage(WsdlPortNode.class, "PORT_NAME_IN_WSDL") ) {
+                NbBundle.getMessage(WsdlPortNode.class, "PORT_NAME_IN_WSDL"), // NOI18N
+                NbBundle.getMessage(WsdlPortNode.class, "PORT_NAME_IN_WSDL")) { // NOI18N
+            @Override
             public Object getValue() {
                 String portName = port.getName();
                 return portName;
@@ -150,8 +149,9 @@ public class WsdlPortNode extends AbstractNode {
         // URL for the wsdl file (entered by the user)
         ss.put( new PropertySupport.ReadOnly( "URL", // NOI18N
                 String.class,
-                NbBundle.getMessage(WsdlPortNode.class, "WS_URL"),
-                NbBundle.getMessage(WsdlPortNode.class, "WS_URL") ) {
+                NbBundle.getMessage(WsdlPortNode.class, "WS_URL"), // NOI18N
+                NbBundle.getMessage(WsdlPortNode.class, "WS_URL")) { // NOI18N
+            @Override
             public Object getValue() {
                 return port.getParentSaas().getUrl();
             }

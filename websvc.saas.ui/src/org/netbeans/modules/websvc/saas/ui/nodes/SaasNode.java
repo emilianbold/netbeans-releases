@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
@@ -63,7 +64,6 @@ import org.openide.util.lookup.AbstractLookup;
  * @author nam
  */
 public abstract class SaasNode extends AbstractNode {
-
     protected Saas saas;
 
     public SaasNode(SaasNodeChildren nodeChildren, AbstractLookup lookup, Saas saas) {
@@ -95,9 +95,7 @@ public abstract class SaasNode extends AbstractNode {
     public static List<Action> getActions(Lookup lookup) {
         List<Action> actions = new ArrayList<Action>();
         for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(lookup)) {
-                actions.add(a);
-            }
+            actions.addAll(Arrays.asList(ext.getSaasActions(lookup)));
         }
         return actions;
     }

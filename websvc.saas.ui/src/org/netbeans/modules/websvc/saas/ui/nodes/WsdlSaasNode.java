@@ -51,19 +51,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
-import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
-import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.ExTransferable.Single;
@@ -75,7 +72,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WsdlSaasNode extends SaasNode {
-    ExTransferable transferable;
+    private ExTransferable transferable;
     
     public WsdlSaasNode(WsdlSaas saas) {
         this(saas, new InstanceContent());
@@ -103,6 +100,7 @@ public class WsdlSaasNode extends SaasNode {
     private static final java.awt.Image ICON =
        ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
     
+    @Override
     public Image getGenericIcon(int type) {
         return ICON;
     }
@@ -136,16 +134,17 @@ public class WsdlSaasNode extends SaasNode {
         if (ss == null) {
             ss = new Set();
             ss.setName("data");  // NOI18N
-            ss.setDisplayName(NbBundle.getMessage(WsdlSaasNode.class, "WS_INFO"));
-            ss.setShortDescription(NbBundle.getMessage(WsdlSaasNode.class, "WS_INFO"));
+            ss.setDisplayName(NbBundle.getMessage(WsdlSaasNode.class, "WS_INFO")); // NOI18N
+            ss.setShortDescription(NbBundle.getMessage(WsdlSaasNode.class, "WS_INFO")); // NOI18N
             sheet.put(ss);
         }
         
         // Service name (from the wsdl)
         ss.put( new PropertySupport.ReadOnly( "name", // NOI18N
                 String.class,
-                NbBundle.getMessage(WsdlSaasNode.class, "PORT_NAME_IN_WSDL"),
-                NbBundle.getMessage(WsdlSaasNode.class, "PORT_NAME_IN_WSDL") ) {
+                NbBundle.getMessage(WsdlSaasNode.class, "PORT_NAME_IN_WSDL"), // NOI18N
+                NbBundle.getMessage(WsdlSaasNode.class, "PORT_NAME_IN_WSDL")) { // NOI18N
+            @Override
             public Object getValue() {
                 return getName();
             }
@@ -154,8 +153,9 @@ public class WsdlSaasNode extends SaasNode {
         // URL for the wsdl file (entered by the user)
         ss.put( new PropertySupport.ReadOnly( "URL", // NOI18N
                 String.class,
-                NbBundle.getMessage(WsdlSaasNode.class, "WS_URL"),
-                NbBundle.getMessage(WsdlSaasNode.class, "WS_URL") ) {
+                NbBundle.getMessage(WsdlSaasNode.class, "WS_URL"), // NOI18N
+                NbBundle.getMessage(WsdlSaasNode.class, "WS_URL")) { // NOI18N
+            @Override
             public Object getValue() {
                 return saas.getUrl();
             }

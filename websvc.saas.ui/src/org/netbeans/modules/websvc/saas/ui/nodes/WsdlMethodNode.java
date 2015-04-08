@@ -41,11 +41,10 @@
  */
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-//import com.sun.tools.ws.processor.model.java.JavaMethod;
-//import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -69,7 +68,6 @@ import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -79,8 +77,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WsdlMethodNode extends AbstractNode {
-
-    WsdlSaasMethod method;
+    private WsdlSaasMethod method;
     private Transferable transferable;
 
     public WsdlMethodNode(WsdlSaasMethod method) {
@@ -103,13 +100,12 @@ public class WsdlMethodNode extends AbstractNode {
     @Override
     public String getShortDescription() {
         JavaMethod javaMethod = method.getJavaMethod();
-        String signature = "";
+        String signature;
         if (javaMethod != null) {
             signature = javaMethod.getReturnType().getFormalName() + " " + javaMethod.getName() + "(";
             Iterator parameterIterator = javaMethod.getParametersList().iterator();
-            JavaParameter currentParam = null;
             while (parameterIterator.hasNext()) {
-                currentParam = (JavaParameter) parameterIterator.next();
+                JavaParameter currentParam = (JavaParameter) parameterIterator.next();
                 String parameterType = TypeUtil.getParameterType(currentParam);
                 signature += parameterType + " " + currentParam.getName();
                 if (parameterIterator.hasNext()) {
@@ -138,36 +134,37 @@ public class WsdlMethodNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         List<Action> actions = SaasNode.getActions(getLookup());
         for (MethodNodeActionsProvider ext : SaasUtil.getMethodNodeActionsProviders()) {
-            for (Action a : ext.getMethodActions(getLookup())) {
-                actions.add(a);
-            }
+            actions.addAll(Arrays.asList(ext.getMethodActions(getLookup())));
         }
         return actions.toArray(new Action[actions.size()]);
     }
 
+    @Override
     public Action getPreferredAction() {
         Action[] actions = getActions(true);
         return actions.length > 0 ? actions[0] : null;
     }
 
+    @Override
     public Image getIcon(int type) {
         return getMethodIcon();
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return getMethodIcon();
     }
 
     private Image getMethodIcon() {
         JavaMethod javaMethod = method.getJavaMethod();
-        if (javaMethod != null && !"void".equals(javaMethod.getReturnType().getRealName())) {
-            Image image1 = ImageUtilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
-            Image image2 = ImageUtilities.loadImage("org/netbeans/modules/websvc/manager/resources/table_dp_badge.png");
+        if (javaMethod != null && !"void".equals(javaMethod.getReturnType().getRealName())) { // NOI18N
+            Image image1 = ImageUtilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png"); // NOI18N
+            Image image2 = ImageUtilities.loadImage("org/netbeans/modules/websvc/manager/resources/table_dp_badge.png"); // NOI18N
             int x = image1.getWidth(null) - image2.getWidth(null);
             int y = image1.getHeight(null) - image2.getHeight(null);
             return ImageUtilities.mergeImages(image1, image2, x, y);
         } else {
-            return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/ui/resources/methodicon.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/ui/resources/methodicon.png"); // NOI18N
         }
     }
 
@@ -175,6 +172,7 @@ public class WsdlMethodNode extends AbstractNode {
      * Create a property sheet for the individual method node
      * @return property sheet for the data source nodes
      */
+    @Override
     protected Sheet createSheet() {
         JavaMethod javaMethod = method.getJavaMethod();
         Sheet sheet = super.createSheet();
@@ -183,8 +181,8 @@ public class WsdlMethodNode extends AbstractNode {
         if (ss == null) {
             ss = new Set();
             ss.setName("data");  // NOI18N
-            ss.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO"));
-            ss.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO"));
+            ss.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO")); // NOI18N
+            ss.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO")); // NOI18N
             sheet.put(ss);
         }
 
@@ -197,16 +195,15 @@ public class WsdlMethodNode extends AbstractNode {
 
             p = new Reflection(javaMethod, String.class, "getName", null); // NOI18N
             p.setName("name"); // NOI18N
-            p.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_NAME"));
-            p.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_NAME"));
+            p.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_NAME")); // NOI18N
+            p.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_NAME")); // NOI18N
             ss.put(p);
             String signature = javaMethod.getReturnType().getRealName() + " " +
                     javaMethod.getName() + "(";
 
             Iterator tempIterator = javaMethod.getParametersList().iterator();
-            JavaParameter currentparam = null;
             while (tempIterator.hasNext()) {
-                currentparam = (JavaParameter) tempIterator.next();
+                JavaParameter currentparam = (JavaParameter) tempIterator.next();
                 signature += currentparam.getType().getRealName() + " " + currentparam.getName();
                 if (tempIterator.hasNext()) {
                     signature += ", ";
@@ -231,14 +228,14 @@ public class WsdlMethodNode extends AbstractNode {
 
             p = new Reflection(signature, String.class, "toString", null); // NOI18N
             p.setName("signature"); // NOI18N
-            p.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_SIGNATURE"));
-            p.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_SIGNATURE"));
+            p.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_SIGNATURE")); // NOI18N
+            p.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_SIGNATURE")); // NOI18N
             ss.put(p);
 
             p = new Reflection(javaMethod.getReturnType(), String.class, "getRealName", null); // NOI18N
             p.setName("returntype"); // NOI18N
-            p.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_RETURNTYPE"));
-            p.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_RETURNTYPE"));
+            p.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_RETURNTYPE")); // NOI18N
+            p.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_RETURNTYPE")); // NOI18N
             ss.put(p);
 
             Set paramSet = sheet.get("parameters"); // NOI18N
@@ -251,15 +248,14 @@ public class WsdlMethodNode extends AbstractNode {
             }
             Iterator paramIterator = javaMethod.getParametersList().iterator();
             if (paramIterator.hasNext()) {
-                p = new Reflection(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_PARAMTYPE"),
+                p = new Reflection(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_PARAMTYPE"), // NOI18N
                         String.class,
-                        "toString",
-                        null); // NOI18N
+                        "toString", // NOI18N
+                        null);
                 p.setName("paramdivider2"); // NOI18N
 
-                JavaParameter currentParameter = null;
                 for (int ii = 0; paramIterator.hasNext(); ii++) {
-                    currentParameter = (JavaParameter) paramIterator.next();
+                    JavaParameter currentParameter = (JavaParameter) paramIterator.next();
                     if (currentParameter.getType().isHolder()) {
                         p = new Reflection(TypeUtil.getParameterType(currentParameter), String.class, "toString", null); // NOI18N
                     } else {
@@ -282,13 +278,12 @@ public class WsdlMethodNode extends AbstractNode {
             }
 
             Iterator exceptionIterator = javaMethod.getExceptions();
-            String currentException = null;
             for (int ii = 0; exceptionIterator.hasNext(); ii++) {
-                currentException = (String) exceptionIterator.next();
+                String currentException = (String) exceptionIterator.next();
                 p = new Reflection(currentException, String.class, "toString", null); // NOI18N
                 p.setName("exception" + ii); // NOI18N
-                p.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_PARAMTYPE"));
-                p.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_PARAMTYPE"));
+                p.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_PARAMTYPE")); // NOI18N
+                p.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_PARAMTYPE")); // NOI18N
                 exceptionSet.put(p);
             }
         } catch (NoSuchMethodException nsme) {
@@ -298,10 +293,12 @@ public class WsdlMethodNode extends AbstractNode {
         return sheet;
     }
     // Handle copying and cutting specially:
+    @Override
     public boolean canCopy() {
         return true;
     }
 
+    @Override
     public boolean canCut() {
         return false;
     }

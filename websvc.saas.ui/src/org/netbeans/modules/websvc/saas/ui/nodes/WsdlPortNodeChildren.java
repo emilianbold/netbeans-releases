@@ -54,7 +54,7 @@ import org.openide.nodes.Node;
  * @author nam
  */
 public class WsdlPortNodeChildren extends Children.Keys<WsdlSaasMethod>{
-    private WsdlSaasPort port;
+    private final WsdlSaasPort port;
 
     public WsdlPortNodeChildren(WsdlSaasPort port) {
         this.port = port;
