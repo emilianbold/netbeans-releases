@@ -2648,9 +2648,6 @@ final class Central implements ControllerHandler {
                 break;
             }
         }
-        //#232061 
-        if( !tc.isOpened() )
-            tc.open();
         int prevIndex = prevMode != null && (intoSliding || intoSeparate) ? prevMode.getOpenedTopComponentsIDs().indexOf( tcID ) : -1;
         if(removeTopComponentFromOtherModes(mode, tc)) {
             moved = true;
@@ -2696,6 +2693,11 @@ final class Central implements ControllerHandler {
                 // now we have the sliding mode in initial state
                 mode.setBounds(tc.getBounds());
             }            
+        }
+        //#232061 
+        if( null != tc.getClientProperty("windnd_cloned_tc")) {
+            tc.putClientProperty("windnd_cloned_tc", null);
+            WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
         }
         return moved;
     }
