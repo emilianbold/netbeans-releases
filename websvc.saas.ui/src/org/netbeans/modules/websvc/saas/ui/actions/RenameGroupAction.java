@@ -50,21 +50,12 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.RenameAction;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * To rename a web service group
+ * Action that renames a web service group.
  */
 public class RenameGroupAction extends RenameAction {
-    
-    protected boolean isEnabled(Node[] nodes) {
-        if (nodes != null && nodes.length == 1) {
-            SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
-            return g != null && g.isUserDefined();
-        }
-        return false;
-    }
     
     @Override
     protected void performAction(Node[] nodes) {
@@ -76,13 +67,13 @@ public class RenameGroupAction extends RenameAction {
 
             Node n = nodes[0];
             NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-                    NbBundle.getMessage(RenameAction.class, "CTL_RenameLabel"),
-                    NbBundle.getMessage(RenameAction.class, "CTL_RenameTitle"));
+                    NbBundle.getMessage(RenameAction.class, "CTL_RenameLabel"), // NOI18N
+                    NbBundle.getMessage(RenameAction.class, "CTL_RenameTitle")); // NOI18N
             dlg.setInputText(n.getName());
             if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
                 String name = dlg.getInputText().trim();
                 if (group.getParent().getChildGroup(name) != null) {
-                    String msg = NbBundle.getMessage(RenameGroupAction.class, "MSG_DuplicateGroupName");
+                    String msg = NbBundle.getMessage(RenameGroupAction.class, "MSG_DuplicateGroupName"); // NOI18N
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                     return;
