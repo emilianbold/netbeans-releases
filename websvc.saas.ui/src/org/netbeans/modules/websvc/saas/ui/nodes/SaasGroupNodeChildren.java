@@ -59,8 +59,7 @@ import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
 
 public class SaasGroupNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
-
-    protected SaasGroup group;
+    private SaasGroup group;
 
     public SaasGroupNodeChildren(SaasGroup group) {
         this.group = group;
@@ -78,6 +77,7 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         super.addNotify();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == group) {
             updateKeys();
@@ -109,6 +109,7 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         super.removeNotify();
     }
 
+    @Override
     protected Node[] createNodes(Object key) {
         if (key instanceof SaasGroup) {
             SaasGroup g = (SaasGroup) key;

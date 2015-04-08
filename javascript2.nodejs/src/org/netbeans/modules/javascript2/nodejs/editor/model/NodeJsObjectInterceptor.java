@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.javascript2.editor.api.FrameworksUtils;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -116,6 +117,8 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
                         modifiers.remove(Modifier.PUBLIC);
                         modifiers.add(Modifier.PRIVATE);
                     }
+                } else if (!property.isDeprecated() && !module.getName().equals(propertyName)) {
+                    FrameworksUtils.changeDeclarationScope(property, module);
                 }
             }
         }

@@ -170,23 +170,8 @@ public final class PhingBuildTool implements BuildToolImplementation {
 
     public static final class Registration {
 
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-        public static BuildToolImplementation forHtml5Project(Project project) {
-            return new PhingBuildTool(project);
-        }
-
         @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
         public static BuildToolImplementation forPhpProject(Project project) {
-            return new PhingBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-project") // NOI18N
-        public static BuildToolImplementation forWebProject(Project project) {
-            return new PhingBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-maven") // NOI18N
-        public static BuildToolImplementation forMavenProject(Project project) {
             return new PhingBuildTool(project);
         }
 
