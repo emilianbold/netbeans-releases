@@ -231,7 +231,7 @@ public class ClientSideProject implements Project {
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                assert ProjectManager.mutex().isWriteAccess();
+                assert ProjectManager.mutex().isWriteAccess() || ProjectManager.mutex().isReadAccess();
                 if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
                     projectBrowserUsageLogger.reset();
                     synchronized (ClientSideProject.this) {

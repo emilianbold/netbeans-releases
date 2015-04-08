@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phing.options;
+package org.netbeans.modules.php.symfony2.options;
 
+import java.io.File;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
-import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.util.NbBundle;
 
-public final class PhingOptionsValidator {
-
-    public static final String PHING_PATH = "phing.path"; // NOI18N
+public final class Symfony2OptionsValidator {
 
     private final ValidationResult result = new ValidationResult();
 
 
-    public PhingOptionsValidator validate() {
-        return validatePhing();
+    public Symfony2OptionsValidator validate() {
+        if (Symfony2Options.getInstance().isUseInstaller()) {
+            validateInstaller();
+        } else {
+            validateSandbox();
+        }
+        return this;
     }
 
-    public PhingOptionsValidator validatePhing() {
-        return validatePhing(PhingOptions.getInstance().getPhing());
+    public Symfony2OptionsValidator validate(boolean useInstaller, String installer, String sandbox) {
+        if (useInstaller) {
+            return validateInstaller(installer);
+        }
+        return validateSandbox(sandbox);
     }
 
-    @NbBundle.Messages("PhingOptionsValidator.phing.name=Phing")
-    public PhingOptionsValidator validatePhing(String phing) {
-        String warning = PhpExecutableValidator.validateCommand(phing, Bundle.PhingOptionsValidator_phing_name());
+    public Symfony2OptionsValidator validateInstaller() {
+        return validateInstaller(Symfony2Options.getInstance().getInstaller());
+    }
+
+    @NbBundle.Messages("Symfony2OptionsValidator.installer=Installer")
+    public Symfony2OptionsValidator validateInstaller(String installer) {
+        String warning = PhpExecutableValidator.validateCommand(installer, Bundle.Symfony2OptionsValidator_installer());
         if (warning != null) {
-            result.addWarning(new ValidationResult.Message(PHING_PATH, warning));
+            result.addWarning(new ValidationResult.Message(Symfony2Options.INSTALLER, warning));
+        }
+        return this;
+    }
+
+    public Symfony2OptionsValidator validateSandbox() {
+        return validateSandbox(Symfony2Options.getInstance().getSandbox());
+    }
+
+    @NbBundle.Messages({
+        "Symfony2OptionsValidator.sandbox=Sandbox",
+        "Symfony2OptionsValidator.sandbox.notZip=Sandbox is not ZIP file."
+    })
+    public Symfony2OptionsValidator validateSandbox(@NullAllowed String sandbox) {
+        String warning = FileUtils.validateFile(Bundle.Symfony2OptionsValidator_sandbox(), sandbox, false);
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message(Symfony2Options.SANDBOX, warning));
+        } else if (!new File(sandbox).getName().toLowerCase().endsWith(".zip")) { // NOI18N
+            result.addWarning(new ValidationResult.Message(Symfony2Options.SANDBOX, Bundle.Symfony2OptionsValidator_sandbox_notZip()));
         }
         return this;
     }
