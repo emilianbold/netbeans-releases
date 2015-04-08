@@ -48,14 +48,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.symfony2.options.Symfony2Options;
+import org.netbeans.modules.php.symfony2.options.Symfony2OptionsValidator;
 import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -96,11 +100,27 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
         changeSupport.removeChangeListener(listener);
     }
 
+    public boolean isUseLts() {
+        return ltsCheckBox.isSelected();
+    }
+
     public String getErrorMessage() {
-        return Symfony2OptionsPanelController.validateSandbox(Symfony2Options.getInstance().getSandbox());
+        // treat all as errors here
+        ValidationResult result = new Symfony2OptionsValidator()
+                .validate()
+                .getResult();
+        if (result.hasErrors()) {
+            return result.getErrors().get(0).getMessage();
+        }
+        // warnings
+        if (result.hasWarnings()) {
+            return result.getWarnings().get(0).getMessage();
+        }
+        return null;
     }
 
     private void init() {
+        setComponents();
         // work around - keep the label on the right side
         optionsLabel.setMaximumSize(optionsLabel.getPreferredSize());
     }
@@ -113,6 +133,25 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
             }
         });
         enableOptionsLabel();
+    }
+
+    @NbBundle.Messages({
+        "NewProjectConfigurationPanel.info.installer=<html>Project will be created using <i>Symfony Installer</i>.</html>",
+        "NewProjectConfigurationPanel.info.sandbox=<html>Project will be created using <i>Symfony Sandbox</i>.</html>",
+    })
+    private void setComponents() {
+        String info;
+        boolean showOther;
+        if (Symfony2Options.getInstance().isUseInstaller()) {
+            info = Bundle.NewProjectConfigurationPanel_info_installer();
+            showOther = true;
+        } else {
+            info = Bundle.NewProjectConfigurationPanel_info_sandbox();
+            showOther = false;
+        }
+        infoLabel.setText(info);
+        ltsCheckBox.setVisible(showOther);
+        noteLabel.setVisible(showOther);
     }
 
     void enableOptionsLabel() {
@@ -131,10 +170,15 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        optionsLabel = new JLabel();
         infoLabel = new JLabel();
+        optionsLabel = new JLabel();
+        ltsCheckBox = new JCheckBox();
+        noteLabel = new JLabel();
 
-        optionsLabel.setText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.text"));         optionsLabel.addMouseListener(new MouseAdapter() {
+        Mnemonics.setLocalizedText(infoLabel, "INFO"); // NOI18N
+
+        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.text")); // NOI18N
+        optionsLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 optionsLabelMouseEntered(evt);
             }
@@ -143,23 +187,35 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
             }
         });
 
-        infoLabel.setText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.text"));
+        Mnemonics.setLocalizedText(ltsCheckBox, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.ltsCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.noteLabel.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(infoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ltsCheckBox)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 154, Short.MAX_VALUE))
+                    .addComponent(infoLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(ltsCheckBox)
+                .addGap(18, 18, 18)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -173,11 +229,14 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel infoLabel;
+    private JCheckBox ltsCheckBox;
+    private JLabel noteLabel;
     private JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        setComponents();
         fireChange();
     }
 
