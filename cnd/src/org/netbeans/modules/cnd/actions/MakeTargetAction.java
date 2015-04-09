@@ -64,23 +64,22 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
 /**
  * Implements Make target Action
  */
-public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup {
+public class MakeTargetAction extends MakeBaseAction {
 
     /* target mnemonics for the first 10 targets */
-    private static String mnemonics = "1234567890"; // NOI18N
+    private static final String mnemonics = "1234567890"; // NOI18N
 
     @Override
     public String getName () {
         return getString("BTN_Target");	// NOI18N
     }
-    
+
     @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(MakeTargetAction.class); // FIXUP ???
@@ -95,7 +94,7 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
     private class TargetPopupMenu extends JMenu {
         private boolean initialized = false;
         private SystemAction action = null;
-        private Node[] activeNodes;
+        private final Node[] activeNodes;
 
         public TargetPopupMenu(SystemAction action, boolean en, Node[] activeNodes) {
             super();
@@ -157,7 +156,7 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
             }
             return popup;
         }
-        
+
     }
 
     /**
@@ -173,10 +172,10 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
         }
     }
 
-    protected class PopupItemTarget extends JMenuItem implements ActionListener {
+    private class PopupItemTarget extends JMenuItem implements ActionListener {
 
-        Node node = null;
-        String target = null;
+        private final Node node;
+        private final String target;
 
         public PopupItemTarget(Node activeNode, String name, int mne) {
             //super(nameWithMnemonic(name, mne), new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/resources/blank.gif", true)));
@@ -198,9 +197,9 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
         }
     }
 
-    protected static class PopupItemAddTarget extends JMenuItem implements ActionListener {
+    private static class PopupItemAddTarget extends JMenuItem implements ActionListener {
 
-        private Node node = null;
+        private final Node node;
 
         public PopupItemAddTarget(Node activeNode) {
             //super(getString("ADD_NEW_TARGET"), new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/resources/AddMakeTargetAction.gif", true))); // NOI18N

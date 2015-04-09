@@ -85,7 +85,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private final ExplorerManager manager;
     private final BeanTreeView btv;
     
-    private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
+    private static final JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
     
     /** Creates new form BrowseFolders */
     public BrowseFolders( SourceGroup[] folders, Project project, String preselectedFileName ) {
@@ -369,7 +369,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         public static final String COMMAND_SELECT = "SELECT"; // NOI18N
         public static final String COMMAND_CANCEL = "CANCEL"; // NOI18N
             
-        private BrowseFolders browsePanel;
+        private final BrowseFolders browsePanel;
         
         private FileObject result;
         

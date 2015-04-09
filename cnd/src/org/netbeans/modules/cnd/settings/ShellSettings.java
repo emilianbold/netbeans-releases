@@ -64,7 +64,7 @@ public class ShellSettings extends SharedClassObject {
     public static final String PROP_DEFSHELLCOMMAND = "defaultShellCommand";//NOI18N
     public static final String PROP_SAVE_ALL = "saveAll";        //NOI18N
     /** The resource bundle for the form editor */
-    public static ResourceBundle bundle;
+    private static ResourceBundle bundle;
 
     /**
      *  Initialize each property.
@@ -92,7 +92,7 @@ public class ShellSettings extends SharedClassObject {
         return new HelpCtx("Welcome_opt_shell_settings");	        //NOI18N // FIXUP
     }
 
-    /** 
+    /**
      * Default Shell Command
      */
     public void setDefaultShellCommand(String dsc) {

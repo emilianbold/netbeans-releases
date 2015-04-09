@@ -73,20 +73,14 @@ public final class CppSettings extends SharedClassObject {
     static final long serialVersionUID = -2942467713237077336L;
 
     private static final String PROP_REPLACEABLE_STRINGS_TABLE = "replaceableStringsTable"; //NOI18N
-    
+
     /** The resource bundle for the form editor */
     private static ResourceBundle bundle;
-    
+
 //    private String path = null;
 
     private static CppSettings cppSettings = null;
 
-    /** Initialize each property */
-    @Override
-    protected void initialize() {
-        super.initialize();
-    }
-    
     /** Return the singleton cppSettings */
     public static CppSettings getDefault() {
         // See IZ 120502
@@ -95,7 +89,7 @@ public final class CppSettings extends SharedClassObject {
         }
         return cppSettings;
     }
-    
+
     /**
      * Sets the replaceable strings table - used during instantiating
      * from template.
@@ -129,7 +123,7 @@ public final class CppSettings extends SharedClassObject {
      */
     public Properties getReplaceableStringsProps() {
         Properties props = new Properties();
-        
+
         try {
             props.load(new StringReader(getReplaceableStringsTable()));
         }
@@ -146,7 +140,7 @@ public final class CppSettings extends SharedClassObject {
     public String displayName () {
         return getString("OPTION_CPP_SETTINGS_NAME"); //NOI18N
     }
-    
+
     public HelpCtx getHelpCtx () {
         return new HelpCtx("Welcome_opt_editing_sources"); //NOI18N
     }
@@ -154,11 +148,11 @@ public final class CppSettings extends SharedClassObject {
     private Preferences getPreferences() {
         return NbPreferences.forModule(CppSettings.class);
     }
-    
+
     public ResourceBundle getBundle() {
         return bundle;
     }
-    
+
     /** @return localized string */
     static String getString(String s) {
         if (bundle == null) {

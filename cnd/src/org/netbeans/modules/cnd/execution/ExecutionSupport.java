@@ -74,7 +74,7 @@ public class ExecutionSupport implements Node.Cookie {
     /** Name of property providing a custom {@link Executor} for a file. */
     public static final String PROP_EXECUTION = "execution"; // NOI18N
     /** entry to be associated with */
-    private MultiDataObject.Entry entry;
+    private final MultiDataObject.Entry entry;
     /**  readOnlyAttrs is name of virtual attribute. This name of virtual attribute 
      * is shared between classes (and should be changed everywhere): 
      * - org.openide.filesystems.DefaultAttributes

@@ -383,7 +383,7 @@ public final class PlatformInfo {
         }
     }
 
-    private static Map<ExecutionEnvironment, PlatformInfo> map =
+    private static final Map<ExecutionEnvironment, PlatformInfo> map =
             new HashMap<ExecutionEnvironment, PlatformInfo>();
 
     public static synchronized PlatformInfo getDefault(ExecutionEnvironment execEnv) {
