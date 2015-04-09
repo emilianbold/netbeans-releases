@@ -478,9 +478,11 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                    } else if (newEntry.getINode()!= oldEntry.getINode()) {
                        updateStat = true;
                        removeCache = true;
-                   } else if (!newEntry.isSameAccess(oldEntry)) {
+                   } 
+                   if (!newEntry.isSameAccess(oldEntry)) {
                        updateStat = true;
-                       removeCache = false;
+                       // removeCache stays as it was: 
+                       // of only r/o-r/w chanegd, no need to remove cache
                        fireChangedRO = true;
                    }
                 } else {
