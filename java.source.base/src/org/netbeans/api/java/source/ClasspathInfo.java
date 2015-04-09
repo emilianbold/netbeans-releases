@@ -78,7 +78,6 @@ import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -90,10 +89,9 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula, Petr Hrebejk
  */
 public final class ClasspathInfo {
-    
-    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
+
     private static final Logger log = Logger.getLogger(ClasspathInfo.class.getName());
-    
+
     static {
         ClasspathInfoAccessor.setINSTANCE(new ClasspathInfoAccessorImpl());
         try {
@@ -102,10 +100,10 @@ public final class ClasspathInfo {
             if (log.isLoggable(Level.SEVERE))
                 log.log(Level.SEVERE, ex.getMessage(), ex);
         }
-    }    
-    
+    }
+
     private final CachingArchiveProvider archiveProvider;
-    
+
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
     private final ClassPath compileClassPath;
@@ -114,7 +112,7 @@ public final class ClasspathInfo {
     private final ClassPath cachedBootClassPath;
     private final ClassPath cachedCompileClassPath;
     private final ClassPath outputClassPath;
-    
+
     private final ClassPathListener cpListener;
     private final boolean useModifiedFiles;
     private final boolean ignoreExcludes;
@@ -123,16 +121,16 @@ public final class ClasspathInfo {
     private final ChangeSupport listenerList;
     private final FileManagerTransaction fmTx;
     private final ProcessorGenerated pgTx;
-    
+
     //@GuardedBy("this")
     private ClassIndex usagesQuery;
-    
+
     /** Creates a new instance of ClasspathInfo (private use the factory methods) */
     private ClasspathInfo(final @NonNull CachingArchiveProvider archiveProvider,
                           final @NonNull ClassPath bootCp,
                           final @NonNull ClassPath compileCp,
-                          final ClassPath srcCp,
-                          final JavaFileFilterImplementation filter,
+                          final @NullAllowed ClassPath srcCp,
+                          final @NullAllowed JavaFileFilterImplementation filter,
                           final boolean backgroundCompilation,
                           final boolean ignoreExcludes,
                           final boolean hasMemoryFileManager,
@@ -152,9 +150,8 @@ public final class ClasspathInfo {
             this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         }
         if (srcCp == null) {
-            this.cachedSrcClassPath = this.srcClassPath = EMPTY_PATH;
+            this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = ClassPath.EMPTY;
             this.cachedAptSrcClassPath = null;
-            this.outputClassPath = EMPTY_PATH;
         } else {
             this.srcClassPath = srcCp;
             final ClassPathImplementation noApt = AptSourcePath.sources(srcCp);
@@ -187,7 +184,7 @@ public final class ClasspathInfo {
             pgTx = ProcessorGenerated.nullWrite();
         }
         assert fmTx != null : "No file manager transaction.";   //NOI18N
-        assert pgTx != null : "No processor generated transaction.";   //NOI18N        
+        assert pgTx != null : "No processor generated transaction.";   //NOI18N
     }
 
     @Override
@@ -200,11 +197,11 @@ public final class ClasspathInfo {
                 cachedBootClassPath,
                 cachedCompileClassPath,
                 cachedSrcClassPath,
-                outputClassPath);        
+                outputClassPath);
     }
 
     @Override
-    public int hashCode() {        
+    public int hashCode() {
         return Arrays.hashCode(toURIs(this.srcClassPath));
     }
 
@@ -229,7 +226,8 @@ public final class ClasspathInfo {
      * @return ClasspathInfo or null if the file does not exist on the
      * local file system or it has no classpath associated
      */
-    public static @NullUnknown ClasspathInfo create (@NonNull final File file) {
+    @NullUnknown
+    public static ClasspathInfo create (@NonNull final File file) {
         if (file == null) {
             throw new IllegalArgumentException ("Cannot pass null as parameter of ClasspathInfo.create(java.io.File)");     //NOI18N
         }
@@ -256,7 +254,8 @@ public final class ClasspathInfo {
      * found.
      * @since 0.42
      */
-    public static @NullUnknown ClasspathInfo create(@NonNull final Document doc) {
+    @NullUnknown
+    public static ClasspathInfo create(@NonNull final Document doc) {
         Parameters.notNull("doc", doc);
         FileObject fileObject = Utilities.getFileObject(doc);
         if (fileObject != null) {
@@ -265,8 +264,28 @@ public final class ClasspathInfo {
         return null;
     }
 
-    private static ClasspathInfo create (final @NonNull FileObject fo,
-            final JavaFileFilterImplementation filter,
+    /** Creates new interface to the compiler
+     * @param fo for which the CompilerInterface should be created
+     */
+    @NonNull
+    public static ClasspathInfo create(@NonNull final FileObject fo) {
+        return create (fo, null, false, false, false, true);
+    }
+
+    @NonNull
+    public static ClasspathInfo create(
+            @NonNull final ClassPath bootPath,
+            @NonNull final ClassPath classPath,
+            @NullAllowed final ClassPath sourcePath) {
+        Parameters.notNull("bootPath", bootPath);       //NOI18N
+        Parameters.notNull("classPath", classPath);     //NOI18N
+        return create (bootPath, classPath, sourcePath, null, false, false, false, true);
+    }
+
+    @NonNull
+    private static ClasspathInfo create (
+            @NonNull final FileObject fo,
+            @NullAllowed final JavaFileFilterImplementation filter,
             final boolean backgroundCompilation,
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
@@ -278,26 +297,18 @@ public final class ClasspathInfo {
         }
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         if (compilePath == null) {
-            compilePath = EMPTY_PATH;
+            compilePath = ClassPath.EMPTY;
         }
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        if (srcPath == null) {
-            srcPath = EMPTY_PATH;
-        }
         return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
-        
-    /** Creates new interface to the compiler
-     * @param fo for which the CompilerInterface should be created
-     */
-    public static @NonNull ClasspathInfo create(@NonNull FileObject fo) {
-        return create (fo, null, false, false, false, true);
-    }
-    
-    private static ClasspathInfo create(final @NonNull ClassPath bootPath,
-            final @NonNull ClassPath classPath,
-            final ClassPath sourcePath,
-            final JavaFileFilterImplementation filter,
+
+    @NonNull
+    private static ClasspathInfo create(
+            @NonNull final ClassPath bootPath,
+            @NonNull final ClassPath classPath,
+            @NullAllowed final ClassPath sourcePath,
+            @NullAllowed final JavaFileFilterImplementation filter,
             final boolean backgroundCompilation,
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
@@ -305,15 +316,9 @@ public final class ClasspathInfo {
         return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath,
                 filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
-    
-    public static @NonNull ClasspathInfo create(@NonNull final ClassPath bootPath, @NonNull final ClassPath classPath, @NullAllowed final ClassPath sourcePath) {
-        Parameters.notNull("bootPath", bootPath);       //NOI18N
-        Parameters.notNull("classPath", classPath);     //NOI18N
-        return create (bootPath, classPath, sourcePath, null, false, false, false, true);
-    }
-       
+
     // Public methods ----------------------------------------------------------
-       
+
     /** Registers ChangeListener which will be notified about the changes in the classpath.
      * @param listener The listener to register.
      */
@@ -341,7 +346,7 @@ public final class ClasspathInfo {
 		return null;
 	}
     }
-    
+
     ClassPath getCachedClassPath (PathKind pathKind) {
         switch( pathKind ) {
 	    case BOOT:
@@ -357,8 +362,8 @@ public final class ClasspathInfo {
 		return null;
 	}
     }
-    
-    
+
+
     public synchronized @NonNull ClassIndex getClassIndex () {
         if ( usagesQuery == null ) {
             usagesQuery = new ClassIndex (
@@ -368,42 +373,42 @@ public final class ClasspathInfo {
         }
         return usagesQuery;
     }
-    
+
     // Package private methods -------------------------------------------------
 
     @NonNull
     private synchronized JavaFileManager createFileManager() {
-            final boolean hasSources = this.cachedSrcClassPath != EMPTY_PATH;
+            final boolean hasSources = this.cachedSrcClassPath != ClassPath.EMPTY;
             final SiblingSource siblings = SiblingSupport.create();
             final JavaFileManager fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? 
+                cachedAptSrcClassPath != null ?
                     new AptSourceFileManager(
-                            this.cachedSrcClassPath, 
-                            this.cachedAptSrcClassPath, 
+                            this.cachedSrcClassPath,
+                            this.cachedAptSrcClassPath,
                             siblings.getProvider(),
                             fmTx
                     ) : null,
-                hasSources ? 
+                hasSources ?
                     new OutputFileManager(
-                            this.archiveProvider, 
-                            this.outputClassPath, 
-                            this.cachedSrcClassPath, 
-                            this.cachedAptSrcClassPath, 
-                            siblings.getProvider(), 
+                            this.archiveProvider,
+                            this.outputClassPath,
+                            this.cachedSrcClassPath,
+                            this.cachedAptSrcClassPath,
+                            siblings.getProvider(),
                             fmTx) : null,
                 this.memoryFileManager,
                 this.pgTx,
                 siblings);
         return fileManager;
     }
-    
-    
+
+
     // Private methods ---------------------------------------------------------
-    
+
     private void fireChangeListenerStateChanged() {
         listenerList.fireChange();
     }
@@ -432,31 +437,31 @@ public final class ClasspathInfo {
     // Innerclasses ------------------------------------------------------------
 
 
-    public static enum PathKind {	
-	BOOT,	
-	COMPILE,	
-	SOURCE,	
+    public static enum PathKind {
+	BOOT,
+	COMPILE,
+	SOURCE,
 	OUTPUT,
-	
+
     }
-    
-    private class ClassPathListener implements PropertyChangeListener {			
+
+    private class ClassPathListener implements PropertyChangeListener {
         @Override
         public void propertyChange (PropertyChangeEvent event) {
-            if (ClassPath.PROP_ROOTS.equals(event.getPropertyName())) {                
+            if (ClassPath.PROP_ROOTS.equals(event.getPropertyName())) {
                 fireChangeListenerStateChanged();
             }
         }
     }
-    
+
     private static class ClasspathInfoAccessorImpl extends ClasspathInfoAccessor {
-        
+
         @Override
         @NonNull
         public JavaFileManager createFileManager(@NonNull final ClasspathInfo cpInfo) {
             return cpInfo.createFileManager();
         }
-        
+
         @Override
         @NonNull
         public FileManagerTransaction getFileManagerTransaction(@NonNull ClasspathInfo cpInfo) {
@@ -466,8 +471,8 @@ public final class ClasspathInfo {
         @Override
         public ClassPath getCachedClassPath(final ClasspathInfo cpInfo, final PathKind kind) {
             return cpInfo.getCachedClassPath(kind);
-        }                
-        
+        }
+
         @Override
         public ClasspathInfo create (final ClassPath bootPath,
                 final ClassPath classPath,
@@ -489,7 +494,7 @@ public final class ClasspathInfo {
                 final boolean useModifiedFiles) {
             return ClasspathInfo.create(fo, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
         }
-                
+
         @Override
         public boolean registerVirtualSource(final ClasspathInfo cpInfo, final InferableJavaFileObject jfo) throws UnsupportedOperationException {
             if (cpInfo.memoryFileManager == null) {

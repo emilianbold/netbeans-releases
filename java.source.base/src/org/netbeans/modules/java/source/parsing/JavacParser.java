@@ -288,7 +288,10 @@ public class JavacParser extends Parser {
             //Recheck ClasspathInfo if still valid
             assert this.file != null;
             assert cpInfo != null;
-            final ClassPath scp = ClassPath.getClassPath(this.file, ClassPath.SOURCE);
+            ClassPath scp = ClassPath.getClassPath(this.file, ClassPath.SOURCE);
+            if (scp == null) {
+                scp = ClassPath.EMPTY;
+            }
             if (scp != cpInfo.getClassPath(PathKind.SOURCE)) {
                 //Revalidate
                 final Project owner = FileOwnerQuery.getOwner(this.file);
@@ -297,7 +300,7 @@ public class JavacParser extends Parser {
                             this.file,
                             owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")"), cpInfo.getClassPath(PathKind.SOURCE),    //NOI18N
                             scp
-                });       
+                });
                 if (this.weakCpListener != null) {
                     cpInfo.removeChangeListener(weakCpListener);
                 }
