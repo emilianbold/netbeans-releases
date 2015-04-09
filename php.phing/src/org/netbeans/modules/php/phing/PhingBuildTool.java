@@ -166,15 +166,11 @@ public final class PhingBuildTool implements BuildToolImplementation {
         return true;
     }
 
-    //~ Inner classes
+    //~ Factories
 
-    public static final class Registration {
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
-        public static BuildToolImplementation forPhpProject(Project project) {
-            return new PhingBuildTool(project);
-        }
-
+    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
+    public static BuildToolImplementation forPhpProject(Project project) {
+        return new PhingBuildTool(project);
     }
 
 }
