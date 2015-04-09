@@ -64,7 +64,7 @@ public class RemoteApiMultipleTestSuite extends RemoteTestSuiteBase {
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         Class[] orig = RemoteApiTest.getTestClasses();
         int mul = 4;
-        List<Class<? extends NativeExecutionBaseTestCase>> res = new ArrayList<Class<? extends NativeExecutionBaseTestCase>>();
+        List<Class<? extends NativeExecutionBaseTestCase>> res = new ArrayList<>();
         for (int i = 0; i < mul; i++) {
             for (int j = 0; j < orig.length; j++) {
                 if (orig[j] != RemoteFileSystemOffilneTestCase.class && orig[j] != ScheduleRefreshParityTestCase.class) {

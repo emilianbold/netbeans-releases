@@ -72,7 +72,7 @@ public class FastPasteAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] nodes) {
-        Set<FileObject> fileObjects = new HashSet<FileObject>();
+        Set<FileObject> fileObjects = new HashSet<>();
         Transferable rf = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         DataFlavor[] flavors = rf.getTransferDataFlavors();
         for (DataFlavor fl : flavors) {

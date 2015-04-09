@@ -78,7 +78,7 @@ public class RemoteFileSystemParallelLsTestCase extends RemoteFileSystemParallel
         final String absPath = "/usr/include";
 
         final AtomicLong size = new AtomicLong(-1);
-        final AtomicReference<FileObject> fileObjectRef = new AtomicReference<FileObject>();
+        final AtomicReference<FileObject> fileObjectRef = new AtomicReference<>();
 
         class Worker extends ParallelTestWorker {
 

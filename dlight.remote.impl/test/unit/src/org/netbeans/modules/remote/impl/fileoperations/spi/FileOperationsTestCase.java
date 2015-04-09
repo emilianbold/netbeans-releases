@@ -300,7 +300,7 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         ProcessBuilder pb = fileOperations.createProcessBuilder(file);
         pb.setExecutable("chmod");
         pb.setWorkingDirectory(remoteDir);
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("oag-w");
         list.add(name);
         pb.setArguments(list);

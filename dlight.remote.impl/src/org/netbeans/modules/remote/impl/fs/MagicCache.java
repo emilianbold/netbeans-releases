@@ -79,7 +79,7 @@ public class MagicCache {
     
     public synchronized byte[] get(String fileName) {
         if (cache == null) {
-            cache = new HashMap<String, byte[]>();
+            cache = new HashMap<>();
             if (!readCache()) {
                 cache = null;
                 return null;

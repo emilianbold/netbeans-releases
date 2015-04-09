@@ -67,9 +67,9 @@ public class RemoteFileSystemManager {
     private final Object lock = new Object();
     
     private final Map<ExecutionEnvironment, SoftReference<RemoteFileSystem>> fileSystems =
-            new HashMap<ExecutionEnvironment, SoftReference<RemoteFileSystem>>();
+            new HashMap<>();
 
-    private final List<FileChangeListener> globalListsners = new ArrayList<FileChangeListener>();
+    private final List<FileChangeListener> globalListsners = new ArrayList<>();
 
     public static RemoteFileSystemManager getInstance() {
         return INSTANCE;
@@ -97,7 +97,7 @@ public class RemoteFileSystemManager {
             if (result == null) {
                 try {
                     result = new RemoteFileSystem(execEnv);
-                    fileSystems.put(execEnv, new SoftReference<RemoteFileSystem>(result));
+                    fileSystems.put(execEnv, new SoftReference<>(result));
                     for (FileChangeListener listener : globalListsners) {
                         result.addFileChangeListener(listener);
                     }

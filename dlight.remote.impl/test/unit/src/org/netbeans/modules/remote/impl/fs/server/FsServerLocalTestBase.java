@@ -196,7 +196,7 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         assertTrue("Should be a directory: " + base, base.isDirectory());
         System.out.printf("Gathering %s subdirectories\n", base.getAbsolutePath());
         long time = System.currentTimeMillis();
-        List<File> l = new ArrayList<File>();
+        List<File> l = new ArrayList<>();
         findDirectories(base, l, new HashSet<File>());
         System.out.printf("Gathering %s subdirectories took %d seconds\n", 
                 base.getAbsolutePath(),
@@ -247,7 +247,7 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
                     break;
                 case TIME:
                     processBuilder.setExecutable("/usr/bin/time");
-                    List<String> args = new ArrayList<String>(params.length + 2);
+                    List<String> args = new ArrayList<>(params.length + 2);
                     if (HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getOSFamily() == OSFamily.LINUX) {
                         args.add("--portability");
                     }
@@ -312,7 +312,7 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         private int total;
 
         public CyclicStringBuffer(int capacity) {
-            this.lines = new ArrayList<String>(capacity);
+            this.lines = new ArrayList<>(capacity);
             this.capacity = capacity;
             this.last = -1;
         }
@@ -335,7 +335,7 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         
         public List<String> getLines() {           
             synchronized (lock) {
-                List<String> result = new ArrayList<String>(Math.max(total, lines.size()));
+                List<String> result = new ArrayList<>(Math.max(total, lines.size()));
                 if (total > lines.size()) { // wrapped
                     for (int i = last + 1; i < lines.size(); i++) {
                         result.add(lines.get(i));

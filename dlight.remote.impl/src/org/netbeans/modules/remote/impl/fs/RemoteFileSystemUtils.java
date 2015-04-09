@@ -400,7 +400,7 @@ public class RemoteFileSystemUtils {
             if (env.equals(((RemoteFileObject) target).getExecutionEnvironment())
                     && RemoteFileSystemTransport.canCopy(env, from, newPath)) {
                 try {
-                    List<IOException> subdirectoryExceptions = new ArrayList<IOException>();
+                    List<IOException> subdirectoryExceptions = new ArrayList<>();
                     DirEntryList entries = RemoteFileSystemTransport.copy(env, from, newPath, subdirectoryExceptions);
                     ((RemoteFileObject) target).getImplementor().postDeleteOrCreateChild(null, entries);
                     FileObject fo = target.getFileObject(newNameExt);

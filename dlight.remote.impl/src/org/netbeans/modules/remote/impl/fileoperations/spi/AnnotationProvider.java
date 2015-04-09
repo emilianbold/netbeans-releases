@@ -60,7 +60,7 @@ abstract public class AnnotationProvider {
 
     private static AnnotationProvider defaultProvider;
     /** listeners */
-    private final List<FileStatusListener> fsStatusListener = new ArrayList<FileStatusListener>();
+    private final List<FileStatusListener> fsStatusListener = new ArrayList<>();
     /** lock for modification of listeners */
     private static final Object lock = new Object();
 
@@ -153,7 +153,7 @@ abstract public class AnnotationProvider {
      * @param event The event to be fired
      */
     protected final void fireFileStatusChanged(FileStatusEvent event) {
-        List<FileStatusListener> listeners = new ArrayList<FileStatusListener>();
+        List<FileStatusListener> listeners = new ArrayList<>();
         synchronized (lock) {
             listeners.addAll(fsStatusListener);
         }

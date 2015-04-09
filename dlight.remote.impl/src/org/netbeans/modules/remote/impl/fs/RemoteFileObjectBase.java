@@ -84,7 +84,7 @@ public abstract class RemoteFileObjectBase {
     private final RemoteFileObjectBase parent;
     private volatile String remotePath;
     private final File cache;
-    private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
+    private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<>();
     private FileLock lock;
     private final Object instanceLock = new Object();
     public static final boolean USE_VCS;
@@ -223,7 +223,7 @@ public abstract class RemoteFileObjectBase {
         } else if (fo2 == null || fo2.listeners.isEmpty()) {
             return fo1.getListeners();
         } else {
-            List<FileChangeListener> result = new ArrayList<FileChangeListener>(fo1.listeners.size() + fo2.listeners.size());
+            List<FileChangeListener> result = new ArrayList<>(fo1.listeners.size() + fo2.listeners.size());
             result.addAll(fo1.listeners);
             result.addAll(fo2.listeners);
             return Collections.enumeration(result);
@@ -386,7 +386,7 @@ public abstract class RemoteFileObjectBase {
         if (!recursive) {
             return getExistentChildren();
         }
-        List<RemoteFileObjectBase> children = new LinkedList<RemoteFileObjectBase>();
+        List<RemoteFileObjectBase> children = new LinkedList<>();
         populateWithChildren(this, children);
         children.remove(this);
         return children.toArray(new RemoteFileObjectBase[0]);
@@ -853,7 +853,7 @@ public abstract class RemoteFileObjectBase {
 
 
     private Map<String,Object> getAttributesMap() throws IOException {
-        Map<String,Object> map = new HashMap<String,Object>();
+        Map<String,Object> map = new HashMap<>();
         Enumeration<String> attributes = getAttributes();
         while(attributes.hasMoreElements()) {
             String attr = attributes.nextElement();

@@ -60,7 +60,7 @@ import org.openide.filesystems.FileSystem;
  */
 //@org.openide.util.lookup.ServiceProvider(service = FilesystemInterceptorProvider.class, position = 100)
 public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorProvider {
-    private final Map<FileSystem, FilesystemInterceptor> map = new HashMap<FileSystem, FilesystemInterceptor>();
+    private final Map<FileSystem, FilesystemInterceptor> map = new HashMap<>();
 
     @Override
     public synchronized FilesystemInterceptor getFilesystemInterceptor(FileSystem fs) {
@@ -77,27 +77,27 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
         private final ExecutionEnvironment env;
         
         
-        private final List<FileProxyI>    beforeCreateFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    doCreateFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    createdFiles = new ArrayList<FileProxyI>();
+        private final List<FileProxyI>    beforeCreateFiles = new ArrayList<>();
+        private final List<FileProxyI>    doCreateFiles = new ArrayList<>();
+        private final List<FileProxyI>    createdFiles = new ArrayList<>();
         
-        private final List<FileProxyI>    beforeDeleteFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    doDeleteFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    deletedFiles = new ArrayList<FileProxyI>();
+        private final List<FileProxyI>    beforeDeleteFiles = new ArrayList<>();
+        private final List<FileProxyI>    doDeleteFiles = new ArrayList<>();
+        private final List<FileProxyI>    deletedFiles = new ArrayList<>();
         
-        private final List<FileProxyI>    beforeMoveFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    afterMoveFiles = new ArrayList<FileProxyI>();
+        private final List<FileProxyI>    beforeMoveFiles = new ArrayList<>();
+        private final List<FileProxyI>    afterMoveFiles = new ArrayList<>();
         
-        private final List<FileProxyI>    beforeCopyFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    afterCopyFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    doCopyFiles = new ArrayList<FileProxyI>();
+        private final List<FileProxyI>    beforeCopyFiles = new ArrayList<>();
+        private final List<FileProxyI>    afterCopyFiles = new ArrayList<>();
+        private final List<FileProxyI>    doCopyFiles = new ArrayList<>();
         
-        private final List<FileProxyI>    beforeEditFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    beforeChangeFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    afterChangeFiles = new ArrayList<FileProxyI>();
+        private final List<FileProxyI>    beforeEditFiles = new ArrayList<>();
+        private final List<FileProxyI>    beforeChangeFiles = new ArrayList<>();
+        private final List<FileProxyI>    afterChangeFiles = new ArrayList<>();
         
-        private final List<FileProxyI>    isMutableFiles = new ArrayList<FileProxyI>();
-        private final List<FileProxyI>    refreshRecursivelyFiles = new ArrayList<FileProxyI>();
+        private final List<FileProxyI>    isMutableFiles = new ArrayList<>();
+        private final List<FileProxyI>    refreshRecursivelyFiles = new ArrayList<>();
         
         public FilesystemInterceptorImpl(FileSystem fs) {
             this.fs = fs;

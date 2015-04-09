@@ -93,7 +93,7 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
         private final static int cacheLifetime = 1000 * 60 * 10; // 10 min
         private final ExecutionEnvironment env;
         private String homeDir = null;
-        private final LinkedList<CachedValue> cache = new LinkedList<CachedValue>();
+        private final LinkedList<CachedValue> cache = new LinkedList<>();
         private final Task cleanUpTask;
 
         public Provider(final ExecutionEnvironment env) throws IOException {
@@ -115,7 +115,7 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
             boolean absolutePaths = false;
 
             if ("~".equals(str) || ".".equals(str)) { // NOI18N
-                List<String> dir = new ArrayList<String>();
+                List<String> dir = new ArrayList<>();
 
                 if (".".equals(str) && env.isLocal()) { // NOI18N
                     dir.add(new File("").getAbsolutePath() + '/'); // NOI18N
@@ -142,7 +142,7 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
                 return Collections.<String>emptyList();
             }
 
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
 
             int idx = str.lastIndexOf('/') + 1;
             String dir = str.substring(0, idx);
@@ -174,7 +174,7 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
                 }
             }
 
-            List<String> content = new ArrayList<String>();
+            List<String> content = new ArrayList<>();
 
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable("/bin/ls").setArguments("-1FL", dir); // NOI18N

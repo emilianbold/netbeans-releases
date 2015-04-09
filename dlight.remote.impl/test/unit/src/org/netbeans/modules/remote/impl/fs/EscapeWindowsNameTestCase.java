@@ -102,7 +102,7 @@ public class EscapeWindowsNameTestCase extends NativeExecutionBaseTestCase {
             checkEscapedDifferUnescapedSame("file" + c);
             checkEscapedDifferUnescapedSame("file." + c);
         }
-        Map<String, String> escpedToOrig = new HashMap<String, String>();
+        Map<String, String> escpedToOrig = new HashMap<>();
         for (char c : reserved) {
             String orig = "xxx" + c + "yyy";
             String escaped = RemoteFileSystemUtils.escapeFileName(orig);

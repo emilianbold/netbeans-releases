@@ -242,7 +242,7 @@ public class PerformanceTestCase extends RemoteFileTestBase {
         }
 
         System.err.printf("### Recursing locally %s\n", toString(paths));
-        List<IOException> localExceptions = new ArrayList<IOException>();
+        List<IOException> localExceptions = new ArrayList<>();
         Counter localCounter = new Counter();
         long localTime = System.currentTimeMillis();
         for (FileObject localBaseDirFO : localFileObjects) {
@@ -251,7 +251,7 @@ public class PerformanceTestCase extends RemoteFileTestBase {
         localTime = System.currentTimeMillis() - localTime;
 
         System.err.printf("### Recursing remotely %s\n", toString(paths));
-        List<IOException> remoteExceptions = new ArrayList<IOException>();
+        List<IOException> remoteExceptions = new ArrayList<>();
         Counter remoteCounter = new Counter();
         long remoteTime = System.currentTimeMillis();
         for (FileObject remoteBaseDirFO : remoteFileObjects) {

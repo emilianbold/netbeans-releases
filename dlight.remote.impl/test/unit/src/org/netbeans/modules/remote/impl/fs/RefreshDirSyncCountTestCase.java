@@ -118,7 +118,7 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
     }
     
     private static Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
-        Collection<RemoteFileObjectBase> result = new HashSet<RemoteFileObjectBase>();
+        Collection<RemoteFileObjectBase> result = new HashSet<>();
         for (RemoteFileObjectBase fo : fileObjects) {
             // Don't call isValid() or isFolder() - they might be SLOW!
             if (isDirectoryXXX(fo)) {

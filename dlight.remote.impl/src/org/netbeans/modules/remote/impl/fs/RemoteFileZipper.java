@@ -64,7 +64,7 @@ public class RemoteFileZipper {
     private final ExecutionEnvironment execEnv;
     private final RequestProcessor rp;
     
-    private final Map<String, Worker> workers = new HashMap<String, Worker>();
+    private final Map<String, Worker> workers = new HashMap<>();
     private final Object workersLock = new Object();
 
     public RemoteFileZipper(ExecutionEnvironment execEnv) {

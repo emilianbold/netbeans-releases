@@ -95,7 +95,7 @@ import org.openide.util.NotImplementedException;
     private final ExecutionEnvironment env;
     
     private final Object lock = new Object();
-    private final LinkedList<Package> packages = new LinkedList<Package>();
+    private final LinkedList<Package> packages = new LinkedList<>();
     private ExecutionException exception = null;
     
     public FSSResponse(FSSRequest request, Disposer<FSSResponse> disposer, Listener listener, ExecutionEnvironment env) {

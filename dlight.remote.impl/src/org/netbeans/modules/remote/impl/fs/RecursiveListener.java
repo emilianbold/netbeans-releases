@@ -85,7 +85,7 @@ implements FileChangeListener {
                 final FileSystem fileSystem = source.getFileSystem();
                 source.getFileSystem().setInsideVCS(true);
                 FilesystemInterceptor interseptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
-                LinkedList<FileProxyI> list = new LinkedList<FileProxyI>();
+                LinkedList<FileProxyI> list = new LinkedList<>();
                 if (interseptor != null) {
                     long tc = interseptor.listFiles(FilesystemInterceptorProvider.toFileProxy(source), previous, list);
                 }

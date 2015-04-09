@@ -155,7 +155,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
             res.cancel(true);
             throw ex;
         }
-        List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
+        List<DirEntry> newEntries = new ArrayList<>(infos.length);
         for (StatInfo statInfo : infos) {
             // filtering of "." and ".." is up to provider now
             newEntries.add(DirEntryImpl.create(statInfo, execEnv));
