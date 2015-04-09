@@ -797,4 +797,14 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
     
+    public void testMultipleAnds() {
+        String source = ".heading {\n"
+                + "    &&--type-small {\n"
+                + "        font-size: 15px;\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
 }
