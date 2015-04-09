@@ -115,7 +115,7 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         if (phingBuildTool == null) {
             return this;
         }
-        if (!phingBuildTool.getBuildXml().exists()) {
+        if (!phingBuildTool.isEnabled()) {
             return this;
         }
         return new RunPhingTargetAction(contextProject);
