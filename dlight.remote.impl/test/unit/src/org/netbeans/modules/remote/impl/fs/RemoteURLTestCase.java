@@ -49,6 +49,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import junit.framework.Test;
@@ -245,7 +246,77 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
             removeRemoteDirIfNotNull(remoteBaseDir);
         }
     }
+    
+    private void doTestPathWithSpecialCharacters(char[] chars) throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        String remoteBaseDir = null;
+        try {
+            remoteBaseDir = mkTempAndRefreshParent(true);
+            FileObject remoteBaseDirFO = getFileObject(remoteBaseDir);
+            for (char c : chars) {
+                if (c == '\n' || c == '\r'  || c == '"' || c == '\'' 
+                        || c == '$' || c == '\\' || c == '`') {
+                    // We fail to create such files so far.
+                    // That's because we use "touch" command when creating a plain file.
+                    // We could use fs_server for plain file creation, then we would be able to do this.
+                    // The querstion is whether it's worth doing that :)
+                    continue;
+                }
+                String name = "file" + c + "with" + c;
+                FileObject fo = remoteBaseDirFO.createData(name);
+                assertNotNull(fo);
+                URL url = fo.toURL();
+                try {
+                    URI uri = fo.toURI();
+                } catch (Exception ex) {
+                    throw new Exception("Error converting path with '" + c + "' to URI", ex);
+                }                
+                FileObject fo2 = URLMapper.findFileObject(url);
+                assertEquals("File objects should be equal", fo, fo2);
+                //assertTrue("File objects should be the same instance: " + fo + " and " + fo2, fo == fo2);
+            }
+        } finally {
+            removeRemoteDirIfNotNull(remoteBaseDir);
+        }
+    }
+    
+    @ForAllEnvironments
+    public void testUrlForPathWithReserved() throws Exception {
+        doTestPathWithSpecialCharacters(new char[] {
+            ';', /*'/',*/ '?', ':', '@', '&', '=', '+', '$', ','
+        });
+    }
 
+    @ForAllEnvironments
+    public void testUrlForPathWithMark() throws Exception {
+        doTestPathWithSpecialCharacters(new char[] {
+            '-', '_', '.', '!', '~', '*', '\'', '(', ')'
+        });
+    }
+    
+    @ForAllEnvironments
+    public void testUrlForPathWithDelims() throws Exception {
+        doTestPathWithSpecialCharacters(new char[] {
+            '<', '>', '#', '%', '"'
+        });
+    }
+    
+    @ForAllEnvironments
+    public void testUrlForPathWithUnwise() throws Exception {
+        doTestPathWithSpecialCharacters(new char[] {
+            '{', '}', '|', '\\', '^', '[', ']', '`'
+        });
+    }
+    
+    @ForAllEnvironments
+    public void testUrlForPathWithControl() throws Exception {
+        doTestPathWithSpecialCharacters(new char[] {
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF,
+            0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+            0x7F
+        });
+    }
+    
 //    @ForAllEnvironments
 //    public void testNewFile() throws Exception {
 //        String absPath = "/usr/include/stdio.h";
