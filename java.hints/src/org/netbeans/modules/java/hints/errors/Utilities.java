@@ -1728,9 +1728,6 @@ public class Utilities {
             CompilationInfo ci, TreePath invPath, 
             TreePath origPath,
             Tree sel, TreePath valPath, String customPrefix) {
-        if (customPrefix == null) {
-            // typecast to the valPath's own type. It's redundant, but 
-        }
         CharSequence source = ci.getSnapshot().getText();
         Element e = ci.getTrees().getElement(invPath);
         if (!(e instanceof ExecutableElement)) {
