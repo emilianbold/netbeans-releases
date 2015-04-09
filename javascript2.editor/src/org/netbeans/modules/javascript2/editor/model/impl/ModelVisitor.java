@@ -2327,6 +2327,7 @@ public class ModelVisitor extends PathNodeVisitor {
        return  (getPath().size() > pathIndex + 4 && getPreviousFromPath(pathIndex) instanceof FunctionNode
                     && getPreviousFromPath(pathIndex + 1) instanceof ReferenceNode
                     && getPreviousFromPath(pathIndex + 2) instanceof CallNode
+                    && ((CallNode)getPreviousFromPath(pathIndex + 2)).getFunction().equals(getPreviousFromPath(pathIndex + 1))
                     && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
                     && (getPreviousFromPath(pathIndex + 4) instanceof BinaryNode
                         || getPreviousFromPath(pathIndex + 4) instanceof VarNode));

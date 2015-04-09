@@ -94,6 +94,10 @@ public class CompletionContextFinder {
         Token<? extends JsTokenId> token = ts.token();
         JsTokenId tokenId =token.id();
         
+        if (tokenId == JsTokenId.DOC_COMMENT) {
+            return CompletionContext.DOCUMENTATION;
+        }
+        
         if (tokenId == JsTokenId.OPERATOR_DOT && ts.moveNext()) {
             ts.movePrevious();
             ts.movePrevious();
