@@ -206,11 +206,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             } else {
                 throw new IOException("Unexpected package kind: " + pkg.getKind()); // NOI18N
             }
-        } catch (ConnectException ex) {
-            throw new IOException(ex);
-        } catch (CancellationException ex) {
-            throw new IOException(ex);
-        } catch (InterruptedException ex) {
+        } catch (ConnectException | CancellationException | InterruptedException ex) {
             throw new IOException(ex);
         } catch (ExecutionException ex) {
             if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -540,13 +536,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 assert pkg.getKind() == FSSResponseKind.FS_RSP_LS;
             }
             return readEntries(response, path, request.getId(), dirReadCnt);
-        } catch (ConnectException ex) {
-            throw new IOException(ex);
-        } catch (CancellationException ex) {
-            throw new IOException(ex);
-        } catch (InterruptedException ex) {
-            throw new IOException(ex);
-        } catch (ExecutionException ex) {
+        } catch (ConnectException | CancellationException | InterruptedException | ExecutionException ex) {
             throw new IOException(ex);
         } finally {
             RemoteStatistics.stopChannelActivity(activityID, 0);
@@ -629,9 +619,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             if (useListener) {
                 try {
                     sendRequest();
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                } catch (ExecutionException ex) {
+                } catch (IOException | ExecutionException ex) {
                     ex.printStackTrace(System.err);
                 } catch (CancellationException ex) {
                     // don't log CancellationException
@@ -746,9 +734,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 synchronized (lock) {
                     cache.clear();
                 }
-            } catch (ConnectException ex) {
-                ex.printStackTrace(System.err);
-            } catch (ExecutionException ex) {
+            } catch (ConnectException | ExecutionException ex) {
                 ex.printStackTrace(System.err);
             } finally {
                 FSSResponse r;

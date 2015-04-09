@@ -542,14 +542,10 @@ public abstract class RemoteFileObjectBase {
     /*package*/ void nonRecursiveRefresh() {
         try {
             refreshImpl(false, null, true, RefreshMode.DEFAULT);
-        } catch (ConnectException ex) {
+        } catch (ConnectException | InterruptedException | CancellationException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.info(ex, this);
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (CancellationException ex) {
-            RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
             RemoteLogger.info(ex, this);
         }
@@ -558,14 +554,10 @@ public abstract class RemoteFileObjectBase {
     public final void refresh(boolean expected) {
         try {
             refreshImpl(true, null, expected, RefreshMode.DEFAULT);
-        } catch (ConnectException ex) {
+        } catch (ConnectException | InterruptedException | CancellationException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.info(ex, this);
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (CancellationException ex) {
-            RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
             RemoteLogger.info(ex, this);
         }

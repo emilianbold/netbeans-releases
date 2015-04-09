@@ -341,17 +341,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             }
 
             //getParent().ensureChildSync(this);
-        } catch (ConnectException ex) {
+        } catch (ConnectException | CancellationException ex) {
+            // TODO: do we need this with CancelletionException? 
+            // unfortunately CancellationException is RuntimeException, so I'm not sure
             return new ByteArrayInputStream(new byte[]{});
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException | ExecutionException ex) {
             throw newFileNotFoundException(ex);
-        } catch (InterruptedException ex) {
-            throw newFileNotFoundException(ex);
-        } catch (ExecutionException ex) {
-            throw newFileNotFoundException(ex);
-        } catch (CancellationException ex) {
-            // TODO: do we need this? unfortunately CancellationException is RuntimeException, so I'm not sure
-            return new ByteArrayInputStream(new byte[]{});
         }
     }
 

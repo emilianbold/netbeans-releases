@@ -88,9 +88,7 @@ public class FastPasteAction extends CookieAction {
                             }
                         }
                     }
-                } catch (UnsupportedFlavorException ex) {
-                    RemoteLogger.fine(ex);
-                } catch (IOException ex) {
+                } catch (UnsupportedFlavorException | IOException ex) {
                     RemoteLogger.fine(ex);
                 }
             }
@@ -167,9 +165,7 @@ public class FastPasteAction extends CookieAction {
                             }
                         }
                     }
-                } catch (UnsupportedFlavorException ex) {
-                    RemoteLogger.fine(ex);
-                } catch (IOException ex) {
+                } catch (UnsupportedFlavorException | IOException ex) {
                     RemoteLogger.fine(ex);
                 }
             }

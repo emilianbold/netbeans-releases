@@ -137,13 +137,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return entry;
         } catch (ConnectException ex) {
             throw ex;
-        } catch (InterruptedIOException ex) {
-            RemoteLogger.finest(ex, this);
-            return null; // don't report
-        } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex, this);
-            return null; // don't report
-        } catch (InterruptedException ex) {
+        } catch (InterruptedIOException | ExecutionException | InterruptedException ex) {
             RemoteLogger.finest(ex, this);
             return null; // don't report
         } catch (CancellationException ex) {
@@ -233,9 +227,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 DirectoryStorage ds = refreshDirectoryStorage(childNameExt, false); // it will fire events itself
             } catch (ConnectException ex) {
                 RemoteLogger.getInstance().log(Level.INFO, "Error post removing/creating child " + child, ex);
-            } catch (IOException ex) {
-                RemoteLogger.finest(ex, this);
-            } catch (ExecutionException ex) {
+            } catch (IOException | ExecutionException ex) {
                 RemoteLogger.finest(ex, this);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -410,24 +402,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return null;
             }
             return getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
-            return null;
-        } catch (InterruptedIOException ex) {
-            RemoteLogger.finest(ex, this);
-            return null;
-        } catch (CancellationException ex) {
-            RemoteLogger.finest(ex, this);
-            return null;
-        } catch (ExecutionException ex) {
+        } catch (InterruptedException | InterruptedIOException | CancellationException 
+                | ExecutionException | FileNotFoundException ex) {
             RemoteLogger.finest(ex, this);
             return null;
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
             setFlag(CONNECTION_ISSUES, true);
-            RemoteLogger.finest(ex, this);
-            return null;
-        } catch (FileNotFoundException ex) {
             RemoteLogger.finest(ex, this);
             return null;
         } catch (IOException ex) {
@@ -515,27 +496,20 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 childrenFO[i] = getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
             }
             return childrenFO;
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | InterruptedIOException | 
+                FileNotFoundException | CancellationException ex) {
             // don't report, this just means that we aren't connected
             // or just interrupted (for example by FileChooser UI)
-            RemoteLogger.finest(ex, this);
-        } catch (InterruptedIOException ex) {
-            // don't report, for example FileChooser UI can interrupt us
+            // or cancelled
             RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
             RemoteLogger.finest(ex, this);
-            // should we report it?
-        } catch (ConnectException ex) {
+            // should we report ExecutionException?
             // don't report, this just means that we aren't connected
             setFlag(CONNECTION_ISSUES, true);
             RemoteLogger.finest(ex, this);
-        } catch (FileNotFoundException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (IOException ex) {
+        }catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            // never report CancellationException
-            RemoteLogger.finest(ex, this);
         }
         return new RemoteFileObject[0];
     }
@@ -815,9 +789,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 newEntries = readEntries(storage, true, newNameExt);
             } catch (FileNotFoundException ex) {
                 throw ex;
-            } catch (IOException ex) {
-                problem = ex;
-            } catch (ExecutionException ex) {
+            } catch (IOException | ExecutionException ex) {
                 problem = ex;
             }
             if (problem != null) {
@@ -1156,9 +1128,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 newEntries = readEntries(storage, forceRefresh, childName);
             }  catch (FileNotFoundException ex) {
                 throw ex;
-            }  catch (IOException ex) {
-                problem = ex;
-            }  catch (ExecutionException ex) {
+            }  catch (IOException | ExecutionException ex) {
                 problem = ex;
             }
             if (problem != null) {
@@ -1601,10 +1571,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
                         "EXC_CanNotDownload", getDisplayName(child.getPath()), errorWriter.toString())); //NOI18N
             }
-        } catch (InterruptedException ex) {
-            child.getCache().delete();
-            throw ex;
-        } catch (ExecutionException ex) {
+        } catch (InterruptedException | ExecutionException ex) {
             child.getCache().delete();
             throw ex;
         } finally {
@@ -1744,11 +1711,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.finest(ex, this);
-        } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (CancellationException ex) {
+        } catch (ExecutionException | InterruptedException | CancellationException ex) {
             RemoteLogger.finest(ex, this);
         }
         return null;

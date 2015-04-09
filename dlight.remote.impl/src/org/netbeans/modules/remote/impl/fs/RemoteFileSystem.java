@@ -1094,9 +1094,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             } catch (ConnectException ex) {
                 RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
                 ConnectionNotifier.addTask(execEnv, this);
-            } catch (InterruptedException ex) {
-                RemoteLogger.finest(ex);
-            } catch (InterruptedIOException ex) {
+            } catch (InterruptedException | InterruptedIOException ex) {
                 RemoteLogger.finest(ex);
             } catch (IOException ex) {
                 RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
