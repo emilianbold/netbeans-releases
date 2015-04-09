@@ -59,18 +59,15 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**

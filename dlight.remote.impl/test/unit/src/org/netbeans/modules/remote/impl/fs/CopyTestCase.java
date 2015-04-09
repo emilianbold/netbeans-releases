@@ -41,17 +41,11 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.util.Date;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;

@@ -60,7 +60,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.FileStatistics;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;

@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**

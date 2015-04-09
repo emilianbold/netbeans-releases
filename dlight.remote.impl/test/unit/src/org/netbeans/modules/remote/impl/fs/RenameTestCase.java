@@ -45,7 +45,6 @@ import java.io.File;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;

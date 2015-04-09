@@ -45,7 +45,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -59,7 +58,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.util.datatransfer.PasteType;
 
 /**
  *

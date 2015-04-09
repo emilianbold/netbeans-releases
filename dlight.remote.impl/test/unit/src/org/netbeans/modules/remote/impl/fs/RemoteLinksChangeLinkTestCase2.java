@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
-import org.openide.util.Exceptions;
 
 /**
  * There hardly is a way to unit test remote operations.
