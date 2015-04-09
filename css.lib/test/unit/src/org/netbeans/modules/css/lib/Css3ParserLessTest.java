@@ -807,4 +807,15 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
     
+    public void testTwoClassesWithoutSpace() {
+        String source = "body {\n"
+                + "    .foo.bar {\n"
+                + "        // any css statement\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+         TestUtil.dumpResult(result);
+        assertResultOK(result);
+    }
+    
 }
