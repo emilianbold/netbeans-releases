@@ -108,6 +108,7 @@ public class GlobalOptionSet extends OptionSetSupport {
     } 
 
 
+    @Override
     public OptionSet makeCopy() {
 	return new GlobalOptionSet(this);
     }
@@ -129,6 +130,7 @@ public class GlobalOptionSet extends OptionSetSupport {
 	} 
 
 	// interface UserdirFile.Writer
+        @Override
 	public void writeTo(OutputStream os)
 	    throws IOException, FileStateInvalidException {
 
@@ -141,12 +143,14 @@ public class GlobalOptionSet extends OptionSetSupport {
 	}
 
 	// interface XMLEncoder
+        @Override
 	public void encode(XMLEncoderStream xes) {
 	    encoder.encode(xes);
 	}
     }
 
     // interface OptionSet
+    @Override
     public void save() {
 	if (!needSave) {
 	    return;
@@ -170,6 +174,7 @@ public class GlobalOptionSet extends OptionSetSupport {
 	} 
 
 	// interface UserdirFile.Reader
+        @Override
 	public void readFrom(InputStream is) throws IOException {
 	    read(is, "global debugger options"); // NOI18N
 	}
@@ -180,23 +185,28 @@ public class GlobalOptionSet extends OptionSetSupport {
 	}
 
 	// interface XMLDecoder
+        @Override
 	protected String tag() {
 	    return null;
 	}
 
 	// interface XMLDecoder
+        @Override
 	public void start(Attributes atts) {
 	}
 
 	// interface XMLDecoder
+        @Override
 	public void end() {
 	}
 
 	// interface XMLDecoder
+        @Override
 	public void startElement(String name, Attributes atts) {
 	}
 		
 	// interface XMLDecoder
+        @Override
 	public void endElement(String name, String currentText) {
 	}
     }
@@ -209,6 +219,7 @@ public class GlobalOptionSet extends OptionSetSupport {
 	new UserdirFile(moduleFolderName, folderName, filename);
 
     // interface OptionSet
+    @Override
     public void open() {
 	if (!needOpen) {
 	    return;
@@ -226,11 +237,13 @@ public class GlobalOptionSet extends OptionSetSupport {
     }
 
     // interface OptionSet
+    @Override
     public String tag() {
 	return "GlobalDebugOptions";		// NOI18N
     }
 
     // interface OptionSet
+    @Override
     public String description() {
 	return "global debugger options";	// NOI18N
     }

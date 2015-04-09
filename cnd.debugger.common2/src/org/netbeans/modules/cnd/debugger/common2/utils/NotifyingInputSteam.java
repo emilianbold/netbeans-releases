@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
 import java.io.InputStream;
-import java.io.PipedInputStream;
 import java.io.IOException;
 
 public class NotifyingInputSteam extends InputStream {
@@ -84,6 +83,7 @@ public class NotifyingInputSteam extends InputStream {
 	this.delegate = delegate;
     }
 
+    @Override
     public int read() throws IOException {
 	int c;
 	c = delegate.read();
@@ -91,22 +91,27 @@ public class NotifyingInputSteam extends InputStream {
 	return c;
     }
 
+    @Override
     public int 	available() throws IOException {
 	return delegate.available();
     }
 
+    @Override
     public  void close() throws IOException  {
 	delegate.close();
     }
 
+    @Override
     public void mark(int readlimit) {
 	delegate.mark(readlimit);
     }
 
+    @Override
     public boolean markSupported() {
 	return delegate.markSupported();
     }
 
+    @Override
     public int 	read(byte[] b) throws IOException {
 	int c;
 	c = delegate.read(b);
@@ -114,6 +119,7 @@ public class NotifyingInputSteam extends InputStream {
 	return c;
     }
 
+    @Override
     public int 	read(byte[] b, int off, int len) throws IOException {
 	int c;
 	c = delegate.read(b, off, len);
@@ -121,10 +127,12 @@ public class NotifyingInputSteam extends InputStream {
 	return c;
     }
 
+    @Override
     public void	reset() throws IOException {
 	delegate.reset();
     }
 
+    @Override
     public long skip(long n)  throws IOException {
 	return delegate.skip(n);
     }

@@ -130,11 +130,13 @@ public final class Handler implements ListMapItem {
     }
 
     // interface Mappable
+    @Override
     public boolean hasKey() {
 	return id > 0;
     }
 
     // interface Mappable
+    @Override
     public Object getKey() {
 	return id;
     }

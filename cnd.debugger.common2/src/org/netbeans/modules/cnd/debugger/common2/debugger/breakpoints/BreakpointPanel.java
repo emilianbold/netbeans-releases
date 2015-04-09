@@ -239,6 +239,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 	    adjustScript();
 
 	    actionCombo.addActionListener(new java.awt.event.ActionListener() {
+                @Override
 		public void actionPerformed(java.awt.event.ActionEvent evt) {
 		    String value = actionCombo.getSelectedItem().toString();
 		    if (value == null)
@@ -499,6 +500,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 	 */
 
 	// interface Controller
+        @Override
 	public boolean ok() {
 	    if (!validateFields())
 		return false;
@@ -528,21 +530,25 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 	 */
 
 	// interface Controller
+        @Override
 	final public boolean cancel () {
 	    return true;
 	}
 
 	// interface Controller
+        @Override
 	final public boolean isValid() {
 	    return owner.propertiesAreValid();
 	}
 	
         // interface Controller
+        @Override
         final public void addPropertyChangeListener(PropertyChangeListener l) {
             pcs.addPropertyChangeListener(l);
         }
 
         // interface Controller
+        @Override
         final public void removePropertyChangeListener(PropertyChangeListener l)
  {
             pcs.removePropertyChangeListener(l);
@@ -555,6 +561,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 
     private final BptController controller = new BptController(this);
 
+    @Override
     public Controller getController() {
 	return controller;
     }
@@ -1024,6 +1031,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 	    } 
 	}
 	SwingUtilities.invokeLater(new Runnable() {
+                @Override
 		public void run() {
 		    synchronized(BreakpointPanel.this) {
 			checkPlanned = false;
@@ -1036,25 +1044,30 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 
 
     // Implements DocumentListener
+    @Override
     public void changedUpdate(DocumentEvent e) {
 	checkValidSoon();
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
 	checkValidSoon();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
 	checkValidSoon();
     }
 
 
     // interface ItemListener
+    @Override
     public void itemStateChanged(ItemEvent e) {
 	checkValidSoon();
     }
 
     // Implements HelpCtx.Provider
+    @Override
     public HelpCtx getHelpCtx () {
 	return new HelpCtx ("Breakpoints");	// NOI18N
     }

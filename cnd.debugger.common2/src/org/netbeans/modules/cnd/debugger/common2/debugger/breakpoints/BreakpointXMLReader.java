@@ -72,28 +72,34 @@ class BreakpointXMLReader extends XMLDocReader implements UserdirFile.Reader {
 
 
     // interface UserdirFile.Reader
+    @Override
     public void readFrom(InputStream is) throws IOException {
 	read(is, "breakpoints"); // NOI18N
     }
 
     // interface XMLDecoder
+    @Override
     protected String tag() {
 	return null;
 	
     } 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) {
     } 
 
     // interface XMLDecoder
+    @Override
     public void end() {
     } 
 
     // interface XMLDecoder
+    @Override
     public void startElement(String name, Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String name, String currentText) {
     }
 }

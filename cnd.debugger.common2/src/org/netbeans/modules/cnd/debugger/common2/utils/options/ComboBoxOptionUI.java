@@ -83,6 +83,7 @@ class ComboBoxOptionUI extends OptionUI {
     
     /**returns the value displayed on the UI
      */
+    @Override
     protected String getValueFromUI() {
 	return optionType.getValue((String) comboBox.getSelectedItem());
     }
@@ -90,6 +91,7 @@ class ComboBoxOptionUI extends OptionUI {
 
     /** update UI with currValue
      */
+    @Override
     protected void updateUI(){
 	if (currValue == null)
 	    return;
@@ -97,6 +99,7 @@ class ComboBoxOptionUI extends OptionUI {
     }
 
     /** Add this option into the given panel */
+    @Override
     public void addTo(JPanel parent) {
 	GridBagConstraints gridBagConstraints = new GridBagConstraints();
 	if (hasLabel) {

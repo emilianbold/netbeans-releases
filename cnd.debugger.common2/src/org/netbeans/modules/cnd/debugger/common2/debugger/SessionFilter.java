@@ -82,12 +82,14 @@ public final class SessionFilter extends ModelListenerSupport
     } 
 
     // interface TreeModelFilter etc
+    @Override
     public void addModelListener(ModelListener l)  {
 	if (super.addModelListenerHelp(l))
 	    NativeDebuggerManager.get().registerSessionModel(this);
     }
 
     // interface TreeModelFilter etc
+    @Override
     public void removeModelListener(ModelListener l)  {
 	if (super.removeModelListenerHelp(l))
 	    NativeDebuggerManager.get().registerSessionModel(null);
@@ -104,6 +106,7 @@ public final class SessionFilter extends ModelListenerSupport
      */
 
     // interface TreeModelFilter
+    @Override
     public Object [] getChildren(TreeModel original, Object parent,
 			        int from, int to) {
 	Object [] children = null;
@@ -136,6 +139,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface TreeModelFilter
+    @Override
     public int getChildrenCount(TreeModel original, Object parent) {
 	int count = 0;
 	try {
@@ -146,11 +150,13 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface TreeModelFilter
+    @Override
     public Object getRoot(TreeModel original) {
 	return original.getRoot();
     }
 
     // interface TreeModelFilter
+    @Override
     public boolean isLeaf(TreeModel original, Object node) {
 	boolean isLeaf = false;
 	try {
@@ -164,6 +170,7 @@ public final class SessionFilter extends ModelListenerSupport
 
 
     // interface NodeModelFilter
+    @Override
     public String getDisplayName(NodeModel original, Object node) 
 	throws UnknownTypeException {
 
@@ -177,6 +184,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface NodeModelFilter
+    @Override
     public String getIconBase(NodeModel original, Object node)
 	throws UnknownTypeException {
 
@@ -184,6 +192,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface NodeModelFilter
+    @Override
     public String getShortDescription(NodeModel original, Object node)
 	throws UnknownTypeException {
 
@@ -198,6 +207,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModelFilter
+    @Override
     public boolean canCopy(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException {
 
@@ -212,6 +222,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModelFilter
+    @Override
     public Transferable clipboardCopy(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException, java.io.IOException {
 
@@ -225,6 +236,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModelFilter
+    @Override
     public boolean canCut(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException {
 
@@ -238,6 +250,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModelFilter
+    @Override
     public Transferable clipboardCut(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException, java.io.IOException {
 
@@ -251,6 +264,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModelFilter
+    @Override
     public boolean canRename(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException {
 
@@ -264,6 +278,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModelFilter
+    @Override
     public void setName(ExtendedNodeModel original, Object node, String name)
 	throws UnknownTypeException {
 
@@ -277,6 +292,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModelFilter
+    @Override
     public PasteType[] getPasteTypes(ExtendedNodeModel original,
 				     Object node,
 				     Transferable t)
@@ -292,6 +308,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModelFilter
+    @Override
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException {
 
@@ -310,6 +327,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface TableModelFilter
+    @Override
     public Object getValueAt(TableModel original, Object node, String columnID)
 	throws UnknownTypeException {
 
@@ -349,6 +367,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface TableModelFilter
+    @Override
     public boolean isReadOnly(TableModel original, Object node, String columnID)
 	throws UnknownTypeException {
 
@@ -365,6 +384,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface TableModelFilter
+    @Override
     public void setValueAt(TableModel original, Object node, String columnID, Object value)
 	throws UnknownTypeException {
 
@@ -381,6 +401,7 @@ public final class SessionFilter extends ModelListenerSupport
 
 
     // interface NodeActionsProviderFilter
+    @Override
     public Action[] getActions(NodeActionsProvider original, Object node) 
 	throws UnknownTypeException {
 
@@ -392,6 +413,7 @@ public final class SessionFilter extends ModelListenerSupport
     }
 
     // interface NodeActionsProviderFilter
+    @Override
     public void performDefaultAction(NodeActionsProvider original, Object node)
 	throws UnknownTypeException {
 	original.performDefaultAction(node);

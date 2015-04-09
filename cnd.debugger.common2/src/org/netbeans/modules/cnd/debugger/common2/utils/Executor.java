@@ -194,6 +194,7 @@ public abstract class Executor {
 	    if (!Log.Executor.debug)
 		return;
 	    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
 		public void run() {
 		    System.out.printf(msg);
 		}
@@ -201,6 +202,7 @@ public abstract class Executor {
 	}
 
 	// interface Runnable
+        @Override
 	public void run() {
 	    try {
 		if (Log.Executor.debug) {

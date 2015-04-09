@@ -72,9 +72,11 @@ public final class EngineProfile extends ProfileSupport {
     /**
      * Initializes the object to default values
      */
+    @Override
     public void initialize() {
     }
 
+    @Override
     public String getId() {
 	return PROFILE_ID;
     }
@@ -117,11 +119,13 @@ public final class EngineProfile extends ProfileSupport {
     // 
 
     // interface ConfigurationAuxObject
+    @Override
     public XMLDecoder getXMLDecoder() {
 	return new EngineProfileXMLCodec(this);
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public XMLEncoder getXMLEncoder() {
 	return new EngineProfileXMLCodec(this);
     }
@@ -132,6 +136,7 @@ public final class EngineProfile extends ProfileSupport {
      */
 
     // interface ConfigurationAuxObject
+    @Override
     public void assign(ConfigurationAuxObject profileAuxObject) {
 	if (!(profileAuxObject instanceof EngineProfile)) {
 	    // FIXUP: exception ????
@@ -152,6 +157,7 @@ public final class EngineProfile extends ProfileSupport {
      */
 
     // interface ConfigurationAuxObject
+    @Override
     public ConfigurationAuxObject clone(Configuration conf) {
 	EngineProfile clone = new EngineProfile (null);
 
@@ -163,6 +169,7 @@ public final class EngineProfile extends ProfileSupport {
 	return clone;
     }
 
+    @Override
     public Sheet getSheet() {
         Sheet sheet = new Sheet();
         Sheet.Set set;

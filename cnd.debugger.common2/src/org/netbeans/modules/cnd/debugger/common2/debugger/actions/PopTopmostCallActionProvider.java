@@ -60,16 +60,19 @@ public class PopTopmostCallActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton(ActionsManager.ACTION_POP_TOPMOST_CALL);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
 	getDebugger().popTopmostCall();
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	boolean enable = false;
 	if (state != null) {

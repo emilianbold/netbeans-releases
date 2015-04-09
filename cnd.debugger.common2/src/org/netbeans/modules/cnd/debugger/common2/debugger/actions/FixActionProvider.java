@@ -47,14 +47,12 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 import java.util.Set;
 import java.util.Collections;
 
-import org.openide.util.Utilities;
 
 import org.netbeans.api.debugger.ActionsManager;
 
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
 public class FixActionProvider extends NativeActionsProvider {
 
@@ -63,16 +61,19 @@ public class FixActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton (ActionsManager.ACTION_FIX);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
 	getDebugger().fix();
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
     /* Bug 180174
 	boolean enable = false;

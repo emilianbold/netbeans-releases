@@ -110,6 +110,7 @@ public class DebuggerOption extends Option {
      */
 
     // interface Option
+    @Override
     public Option getSubOption(String value) {
 
 	if (this == OUTPUT_LOG_FILE && value.equals("custom")) // NOI18N
@@ -126,12 +127,14 @@ public class DebuggerOption extends Option {
 
     /** Hack to fix width rendering */
     // interface Option
+    @Override
     public boolean verticalLayout() {
 	return (this == RUN_IO);
     }
 
     /** Hack to fix width rendering */
     // interface Option
+    @Override
     public boolean overrideHasLabel() {
 	return (this != RUN_IO);
     }
@@ -141,6 +144,7 @@ public class DebuggerOption extends Option {
      * return the sub option if any
      */
     // interface Option
+    @Override
     public Option getSubOption() {
 	if (this == OUTPUT_LOG_FILE)
 	    return OUTPUT_LOG_FILE_NAME;
@@ -157,6 +161,7 @@ public class DebuggerOption extends Option {
      * returns if this is a sub option or not
      */
     // interface Option
+    @Override
     public boolean isSubOption() {
 	if (this == RUN_PTY)
 	    return true;
@@ -168,16 +173,19 @@ public class DebuggerOption extends Option {
     }
 
     // interface Option
+    @Override
     public Validity getValidity(String text) {
 	return Validity.TRUE;
     }
 
     // interface Option
+    @Override
     public boolean isTrim() {
 	return false;
     }
 
     // interface Option
+    @Override
     public boolean persist(OptionValue value) {
 
 	/* LATER?

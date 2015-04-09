@@ -48,11 +48,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import javax.swing.JButton;
-import javax.swing.Action;
-import javax.swing.KeyStroke;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -134,12 +129,14 @@ public class NewBreakpointAction
 	 */
 
 	// interface ActionListener
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    boolean ok = (e.getSource() == DialogDescriptor.OK_OPTION);
 	    accept(ok);
 	}
 
 	// interface DialogManager
+        @Override
 	public void accept(boolean yes) {
 	    boolean done = false;
 	    Controller controller = panel.getController();
@@ -158,6 +155,7 @@ public class NewBreakpointAction
 	}
 
 	// interface DialogManager
+        @Override
 	public void bringDown() {
 	    dialog.setVisible(false);
 	    dialog.dispose();
@@ -165,6 +163,7 @@ public class NewBreakpointAction
 	}
 
 	// interface DialogManager
+        @Override
 	public void refocus() {
 	    System.out.println
 		("NOT IMPLEMENTED: NewBreakpointProcessor.refocus()"); // NOI18N
@@ -172,6 +171,7 @@ public class NewBreakpointAction
 
 
 	// interface PropertyChangeListener
+        @Override
 	public void propertyChange(PropertyChangeEvent e) {
 	    if (e.getPropertyName () == EditBreakpointPanel.PROP_TYPE) {
 		stopListening ();
@@ -205,11 +205,13 @@ public class NewBreakpointAction
     }
 
     // interface CallableSystemAction
+    @Override
     public boolean asynchronous() {
 	return false;
     }
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 
 	boolean canDo;
@@ -235,16 +237,19 @@ public class NewBreakpointAction
     }
     
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("ACT_BPT_NewBreakpoint"); // NOI18N
     }
     
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	// OLD setEnabled(DebuggerManager.isGlobalBreakpoints());
@@ -252,6 +257,7 @@ public class NewBreakpointAction
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	// Always keep it enabled.
 	// In cases where we can't accept bpts we'll post an error

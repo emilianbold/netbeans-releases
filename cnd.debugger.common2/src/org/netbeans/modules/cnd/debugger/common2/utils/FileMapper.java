@@ -92,10 +92,12 @@ public abstract class FileMapper {
     private static class NullFileMapper extends FileMapper {
         private static NullFileMapper INSTANCE = new NullFileMapper();
 
+        @Override
 	public String worldToEngine(String path) {
 	    return path;
 	} 
 
+        @Override
 	public String engineToWorld(String path) {
 	    return path;
 	}
@@ -149,6 +151,7 @@ public abstract class FileMapper {
 	/**
 	 * c:\x\y\z -> /cygdrive/c/x/y/z
 	 */
+        @Override
 	public String worldToEngine(String path) {
 	    String newPath = path;
 	    if (path.charAt(1) == ':') {
@@ -166,6 +169,7 @@ public abstract class FileMapper {
 	 * /cygdrive/c/x/y/z -> c:\x\y\z
 	 */
 
+        @Override
 	public String engineToWorld(String path) {
 	    String newPath = path;
 	    if (path.startsWith(prefix)) {

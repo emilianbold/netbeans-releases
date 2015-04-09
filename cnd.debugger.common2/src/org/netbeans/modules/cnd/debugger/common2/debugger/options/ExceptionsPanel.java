@@ -187,6 +187,7 @@ class ExceptionsPanel extends JPanel implements PropertyChangeListener, HelpCtx.
 	return exceptions;
     }
         
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) &&
 	    evt.getNewValue() == PropertyEnv.STATE_VALID) {
@@ -196,6 +197,7 @@ class ExceptionsPanel extends JPanel implements PropertyChangeListener, HelpCtx.
         }
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("DebuggerOptions" );
     }
@@ -224,6 +226,7 @@ class ExceptionsPanel extends JPanel implements PropertyChangeListener, HelpCtx.
 	    allCheckbox.setMnemonic(Catalog.
 		getMnemonic("MNEM_InterceptAll"));		// NOI18N
 	    allCheckbox.addItemListener(new ItemListener() {
+                @Override
 		public void itemStateChanged(ItemEvent e) {
 		    adjustButtons();
 		}
@@ -249,6 +252,7 @@ class ExceptionsPanel extends JPanel implements PropertyChangeListener, HelpCtx.
 	    interceptList.addMnemonic =
 		Catalog.getMnemonic("MNEM_AddN");		// NOI18N
 	    interceptList.addActionListener = new ActionListener() {
+                @Override
 		public void actionPerformed(ActionEvent evt) {
 		    addInterceptExceptionRow(evt);
 		}
@@ -257,6 +261,7 @@ class ExceptionsPanel extends JPanel implements PropertyChangeListener, HelpCtx.
 	    interceptList.remMnemonic =
 		Catalog.getMnemonic("MNEM_RemN");		// NOI18N
 	    interceptList.remActionListener = new ActionListener() {
+                @Override
 		public void actionPerformed(ActionEvent evt) {
 		    deleteInterceptExceptionRow(evt);
 		}
@@ -286,6 +291,7 @@ class ExceptionsPanel extends JPanel implements PropertyChangeListener, HelpCtx.
 	    exceptList.addMnemonic =
 		Catalog.getMnemonic("MNEM_AddG");		// NOI18N
 	    exceptList.addActionListener = new ActionListener() {
+                @Override
 		public void actionPerformed(ActionEvent evt) {
 		    addIgnoreExceptionRow(evt);
 		}
@@ -294,6 +300,7 @@ class ExceptionsPanel extends JPanel implements PropertyChangeListener, HelpCtx.
 	    exceptList.remMnemonic =
 		Catalog.getMnemonic("MNEM_RemG");		// NOI18N
 	    exceptList.remActionListener = new ActionListener() {
+                @Override
 		public void actionPerformed(ActionEvent evt) {
 		    deleteIgnoreExceptionRow(evt);
 		}
@@ -352,6 +359,7 @@ class ExceptionsPanel extends JPanel implements PropertyChangeListener, HelpCtx.
 	JTable table = new JTable(model);
 	table.getSelectionModel().
 	    addListSelectionListener( new ListSelectionListener() {
+                @Override
 		public void valueChanged(ListSelectionEvent e) {
 		    // DEBUG System.out.println("JTable Selection changed");
 		    adjustButtons();

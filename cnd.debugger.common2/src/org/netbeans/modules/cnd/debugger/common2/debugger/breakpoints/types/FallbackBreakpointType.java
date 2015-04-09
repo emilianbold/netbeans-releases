@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 public class FallbackBreakpointType extends NativeBreakpointType {
 
     // interface BreakpointType
+    @Override
     public NativeBreakpoint newInstance(int flags) {
 	return new FallbackBreakpoint(flags);
     } 
@@ -67,6 +68,7 @@ public class FallbackBreakpointType extends NativeBreakpointType {
     }
 
     // interface NativeBreakpointType
+    @Override
     public BreakpointPanel getCustomizer(NativeBreakpoint editable) {
 	if (editable == null)
 	    return new FallbackBreakpointPanel();

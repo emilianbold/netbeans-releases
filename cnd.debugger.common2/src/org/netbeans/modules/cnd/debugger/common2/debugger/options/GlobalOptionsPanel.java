@@ -299,6 +299,7 @@ public class GlobalOptionsPanel extends JPanel {
             setKeys(Collections.<OptionCustomizerNode>emptyList());
         }
         
+        @Override
         protected Node[] createNodes(OptionCustomizerNode key) {
             return new Node[] {
 		new ConfigurationNode(key)
@@ -389,6 +390,7 @@ public class GlobalOptionsPanel extends JPanel {
 	    }
 	}
         
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -472,6 +474,7 @@ public class GlobalOptionsPanel extends JPanel {
 		btv.requestFocus();
 	    }
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(evt.getSource() != manager) {
                     return;

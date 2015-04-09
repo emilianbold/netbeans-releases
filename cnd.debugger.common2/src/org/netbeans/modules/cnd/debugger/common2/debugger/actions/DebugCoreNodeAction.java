@@ -69,6 +69,7 @@ public final class DebugCoreNodeAction extends NodeAction {
         putValue("key", "CndDebugCorefileNodeAction"); //NOI18N
     }   
     
+    @Override
     protected boolean enable(final Node[] activatedNodes) {
 	if (activatedNodes == null || activatedNodes.length != 1)
 	    return false;
@@ -79,10 +80,12 @@ public final class DebugCoreNodeAction extends NodeAction {
 	return false;
     }
 
+    @Override
     protected void performAction(final Node[] activatedNodes) {
         final DebugCoreAction debugCoreAction = SharedClassObject.findObject(DebugCoreAction.class, true);
 
-        SwingUtilities.invokeLater( new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 debugCoreAction.performAction(activatedNodes, true);
             }
@@ -95,11 +98,13 @@ public final class DebugCoreNodeAction extends NodeAction {
     }
 
     /** @return the action's name */
+    @Override
     public String getName () {
         return Catalog.get("CTL_DebugCorefile"); // NOI18N
     }
 
     /** @return the action's help context */
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx ("Debugging_corefile"); // NOI18N
     }

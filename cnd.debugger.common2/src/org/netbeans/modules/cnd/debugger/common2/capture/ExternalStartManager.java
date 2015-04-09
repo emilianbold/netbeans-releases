@@ -57,9 +57,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ProjectSupport
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -291,33 +289,41 @@ public final class ExternalStartManager {
     @ServiceProvider(service=ExternalStartProvider.class, position=10000)
     static public class NoopExternalStartProvider implements ExternalStartProvider {
 
+        @Override
 	public ExternalStart createExternalStart(Host host) {
 	    return new ExternalStart() {
 
+                @Override
 		public boolean attached(int pid) {
 		    return false;
 		}
 
+                @Override
 		public void debuggerStarted() {
 		}
 
+                @Override
 		public void fail() {
 		}
 
+                @Override
 		public boolean start() {
 		    return false;
 		}
 
+                @Override
 		public boolean stop() {
 		    return false;
 		}
 
+                @Override
 		public boolean isRunning() {
 		    return false;
 		}
 	    };
 	}
 
+        @Override
 	public boolean isSupported() {
 	    return false;
 	}

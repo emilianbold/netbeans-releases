@@ -70,6 +70,7 @@ public class EvaluateAction extends CallableSystemAction implements StateListene
     }
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
 	return false;
     } 
@@ -95,18 +96,21 @@ public class EvaluateAction extends CallableSystemAction implements StateListene
     
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("LBL_EvaluateAction"); // NOI18N
     }
     
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected String iconResource () {
         return "org/netbeans/modules/cnd/debugger/common2/icons/" +		// NOI18N
 	       "evaluate_expression.png";			// NOI18N
@@ -114,6 +118,7 @@ public class EvaluateAction extends CallableSystemAction implements StateListene
 
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	// 6640192
@@ -121,6 +126,7 @@ public class EvaluateAction extends CallableSystemAction implements StateListene
     }    
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	if (state == null) {
 	    setEnabled(false);

@@ -65,14 +65,17 @@ public final class InstructionBreakpoint extends NativeBreakpoint {
 	instruction.set(in);
     }
 
+    @Override
     public String getSummary() {
 	return instruction.get();
     }
 
+    @Override
     protected String getDisplayNameHelp() {
 	return Catalog.format("Handler_Instruction", getAddress()); // NOI18N
     }
 
+    @Override
     protected void processOriginalEventspec(String oeventspec) {
 	assert IpeUtils.isEmpty(oeventspec);
     }

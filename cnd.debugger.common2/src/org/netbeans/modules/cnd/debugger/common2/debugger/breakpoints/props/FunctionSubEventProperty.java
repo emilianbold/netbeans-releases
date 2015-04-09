@@ -61,26 +61,31 @@ public final class FunctionSubEventProperty extends EnumProperty {
     }
 
     // interface Property
+    @Override
     protected final void setFromStringImpl(String s) {
 	value = FunctionSubEvent.byTag(s);
     }
     
     // interface EnumProperty
+    @Override
     protected final void setFromNameImpl(String s) {
 	value = FunctionSubEvent.valueOf(s);
     }
 
     // interface Property
+    @Override
     public final String toString() {
 	return value.toString();
     } 
     
     // interface Property
+    @Override
     protected final void setFromObjectImpl(Object o) {
 	value = (FunctionSubEvent) o;
     }
 
     // interface Property
+    @Override
     public final Object getAsObject() {
 	return value;
     }

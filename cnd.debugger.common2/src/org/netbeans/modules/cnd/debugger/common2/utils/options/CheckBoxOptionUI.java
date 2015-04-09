@@ -52,7 +52,6 @@ package org.netbeans.modules.cnd.debugger.common2.utils.options;
 import java.awt.*;
 import javax.swing.*;
 
-import org.openide.awt.Actions;
 
 class CheckBoxOptionUI extends OptionUI {
 
@@ -65,6 +64,7 @@ class CheckBoxOptionUI extends OptionUI {
  
     /**returns the value displayed on the UI
      */
+    @Override
     protected String getValueFromUI() {
 	return (checkBox.isSelected()) ? "on" : "off";    // NOI18N
     }
@@ -72,6 +72,7 @@ class CheckBoxOptionUI extends OptionUI {
 
     /** update UI with currValue
      */
+    @Override
     protected void updateUI(){
 	if (currValue == null)
 	    return;
@@ -79,6 +80,7 @@ class CheckBoxOptionUI extends OptionUI {
     }
 
     /** Add this option into the given panel */
+    @Override
     public void addTo(JPanel parent) {
 	GridBagConstraints gridBagConstraints = new GridBagConstraints();
 	if (hasLabel) {

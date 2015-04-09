@@ -49,6 +49,7 @@ import java.awt.Font;
 import javax.swing.JLabel;
 
 public class VariableValueEditor extends AsyncEditor {
+    @Override
     public boolean isPaintable() {
 	return true;
     } 
@@ -57,6 +58,7 @@ public class VariableValueEditor extends AsyncEditor {
         static final JLabel label = new JLabel();
     };
 
+    @Override
     public void paintValue(java.awt.Graphics g, java.awt.Rectangle box) {
 
         // 'label' instantiated on first use

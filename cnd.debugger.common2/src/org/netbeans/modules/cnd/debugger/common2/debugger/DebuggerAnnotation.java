@@ -115,6 +115,7 @@ public class DebuggerAnnotation
     }
 
     // interface PropertyChangeListener
+    @Override
     public void propertyChange(PropertyChangeEvent e) {
         String pName = e.getPropertyName();
 
@@ -208,6 +209,7 @@ public class DebuggerAnnotation
      */
 
     // interface Annotation
+    @Override
     public String getAnnotationType() {
         return type;
     }
@@ -282,6 +284,7 @@ public class DebuggerAnnotation
     }
 
     // interface Annotation
+    @Override
     public String getShortDescription() {
 
         // These are used only for simple annotations.

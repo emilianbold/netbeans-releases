@@ -128,6 +128,7 @@ public class EditUndo implements Runnable {
 	this.property = property;
     }
 
+    @Override
     public void run() {
 	target.undo(property);
     }

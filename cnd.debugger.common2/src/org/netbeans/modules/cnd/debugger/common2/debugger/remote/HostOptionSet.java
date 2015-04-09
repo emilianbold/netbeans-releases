@@ -68,26 +68,31 @@ public class HostOptionSet extends OptionSetSupport {
 	copy(that);
     } 
 
+    @Override
     public OptionSet makeCopy() {
 	return new HostOptionSet (this);
     }
 
     // interface OptionSet
+    @Override
     public void save() {
 	// noop
     }
 
     // interface OptionSet
+    @Override
     public void open() {
 	// noop
     }
 
     // interface OptionSet
+    @Override
     public String tag() {
 	return "Host_Settings";		// NOI18N
     }
 
     // interface OptionSet
+    @Override
     public String description() {
 	return "remote host settings";	// NOI18N
     }

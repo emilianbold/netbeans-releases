@@ -297,6 +297,7 @@ public abstract class NativeBreakpoint
     }
 
     // interface org.netbeans.api.debugger.Breakpoint
+    @Override
     public void enable() {
 	if (NativeDebuggerManager.isPerTargetBpts()) {
 	    NativeBreakpoint current = findCurrent();
@@ -308,6 +309,7 @@ public abstract class NativeBreakpoint
     }
 
     // interface org.netbeans.api.debugger.Breakpoint
+    @Override
     public void disable() {
 	if (NativeDebuggerManager.isPerTargetBpts()) {
 	    NativeBreakpoint current = findCurrent();
@@ -335,6 +337,7 @@ public abstract class NativeBreakpoint
 	// 6706848
 	if (!SwingUtilities.isEventDispatchThread()) {
 	    SwingUtilities.invokeLater(new Runnable() {
+                @Override
 		public void run() {
 		    dispose();
 		}
@@ -837,6 +840,7 @@ public abstract class NativeBreakpoint
 
 
 	return this.equals(that, new PropertyOwner.Comparator() {
+            @Override
 	    public boolean equals(Property thisP, Property thatP) {
 		if (enableDifferentiates && thisP == enabled) {
 		} else if (ghostBuster && thisP == context) {
@@ -960,6 +964,7 @@ public abstract class NativeBreakpoint
 		"\tthat: " + that.getBreakpointType(); // NOI18N
 
 	return this.equals(that, new PropertyOwner.Comparator() {
+            @Override
 	    public boolean equals(Property thisP, Property thatP) {
 		if (enableDifferentiates && thisP == enabled) {
 		} else if (thisP == context) {
@@ -1554,6 +1559,7 @@ public abstract class NativeBreakpoint
 
 
     // interface EditUndoable
+    @Override
     public void undo(String property) {
 	 // re-pull the whole line instead of just the cell.
 	 update();
@@ -1838,6 +1844,7 @@ public abstract class NativeBreakpoint
 
 	DebuggerAnnotation.Listener listener =
 	    new DebuggerAnnotation.Listener() {
+                @Override
 		public void annotationMoved() {
 		    update();
 		    updateTimestamp();
@@ -2142,41 +2149,49 @@ public abstract class NativeBreakpoint
      */
 
     // interface PropertyOwner
+    @Override
     public final void register(Property p) {
 	pos.register(p);
     }
 
     // interface PropertyOwner
+    @Override
     public Property propertyByName(String name) {
 	return pos.propertyByName(name);
     }
 
     // interface PropertyOwner
+    @Override
     public Property propertyByKey(String key) {
 	return pos.propertyByKey(key);
     }
 
     // interface PropertyOwner
+    @Override
     public int size() {
 	return pos.size();
     }
 
     // interface PropertyOwner/Iterable
+    @Override
     public Iterator<Property> iterator() {
 	return pos.iterator();
     }
 
     // interface PropertyOwner
+    @Override
     public boolean isDirty() {
 	return pos.isDirty();
     }
 
     // interface PropertyOwner
+    @Override
     public void clearDirty() {
 	pos.clearDirty();
     }
 
     // interface PropertyOwner
+    @Override
     public boolean equals(PropertyOwner that, Comparator comparator) {
 	return pos.equals(((NativeBreakpoint)that).pos, comparator);
     }
@@ -2230,6 +2245,7 @@ public abstract class NativeBreakpoint
     }
 
     // interface org.netbeans.api.debugger.Breakpoint
+    @Override
     public final boolean isEnabled() {
 	boolean isEnabled = enabled.get();
 	if (Log.Bpt.enabling) {

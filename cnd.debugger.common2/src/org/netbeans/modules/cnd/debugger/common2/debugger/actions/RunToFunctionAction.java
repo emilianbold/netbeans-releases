@@ -70,11 +70,13 @@ public class RunToFunctionAction extends CallableSystemAction implements StateLi
     }
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
         NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger != null) {
@@ -83,18 +85,21 @@ public class RunToFunctionAction extends CallableSystemAction implements StateLi
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
         return Catalog.get("LBL_RunToFunctionAction"); // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected String iconResource () {
         return "org/netbeans/modules/cnd/debugger/common2/icons/step_to_function.png"; // NOI18N
 // NOI18N
@@ -102,6 +107,7 @@ public class RunToFunctionAction extends CallableSystemAction implements StateLi
 
 
     // interface SystemAction
+    @Override
     protected void initialize() {
         super.initialize();
         putValue(SHORT_DESCRIPTION, Catalog.get("TIP_RunToFunctionAction")); // NOI18N
@@ -109,6 +115,7 @@ public class RunToFunctionAction extends CallableSystemAction implements StateLi
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
         boolean enable = false;
         NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();

@@ -45,11 +45,11 @@
 
 package org.netbeans.modules.cnd.debugger.common2.values;
 
-import java.awt.Font;
 import java.awt.Color;
 import javax.swing.JLabel;
 
 public class StringEditor extends AsyncEditor {
+    @Override
     public boolean isPaintable() {
 	return true;
     } 
@@ -58,6 +58,7 @@ public class StringEditor extends AsyncEditor {
         static final JLabel label = new JLabel();
     };
 
+    @Override
     public void paintValue(java.awt.Graphics g, java.awt.Rectangle box) {
 
         // 'label' instantiated on first use

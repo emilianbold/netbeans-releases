@@ -58,6 +58,7 @@ public abstract class Enum {
 
     public String name() { return name; }
 
+    @Override
     public String toString() { return tag; }
 
 

@@ -53,6 +53,7 @@ import org.openide.util.Lookup;
 public final class Autos {
     private static AutosProvider DEFAULT = null;
     private static final AutosProvider EMPTY = new AutosProvider() {
+        @Override
         public Set<String> getAutos(StyledDocument document, int line) {
             return Collections.<String>emptySet();
         }

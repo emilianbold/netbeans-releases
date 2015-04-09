@@ -109,6 +109,7 @@ public class OptionPropertySupport extends PropertySupport {
     }
 
     // interface Node.Property
+    @Override
     public void setValue(Object o) {
 	OptionValue ov = optionSetOwner.getOptions().byType(option);
 	if (ov != null) {
@@ -126,6 +127,7 @@ public class OptionPropertySupport extends PropertySupport {
     }
 
     // interface Node.Property
+    @Override
     public Object getValue() {
 	OptionValue ov = optionSetOwner.getOptions().byType(option);
 	if (ov != null) {

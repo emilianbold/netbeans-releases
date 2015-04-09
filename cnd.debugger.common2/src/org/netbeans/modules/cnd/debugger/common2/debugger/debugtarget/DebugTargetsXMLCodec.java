@@ -64,21 +64,25 @@ public class DebugTargetsXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
 	return TAG_DEBUGTARGETS;
     } 
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
 	String what = "debugtarget list"; // NOI18N
 	checkVersion(atts, what, VERSION);
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
 	if (Log.XML.debug)
 	    System.out.println("DebugTargetsXMLCodec: " + element); // NOI18N
@@ -88,6 +92,7 @@ public class DebugTargetsXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
     }
 
@@ -99,6 +104,7 @@ public class DebugTargetsXMLCodec extends XMLDecoder implements XMLEncoder {
      * Encode
      * interface XMLEncoder
      */
+    @Override
     public void encode(XMLEncoderStream xes) {
 	xes.elementOpen(TAG_DEBUGTARGETS, version());
 	    int index = 1;

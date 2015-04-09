@@ -78,24 +78,32 @@ public abstract class ProfileSupport implements ConfigurationAuxObject {
 	this.pcs = pcs;
     }
 
+    @Override
     public boolean shared() {
 	return false;
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public abstract String getId();
-    public abstract XMLDecoder getXMLDecoder() ;
-    public abstract XMLEncoder getXMLEncoder() ;
+    @Override
+    public abstract XMLDecoder getXMLDecoder();
+    @Override
+    public abstract XMLEncoder getXMLEncoder();
+    @Override
     public abstract void assign(ConfigurationAuxObject profileAuxObject);
+    @Override
     public abstract ConfigurationAuxObject clone(Configuration conf);
     public abstract Sheet getSheet() ;
 
     // interface ConfigurationAuxObject
+    @Override
     public void clearChanged() {
 	needSave = false;
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public boolean hasChanged() {
 	return needSave;
     }

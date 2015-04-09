@@ -45,7 +45,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.values;
 
-import java.awt.Component;
 
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -56,9 +55,11 @@ abstract public class EnhancedAsyncEditor extends AsyncEditor
     // If we have tags and canEditAsText is TRUE there's problems with
     // focus. See IZ 76522.
 
+    @Override
     abstract public String[] getTags();
 
     // interface ExPropertyEditor
+    @Override
     public void attachEnv(PropertyEnv env) {
 	env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE); // NOI18N
     }

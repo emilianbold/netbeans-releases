@@ -64,11 +64,13 @@ public class PauseActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton (ActionsManager.ACTION_PAUSE);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
         NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
             @Override
@@ -79,6 +81,7 @@ public class PauseActionProvider extends NativeActionsProvider {
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	boolean enable = !state.isListening();
 	setEnabled(ActionsManager.ACTION_PAUSE, enable);

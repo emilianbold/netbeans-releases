@@ -48,10 +48,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.border.*;
 import javax.swing.table.*;
 
-import org.openide.awt.Actions;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.ListTableModel;
 
@@ -200,6 +198,7 @@ public class ListUI {
 
 	table.getSelectionModel().
 	    addListSelectionListener( new ListSelectionListener() {
+                @Override
 		public void valueChanged(ListSelectionEvent e) {
 		    // DEBUG System.out.println("JTable Selection changed");
 		    adjustButtons(false);

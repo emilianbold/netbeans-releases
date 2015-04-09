@@ -64,16 +64,19 @@ public class MakeCalleeCurrentActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton(ActionsManager.ACTION_MAKE_CALLEE_CURRENT);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
 	getDebugger().makeCalleeCurrent();
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	boolean enable = false;
 	if (state != null) {

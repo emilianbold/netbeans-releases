@@ -67,11 +67,13 @@ public class RunToCursorActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton (ActionsManager.ACTION_RUN_TO_CURSOR);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
 	int lineNo = EditorContextBridge.getCurrentLineNumber();
         if (lineNo < 0) {
@@ -89,6 +91,7 @@ public class RunToCursorActionProvider extends NativeActionsProvider {
     }
     
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
         boolean enable = false;
         NativeDebugger debugger = getDebugger();

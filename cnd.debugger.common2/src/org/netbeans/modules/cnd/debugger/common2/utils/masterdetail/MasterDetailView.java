@@ -82,6 +82,7 @@ public class MasterDetailView extends TopComponent {
     private DetailView detailView;
 
     private Validator validator = new Validator() {
+        @Override
 	public void fireChanged() {
 	    if (Log.MasterDetail.debug)
 		System.out.printf("MDV.fireChanged() ...\n"); // NOI18N
@@ -92,6 +93,7 @@ public class MasterDetailView extends TopComponent {
 	    okButton.setEnabled(true);
 	}
 
+        @Override
 	public boolean isRecordValid() {
 	    boolean valid = true;
 	    if (masterView != null) {
@@ -109,6 +111,7 @@ public class MasterDetailView extends TopComponent {
 	    return valid;
 	}
 
+        @Override
 	public boolean isDirty() {
 	    boolean dirty = false;
 	    if (masterView != null) {
@@ -247,6 +250,7 @@ public class MasterDetailView extends TopComponent {
 	    okButton.setText(Catalog.get("LISTEDITDIALOG_OK_BUTTON_TXT")); // NOI18N
 
         okButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
 		okButtonActionPerformed(evt);
             }
@@ -254,6 +258,7 @@ public class MasterDetailView extends TopComponent {
 
         cancelButton.setText(Catalog.get("LISTEDITDIALOG_CANCEL_BUTTON_TXT")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
@@ -264,6 +269,7 @@ public class MasterDetailView extends TopComponent {
         applyButton.setText(Catalog.get("LISTEDITDIALOG_APPLY_BUTTON_TXT")); // NOI18N
 	applyButton.setMnemonic(Catalog.getMnemonic("MNEM_Apply")); // NOI18N
         applyButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 applyButtonActionPerformed(evt);
             }
@@ -276,6 +282,7 @@ public class MasterDetailView extends TopComponent {
         helpButton.setMnemonic(Catalog.get("LISTEDITDIALOG_HELP_BUTTON_MN").charAt(0)); // NOI18N
         helpButton.setText(Catalog.get("LISTEDITDIALOG_HELP_BUTTON_TXT")); // NOI18N
         helpButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);
             }
@@ -304,6 +311,7 @@ public class MasterDetailView extends TopComponent {
 	rp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
 	    put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), ENTER_COMMAND);
 	rp.getActionMap().put(ENTER_COMMAND, new AbstractAction() {
+            @Override
 	    public void actionPerformed(ActionEvent e) {
 		okButtonActionPerformed(e);
 	    }
@@ -313,6 +321,7 @@ public class MasterDetailView extends TopComponent {
 	rp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
 	    put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), ESCAPE_COMMAND);
 	rp.getActionMap().put(ESCAPE_COMMAND, new AbstractAction() {
+            @Override
 	    public void actionPerformed(ActionEvent e) {
                 cancelButtonActionPerformed(e);
 	    }
@@ -392,6 +401,7 @@ public class MasterDetailView extends TopComponent {
     }
 
     private static class EscapeKeyAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent evt) {
         }
     }

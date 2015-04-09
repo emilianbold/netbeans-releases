@@ -71,7 +71,6 @@ import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.Utilities;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -110,12 +109,15 @@ public class EditWatchPanel extends javax.swing.JPanel
     private boolean customizing = false;
 
     private final DocumentListener documentListener = new DocumentListener() {
+        @Override
 	public void changedUpdate(DocumentEvent e) {
 	    checkValid();
 	}
+        @Override
 	public void insertUpdate(DocumentEvent e) {
 	    checkValid();
 	}
+        @Override
 	public void removeUpdate(DocumentEvent e) {
 	    checkValid();
 	}
@@ -303,6 +305,7 @@ public class EditWatchPanel extends javax.swing.JPanel
 	}
 
 	// interface Controller
+        @Override
 	public boolean ok() {
 	    if (!validateFields())
 		return false;
@@ -321,11 +324,13 @@ public class EditWatchPanel extends javax.swing.JPanel
 	}
 
 	// interface Controller
+        @Override
 	public boolean cancel() {
 	    return true;
 	}
 
 	// interface Controller
+        @Override
 	public boolean isValid() {
 	    if (Log.Watch.dialog)
 		System.out.printf("EditWatchPanel.isValid()\n"); // NOI18N
@@ -342,11 +347,13 @@ public class EditWatchPanel extends javax.swing.JPanel
 	}
 
         // interface Controller
+        @Override
         final public void addPropertyChangeListener(PropertyChangeListener l) {
             pcs.addPropertyChangeListener(l);
         }
 
         // interface Controller
+        @Override
         final public void removePropertyChangeListener(PropertyChangeListener l)
  {
             pcs.removePropertyChangeListener(l);
@@ -359,6 +366,7 @@ public class EditWatchPanel extends javax.swing.JPanel
     }
 
     // interface QualifiedExprListener
+    @Override
     public void qualifiedExpr(String qualifiedForm, boolean ok) {
 	if (Log.Watch.dialog)
 	    System.out.printf("qualifiedExpr('%s')\n", qualifiedForm); // NOI18N

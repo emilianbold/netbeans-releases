@@ -57,21 +57,25 @@ public class IntegerProperty extends Property {
     }
 
     // interface Property
+    @Override
     protected void setFromStringImpl(String s) {
 	value = Integer.parseInt(s);
     }
 
     // interface Property
+    @Override
     public final String toString() {
 	return Integer.toString(value);
     } 
 
     // interface Property
+    @Override
     protected void setFromObjectImpl(Object o) {
 	value = ((Integer) o).intValue();
     }
 
     // interface Property
+    @Override
     public Object getAsObject () {
 	return new Integer(value);
     }

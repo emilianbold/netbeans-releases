@@ -77,6 +77,7 @@ public class CndCoreTestUtils {
         final JEditorPane editor[] = new JEditorPane[] {null};
         try {
             Runnable test = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         JEditorPane pane = getAnEditorPane(dob);

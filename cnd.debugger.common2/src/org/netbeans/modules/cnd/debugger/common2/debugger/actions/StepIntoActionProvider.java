@@ -78,11 +78,13 @@ public class StepIntoActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton (ActionsManager.ACTION_STEP_INTO);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object a) {
 	NativeDebugger debugger = getDebugger();
 	if (debugger != null) {
@@ -100,6 +102,7 @@ public class StepIntoActionProvider extends NativeActionsProvider {
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	boolean enable;
 	if (!state.isLoaded || state.isRunning) {

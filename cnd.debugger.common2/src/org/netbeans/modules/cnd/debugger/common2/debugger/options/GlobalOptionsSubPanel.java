@@ -142,21 +142,25 @@ class GlobalOptionsSubPanel extends javax.swing.JPanel
     }
 
     // interface OptionCustomizerPanel
+    @Override
     public void initValues(OptionSet options) {
 	UISet.bind(options);
     }
 
     // interface OptionCustomizerPanel
+    @Override
     public boolean areValuesValid() {
 	return true;
     } 
 
     // interface OptionCustomizerPanel
+    @Override
     public void storeValues() {
 	UISet.applyChanges();
     }
 
     // interface HelpCtx.Provider
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx( GlobalOptionsSubPanel.class );
     }

@@ -44,11 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.awt.BorderLayout;
 
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.HelpCtx;
@@ -94,11 +91,13 @@ public final class DisassemblerWindow extends TopComponent {
     }
 
     // interface TopComponent
+    @Override
     protected String preferredID() {
         return this.getClass().getName();
     }
 
     // interface TopComponent
+    @Override
     public void componentHidden () {
 //	if (debugger != null)
 //	    debugger.registerDisassemblerWindow(null);
@@ -106,6 +105,7 @@ public final class DisassemblerWindow extends TopComponent {
     }
     
     // interface TopComponent
+    @Override
     public void componentShowing () {
 	if (debugger == null) return;
 //	debugger.registerDisassemblerWindow(this);
@@ -114,6 +114,7 @@ public final class DisassemblerWindow extends TopComponent {
     }
 
     // interface TopComponent
+    @Override
     protected void componentClosed () {
 //	if (debugger != null) {
 //	    debugger.registerDisassemblerWindow(null);
@@ -122,20 +123,24 @@ public final class DisassemblerWindow extends TopComponent {
     }
 
     // interface TopComponent
+    @Override
     public void componentActivated() {
 	super.componentActivated();
 	view.componentActivated();
     }
 
     // interface TopComponent
+    @Override
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;
     }
         
+    @Override
     public String getName () {
         return name;
     }
     
+    @Override
     public String getToolTipText () {
 	return Catalog.get("TIP_DisWindow");	// NOI18N
     }
@@ -148,6 +153,7 @@ public final class DisassemblerWindow extends TopComponent {
         this.debugger = debugger;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("DisassemblerWindow");
     }

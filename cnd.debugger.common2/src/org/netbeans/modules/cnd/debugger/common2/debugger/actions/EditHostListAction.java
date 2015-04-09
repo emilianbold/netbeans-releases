@@ -45,13 +45,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JButton;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
@@ -64,31 +57,37 @@ public class EditHostListAction extends CallableSystemAction {
     static final long serialVersionUID = -8705899978543961455L;
     
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	HostListEditor editor = new HostListEditor();
 	editor.showDialog(null);
     }
     
     // interface CallableSystemAction
+    @Override
     public boolean asynchronous() {
 	return false;
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("TITLE_Hosts"); // NOI18N
     }
     
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
+    @Override
     protected String iconResource () {
 	return null;
     }
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	setEnabled(true);

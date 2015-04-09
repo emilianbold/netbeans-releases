@@ -145,6 +145,7 @@ public final class Signals extends ProfileCategory {
      */
 
     // Override Object
+    @Override
     public boolean equals(Object thatObject) {
 	// canonical part
 	if (this == thatObject)
@@ -164,6 +165,7 @@ public final class Signals extends ProfileCategory {
 	return true;
     }
 
+    @Override
     public Object clone() {
 	Signals clone = new Signals(null);
 	clone.setClone();
@@ -189,6 +191,7 @@ public final class Signals extends ProfileCategory {
      * Assign values of thatObject to this.
      */
 
+    @Override
     public void assign(Object thatObject) {
 
 	// This happens in the case of cancellation

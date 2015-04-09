@@ -100,6 +100,7 @@ public final class WatchModel extends VariableModel
     }
 
     // interface VariableModel
+    @Override
     protected boolean isLocal() {
 	return false;
     }
@@ -118,6 +119,7 @@ public final class WatchModel extends VariableModel
      */
 
     // interface TreeModel
+    @Override
     public Object[] getChildren(Object parent, int from, int to) 
 		throws UnknownTypeException {
 	assert !(parent instanceof Watch);
@@ -151,6 +153,7 @@ public final class WatchModel extends VariableModel
     }
 
     // interface TreeModel
+    @Override
     public int getChildrenCount(Object parent)  throws UnknownTypeException {
 	assert !(parent instanceof Watch);
 	if (parent == ROOT) {
@@ -330,12 +333,15 @@ public final class WatchModel extends VariableModel
     public /* TMP */ static final Action DELETE_ACTION = Models.createAction (
 	Catalog.get("ACT_WATCH_Delete"), // NOI18N
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return !(node instanceof EmptyWatch);
             }
+            @Override
             public void perform (final Object[] nodes) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 		    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
 			public void run() {
 			    perform(nodes);
 			}
@@ -365,6 +371,7 @@ public final class WatchModel extends VariableModel
 
     public static final Action NEW_WATCH_ACTION = new AbstractAction
         (Catalog.get("ACT_WATCH_NewWatch")) { //NOI18N
+            @Override
             public void actionPerformed (ActionEvent e) {
                 DebuggerEngine engine = org.netbeans.api.debugger.DebuggerManager.getDebuggerManager().getCurrentEngine();
                     if (engine != null) {
@@ -375,6 +382,7 @@ public final class WatchModel extends VariableModel
 
 
     // interface NodeActionsProvider
+    @Override
     public Action[] getActions(Object o) throws UnknownTypeException {
 	assert ! (o instanceof NativeWatch) : 
 	       "WatchModel.get*(): got a NativeWatch"; // NOI18N
@@ -426,12 +434,14 @@ public final class WatchModel extends VariableModel
     }
 
     // interface TreeModel etc
+    @Override
     public void addModelListener(ModelListener l) {
 	if (super.addModelListenerHelp(l) && debugger != null)
 	    debugger.registerWatchModel(this);
     }
 
     // interface TreeModel etc
+    @Override
     public void removeModelListener(ModelListener l) {
 	if (super.removeModelListenerHelp(l) && debugger != null)
 	    debugger.registerWatchModel(null);
@@ -446,6 +456,7 @@ public final class WatchModel extends VariableModel
 	    setEnabled(true);
 	}
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    watchBag().postDeleteAllWatches();
 	}

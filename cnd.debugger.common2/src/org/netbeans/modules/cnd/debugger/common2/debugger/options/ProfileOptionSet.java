@@ -131,26 +131,31 @@ public class ProfileOptionSet extends OptionSetSupport {
 	copy(that);
     } 
 
+    @Override
     public OptionSet makeCopy() {
 	return new ProfileOptionSet(this);
     }
 
     // interface OptionSet
+    @Override
     public void save() {
 	// noop
     }
 
     // interface OptionSet
+    @Override
     public void open() {
 	// noop
     }
 
     // interface OptionSet
+    @Override
     public String tag() {
 	return "DebugOptions";		// NOI18N
     }
 
     // interface OptionSet
+    @Override
     public String description() {
 	return "debugger options";	// NOI18N
     }

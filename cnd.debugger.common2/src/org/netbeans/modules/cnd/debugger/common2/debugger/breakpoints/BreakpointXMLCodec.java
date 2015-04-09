@@ -117,11 +117,13 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
     } 
 
     // interface XMLDecoder
+    @Override
     protected String tag() {
 	return TAG_BREAKPOINT;
     } 
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) {
 	if (Log.Bpt.xml)
 	    System.out.printf("BreakpointXMLCodec().start(%s)\n", tag()); // NOI18N
@@ -174,6 +176,7 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
 	if (Log.Bpt.xml)
 	    System.out.printf("BreakpointXMLCodec().end(%s)\n", tag()); // NOI18N
@@ -202,6 +205,7 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
 
 	if (Log.Bpt.xml)
@@ -238,6 +242,7 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
 	if (Log.Bpt.xml)
 	    System.out.printf("BreakpointXMLCodec().endElement(%s)\n", element); // NOI18N
@@ -299,6 +304,7 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // pseudo-interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 	bpt.prepareForSaving();
 

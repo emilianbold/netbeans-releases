@@ -74,6 +74,7 @@ public class ModelListenerSupport implements ModelListener {
      */
 
     // interface ModelListener
+    @Override
     public void modelChanged(ModelEvent event) {
 	ModelListener lastListener = null;
 

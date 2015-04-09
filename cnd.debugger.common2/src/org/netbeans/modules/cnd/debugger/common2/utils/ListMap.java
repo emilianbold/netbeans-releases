@@ -100,6 +100,7 @@ public class ListMap<O extends ListMapItem> implements Iterable<O> {
     }
 
     // interface Iterable
+    @Override
     public Iterator<O> iterator() {
 	return list.iterator();
     }

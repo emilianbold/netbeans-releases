@@ -101,6 +101,7 @@ public final class Gen {
 	this.origin = origin;
     }
 
+    @Override
     public String toString() {
 	String sprd = spread? "s": "";		// NOI18N
 	return "<"+gen+spread+">";		// NOI18N

@@ -404,6 +404,7 @@ public class IpeUtils {
 
     public static void requestFocus(final Component c) {
 	SwingUtilities.invokeLater(new Runnable() {
+                @Override
 		public void run() {
 		    if (c != null) {
 			if (c.getParent() != null) {
@@ -573,6 +574,7 @@ public class IpeUtils {
 		});
 	    ActionListener errorListener = new ActionListener() {
 
+                @Override
 		public void actionPerformed(ActionEvent event) {
 		    if (event.getSource() == DialogDescriptor.OK_OPTION ||
 			event.getSource() == NotifyDescriptor.CLOSED_OPTION) {

@@ -85,12 +85,14 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface TreeModel
+    @Override
     public Object getRoot() {
 	// redundant?
 	return ROOT;
     } 
 
     // interface TreeModel
+    @Override
     public Object[] getChildren(Object parent, int from, int to) {
 	if (parent == ROOT) {
 	    Object o[] =  debugger.getThreads();
@@ -107,6 +109,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface TreeModel
+    @Override
     public int getChildrenCount(Object parent) {
 	if (parent == ROOT)
 	    return debugger.getThreads().length;
@@ -115,6 +118,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface TreeModel
+    @Override
     public boolean isLeaf(Object node) {
 	if (node == ROOT)
 	    return false;
@@ -132,6 +136,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface NodeModel
+    @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return ROOT;
@@ -178,6 +183,7 @@ public final class ThreadModel extends ModelListenerSupport
 
 
     // interface NodeModel
+    @Override
     public String getIconBase(Object node) throws UnknownTypeException {
 	if (node == ROOT)
 	    return ICON_CURRENT_NORMAL;
@@ -199,6 +205,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface NodeModel
+    @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
 	if (node == ROOT)
 	    return ROOT;
@@ -207,6 +214,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public boolean canCopy(Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return false;
@@ -218,6 +226,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public Transferable clipboardCopy(Object node)
 	throws UnknownTypeException, java.io.IOException {
 	if (node == ROOT) {
@@ -230,6 +239,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public boolean canCut(Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return false;
@@ -241,6 +251,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public Transferable clipboardCut(Object node)
 	throws UnknownTypeException, java.io.IOException {
 	if (node == ROOT) {
@@ -253,6 +264,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public boolean canRename(Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return false;
@@ -264,6 +276,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public void setName(Object node, String name)
 	throws UnknownTypeException {
 	if (node == ROOT) {
@@ -276,6 +289,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public PasteType[] getPasteTypes(Object node, Transferable t)
 	throws UnknownTypeException {
 	if (node == ROOT) {
@@ -288,6 +302,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public String getIconBaseWithExtension(Object node) 
 	throws UnknownTypeException {
 
@@ -295,6 +310,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface TableModel
+    @Override
     public Object getValueAt(Object node, String columnID)
 	throws UnknownTypeException {
 
@@ -342,6 +358,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface TableModel
+    @Override
     public boolean isReadOnly(Object node, String columnID) {
 	// TMP return true;
 
@@ -352,6 +369,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface TableModel
+    @Override
     public void setValueAt(Object node, String columnID, Object value) 
 	throws UnknownTypeException, NumberFormatException {
 
@@ -362,6 +380,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface NodeActionsProvider
+    @Override
     public Action[] getActions (Object node) throws UnknownTypeException {
 
 	if (node == ROOT) {
@@ -376,6 +395,7 @@ public final class ThreadModel extends ModelListenerSupport
     }
 
     // interface NodeActionsProvider
+    @Override
     public void performDefaultAction (Object node) throws UnknownTypeException {
 	// This gets called redundantly, see issue 48891.
 	debugger.makeThreadCurrent(getThread(node));
@@ -393,18 +413,21 @@ public final class ThreadModel extends ModelListenerSupport
 	    setEnabled(!thread.isCurrent());
 	} 
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    debugger.makeThreadCurrent(thread);
 	}
     }
 
     // interface TreeModel etc
+    @Override
     public void addModelListener(ModelListener l) {
 	if (super.addModelListenerHelp(l))
 	    debugger.registerThreadModel(this);
     }
 
     // interface TreeModel etc
+    @Override
     public void removeModelListener(ModelListener l) {
 	if (super.removeModelListenerHelp(l))
 	    debugger.registerThreadModel(null);

@@ -217,6 +217,7 @@ public class DisView {
      *
      */
     class AddressTextAction extends AbstractAction implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent actionEvent) {
 	String ac = actionEvent.getActionCommand();
 	    // 6573554
@@ -252,6 +253,7 @@ public class DisView {
 	    super(Catalog.get("Dis_ACT_Go_To_Source"), 		// NOI18N
 		new ImageIcon("open.gif"));			// NOI18N
 	}
+        @Override
 	public void actionPerformed(ActionEvent ev) {
 	    //controller.goToSource();
 	}
@@ -262,6 +264,7 @@ public class DisView {
 	    super(Catalog.get("Dis_ACT_Show_Current_Statement"),// NOI18N
 		new ImageIcon("open.gif"));			// NOI18N
 	}
+        @Override
 	public void actionPerformed(ActionEvent ev) {
 	    showCurrentStatement();
 	}
@@ -274,6 +277,7 @@ public class DisView {
 	    super(bptString, new ImageIcon("cut.gif"));		// NOI18N
 	    this.add = add;
 	}
+        @Override
 	public void actionPerformed(ActionEvent ev) {
 	    if (controller != null) {
 		String address = addrFromLine(getCurrentLine());
@@ -339,13 +343,17 @@ public class DisView {
 			   e.getX(), e.getY());
 	    }
 	}
+        @Override
 	public void actionPerformed(ActionEvent ev) {
 	    JMenuItem source = (JMenuItem)(ev.getSource());
 	}
+        @Override
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 	}
+        @Override
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 	}
+        @Override
 	public void popupMenuCanceled(PopupMenuEvent e) {
 	}
     }
@@ -480,6 +488,7 @@ public class DisView {
 	}
 
 	private final ViewScanner viewScanner = new ViewScanner() {
+            @Override
 	    protected void scanLine(Graphics g, int y, int ycenter) {
 		Rectangle clip = g.getClipBounds();
 
@@ -560,6 +569,7 @@ public class DisView {
 
 	    private final ViewScanner viewScanner = new ViewScanner() {
 
+                @Override
 		protected void scanLine(Graphics g, int y, int ycenter) {
 		    Point p = new Point(0, ycenter);
 		    int pos = editorPane.viewToModel(p);
@@ -669,10 +679,12 @@ public class DisView {
 	// it's enabled and editable, and we're not editable.
 
 	editorPane.addFocusListener(new java.awt.event.FocusListener() {
+            @Override
 	    public void focusGained(java.awt.event.FocusEvent e) {
 		// DEBUG System.out.printf("disasm: focusGained()\n");
 		editorPane.getCaret().setVisible(true);
 	    }
+            @Override
 	    public void focusLost(java.awt.event.FocusEvent e) {
 		// DEBUG System.out.printf("disasm: focusLost()\n");
 	    }
@@ -722,6 +734,7 @@ public class DisView {
 	    patternText.setEditable(true);
 
 	    patternText.addActionListener(new ActionListener() {
+                @Override
 		public void actionPerformed(ActionEvent evt) {
 		    debugPattern = patternText.getText();
 		    System.out.printf("Pattern: '%s'\n", debugPattern); // NOI18N
@@ -1755,6 +1768,7 @@ public class DisView {
      */
     private final BreakpointModel.Listener breakpointListener =
 	new BreakpointModel.Listener() {
+            @Override
 	    public void bptUpdated() {
 		breakpointModelChanged();
 	    }
@@ -1785,6 +1799,7 @@ public class DisView {
      */
     private final DisFragModel.Listener fragListener =
 	new DisFragModel.Listener() {
+            @Override
 	    public void fragUpdated() {
 		modelChanged();
 	    }
@@ -1795,6 +1810,7 @@ public class DisView {
      */
     private final StateModel.Listener stateListener =
 	new StateModel.Listener() {
+            @Override
 	    public void stateUpdated() {
 		stateModelChanged();
 	    }

@@ -75,18 +75,22 @@ public class DbgActionHandler implements ProjectActionHandler {
     private ProjectActionEvent pae;
     private NativeDebuggerInfo ndi;
 
+    @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
     }
 
+    @Override
     public void addExecutionListener(ExecutionListener l) {
         listeners.add(l);
     }
 
+    @Override
     public void removeExecutionListener(ExecutionListener l) {
         listeners.remove(l);
     }
 
+    @Override
     public boolean canCancel() {
         return true;
     }
@@ -94,6 +98,7 @@ public class DbgActionHandler implements ProjectActionHandler {
     /*
      * Called when user cancels execution from progressbar in output window
      */
+    @Override
     public void cancel() {
         // find dbugger using ndi and kill it
         for (NativeDebugger debugger: NativeDebuggerManager.get().nativeDebuggers()) {
@@ -105,6 +110,7 @@ public class DbgActionHandler implements ProjectActionHandler {
     }
 
     // interface CustomProjectActionHandler
+    @Override
     public void execute(final InputOutput io) {
 
 	// The executable file is already checked and adjusted by the
@@ -115,6 +121,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 	dm.setIO(io);
 	String hostName = CndRemote.userhostFromConfiguration(pae.getConfiguration());
 	CndRemote.validate(hostName, new Runnable() {
+            @Override
 		public void run() {
 			doExecute(executable, dm, io);
 		}
@@ -142,6 +149,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 	executionStarted();
 
         Runnable loadProgram = new Runnable() {
+            @Override
             public void run() {
                 if (io != null) {
                     IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));

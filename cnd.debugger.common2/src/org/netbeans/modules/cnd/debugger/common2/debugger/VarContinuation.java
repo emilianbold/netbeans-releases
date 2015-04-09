@@ -66,6 +66,7 @@ public abstract class VarContinuation implements Runnable {
      * Override this method with the code to be executed when we receive
      * the value.
      */
+    @Override
     public abstract void run();
 
     protected String getResult() {
@@ -83,6 +84,7 @@ public abstract class VarContinuation implements Runnable {
 
 	// SHOULD make it be parameteric instead of always doing this?
 	SwingUtilities.invokeLater (new Runnable() {
+            @Override
 	    public void run() {
 		VarContinuation.this.run();
 	    }

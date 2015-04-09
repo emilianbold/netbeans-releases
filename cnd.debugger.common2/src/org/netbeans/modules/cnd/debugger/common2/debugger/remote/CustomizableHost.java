@@ -77,11 +77,13 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
      */
 
     // interface Record
+    @Override
     public String getKey() {
 	return getHostName();
     }
 
     // interface Record
+    @Override
     public void setKey(String newKey) {
 
 	// Do allow setting of an archetypes key because otherwise 
@@ -91,11 +93,13 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
     }
 
     // interface Record
+    @Override
     public boolean matches(String key) {
 	return IpeUtils.sameString(getKey(), key);
     }
 
     // interface Record
+    @Override
     public boolean isArchetype() {
 	return localhost.equals(getHostName());	// NOI18N
     }
@@ -103,6 +107,7 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
     /**
      * Convert this to an ExecutionEnvironment.
      */
+    @Override
     public ExecutionEnvironment executionEnvironment() {
         ExecutionEnvironment ee;
 	if (isRemote())
@@ -132,6 +137,7 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
         return LocalHostNameHolder.name;
     }
     
+    @Override
     public boolean isRemote() {
         return isRemote(getHostName());
     }
@@ -148,6 +154,7 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
      * Stored in option property and display to users as the form of 
      * "Solaris_Sparc", "Solaris_x86" , "Linux_x86"
      */
+    @Override
     public String getPlatformName() {
 	String platForm = getHostOption("platform"); // NOI18N
 	return platForm;
@@ -157,11 +164,13 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
 	setHostOption("platform", platform); // NOI18N
     }
 
+    @Override
     public String getHostName() {
 	String hostName = getHostOption("host_name"); // NOI18N
 	return hostName;
     }
 
+    @Override
     public int getPortNum() {
         return Integer.parseInt(getHostOption("ssh_port")); // NOI18N
     }
@@ -203,6 +212,7 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
 	//}
     }
 
+    @Override
     public String getHostLogin() {
 	String loginName = getHostOption("login_name"); // NOI18N
 	return loginName;
@@ -212,6 +222,7 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
 	setHostOption("login_name", loginName); // NOI18N
     }
 
+    @Override
     public String getRemoteStudioLocation() {
 	String studioLocation = getHostOption("studio_location"); // NOI18N
 	if (Log.Remote.host) {
@@ -229,17 +240,20 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
 	setHostOption("ssh_port", Integer.toString(ss.sshPort())); // NOI18N
     }
 
+    @Override
     public SecuritySettings getSecuritySettings() {
 	return new SecuritySettings(Integer.parseInt(getHostOption("ssh_port")), null); // NOI18N
     }
     
 
     // interface Record
+    @Override
     public CustomizableHost cloneRecord() {
 	return new CustomizableHost(options.makeCopy());
     }
     
     // interface Record
+    @Override
     public String displayName() {        
 	if (getHostName().equals("localhost")) // NOI18N
 	    return getHostName() + " (" + getLocalHost() + ", " + getPlatformName() + " )"; // NOI18N
@@ -273,6 +287,7 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
     }
 
     // interface OptionSetOwner
+    @Override
     public OptionSet getOptions() {
         return options;
     }

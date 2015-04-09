@@ -329,6 +329,7 @@ class CapturePanel extends JPanel {
 		Catalog.setAccessibleDescription(projectComboBox,
 						 "ACSD_Project");	// NOI18N
 		projectComboBox.addActionListener(new ActionListener() {
+                    @Override
 		    public void actionPerformed(ActionEvent e) {
 			// different project was selected
 			clearError();
