@@ -84,6 +84,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -249,6 +250,13 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                 boolean trustException = Boolean.parseBoolean(ip.getProperty(TRUST_EXCEPTION_PROPERTY));
                 if (trustException) {
                     ip.setProperty(TRUST_EXCEPTION_PROPERTY, Boolean.FALSE.toString());
+                    try {
+                        removeFromTrustStore(url);
+                    } catch (GeneralSecurityException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
                 }
             } catch (CertificateException excep) {
                 Future<Boolean> task = TRUST_MANAGER_ACCESS.submit(new Callable<Boolean>() {
