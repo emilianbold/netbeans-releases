@@ -48,6 +48,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -311,11 +312,9 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             EnvReader reader = new EnvReader(login_shell_channels.out, true);
             environmentToFill.putAll(reader.call());
         } catch (Exception ex) {
-            if (ex instanceof InterruptedException) {
-                throw (InterruptedException) ex;
-            }
-            if (ex.getCause() instanceof InterruptedException) {
-                throw (InterruptedException) ex.getCause();
+            InterruptedException iex = toInterruptedException(ex);
+            if (iex != null) {
+                throw iex;
             }
             log.log(Level.WARNING, "Failed to get getRemoteUserEnvironment for " + execEnv.getDisplayName(), ex); // NOI18N
         } finally {
@@ -332,6 +331,26 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         }
     }
 
+    InterruptedException toInterruptedException(Exception ex) {
+        if (ex instanceof InterruptedException) {
+            return (InterruptedException) ex;
+        } else if (ex.getCause() instanceof InterruptedException) {
+            return (InterruptedException) ex.getCause();
+        }
+        InterruptedIOException iioe = null;
+        if (ex instanceof InterruptedIOException) {
+            iioe = (InterruptedIOException) ex;
+        } else if (ex.getCause() instanceof InterruptedIOException) {
+            iioe = (InterruptedIOException) ex.getCause();
+        }
+        if (iioe != null) {
+            InterruptedException wrapper = new InterruptedException(ex.getMessage());
+            wrapper.initCause(iioe);
+            return wrapper;
+        }
+        return null;
+    }
+    
     private void getLocalUserEnvironment(HostInfo hostInfo, Map<String, String> environmentToFill) {
         environmentToFill.putAll(System.getenv());
     }
