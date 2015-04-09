@@ -56,7 +56,7 @@ public class VisibilityIndentProperty extends PropertySupport.ReadWrite<CodeStyl
 
     private final CodeStyle.Language language;
     private final String optionID;
-    private PreviewPreferences preferences;
+    private final PreviewPreferences preferences;
     private CodeStyle.VisibilityIndent state;
     private PropertyEditor editor;
 
@@ -93,10 +93,12 @@ public class VisibilityIndentProperty extends PropertySupport.ReadWrite<CodeStyl
         return null;
     }
 
+    @Override
     public CodeStyle.VisibilityIndent getValue() {
         return state;
     }
 
+    @Override
     public void setValue(CodeStyle.VisibilityIndent v) {
         state = v;
         getPreferences().put(optionID, state.name());

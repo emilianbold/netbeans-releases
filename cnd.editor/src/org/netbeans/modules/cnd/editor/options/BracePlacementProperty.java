@@ -56,7 +56,7 @@ public class BracePlacementProperty extends PropertySupport.ReadWrite<CodeStyle.
 
     private final CodeStyle.Language language;
     private final String optionID;
-    private PreviewPreferences preferences;
+    private final PreviewPreferences preferences;
     private CodeStyle.BracePlacement state;
     private PropertyEditor editor;
 
@@ -93,10 +93,12 @@ public class BracePlacementProperty extends PropertySupport.ReadWrite<CodeStyle.
         return null;
     }
 
+    @Override
     public CodeStyle.BracePlacement getValue() {
         return state;
     }
 
+    @Override
     public void setValue(CodeStyle.BracePlacement v) {
         state = v;
         getPreferences().put(optionID, state.name());

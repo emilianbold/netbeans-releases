@@ -62,7 +62,7 @@ public class FortranReformatterImpl {
     /*package local*/ final FortranCodeStyle codeStyle;
     /*package local*/ final FortranDiffLinkedList diffs = new FortranDiffLinkedList();
     /*package local*/ final FortranBracesStack braces;
-    private FortranPreprocessorFormatter preprocessorFormatter;
+    private final FortranPreprocessorFormatter preprocessorFormatter;
     private final int startOffset;
     private final int endOffset;
     final int tabSize;

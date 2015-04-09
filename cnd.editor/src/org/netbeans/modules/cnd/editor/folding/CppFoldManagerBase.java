@@ -115,13 +115,13 @@ abstract class CppFoldManagerBase implements FoldManager {
     /* Copied from JavaFoldManger in java/editor/lib */
     protected static final class FoldTemplate {
         
-        private FoldType type;
+        private final FoldType type;
         
-        private String description;
+        private final String description;
         
-        private int startGuardedLength;
+        private final int startGuardedLength;
         
-        private int endGuardedLength;
+        private final int endGuardedLength;
         
         protected FoldTemplate(FoldType type, String description,
 			int startGuardedLength, int endGuardedLength) {

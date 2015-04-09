@@ -63,10 +63,12 @@ import javax.swing.text.JTextComponent;
         super(name, originalAction);
     }
 
+    @Override
     protected int newOffset(JTextComponent textComponent) throws BadLocationException {
         return CamelCaseOperations.previousCamelCasePosition(textComponent);
     }
 
+    @Override
     protected void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
         textComponent.setCaretPosition(offset);
     }

@@ -84,6 +84,7 @@ import org.openide.util.NbPreferences;
         }
     }
 
+    @Override
     public final void actionPerformed(ActionEvent evt, final JTextComponent target) {
         if (target != null) {
             if (originalAction != null && !isUsingCamelCase()) {
@@ -96,6 +97,7 @@ import org.openide.util.NbPreferences;
                 final BaseDocument bdoc = org.netbeans.editor.Utilities.getDocument(target);
                 if (bdoc != null) {
                     bdoc.runAtomicAsUser (new Runnable () {
+                        @Override
                         public void run () {
                             DocumentUtilities.setTypingModification(bdoc, true);
                             try {

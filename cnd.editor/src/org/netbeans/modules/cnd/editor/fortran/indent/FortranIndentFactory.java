@@ -50,6 +50,7 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
  */
 public class FortranIndentFactory implements IndentTask.Factory {
 
+    @Override
     public FortranIndentTask createTask(Context context) {
         return new FortranIndentTask(context);
     }

@@ -59,13 +59,13 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
  * @author Alexander Simon
  */
 public class PreprocessorFormatter {
-    private ReformatterImpl context;
+    private final ReformatterImpl context;
     private final ExtendedTokenSequence ts;
     private final CodeStyle codeStyle;
     private final DiffLinkedList diffs;
     private int prepocessorDepth = 0;
-    private Stack<PreprocessorStateStack> stateStack = new Stack<PreprocessorStateStack>();
-    private BracesStack braces;
+    private final Stack<PreprocessorStateStack> stateStack = new Stack<PreprocessorStateStack>();
+    private final BracesStack braces;
 
     
     /*package local*/ PreprocessorFormatter(ReformatterImpl context){
