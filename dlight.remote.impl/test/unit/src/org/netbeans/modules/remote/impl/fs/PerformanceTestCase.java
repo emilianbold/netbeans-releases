@@ -102,7 +102,7 @@ public class PerformanceTestCase extends RemoteFileTestBase {
         private int files = 0;
         private int directories = 0;
         private long time = System.currentTimeMillis();
-        private static int divider = 5000;
+        private static final int divider = 5000;
 
         public int getFiles() {
             return files;

@@ -64,7 +64,7 @@ final class CachedRemoteInputStream extends InputStream {
 
     private static final int BUFFER_SIZE;
     private final RemotePlainFile remoteFile;
-    private byte[] buffer;
+    private final byte[] buffer;
     private int position;
     private final Writer writer = new PrintWriter(System.err);
     private Object delegate;

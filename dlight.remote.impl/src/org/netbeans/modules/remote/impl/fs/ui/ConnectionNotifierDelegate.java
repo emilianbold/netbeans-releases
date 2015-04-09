@@ -82,8 +82,8 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
 
 
     private static final Map<ExecutionEnvironment, ConnectionNotifierDelegate> instances = new HashMap<ExecutionEnvironment, ConnectionNotifierDelegate>();
-    private static RequestProcessor RP_WORKER = new RequestProcessor("Connection worker", 2); //NOI18N
-    private static RequestProcessor RP_NOTIFIER = new RequestProcessor("Connection notifier", 1); //NOI18N
+    private static final RequestProcessor RP_WORKER = new RequestProcessor("Connection worker", 2); //NOI18N
+    private static final RequestProcessor RP_NOTIFIER = new RequestProcessor("Connection notifier", 1); //NOI18N
 
     static public ConnectionNotifierDelegate getInstance(ExecutionEnvironment env) {
         synchronized (instances) {

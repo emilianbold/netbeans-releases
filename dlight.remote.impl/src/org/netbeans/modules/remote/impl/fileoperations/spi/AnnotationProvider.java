@@ -60,7 +60,7 @@ abstract public class AnnotationProvider {
 
     private static AnnotationProvider defaultProvider;
     /** listeners */
-    private List<FileStatusListener> fsStatusListener = new ArrayList<FileStatusListener>();
+    private final List<FileStatusListener> fsStatusListener = new ArrayList<FileStatusListener>();
     /** lock for modification of listeners */
     private static final Object lock = new Object();
 

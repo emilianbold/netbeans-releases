@@ -190,7 +190,7 @@ public class RemoteFileURLConnection extends URLConnection {
         /**
          * delegated reader that reads the document
          */
-        private StringReader reader;
+        private final StringReader reader;
 
         /**
          * @param folder is a folder

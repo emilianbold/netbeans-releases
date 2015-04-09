@@ -122,7 +122,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     // <editor-fold desc="Moved from RemoteFileObjectFile.">
     
-    transient private ThreadLocal<AtomicInteger> magic = new ThreadLocal<AtomicInteger>() {
+    private final transient ThreadLocal<AtomicInteger> magic = new ThreadLocal<AtomicInteger>() {
 
         @Override
         protected AtomicInteger initialValue() {

@@ -60,7 +60,7 @@ import org.openide.filesystems.FileSystem;
  */
 //@org.openide.util.lookup.ServiceProvider(service = FilesystemInterceptorProvider.class, position = 100)
 public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorProvider {
-    private Map<FileSystem, FilesystemInterceptor> map = new HashMap<FileSystem, FilesystemInterceptor>();
+    private final Map<FileSystem, FilesystemInterceptor> map = new HashMap<FileSystem, FilesystemInterceptor>();
 
     @Override
     public synchronized FilesystemInterceptor getFilesystemInterceptor(FileSystem fs) {

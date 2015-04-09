@@ -80,7 +80,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     
     private final char fileTypeChar;
 //    private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
-    private SimpleRWLock rwl = new SimpleRWLock();
+    private final SimpleRWLock rwl = new SimpleRWLock();
     
     /*package*/ RemotePlainFile(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
