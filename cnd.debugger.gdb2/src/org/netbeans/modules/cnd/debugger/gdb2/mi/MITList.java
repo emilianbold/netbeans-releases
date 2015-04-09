@@ -54,8 +54,8 @@ import java.util.logging.Logger;
  * Representation of a 'tuple/list' combo sub-tree from the MI spec.
  * A list can be one of:
  * <ul>
- * <li>"[]" 
- * <li>"[" tlist-item ( "," tlist-item )* "]" 
+ * <li>"[]"
+ * <li>"[" tlist-item ( "," tlist-item )* "]"
  * <li>"{" tlist-item ( "," tlist-item )* "}"
  * </ul>
  */
@@ -68,20 +68,20 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 
     private boolean sawResults;
     private boolean sawValues;
-    
+
     private static final Logger LOG = Logger.getLogger(MITList.class.toString());
 
     MITList(boolean isList, boolean topLevel) {
 	list = new ArrayList<MITListItem>();
 	this.isList = isList;
 	this.topLevel = topLevel;
-    } 
+    }
 
     @Override
     public String toString() {
-	String s = new String();
+	StringBuilder s = new StringBuilder();
 	if (!topLevel)
-	    s += isList()? "[": "{"; // NOI18N
+	    s.append(isList()? '[': '{'); // NOI18N
 	for (int vx = 0; vx < list.size(); vx++) {
 	    /* OLD
 	    if (isValueList) {
@@ -93,14 +93,14 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 	    }
 	    */
 	    MITListItem item = list.get(vx);
-	    s += item.toString();
+	    s.append(item.toString());
 
 	    if (vx+1 < list.size())
-		s += ","; // NOI18N
+		s.append(','); // NOI18N
 	}
 	if (!topLevel)
-	    s += isList()? "]": "}"; // NOI18N
-	return s;
+	    s.append(isList()? ']': '}'); // NOI18N
+	return s.toString();
     }
 
 
@@ -146,7 +146,7 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 
     public boolean isEmpty() {
 	return list.isEmpty();
-    } 
+    }
 
     /**
      * return size of list
@@ -157,11 +157,11 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 
     public boolean isValueList() {
 	return sawValues;
-    } 
+    }
 
     public boolean isResultList() {
 	return sawResults;
-    } 
+    }
 
     /**
      * return one entry by index
@@ -181,16 +181,16 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 	sawValues = true;
 	list.add(value);
     }
-    
+
     public <Type> Iterable<Type> getOnly(final Class<Type> cls) {
         final Iterator<MITListItem> iterator = iterator();
-        
+
         return new Iterable<Type>() {
             @Override
             public Iterator<Type> iterator() {
                 return new Iterator<Type>() {
                     private Type item = nextImpl();
-                    
+
                     private Type nextImpl() {
                         while (iterator.hasNext()) {
                             MITListItem next = iterator.next();
@@ -245,7 +245,7 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 	}
 	return null;
     }
-    
+
     /**
      * Get const value directly
      * @param variable - name of the const variable in the list
@@ -254,7 +254,7 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
     public String getConstValue(String variable) {
         return getConstValue(variable, "");
     }
-    
+
     /**
      * Get const value directly
      * @param variable - name of the const variable in the list
