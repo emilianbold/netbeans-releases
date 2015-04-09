@@ -675,9 +675,9 @@ declaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration
     | (cp_mixin_declaration)=>cp_mixin_declaration
-    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
-    | (cp_mixin_call)=> {isCssPreprocessorSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
+    | (cp_mixin_call)=> cp_mixin_call (ws? IMPORTANT_SYM)?
+    | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?    
     | {isLessSource()}? AT_IDENT LPAREN RPAREN
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
