@@ -124,10 +124,18 @@ public class UnnecessaryBoxingTest extends NbTestCase {
                 + "        Long a = t ? new Integer(1) : Long.valueOf(5);\n"
                 + "    }\n"
                 + "}", false)
-                .sourceLevel("1.5")
+                .sourceLevel("1.5").preference(UnnecessaryBoxing.PREFER_CAST_TO_BOXING, true)
                 .run(UnnecessaryBoxing.class)
                 .assertWarnings("3:21-3:35:verifier:TEXT_UnnecessaryBoxing",
-                "3:38-3:53:verifier:TEXT_UnnecessaryBoxing");
+                    "3:38-3:53:verifier:TEXT_UnnecessaryBoxing")
+                .findWarning("3:38-3:53:verifier:TEXT_UnnecessaryBoxing")
+                .applyFix()
+                .assertOutput("package test;\n"
+                + "final class Test  {\n"
+                + "    public void test(boolean t) {\n"
+                + "        Long a = t ? new Integer(1) : (long) 5;\n"
+                + "    }\n"
+                + "}");
     }
 
     public void testConditionalDifferentTypes() throws Exception {
@@ -139,7 +147,7 @@ public class UnnecessaryBoxingTest extends NbTestCase {
                 + "        Long a = t ? new Float(1) : Long.valueOf(5);\n"
                 + "    }\n"
                 + "}", false)
-                .sourceLevel("1.5")
+                .sourceLevel("1.5").preference(UnnecessaryBoxing.PREFER_CAST_TO_BOXING, true)
                 .run(UnnecessaryBoxing.class)
                 .assertWarnings("3:36-3:51:verifier:TEXT_UnnecessaryBoxing");
     }

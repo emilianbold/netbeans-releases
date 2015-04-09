@@ -118,7 +118,7 @@ public class UnnecessaryBoxing {
         tooltip = "#OPTDESC_PreferCastsToBoxing",
         defaultValue = DEFAULT_PREFER_CAST_TO_BOXING
     )
-    private static final String PREFER_CAST_TO_BOXING = "boxing.prefer.cast"; // NOI18N
+    static final String PREFER_CAST_TO_BOXING = "boxing.prefer.cast"; // NOI18N
     
     @TriggerPatterns({
         @TriggerPattern(value = "new java.lang.Byte($v)"),
