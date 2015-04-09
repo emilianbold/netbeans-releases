@@ -398,7 +398,7 @@ mediaBody
 
 mediaBodyItem
     :
-    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
+    (SASS_MIXIN | (((DOT IDENT) | HASH) ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
@@ -464,7 +464,7 @@ mediaFeature
 
 bodyItem
     :
-        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|RBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
+        (SASS_MIXIN | (((DOT IDENT) | HASH) ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|RBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
         //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
         | (cp_mixin_call ws? SEMI)=> {isLessSource()}? cp_mixin_call
         | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call
@@ -1099,7 +1099,7 @@ cp_math_expression_atom
 cp_mixin_declaration
     :
     (
-        {isLessSource()}? (LESS_AND | (DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN)) (ws? less_mixin_guarded)?
+        {isLessSource()}? (LESS_AND | (((DOT cp_mixin_name) | HASH) ws? LPAREN ws? cp_args_list? RPAREN)) (ws? less_mixin_guarded)?
         |
         {isScssSource()}? SASS_MIXIN ws cp_mixin_name (ws? LPAREN ws? cp_args_list? RPAREN)?
     )
@@ -1111,7 +1111,7 @@ cp_mixin_declaration
 cp_mixin_call
     :
     (
-        {isLessSource()}? DOT cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
+        {isLessSource()}? (DOT cp_mixin_name | HASH) (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? (ws? cp_mixin_block)?
     )

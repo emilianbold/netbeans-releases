@@ -814,8 +814,28 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "    }\n"
                 + "}";
         CssParserResult result = TestUtil.parse(source);
-         TestUtil.dumpResult(result);
         assertResultOK(result);
     }
     
+    public void testMixinCallsWithHash() {
+        String source = ".a, #b {\n"
+                + "  color: red;\n"
+                + "}\n"
+                + ".mixin-class {\n"
+                + "  .a();\n"
+                + "}\n"
+                + ".mixin-id {\n"
+                + "  #b();\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testMixinDefWithHash() {
+        String source = "#mymixin(@ruleset) { \n"
+                + "    @ruleset(); \n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }
