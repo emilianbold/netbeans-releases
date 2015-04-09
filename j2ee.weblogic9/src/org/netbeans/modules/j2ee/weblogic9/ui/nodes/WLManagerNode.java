@@ -102,7 +102,12 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public String  getAdminURL() {
-        StringBuilder builder = new StringBuilder("http://"); // NOI18N
+        StringBuilder builder = new StringBuilder();
+        if (deploymentManager.getCommonConfiguration().isSecured()) {
+            builder.append("https://"); // NOI18N
+        } else {
+            builder.append("http://"); // NOI18N
+        }
         builder.append(deploymentManager.getHost());
         builder.append(":"); // NOI18N
         builder.append(deploymentManager.getPort());
