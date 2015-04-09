@@ -145,6 +145,7 @@ public class GdbDisassembly extends Disassembly {
                     dialog = DialogDisplayer.getDefault().createDialog(dd);
                     final Dialog dlg = dialog;
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             dlg.setVisible(true);
                             if (dd.getValue() == DialogDescriptor.CANCEL_OPTION) {
@@ -205,6 +206,7 @@ public class GdbDisassembly extends Disassembly {
         if (dialog != null) {
             final Dialog dlg = dialog;
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     dlg.setVisible(false);
                     dlg.dispose();
@@ -291,6 +293,7 @@ public class GdbDisassembly extends Disassembly {
 //        return res;
 //    }
 
+    @Override
     public void stateUpdated() {
         reloadDis(true, false);
     }
@@ -422,6 +425,7 @@ public class GdbDisassembly extends Disassembly {
             this.instruction = readValue(INSTR_HEADER, msg, pos);
         }
 
+        @Override
         public String getAddress() {
             return address;
         }
@@ -430,10 +434,12 @@ public class GdbDisassembly extends Disassembly {
             return function;
         }
 
+        @Override
         public int getIdx() {
             return idx;
         }
 
+        @Override
         public void setIdx(int idx) {
             this.idx = idx;
         }

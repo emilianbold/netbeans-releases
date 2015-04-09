@@ -80,18 +80,22 @@ public final class GdbDebuggerSettings implements DebuggerSettings {
         this.dbgProfile = dbgProfile;
     }
 
+    @Override
     public DbgProfile dbgProfile() {
         return dbgProfile;
     }
 
+    @Override
     public RunProfile runProfile() {
         return runProfile;
     }
 
+    @Override
     public DebuggerSettings clone(Configuration conf) {
         return create(runProfile.clone(conf), (DbgProfile) dbgProfile.clone(conf));
     }
 
+    @Override
     public void attachBridge(DebuggerSettingsBridge bridge) {
         if (runProfile != null) {
             runProfile.addPropertyChangeListener(bridge);
@@ -101,6 +105,7 @@ public final class GdbDebuggerSettings implements DebuggerSettings {
         }
     }
 
+    @Override
     public void detachBridge(DebuggerSettingsBridge bridge) {
         if (runProfile != null) {
             runProfile.removePropertyChangeListener(bridge);

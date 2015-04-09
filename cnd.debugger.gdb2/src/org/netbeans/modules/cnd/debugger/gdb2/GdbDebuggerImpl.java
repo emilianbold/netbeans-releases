@@ -5098,7 +5098,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	// If we get an overload menu we might end up working with a new
 	// non-0 rt:
-	private int newRT = 0;
+	private final int newRT = 0;
 
 	// If we cancel an overload menu we'll get something like this:
 	//

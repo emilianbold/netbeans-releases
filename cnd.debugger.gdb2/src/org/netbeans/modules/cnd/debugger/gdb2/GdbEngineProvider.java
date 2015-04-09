@@ -55,11 +55,13 @@ public class GdbEngineProvider extends NativeEngineProvider {
     } 
 
     // interface DebuggerEngineProvider
+    @Override
     public String [] getLanguages() {
 	return new String[] {"All languages supported by gdb"}; // NOI18N
     }
 
     // interface DebuggerEngineProvider
+    @Override
     public String getEngineTypeID() {
 
 	// "folder" in which startDebugging() will look for 

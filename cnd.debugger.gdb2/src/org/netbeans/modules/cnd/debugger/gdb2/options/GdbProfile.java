@@ -96,6 +96,7 @@ public class GdbProfile extends DbgProfile implements
      * pool of aux objects and for storing the object in xml form and
      * parsing the xml code to restore the object.
      */
+    @Override
     public String getId() {
 	return PROFILE_ID;
     }
@@ -106,11 +107,13 @@ public class GdbProfile extends DbgProfile implements
     // 
 
     // interface ConfigurationAuxObject
+    @Override
     public XMLDecoder getXMLDecoder() {
 	return new GdbProfileXMLCodec(this);
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public XMLEncoder getXMLEncoder() {
 	return new GdbProfileXMLCodec(this);
     }
@@ -121,6 +124,7 @@ public class GdbProfile extends DbgProfile implements
      */
 
     // interface ConfigurationAuxObject
+    @Override
     public void assign(ConfigurationAuxObject profileAuxObject) {
 	if (!(profileAuxObject instanceof GdbProfile)) {
 	    // FIXUP: exception ????
@@ -147,6 +151,7 @@ public class GdbProfile extends DbgProfile implements
      */
 
     // interface ConfigurationAuxObject
+    @Override
     public ConfigurationAuxObject clone(Configuration conf) {
 	GdbProfile clone = new GdbProfile(null, conf);
 
@@ -165,6 +170,7 @@ public class GdbProfile extends DbgProfile implements
 	return clone;
     }
 
+    @Override
     public Sheet getSheet() {
 	Sheet sheet = new Sheet();
 	Sheet.Set set;

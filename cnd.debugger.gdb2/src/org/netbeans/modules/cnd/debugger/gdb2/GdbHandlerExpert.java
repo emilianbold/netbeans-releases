@@ -139,11 +139,13 @@ public class GdbHandlerExpert implements HandlerExpert {
                 result.variable().equals(GdbDebuggerImpl.MI_WPT) : "Result " + result + " is not a breakpoint"; //NOI18N
     }
 
+    @Override
     public ReplacementPolicy replacementPolicy() {
 	return ReplacementPolicy.EXPLICIT;
     }
 
     // interface HandlerExpert
+    @Override
     public Handler childHandler(NativeBreakpoint bpt) {
 	NativeBreakpoint breakpoint;
 	if (bpt.isToplevel()) {

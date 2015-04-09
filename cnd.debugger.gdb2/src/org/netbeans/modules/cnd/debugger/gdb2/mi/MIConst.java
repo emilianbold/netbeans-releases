@@ -57,6 +57,7 @@ public class MIConst extends MIValue {
 	this.value = value;
     } 
 
+    @Override
     public String toString() {
 	return "\"" + value + "\""; // NOI18N
     } 

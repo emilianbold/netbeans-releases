@@ -53,7 +53,7 @@ public class ValuePresenter {
     private ValuePresenter() {
     }
 
-    private static Presenter[] presenters = new Presenter[]{new StdStringPresenter()};
+    private static final Presenter[] presenters = new Presenter[]{new StdStringPresenter()};
 
     public static String getValue(String value) {
         return getValue(null, value);
@@ -95,10 +95,12 @@ public class ValuePresenter {
             TYPES.add("std::locale::string &"); // NOI18N
         }
 
+        @Override
         public boolean acceptsType(String type) {
             return TYPES.contains(type);
         }
         
+        @Override
         public boolean accepts(String type, String value) {
             // if type is not provided - try to check value
             if (type == null) {
@@ -127,6 +129,7 @@ public class ValuePresenter {
             return value.indexOf(VALUE_PREFIX) != -1;
         }
 
+        @Override
         public String present(String type, String value) {
             int pos = value.indexOf(VALUE_PREFIX);
             assert pos > 0;

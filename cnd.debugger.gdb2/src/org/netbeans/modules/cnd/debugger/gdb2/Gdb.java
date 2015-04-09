@@ -93,6 +93,7 @@ public class Gdb {
             super();
         }
 
+        @Override
         protected String[] levelLabels() {
             return levelLabels;
         }
@@ -107,6 +108,7 @@ public class Gdb {
         public void startProgress(final boolean shortNames,
                                   final String hostname) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (StartProgressManager.super.startProgress(cancelListener, shortNames)) {
                         phasedProgress().setCancelMsg(Catalog.get("CancelNoted"));// NOI18N
@@ -127,6 +129,7 @@ public class Gdb {
         @Override
         public void finishProgress() {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     StartProgressManager.super.finishProgress();
                 }
@@ -141,6 +144,7 @@ public class Gdb {
                                    final int count,
                                    final int total) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     StartProgressManager.super.updateProgress(beginEnd, level, message, count, total);
                 }
@@ -151,6 +155,7 @@ public class Gdb {
 
     private final PhasedProgress.CancelListener cancelListener =
         new PhasedProgress.CancelListener() {
+            @Override
             public void cancelled() {
                 interrupt();
             }
@@ -182,7 +187,7 @@ public class Gdb {
 	private IOPack ioPack;
 	private boolean remote;
         private final String runDir;
-	private NativeDebuggerInfo ndi;	// TMP
+	private final NativeDebuggerInfo ndi;	// TMP
 
 	public Factory(Executor executor,
 		       String additionalArgv[],
