@@ -89,8 +89,8 @@ public final class ShellValidationSupport {
     private static ShellValidationStatus validateCygwinShell(final Shell shell) {
         assert shell != null && shell.type == ShellType.CYGWIN;
 
-        ArrayList<String> validationErrors = new ArrayList<String>();
-        ArrayList<String> validationWarnings = new ArrayList<String>();
+        ArrayList<String> validationErrors = new ArrayList<>();
+        ArrayList<String> validationWarnings = new ArrayList<>();
 
         String jdkBitness = System.getProperty("os.arch"); // NOI18N
         if (jdkBitness == null) {
@@ -259,8 +259,8 @@ public final class ShellValidationSupport {
 
     public static class ShellValidationStatus {
 
-        private final List<String> errors = new ArrayList<String>();
-        private final List<String> warnings = new ArrayList<String>();
+        private final List<String> errors = new ArrayList<>();
+        private final List<String> warnings = new ArrayList<>();
         private final Shell shell;
 
         private ShellValidationStatus(Shell shell, List<String> errors, List<String> warnings) {

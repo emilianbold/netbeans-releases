@@ -48,9 +48,9 @@ import java.util.List;
  */
 public final class TerminalProfile {
     private String command;
-    private List<String> arguments = new ArrayList<String>();
-    private List<String> searchPaths = new ArrayList<String>();
-    private List<String> validationCommands = new ArrayList<String>();
+    private List<String> arguments = new ArrayList<>();
+    private List<String> searchPaths = new ArrayList<>();
+    private List<String> validationCommands = new ArrayList<>();
     private String id;
     private String platforms;
 

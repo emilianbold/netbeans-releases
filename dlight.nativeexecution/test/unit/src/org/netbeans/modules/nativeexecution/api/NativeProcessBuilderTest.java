@@ -169,7 +169,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
         final Counters counters = new Counters();
         final AtomicInteger result = new AtomicInteger();
-        final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+        final AtomicReference<NativeProcess> processRef = new AtomicReference<>();
 
         npb.addNativeProcessListener(new ChangeListener() {
 
@@ -387,7 +387,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
     }
 
     private String findComand(String command) {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         String path = System.getenv("PATH"); // NOI18N
         if (path != null) {
             StringTokenizer st = new StringTokenizer(path, File.pathSeparator); // NOI18N

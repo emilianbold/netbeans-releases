@@ -54,7 +54,7 @@ public final class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEn
     private static final int DEFAULT_PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
 
     private static final ExecutionEnvironment LOCAL = new ExecutionEnvironmentImpl(DEFAULT_USER, HostInfoUtils.LOCALHOST, 0);
-    private static final ConcurrentHashMap<String, ExecutionEnvironment> cache = new ConcurrentHashMap<String, ExecutionEnvironment>();
+    private static final ConcurrentHashMap<String, ExecutionEnvironment> cache = new ConcurrentHashMap<>();
 
     /**
      * Returns an instance of <tt>ExecutionEnvironment</tt> for local execution.

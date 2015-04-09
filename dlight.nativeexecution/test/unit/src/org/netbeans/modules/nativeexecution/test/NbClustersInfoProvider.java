@@ -101,7 +101,7 @@ public final class NbClustersInfoProvider {
                 File nbjunit = new File(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                 File harness = nbjunit.getParentFile().getParentFile();
                 Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
-                TreeSet<File> sorted = new TreeSet<File>();
+                TreeSet<File> sorted = new TreeSet<>();
                 File[] listFiles = harness.getParentFile().listFiles();
                 if (listFiles != null) {
                     for (File p : listFiles) {

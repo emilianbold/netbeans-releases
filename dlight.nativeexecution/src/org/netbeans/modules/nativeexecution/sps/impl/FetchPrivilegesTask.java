@@ -84,8 +84,8 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
                         command + " failed with code " + result); // NOI18N
             }
 
-            List<String> iprivs = new ArrayList<String>();
-            List<String> lprivs = new ArrayList<String>();
+            List<String> iprivs = new ArrayList<>();
+            List<String> lprivs = new ArrayList<>();
 
             List<String> out = ProcessUtils.readProcessOutput(ppriv);
 
@@ -105,7 +105,7 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
                 return Collections.emptyList();
             }
 
-            List<String> real_privs = new ArrayList<String>();
+            List<String> real_privs = new ArrayList<>();
 
             for (String ipriv : iprivs) {
                 if (lprivs.contains(ipriv)) {

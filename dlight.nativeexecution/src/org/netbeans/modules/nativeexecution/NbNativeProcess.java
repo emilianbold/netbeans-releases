@@ -92,7 +92,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
     }
 
     private List<String> getCommand() {
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
 
         command.add(nbStartPath);
 

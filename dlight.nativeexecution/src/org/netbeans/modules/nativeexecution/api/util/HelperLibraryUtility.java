@@ -63,7 +63,7 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class HelperLibraryUtility {
 
-    private final HashMap<ExecutionEnvironment, List<String>> cache = new HashMap<ExecutionEnvironment, List<String>>();
+    private final HashMap<ExecutionEnvironment, List<String>> cache = new HashMap<>();
     private final String pattern;
     private final String codeNameBase;
 
@@ -100,7 +100,7 @@ public class HelperLibraryUtility {
                     if (env.isLocal()) {
                         result = localFile;
                     } else {
-                        result = new ArrayList<String>();
+                        result = new ArrayList<>();
                         for(String lf : localFile) {
                             Logger.assertNonUiThread("Potentially long method " + getClass().getName() + ".getPath() is invoked in AWT thread"); // NOI18N
                             final File file = new File(lf);
@@ -220,14 +220,14 @@ public class HelperLibraryUtility {
         String aPattern = pattern.replace("${_isa}", "${_my_isa}"); // NOI18N
         String path = expander.expandPredefinedMacros(aPattern);
         int indexOf = path.indexOf("${_my_isa}"); // NOI18N
-        List<String> paths = new ArrayList<String>();
+        List<String> paths = new ArrayList<>();
         if (indexOf > 0) {
             paths.add(path.replace("${_my_isa}", "")); // NOI18N
             paths.add(path.replace("${_my_isa}", "_64")); // NOI18N
         } else {
             paths.add(path);
         }
-        List<String> res = new ArrayList<String>();
+        List<String> res = new ArrayList<>();
         MissingResourceException ex = null;
         for(String p : paths) {
             File file = fl.locate(p, codeNameBase, false);

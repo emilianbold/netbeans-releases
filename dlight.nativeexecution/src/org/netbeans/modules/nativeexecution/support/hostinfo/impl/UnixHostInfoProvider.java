@@ -109,7 +109,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
                 ? getLocalHostInfo()
                 : getRemoteHostInfo(execEnv);
 
-        final Map<String, String> environment = new HashMap<String, String>();
+        final Map<String, String> environment = new HashMap<>();
 
         HostInfo result = HostInfoFactory.newHostInfo(execEnv, info, environment);
 

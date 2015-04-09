@@ -71,7 +71,7 @@ public class ExecutionEnvironmentFactory {
     private static final ExecutionEnvironmentFactoryService defaultFactory =
             new ExecutionEnvironmentFactoryServiceImpl();
     private static final CopyOnWriteArrayList<ExecutionEnvironmentFactoryService> allFactories =
-            new CopyOnWriteArrayList<ExecutionEnvironmentFactoryService>();
+            new CopyOnWriteArrayList<>();
     private static final Lookup.Result<ExecutionEnvironmentFactoryService> lookupResult =
             Lookup.getDefault().lookupResult(ExecutionEnvironmentFactoryService.class);
     private static final LookupListener ll;

@@ -101,7 +101,7 @@ public final class NativeExecutionService {
     private final NativeExecutionDescriptor descriptor;
     private static final Charset execCharset;
     private Runnable postExecutable;
-    private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+    private final AtomicReference<NativeProcess> processRef = new AtomicReference<>();
     private final AtomicBoolean started = new AtomicBoolean(false);
     private ProcessChangeListener listener;
     private long startTimeMillis;
@@ -150,7 +150,7 @@ public final class NativeExecutionService {
     }
 
     private Future<Integer> runTerm() {
-        final AtomicReference<FutureTask<Integer>> runTaskRef = new AtomicReference<FutureTask<Integer>>(null);
+        final AtomicReference<FutureTask<Integer>> runTaskRef = new AtomicReference<>(null);
 
         processBuilder.setUsePty(true);
 

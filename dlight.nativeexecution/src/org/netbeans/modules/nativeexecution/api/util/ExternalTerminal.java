@@ -63,7 +63,7 @@ import org.openide.util.Utilities;
 public final class ExternalTerminal {
 
     private final static ConcurrentHashMap<TermEnvPair, String> execCache =
-            new ConcurrentHashMap<TermEnvPair, String>();
+            new ConcurrentHashMap<>();
     private final TerminalProfile profile;
     private String title = null;
     private String workdir = null;
@@ -156,7 +156,7 @@ public final class ExternalTerminal {
                 return args;
             }
 
-            ArrayList<String> result = new ArrayList<String>();
+            ArrayList<String> result = new ArrayList<>();
 
             result.add(exec);
 

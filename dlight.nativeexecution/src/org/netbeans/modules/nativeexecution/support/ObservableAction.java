@@ -168,7 +168,7 @@ public abstract class ObservableAction<T>
 
     private void fireStarted() {
         List<ObservableActionListener<T>> ll =
-                new ArrayList<ObservableActionListener<T>>(listeners);
+                new ArrayList<>(listeners);
 
         for (ObservableActionListener l : ll) {
             l.actionStarted(this);
@@ -177,7 +177,7 @@ public abstract class ObservableAction<T>
 
     private void fireCompleted(T result) {
         List<ObservableActionListener<T>> ll =
-                new ArrayList<ObservableActionListener<T>>(listeners);
+                new ArrayList<>(listeners);
 
         for (ObservableActionListener<T> l : ll) {
             l.actionCompleted(this, result);

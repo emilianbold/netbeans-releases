@@ -63,7 +63,7 @@ public abstract class FileNamesCompletionProvider implements AutocompletionProvi
     private final static int cacheSizeLimit = 20;
     private final static int cacheLifetime = 1000 * 60 * 10; // 10 min
     private final ExecutionEnvironment env;
-    private final LinkedList<CachedValue> cache = new LinkedList<CachedValue>();
+    private final LinkedList<CachedValue> cache = new LinkedList<>();
     private final Task cleanUpTask;
     private final AtomicBoolean enabled = new AtomicBoolean();
     private final ConnectionListener listener = new Listener();
@@ -96,7 +96,7 @@ public abstract class FileNamesCompletionProvider implements AutocompletionProvi
             return Collections.<String>emptyList();
         }
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         int idx = str.lastIndexOf('/') + 1;
         String dir = str.substring(0, idx);

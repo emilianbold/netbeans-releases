@@ -75,7 +75,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         ExecutionEnvironment env = info.getExecutionEnvironment();
         Pty pty = info.getPty();
 
-        List<String> newArgs = new ArrayList<String>();
+        List<String> newArgs = new ArrayList<>();
 
         if (pty != null) {
             newArgs.add("-p"); // NOI18N
@@ -90,7 +90,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         // We don't want pty to be affected by passed environment.
         // So at least defend ourselfs from LD_PRELOAD
-        final Map<String, String> removedEntries = new HashMap<String, String>();
+        final Map<String, String> removedEntries = new HashMap<>();
         removedEntries.put("LD_PRELOAD", envMap.remove("LD_PRELOAD")); // NOI18N
         removedEntries.put("LD_PRELOAD_32", envMap.remove("LD_PRELOAD_32")); // NOI18N
         removedEntries.put("LD_PRELOAD_64", envMap.remove("LD_PRELOAD_64")); // NOI18N

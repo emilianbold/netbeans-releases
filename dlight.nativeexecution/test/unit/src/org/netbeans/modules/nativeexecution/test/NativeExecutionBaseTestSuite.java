@@ -240,7 +240,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
     private static class TestClassData {
         
         // making fields public would be unsafe if this class wasn't private static :-)
-        public List<TestMethodData> testMethods = new ArrayList<TestMethodData>();
+        public List<TestMethodData> testMethods = new ArrayList<>();
         public Constructor<?> ordinaryConstructor = null;
         public Constructor<?> forAllEnvConstructor = null;
         
