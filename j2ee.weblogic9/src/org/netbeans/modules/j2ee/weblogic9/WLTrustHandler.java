@@ -242,12 +242,15 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         @Override
         public void checkServerTrusted(final X509Certificate[] chain, final String authType)
                 throws CertificateException {
+            final String url = WLDeploymentFactory.getUrl(config);
+            final InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
             try {
                 pkixTrustManager.checkServerTrusted(chain, authType);
+                boolean trustException = Boolean.parseBoolean(ip.getProperty(TRUST_EXCEPTION_PROPERTY));
+                if (trustException) {
+                    ip.setProperty(TRUST_EXCEPTION_PROPERTY, Boolean.FALSE.toString());
+                }
             } catch (CertificateException excep) {
-                final String url = WLDeploymentFactory.getUrl(config);
-                final InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
-
                 Future<Boolean> task = TRUST_MANAGER_ACCESS.submit(new Callable<Boolean>() {
 
                     @Override
