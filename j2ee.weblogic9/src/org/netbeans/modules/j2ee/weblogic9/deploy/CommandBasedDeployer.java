@@ -739,9 +739,16 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 progressObject.fireProgressEvent(null,
                         new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
 
+                int timeout = 1000;
                 while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (URLWait.waitForUrlReady(dm, URL_WAIT_RP, url, 1000)) {
+                    if (URLWait.waitForUrlReady(dm, URL_WAIT_RP, url, timeout)) {
                         break;
+                    }
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new InterruptedException();
+                    }
+                    if (timeout < TIMEOUT / 10) {
+                        timeout = Math.min(TIMEOUT / 10, 2 * timeout);
                     }
                 }
             } catch (MalformedURLException ex) {

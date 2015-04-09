@@ -117,6 +117,7 @@ public final class URLWait {
         } catch (ExecutionException ex) {
             LOGGER.log(Level.FINE, null, ex);
         } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, null, ex);
             Thread.currentThread().interrupt();
         } catch (TimeoutException ex) {
             task.cancel(true);
