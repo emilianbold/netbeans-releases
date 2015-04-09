@@ -116,11 +116,13 @@ abstract public class AbstractColumnModel extends ColumnModel {
 
 
     // interface ColumnModel
+    @Override
     public String getID() {
 	return id;
     }
 
     // interface ColumnModel
+    @Override
     public String getDisplayName() {
         return displayName; // NOI18N
     }
@@ -133,6 +135,7 @@ abstract public class AbstractColumnModel extends ColumnModel {
 
 
     // interface ColumnModel
+    @Override
     public Class getType() {
 	return type;
     }

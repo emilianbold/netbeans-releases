@@ -79,7 +79,7 @@ public final class RcFile {
     private class Section {
 
         public final String name;
-        private final Map<String, String> map = new TreeMap<String, String>();
+        private final Map<String, String> map = new TreeMap<>();
 
         public Section(String name) throws IOException {
             this.name = name;
@@ -94,7 +94,7 @@ public final class RcFile {
         }
 
         public synchronized  Collection<String> getKeys() {
-            return new ArrayList<String>(map.keySet());
+            return new ArrayList<>(map.keySet());
         }
 
         public synchronized boolean containsKey(String key) {
@@ -106,7 +106,7 @@ public final class RcFile {
         }
     }
 
-    private final Map<String, Section> sections = new TreeMap<String, Section>();
+    private final Map<String, Section> sections = new TreeMap<>();
     private final File file;
 
     public synchronized String get(String section, String key, String defaultValue) {
@@ -134,7 +134,7 @@ public final class RcFile {
     }
 
     public synchronized Collection<String> getSections() {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Section section : sections.values()) {
             result.add(section.name);
         }

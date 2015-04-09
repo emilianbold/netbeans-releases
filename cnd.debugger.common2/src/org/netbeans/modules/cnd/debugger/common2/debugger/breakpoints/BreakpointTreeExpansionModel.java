@@ -64,6 +64,7 @@ public final class BreakpointTreeExpansionModel
     implements TreeExpansionModel {
 
     // interface TreeExpansionModel
+    @Override
     public boolean isExpanded(Object o) {
 	boolean retval = false;
 	if (o instanceof NativeBreakpoint) {
@@ -80,6 +81,7 @@ public final class BreakpointTreeExpansionModel
     }
 
     // interface TreeExpansionModel
+    @Override
     public void nodeCollapsed(Object o) {
 	/* DEBUG
 	System.out.print("BreakpointTreeExpansionModel.nodeCollapsed(): ");
@@ -94,6 +96,7 @@ public final class BreakpointTreeExpansionModel
     }
 
     // interface TreeExpansionModel
+    @Override
     public void nodeExpanded(Object o) {
 	/* DEBUG
 	System.out.print("BreakpointTreeExpansionModel.nodeExpanded(): ");

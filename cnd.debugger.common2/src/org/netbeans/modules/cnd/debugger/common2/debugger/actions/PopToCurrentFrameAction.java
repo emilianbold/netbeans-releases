@@ -64,6 +64,7 @@ public class PopToCurrentFrameAction
     static final long serialVersionUID = -8705899978543961455L;
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
@@ -72,33 +73,39 @@ public class PopToCurrentFrameAction
     }
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
 	return false;
     }
 
     
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("LBL_PopToCurrent"); // NOI18N
     }
     
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/debugger/common2/icons/pop2cur.gif"; // NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	setEnabled(false);
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
         boolean enable = false;
         if (state != null) {

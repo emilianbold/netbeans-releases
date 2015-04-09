@@ -89,12 +89,14 @@ public final class StackModel extends ModelListenerSupport
     }
 
     // interface TreeModel
+    @Override
     public Object getRoot() {
 	// redundant?
 	return ROOT;
     } 
 
     // interface TreeModel
+    @Override
     public Object[] getChildren(Object parent, int from, int to) {
 	if (parent == ROOT)
 	    return debugger.getStack();
@@ -103,6 +105,7 @@ public final class StackModel extends ModelListenerSupport
     }
 
     // interface TreeModel
+    @Override
     public int getChildrenCount(Object parent) {
 	if (parent == ROOT)
 	    return debugger.getStack().length;
@@ -111,6 +114,7 @@ public final class StackModel extends ModelListenerSupport
     }
 
     // interface TreeModel
+    @Override
     public boolean isLeaf(Object node) {
 	if (node == ROOT)
 	    return false;
@@ -119,6 +123,7 @@ public final class StackModel extends ModelListenerSupport
     }
 
     // interface NodeModel
+    @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
 	if (! (node instanceof Frame)) {
 	    return Catalog.get("LBL_FunctionCol");	// NOI18N
@@ -154,6 +159,7 @@ public final class StackModel extends ModelListenerSupport
 
 
     // interface NodeModel
+    @Override
     public String getIconBase(Object node) {
 	if (node instanceof Frame) {
 	    Frame f = (Frame) node;
@@ -173,6 +179,7 @@ public final class StackModel extends ModelListenerSupport
     }
 
     // interface NodeModel
+    @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
 	if (node instanceof Frame) {
 	    Frame frame = (Frame) node;
@@ -182,6 +189,7 @@ public final class StackModel extends ModelListenerSupport
     }
 
     // interface TableModel
+    @Override
     public Object getValueAt(Object node, String columnID)
 	throws UnknownTypeException {
 
@@ -211,11 +219,13 @@ public final class StackModel extends ModelListenerSupport
     }
 
     // interface TableModel
+    @Override
     public boolean isReadOnly(Object node, String columnID) {
 	return true;
     }
 
     // interface TableModel
+    @Override
     public void setValueAt(Object node, String columnID, Object value) 
 	throws UnknownTypeException {
 
@@ -228,6 +238,7 @@ public final class StackModel extends ModelListenerSupport
     private static final Action Action_VERBOSE = new VerboseAction(); 
 
     // interface NodeActionsProvider
+    @Override
     public Action[] getActions (Object node) throws UnknownTypeException {
 	EngineDescriptor desp = debugger.getNDI().getEngineDescriptor();
 	boolean canDoMaxFrame = desp.hasCapability(EngineCapability.STACK_MAXFRAME);
@@ -263,6 +274,7 @@ public final class StackModel extends ModelListenerSupport
     }
 
     // interface NodeActionsProvider
+    @Override
     public void performDefaultAction (Object node) {
 	Frame frame = (Frame) node;
 	if (frame.more) {
@@ -283,6 +295,7 @@ public final class StackModel extends ModelListenerSupport
 	    setEnabled(!frame.isCurrent() && !frame.isSpecial());
 	} 
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    debugger.makeFrameCurrent(frame);
 	}
@@ -299,6 +312,7 @@ public final class StackModel extends ModelListenerSupport
 	    setEnabled(!frame.isCurrent() && !frame.isSpecial());
 	} 
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    debugger.popToHere(frame);
 	}
@@ -317,6 +331,7 @@ public final class StackModel extends ModelListenerSupport
 	    setEnabled(!debugger.state().isCore);
 	} 
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    debugger.popTopmostCall();
 	}
@@ -325,22 +340,26 @@ public final class StackModel extends ModelListenerSupport
     private static class VerboseAction extends BooleanStateAction {
 
 	// interface BooleanStateAction
+        @Override
 	public boolean getBooleanState() {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    return debugger.getVerboseStack();
 	}
 
 	// interface SystemAction
+        @Override
 	public String getName() {
 	    return Catalog.get("LBL_Verbose");	// NOI18N
 	} 
 
 	// interface SystemAction
+        @Override
 	public HelpCtx getHelpCtx() {
 	    return new HelpCtx("Debugging_stack_verbose");	// NOI18N
 	}
 
 	// interface SystemAction
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    debugger.postVerboseStack( ! getBooleanState());
@@ -355,18 +374,21 @@ public final class StackModel extends ModelListenerSupport
 	    this.debugger = debugger;
 	} 
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    debugger.copyStack();
 	}
     }
 
     // interface TreeModel etc
+    @Override
     public void addModelListener(ModelListener l) {
 	if (super.addModelListenerHelp(l))
 	    debugger.registerStackModel(this);
     }
 
     // interface TreeModel etc
+    @Override
     public void removeModelListener(ModelListener l) {
 	if (super.removeModelListenerHelp(l))
 	    debugger.registerStackModel(null);

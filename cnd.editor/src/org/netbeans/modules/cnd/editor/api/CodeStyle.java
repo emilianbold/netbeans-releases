@@ -60,9 +60,9 @@ public final class CodeStyle {
         EditorOptions.codeStyleFactory = new FactoryImpl();
     }
 
-    private static Map<String, CodeStyle> INSTANCE_C = new HashMap<String, CodeStyle>();
-    private static Map<String, CodeStyle> INSTANCE_H = new HashMap<String, CodeStyle>();
-    private static Map<String, CodeStyle> INSTANCE_CPP = new HashMap<String, CodeStyle>();
+    private static final Map<String, CodeStyle> INSTANCE_C = new HashMap<String, CodeStyle>();
+    private static final Map<String, CodeStyle> INSTANCE_H = new HashMap<String, CodeStyle>();
+    private static final Map<String, CodeStyle> INSTANCE_CPP = new HashMap<String, CodeStyle>();
     private final Language language;
     private final String profileId;
     private Preferences preferences;

@@ -65,7 +65,6 @@ import org.openide.awt.StatusDisplayer;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
@@ -86,10 +85,12 @@ import org.openide.util.Lookup;
  */
 public class DebugCoreAction extends SystemAction {
 
+    @Override
     public String getName() {
         return Catalog.get("LOADCOREDIALOGACTION_NAME"); // NOI18N
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         Node[] activeNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
         performAction(activeNodes, false);
@@ -262,6 +263,7 @@ public class DebugCoreAction extends SystemAction {
         return "org/netbeans/modules/cnd/debugger/common2/icons/debug_core_file.png"; // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(DebugCoreAction.class); // FIXUP ???
     }

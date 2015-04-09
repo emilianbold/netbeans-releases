@@ -61,6 +61,7 @@ public final class GdbEngineCapabilityProvider implements EngineCapabilityProvid
     /*package*/ final static String ID = "gdb"; // NOI18N
     private final static EngineType GDB_ENGINE_TYPE = EngineTypeManager.create(ID, Catalog.get("GdbEngineDisplayName")); // NOI18N
 
+    @Override
     public boolean hasCapability(EngineType et, EngineCapability capability) {
         if (ID.equals(et.getDebuggerID())) {
             switch (capability) {
@@ -76,6 +77,7 @@ public final class GdbEngineCapabilityProvider implements EngineCapabilityProvid
         return false;
     }
 
+    @Override
     public EngineType engineType() {
         return GDB_ENGINE_TYPE;
     }
@@ -92,10 +94,12 @@ public final class GdbEngineCapabilityProvider implements EngineCapabilityProvid
         return "GNU".equalsIgnoreCase(id);//NOI18N
     }    
 
+    @Override
     public boolean isSupported(DebuggerDescriptor descriptor) {
         return isSupportedImpl(descriptor);
     }
 
+    @Override
     public String debuggerProfileID() {
         return GdbProfile.PROFILE_ID;
     }

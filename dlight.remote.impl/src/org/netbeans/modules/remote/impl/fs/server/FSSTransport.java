@@ -83,7 +83,7 @@ import org.openide.util.RequestProcessor;
  */
 public class FSSTransport extends RemoteFileSystemTransport implements ConnectionListener {
     
-    private static final Map<ExecutionEnvironment, FSSTransport> instances = new HashMap<ExecutionEnvironment, FSSTransport>();
+    private static final Map<ExecutionEnvironment, FSSTransport> instances = new HashMap<>();
     private static final Object instancesLock = new Object();
     
     public static final boolean USE_FS_SERVER = RemoteFileSystemUtils.getBoolean("remote.fs_server", true);
@@ -206,11 +206,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             } else {
                 throw new IOException("Unexpected package kind: " + pkg.getKind()); // NOI18N
             }
-        } catch (ConnectException ex) {
-            throw new IOException(ex);
-        } catch (CancellationException ex) {
-            throw new IOException(ex);
-        } catch (InterruptedException ex) {
+        } catch (ConnectException | CancellationException | InterruptedException ex) {
             throw new IOException(ex);
         } catch (ExecutionException ex) {
             if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -299,7 +295,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         try {
             RemoteLogger.finest("Reading response #{0} from fs_server for directory {1})",
                     reqId, path);
-            List<FSSResponse.Package> packages = new ArrayList<FSSResponse.Package>();
+            List<FSSResponse.Package> packages = new ArrayList<>();
             for (FSSResponse.Package pkg = response.getNextPackage(); 
                     pkg.getKind() != FSSResponseKind.FS_RSP_END; 
                     pkg = response.getNextPackage()) {
@@ -318,7 +314,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             }
             RemoteLogger.finest("Processing response #{0} from fs_server for directory {1}",
                     reqId, path);
-            List<DirEntry> result = new ArrayList<DirEntry>();
+            List<DirEntry> result = new ArrayList<>();
             for (FSSResponse.Package pkg : packages) {
                 try {
                     assert pkg != null;
@@ -540,13 +536,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 assert pkg.getKind() == FSSResponseKind.FS_RSP_LS;
             }
             return readEntries(response, path, request.getId(), dirReadCnt);
-        } catch (ConnectException ex) {
-            throw new IOException(ex);
-        } catch (CancellationException ex) {
-            throw new IOException(ex);
-        } catch (InterruptedException ex) {
-            throw new IOException(ex);
-        } catch (ExecutionException ex) {
+        } catch (ConnectException | CancellationException | InterruptedException | ExecutionException ex) {
             throw new IOException(ex);
         } finally {
             RemoteStatistics.stopChannelActivity(activityID, 0);
@@ -613,7 +603,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {
 
         private final String path;
-        private final Map<String, DirEntryList> cache = new HashMap<String, DirEntryList>();
+        private final Map<String, DirEntryList> cache = new HashMap<>();
         private final Object lock = new Object();
         private FSSResponse response;
 
@@ -629,9 +619,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             if (useListener) {
                 try {
                     sendRequest();
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                } catch (ExecutionException ex) {
+                } catch (IOException | ExecutionException ex) {
                     ex.printStackTrace(System.err);
                 } catch (CancellationException ex) {
                     // don't log CancellationException
@@ -746,9 +734,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 synchronized (lock) {
                     cache.clear();
                 }
-            } catch (ConnectException ex) {
-                ex.printStackTrace(System.err);
-            } catch (ExecutionException ex) {
+            } catch (ConnectException | ExecutionException ex) {
                 ex.printStackTrace(System.err);
             } finally {
                 FSSResponse r;

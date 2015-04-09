@@ -388,6 +388,7 @@ public final class ProjectSupport {
 
 	final String hostName = seed.getHostName();
 	CndRemote.validate(hostName, new Runnable() {
+                @Override
 		public void run() {
 		    Host host = Host.byName(hostName);
 		    seed.setHost(host);

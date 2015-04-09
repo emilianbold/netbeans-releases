@@ -83,6 +83,7 @@ public class ModelChangeDelegator implements ModelListener {
     }
 
     // interface ModelListener
+    @Override
     public void modelChanged(ModelEvent e) {
 	firechange = true;
 	if (listener != null && !batchmode) {

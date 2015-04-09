@@ -126,22 +126,64 @@ public class RemoteFileUrlMapper extends URLMapper {
         return sb.toString();
     }
 
-    private static String escapePath(String path) {
-        if (path.indexOf('#') >= 0) { //NOI18N
-            path = path.replace("#", "%23"); //NOI18N
+    private final static char[] hexDigits = {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+    
+    /**
+     * See section 2.2. and below at  http://www.ietf.org/rfc/rfc2396.txt
+     * reserved    = ";" | "/" | "?" | ":" | "@" | "&" | "=" | "+" | "$" | ","
+     * mark        = "-" | "_" | "." | "!" | "~" | "*" | "'" | "(" | ")"
+     * delims      = "<" | ">" | "#" | "%" | <">
+     * unwise      = "{" | "}" | "|" | "\" | "^" | "[" | "]" | "`"
+     * control     = <US-ASCII coded characters 00-1F and 7F hexadecimal>
+     * space       = <US-ASCII coded character 20 hexadecimal>
+     **/
+    private final static char[] charsToEscape = new char[] {
+        ';', /*'/',*/ '?', ':', '@', '&', '=', '+', '$', ',', // reserved
+        '-', '_', /*'.',*/ '!', '~', '*', '\'', '(', ')', // mark
+        '<', '>', '#', '%', '"', // delims
+        '{', '}', '|', '\\', '^', '[', ']', '`', // unwise
+        ' ', // space
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF,
+        0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+        0x7F // control
+        
+    };
+
+    private static void appendEscaped(StringBuilder sb, char c) {
+        byte b = (byte) c;
+        sb.append('%');
+        sb.append(hexDigits[(b >> 4) & 0x0f]);
+        sb.append(hexDigits[(b >> 0) & 0x0f]);
+    }
+    
+    private static CharSequence escapeImpl(String path, int firstSpecial) {
+        StringBuilder sb = (firstSpecial == 0) ? 
+                new StringBuilder() : 
+                new StringBuilder(path.subSequence(0, firstSpecial));
+        for (int i = firstSpecial; i < path.length(); i++) {
+            appendEscaped(sb, path.charAt(i));
         }
-        if (path.indexOf('?') >= 0) { //NOI18N
-            path = path.replace("?", "%3f"); //NOI18N
-        }
-        if (path.indexOf(' ') >= 0) { //NOI18N
-            path = path.replace(" ", "%20"); //NOI18N
+        return sb;
+    }
+
+    private static CharSequence escapePath(String path) {
+        for (int i = 0; i < path.length(); i++) {
+            for (int j = 0; j < charsToEscape.length; j++) {
+                final char c = path.charAt(i);
+                if (c == charsToEscape[j]) {
+                    return escapeImpl(path, i);
+                }
+            }            
         }
         return path;
     }
 
     private static String unescapePath(URL url) {
         String path = url.getFile();
-        if (path.contains("%23") || path.contains("%3f") || path.contains("%20")) { //NOI18N
+        if (path.contains("%")) { //NOI18N
             try {
                 return url.toURI().getPath();
             } catch (URISyntaxException ex) {

@@ -70,8 +70,8 @@ public final class RemoteStatistics implements Callable<Boolean> {
     private static final String BREAK_UPLOADS_FLAG_FILE = System.getProperty("break.uploads"); // NOI18N
     private static final TrafficCounters trafficCounters = new TrafficCounters();
     private static final RemoteMeasurementsRef unnamed = new RemoteMeasurementsRef("uncategorized", new RemoteMeasurements("uncategorized"), null, 0); // NOI18N
-    private static final AtomicReference<RemoteMeasurementsRef> currentStatRef = new AtomicReference<RemoteMeasurementsRef>(unnamed);
-    private static final BlockingQueue<Task> queue = new ArrayBlockingQueue<Task>(1);
+    private static final AtomicReference<RemoteMeasurementsRef> currentStatRef = new AtomicReference<>(unnamed);
+    private static final BlockingQueue<Task> queue = new ArrayBlockingQueue<>(1);
     private static final RemoteIOListener listener = new RemoteIOListener();
     private static final AtomicBoolean trafficDetected = new AtomicBoolean();
 

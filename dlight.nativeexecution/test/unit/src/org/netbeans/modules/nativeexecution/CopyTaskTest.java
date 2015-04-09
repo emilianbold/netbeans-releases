@@ -122,7 +122,7 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         StatInfo stat = FileInfoProvider.lstat(execEnv, dst).get();
         assertEquals("Stat got from upload differ", stat.toExternalForm(), statFomrUpload.toExternalForm());
 
-        final AtomicReference<Object> ref = new AtomicReference<Object>();
+        final AtomicReference<Object> ref = new AtomicReference<>();
         CommonTasksSupport.UploadParameters up = new CommonTasksSupport.UploadParameters(
                 src, execEnv, dst, null, 0755, false, new ChangeListener() {
             @Override

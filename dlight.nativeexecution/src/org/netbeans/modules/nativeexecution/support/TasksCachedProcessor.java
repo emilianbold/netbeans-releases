@@ -60,7 +60,7 @@ public final class TasksCachedProcessor<P, R>
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private final ConcurrentMap<P, Future<R>> cache =
-            new ConcurrentHashMap<P, Future<R>>();
+            new ConcurrentHashMap<>();
     private final Computable<P, R> computable;
     private final boolean removeOnCompletion;
 
@@ -99,7 +99,7 @@ public final class TasksCachedProcessor<P, R>
                 }
             };
 
-            FutureTask<R> ft = new FutureTask<R>(evaluation);
+            FutureTask<R> ft = new FutureTask<>(evaluation);
             f = cache.putIfAbsent(arg, ft);
 
             if (f == null) {

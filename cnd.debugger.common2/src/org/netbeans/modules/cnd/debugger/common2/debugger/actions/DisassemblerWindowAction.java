@@ -68,6 +68,7 @@ public class DisassemblerWindowAction extends CallableSystemAction implements St
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return menu_name;
     }
@@ -80,6 +81,7 @@ public class DisassemblerWindowAction extends CallableSystemAction implements St
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
         boolean enable;
         if (!state.isLoaded) {
@@ -99,9 +101,11 @@ public class DisassemblerWindowAction extends CallableSystemAction implements St
      * This is the reverse of DisView.GoToSourceAction.
      */
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	if (!SwingUtilities.isEventDispatchThread()) {
 	    SwingUtilities.invokeLater(new Runnable() {
+                @Override
 		public void run() {
 		    performAction();
 		}
@@ -122,6 +126,7 @@ public class DisassemblerWindowAction extends CallableSystemAction implements St
     }
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("CTL_Disassembly");		// NOI18N
     }

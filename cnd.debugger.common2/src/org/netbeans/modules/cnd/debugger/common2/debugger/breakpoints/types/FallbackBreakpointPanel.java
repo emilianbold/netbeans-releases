@@ -58,6 +58,7 @@ class FallbackBreakpointPanel extends BreakpointPanel {
     private JLabel eventspecLabel;
     private JTextField eventspecText;
 
+    @Override
     public void seed(NativeBreakpoint breakpoint) {
 	seedCommonComponents(breakpoint);
 	fb = (FallbackBreakpoint) breakpoint;
@@ -92,6 +93,7 @@ class FallbackBreakpointPanel extends BreakpointPanel {
 	eventspecText.getDocument().addDocumentListener(this);
     }
 
+    @Override
     public void setDescriptionEnabled(boolean enabled) {
 	// eventspecLabel.setEnabled(false);
 	eventspecText.setEnabled(false);
@@ -129,10 +131,12 @@ class FallbackBreakpointPanel extends BreakpointPanel {
 	);
     }
 
+    @Override
     protected void assignProperties() {
 	fb.setEventspec(eventspecText.getText(), null);
     }
     
+    @Override
     protected boolean propertiesAreValid() {
 	// No good way to judge the validity of unanticipated engine eventspecs
 	// But at least it shouldn't be null

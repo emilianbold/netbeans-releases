@@ -96,8 +96,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private static final boolean trace = Boolean.getBoolean("cnd.remote.directory.trace"); //NOI18N
 
-    private Reference<DirectoryStorage> storageRef = new SoftReference<DirectoryStorage>(null);
-    private Reference<MagicCache> magicCache = new SoftReference<MagicCache>(null);
+    private Reference<DirectoryStorage> storageRef = new SoftReference<>(null);
+    private Reference<MagicCache> magicCache = new SoftReference<>(null);
 
     private static final class RefLock {}
     private final Object refLock = new RefLock();
@@ -137,13 +137,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return entry;
         } catch (ConnectException ex) {
             throw ex;
-        } catch (InterruptedIOException ex) {
-            RemoteLogger.finest(ex, this);
-            return null; // don't report
-        } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex, this);
-            return null; // don't report
-        } catch (InterruptedException ex) {
+        } catch (InterruptedIOException | ExecutionException | InterruptedException ex) {
             RemoteLogger.finest(ex, this);
             return null; // don't report
         } catch (CancellationException ex) {
@@ -205,7 +199,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         Exceptions.printStackTrace(ex); // what else can we do?..
                     }
                     synchronized (refLock) {
-                        storageRef = new SoftReference<DirectoryStorage>(newStorage);
+                        storageRef = new SoftReference<>(newStorage);
                     }
                     if (child != null) {
                         getFileSystem().getFactory().invalidate(child.getPath());
@@ -233,9 +227,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 DirectoryStorage ds = refreshDirectoryStorage(childNameExt, false); // it will fire events itself
             } catch (ConnectException ex) {
                 RemoteLogger.getInstance().log(Level.INFO, "Error post removing/creating child " + child, ex);
-            } catch (IOException ex) {
-                RemoteLogger.finest(ex, this);
-            } catch (ExecutionException ex) {
+            } catch (IOException | ExecutionException ex) {
                 RemoteLogger.finest(ex, this);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -410,24 +402,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return null;
             }
             return getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
-            return null;
-        } catch (InterruptedIOException ex) {
-            RemoteLogger.finest(ex, this);
-            return null;
-        } catch (CancellationException ex) {
-            RemoteLogger.finest(ex, this);
-            return null;
-        } catch (ExecutionException ex) {
+        } catch (InterruptedException | InterruptedIOException | CancellationException 
+                | ExecutionException | FileNotFoundException ex) {
             RemoteLogger.finest(ex, this);
             return null;
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
             setFlag(CONNECTION_ISSUES, true);
-            RemoteLogger.finest(ex, this);
-            return null;
-        } catch (FileNotFoundException ex) {
             RemoteLogger.finest(ex, this);
             return null;
         } catch (IOException ex) {
@@ -493,7 +474,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private RemoteFileObjectBase[] getExistentChildren(DirectoryStorage storage) {
         List<DirEntry> entries = storage.listValid();
-        List<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>(entries.size());
+        List<RemoteFileObjectBase> result = new ArrayList<>(entries.size());
         for (DirEntry entry : entries) {
             String path = getPath() + '/' + entry.getName();
             RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(path);
@@ -515,27 +496,20 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 childrenFO[i] = getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
             }
             return childrenFO;
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | InterruptedIOException | 
+                FileNotFoundException | CancellationException ex) {
             // don't report, this just means that we aren't connected
             // or just interrupted (for example by FileChooser UI)
-            RemoteLogger.finest(ex, this);
-        } catch (InterruptedIOException ex) {
-            // don't report, for example FileChooser UI can interrupt us
+            // or cancelled
             RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
             RemoteLogger.finest(ex, this);
-            // should we report it?
-        } catch (ConnectException ex) {
+            // should we report ExecutionException?
             // don't report, this just means that we aren't connected
             setFlag(CONNECTION_ISSUES, true);
             RemoteLogger.finest(ex, this);
-        } catch (FileNotFoundException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (IOException ex) {
+        }catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            // never report CancellationException
-            RemoteLogger.finest(ex, this);
         }
         return new RemoteFileObject[0];
     }
@@ -570,7 +544,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private static final Collection<String> AUTO_MOUNTS;
     static {
-        List<String> list = new ArrayList<String>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
+        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
         String t = System.getProperty("remote.autofs.list"); //NOI18N
         if (t != null) {
             String[] paths = t.split(","); //NOI18N
@@ -638,7 +612,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private Map<String, DirEntry> toMap(DirEntryList entryList) {
-        Map<String, DirEntry> map = new HashMap<String, DirEntry>();
+        Map<String, DirEntry> map = new HashMap<>();
         for (DirEntry entry : entryList.getEntries()) {
             map.put(entry.getName(), entry);
         }
@@ -683,7 +657,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 RemoteLogger.finest("Warmup hits: {0} of {1} (total {2} dir.read reqs)", warmupHints.get(), warmupReqs.get(), readEntryReqs.get());
             }
         }
-        Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();
+        Map<String, DirEntry> newEntries = new HashMap<>();
         boolean canLs = canLs();
         if (canLs) {
             DirEntryList entryList = RemoteFileSystemTransport.readDirectory(getExecutionEnvironment(), getPath());
@@ -815,9 +789,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 newEntries = readEntries(storage, true, newNameExt);
             } catch (FileNotFoundException ex) {
                 throw ex;
-            } catch (IOException ex) {
-                problem = ex;
-            } catch (ExecutionException ex) {
+            } catch (IOException | ExecutionException ex) {
                 problem = ex;
             }
             if (problem != null) {
@@ -830,7 +802,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     if (fileNotFoundException) {
                         getFileSystem().getFactory().invalidate(this);
                         synchronized (refLock) {
-                            storageRef = new SoftReference<DirectoryStorage>(DirectoryStorage.EMPTY);
+                            storageRef = new SoftReference<>(DirectoryStorage.EMPTY);
                         }
                     }
                     if (!fileNotFoundException) {
@@ -845,14 +817,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
             getFileSystem().incrementDirSyncCount();
-            Map<String, List<DirEntry>> dupLowerNames = new HashMap<String, List<DirEntry>>();
+            Map<String, List<DirEntry>> dupLowerNames = new HashMap<>();
             boolean hasDups = false;
             boolean changed = true;
-            Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
-            List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
-            List<DirEntry> entriesToFireChangedRO = new ArrayList<DirEntry>();
-            List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
-            List<RemoteFileObject> filesToFireDeleted = new ArrayList<RemoteFileObject>();
+            Set<DirEntry> keepCacheNames = new HashSet<>();
+            List<DirEntry> entriesToFireChanged = new ArrayList<>();
+            List<DirEntry> entriesToFireChangedRO = new ArrayList<>();
+            List<DirEntry> entriesToFireCreated = new ArrayList<>();
+            List<RemoteFileObject> filesToFireDeleted = new ArrayList<>();
             for (DirEntry newEntry : newEntries.values()) {
                 if (newEntry.isValid()) {
                     String cacheName;
@@ -913,7 +885,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     String lowerCacheName = RemoteFileSystemUtils.isSystemCaseSensitive() ? newEntry.getCache() : newEntry.getCache().toLowerCase();
                     List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                     if (dupEntries == null) {
-                        dupEntries = new ArrayList<DirEntry>();
+                        dupEntries = new ArrayList<>();
                         dupLowerNames.put(lowerCacheName, dupEntries);
                     } else {
                         hasDups = true;
@@ -938,7 +910,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 if (hasDups) {
                     for (Map.Entry<String, List<DirEntry>> mapEntry :
-                            new ArrayList<Map.Entry<String, List<DirEntry>>>(dupLowerNames.entrySet())) {
+                            new ArrayList<>(dupLowerNames.entrySet())) {
 
                         List<DirEntry> dupEntries = mapEntry.getValue();
                         if (dupEntries.size() > 1) {
@@ -973,7 +945,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // always put new content in cache
             // do it before firing events, to give liseners real content
             synchronized (refLock) {
-                storageRef = new SoftReference<DirectoryStorage>(storage);
+                storageRef = new SoftReference<>(storage);
             }
             // fire all event under lockImpl
             if (changed) {
@@ -1045,7 +1017,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     Exceptions.printStackTrace(ex); // what else can we do?..
                 }
                 synchronized (refLock) {
-                    storageRef = new SoftReference<DirectoryStorage>(newStorage);
+                    storageRef = new SoftReference<>(newStorage);
                 }
                 fo.setPendingRemoteDelivery(false);
             }
@@ -1093,7 +1065,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                 if (trace) { trace("using storage that was kept by other thread"); } // NOI18N
                                 storage = s;
                             } else {
-                                storageRef = new SoftReference<DirectoryStorage>(storage);
+                                storageRef = new SoftReference<>(storage);
                             }
                         }
                     } catch (FormatException e) {
@@ -1156,9 +1128,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 newEntries = readEntries(storage, forceRefresh, childName);
             }  catch (FileNotFoundException ex) {
                 throw ex;
-            }  catch (IOException ex) {
-                problem = ex;
-            }  catch (ExecutionException ex) {
+            }  catch (IOException | ExecutionException ex) {
                 problem = ex;
             }
             if (problem != null) {
@@ -1170,7 +1140,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     boolean fileNotFoundException = RemoteFileSystemUtils.isFileNotFoundException(problem);
                     if (fileNotFoundException) {
                         synchronized (refLock) {
-                            storageRef = new SoftReference<DirectoryStorage>(DirectoryStorage.EMPTY);
+                            storageRef = new SoftReference<>(DirectoryStorage.EMPTY);
                         }
                     }
                     if (!fileNotFoundException) {
@@ -1196,15 +1166,15 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             final boolean expected) throws IOException {
 
         getFileSystem().incrementDirSyncCount();
-        Map<String, List<DirEntry>> dupLowerNames = new HashMap<String, List<DirEntry>>();
+        Map<String, List<DirEntry>> dupLowerNames = new HashMap<>();
         boolean hasDups = false;
         boolean changed = (newEntries.size() != storage.listAll().size()) || (storage == DirectoryStorage.EMPTY);
-        Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
-        List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
-        List<DirEntry> entriesToFireChangedRO = new ArrayList<DirEntry>();
-        List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
+        Set<DirEntry> keepCacheNames = new HashSet<>();
+        List<DirEntry> entriesToFireChanged = new ArrayList<>();
+        List<DirEntry> entriesToFireChangedRO = new ArrayList<>();
+        List<DirEntry> entriesToFireCreated = new ArrayList<>();
         DirEntry expectedCreated = null;
-        List<RemoteFileObject> filesToFireDeleted = new ArrayList<RemoteFileObject>();
+        List<RemoteFileObject> filesToFireDeleted = new ArrayList<>();
         for (DirEntry newEntry : newEntries.values()) {
             if (newEntry.isValid()) {
                 String cacheName;
@@ -1263,7 +1233,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 String lowerCacheName = RemoteFileSystemUtils.isSystemCaseSensitive() ? newEntry.getCache() : newEntry.getCache().toLowerCase();
                 List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                 if (dupEntries == null) {
-                    dupEntries = new ArrayList<DirEntry>();
+                    dupEntries = new ArrayList<>();
                     dupLowerNames.put(lowerCacheName, dupEntries);
                 } else {
                     hasDups = true;
@@ -1288,7 +1258,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             if (hasDups) {
                 for (Map.Entry<String, List<DirEntry>> mapEntry :
-                        new ArrayList<Map.Entry<String, List<DirEntry>>>(dupLowerNames.entrySet())) {
+                        new ArrayList<>(dupLowerNames.entrySet())) {
 
                     List<DirEntry> dupEntries = mapEntry.getValue();
                     if (dupEntries.size() > 1) {
@@ -1322,7 +1292,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         // always put new content in cache
         // do it before firing events, to give liseners real content
         synchronized (refLock) {
-            storageRef = new SoftReference<DirectoryStorage>(storage);
+            storageRef = new SoftReference<>(storage);
         }
         // fire all event under lockImpl
         if (changed) {
@@ -1601,10 +1571,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
                         "EXC_CanNotDownload", getDisplayName(child.getPath()), errorWriter.toString())); //NOI18N
             }
-        } catch (InterruptedException ex) {
-            child.getCache().delete();
-            throw ex;
-        } catch (ExecutionException ex) {
+        } catch (InterruptedException | ExecutionException ex) {
             child.getCache().delete();
             throw ex;
         } finally {
@@ -1641,7 +1608,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             magic = magicCache.get();
             if (magic == null) {
                 magic = new MagicCache(this);
-                magicCache = new SoftReference<MagicCache>(magic);
+                magicCache = new SoftReference<>(magic);
             }
         }
         return magic;
@@ -1652,7 +1619,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             MagicCache magic = magicCache.get();
             if (magic != null) {
                 magic.clean(null);
-                magicCache = new SoftReference<MagicCache>(null);
+                magicCache = new SoftReference<>(null);
             } else {
                 new MagicCache(this).clean(null);
             }
@@ -1744,11 +1711,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.finest(ex, this);
-        } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (CancellationException ex) {
+        } catch (ExecutionException | InterruptedException | CancellationException ex) {
             RemoteLogger.finest(ex, this);
         }
         return null;

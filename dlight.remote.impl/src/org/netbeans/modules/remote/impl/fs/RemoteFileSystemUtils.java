@@ -400,7 +400,7 @@ public class RemoteFileSystemUtils {
             if (env.equals(((RemoteFileObject) target).getExecutionEnvironment())
                     && RemoteFileSystemTransport.canCopy(env, from, newPath)) {
                 try {
-                    List<IOException> subdirectoryExceptions = new ArrayList<IOException>();
+                    List<IOException> subdirectoryExceptions = new ArrayList<>();
                     DirEntryList entries = RemoteFileSystemTransport.copy(env, from, newPath, subdirectoryExceptions);
                     ((RemoteFileObject) target).getImplementor().postDeleteOrCreateChild(null, entries);
                     FileObject fo = target.getFileObject(newNameExt);
@@ -414,11 +414,11 @@ public class RemoteFileSystemUtils {
                         }
                         return fo;
                     }
-                } catch (InterruptedException ex) {
+                } catch (InterruptedException | CancellationException ex) {
                     throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
-                } catch (CancellationException ex) {
-                    throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
-                } catch (ExecutionException ex) {
+                }
+                //NOI18N
+                 catch (ExecutionException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                         throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
                                 "EXC_CantCopyFromTo", from, newPath, ex.getLocalizedMessage()), ex); //NOI18N

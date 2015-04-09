@@ -92,19 +92,21 @@ public final class BreakpointBag {
 	 * Gets called when the contents of the DebugTarget list changes.
 	 *
 	 * It gets called too many times!
-	 * a) In addRecentDebugTarget() there's the sequence 
+	 * a) In addRecentDebugTarget() there's the sequence
 	 *	// 6785977
 	 *	debugtargetlist.replaceRecordAt(dt, foundAt);
 	 *	debugtargetlist.moveToFront(foundAt);
 	 *    Each one causing a call to us.
 	 * b) addRecentDebugTarget() gets called on progUnloaded()!
 	 */
+        @Override
 	public void contentsChanged(RecordListEvent e) {
 	    cleanupBpts();
 	}
     }
 
     private class OptionListener implements PropertyChangeListener {
+        @Override
 	public void propertyChange(PropertyChangeEvent e) {
 	    if (DebuggerOption.SAVE_BREAKPOINTS.caused(e))
 		cleanupBpts();
@@ -207,7 +209,7 @@ public final class BreakpointBag {
     public NativeBreakpoint[] getBreakpoints() {
 	NativeBreakpoint [] ba = new NativeBreakpoint[breakpoints.size()];
 	return breakpoints.toArray(ba);
-    } 
+    }
 
 
     /**
@@ -301,7 +303,7 @@ public final class BreakpointBag {
     }
 
     /**
-     * Return a list of midlevel bpts belonging to the session associated 
+     * Return a list of midlevel bpts belonging to the session associated
      * with 'debugger'.
      */
     private List<NativeBreakpoint> sessionBreakpoints(NativeDebugger debugger) {
@@ -344,7 +346,7 @@ public final class BreakpointBag {
 
     private static final UserdirFile userdirFile =
 	new UserdirFile(moduleFolderName, folderName, filename);
-    
+
     public void restore() {
         doRestore(userdirFile, this);
     }
@@ -384,7 +386,7 @@ public final class BreakpointBag {
 	    b.clearDirty();
 	}
     }
-    
+
     public void save() {
         doSave(userdirFile, this);
     }

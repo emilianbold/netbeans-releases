@@ -68,6 +68,7 @@ public final class Exceptions extends ProfileCategory {
 	super(owner, DbgProfile.PROP_INTERCEPTLIST);
     } 
 
+    @Override
     public boolean equals(Object thatObject) {
 	// canonical part
 	if (this == thatObject)
@@ -93,6 +94,7 @@ public final class Exceptions extends ProfileCategory {
 	return true;
     }
 
+    @Override
     public Object clone() {
 	Exceptions clone = new Exceptions(null);
 	clone.interceptUnhandled = this.interceptUnhandled;
@@ -103,6 +105,7 @@ public final class Exceptions extends ProfileCategory {
 	return clone;
     }
 
+    @Override
     public void assign(Object thatObject) {
 	if (this.equals(thatObject))
 	    return;
@@ -256,6 +259,7 @@ public final class Exceptions extends ProfileCategory {
 	return list;
     }
 
+    @Override
     public String toString() {
 	String ret = "";
 	boolean addSep = false;

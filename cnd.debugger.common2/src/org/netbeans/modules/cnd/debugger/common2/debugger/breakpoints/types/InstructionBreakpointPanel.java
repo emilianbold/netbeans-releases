@@ -52,6 +52,7 @@ class InstructionBreakpointPanel extends BreakpointPanel {
 
     private InstructionBreakpoint fb;
     
+    @Override
     public void seed(NativeBreakpoint breakpoint) {
 	seedCommonComponents(breakpoint);
 	fb = (InstructionBreakpoint) breakpoint;
@@ -85,6 +86,7 @@ class InstructionBreakpointPanel extends BreakpointPanel {
 	addressField.getDocument().addDocumentListener(this);
     }
 
+    @Override
     public void setDescriptionEnabled(boolean enabled) {
 	// addressLabel.setEnabled(false);
 	addressField.setEnabled(false);
@@ -130,11 +132,13 @@ class InstructionBreakpointPanel extends BreakpointPanel {
     private javax.swing.JLabel addressLabel;
     private javax.swing.JTextField addressField;
 
+    @Override
     protected void assignProperties() {
 	String address = addressField.getText ();
 	fb.setAddress(address);
     }
     
+    @Override
     protected boolean propertiesAreValid() {
 	return ! IpeUtils.isEmpty(addressField.getText());
     }

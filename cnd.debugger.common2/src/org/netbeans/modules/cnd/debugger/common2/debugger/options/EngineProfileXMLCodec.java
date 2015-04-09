@@ -63,11 +63,13 @@ public class EngineProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     } 
 
     // interface XMLDecoder
+    @Override
     public String tag() {
 	return profile.getId();
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
         String what = "Engine profile"; // NOI18N
         int maxVersion = 1;
@@ -75,12 +77,14 @@ public class EngineProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
         profile.clearChanged();
     }
 
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
 	if (Log.XML.debug) {
 	    System.out.println("  startElement: " + element); // NOI18N
@@ -89,6 +93,7 @@ public class EngineProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
 	if (Log.XML.debug) {
 	    System.out.println("  endElement: " + element); // NOI18N
@@ -101,6 +106,7 @@ public class EngineProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // intrface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 	xes.elementOpen(tag(), thisversion);
 	xes.element(TAG_ENGINE, profile.getEngineType().getDebuggerID());

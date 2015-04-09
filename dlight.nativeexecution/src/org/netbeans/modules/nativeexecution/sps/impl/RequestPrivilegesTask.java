@@ -171,7 +171,7 @@ public final class RequestPrivilegesTask implements Computable<RequestPrivileges
             }
 
             if (dialogRef == null || dialogRef.get() == null) {
-                dialogRef = new WeakReference<GrantPrivilegesDialog>(
+                dialogRef = new WeakReference<>(
                         new GrantPrivilegesDialog());
             }
 

@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs.server;
 
-import java.nio.BufferUnderflowException;
-
 /**
  *
  * @author vkvashin

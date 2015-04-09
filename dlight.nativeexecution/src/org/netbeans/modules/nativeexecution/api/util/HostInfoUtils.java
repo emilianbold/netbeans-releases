@@ -35,13 +35,13 @@ public final class HostInfoUtils {
     public static final String LOCALHOST = "localhost"; // NOI18N
     private static final Future<List<String>> myAddresses;
     private static final ConcurrentHashMap<ExecutionEnvironment, HostInfo> cache =
-            new ConcurrentHashMap<ExecutionEnvironment, HostInfo>();
+            new ConcurrentHashMap<>();
 
     static {
         myAddresses = RequestProcessor.getDefault().submit(new Callable<List<String>>() {
             @Override
             public List<String> call() throws Exception {
-                List<String> result = new ArrayList<String>();
+                List<String> result = new ArrayList<>();
                 NetworkInterface iface;
                 try {
                     for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();

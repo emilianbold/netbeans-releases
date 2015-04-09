@@ -68,11 +68,11 @@ public class EditorBase extends BaseDocumentUnitTestCase {
         }
     }
     private MimePath mimePathCpp;
-    private MimePath[] embeddingsPathCpp = new MimePath[4];
+    private final MimePath[] embeddingsPathCpp = new MimePath[4];
     private MimePath mimePathHeader;
-    private MimePath[] embeddingsPathHeader = new MimePath[4];
+    private final MimePath[] embeddingsPathHeader = new MimePath[4];
     private MimePath mimePathC;
-    private MimePath[] embeddingsPathC = new MimePath[4];
+    private final MimePath[] embeddingsPathC = new MimePath[4];
     private MimePath mimePathFortran;
     private MimePath mimePathAsm;
 

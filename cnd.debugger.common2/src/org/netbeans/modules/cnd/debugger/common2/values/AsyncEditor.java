@@ -65,6 +65,7 @@ public class AsyncEditor extends PropertyEditorSupport {
 
     public AsyncEditor() {
 	addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            @Override
 	    public void propertyChange(java.beans.PropertyChangeEvent evt)  {
 		clearPending();
 	    }
@@ -98,6 +99,7 @@ public class AsyncEditor extends PropertyEditorSupport {
 	throw iae;
     }
 
+    @Override
     public void setAsText(String newText) {
 	// Called when an edit is commited through user action
 	// System.out.println("StringEditor.setAsText \"" + newText + "\"");
@@ -112,6 +114,7 @@ public class AsyncEditor extends PropertyEditorSupport {
 	notePending(newText);
     }
 
+    @Override
     public String getAsText() {
 
 	// LATER

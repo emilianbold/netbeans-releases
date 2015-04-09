@@ -250,7 +250,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     @Override
     public final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
-            antiLoop = new HashSet<String>();
+            antiLoop = new HashSet<>();
         }
         if (antiLoop.contains(getPath())) {
             return;
@@ -333,7 +333,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     public boolean isCyclicLink() {
-        Set<RemoteFileObjectBase> antiCycle = new HashSet<RemoteFileObjectBase>();
+        Set<RemoteFileObjectBase> antiCycle = new HashSet<>();
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate == null && getPath() != null) {
             // self-referencing link

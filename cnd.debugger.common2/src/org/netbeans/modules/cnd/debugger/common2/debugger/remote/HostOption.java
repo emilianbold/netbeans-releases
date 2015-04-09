@@ -74,18 +74,21 @@ public class HostOption extends Option {
      */
 
     // interface Option
+    @Override
     public Option getSubOption(String value) {
 	return null;   
     }
 
     /** Hack to fix width rendering */
     // interface Option
+    @Override
     public boolean verticalLayout() {
 	return false;
     }
 
     /** Hack to fix width rendering */
     // interface Option
+    @Override
     public boolean overrideHasLabel() {
 	return true;
     }
@@ -95,6 +98,7 @@ public class HostOption extends Option {
      * return the sub option if any
      */
     // interface Option
+    @Override
     public Option getSubOption() {
 	return null;
     }
@@ -104,11 +108,13 @@ public class HostOption extends Option {
      * returns if this is a sub option or not
      */
     // interface Option
+    @Override
     public boolean isSubOption() {
 	return false;
     }
 
     // interface Option
+    @Override
     public Validity getValidity(String text) {
 	return Validity.TRUE;
     }
@@ -120,11 +126,13 @@ public class HostOption extends Option {
     }
 
     // interface Option
+    @Override
     public boolean isTrim() {
 	return false;
     }
 
     // interface Option
+    @Override
     public boolean persist(OptionValue value) {
 	return true;
     }

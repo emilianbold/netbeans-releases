@@ -51,7 +51,6 @@ package org.netbeans.modules.cnd.debugger.common2.utils.options;
 
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.*;
 import javax.swing.border.*;
 
 class SubcategoryOptionUI extends OptionUI {
@@ -67,12 +66,14 @@ class SubcategoryOptionUI extends OptionUI {
 
     /**returns the value displayed on the UI
      */
+    @Override
     protected String getValueFromUI() {
 	return null;
     }
 
     /** update UI with currValue
      */
+    @Override
     protected void updateUI(){
     }
 
@@ -82,6 +83,7 @@ class SubcategoryOptionUI extends OptionUI {
      */
 
     // override OptionUI
+    @Override
     void bind(OptionSet options) {
 	for (int uix = 0; uix < optionUIs.length; uix++) {
 	    OptionUI ui = optionUIs[uix];
@@ -90,6 +92,7 @@ class SubcategoryOptionUI extends OptionUI {
     }
 
     // override OptionUI
+    @Override
     public void applyChanges() {
 	for (int uix = 0; uix < optionUIs.length; uix++) {
 	    OptionUI ui = optionUIs[uix];
@@ -98,6 +101,7 @@ class SubcategoryOptionUI extends OptionUI {
     }
 
     /** Add this option into the given panel */
+    @Override
     public void addTo(JPanel parent) {
 
 	JPanel panel = new JPanel();

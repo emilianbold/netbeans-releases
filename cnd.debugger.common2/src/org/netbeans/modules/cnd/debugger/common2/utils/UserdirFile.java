@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
@@ -148,6 +147,7 @@ public final class UserdirFile {
 	final String fullPath = fullPath();
 
 	fs.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
 	    public void run() throws IOException {
 
 		FileObject fo = FileUtil.createData(rootFo, fullPath);

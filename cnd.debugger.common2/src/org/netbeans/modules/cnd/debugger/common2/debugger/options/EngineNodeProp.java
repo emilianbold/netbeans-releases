@@ -67,10 +67,12 @@ public class EngineNodeProp extends PropertySupport<EngineType> {
 	this.profile = profile;
     }
 
+    @Override
     public EngineType getValue() {
 	return profile.getEngineType();
     }
 
+    @Override
     public void setValue(EngineType v) {
 	profile.setEngineType(v);
     } 

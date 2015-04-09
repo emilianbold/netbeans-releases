@@ -217,16 +217,19 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     // interface NativeDebugger
+    @Override
     public final NativeSession session() {
         return session;
     }
 
     // interface NativeDebugger
+    @Override
     public final NativeDebuggerManager manager() {
         return NativeDebuggerManager.get();
     }
 
     // interface NativeDebugger
+    @Override
     public final BreakpointManager bm() {
 	return bm;
     }
@@ -236,14 +239,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      */
 
     // interface NativeDebugger
+    @Override
     public boolean isCurrent() {
         return manager().currentNativeDebugger() == this;
     }
 
 
     // interface NativeDebugger
+    @Override
     public abstract DebuggerSettingsBridge profileBridge();
 
+    @Override
     public Context context() {
         final String executable = session().getTarget();
         final String hostname = session().getSessionHost();
@@ -266,6 +272,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         return executor.getExecutionEnvironment();
     }
 
+    @Override
     public Host getHost() {
         if (host == null) {
             host = Host.byName(getNDI().getHostName());
@@ -296,6 +303,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         return (syncFactory == null) ? null : syncFactory.getPathMap(ee);
     }
 
+    @Override
     public final String localToRemote(String who, String path) {
 	String mapped;
 	if (path == null) {
@@ -322,6 +330,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	return mapped;
     }
 
+    @Override
     public final String remoteToLocal(String who, String path) {
 	String mapped;
 	if (path == null) {
@@ -374,6 +383,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      */
 
     // interface NativeDebugger
+    @Override
     public void invalidateSessionData() {
         if (session != null) // FIXUP: Ivan, check this....
         {
@@ -409,10 +419,12 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         return NativeDebuggerManager.actionEnabler();
     }
 
+    @Override
     public State state() {
         return state;
     }
 
+    @Override
     public void addStateListener(StateListener sl) {
         actions.add(sl);
     }
@@ -453,6 +465,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      */
     protected void updateActions() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 // update explicitly registered actions
                 for (StateListener action : actions) {
@@ -505,6 +518,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 runTimer = new javax.swing.Timer(getRunDelay(),
                         new ActionListener() {
 
+                            @Override
                             public void actionPerformed(ActionEvent evt) {
                                 // set state and update when timer expires
                                 state.isRunning = true;
@@ -526,6 +540,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
 
     // interface NativeDebugger as well.
+    @Override
     public abstract String debuggerType();
 
 
@@ -653,6 +668,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     // interface NativeDebugger
+    @Override
     public WatchVariable[] getWatches() {
         return watches.toArray(new WatchVariable[watches.size()]);
     }
@@ -665,6 +681,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         return manager().watchUpdater();
     }
 
+    @Override
     public void restoreWatches(WatchBag wb) {
         NativeWatch[] watchesToRestore = wb.getWatches();
         for (int i = 0; i < watchesToRestore.length; i++) {
@@ -710,11 +727,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
     }
 
+    @Override
     public void spreadWatchCreation(NativeWatch w) {
         // very similar to restoreWatches
         restoreWatch(w);
     }
 
+    @Override
     public abstract void replaceWatch(NativeWatch template, String replacewith);
     protected abstract void restoreWatch(NativeWatch template);
 
@@ -744,6 +763,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected abstract void postVarContinuation(int rt, VarContinuation vc);
 
     // interface NativeDebugger
+    @Override
     public void postVarContinuation(VarContinuation vc) {
         int rt = RoutingToken.VAR.getUniqueRoutingTokenInt();
         varContinuations.put(rt, vc);
@@ -757,6 +777,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
     }
 
+    @Override
     public void setShowAutos(boolean showAutos) {
 	// System.out.printf("NativeDebuggerImpl.setShowAutos(%b)\n", showAutos);
 	this.showAutos = showAutos;
@@ -778,6 +799,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      */
     protected final void deleteMarkLocations() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 setCurrentLine(null, false, false, ShowMode.NONE, false);
             }
@@ -786,12 +808,14 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     protected final void resetCurrentLine() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 setCurrentLine(null, false, false, ShowMode.NONE, false);
             }
         });
     }
     
+    @Override
     public Location getVisitedLocation() {
         return visitedLocation;
     }
@@ -959,6 +983,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	updateLocation(true, ShowMode.AUTO, false);
     }
 
+    @Override
     public void setSrcOODMessage(String msg) {
         if (msg != null && !srcOOD) {
             // If srcOOD is not set it's quite likley that this is a
@@ -976,6 +1001,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected int deliverSignal = -1;
     protected OptionLayers optionLayers = null;
 
+    @Override
     public OptionLayers optionLayersInit() {
         // we don't want to create one, if optionLayers is null
         return optionLayers;
@@ -984,6 +1010,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected void addExtraOptions(OptionLayers optionLayers) {
     }
 
+    @Override
     public final OptionLayers optionLayers() {
         // We want to create one, if optionLayers is null
 
@@ -1007,6 +1034,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     // interface NativeDebugger
+    @Override
     public void optionLayersReset() {
         // arrange so we re-create optionLayers
         optionLayers = null;
@@ -1016,6 +1044,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Called when this session has been switched to
      * 'redundant' is true when we double-click on the same session.
      */
+    @Override
     public void activate(boolean redundant) {
 
         ioPack.switchTo();
@@ -1073,6 +1102,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Called when this session has been switched away from
      * 'redundant' is true when we double-click on the same session.
      */
+    @Override
     public void deactivate(boolean redundant) {
 
         if (redundant) {
@@ -1101,6 +1131,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         EditorBridge.setStatus(null);
     }
 
+    @Override
     public boolean getVerboseStack() {
         if ("on".equals(DebuggerOption.STACK_VERBOSE.getCurrValue(optionLayers()))) { // NOI18N
             return true;
@@ -1263,26 +1294,31 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
         // implement DisFragModel
+        @Override
         public void clear() {
             current_addrs.clear();
         }
 
         // implement DisFragModel
+        @Override
         public Line getItem(int i) {
             return current_addrs.get(i);
         }
 
         // implement DisFragModel
+        @Override
         public int size() {
             return current_addrs.size();
         }
 
         // interface DisFragModel
+        @Override
         public void addListener(Listener listener) {
             listeners.add(listener);
         }
 
         // interface DisFragModel
+        @Override
         public void removeListener(Listener listener) {
             listeners.remove(listener);
         }
@@ -1299,6 +1335,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             }
 	}
 
+        @Override
         public Iterator<Line> iterator() {
             return current_addrs.iterator();
         }
@@ -1309,9 +1346,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         private StateListener runToCursorListener = null;
 
         // interface Controller
+        @Override
         abstract public void requestDis(boolean withSource);
 
         // interface Controller
+        @Override
         abstract public void requestDis(String start, int count, boolean withSource);
 
 
@@ -1322,6 +1361,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
          */
 
 	// interface Controller
+        @Override
         public void setBreakpoint(String address, boolean add) {
             if (add) {
 		setBreakpointHelp(address);
@@ -1339,6 +1379,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
          */
 
 	// interface Controller
+        @Override
         public void toggleBreakpoint(String address) {
 	    long addr = Address.parseAddr(address);
             InstBreakpointModel.Bpt foundBpt = breakpointModel().findBptByAddr(addr);
@@ -1355,6 +1396,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
          */
 
         // interface Controller
+        @Override
         public final void enableBreakpoint(long address, NativeBreakpoint bpt,
                 boolean enable) {
 
@@ -1371,6 +1413,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
          */
 
         // interface Controller
+        @Override
         public final void updateBreakpoint(long address, NativeBreakpoint bpt,
                 boolean add) {
 
@@ -1388,6 +1431,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
 
         // interface Controller
+        @Override
         public final void addStateListenerInst(StateListener sl) {
             if (runToCursorListener == null) {
                 runToCursorListener = sl;
@@ -1396,6 +1440,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
 
         // interface Controller
+        @Override
         public final void removeStateListenerInst(StateListener sl) {
             // 6567570
             if (runToCursorListener != null) {
@@ -1424,11 +1469,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	}
 
         // interface BreakpointModel
+        @Override
         public void addListener(Listener listener) {
             listeners.add(listener);
         }
 
         // interface BreakpointModel
+        @Override
         public void removeListener(Listener listener) {
             listeners.remove(listener);
         }
@@ -1449,6 +1496,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
          * Return number of disabled bpts at this address.
          */
         // interface BreakpointModel
+        @Override
         public int findDisabled(long address) {
             int count = 0;
             for (Bpt bpt : breakpoints_List) {
@@ -1463,6 +1511,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
          * Return number of bpts at this address.
          */
         // interface BreakpointModel
+        @Override
         public int find(long address) {
             int count = 0;
             for (Bpt bpt : breakpoints_List) {
@@ -1499,6 +1548,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             }
         }
 
+        @Override
         public NativeBreakpoint[] getBreakpoints() {
             NativeBreakpoint[] res = new NativeBreakpoint[breakpoints_List.size()];
             int idx = 0;
@@ -1521,42 +1571,50 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	}
 
         // interface StateModel
+        @Override
         public void addListener(Listener listener) {
             listeners.add(listener);
         }
 
         // interface StateModel
+        @Override
         public void removeListener(Listener listener) {
             listeners.remove(listener);
         }
 
         // interface StateModel
+        @Override
         public void setAddrHashMap(HashMap<Long, Integer> hashmap) {
             addrHashMap = hashmap;
         }
 
 
         // interface StateModel
+        @Override
         public boolean isVisited() {
             return location.visited();
         }
 
         // interface StateModel
+        @Override
         public long getPC() {
             return location.pc();
         }
 
         // interface StateModel
+        @Override
         public String getFunction() {
             return location.func();
         }
 
         // interface StateModel
+        @Override
         public String getFile() {
             return location.src();
         }
 
         // interface StateModel
+        @Override
         public int getLine() {
             return location.line();
         }
@@ -1590,21 +1648,25 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     // interface NativeDebugger
+    @Override
     public final void InstBptEnabled(long addr, NativeBreakpoint bpt) {
 	disController().enableBreakpoint(addr, bpt, true);
     }
 
     // interface NativeDebugger
+    @Override
     public final void InstBptDisabled(long addr, NativeBreakpoint bpt) {
 	disController().enableBreakpoint(addr, bpt, false);
     }
 
     // interface NativeDebugger
+    @Override
     public final void InstBptAdded(long addr, NativeBreakpoint bpt) {
 	disController().updateBreakpoint(addr, bpt, true);
     }
 
     // interface NativeDebugger
+    @Override
     public final void InstBptRemoved(long addr, NativeBreakpoint bpt) {
 	disController().updateBreakpoint(addr, bpt, false);
     }
@@ -1679,9 +1741,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         return null;
     }
     
+    @Override
     public void registerMemoryWindow(MemoryWindow w) {
     }
 
+    @Override
     public Set<String> requestAutos() {
 	autos.clear();
 
@@ -1698,15 +1762,18 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	return Autos.get(EditorBridge.documentFor(location.src(), this), location.line()-1);
     }
     
+    @Override
     public int getAutosCount() {
 	return autos.size();
     }
     
+    @Override
     public Variable[] getAutos() {
         Variable array[] = autos.toArray(new Variable[autos.size()]);
 	return array;
     }
 
+    @Override
     public void copyStack() {
         if (guiStackFrames == null)
 	    return;

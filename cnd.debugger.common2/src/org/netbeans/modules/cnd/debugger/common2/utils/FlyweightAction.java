@@ -174,6 +174,7 @@ abstract public class FlyweightAction extends AbstractAction
     }
 
     // interface HelpCtx.Provider
+    @Override
     public final HelpCtx getHelpCtx() {
 	return shared.getHelpCtx();
     }
@@ -214,6 +215,7 @@ abstract public class FlyweightAction extends AbstractAction
     }
 
     // interface Presenter.Toolbar
+    @Override
     public Component getToolbarPresenter() {
 	JButton button = new JButton();
 	fixButtonLF(button);
@@ -246,6 +248,7 @@ abstract public class FlyweightAction extends AbstractAction
     }
 
     // interface Presenter.Popup
+    @Override
     public JMenuItem getPopupPresenter() {
 	JMenuItem menuItem = new JMenuItem();
 	menuItem.setAction(this);

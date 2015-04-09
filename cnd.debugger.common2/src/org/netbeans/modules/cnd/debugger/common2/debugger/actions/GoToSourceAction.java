@@ -64,6 +64,7 @@ public class GoToSourceAction extends CallableSystemAction implements StateListe
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return menu_name;
     }
@@ -76,6 +77,7 @@ public class GoToSourceAction extends CallableSystemAction implements StateListe
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
         boolean enable;
         if (!state.isLoaded) {
@@ -88,6 +90,7 @@ public class GoToSourceAction extends CallableSystemAction implements StateListe
     }
     
     // interface CallableSystemAction
+    @Override
     public void performAction() {
         NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger instanceof NativeDebuggerImpl) {
@@ -102,6 +105,7 @@ public class GoToSourceAction extends CallableSystemAction implements StateListe
     }
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }

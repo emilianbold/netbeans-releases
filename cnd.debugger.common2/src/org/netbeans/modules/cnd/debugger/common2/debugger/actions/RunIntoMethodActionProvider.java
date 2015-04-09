@@ -61,16 +61,19 @@ public class RunIntoMethodActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton (ActionsManager.ACTION_RUN_INTO_METHOD);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
 	getDebugger().stepTo(EditorBridge.getCurrentSelection());
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	boolean enable = state.isListening() && !state.isCore && state.isLoaded;
 	setEnabled(ActionsManager.ACTION_RUN_INTO_METHOD, enable);

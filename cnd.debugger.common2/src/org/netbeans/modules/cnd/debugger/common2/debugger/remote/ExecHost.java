@@ -69,30 +69,37 @@ class ExecHost extends Host {
         this.platform = platformByCNDId(platformx).name();
     }
 
+    @Override
     public ExecutionEnvironment executionEnvironment() {
         return exEnv;
     }
 
+    @Override
     public String getHostLogin() {
         return exEnv.getUser();
     }
 
+    @Override
     public String getHostName() {
         return exEnv.getHost();
     }
 
+    @Override
     public SecuritySettings getSecuritySettings() {
         return new SecuritySettings(exEnv.getSSHPort(), AuthenticationUtils.getSSHKeyFileFor(exEnv));
     }
 
+    @Override
     public String getPlatformName() {
         return platform;
     }
 
+    @Override
     public int getPortNum() {
         return exEnv.getSSHPort();
     }
 
+    @Override
     public String getRemoteStudioLocation() {
         CompilerSetManager csm = CompilerSetManager.get(exEnv);
 
@@ -118,6 +125,7 @@ class ExecHost extends Host {
         }
     }
 
+    @Override
     public boolean isRemote() {
         return exEnv.isRemote();
     }

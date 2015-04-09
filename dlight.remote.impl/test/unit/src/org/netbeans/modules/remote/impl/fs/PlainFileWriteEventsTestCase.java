@@ -82,7 +82,7 @@ public class PlainFileWriteEventsTestCase extends RemoteFileTestBase {
             remoteBaseDir = mkTempAndRefreshParent(true);            
             FileObject subDirFO = getFileObject(remoteBaseDir).createFolder("testFileWriteEvents");            
             FileObject fo1 = subDirFO.createData("text.txt");
-            List<FileEvent> events = new ArrayList<FileEvent>();
+            List<FileEvent> events = new ArrayList<>();
             subDirFO.getFileSystem().addFileChangeListener(new CollectingFileChangeListener(events));
             sleep(3000);
             lock = fo1.lock();

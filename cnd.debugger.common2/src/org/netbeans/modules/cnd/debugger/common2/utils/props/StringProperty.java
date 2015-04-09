@@ -54,16 +54,19 @@ public class StringProperty extends Property {
 	    System.out.println("PROP " + name + " initial value = " + initialValue); // NOI18N
 	}
 
+        @Override
 	protected void setFromStringImpl(String s) {
 	    super.setFromStringImpl(s);
 	    System.out.println("PROP " + name() + " new value = " + value); // NOI18N
 	}
 
+        @Override
 	protected void setFromObjectImpl(Object o) {
 	    super.setFromObjectImpl(o);
 	    System.out.println("PROP " + name() + " new value = " + o); // NOI18N
 	}
 
+        @Override
 	public final void set(String s) {
 	    super.set(s);
 	    System.out.println("PROP " + name() + " new value = " + s); // NOI18N
@@ -77,16 +80,19 @@ public class StringProperty extends Property {
     }
 
     // interface Property
+    @Override
     protected void setFromStringImpl(String s) {
 	value = s;
     }
 
     // interface Property
+    @Override
     public final String toString() {
 	return value;
     } 
 
     // interface Property
+    @Override
     protected void setFromObjectImpl(Object o) {
 	if (o != null)
 	    value = ((String) o).valueOf(o);
@@ -95,6 +101,7 @@ public class StringProperty extends Property {
     }
 
     // interface Property
+    @Override
     public final Object getAsObject () {
 	return value;
     }

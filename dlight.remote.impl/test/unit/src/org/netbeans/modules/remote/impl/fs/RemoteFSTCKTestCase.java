@@ -80,9 +80,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
         try {
             RcFile rcFile = NativeExecutionTestSupport.getRcFile();
             mspec = rcFile.get("remote", "fstck.mspec");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (FormatException ex) {
+        } catch (IOException | FormatException ex) {
             Exceptions.printStackTrace(ex);
         }
 

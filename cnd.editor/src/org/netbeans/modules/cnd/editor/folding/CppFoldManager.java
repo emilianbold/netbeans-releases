@@ -656,7 +656,7 @@ final class CppFoldManager extends CppFoldManagerBase
 
     private static final class WeakParsingListener implements ParsingListener {
 
-        private WeakReference<ParsingListener> ref;
+        private final WeakReference<ParsingListener> ref;
 
         WeakParsingListener(ParsingListener listener) {
             ref = new WeakReference<ParsingListener>(listener);

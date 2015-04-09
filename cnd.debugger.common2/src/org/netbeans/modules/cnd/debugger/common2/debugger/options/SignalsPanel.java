@@ -44,17 +44,13 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.options;
 
-import java.util.ArrayList;
 
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
 
 import org.openide.util.HelpCtx;
-import org.openide.awt.Actions;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -98,6 +94,7 @@ class SignalsPanel extends JPanel implements HelpCtx.Provider, PropertyChangeLis
 	return signals;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) &&
 	    evt.getNewValue() == PropertyEnv.STATE_VALID) {
@@ -107,6 +104,7 @@ class SignalsPanel extends JPanel implements HelpCtx.Provider, PropertyChangeLis
         }
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("DebuggerOptions" );
     }
@@ -119,6 +117,7 @@ class SignalsPanel extends JPanel implements HelpCtx.Provider, PropertyChangeLis
 	}
 
 	// interface TableCellRenderer
+        @Override
 	public Component getTableCellRendererComponent(JTable table,
 						       Object value,
 						       boolean isSelected,

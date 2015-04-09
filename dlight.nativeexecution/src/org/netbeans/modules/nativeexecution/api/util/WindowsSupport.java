@@ -70,7 +70,7 @@ public final class WindowsSupport {
     private boolean initialized = false;
     private Shell activeShell = null;
     private PathConverter pathConverter = null;
-    private AtomicReference<String> pathKeyRef = new AtomicReference<String>();
+    private AtomicReference<String> pathKeyRef = new AtomicReference<>();
     private Charset charset;
 
     private WindowsSupport() {

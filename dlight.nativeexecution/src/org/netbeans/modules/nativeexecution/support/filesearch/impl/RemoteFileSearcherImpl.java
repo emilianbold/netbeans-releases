@@ -76,7 +76,7 @@ public class RemoteFileSearcherImpl implements FileSearcher {
                 return null;
             }
 
-            List<String> sp = new ArrayList<String>(fileSearchParams.getSearchPaths());
+            List<String> sp = new ArrayList<>(fileSearchParams.getSearchPaths());
 
             if (fileSearchParams.isSearchInUserPaths()) {
                 String path = hostInfo.getEnvironment().get("PATH"); // NOI18N

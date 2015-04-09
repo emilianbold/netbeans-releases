@@ -80,7 +80,7 @@ public final class ShellSession {
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final RequestProcessor RP = new RequestProcessor("ShellSession I/O", 10); // NOI18N
     private static final HashMap<ExecutionEnvironment, ShellProcess> processes =
-            new HashMap<ExecutionEnvironment, ShellProcess>();
+            new HashMap<>();
     private static final String csName = "UTF-8"; // NOI18N
     private static final String eop = "ShellSession.CMDDONE"; // NOI18N
 

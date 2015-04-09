@@ -44,27 +44,12 @@
 
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.border.*;
-import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
 import java.util.*;
-import java.lang.reflect.*;
-import java.net.URL;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeSupport;
-
-import javax.swing.filechooser.FileView;
-import javax.swing.plaf.basic.BasicFileChooserUI;
-import org.openide.filesystems.*;
 // deprecated in NB65
 // import org.netbeans.modules.cnd.MIMENames;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 @Deprecated
 public class CorefileFilter extends javax.swing.filechooser.FileFilter {
     
@@ -72,11 +57,13 @@ public class CorefileFilter extends javax.swing.filechooser.FileFilter {
 	super();
     }
     
+    @Override
     public String getDescription() {
 	return getString("FileChooser_Corefiles"); // NOI18N
     }
     
 
+    @Override
    public boolean accept(File f) {
 	if(f != null) {
 	    if(f.isDirectory()) {

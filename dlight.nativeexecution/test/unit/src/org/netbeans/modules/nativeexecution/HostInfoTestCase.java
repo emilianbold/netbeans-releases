@@ -104,8 +104,8 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
         int[] allGids = hi.getAllGroupIDs();
         
         String[] tmp = runScript("groups").trim().split(" +");
-        Set<String> refGroups = new HashSet<String>(Arrays.asList(tmp));
-        Set<String> realGroups = new HashSet<String>(Arrays.asList(hi.getAllGroups()));
+        Set<String> refGroups = new HashSet<>(Arrays.asList(tmp));
+        Set<String> realGroups = new HashSet<>(Arrays.asList(hi.getAllGroups()));
         assertEquals("Groups names differ", refGroups, realGroups);
 
         assertEquals("Groups ids count differ", refGroups.size(), allGids.length);
@@ -131,7 +131,7 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String mspec = NativeExecutionTestSupport.getMspec(execEnv);
         String section = "execution." + mspec + ".hostInfo";
-        Map<String, String> expectedMap = new HashMap<String, String>();
+        Map<String, String> expectedMap = new HashMap<>();
         Collection<String> keys = rcFile.getKeys(section);
         if (keys.isEmpty()) {
             return;
@@ -140,7 +140,7 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
             String value = rcFile.get(section, key);
             expectedMap.put(key, value);
         }
-        Map<String, String> actualMap = new HashMap<String, String>();
+        Map<String, String> actualMap = new HashMap<>();
         actualMap.put("getCpuFamily", "" + hi.getCpuFamily());
         actualMap.put("getCpuNum", "" + hi.getCpuNum());
         actualMap.put("getGroup", "" + hi.getGroup());
@@ -184,7 +184,7 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
     }
     
     private void printMap(Map<String, String> map, PrintStream printStream) {
-        SortedMap<String, String> sortedMap = new TreeMap<String, String>(map);
+        SortedMap<String, String> sortedMap = new TreeMap<>(map);
         for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
             printStream.printf("%s=%s\n", entry.getKey(), entry.getValue());
         }

@@ -61,8 +61,8 @@ public class PreviewPreferencesModel {
         All
     }
 
-    private Map<CodeStyle.Language, Map<String, PreviewPreferences>> preferences = new ConcurrentHashMap<CodeStyle.Language, Map<String, PreviewPreferences>>();
-    private Map<CodeStyle.Language, String> defaultStyles = new ConcurrentHashMap<CodeStyle.Language, String>();
+    private final Map<CodeStyle.Language, Map<String, PreviewPreferences>> preferences = new ConcurrentHashMap<CodeStyle.Language, Map<String, PreviewPreferences>>();
+    private final Map<CodeStyle.Language, String> defaultStyles = new ConcurrentHashMap<CodeStyle.Language, String>();
 
     public PreviewPreferencesModel() {
     }

@@ -70,8 +70,8 @@ public final class NativeProcessInfo {
     private final ExecutionEnvironment execEnv;
     private final boolean isWindows;
     private final MacroMap environment;
-    private final List<String> arguments = new ArrayList<String>();
-    private final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+    private final List<String> arguments = new ArrayList<>();
+    private final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<>();
     private String executable;
     private String commandLine;
     private String workingDirectory;
@@ -151,7 +151,7 @@ public final class NativeProcessInfo {
                 return;
             }
 
-            List<String> args = new ArrayList<String>(cmdAndArgs.length - 1);
+            List<String> args = new ArrayList<>(cmdAndArgs.length - 1);
             for (int i = 1; i < cmdAndArgs.length; i++) {
                 args.add(cmdAndArgs[i]);
             }
@@ -217,7 +217,7 @@ public final class NativeProcessInfo {
             return null;
         }
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         String cmd;
 
@@ -358,7 +358,7 @@ public final class NativeProcessInfo {
     }
 
     /* package */ Collection<ChangeListener> getListenersSnapshot() {
-        return new LinkedList<ChangeListener>(listeners);
+        return new LinkedList<>(listeners);
     }
 
     public String getWorkingDirectory(boolean expandMacros) {

@@ -200,7 +200,7 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
                 if (execEnv.isLocal()) {
                     BufferedReader br = new BufferedReader(new FileReader(tmpFileFile));
                     String s;
-                    result = new ArrayList<String>();
+                    result = new ArrayList<>();
 
                     while ((s = br.readLine()) != null) {
                         result.add(s);

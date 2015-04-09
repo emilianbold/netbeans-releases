@@ -109,11 +109,13 @@ class DebugTargetXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     protected String tag() {
 	return TAG_DEBUGTARGET;
     } 
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
 	String id = atts.getValue(ATTR_ID); 
 	if (Log.XML.debug)
@@ -131,6 +133,7 @@ class DebugTargetXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
         // unregister aux objects' codecs
         for (XMLDecoder decoder : currentDTAuxDecoders) {
@@ -139,6 +142,7 @@ class DebugTargetXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
 	if (Log.XML.debug) {
 	    System.out.println(" DebugTargetXMLCodec startElement: element " + element); // NOI18N
@@ -153,6 +157,7 @@ class DebugTargetXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
 	if (Log.XML.debug) {
 	    System.out.println(" DebugTargetXMLCodec endElement: element " + element); // NOI18N
@@ -214,6 +219,7 @@ class DebugTargetXMLCodec extends XMLDecoder implements XMLEncoder {
 
 
     // pseudo-interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
             AttrValuePair id_attr[] = new AttrValuePair[] {
                 new AttrValuePair(ATTR_ID, index + " " + currentDT.displayName())}; // NOI18N

@@ -61,14 +61,17 @@ public abstract class DetailView<R extends Record>
     }
 
     // implement Validator
+    @Override
     public void fireChanged() {
 	if (validator != null)
 	    validator.fireChanged();
     }
 
     // implement Validator
+    @Override
     public abstract boolean isRecordValid();
 
     // implement Validator
+    @Override
     public abstract boolean isDirty();
 }

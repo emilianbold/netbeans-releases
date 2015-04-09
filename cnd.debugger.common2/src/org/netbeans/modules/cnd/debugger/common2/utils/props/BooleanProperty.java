@@ -57,21 +57,25 @@ public final class BooleanProperty extends Property {
     }
 
     // interface Property
+    @Override
     public final void setFromStringImpl(String s) {
 	value = Boolean.valueOf(s).booleanValue();
     }
 
     // interface Property
+    @Override
     public final String toString() {
 	return Boolean.toString(value);
     } 
 
     // interface Property
+    @Override
     public final void setFromObjectImpl(Object o) {
 	value = ((Boolean) o).booleanValue();
     }
 
     // interface Property
+    @Override
     public final Object getAsObject () {
 	return new Boolean(value);
     }

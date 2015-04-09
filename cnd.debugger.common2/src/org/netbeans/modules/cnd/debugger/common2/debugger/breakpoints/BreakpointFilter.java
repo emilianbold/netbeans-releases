@@ -133,6 +133,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TreeModelFilter
+        @Override
 	public Object getRoot(TreeModel original) {
 		// redundant?
 		return TreeModel.ROOT;
@@ -279,6 +280,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TreeModelFilter
+        @Override
 	public Object[] getChildren(TreeModel original, Object parent,
 			int from, int to) throws UnknownTypeException {
             CndUtils.assertNonUiThread();
@@ -307,6 +309,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TreeModelFilter
+        @Override
 	public int getChildrenCount(TreeModel original, Object parent)
 			throws UnknownTypeException {
             CndUtils.assertNonUiThread();
@@ -355,6 +358,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TreeModelFilter
+        @Override
 	public boolean isLeaf(TreeModel original, Object node)
 			throws UnknownTypeException {
 
@@ -374,6 +378,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TreeModelFilter
+        @Override
 	public void addModelListener(ModelListener l) {
 		if (super.addModelListenerHelp(l)) {
 			manager().breakpointUpdater().setListener(this);
@@ -381,6 +386,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TreeModelFilter etc
+        @Override
 	public void removeModelListener(ModelListener l) {
 		if (super.removeModelListenerHelp(l)) {
 			manager().breakpointUpdater().setListener(null);
@@ -388,6 +394,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface NodeModelFilter etc
+        @Override
 	public String getDisplayName(NodeModel original, Object node)
 			throws UnknownTypeException {
 
@@ -400,6 +407,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface NodeModelFilter
+        @Override
 	public String getIconBase(NodeModel original, Object node)
 			throws UnknownTypeException {
 
@@ -412,6 +420,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface NodeModelFilter
+        @Override
 	public String getShortDescription(NodeModel original, Object node)
 			throws UnknownTypeException {
 
@@ -428,6 +437,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TableModelFilter
+        @Override
 	public Object getValueAt(TableModel original, Object node, String columnID)
 			throws UnknownTypeException {
 		if (!(node instanceof NativeBreakpoint)) /* OLD, columnID may not honored by original
@@ -472,6 +482,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TableModelFilter
+        @Override
 	public boolean isReadOnly(TableModel original, Object node, String columnID)
 			throws UnknownTypeException {
 
@@ -491,6 +502,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface TableModelFilter
+        @Override
 	public void setValueAt(TableModel original, Object node,
 			String columnID, Object value)
 			throws UnknownTypeException {
@@ -544,6 +556,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface CheckNodeModelFilter
+        @Override
 	public boolean isCheckable(NodeModel originalNM, Object node) throws UnknownTypeException {
 		if (!(originalNM instanceof CheckNodeModel)) {
 			throw new UnknownTypeException(node);
@@ -557,6 +570,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface CheckNodeModelFilter
+        @Override
 	public boolean isCheckEnabled(NodeModel originalNM, Object node) throws UnknownTypeException {
 		if (!(originalNM instanceof CheckNodeModel)) {
 			throw new UnknownTypeException(node);
@@ -570,6 +584,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface CheckNodeModelFilter
+        @Override
 	public Boolean isSelected(NodeModel originalNM, Object node) throws UnknownTypeException {
 		if (node instanceof NativeBreakpoint) {
 			NativeBreakpoint b = (NativeBreakpoint) node;
@@ -603,6 +618,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface CheckNodeModelFilter
+        @Override
 	public void setSelected(NodeModel originalNM, Object node, Boolean selected) throws UnknownTypeException {
 		if (node instanceof NativeBreakpoint) {
 			NativeBreakpoint b = (NativeBreakpoint) node;
@@ -621,6 +637,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface AsynchronousModelFilter
+        @Override
 	public Executor asynchronous(Executor arg0, CALL arg1, Object arg2) throws UnknownTypeException {
 		// IZ 172060 Make calls come in on the EDT.
             switch (arg1) {
@@ -664,6 +681,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		// interface Models.ActionPerformer
+                @Override
 		public boolean isEnabled(Object node) {
 			if (!(node instanceof NativeBreakpoint)) {
 				return false;
@@ -676,6 +694,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 		 * Call perform(NativeBreakpoint) on every passed object that is a Bpt
 		 */
 		// interface Models.ActionPerformer
+                @Override
 		public void perform(Object[] nodes) {
 			for (int nx = 0; nx < nodes.length; nx++) {
 				if (!(nodes[nx] instanceof NativeBreakpoint)) {
@@ -700,10 +719,12 @@ public final class BreakpointFilter extends ModelListenerSupport
 			 */
 		}
 
+                @Override
 		public boolean isEnabled(NativeBreakpoint b) {
 			return true;
 		}
 
+                @Override
 		protected void perform(NativeBreakpoint b) {
 			b.dispose();
 		}
@@ -727,10 +748,12 @@ public final class BreakpointFilter extends ModelListenerSupport
 			 */
 		}
 
+                @Override
 		public boolean isEnabled(NativeBreakpoint b) {
 			return true;
 		}
 
+                @Override
 		protected void perform(NativeBreakpoint b) {
 			if (b.isEnabled()) {
 				b.disable();
@@ -750,10 +773,12 @@ public final class BreakpointFilter extends ModelListenerSupport
 
 	private static class CustomizeAction extends BptActionPerformer {
 
+                @Override
 		public boolean isEnabled(NativeBreakpoint b) {
 			return true;
 		}
 
+                @Override
 		protected void perform(NativeBreakpoint b) {
 			NativeBreakpoint editableBreakpoint;
 			editableBreakpoint = b.makeEditableCopy();
@@ -769,10 +794,12 @@ public final class BreakpointFilter extends ModelListenerSupport
 
 	private static class GoToSourceAction extends BptActionPerformer {
 
+                @Override
 		public boolean isEnabled(NativeBreakpoint b) {
 			return b.isVisitable();
 		}
 
+                @Override
 		protected void perform(NativeBreakpoint b) {
 			b.visitNextAnnotation();
 		}
@@ -788,6 +815,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 			super(Catalog.get("ACT_BPT_EnableAll"));	// NOI18N
 		}
 
+                @Override
 		public void actionPerformed(ActionEvent e) {
 			breakpointBag().postEnableAllHandlers(true);
 		}
@@ -809,6 +837,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 			super(Catalog.get("ACT_BPT_DisableAll"));	// NOI18N
 		}
 
+                @Override
 		public void actionPerformed(ActionEvent e) {
 			breakpointBag().postEnableAllHandlers(false);
 		}
@@ -830,6 +859,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 			super(Catalog.get("ACT_BPT_DeleteAll"));	// NOI18N
 		}
 
+                @Override
 		public void actionPerformed(ActionEvent e) {
 			breakpointBag().postDeleteAllHandlers();
 		}
@@ -852,6 +882,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 			super(Catalog.get("ACT_BPT_DeleteInapplicable"));	// NOI18N
 		}
 
+                @Override
 		public void actionPerformed(ActionEvent e) {
 			NativeBreakpoint[] bpts = breakpointBag().getBreakpoints();
 			for (NativeBreakpoint b : bpts) {
@@ -913,11 +944,13 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		// interface SystemAction
+                @Override
 		public String getName() {
 			return Catalog.get("ACT_BPT_SaveBpt"); // NOI18N
 		}
 
 		// interface SystemAction
+                @Override
 		public HelpCtx getHelpCtx() {
 			return null;
 		}
@@ -939,11 +972,13 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		// interface SystemAction
+                @Override
 		public String getName() {
 			return "ghost buster"; // NOI18N
 		}
 
 		// interface SystemAction
+                @Override
 		public HelpCtx getHelpCtx() {
 			return null;
 		}
@@ -973,11 +1008,13 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		// interface SystemAction
+                @Override
 		public String getName() {
 			return "only show bpts in current session"; // NOI18N
 		}
 
 		// interface SystemAction
+                @Override
 		public HelpCtx getHelpCtx() {
 			return null;
 		}
@@ -1002,11 +1039,13 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		// interface SystemAction
+                @Override
 		public String getName() {
 			return "skip single parents"; // NOI18N
 		}
 
 		// interface SystemAction
+                @Override
 		public HelpCtx getHelpCtx() {
 			return null;
 		}
@@ -1031,11 +1070,13 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		// interface SystemAction
+                @Override
 		public String getName() {
 			return "enabled property differentiates"; // NOI18N
 		}
 
 		// interface SystemAction
+                @Override
 		public HelpCtx getHelpCtx() {
 			return null;
 		}
@@ -1061,6 +1102,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface NodeActionsProviderFilter
+        @Override
 	public Action[] getActions(NodeActionsProvider original, Object o)
 			throws UnknownTypeException {
 
@@ -1147,6 +1189,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 	}
 
 	// interface NodeActionsProviderFilter
+        @Override
 	public void performDefaultAction(NodeActionsProvider original, Object o)
 			throws UnknownTypeException {
 
@@ -1204,12 +1247,14 @@ public final class BreakpointFilter extends ModelListenerSupport
 		 * Called when some dialog button is pressed
 		 */
 		// interface ActionListener
+                @Override
 		public void actionPerformed(ActionEvent e) {
 			boolean ok = (e.getSource() == DialogDescriptor.OK_OPTION);
 			accept(ok);
 		}
 
 		// interface DialogManager
+                @Override
 		public void accept(boolean yes) {
 			boolean done = false;
 			Controller controller = panel.getController();
@@ -1224,6 +1269,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		// interface DialogManager
+                @Override
 		public void bringDown() {
 			NativeDebuggerManager.get().deRegisterDialog(this);
 			dialog.setVisible(false);
@@ -1232,11 +1278,13 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		// interface DialogManager
+                @Override
 		public void refocus() {
 			System.out.println("NOT IMPLEMENTED: CustomizeBreakpointProcessor.refocus()"); // NOI18N
 		}
 
 		// interface PropertyChangeListener
+                @Override
 		public void propertyChange(PropertyChangeEvent e) {
 			if (Controller.PROP_VALID.equals(e.getPropertyName())) {
 				setValid();

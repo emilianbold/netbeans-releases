@@ -67,14 +67,14 @@ import org.openide.windows.TopComponent;
 final class CppMetaModel implements PropertyChangeListener {
 
     // TODO: need to get reparse time from settings
-    private int reparseDelay = 1000;
+    private final int reparseDelay = 1000;
     
     /** map of all files we're interested in */
-    private Map<String,CppFile> map = new ConcurrentHashMap<String,CppFile>();
+    private final Map<String,CppFile> map = new ConcurrentHashMap<String,CppFile>();
 
-    private Collection<ParsingListener> listeners = new ConcurrentLinkedQueue<ParsingListener>();
+    private final Collection<ParsingListener> listeners = new ConcurrentLinkedQueue<ParsingListener>();
 
-    private static CppMetaModel instance = new CppMetaModel();
+    private static final CppMetaModel instance = new CppMetaModel();
     static {
         TopComponent.getRegistry().addPropertyChangeListener(instance);
     }

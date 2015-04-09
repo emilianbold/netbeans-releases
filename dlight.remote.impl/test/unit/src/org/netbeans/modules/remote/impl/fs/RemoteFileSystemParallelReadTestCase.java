@@ -78,7 +78,7 @@ public class RemoteFileSystemParallelReadTestCase extends RemoteFileSystemParall
         final String absPath = "/usr/include/stdio.h";
 
         final AtomicLong size = new AtomicLong(-1);
-        final AtomicReference<FileObject> fileObjectRef = new AtomicReference<FileObject>();
+        final AtomicReference<FileObject> fileObjectRef = new AtomicReference<>();
 
         class Worker extends ParallelTestWorker {
 

@@ -69,6 +69,7 @@ public abstract class Validity {
 	TRUE(String why) {
 	    super(why);
 	}
+        @Override
 	public boolean isValid() { return true; }
     }
 
@@ -76,6 +77,7 @@ public abstract class Validity {
 	FALSE(String why) {
 	    super(why);
 	}
+        @Override
 	public boolean isValid() { return false; }
     }
 }

@@ -56,7 +56,7 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
 
     private final CodeStyle.Language language;
     private final String optionID;
-    private PreviewPreferences preferences;
+    private final PreviewPreferences preferences;
     private CodeStyle.PreprocessorIndent state;
     private PropertyEditor editor;
 
@@ -93,10 +93,12 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
         return null;
     }
 
+    @Override
     public CodeStyle.PreprocessorIndent getValue() {
         return state;
     }
 
+    @Override
     public void setValue(CodeStyle.PreprocessorIndent v) {
         state = v;
         getPreferences().put(optionID, state.name());

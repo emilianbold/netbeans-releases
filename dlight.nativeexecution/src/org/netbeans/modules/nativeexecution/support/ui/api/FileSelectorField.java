@@ -80,7 +80,7 @@ public final class FileSelectorField extends JTextField
         super();
         this.provider = provider;
 
-        currentTask = new AtomicReference<CompletionTask>();
+        currentTask = new AtomicReference<>();
 
         getDocument().addDocumentListener(new DocumentListener() {
 
@@ -194,7 +194,7 @@ public final class FileSelectorField extends JTextField
 
     private void setTabTraversalEnabled(boolean enabled) {
         Set<AWTKeyStroke> tKeys = getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        Set<AWTKeyStroke> newTKeys = new HashSet<AWTKeyStroke>(tKeys);
+        Set<AWTKeyStroke> newTKeys = new HashSet<>(tKeys);
         if (enabled) {
             newTKeys.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
         } else {

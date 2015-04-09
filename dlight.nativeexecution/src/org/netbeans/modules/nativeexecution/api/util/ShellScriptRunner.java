@@ -84,7 +84,7 @@ public final class ShellScriptRunner {
     private LineProcessor errorProcessor;
     private CountDownLatch countdown;
     private NativeProcess shellProcess;
-    private final List<String> args = new ArrayList<String>();
+    private final List<String> args = new ArrayList<>();
 
     public ShellScriptRunner(ExecutionEnvironment env, String script, LineProcessor outputProcessor) {
         this.env = env;
@@ -140,7 +140,7 @@ public final class ShellScriptRunner {
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
-        List<String> finalArgs = new ArrayList<String>();
+        List<String> finalArgs = new ArrayList<>();
         finalArgs.add("-s"); // NOI18N
         if (!args.isEmpty()) {
             finalArgs.add("--"); // NOI18N
@@ -321,7 +321,7 @@ public final class ShellScriptRunner {
 
     public final static class BufferedLineProcessor implements LineProcessor {
 
-        private final List<String> buffer = new ArrayList<String>();
+        private final List<String> buffer = new ArrayList<>();
 
         @Override
         public void processLine(String line) {

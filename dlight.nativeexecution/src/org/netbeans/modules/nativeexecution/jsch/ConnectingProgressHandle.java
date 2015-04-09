@@ -58,8 +58,8 @@ import org.openide.util.NbBundle;
 public final class ConnectingProgressHandle {
 
     private static final Object lock = new Object();
-    private static final HashMap<ExecutionEnvironment, ProgressHandle> envToHandle = new HashMap<ExecutionEnvironment, ProgressHandle>();
-    private static final HashMap<ProgressHandle, List<Cancellable>> phToCancelList = new HashMap<ProgressHandle, List<Cancellable>>();
+    private static final HashMap<ExecutionEnvironment, ProgressHandle> envToHandle = new HashMap<>();
+    private static final HashMap<ProgressHandle, List<Cancellable>> phToCancelList = new HashMap<>();
 
     private ConnectingProgressHandle() {
     }
@@ -97,7 +97,7 @@ public final class ConnectingProgressHandle {
             });
 
             envToHandle.put(env, ph);
-            List<Cancellable> cl = new LinkedList<Cancellable>();
+            List<Cancellable> cl = new LinkedList<>();
             cl.add(cancel);
             phToCancelList.put(ph, cl);
         }

@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=KeyringProvider.class, position=0)
 public class DummyKeyringProvider implements KeyringProvider {
-    private Map<String,char[]> cache = new HashMap<String,char[]>();
+    private Map<String,char[]> cache = new HashMap<>();
 
     @Override
     public boolean enabled() {

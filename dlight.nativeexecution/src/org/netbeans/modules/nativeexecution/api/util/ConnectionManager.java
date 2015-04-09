@@ -100,19 +100,19 @@ public final class ConnectionManager {
     }
     private static final java.util.logging.Logger log = Logger.getInstance();
     // Actual sessions pools. One per host
-    private static final ConcurrentHashMap<ExecutionEnvironment, JSchChannelsSupport> channelsSupport = new ConcurrentHashMap<ExecutionEnvironment, JSchChannelsSupport>();
-    private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
+    private static final ConcurrentHashMap<ExecutionEnvironment, JSchChannelsSupport> channelsSupport = new ConcurrentHashMap<>();
+    private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<>();
     private static final Object channelsSupportLock = new Object();
-    private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<ExecutionEnvironment, ConnectToAction>();
+    private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<>();
     private static final ConcurrentHashMap<ExecutionEnvironment, JSch> jschPool =
-            new ConcurrentHashMap<ExecutionEnvironment, JSch>();
+            new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask> connectionTasks =
-            new ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask>();
+            new ConcurrentHashMap<>();
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     // Instance of the ConnectionManager
     private static final ConnectionManager instance = new ConnectionManager();
     private final ConnectionContinuation DEFAULT_CC;
-    private final AbstractList<ExecutionEnvironment> recentConnections = new ArrayList<ExecutionEnvironment>();
+    private final AbstractList<ExecutionEnvironment> recentConnections = new ArrayList<>();
 
     private final ConnectionWatcher connectionWatcher;
     final int connectionWatcherInterval;
@@ -185,7 +185,7 @@ public final class ConnectionManager {
 
     public List<ExecutionEnvironment> getRecentConnections() {
         synchronized (recentConnections) {
-            return Collections.unmodifiableList(new ArrayList<ExecutionEnvironment>(recentConnections));
+            return Collections.unmodifiableList(new ArrayList<>(recentConnections));
         }
     }
 
@@ -773,7 +773,7 @@ public final class ConnectionManager {
          * Guarded by channelsSupportLock.
          * Contains list of connections that were already recognized as broken
          */
-        private final Set<ExecutionEnvironment> brokenConnections = new HashSet<ExecutionEnvironment>();
+        private final Set<ExecutionEnvironment> brokenConnections = new HashSet<>();
 
         private final RequestProcessor.Task myTask;
 
@@ -785,7 +785,7 @@ public final class ConnectionManager {
         public void run() {
             try {
                 // fast check without locking
-                List<ExecutionEnvironment> candidates = new ArrayList<ExecutionEnvironment>();
+                List<ExecutionEnvironment> candidates = new ArrayList<>();
                 for (JSchChannelsSupport cs : channelsSupport.values()) {
                     if (!cs.isConnected()) {
                         candidates.add(cs.getExecutionEnvironment());

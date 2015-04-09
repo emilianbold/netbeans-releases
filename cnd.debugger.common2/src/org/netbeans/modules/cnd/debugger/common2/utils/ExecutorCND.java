@@ -87,10 +87,12 @@ import org.openide.util.Utilities;
         this.changeListener = changeListener;
     }
 
+    @Override
     public ExecutionEnvironment getExecutionEnvironment() {
         return exEnv;
     }
 
+    @Override
     public boolean isAlive() {
         try {
             engineProc.exitValue();
@@ -105,6 +107,7 @@ import org.openide.util.Utilities;
         return engineProc.exitValue();
     }
 
+    @Override
     public void terminate() throws IOException {
         engineProc.destroy();	// On unix this sends a SIGTERM
     }
@@ -112,6 +115,7 @@ import org.openide.util.Utilities;
     /*
      * Interrupt an arbitrary process with SIGINT
      */
+    @Override
     public void interrupt(final int pid) throws IOException {
         CndUtils.assertNonUiThread();
         // use DebugBreakProcess on windows
@@ -134,6 +138,7 @@ import org.openide.util.Utilities;
         interrupt(pid);
     }
 
+    @Override
     public void interruptGroup() throws IOException {
         CndUtils.assertNonUiThread();
         try {
@@ -143,6 +148,7 @@ import org.openide.util.Utilities;
         }
     }
 
+    @Override
     public void sigqueue(final int sig, final int data) throws IOException {
         CndUtils.assertNonUiThread();
         try {
@@ -152,6 +158,7 @@ import org.openide.util.Utilities;
         }
     }
 
+    @Override
     public synchronized int startShellCmd(String cmd_argv[]) {
 	NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
 
@@ -184,6 +191,7 @@ import org.openide.util.Utilities;
         }
     }
 
+    @Override
     public synchronized int startEngine(String enginePath,
 					String engine_argv[], 
                                         Map<String, String> additionalEnv,
@@ -257,6 +265,7 @@ import org.openide.util.Utilities;
 	return startError;
     }
 
+    @Override
     protected int waitForEngine() throws InterruptedException {
 	if (engineProc == null) {
 	    return -1;
@@ -317,6 +326,7 @@ import org.openide.util.Utilities;
 
 			final String foutput = output;
 			SwingUtilities.invokeLater(new Runnable() {
+                            @Override
 			    public void run() {
 				IpeUtils.postError(foutput);
 			    }
@@ -328,10 +338,12 @@ import org.openide.util.Utilities;
 	reaper.start();
     }
 
+    @Override
     public String readlink(long pid) {
         return PathUtils.getExePath(pid, exEnv);
     }
     
+    @Override
     public String readlsof(long pid) {
         ExitStatus status = ProcessUtils.execute(exEnv, "lsof", "-p", "" + pid, "-Fn"); //NOI18N
         if (status.isOK()) {
@@ -340,19 +352,23 @@ import org.openide.util.Utilities;
         return ""; //NOI18N
     }
 
+    @Override
     public String readDirLink(long pid) {
         return PathUtils.getCwdPath(pid, exEnv);
     }
 
+    @Override
     public boolean is_64(String filep) {
 	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/file", filep); //NOI18N
         return status.output.contains(" 64"); //NOI18N
     }
 	      
+    @Override
     public InputStream getInputStream() {
 	return engineProc.getInputStream();
     }
 
+    @Override
     public OutputStream getOutputStream() {
 	return engineProc.getOutputStream();
     }

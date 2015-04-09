@@ -81,9 +81,9 @@ import org.openide.xml.XMLUtil;
 public class ConnectionNotifierDelegate implements ConnectionListener {
 
 
-    private static final Map<ExecutionEnvironment, ConnectionNotifierDelegate> instances = new HashMap<ExecutionEnvironment, ConnectionNotifierDelegate>();
-    private static RequestProcessor RP_WORKER = new RequestProcessor("Connection worker", 2); //NOI18N
-    private static RequestProcessor RP_NOTIFIER = new RequestProcessor("Connection notifier", 1); //NOI18N
+    private static final Map<ExecutionEnvironment, ConnectionNotifierDelegate> instances = new HashMap<>();
+    private static final RequestProcessor RP_WORKER = new RequestProcessor("Connection worker", 2); //NOI18N
+    private static final RequestProcessor RP_NOTIFIER = new RequestProcessor("Connection notifier", 1); //NOI18N
 
     static public ConnectionNotifierDelegate getInstance(ExecutionEnvironment env) {
         synchronized (instances) {
@@ -99,7 +99,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     private final ExecutionEnvironment env;
     private boolean shown;
     private Notification notification; // guards notification and shown fields
-    private final Set<ConnectionNotifier.NamedRunnable> tasks = new HashSet<ConnectionNotifier.NamedRunnable>();
+    private final Set<ConnectionNotifier.NamedRunnable> tasks = new HashSet<>();
     private final Object lock = new Object();
 
     public ConnectionNotifierDelegate(ExecutionEnvironment execEnv) {
@@ -149,7 +149,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
         }
         List<ConnectionNotifier.NamedRunnable> toLaunch;
         synchronized (tasks) {
-            toLaunch = new ArrayList<ConnectionNotifier.NamedRunnable>(tasks);
+            toLaunch = new ArrayList<>(tasks);
             tasks.clear();
         }
         for (ConnectionNotifier.NamedRunnable task : toLaunch) {

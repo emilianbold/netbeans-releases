@@ -105,6 +105,7 @@ public class AddWatchAction extends NativeActionsProvider {
 	}
 
 	// interface PropertyChangeListener
+        @Override
 	public void propertyChange(PropertyChangeEvent e) {
 	    if (e.getPropertyName () == Controller.PROP_VALID) {
 		setValid();
@@ -165,6 +166,7 @@ public class AddWatchAction extends NativeActionsProvider {
 //    }
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	boolean enable = true;
 	if (state != null) {

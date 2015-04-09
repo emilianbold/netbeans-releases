@@ -115,6 +115,7 @@ public class NewTermComponent implements TermComponent {
 	// 4896262, for non-remote PIO
 	final NotifyingInputSteam notifier = new NotifyingInputSteam(out);
 	notifier.setListener(new NotifyingInputSteam.Listener () {
+            @Override
 	    public void activity () {
 		if (DebuggerOption.FRONT_PIO.isEnabled(
 			    NativeDebuggerManager.get().globalOptions()))
@@ -127,39 +128,48 @@ public class NewTermComponent implements TermComponent {
 	return out;
     }
 
+    @Override
     public void connectIO(OutputStream in, InputStream out) {
 	out = interposeActivityDetector(out);
 	term.connect(in, out, null);
     }
 
+    @Override
     public ActiveTerm getActiveTerm() {
 	return term;
     }
 
+    @Override
     public Term getTerm() {
 	return term;
     }
 
+    @Override
     public int flags() {
 	return flags;
     }
 
+    @Override
     public boolean isPty() {
 	return TermComponentFactory.isPty(flags);
     }
 
+    @Override
     public boolean isActive() {
 	return TermComponentFactory.isActive(flags);
     }
 
+    @Override
     public boolean isPacketMode() {
 	return TermComponentFactory.isPacketMode(flags);
     }
 
+    @Override
     public boolean isRaw() {
 	return TermComponentFactory.isRaw(flags);
     }
 
+    @Override
     public void requestVisible() {
 	// Pass on to containing TC.
 	// Bring (TC's tab) to front but don't activate
@@ -169,6 +179,7 @@ public class NewTermComponent implements TermComponent {
 	owner.topComponent().requestVisible();
     }
 
+    @Override
     public void switchTo() {
 	// select the IO but don't front or activate anything.
 	// IO.select() will also open the TC so is not the right thing!
@@ -176,6 +187,7 @@ public class NewTermComponent implements TermComponent {
         IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
     }
 
+    @Override
     public void open() {
 	// Pass on to containing TC.
 	// Makes it visible but not active.
@@ -183,6 +195,7 @@ public class NewTermComponent implements TermComponent {
 	owner.topComponent().open();
     }
 
+    @Override
     public void bringUp() {
 	// no-op
 	// OldTermComponent wasn't self-inserting on construction like us
@@ -190,11 +203,13 @@ public class NewTermComponent implements TermComponent {
 	// OLD io.select();
     }
 
+    @Override
     public void bringDown() {
 	// Mainly used when session goes away.
 	io.closeInputOutput();
     }
 
+    @Override
     public InputOutput getIO() {
         return io;
     }

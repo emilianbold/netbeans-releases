@@ -120,6 +120,7 @@ public class VariablesViewButtons {
             this.button = toggleButton;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             boolean isSelected = button.isSelected();
             setButtonSelected(SHOW_AUTOS, isSelected);

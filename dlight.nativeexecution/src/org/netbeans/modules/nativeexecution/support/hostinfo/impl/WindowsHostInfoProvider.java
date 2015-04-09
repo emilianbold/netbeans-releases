@@ -117,7 +117,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         HostInfoImpl() {
             Collator collator = Collator.getInstance(Locale.US);
             collator.setStrength(Collator.PRIMARY);
-            Map<String, String> env = new TreeMap<String, String>(collator);
+            Map<String, String> env = new TreeMap<>(collator);
             env.putAll(System.getenv());
 
             // Use os.arch to detect bitness.

@@ -65,8 +65,8 @@ import org.netbeans.modules.cnd.debugger.gdb2.GdbDebuggerInfo;
 
 public class GdbStartActionProvider extends ActionsProvider {
 
-    private GdbDebuggerImpl debugger;
-    private GdbDebuggerInfo gdi;
+    private final GdbDebuggerImpl debugger;
+    private final GdbDebuggerInfo gdi;
 
     public GdbStartActionProvider(ContextProvider ctx) {
 	// typically resolved via 
@@ -81,6 +81,7 @@ public class GdbStartActionProvider extends ActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton (ActionsManager.ACTION_START);
     }
@@ -120,6 +121,7 @@ public class GdbStartActionProvider extends ActionsProvider {
 	    // this.actionPerformedNotifier with two Start's back-to-back.
 
 	    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
 		public void run() {
 		    doAction(action);
 		}
@@ -176,16 +178,20 @@ public class GdbStartActionProvider extends ActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public void doAction(Object action) {
 	debugger.start(gdi);
     }
 
     /* interface ActionsProvider */
+    @Override
     public boolean isEnabled(Object action) {
 	return true;
     }
 
     /* interface ActionsProvider */
+    @Override
     public void addActionsProviderListener (ActionsProviderListener l) {}
+    @Override
     public void removeActionsProviderListener (ActionsProviderListener l) {}
 }

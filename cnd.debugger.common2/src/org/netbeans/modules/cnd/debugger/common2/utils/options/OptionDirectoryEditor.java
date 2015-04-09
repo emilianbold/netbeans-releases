@@ -84,38 +84,45 @@ class OptionDirectoryEditor extends PropertyEditorSupport
     }
 
     // interface PropertyEditor
+    @Override
     public void setAsText(String text) {
 	setValue(text); // from PropertyEditorSupport
     }
 
     // interface PropertyEditor
+    @Override
     public String getAsText() {
 	return (String) getValue();
     }
 
     // interface PropertyEditor
+    @Override
     public void setValue(Object v) {
 	ops.setValue(v);
     }
 
     // interface PropertyEditor
+    @Override
     public Object getValue() {
 	Object o = ops.getValue();
 	return o;
     }
 
     // interface PropertyEditor
+    @Override
     public boolean supportsCustomEditor() {
 	return true;
     }
 
     // interface PropertyEditor
+    @Override
     public java.awt.Component getCustomEditor() {
 	return new DirectoryChooser(this, env, dirOrFile, baseDir, 
                 (String) ops.getValue(), fileSystem);
     }
 
     // interface ExPropertyEditor
+    @Override
     public void attachEnv(PropertyEnv env) {
 	this.env = env;
     }
@@ -180,6 +187,7 @@ class OptionDirectoryEditor extends PropertyEditorSupport
 	    env.addPropertyChangeListener(this);
 	}
 
+        @Override
 	public void propertyChange(PropertyChangeEvent evt) {
 	    if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) &&
 		evt.getNewValue() == PropertyEnv.STATE_VALID) {

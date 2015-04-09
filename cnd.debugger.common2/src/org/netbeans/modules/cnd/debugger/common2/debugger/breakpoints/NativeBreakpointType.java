@@ -66,6 +66,7 @@ abstract public class NativeBreakpointType extends BreakpointType {
 	new WeakReference<BreakpointPanel>(null);
 
     // interface BreakpointType
+    @Override
     public JComponent getCustomizer() {
 	BreakpointPanel customizer = getCustomizer(null);
 	customizerRef = new WeakReference<BreakpointPanel>(customizer);
@@ -97,6 +98,7 @@ abstract public class NativeBreakpointType extends BreakpointType {
     abstract public BreakpointPanel getCustomizer(NativeBreakpoint editableBreakpoint);
 
     // interface BreakpointType
+    @Override
     public final String getCategoryDisplayName() {
 	    return CATEGORY_NAME;
     } 
@@ -111,6 +113,7 @@ abstract public class NativeBreakpointType extends BreakpointType {
      */
 
     // interface BreakpointType
+    @Override
     public boolean isDefault() {
 	return false;
     } 

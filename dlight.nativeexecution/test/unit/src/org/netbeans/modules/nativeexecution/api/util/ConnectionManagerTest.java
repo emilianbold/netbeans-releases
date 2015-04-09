@@ -98,7 +98,7 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
         ExecutionEnvironment[] envs = NativeExecutionTestSupport.getTestExecutionEnvironmentsFromSection(section);
         assertTrue("Empty environmens list for section ", envs.length > 0);
         ConnectionManager.getInstance().clearRecentConnectionsList();
-        AbstractList<ExecutionEnvironment> referenceList = new ArrayList<ExecutionEnvironment>();
+        AbstractList<ExecutionEnvironment> referenceList = new ArrayList<>();
         for (ExecutionEnvironment env : envs) {
             ConnectionManager.getInstance().updateRecentConnectionsList(env);
             referenceList.add(0, env);

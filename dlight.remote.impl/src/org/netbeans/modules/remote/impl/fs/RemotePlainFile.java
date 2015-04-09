@@ -59,18 +59,15 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,7 +80,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     
     private final char fileTypeChar;
 //    private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
-    private SimpleRWLock rwl = new SimpleRWLock();
+    private final SimpleRWLock rwl = new SimpleRWLock();
     
     /*package*/ RemotePlainFile(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
@@ -344,17 +341,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             }
 
             //getParent().ensureChildSync(this);
-        } catch (ConnectException ex) {
+        } catch (ConnectException | CancellationException ex) {
+            // TODO: do we need this with CancelletionException? 
+            // unfortunately CancellationException is RuntimeException, so I'm not sure
             return new ByteArrayInputStream(new byte[]{});
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException | ExecutionException ex) {
             throw newFileNotFoundException(ex);
-        } catch (InterruptedException ex) {
-            throw newFileNotFoundException(ex);
-        } catch (ExecutionException ex) {
-            throw newFileNotFoundException(ex);
-        } catch (CancellationException ex) {
-            // TODO: do we need this? unfortunately CancellationException is RuntimeException, so I'm not sure
-            return new ByteArrayInputStream(new byte[]{});
         }
     }
 
@@ -478,9 +470,11 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                    } else if (newEntry.getINode()!= oldEntry.getINode()) {
                        updateStat = true;
                        removeCache = true;
-                   } else if (!newEntry.isSameAccess(oldEntry)) {
+                   } 
+                   if (!newEntry.isSameAccess(oldEntry)) {
                        updateStat = true;
-                       removeCache = false;
+                       // removeCache stays as it was: 
+                       // of only r/o-r/w chanegd, no need to remove cache
                        fireChangedRO = true;
                    }
                 } else {

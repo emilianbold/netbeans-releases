@@ -447,7 +447,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
 
     private static final class CaretImpl implements Caret, DocumentListener {
         
-        private Document doc;
+        private final Document doc;
         
         private int dot;
         
@@ -459,7 +459,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
         
         private int blinkRate = 300;
         
-        private EventListenerList listenerList = new EventListenerList();
+        private final EventListenerList listenerList = new EventListenerList();
         
         private ChangeEvent changeEvent;
         

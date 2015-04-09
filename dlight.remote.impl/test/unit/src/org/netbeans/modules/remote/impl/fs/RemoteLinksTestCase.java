@@ -72,7 +72,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
     // The following two methods are copy-paste from org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider
     // They are used for emulation refresh method used in ADE plugin
     private void refreshFor(String... paths) {
-        List<RemoteFileObjectBase> roots = new ArrayList<RemoteFileObjectBase>();
+        List<RemoteFileObjectBase> roots = new ArrayList<>();
         for (String path : paths) {
             RemoteFileObjectBase fo = findExistingFileObjectOrParent(path);
             if (fo != null) {

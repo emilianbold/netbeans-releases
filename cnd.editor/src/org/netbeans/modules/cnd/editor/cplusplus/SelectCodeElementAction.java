@@ -199,8 +199,8 @@ public class SelectCodeElementAction extends BaseAction {
     
     private static final class SelectionInfo {
         
-        private int startOffset;
-        private int endOffset;
+        private final int startOffset;
+        private final int endOffset;
         
         SelectionInfo(int startOffset, int endOffset) {
             this.startOffset = startOffset;
