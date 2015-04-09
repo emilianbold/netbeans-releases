@@ -4,13 +4,14 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jdk.Bundle;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -113,9 +114,23 @@ public class UnnecessaryUnboxing {
         }
         
         Tree t = parentPath.getLeaf();
+        TreePath otherPath = null;
+        
         switch (t.getKind()) {
             // with conditional expression, if both operands are object type, the result is most probably object
             // type as well? 
+            case TYPE_CAST: {
+                // unboxing needed if casted to a primitive which is not assignable to the casted type
+                TypeCastTree castTree = (TypeCastTree)t;
+                TreePath toTypePath = new TreePath(parentPath, castTree.getType());
+                TypeMirror m = ci.getTrees().getTypeMirror(toTypePath);
+                TypeMirror vt = ci.getTrees().getTypeMirror(vPath);
+                if (!Utilities.isValidType(m) || 
+                    (m.getKind().isPrimitive() && !ci.getTypes().isAssignable(ci.getTypes().unboxedType(vt), m))) {
+                    return null;
+                }
+                break;
+            }
             case CONDITIONAL_EXPRESSION: {
                 ConditionalExpressionTree cte = (ConditionalExpressionTree)t;
                 
@@ -127,7 +142,7 @@ public class UnnecessaryUnboxing {
                 } else {
                     break; // switch
                 }
-                TreePath otherPath = new TreePath(parentPath, other);
+                otherPath = new TreePath(parentPath, other);
                 TypeMirror m = ci.getTrees().getTypeMirror(otherPath);
                 if (m == null || !m.getKind().isPrimitive()) {
                     return null;
@@ -141,7 +156,7 @@ public class UnnecessaryUnboxing {
             case NOT_EQUAL_TO: {
                 BinaryTree bt = (BinaryTree)t;
                 Tree other = followed == bt.getLeftOperand() ? bt.getRightOperand() : bt.getLeftOperand();
-                TreePath otherPath = new TreePath(parentPath, other);
+                otherPath = new TreePath(parentPath, other);
                 TypeMirror m = ci.getTrees().getTypeMirror(otherPath);
                 if (m == null || !m.getKind().isPrimitive()) {
                     return null;
@@ -152,6 +167,26 @@ public class UnnecessaryUnboxing {
             case METHOD_INVOCATION: {
                 if (!Utilities.checkAlternativeInvocation(ci, parentPath, ctx.getPath(), vPath, null)) {
                     return null;
+                }
+            }
+        }
+        // check the shape of the other parameter in binary/conditional. It is more readable to have them BOTH
+        // unboxed, although one would be sufficient.
+        if (otherPath != null) {
+            while (otherPath.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+                otherPath = new TreePath(otherPath, ((ParenthesizedTree)otherPath.getLeaf()).getExpression());
+            }
+            Tree other = otherPath.getLeaf();
+            if (other.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                mit = (MethodInvocationTree)other;
+                Tree selTree = mit.getMethodSelect();
+                if (selTree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    MemberSelectTree mst = (MemberSelectTree)selTree;
+                    TypeMirror x = ctx.getInfo().getTrees().getTypeMirror(new TreePath(otherPath, mst.getExpression()));
+                    if (Utilities.isPrimitiveWrapperType(x) &&
+                        mst.getIdentifier().toString().endsWith("Value")) { // NOI18N
+                        return null;
+                    }
                 }
             }
         }

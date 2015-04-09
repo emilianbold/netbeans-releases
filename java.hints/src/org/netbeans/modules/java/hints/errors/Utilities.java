@@ -149,9 +149,24 @@ import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
 import static com.sun.source.tree.Tree.Kind.*;
+import com.sun.tools.javac.api.JavacScope;
+import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.Attr;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.util.JCDiagnostic;
+import com.sun.tools.javac.util.Log;
+import java.net.URI;
 import javax.lang.model.type.UnionType;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CodeStyleUtils;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.openide.util.Pair;
 
 /**
@@ -1666,10 +1681,56 @@ public class Utilities {
         }
     }
     
+    // -------------------------------------------------------------------------------------
+    // To be moved to java.source.base TreeUtilities
+    private static final class DummyJFO extends SimpleJavaFileObject {
+        private DummyJFO() {
+            super(URI.create("dummy.java"), JavaFileObject.Kind.SOURCE); // NOI18N
+        }
+        @Override
+        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+            return "";
+        }
+    };
+
+    private static TypeMirror attributeTree(JavacTaskImpl jti, Tree tree, Scope scope, 
+            final List<Diagnostic<? extends JavaFileObject>> errors, @NullAllowed final Diagnostic.Kind filter) {
+        Log log = Log.instance(jti.getContext());
+        JavaFileObject prev = log.useSource(new DummyJFO());
+        Enter enter = Enter.instance(jti.getContext());
+        
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(log) {
+            private Diagnostic.Kind f = filter == null ? Diagnostic.Kind.ERROR : filter;
+            @Override
+            public void report(JCDiagnostic diag) {
+                if (diag.getKind().compareTo(f) >= 0) {
+                    errors.add(diag);
+                }
+            }            
+        };
+        try {
+            enter.shadowTypeEnvs(true);
+            Attr attr = Attr.instance(jti.getContext());
+            Env<AttrContext> env = ((JavacScope) scope).getEnv();
+            if (tree instanceof JCTree.JCExpression) {
+                return attr.attribExpr((JCTree) tree,env, Type.noType);
+            }
+            return attr.attribStat((JCTree) tree,env);
+        } finally {
+            log.useSource(prev);
+            log.popDiagnosticHandler(discardHandler);
+            enter.shadowTypeEnvs(false);
+        }
+    }
+    // -------------------------------------------------------------------------------------
+
     private static boolean resolveAlternativeInvocation(
             CompilationInfo ci, TreePath invPath, 
             TreePath origPath,
             Tree sel, TreePath valPath, String customPrefix) {
+        if (customPrefix == null) {
+            // typecast to the valPath's own type. It's redundant, but 
+        }
         CharSequence source = ci.getSnapshot().getText();
         Element e = ci.getTrees().getElement(invPath);
         if (!(e instanceof ExecutableElement)) {
@@ -1809,10 +1870,12 @@ public class Utilities {
         } else {
             t = ci.getTreeUtilities().parseExpression(sb.toString(), nsp);
         }
-        
         Scope s = ci.getTreeUtilities().scopeFor(Math.max(0, expEndPos - 1));
-        ci.getTreeUtilities().attributeTree(t, s);
-        
+        List<Diagnostic<? extends JavaFileObject>> diags = new ArrayList<>();
+        attributeTree(JavaSourceAccessor.getINSTANCE().getJavacTask(ci), t, s, diags, null);
+        if (!diags.isEmpty()) {
+            return false;
+        }
         TreePath newPath = new TreePath(exp.getParentPath(), t);
         // path for the method invocation within the newly formed expression or statement.
         // the +1 ensures that we are inside the method invocation subtree (method has >= 1 char as ident)
