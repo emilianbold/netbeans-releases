@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.cnd.api.project.support;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
@@ -65,15 +65,28 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
 
     private static final class NativeFileItemSetImpl implements NativeFileItemSet {
 
-        private Set<NativeFileItem> items = new WeakSet<NativeFileItem>(1);
+        private /*WeakReference<NativeFileItem> or WeakSet<NativeFileItem>*/Object singleItemOrItems;
 
         @Override
         public synchronized Collection<NativeFileItem> getItems() {
-            ArrayList<NativeFileItem> res = new ArrayList<NativeFileItem>(items.size());
-            for(NativeFileItem item : items) {
-                if (item != null) {
-                    res.add(item);
+            ArrayList<NativeFileItem> res;
+            if (singleItemOrItems instanceof WeakReference) {
+                WeakReference<NativeFileItem> singleItem = (WeakReference<NativeFileItem>) singleItemOrItems;
+                res = new ArrayList<>(1);
+                NativeFileItem first = singleItem.get();
+                if (first != null) {
+                    res.add(first);
                 }
+            } else if (singleItemOrItems instanceof WeakSet){
+                WeakSet<NativeFileItem> items = (WeakSet<NativeFileItem>) singleItemOrItems;
+                res = new ArrayList<>(items.size());
+                for(NativeFileItem item : items) {
+                    if (item != null) {
+                        res.add(item);
+                    }
+                }
+            } else {
+                res = new ArrayList<>(0);
             }
             return res;
         }
@@ -83,7 +96,25 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
             if (item == null) {
                 return;
             }
-            items.add(item);
+            if (singleItemOrItems == null) {
+                singleItemOrItems = new WeakReference<>(item);
+            } else if (singleItemOrItems instanceof WeakReference) {
+                WeakReference<NativeFileItem> singleItem = (WeakReference<NativeFileItem>) singleItemOrItems;
+                NativeFileItem first = singleItem.get();
+                if (first == null) {
+                    singleItemOrItems = new WeakReference<>(item);
+                    return;
+                } else if (item.equals(first)) {
+                    return;
+                }
+                WeakSet<NativeFileItem> items = new WeakSet<>(2);
+                items.add(first);
+                items.add(item);
+                singleItemOrItems = items;
+            } else  if (singleItemOrItems instanceof WeakSet) {
+                WeakSet<NativeFileItem> items = (WeakSet<NativeFileItem>) singleItemOrItems;
+                items.add(item);
+            }
         }
 
         @Override
@@ -91,12 +122,28 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
             if (item == null) {
                 return;
             }
-            items.remove(item);
+            if (singleItemOrItems instanceof WeakReference) {
+                WeakReference<NativeFileItem> singleItem = (WeakReference<NativeFileItem>) singleItemOrItems;
+                NativeFileItem first = singleItem.get();
+                if (item.equals(first)) {
+                    singleItemOrItems = null;
+                }
+            } else  if (singleItemOrItems instanceof WeakSet) {
+                WeakSet<NativeFileItem> items = (WeakSet<NativeFileItem>) singleItemOrItems;
+                items.remove(item);
+            }
         }
 
         @Override
-        public boolean isEmpty() {
-            return items.isEmpty();
+        public synchronized boolean isEmpty() {
+            if (singleItemOrItems instanceof WeakReference) {
+                WeakReference<NativeFileItem> singleItem = (WeakReference<NativeFileItem>) singleItemOrItems;
+                return singleItem.get() == null;
+            } else  if (singleItemOrItems instanceof WeakSet) {
+                WeakSet<NativeFileItem> items = (WeakSet<NativeFileItem>) singleItemOrItems;
+                return items.isEmpty();
+            }
+            return true;
         }
     }
 }

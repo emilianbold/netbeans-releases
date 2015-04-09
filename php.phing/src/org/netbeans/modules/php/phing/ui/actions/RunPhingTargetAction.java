@@ -54,6 +54,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.phing.PhingBuildTool;
 import org.netbeans.modules.php.phing.exec.PhingExecutable;
@@ -62,9 +63,12 @@ import org.netbeans.modules.php.phing.ui.options.PhingOptionsPanelController;
 import org.netbeans.modules.php.phing.util.PhingUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -73,7 +77,12 @@ import org.openide.util.actions.Presenter;
 
 @ActionID(id = "org.netbeans.modules.php.phing.ui.actions.RunPhingTargetAction", category = "Build")
 @ActionRegistration(displayName = "#RunPhingTargetAction.name", lazy = false)
-@ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 120)
+@ActionReferences({
+    @ActionReference(path = "Loaders/text/x-ant+xml/Actions", position = 150),
+    // XXX cannot be added here since empty space is shown if action is disabled :/
+    //@ActionReference(path = "Editors/text/x-ant+xml/Popup", position = 850),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 120),
+})
 @NbBundle.Messages("RunPhingTargetAction.name=Phing Targets")
 public final class RunPhingTargetAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 
@@ -106,6 +115,24 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
             // project action
             return createAction(contextProject);
         }
+        // file action?
+        FileObject fileObject = context.lookup(FileObject.class);
+        if (fileObject == null) {
+            DataObject dataObject = context.lookup(DataObject.class);
+            if (dataObject != null) {
+                fileObject = dataObject.getPrimaryFile();
+            }
+        }
+        if (fileObject != null) {
+            contextProject = FileOwnerQuery.getOwner(fileObject);
+            if (contextProject == null) {
+                return this;
+            }
+            if (contextProject.getProjectDirectory().equals(fileObject.getParent())) {
+                // build.xml directly in project dir
+                return createAction(contextProject);
+            }
+        }
         return this;
     }
 
@@ -115,7 +142,7 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         if (phingBuildTool == null) {
             return this;
         }
-        if (!phingBuildTool.getBuildXml().exists()) {
+        if (!phingBuildTool.isEnabled()) {
             return this;
         }
         return new RunPhingTargetAction(contextProject);

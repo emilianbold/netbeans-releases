@@ -99,15 +99,7 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
 
         @Override
         public SaveAsCapable convert(final SourceDataObject obj) {
-            return new SaveAsCapable() {
-                @Override
-                public void saveAs( FileObject folder, String fileName ) throws IOException {
-                    CppEditorSupport ces = obj.getLookup().lookup(CppEditorSupport.class);
-                    if (ces != null) {
-                        ces.saveAs(folder, fileName);
-                    }
-                }
-            };
+            return new SaveAsCapableImpl(obj);
         }
 
         @Override
@@ -124,6 +116,23 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
         public String displayName(SourceDataObject obj) {
             return id(obj);
         }
+
     }
-    
+
+    private static class SaveAsCapableImpl implements SaveAsCapable {
+
+        private final SourceDataObject obj;
+
+        public SaveAsCapableImpl(SourceDataObject obj) {
+            this.obj = obj;
+        }
+
+        @Override
+        public void saveAs( FileObject folder, String fileName ) throws IOException {
+            CppEditorSupport ces = obj.getLookup().lookup(CppEditorSupport.class);
+            if (ces != null) {
+                ces.saveAs(folder, fileName);
+            }
+        }
+    }
 }

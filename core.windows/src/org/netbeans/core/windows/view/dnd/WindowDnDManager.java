@@ -853,6 +853,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
                     // "Copy" the top component.
                     tc = ctc.cloneComponent();
+                    tc.putClientProperty("windnd_cloned_tc", Boolean.TRUE);
                 } else {
                     tc = (TopComponent)tr.getTransferData(df);
                 }
