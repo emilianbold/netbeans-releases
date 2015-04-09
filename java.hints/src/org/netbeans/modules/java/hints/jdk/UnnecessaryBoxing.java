@@ -39,12 +39,14 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.suggestions.ExpectedTypeResolver;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.UseOptions;
 import org.openide.util.NbBundle;
 
 /*
@@ -103,9 +105,20 @@ import org.openide.util.NbBundle;
     "# {0} - name of boxing class",
     "FIX_UnnecessaryBoxing1=Remove new {0}",
     "# {0} - name of boxing class",
-    "FIX_UnnecessaryBoxing2=Remove {0}.valueOf"
+    "FIX_UnnecessaryBoxing2=Remove {0}.valueOf",
+    "# {0} - name of primitive class",
+    "FIX_ChangeBoxingToTypecast=Cast to {0} instead of boxing"
 })
 public class UnnecessaryBoxing {
+    
+    private static final boolean DEFAULT_PREFER_CAST_TO_BOXING = false;
+    
+    @BooleanOption(
+        displayName = "#OPTNAME_PreferCastsToBoxing",
+        tooltip = "#OPTDESC_PreferCastsToBoxing",
+        defaultValue = DEFAULT_PREFER_CAST_TO_BOXING
+    )
+    private static final String PREFER_CAST_TO_BOXING = "boxing.prefer.cast"; // NOI18N
     
     @TriggerPatterns({
         @TriggerPattern(value = "new java.lang.Byte($v)"),
@@ -133,6 +146,7 @@ public class UnnecessaryBoxing {
             enabled = true,
             suppressWarnings = "UnnecessaryBoxing"
     )
+    @UseOptions(PREFER_CAST_TO_BOXING)
     public static ErrorDescription run(HintContext ctx) {
         CompilationInfo ci = ctx.getInfo();
         if (ci.getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
@@ -193,12 +207,24 @@ public class UnnecessaryBoxing {
             rk = null;
         }
         
+        String text;
+        if (rk != null) {
+            boolean preferCast = ctx.getPreferences().getBoolean(PREFER_CAST_TO_BOXING, DEFAULT_PREFER_CAST_TO_BOXING);
+            if (!preferCast) {
+                return null;
+            }
+            text = Bundle.FIX_ChangeBoxingToTypecast(ci.getTypeUtilities().getTypeName(valType));
+        } else if (p.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
+            text = Bundle.FIX_UnnecessaryBoxing1(tname);
+        } else {
+            text = Bundle.FIX_UnnecessaryBoxing2(tname);
+        }
+        
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(),
                 Bundle.TEXT_UnnecessaryBoxing(tname), 
                 new RemoveBoxingFix(
                     TreePathHandle.create(vp, ci),
-                    p.getLeaf().getKind() == Tree.Kind.NEW_CLASS ?
-                        Bundle.FIX_UnnecessaryBoxing1(tname) : Bundle.FIX_UnnecessaryBoxing2(tname),
+                    text,
                     TreePathHandle.create(ctx.getPath(), ci),
                     rk).toEditorFix());
     }
