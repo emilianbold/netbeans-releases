@@ -72,16 +72,16 @@ import org.openide.util.NbBundle;
 public class TargetEditor extends javax.swing.JPanel implements PropertyChangeListener {
 
     private JList targetList = null;
-    private Vector<String> listData = new Vector<String>();
+    private final Vector<String> listData = new Vector<String>();
     private Timer isVisibleTimer;
-    private PropertyEditorSupport editor;
+    private final PropertyEditorSupport editor;
     private JDialog dialog = null;
     private JButton okButton;
     private JButton cancelButton;
     private int returnValue = 0;
     public final static int OK_OPTION = 0;
     public final static int CANCEL_OPTION = 1;
-    private ResourceBundle bundle = NbBundle.getBundle(TargetEditor.class);
+    private final ResourceBundle bundle = NbBundle.getBundle(TargetEditor.class);
 
     public TargetEditor(String[] targets, PropertyEditorSupport editor, PropertyEnv env) {
         this.editor = editor;
@@ -108,6 +108,7 @@ public class TargetEditor extends javax.swing.JPanel implements PropertyChangeLi
 
         isVisibleTimer = new Timer(100, new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 if (addButton.isVisible()) {
                     if (targetList.getModel().getSize() > 0) {
@@ -469,6 +470,7 @@ public class TargetEditor extends javax.swing.JPanel implements PropertyChangeLi
 
     private class TargetSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -493,6 +495,7 @@ public class TargetEditor extends javax.swing.JPanel implements PropertyChangeLi
         return getTargets();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
@@ -530,6 +533,7 @@ public class TargetEditor extends javax.swing.JPanel implements PropertyChangeLi
         okButton.setText(bundle.getString("TARGET_EDITOR_OK_BUTTON_LBL"));
         okButton.addActionListener(new java.awt.event.ActionListener() {
 
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeAction(dialog, OK_OPTION);
             }
@@ -541,6 +545,7 @@ public class TargetEditor extends javax.swing.JPanel implements PropertyChangeLi
         cancelButton.setText(bundle.getString("TARGET_EDITOR_CANCEL_BUTTON_LBL"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
 
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeAction(dialog, CANCEL_OPTION);
             }

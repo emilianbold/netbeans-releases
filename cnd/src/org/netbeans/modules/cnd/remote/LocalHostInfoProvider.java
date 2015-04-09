@@ -58,7 +58,7 @@ import org.openide.util.Utilities;
  */
 /*package-local*/ class LocalHostInfoProvider extends HostInfoProvider {
 
-    private ExecutionEnvironment execEnv;
+    private final ExecutionEnvironment execEnv;
 
     LocalHostInfoProvider(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;

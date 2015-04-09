@@ -306,7 +306,7 @@ public abstract class FormatterBaseDocumentUnitTestCase extends CndBaseTestCase 
 
     class CaretImpl implements Caret, DocumentListener {
         
-        private Document doc;
+        private final Document doc;
         
         private int dot;
         
@@ -318,7 +318,7 @@ public abstract class FormatterBaseDocumentUnitTestCase extends CndBaseTestCase 
         
         private int blinkRate = 300;
         
-        private EventListenerList listenerList = new EventListenerList();
+        private final EventListenerList listenerList = new EventListenerList();
         
         private ChangeEvent changeEvent;
         
@@ -328,68 +328,84 @@ public abstract class FormatterBaseDocumentUnitTestCase extends CndBaseTestCase 
             setDot(dot);
         }
 
+        @Override
         public void deinstall (javax.swing.text.JTextComponent c) {
             fail("Not yet implemented");
         }
         
+        @Override
         public void install (javax.swing.text.JTextComponent c) {
             fail("Not yet implemented");
         }
         
+        @Override
         public java.awt.Point getMagicCaretPosition () {
             fail("Not yet implemented");
             return null;
         }
         
+        @Override
         public void setMagicCaretPosition (java.awt.Point p) {
             fail("Not yet implemented");
         }
         
+        @Override
         public int getDot () {
             return dot;
         }
         
+        @Override
         public int getMark () {
             return mark;
         }
         
+        @Override
        public void setDot (int dot) {
             this.mark = this.dot;
             changeCaretPosition(dot);
         }
         
+        @Override
         public void moveDot (int dot) {
             changeCaretPosition(dot);
         }
         
+        @Override
         public int getBlinkRate () {
             return blinkRate;
         }
         
+        @Override
         public void setBlinkRate (int rate) {
             this.blinkRate = blinkRate;
         }
         
+        @Override
         public boolean isVisible () {
             return visible;
         }
         
+        @Override
         public void setVisible (boolean v) {
             this.visible = visible;
         }
         
+        @Override
         public boolean isSelectionVisible () {
             return selectionVisible;
         }
         
+        @Override
         public void setSelectionVisible (boolean v) {
             this.selectionVisible = v;
         }
         
+        @Override
         public void addChangeListener (ChangeListener l) {
             listenerList.add(ChangeListener.class, l);
         }
         
+        @Override
         public void removeChangeListener (ChangeListener l) {
             listenerList.remove(ChangeListener.class, l);
         }
@@ -406,9 +422,11 @@ public abstract class FormatterBaseDocumentUnitTestCase extends CndBaseTestCase 
             }
         }
         
+        @Override
         public void paint (java.awt.Graphics g) {
         }
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             int offset = e.getOffset();
             int length = e.getLength();
@@ -439,6 +457,7 @@ public abstract class FormatterBaseDocumentUnitTestCase extends CndBaseTestCase 
             }
         }
         
+        @Override
         public void removeUpdate(DocumentEvent e) {
             int offs0 = e.getOffset();
             int offs1 = offs0 + e.getLength();
@@ -466,6 +485,7 @@ public abstract class FormatterBaseDocumentUnitTestCase extends CndBaseTestCase 
             }
         }
         
+        @Override
         public void changedUpdate(DocumentEvent e) {
             
         }

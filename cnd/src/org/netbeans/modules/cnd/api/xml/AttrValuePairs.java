@@ -65,7 +65,7 @@ import java.util.List;
  */
 public final class AttrValuePairs {
 
-    private List<AttrValuePair> vector = new ArrayList<AttrValuePair>();
+    private final List<AttrValuePair> vector = new ArrayList<AttrValuePair>();
 
     public void add(String name, String value) {
         AttrValuePair attr;

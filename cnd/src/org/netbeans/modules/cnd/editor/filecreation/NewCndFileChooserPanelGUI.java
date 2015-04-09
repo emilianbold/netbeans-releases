@@ -106,6 +106,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         setName (NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
     
+    @Override
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
         assert project != null;
         
@@ -160,14 +161,17 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
                     }
                 }
                
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     update(e.getDocument());
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     update(e.getDocument());
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     update(e.getDocument());
                 }
@@ -208,6 +212,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
 
     }
 
+    @Override
     public SourceGroup getTargetGroup() {
         Object selectedItem = locationComboBox.getSelectedItem();
         if (selectedItem == null) {
@@ -220,6 +225,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         return (SourceGroup) selectedItem;
     }
 
+    @Override
     public String getTargetFolder() {
         
         String folderName = folderTextField.getText().trim();
@@ -232,6 +238,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         }
     }
     
+    @Override
     public String getTargetName() {
         String documentName = documentNameTextField.getText().trim();
         
@@ -257,6 +264,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         return cbSetAsDefault.isSelected();
     }
         
+    @Override
     protected void updateCreatedFile() {
         if (fileWithoutExtension && getTargetExtension().length() == 0 || es.getDefaultExtension().equals(getTargetExtension())) {
             cbSetAsDefault.setEnabled(false);
@@ -506,6 +514,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     // End of variables declaration//GEN-END:variables
 
     // ActionListener implementation -------------------------------------------
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;

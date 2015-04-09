@@ -53,10 +53,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory.class)
 public class LocalHostInfoProviderFactory implements  HostInfoProviderFactory {
 
+    @Override
     public boolean canCreate(ExecutionEnvironment execEnv) {
         return execEnv.isLocal();
     }
 
+    @Override
     public HostInfoProvider create(ExecutionEnvironment execEnv) {
         return new LocalHostInfoProvider(execEnv);
     }

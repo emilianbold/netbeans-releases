@@ -211,31 +211,29 @@ public class ShellExecSupport extends ExecutionSupport {
         String shellCommand = getShellCommand(); // From property
 
         // If no shell command set, read first line in script and use if set here
-        if (shellCommand == null || shellCommand.length() == 0) {
+        if (shellCommand.isEmpty()) {
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(fo.getInputStream()));
-                if (in != null) {
-                    String firstLine = in.readLine();
-                    if (firstLine != null) {
-                        if (firstLine.startsWith("#!")) { // NOI18N
-                            if (firstLine.length() > 2) {
-                                int i = 2;
-                                while (Character.isWhitespace(firstLine.charAt(i))) {
-                                    i++;
-                                }
-                                shellCommand = firstLine.substring(i);
+                String firstLine = in.readLine();
+                if (firstLine != null) {
+                    if (firstLine.startsWith("#!")) { // NOI18N
+                        if (firstLine.length() > 2) {
+                            int i = 2;
+                            while (Character.isWhitespace(firstLine.charAt(i))) {
+                                i++;
                             }
+                            shellCommand = firstLine.substring(i);
                         }
                     }
-                    in.close();
                 }
+                in.close();
             } catch (Exception e) {
             }
         }
 
         // If still no shell command, base it on suffix
         String[] argvParsed;
-        if (shellCommand == null || shellCommand.length() == 0) {
+        if (shellCommand.isEmpty()) {
             String ext = fo.getExt();
             if (ext != null && ext.length() > 0) {
                 if ((ext.equals("bat") || ext.equals("cmd")) && Utilities.isWindows()) {// NOI18N

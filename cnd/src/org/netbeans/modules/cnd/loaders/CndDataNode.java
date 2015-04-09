@@ -67,10 +67,10 @@ public class CndDataNode extends DataNode {
     //private static final String PROP_NAME = "name"; // NOI18N
 
     /** Cache the bundle */
-    private static ResourceBundle bundle = NbBundle.getBundle(CndDataNode.class);
+    private static final ResourceBundle bundle = NbBundle.getBundle(CndDataNode.class);
 
     /** Primary File */
-    private FileObject primary;
+    private final FileObject primary;
 
 
     /** Constructor for this class */

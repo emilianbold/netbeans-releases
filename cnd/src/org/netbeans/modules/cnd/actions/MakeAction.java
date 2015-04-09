@@ -60,6 +60,7 @@ import org.openide.windows.InputOutput;
  */
 public class MakeAction extends MakeBaseAction {
 
+    @Override
     public String getName () {
         return getString("BTN_Execute"); // NOI18N
     }

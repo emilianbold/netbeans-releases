@@ -394,7 +394,7 @@ import org.openide.util.lookup.Lookups;
             this.cb = cb;
         }
     }
-    private List<Entity> entities = new ArrayList<Entity>();
+    private final List<Entity> entities = new ArrayList<Entity>();
     private void addEntity(NamedOption ne) {
         JCheckBox cb = new JCheckBox();
         Mnemonics.setLocalizedText(cb, ne.getDisplayName());
