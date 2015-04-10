@@ -48,7 +48,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -61,15 +62,12 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
 
 public final class GulpTasks implements ChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(GulpTasks.class.getName());
 
     public static final String DEFAULT_TASK = "default"; // NOI18N
-
-    private static final RequestProcessor RP = new RequestProcessor(GulpTasks.class);
 
     private final Project project;
     final FileChangeListener nodeModulesListener = new NodeModulesListener();
@@ -98,38 +96,30 @@ public final class GulpTasks implements ChangeListener {
         return tasksRef == null ? null : Collections.unmodifiableList(tasksRef);
     }
 
-    public void processTasks(final TasksProcessor processor) {
-        assert processor != null;
+    public List<String> loadTasks(@NullAllowed Long timeout, @NullAllowed TimeUnit unit) throws ExecutionException, TimeoutException {
         List<String> tasksRef = tasks;
         if (tasksRef != null) {
-            processor.process(Collections.unmodifiableList(tasksRef));
-            return;
+            return Collections.unmodifiableList(tasksRef);
         }
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                readTasksInternal(processor);
-            }
-        });
-    }
-
-    void readTasksInternal(TasksProcessor processor) {
         assert !EventQueue.isDispatchThread();
         Future<List<String>> tasksJob = getTasksJob();
         if (tasksJob == null) {
             // some error
-            processor.process(null);
-            return;
+            return null;
         }
         try {
-            tasks = new CopyOnWriteArrayList<>(tasksJob.get());
+            List<String> allTasks;
+            if (timeout != null) {
+                assert unit != null;
+                allTasks = tasksJob.get(timeout, unit);
+            } else {
+                allTasks = tasksJob.get();
+            }
+            tasks = new CopyOnWriteArrayList<>(allTasks);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-            // XXX warn user?
-            LOGGER.log(Level.INFO, null, ex);
         }
-        processor.process(getTasks());
+        return getTasks();
     }
 
     @CheckForNull
@@ -151,19 +141,6 @@ public final class GulpTasks implements ChangeListener {
     }
 
     //~ Inner classes
-
-    public interface TasksProcessor {
-
-        TasksProcessor DEV_NULL = new TasksProcessor() {
-            @Override
-            public void process(List<String> tasks) {
-                // noop
-            }
-        };
-
-        void process(@NullAllowed List<String> tasks);
-
-    }
 
     private final class NodeModulesListener extends FileChangeAdapter {
 
