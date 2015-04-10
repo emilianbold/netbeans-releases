@@ -69,26 +69,26 @@ import org.openide.util.CharSequences;
  */
 public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<CsmFunctionInstantiation> implements CsmFunctionInstantiation {
 
-    private final FunctionParameterListImpl parameterList;    
-    
+    private final FunctionParameterListImpl parameterList;
+
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
-    private CsmUID<CsmScope> scopeUID;  
-    
-    private final CharSequence name;    
-    
+    private CsmUID<CsmScope> scopeUID;
+
+    private final CharSequence name;
+
     private FunctionInstantiationImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, FunctionParameterListImpl params) throws AstRendererException {
         super(file, getStartOffset(ast), getEndOffset(ast));
         this.parameterList = params;
         _setScope(scope);
-        name = QualifiedNameCache.getManager().getString(nameHolder.getName());        
+        name = QualifiedNameCache.getManager().getString(nameHolder.getName());
     }
-   
+
     private FunctionInstantiationImpl(CharSequence name, CsmScope scope, FunctionParameterListImpl params, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.parameterList = params;
         _setScope(scope);
-        this.name = name;        
-    }    
+        this.name = name;
+    }
 
     public static FunctionInstantiationImpl create(AST ast, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
@@ -120,7 +120,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         }
         return getName();
     }
-    
+
     @Override
     public CsmScope getScope() {
         return _getScope();
@@ -130,7 +130,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         // for functions declared in bodies scope is CsmCompoundStatement - it is not Identifiable
         if ((scope instanceof CsmIdentifiable)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (scopeUID != null || scope == null);
+            assert scopeUID != null;
         } else {
             this.scopeRef = scope;
         }
@@ -145,19 +145,19 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         }
         return scope;
     }
-    
+
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
         Collection<CsmScopeElement> l = new ArrayList<>();
         l.addAll(getParameters());
         return l;
     }
-    
+
     @Override
     public Collection<CsmParameter>  getParameters() {
         return _getParameters();
     }
-    
+
     private Collection<CsmParameter> _getParameters() {
         if (this.parameterList == null) {
             return Collections.<CsmParameter>emptyList();
@@ -165,7 +165,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
             return parameterList.getParameters();
         }
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();
@@ -191,42 +191,42 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
             this.cleanUID();
         }
     }
-    
+
     private synchronized void onDispose() {
         if (this.scopeRef == null) {
             // restore container from it's UID
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
         }
-    }    
-    
+    }
+
 
     public static class FunctionInstantiationBuilder extends SimpleDeclarationBuilder {
-    
+
         @Override
         public FunctionInstantiationImpl create() {
             FunctionInstantiationImpl fun = new FunctionInstantiationImpl(getName(), null, ((FunctionParameterListBuilder)getParametersListBuilder()).create(), getFile(), getStartOffset(), getEndOffset());
-            
+
             postObjectCreateRegistration(isGlobal(), fun);
             getNameHolder().addReference(getFileContent(), fun);
-            
+
             return fun;
         }
-    }      
-    
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
+
     public FunctionInstantiationImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
-        
+
         this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input, this);
-        
+
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.scopeUID = factory.readUID(input);
-        this.scopeRef = null;        
+        this.scopeRef = null;
     }
 
     @Override
@@ -234,11 +234,11 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        
-        PersistentUtils.writeParameterList(this.parameterList, output);        
-        
+
+        PersistentUtils.writeParameterList(this.parameterList, output);
+
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeUID(this.scopeUID, output);        
+        factory.writeUID(this.scopeUID, output);
     }
 
 }

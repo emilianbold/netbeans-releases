@@ -76,7 +76,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
     private final CharSequence name;
     private final CharSequence rawName;
     private CsmUID<CsmScope> scopeUID;
-    private final List<CsmUID<CsmOffsetableDeclaration>> declarations;    
+    private final List<CsmUID<CsmOffsetableDeclaration>> declarations;
 
     private ProgramImpl(String name, CsmFile file, int startOffset, int endOffset, CsmType type, CsmScope scope) {
         super(file, startOffset, endOffset);
@@ -191,7 +191,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         // for functions declared in bodies scope is CsmCompoundStatement - it is not Identifiable
         if ((scope instanceof CsmIdentifiable)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (scopeUID != null || scope == null);
+            assert scopeUID != null;
         }
     }
 
@@ -265,7 +265,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         }
         return UIDCsmConverter.UIDtoDeclaration(out);
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();
@@ -280,7 +280,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         Utils.disposeAll(decls);
         RepositoryUtils.remove(uids);
     }
-    
+
 //
 //    private final CharSequence name;
 //    private final CsmType returnType;
@@ -944,7 +944,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         factory.writeUID(this.scopeUID, output);
 
         factory.writeUIDCollection(this.declarations, output, true);
-        
+
 //        PersistentUtils.writeUTF(this.signature, output);
 //        output.writeByte(flags);
     }
@@ -959,7 +959,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
 
         this.scopeUID = factory.readUID(input);
-        
+
         int collSize = input.readInt();
         if (collSize < 0) {
             declarations = new ArrayList<>();
@@ -967,7 +967,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
             declarations = new ArrayList<>(collSize);
         }
         factory.readUIDCollection(declarations, input, collSize);
-        
+
 //        // not null UID
 //        assert !CHECK_SCOPE || this.scopeUID != null;
 //        this.scopeRef = null;

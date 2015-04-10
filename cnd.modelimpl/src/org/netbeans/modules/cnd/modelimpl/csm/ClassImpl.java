@@ -116,7 +116,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         this.kind = kind;
         this.leftBracketPos = leftBracketPos;
     }
-    
+
     private ClassImpl(CsmFile file, CsmScope scope, CharSequence name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
         super(name, name, file, startOffset, endOffset);
         members = new ArrayList<>();
@@ -154,7 +154,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 //            register(getScope(), false);
 //        }
 //    }
-    
+
     public void init3(CsmScope scope, boolean register) {
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
@@ -163,7 +163,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             register(getScope(), false);
         }
     }
-    
+
     private void initClassDefinition(CsmScope scope) {
         ClassImpl.MemberForwardDeclaration mfd = findMemberForwardDeclaration(scope);
         if (mfd instanceof ClassImpl.ClassMemberForwardDeclaration && CsmKindUtilities.isClass(this)) {
@@ -203,7 +203,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
         return out;
     }
-    
+
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
         ClassImpl impl = findExistingClassImplInContainer(container, ast);
         if (impl != null && !(ClassImpl.class.equals(impl.getClass()))) {
@@ -286,7 +286,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     public boolean isSpecialization() {
         return false;
     }
-    
+
     @Override
     public boolean isExplicitSpecialization() {
         return false;
@@ -435,20 +435,20 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
-    
+
     public static interface MemberBuilder {
         CsmMember create(CsmParserProvider.ParserErrorDelegate gelegate);
         void setScope(CsmScope scope);
         void setVisibility(CsmVisibility visibility);
     }
-    
+
     public static class ClassBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
-        
+
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private List<MemberBuilder> memberBuilders = new ArrayList<>();
         private List<SimpleDeclarationBuilder> friendBuilders = new ArrayList<>();
         private List<InheritanceBuilder> inheritanceBuilders = new ArrayList<>();
-        
+
         private ClassImpl instance;
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
         private CsmVisibility currentMemberVisibility = CsmVisibility.PUBLIC;
@@ -463,12 +463,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             memberBuilders = builder.memberBuilders;
             inheritanceBuilders = builder.inheritanceBuilders;
         }
-        
+
         @Override
         public void setVisibility(CsmVisibility visibility) {
             this.visibility = visibility;
         }
-        
+
         public void setCurrentMemberVisibility(CsmVisibility visibility) {
             this.currentMemberVisibility = visibility;
         }
@@ -476,7 +476,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public CsmVisibility getCurrentMemberVisibility() {
             return currentMemberVisibility;
         }
-        
+
         public void setKind(Kind kind) {
             this.kind = kind;
             switch (kind) {
@@ -503,8 +503,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         public void addFriendBuilder(SimpleDeclarationBuilder builder) {
             this.friendBuilders.add(builder);
-        }        
-        
+        }
+
         public List<MemberBuilder> getMemberBuilders() {
             return memberBuilders;
         }
@@ -512,15 +512,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public List<SimpleDeclarationBuilder> getFriendBuilders() {
             return friendBuilders;
         }
-        
+
         public void addInheritanceBuilder(InheritanceBuilder i) {
             this.inheritanceBuilders.add(i);
-        }        
+        }
 
         public List<InheritanceBuilder> getInheritanceBuilders() {
             return inheritanceBuilders;
         }
-        
+
         private ClassImpl getClassDefinitionInstance() {
             if(instance != null) {
                 return instance;
@@ -541,7 +541,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             return instance;
         }
-        
+
         @Override
         public ClassImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             ClassImpl cls = getClassDefinitionInstance();
@@ -556,9 +556,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 for (InheritanceBuilder inheritanceBuilder : getInheritanceBuilders()) {
                     inheritanceBuilder.setScope(cls);
                     InheritanceImpl inst = inheritanceBuilder.create();
-                    if(inst != null) {
-                        cls.addInheritance(inst, isGlobal());
-                    }
+                    cls.addInheritance(inst, isGlobal());
                 }
                 for (MemberBuilder builder : getMemberBuilders()) {
                     builder.setScope(cls);
@@ -568,14 +566,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     } else {
                         CsmParserProvider.registerParserError(delegate, "Skip unrecognized member for builder '"+builder, getFile(), getStartOffsetImpl(builder, this)); //NOI18N
                     }
-                }                
+                }
                 for (SimpleDeclarationBuilder builder : getFriendBuilders()) {
                     builder.setScope(cls);
                     CsmFriend inst = (CsmFriend)builder.create();
                     if(inst != null) {
                         cls.addFriend(inst, isGlobal());
                     }
-                }                
+                }
                 getNameHolder().addReference(getFileContent(), cls);
                 addDeclaration(cls);
             }
@@ -747,15 +745,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         // inner classes and enums
                         case CPPTokenTypes.CSM_CLASS_DECLARATION:
                         case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
-                            CsmScope currentScope = ClassImpl.this;                              
+                            CsmScope currentScope = ClassImpl.this;
                             if (APTLanguageSupport.getInstance().isLanguageC(language)) {
                                 currentScope = getContainingFile().getProject().getGlobalNamespace();
-                            }                            
+                            }
                             ClassImpl innerClass = createClass(token, currentScope, ClassImpl.this);
                             processClassEnum(innerClass, token);
                             break;
                         }
-                            
+
                         case CPPTokenTypes.CSM_ENUM_DECLARATION:
                             EnumImpl innerEnum = createEnum(token, ClassImpl.this, ClassImpl.this);
                             processClassEnum(innerEnum, token);
@@ -927,7 +925,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             checkInnerIncludes(ClassImpl.this, ClassImpl.this.getMembers());
         }
-        
+
         private void processClassEnum(ClassEnumBase innerClassEnum, AST innerClassAST) {
             Pair typedefs;
             if(innerClassEnum != null) {
@@ -948,13 +946,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     }
                 }
                 renderVariableInClassifier(innerClassAST, innerClassEnum, null, null);
-            }            
+            }
         }
 
         private CsmScope getFriendScope() {
             CsmScope scope = ClassImpl.this.getScope();
             while (CsmKindUtilities.isClass(scope)) {
-               CsmScope newScope = ((CsmClass)scope).getScope(); 
+               CsmScope newScope = ((CsmClass)scope).getScope();
                if (newScope != null) {
                    scope = newScope;
                } else {
@@ -967,15 +965,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         protected EnumImpl createEnum(AST token, CsmScope scope, DeclarationsContainer container) {
             EnumImpl innerEnum = EnumImpl.create(token, scope, getContainingFile(), fileContent, !isRenderingLocalContext());
-            if (innerEnum != null) {
-                innerEnum.setVisibility(curentVisibility);
-                addMember(innerEnum,!isRenderingLocalContext());
-            }
+            innerEnum.setVisibility(curentVisibility);
+            addMember(innerEnum,!isRenderingLocalContext());
             return innerEnum;
         }
 
         @Override
-        protected ClassImpl createClass(AST token, CsmScope currentScope, DeclarationsContainer container) throws AstRendererException {          
+        protected ClassImpl createClass(AST token, CsmScope currentScope, DeclarationsContainer container) throws AstRendererException {
             ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
                     ? ClassImplSpecialization.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container)
                     : ClassImpl.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container);
@@ -985,7 +981,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             return innerClass;
         }
-        
+
         private void setTemplateDescriptor(List<CsmTemplateParameter> params, CharSequence name, boolean specialization) {
             templateDescriptor = new TemplateDescriptor(params, name, specialization, !isRenderingLocalContext());
         }
@@ -1014,7 +1010,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             if (child != null && child.getType() == CPPTokenTypes.LITERAL_typename) {
                 child = child.getNextSibling();
-            }            
+            }
             if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
                 child = child.getNextSibling();
             }
@@ -1192,7 +1188,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             return added;
         }
-        
+
         @Override
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
@@ -1235,7 +1231,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             super(type, name, containingClass, file, startOffset, endOffset);
             this.visibility = visibility;
         }
-        
+
         @Override
         public boolean isStatic() {
             return false;
@@ -1257,16 +1253,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             public MemberTypedefBuilder(SimpleDeclarationBuilder builder) {
                 super(builder);
             }
-            
+
             @Override
             public void setVisibility(CsmVisibility visibility) {
                 this.visibility = visibility;
             }
-        
+
             @Override
             public MemberTypedef create(CsmParserProvider.ParserErrorDelegate delegate) {
                 CsmClass cls = (CsmClass) getScope();
-                
+
                 CsmType type = null;
                 if(getTypeBuilder() != null) {
                     getTypeBuilder().setScope(getScope());
@@ -1284,9 +1280,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
                 return td;
             }
-            
-        }            
-        
+
+        }
+
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
@@ -1302,18 +1298,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             assert this.visibility != null;
         }
     }
-    
+
     public static final class MemberTypeAliasImpl extends TypeAliasImpl implements CsmMember {
 
         private final CsmVisibility visibility;
-        
+
         public static MemberTypeAliasImpl create(CsmFile file, CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility, boolean global) {
             MemberTypeAliasImpl memberTypedef = new MemberTypeAliasImpl(file, containingClass, ast, type, name, curentVisibility);
             if (!global) {
                 Utils.setSelfUID(memberTypedef);
             }
             return memberTypedef;
-        }        
+        }
 
         private MemberTypeAliasImpl(CsmFile file, CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility) {
             super(ast, file, containingClass, type, name);
@@ -1324,7 +1320,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             super(type, name, containingClass, file, startOffset, endOffset);
             this.visibility = visibility;
         }
-        
+
         @Override
         public boolean isStatic() {
             return false;
@@ -1339,7 +1335,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public CsmClass getContainingClass() {
             return (CsmClass) getScope();
         }
-        
+
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
@@ -1354,7 +1350,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             this.visibility = PersistentUtils.readVisibility(input);
             assert this.visibility != null;
         }
-    }    
+    }
 
     public static interface MemberForwardDeclaration {}
 
@@ -1377,7 +1373,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             visibility = curentVisibility;
             containerUID = UIDCsmConverter.declarationToUID(containingClass);
         }
-        
+
         public static ClassMemberForwardDeclaration create(CsmFile file, CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             ClassMemberForwardDeclaration res = new ClassMemberForwardDeclaration(file, containingClass, ast, curentVisibility, register);
             postObjectCreateRegistration(register, res);
@@ -1480,7 +1476,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         public static class ClassMemberForwardDeclarationBuilder extends ClassForwardDeclarationBuilder implements MemberBuilder {
             private CsmVisibility visibility = CsmVisibility.PUBLIC;
-            
+
             public ClassMemberForwardDeclarationBuilder() {
             }
 
@@ -1492,7 +1488,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             public void setVisibility(CsmVisibility visibility) {
                 this.visibility = visibility;
             }
-            
+
             @Override
             public ClassMemberForwardDeclaration create(CsmParserProvider.ParserErrorDelegate delegate) {
                 TemplateDescriptor td = null;
@@ -1507,8 +1503,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
                 return fc;
             }
-        }         
-        
+        }
+
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override

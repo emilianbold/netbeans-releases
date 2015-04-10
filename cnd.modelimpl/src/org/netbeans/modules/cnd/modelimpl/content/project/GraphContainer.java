@@ -75,8 +75,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * Storage for include graph.
  * @author Alexander Simon
  */
-public class GraphContainer extends ProjectComponent implements Persistent, SelfPersistent, CsmProgressListener {
-    
+public class GraphContainer extends ProjectComponent implements CsmProgressListener {
+
     // empty stub
     private static final GraphContainer EMPTY = new GraphContainer() {
 
@@ -111,7 +111,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     public static GraphContainer empty() {
         return EMPTY;
     }
-    
+
     /**
      * save file graph.
      * called after (re)parse.
@@ -154,7 +154,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
         put();
     }
-    
+
     /**
      * remove file graph.
      * called after remove, delelete.
@@ -190,7 +190,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
     	put();
     }
-    
+
     /**
      * gets all direct or indirect included files into the  referenced file.
      */
@@ -255,7 +255,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
         return false;
     }
-    
+
     private void gatherIncludedFiles(Map<Integer, GraphContainer> map, Set<CsmUID<CsmFile>> res, CsmUID<CsmFile> keyFrom) {
         GraphContainer current = map.get(UIDUtilities.getProjectID(keyFrom));
         if (current == null) {
@@ -332,7 +332,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
         return new ParentFiles(top, parent);
     }
-    
+
     /**
      * gets all files that direct or indirect include referenced file.
      * If set empty then return set with the referenced file.
@@ -358,7 +358,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
         return new CoherenceFiles(parent, coherence);
     }
-    
+
     /**
      *  Returns set files that direct include referenced file.
      */
@@ -387,7 +387,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     public Set<CsmFile> getInLinks(CsmFile referencedFile){
         return convertToFiles(getInLinksUids(referencedFile));
     }
-    
+
     /**
      *  Returns set of direct included files in the referenced file.
      */
@@ -427,7 +427,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
         return res2;
     }
-    
+
     /*
      * method called in synchronized block
      */
@@ -441,7 +441,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             }
         }
     }
-    
+
     /*
      * method called in synchronized block
      */
@@ -455,7 +455,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             }
         }
     }
-    
+
     public void clear() {
         graphLock.writeLock().lock();
         try {
@@ -477,54 +477,54 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             graphLock.writeLock().unlock();
         }
     }
-    
+
     private static void writeUIDToNodeLinkMap (
             final RepositoryDataOutput output, final Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
-        
+
         assert output != null;
         assert aMap != null;
-        
+
         UIDObjectFactory uidFactory = UIDObjectFactory.getDefaultFactory();
         assert uidFactory != null;
-        
+
         output.writeInt(aMap.size());
-        
+
         final Set<Entry<CsmUID<CsmFile>,NodeLink>> entrySet = aMap.entrySet();
         final Iterator<Entry<CsmUID<CsmFile>,NodeLink>> setIterator = entrySet.iterator();
-        
+
         while (setIterator.hasNext()) {
             final Entry<CsmUID<CsmFile>,NodeLink> anEntry = setIterator.next();
             assert anEntry != null;
-            
+
             uidFactory.writeUID(anEntry.getKey(), output);
             anEntry.getValue().write(output);
         }
-    }    
-    
+    }
+
     private static void readUIDToNodeLinkMap (
             final RepositoryDataInput input, Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
-        
+
         assert input != null;
         assert aMap != null;
         UIDObjectFactory uidFactory = UIDObjectFactory.getDefaultFactory();
         assert uidFactory != null;
-        
+
         aMap.clear();
-        
+
         final int size = input.readInt();
-        
+
         for (int i = 0; i < size; i++) {
             final CsmUID<CsmFile> uid = uidFactory.readUID(input);
             final NodeLink        link = new NodeLink(input);
-            
+
             assert uid != null;
             assert link != null;
-            
+
             aMap.put(uid, link);
         }
-        
+
     }
-    
+
     private final Map<CsmUID<CsmFile>,NodeLink> graph = new HashMap<>();
     private final ReadWriteLock graphLock = new ReentrantReadWriteLock();
 
@@ -574,17 +574,17 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     @Override
     public void fileRemoved(CsmFile file) {
     }
-    
+
     private static class NodeLink implements SelfPersistent, Persistent {
-        
+
         final Set<CsmUID<CsmFile>> in;
         final Set<CsmUID<CsmFile>> out;
-        
+
         private NodeLink(){
             in = new HashSet<>();
             out = new HashSet<>();
         }
-        
+
         private NodeLink(final RepositoryDataInput input) throws IOException {
             assert input != null;
 
@@ -605,7 +605,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             }
             factory.readUIDCollection(out, input, collSize);
         }
-        
+
         private void addInLink(CsmUID<CsmFile> inLink){
             in.add(inLink);
         }
@@ -630,10 +630,10 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             assert output != null;
             assert in != null;
             assert out != null;
-            
+
             final UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
             assert factory != null;
-            
+
             factory.writeUIDCollection(in, output, false);
             factory.writeUIDCollection(out, output, false);
         }
@@ -680,7 +680,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             return parentFiles;
         }
     }
-    
+
     private static final class HotSpotFile {
          private final CsmUID<CsmFile> from;
          private final Set<CsmUID<CsmFile>> to;

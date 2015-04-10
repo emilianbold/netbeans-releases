@@ -168,7 +168,7 @@ import org.openide.filesystems.FileObject;
         }
         return null;
     }
-    
+
     public NativeProject getNativeProject() {
         if (object instanceof NativeProject) {
             return (NativeProject) object;
@@ -185,7 +185,7 @@ import org.openide.filesystems.FileObject;
 
     public static void trace(String format, Object... args) {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.out.printf("CsmEvent: %s\n", String.format(format, args)); // NOI18N
+            System.out.printf("CsmEvent: %s%n", String.format(format, args)); // NOI18N
         }
     }
 }

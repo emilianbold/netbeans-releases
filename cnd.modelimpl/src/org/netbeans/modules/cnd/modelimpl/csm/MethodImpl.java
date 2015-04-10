@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
@@ -93,18 +92,16 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     }
 
     public static <T> MethodImpl<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
-        CsmScope scope = cls;
-        
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
-        
+
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
             AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
-        
+
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
@@ -140,21 +137,19 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
                     break;
             }
         }
-        
-        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         MethodImpl<T> methodImpl = new MethodImpl<>(name, rawName, cls, visibility, _virtual, _override, _final, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, methodImpl);
-        
+
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, methodImpl, clsTemplateSuffix, global);
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
-        
+
         methodImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         methodImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodImpl, file));
-        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent), 
+        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent),
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
-        
+
         postObjectCreateRegistration(global, methodImpl);
         nameHolder.addReference(fileContent, methodImpl);
         return methodImpl;
@@ -252,14 +247,14 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     }
 
     public static class MethodBuilder extends FunctionBuilder implements MemberBuilder {
-        
+
         private final boolean _virtual = false;
         private final boolean _explicit = false;
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
 
         protected MethodBuilder() {
         }
-        
+
         public MethodBuilder(SimpleDeclarationBuilder builder) {
             super(builder);
         }
@@ -280,7 +275,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         public boolean isExplicit() {
             return _explicit;
         }
-        
+
         @Override
         public MethodImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
@@ -311,16 +306,16 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
 //            addMember(method);
             return method;
         }
-        
+
 //        protected void addMember(CsmMember member) {
 //            if (getParent() instanceof ClassImpl.ClassBuilder) {
 //                ((ClassImpl.ClassBuilder) getParent()).addMember(member);
 //            }
 //        }
-        
-    }          
-    
-    
+
+    }
+
+
 ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 

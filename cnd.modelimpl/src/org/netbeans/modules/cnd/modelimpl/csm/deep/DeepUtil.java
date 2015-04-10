@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import java.util.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;

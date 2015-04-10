@@ -53,10 +53,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Instantiations are not created during parsing process.
@@ -65,7 +63,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Nikolay Krasilnikov(nnnnnk@netbeans.org)
  */
-public class FileComponentInstantiations extends FileComponent implements Persistent, SelfPersistent {
+public class FileComponentInstantiations extends FileComponent {
 
     private Set<CsmUID<CsmInstantiation>> instantiations = createInstantiations();
     private final ReadWriteLock instantiationsLock = new ReentrantReadWriteLock();
@@ -97,7 +95,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
             }
         }
     }
-    
+
     public FileComponentInstantiations(FileImpl file) {
         super(new FileInstantiationsKey(file));
     }

@@ -83,7 +83,7 @@ import org.openide.util.CharSequences;
  *
  * @author Alecander Simon
  */
-public class FileComponentDeclarations extends FileComponent implements Persistent, SelfPersistent {
+public class FileComponentDeclarations extends FileComponent {
 
     private final TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations;
     private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
@@ -104,7 +104,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         CsmUID<CsmOffsetableDeclaration> addDeclaration(CsmOffsetableDeclaration decl) {
             return null;
         }
- 
+
         @Override
         void put() {
         }
@@ -114,6 +114,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return EMPTY;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("UL")
     FileComponentDeclarations(FileComponentDeclarations other, boolean empty) {
         super(other);
         try {
@@ -141,7 +142,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             }
         }
     }
-    
+
     public FileComponentDeclarations(FileImpl file) {
         super(new FileDeclarationsKey(file));
         declarations = new TreeMap<>();
@@ -277,7 +278,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     }
 
     public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
-        OffsetSortedKey key = new OffsetSortedKey(startOffset, Math.abs(CharSequences.create(name).hashCode()));
+        OffsetSortedKey key = new OffsetSortedKey(startOffset, CharSequences.create(name).hashCode());
         CsmUID<CsmOffsetableDeclaration> anUid = null;
         try {
             declarationsLock.readLock().lock();
@@ -294,7 +295,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     }
 
     public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
-        OffsetSortedKey key = new OffsetSortedKey(startOffset, Math.abs(CharSequences.create(name).hashCode()));
+        OffsetSortedKey key = new OffsetSortedKey(startOffset, CharSequences.create(name).hashCode());
         CsmUID<CsmOffsetableDeclaration> anUid = null;
         try {
             declarationsLock.readLock().lock();
@@ -309,7 +310,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
         return UIDCsmConverter.UIDtoDeclaration(anUid);
     }
-    
+
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {
@@ -535,7 +536,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
 
         public OffsetSortedKey(CsmOffsetableDeclaration declaration) {
             start = ((CsmOffsetable) declaration).getStartOffset();
-            name = Math.abs(declaration.getName().hashCode());
+            name = declaration.getName().hashCode();
         }
 
         public OffsetSortedKey(int offset, int name) {
@@ -636,6 +637,6 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             }
             return true;
         }
-        
+
     }
 }

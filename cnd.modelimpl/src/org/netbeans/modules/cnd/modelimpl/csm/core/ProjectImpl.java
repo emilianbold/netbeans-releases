@@ -132,9 +132,7 @@ public final class ProjectImpl extends ProjectBase {
         assert (getPlatformProject() instanceof NativeProject);
         for (NativeProject nativeLib : ((NativeProject) getPlatformProject()).getDependences()) {
             final Key key = createProjectKey(nativeLib);
-            if (key != null) {
-                res.add(key);
-            }
+            res.add(key);
         }
         // Last dependent project is common library.
         //final Key lib = KeyUtilities.createProjectKey("/usr/include"); // NOI18N
@@ -147,13 +145,13 @@ public final class ProjectImpl extends ProjectBase {
         return res;
     }
 
-    
+
     @Override
     protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
         return ParserQueue.Position.HEAD;
     }
 
-    public 
+    public
     @Override
     void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
         if (TraceFlags.DEBUG) {
@@ -189,7 +187,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
-    public 
+    public
     @Override
     void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile, boolean undo) {
         if (TraceFlags.DEBUG) {
@@ -282,7 +280,7 @@ public final class ProjectImpl extends ProjectBase {
     //N.B. don't clear list of editedFiles here.
     }
 
-    protected 
+    protected
     @Override
     boolean hasChangedFiles(CsmFile skipFile) {
         if (skipFile == null) {
@@ -328,15 +326,15 @@ public final class ProjectImpl extends ProjectBase {
                 return false;
             }
             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
-                System.err.printf("EditingTask.updateLastModified: set lastModified from %d to %d\n", this.lastModified, lm);// NOI18N
+                System.err.printf("EditingTask.updateLastModified: set lastModified from %d to %d%n", this.lastModified, lm);// NOI18N
             }
             this.lastModified = lm;
             return true;
         }
-        
+
         public void setTask(Task task) {
             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
-                System.err.printf("EditingTask.setTask: set new EditingTask %d for %s\n", task.hashCode(), buf.getUrl());
+                System.err.printf("EditingTask.setTask: set new EditingTask %d for %s%n", task.hashCode(), buf.getUrl());
             }
             this.task = task;
         }
@@ -369,7 +367,7 @@ public final class ProjectImpl extends ProjectBase {
     private final Map<CsmFile, EditingTask> editedFiles = new HashMap<>();
     private final ConcurrentHashMap<CsmFile, Boolean> modifiedFiles = new ConcurrentHashMap<>();
 
-    public 
+    public
     @Override
     ProjectBase findFileProject(CharSequence absPath, boolean waitFilesCreated) {
         ProjectBase retValue = super.findFileProject(absPath, waitFilesCreated);
@@ -413,7 +411,7 @@ public final class ProjectImpl extends ProjectBase {
         modifiedFiles.clear();
         projectRoots.clear();
     }
-    
+
     private final SourceRootContainer projectRoots = new SourceRootContainer(false);
     @Override
     protected SourceRootContainer getProjectRoots() {
@@ -422,7 +420,7 @@ public final class ProjectImpl extends ProjectBase {
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
-    public 
+    public
     @Override
     void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
@@ -458,7 +456,7 @@ public final class ProjectImpl extends ProjectBase {
         synchronized (editedFiles) {
             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                 new Exception("scheduleParseOnEditing " + file).printStackTrace(System.err); // NOI18N
-            }            
+            }
             EditingTask pair = editedFiles.get(file);
             if (pair == null) {
                 // we were removed between rescheduling and finish of edit
@@ -474,11 +472,11 @@ public final class ProjectImpl extends ProjectBase {
                 }
                 return;
             }
-            
-            // markReparseNeeded have to be called synchroniously 
+
+            // markReparseNeeded have to be called synchroniously
             // otherwise it will be delayed till DeepReparsingUtils.reparseOnEditingFile is called from task
-            // but task is delayed (or even turned off), so this could never happen and client 
-            // using CsmFile.scheduleParsing(true) get file without wait for reparsing, because 
+            // but task is delayed (or even turned off), so this could never happen and client
+            // using CsmFile.scheduleParsing(true) get file without wait for reparsing, because
             // file is still in state PARSED if delayed till task starts execution
             // see #203526 - Code completion is empty if typing too fast
             file.markReparseNeeded(false);
@@ -496,7 +494,7 @@ public final class ProjectImpl extends ProjectBase {
                     public void run() {
                         try {
                             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
-                                System.err.printf("scheduleParseOnEditing: RUN scheduleParseOnEditing task for %s\n", file);
+                                System.err.printf("scheduleParseOnEditing: RUN scheduleParseOnEditing task for %s%n", file);
                             }
                             if (isDisposing()) {
                                 return;
@@ -528,7 +526,7 @@ public final class ProjectImpl extends ProjectBase {
                 delay = Integer.MAX_VALUE;
             }
         }
-        // to prevent frequent re-post 
+        // to prevent frequent re-post
         if (task.getDelay() < Math.max(100, delay - 100)) {
             task.schedule(delay);
         }

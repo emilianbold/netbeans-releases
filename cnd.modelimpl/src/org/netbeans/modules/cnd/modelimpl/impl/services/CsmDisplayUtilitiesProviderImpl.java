@@ -41,14 +41,10 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -74,14 +70,10 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
-import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import static org.netbeans.modules.cnd.modelimpl.csm.Instantiation.CsmSpecializationParamTextProvider;
-import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl.InstantiationParametersInfo;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import static org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities.htmlize;

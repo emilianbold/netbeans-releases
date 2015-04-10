@@ -159,7 +159,7 @@ public class TraceModelBase {
         return result;
     }
 
-    /** 
+    /**
      * Processes a string flag
      * @return true if the flag has been recognised and processed,
      * otherwise false
@@ -176,8 +176,10 @@ public class TraceModelBase {
     private void addFile(List<File> files, File file) {
         if (file.isDirectory()) {
             String[] list = file.list();
-            for (int i = 0; i < list.length; i++) {
-                addFile(files, new File(file, list[i]));
+            if (list != null) {
+                for (int i = 0; i < list.length; i++) {
+                    addFile(files, new File(file, list[i]));
+                }
             }
         } else {
             files.add(file);
@@ -206,7 +208,7 @@ public class TraceModelBase {
     public static void enableProjectListeners(CsmProject p, boolean enable) {
         ((ProjectBase) p).enableProjectListeners(enable);
     }
-    
+
     public static void shutdownModel(CsmModel model) {
         if (model instanceof ModelImpl) {
             ((ModelImpl)model).shutdown();
@@ -214,7 +216,7 @@ public class TraceModelBase {
             CndUtils.assertTrueInConsole(false, "unexpected model instance ", model);
         }
     }
-    
+
     public static CsmProject addNativeProject(NativeProject np) {
         CsmModel model = CsmModelAccessor.getModel();
         CsmProject csmProject = null;
@@ -225,7 +227,7 @@ public class TraceModelBase {
         }
         return csmProject;
     }
-    
+
     public static void closeNativeProject(NativeProject np) {
         CsmModel model = CsmModelAccessor.getModel();
         if (model instanceof ModelImpl) {
@@ -234,7 +236,7 @@ public class TraceModelBase {
             CndUtils.assertTrueInConsole(false, "unexpected model instance ", model);
         }
     }
-    
+
     public static void closeProject(CsmProject project) {
         closeProject(project, false);
     }

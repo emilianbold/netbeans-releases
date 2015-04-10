@@ -86,7 +86,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
 //                    CharSequence fileName2 = KeyUtilities.getFileNameById(projectID2, fileID2);
                     return fileID1 - fileID2;
                 } catch (IndexOutOfBoundsException e) {
-                    System.err.printf("exception %s, when compare\n%s\nvs.\n%s\n", e.getMessage(), o1.getObject(), o2.getObject()); // NOI18N
+                    System.err.printf("exception %s, when compare%n%s%nvs.%n%s%n", e.getMessage(), o1.getObject(), o2.getObject()); // NOI18N
                 }
             }
             int startOffset1 = UIDUtilities.getStartOffset(o1);
@@ -129,7 +129,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             return o1.getEndOffset() - o2.getEndOffset();
         }
     }
-    
+
     static final Comparator<FileComponentReferences.ReferenceImpl> REF_COMPARATOR = new RefComparator();
 
     private static final class RefImpl implements CsmReference {
@@ -236,11 +236,11 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
 
     private ReferencesIndex() {
     };
-    
+
     public static SelfPersistent create(RepositoryDataInput stream) throws IOException {
         return new ReferencesIndex(stream);
     }
-    
+
     private static final class Holder {
         private static final ReferencesIndex INSTANCE = ENABLED ? read() : new ReferencesIndex();
     }
@@ -254,29 +254,29 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             RepositoryUtils.closeUnit(KeyHolder.INDEX_KEY, null, !TraceFlags.PERSISTENT_REPOSITORY);
         }
     }
-    
+
     public static void startup() {
         if (ENABLED) {
             RepositoryUtils.openUnit(KeyHolder.INDEX_KEY);
         }
     }
-    
+
     private static final boolean TRACE = Boolean.getBoolean("cnd.model.global.index") || Boolean.getBoolean("cnd.model.index.enabled");
     private static ReferencesIndex read() {
         if (TRACE) {
-            System.err.printf("Opening INDEX by key %s\n", KeyHolder.INDEX_KEY); // NOI18N
+            System.err.printf("Opening INDEX by key %s%n", KeyHolder.INDEX_KEY); // NOI18N
         }
         RepositoryUtils.openUnit(KeyHolder.INDEX_KEY);
         ReferencesIndex instance = (ReferencesIndex) RepositoryUtils.get(KeyHolder.INDEX_KEY);
         if (instance == null) {
             if (TRACE) {
-                System.err.printf("NO REFERENCES INDEX IN REPOSITORY\n"); // NOI18N
+                System.err.printf("NO REFERENCES INDEX IN REPOSITORY%n"); // NOI18N
             }
             return new ReferencesIndex();
         } else {
             if (TRACE) {
-                System.err.printf("ReferencesIndex from repository has %d ref-entries\n", instance.obj2refs.size()); // NOI18N
-                System.err.printf("ReferencesIndex from repository has %d file-entries\n", instance.obj2files.size()); // NOI18N
+                System.err.printf("ReferencesIndex from repository has %d ref-entries%n", instance.obj2refs.size()); // NOI18N
+                System.err.printf("ReferencesIndex from repository has %d file-entries%n", instance.obj2files.size()); // NOI18N
             }
             return instance;
         }
@@ -289,45 +289,45 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
     public static void clearIndex() {
         Holder.INSTANCE.clear();
     }
-    
+
     static void put(CsmUID<?> refedObject, CsmUID<CsmFile> fileUID, FileComponentReferences.ReferenceImpl ref) {
         Holder.INSTANCE.addRef(refedObject, fileUID, ref);
     }
-    
+
     public static Collection<CsmReference> getAllReferences(CsmUID<?> referedObject) {
         if (!ENABLED) {
-            System.err.printf("INDEX IS DISABLED\n"); // NOI18N
+            System.err.printf("INDEX IS DISABLED%n"); // NOI18N
         }
         final Collection<CsmReference> refs = Holder.INSTANCE.getRefs(referedObject);
         if (TRACE) {
-            System.err.printf("getAllReferences for %s has %d refs\n", referedObject, refs.size()); // NOI18N
+            System.err.printf("getAllReferences for %s has %d refs%n", referedObject, refs.size()); // NOI18N
         }
         return refs;
     }
-    
+
     public static Collection<CsmUID<CsmFile>> getRelevantFiles(CsmUID<?> referedObject) {
         final Collection<CsmUID<CsmFile>> refs = Holder.INSTANCE.getFiles(referedObject);
         if (TRACE) {
-            System.err.printf("getAllFiles for %s has %d files\n", referedObject, refs.size()); // NOI18N
+            System.err.printf("getAllFiles for %s has %d files%n", referedObject, refs.size()); // NOI18N
         }
         return refs;
     }
-    
+
     // value either ref or collection of refs
     private final Map<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> obj2refs = new HashMap<>();
     private final Map<CsmUID<?>, Set<CsmUID<CsmFile>>> obj2files = new HashMap<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    
+
     private void trace(PrintWriter printOut) {
         if (!ENABLED) {
-            printOut.printf("INDEX IS DISABLED\n"); // NOI18N
+            printOut.printf("INDEX IS DISABLED%n"); // NOI18N
             return;
         }
         if (obj2refs.isEmpty()) {
-            printOut.printf("INDEX IS EMPTY\n"); // NOI18N
+            printOut.printf("INDEX IS EMPTY%n"); // NOI18N
             return;
         }
-        printOut.printf("INDEX has %d referenced objects\n", obj2refs.size()); // NOI18N
+        printOut.printf("INDEX has %d referenced objects%n", obj2refs.size()); // NOI18N
         List<CsmUID<?>> keys = new ArrayList<>(obj2refs.keySet());
         Collections.sort(keys, new ComparatorImpl());
         int lastProjectID = -1;
@@ -337,27 +337,27 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             int curProjectID = UIDUtilities.getProjectID(csmUID);
             if (lastProjectID != curProjectID) {
                 if (lastProjectID >= 0) {
-                    printOut.printf("PROJECT %s has %d referenced objects\n\n", KeyUtilities.getUnitName(lastProjectID), numKeys);// NOI18N
+                    printOut.printf("PROJECT %s has %d referenced objects%n%n", KeyUtilities.getUnitName(lastProjectID), numKeys);// NOI18N
                 }
                 numKeys = 0;
                 lastProjectID = curProjectID;
-                printOut.printf("Elements of project [%d] %s\n", curProjectID, KeyUtilities.getUnitName(curProjectID));// NOI18N
+                printOut.printf("Elements of project [%d] %s%n", curProjectID, KeyUtilities.getUnitName(curProjectID));// NOI18N
             }
             numKeys++;
             int curFileID = UIDUtilities.getFileID(csmUID);
             if (lastFileID != curFileID) {
                 lastFileID = curFileID;
-                printOut.printf("Elements of project %s of file [%d] %s\n", KeyUtilities.getUnitName(curProjectID), curFileID, KeyUtilities.getFileNameById(curProjectID, curFileID));// NOI18N
+                printOut.printf("Elements of project %s of file [%d] %s%n", KeyUtilities.getUnitName(curProjectID), curFileID, KeyUtilities.getFileNameById(curProjectID, curFileID));// NOI18N
             }
             Object obj = obj2refs.get(csmUID);
             if (obj == null) {
-                printOut.printf("NO REFERENCES for %s\n", csmUID); // NOI18N
+                printOut.printf("NO REFERENCES for %s%n", csmUID); // NOI18N
             }
             Collection<? extends CsmReference> refs = getRefs(csmUID);
             if (refs.isEmpty()) {
-                printOut.printf("NO REFERENCES 2 for %s\n", csmUID); // NOI18N
+                printOut.printf("NO REFERENCES 2 for %s%n", csmUID); // NOI18N
             } else {
-                printOut.printf("%s is referenced from:\n", csmUID); // NOI18N
+                printOut.printf("%s is referenced from:%n", csmUID); // NOI18N
                 CsmFile prevFile = null;
                 for (CsmReference ref : refs) {
                     FileComponentReferences.ReferenceImpl csmReference = (FileComponentReferences.ReferenceImpl) ref;
@@ -365,11 +365,11 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
                     if (containingFile != null) {
                         if (containingFile != prevFile) {
                             prevFile = containingFile;
-                            printOut.printf("\tFILE %s\n", containingFile.getAbsolutePath()); // NOI18N
+                            printOut.printf("\tFILE %s%n", containingFile.getAbsolutePath()); // NOI18N
                         }
-                        printOut.printf("\t%s\n", toString(csmReference)); // NOI18N
+                        printOut.printf("\t%s%n", toString(csmReference)); // NOI18N
                     } else {
-                        printOut.printf("NOT FROM FILE %s\n", toString(csmReference)); // NOI18N
+                        printOut.printf("NOT FROM FILE %s%n", toString(csmReference)); // NOI18N
                     }
                 }
             }
@@ -379,7 +379,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
     private String toString(FileComponentReferences.ReferenceImpl ref) {
         return ref.toString(true);
     }
-    
+
     private void clear() {
         lock.writeLock().lock();
         try {
@@ -391,7 +391,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             RepositoryUtils.put(KeyHolder.INDEX_KEY, this);
         }
     }
-    
+
     private static final boolean ENABLED = Boolean.getBoolean("cnd.model.global.index");
     private void addRef(CsmUID<?> referedObject, CsmUID<CsmFile> fileUID, FileComponentReferences.ReferenceImpl ref) {
         if (!ENABLED) {
@@ -418,7 +418,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             lock.writeLock().unlock();
         }
         RepositoryUtils.put(KeyHolder.INDEX_KEY, this);
-    }    
+    }
 
     private Collection<CsmReference> getRefs(CsmUID<?> refedObject) {
         lock.readLock().lock();
@@ -433,7 +433,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             lock.readLock().unlock();
         }
     }
-    
+
     private Collection<CsmUID<CsmFile>> getFiles(CsmUID<?> refedObject) {
         lock.readLock().lock();
         try {
@@ -447,14 +447,14 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             lock.readLock().unlock();
         }
     }
-    
+
     @Override
     public void write(RepositoryDataOutput out) throws IOException {
         UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
         lock.readLock().lock();
         try {
             if (TRACE) {
-                System.err.printf("writing REFERENCES INDEX [%s] with %d entries\n", KeyHolder.INDEX_KEY, obj2refs.size()); // NOI18N
+                System.err.printf("writing REFERENCES INDEX [%s] with %d entries%n", KeyHolder.INDEX_KEY, obj2refs.size()); // NOI18N
             }
             out.writeInt(obj2refs.size());
             for (Map.Entry<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> entry : obj2refs.entrySet()) {
@@ -479,8 +479,8 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             lock.readLock().unlock();
         }
     }
-    
-    
+
+
     private ReferencesIndex(RepositoryDataInput aStream) throws IOException {
         int size = aStream.readInt();
         UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
