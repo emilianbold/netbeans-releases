@@ -161,7 +161,7 @@ public class ReferencesCache {
             }
         }
     }
-    
+
     private void clearUnresolved(CsmFile file) {
         Map<TokenItem<TokenId>, CacheEntry> entry = cache.get(file);
         if (entry != null) {
@@ -177,11 +177,11 @@ public class ReferencesCache {
 
     void dumpInfo(PrintWriter printOut) {
         synchronized (cacheLock) {
-            printOut.printf("cache of size %d\n", cache.size()); // NOI18N
+            printOut.printf("cache of size %d%n", cache.size()); // NOI18N
             for (Map.Entry<CsmFile, Map<TokenItem<TokenId>, CacheEntry>> entry : cache.entrySet()) {
                 final CsmFile file = entry.getKey();
-                printOut.printf("-----------------------\n"); // NOI18N
-                printOut.printf("file %s version=%d, class=%s\n", file.getAbsolutePath(), CsmFileInfoQuery.getDefault().getFileVersion(file), file.getClass().getName()); // NOI18N
+                printOut.printf("-----------------------%n"); // NOI18N
+                printOut.printf("file %s version=%d, class=%s%n", file.getAbsolutePath(), CsmFileInfoQuery.getDefault().getFileVersion(file), file.getClass().getName()); // NOI18N
                 SortedMap<TokenItem<TokenId>, CacheEntry> unresolved = new TreeMap<TokenItem<TokenId>, CacheEntry>();
                 SortedMap<TokenItem<TokenId>, CacheEntry> invalid = new TreeMap<TokenItem<TokenId>, CacheEntry>();
                 for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : entry.getValue().entrySet()) {
@@ -196,30 +196,30 @@ public class ReferencesCache {
                     }
                 }
                 if (unresolved.isEmpty()) {
-                    printOut.printf("no UNRESOLVED \n");// NOI18N
+                    printOut.printf("no UNRESOLVED %n");// NOI18N
                 } else {
                     for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : unresolved.entrySet()) {
-                        printOut.printf("UNRESOLVED [%s] version=%d\n", getPosition(entry1.getKey(), file), entry1.getValue().fileVersion);// NOI18N
+                        printOut.printf("UNRESOLVED [%s] version=%d%n", getPosition(entry1.getKey(), file), entry1.getValue().fileVersion);// NOI18N
                         CsmObject checkAgain = ReferencesSupport.findDeclaration(file, CsmReferenceRepository.getDocument(file), entry1.getKey(), entry1.getKey().offset());
                         if (checkAgain != null) {
-                            printOut.printf("\t ERROR: resolved as [%s]\n", checkAgain);// NOI18N
+                            printOut.printf("\t ERROR: resolved as [%s]%n", checkAgain);// NOI18N
                         }
                     }
                 }
                 if (invalid.isEmpty()) {
-                    printOut.printf("no INVALID \n");// NOI18N
+                    printOut.printf("no INVALID %n");// NOI18N
                 } else {
                     for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : invalid.entrySet()) {
                         CsmObject csmObject = entry1.getValue().csmObject;
-                        printOut.printf("INVALID [%s] version=%d %s\n", getPosition(entry1.getKey(), file), entry1.getValue().fileVersion, csmObject);// NOI18N
+                        printOut.printf("INVALID [%s] version=%d %s%n", getPosition(entry1.getKey(), file), entry1.getValue().fileVersion, csmObject);// NOI18N
                         CsmObject checkAgain = ReferencesSupport.findDeclaration(file, CsmReferenceRepository.getDocument(file), entry1.getKey(), entry1.getKey().offset());
                         if (checkAgain != csmObject) {
-                            printOut.printf("\t ERROR: invalid resolved as [%s]\n", checkAgain);// NOI18N
+                            printOut.printf("\t ERROR: invalid resolved as [%s]%n", checkAgain);// NOI18N
                         }
                     }
-                }                
+                }
             }
-            printOut.printf("-----------------------\n");// NOI18N
+            printOut.printf("-----------------------%n");// NOI18N
         }
     }
 

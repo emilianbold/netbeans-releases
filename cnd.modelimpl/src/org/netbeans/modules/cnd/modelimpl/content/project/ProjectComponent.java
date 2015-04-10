@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
- * A common ancestor for project components that 
+ * A common ancestor for project components that
  * 1) has key (most likely a project-based one);
  * 2) are able to put themselves into repository.
  *
@@ -76,7 +76,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
     public ProjectComponent(RepositoryDataInput in) throws IOException {
         key = KeyFactory.getDefaultFactory().readKey(in);
         if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
-            System.err.printf("< ProjectComponent: Reading %s key %s\n", this, key);
+            System.err.printf("< ProjectComponent: Reading %s key %s%n", this, key);
         }
     }
 
@@ -91,19 +91,19 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
 
     public void put() {
         if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
-            System.err.printf("> ProjectComponent: store %s by key %s\n", this, key);
+            System.err.printf("> ProjectComponent: store %s by key %s%n", this, key);
         }
         RepositoryUtils.put(key, this);
     }
 
 //    private void putImpl() {
-//	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Putting %s by key %s\n", this, key);
+//	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Putting %s by key %s%n", this, key);
 //	RepositoryUtils.put(key, this);
 //    }
     @Override
     public void write(RepositoryDataOutput out) throws IOException {
         if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
-            System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);
+            System.err.printf("> ProjectComponent: Writing %s by key %s%n", this, key);
         }
         writeKey(key, out);
     }

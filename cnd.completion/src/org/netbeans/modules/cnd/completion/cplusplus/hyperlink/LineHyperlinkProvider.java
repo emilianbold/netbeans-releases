@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;

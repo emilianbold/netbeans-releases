@@ -79,7 +79,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -97,7 +96,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
     public CodeModelDiagnosticAction() {
         super(true);
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_CodeModelDiagnostic"); //NOI18N
@@ -115,7 +114,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
         }
         return false;
     }
-    
+
     @Override
     protected void performAction(Collection<CsmProject> csmProjects) {
         Node[] activatedNodes = getActivatedNodes();
@@ -139,7 +138,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     }
                 }
             }
-        }        
+        }
         if (doc != null) {
             lookupObjects.add(doc);
             if (files.isEmpty()) {
@@ -147,7 +146,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
                 if (csmFile != null) {
                     files.add(csmFile);
-                }      
+                }
                 DataObject dob = NbEditorUtilities.getDataObject(doc);
                 if (dob != null && !lookupObjects.contains(dob)) {
                     lookupObjects.add(dob);
@@ -158,13 +157,12 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
         lookupObjects.addAll(files);
         LOG.log(Level.INFO, "perform actions on {0}\n nodes={1}\n", new Object[]{csmProjects, activatedNodes});
         if (!lookupObjects.isEmpty()) {
-            Collection<? extends CndDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CndDiagnosticProvider.class);
             JPanel pnl = createPanel();
             DialogDescriptor descr = new DialogDescriptor(pnl, "C/C++ Diagnostics");// NOI18N
             NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(descr));
             if (descr.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
-            }            
+            }
             Lookup context = Lookups.fixed(lookupObjects.toArray(new Object[lookupObjects.size()]));
             String tmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
             if (tmpDir == null) {
@@ -188,10 +186,10 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 io.select();
                 final OutputWriter out = io.getOut();
                 final OutputWriter err = io.getErr();
-                err.printf("dumping cnd diagnostics into %s\n", tmpFile);// NOI18N 
+                err.printf("dumping cnd diagnostics into %s%n", tmpFile);// NOI18N
                 int i = 0;
                 for (CsmFile csmFile : files) {
-                    pw.printf("file [%d] [version=%d] [%s] of class %s\n", i++,  // NOI18N
+                    pw.printf("file [%d] [version=%d] [%s] of class %s%n", i++,  // NOI18N
                             CsmFileInfoQuery.getDefault().getFileVersion(csmFile),
                             csmFile.getAbsolutePath(), csmFile.getClass().getName());
                 }
@@ -201,13 +199,13 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     if (dob != null) {
                         modified = dob.isModified();
                     }
-                    pw.printf("document version=%d timestamp=%s caret=[%d-%d]. Is modified? %s\n", // NOI18N 
-                            DocumentUtilities.getDocumentVersion(doc), DocumentUtilities.getDocumentTimestamp(doc), 
+                    pw.printf("document version=%d timestamp=%s caret=[%d-%d]. Is modified? %s%n", // NOI18N
+                            DocumentUtilities.getDocumentVersion(doc), DocumentUtilities.getDocumentTimestamp(doc),
                             lastFocusedComponent.getSelectionStart(), lastFocusedComponent.getSelectionEnd(), modified);
                 }
                 for (ProviderAction enabledProvider : providerActions) {
                     if (enabledProvider.isSelected()) {
-                        pw.printf("**********************\ndiagnostics of %s\n", enabledProvider.getProvider().getDisplayName());// NOI18N 
+                        pw.printf("**********************%ndiagnostics of %s%n", enabledProvider.getProvider().getDisplayName());// NOI18N
                         enabledProvider.getProvider().dumpInfo(context, pw);
                     }
                 }
@@ -224,10 +222,10 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                         }
                         out.println(line);
                     } while (true);
-                    err.printf("Cnd diagnostics is saved in %s\n", tmpFile);// NOI18N
+                    err.printf("Cnd diagnostics is saved in %s%n", tmpFile);// NOI18N
                     das.close();
                 } catch (IOException e) {
-                    err.printf("Can not display file content %s,\ndue to %s\n", tmpFile, e.getMessage());// NOI18N
+                    err.printf("Can not display file content %s,%ndue to %s%n", tmpFile, e.getMessage());// NOI18N
                 }
                 err.close();
                 out.close();
@@ -262,7 +260,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
         }
         return panel;
     }
-    
+
     private JPanel panel;
     private final List<ProviderAction> providerActions = new ArrayList<ProviderAction>();
     private final static class ProviderAction extends AbstractAction {
@@ -277,7 +275,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
         public void actionPerformed(ActionEvent e) {
             selected = !selected;
         }
-        
+
         boolean isSelected() {
             return selected;
         }

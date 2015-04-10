@@ -97,7 +97,7 @@ public class CsmKeywordCompletionItem implements CompletionItem {
         if (CndUtils.isUnitTestMode()) {
             coloredItemText = sortItemText;
         } else {
-            AttributeSet keywordsColor = ((FontColorSettings) MimeLookup.getLookup(MimePath.get(MIMENames.CPLUSPLUS_MIME_TYPE)).lookup(FontColorSettings.class)).getTokenFontColors("keyword"); //NOI18N
+            AttributeSet keywordsColor = MimeLookup.getLookup(MimePath.get(MIMENames.CPLUSPLUS_MIME_TYPE)).lookup(FontColorSettings.class).getTokenFontColors("keyword"); //NOI18N
             coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, keywordsColor);
         }
         return new CsmKeywordCompletionItem(substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, firstCompletion);
@@ -164,7 +164,7 @@ public class CsmKeywordCompletionItem implements CompletionItem {
     public String toString() {
         StringBuilder out = new StringBuilder();
         out.append(this.getLeftHtmlText(false));
-        out.append(this.getRightHtmlText(false)); 
+        out.append(this.getRightHtmlText(false));
         return out.toString();
     }
 
@@ -225,7 +225,7 @@ public class CsmKeywordCompletionItem implements CompletionItem {
             }
         });
     }
-    
+
     boolean isFistCompletion() {
         return firstCompletion;
     }

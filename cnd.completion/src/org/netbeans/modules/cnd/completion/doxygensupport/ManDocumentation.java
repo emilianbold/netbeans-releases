@@ -269,7 +269,7 @@ public class ManDocumentation {
                 exitStatus = NativeProjectSupport.execute(np, "man", null, name); // NOI18N
             }
         } else {
-            // Current host locale is used here, because user possibly wants to see man pages 
+            // Current host locale is used here, because user possibly wants to see man pages
             // in locale of his development host, not in remote's host one.
             final String DOT_UTF8 = ".UTF-8";  // NOI18N
             exitStatus = NativeProjectSupport.execute(np, "man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH, "LANG=" + Locale.getDefault().toString().trim().replace(DOT_UTF8, "") + DOT_UTF8}, "-S2:3", name); // NOI18N
@@ -298,7 +298,7 @@ public class ManDocumentation {
         String section = null;
         int index1 = output.indexOf(number);
         int index2;
-        while (section == null && index1 >= 0) {
+        while (index1 >= 0) {
             if (output.charAt(index1 + 2) != 'f') { // Don't want fortran!
                 index2 = output.substring(index1).indexOf(")"); // NOI18N
                 section = output.substring(index1 + 1, index1 + index2);
@@ -309,7 +309,7 @@ public class ManDocumentation {
         }
         return section;
     }
-    
+
     private static final Map<String, String> TRANSLATE;
 
     static {

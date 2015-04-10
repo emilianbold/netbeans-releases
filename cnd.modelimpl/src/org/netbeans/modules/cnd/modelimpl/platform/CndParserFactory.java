@@ -85,7 +85,7 @@ import org.openide.util.WeakSet;
 })
 public final class CndParserFactory extends ParserFactory {
 
-    private static final Set<ParserImpl> registry = new WeakSet<ParserImpl>();
+    private static final Set<ParserImpl> registry = new WeakSet<>();
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final int NO_DOCUMENT_VERSION = -1;
 
@@ -312,7 +312,7 @@ public final class CndParserFactory extends ParserFactory {
     }
 
     public static final void firePropertyChanged() {
-        HashSet<ParserImpl> set = new HashSet<ParserImpl>();
+        HashSet<ParserImpl> set = new HashSet<>();
         synchronized (registry) {
             set.addAll(registry);
         }

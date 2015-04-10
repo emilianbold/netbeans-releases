@@ -75,7 +75,7 @@ import org.openide.util.CharSequences;
  * Common ancestor for ClassImpl and EnumImpl
  * @author Vladimir Kvashin
  */
-public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> implements Disposable, CsmCompoundClassifier, CsmMember {
+public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> implements CsmCompoundClassifier, CsmMember {
 
     private final CharSequence name;
     private /*final*/ CharSequence qualifiedName;
@@ -98,7 +98,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         assert name != null;
         this.name = NameCache.getManager().getString(name.getName());
     }
-    
+
     protected ClassEnumBase(CharSequence name, CharSequence qName, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
@@ -314,7 +314,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (this.scopeRef == null) {
             // restore container from it's UID if not directly initialized
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            
+
             // there could be a situation when scope is already disposed
             // i.e. like in  #191610 -  unresolved reference to class declared with outer scope
 //            assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID + " when dispose " + this;

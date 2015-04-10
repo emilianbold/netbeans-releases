@@ -95,7 +95,6 @@ import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
-import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**

@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
@@ -78,7 +77,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
  * Storage for project or namespace declarations.
  * @author Alexander Simon
  */
-public abstract class DeclarationContainer extends ProjectComponent implements Persistent, SelfPersistent {
+public abstract class DeclarationContainer extends ProjectComponent {
 
     private final TreeMap<CharSequence, Object> declarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();

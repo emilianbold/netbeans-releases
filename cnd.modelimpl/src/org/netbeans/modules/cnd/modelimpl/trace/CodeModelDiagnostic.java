@@ -97,17 +97,17 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====CsmStandaloneFileProviders info:\n");// NOI18N
+            printOut.printf("====CsmStandaloneFileProviders info:%n");// NOI18N
             for (CsmStandaloneFileProvider sap : Lookup.getDefault().lookupAll(CsmStandaloneFileProvider.class)) {
                 if (sap instanceof CsmStandaloneFileProviderImpl) {
                     ((CsmStandaloneFileProviderImpl) sap).dumpInfo(printOut);
                 } else {
-                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", sap.getClass().getName(), sap.toString());// NOI18N
+                    printOut.printf("UNKNOWN FOR ME [%s] %s%n", sap.getClass().getName(), sap.toString());// NOI18N
                 }
             }
         }
     }
-        
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1100)
     public final static class FileTrace implements CndDiagnosticProvider {
 
@@ -119,7 +119,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getLongParseCount());// NOI18N 
+            printOut.printf("====Files info:%nGlobal ParseCount=%d%n", FileImpl.getLongParseCount());// NOI18N
             Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
             for (CsmFile csmFile : allFiles) {
                 if (csmFile instanceof FileImpl) {
@@ -127,7 +127,7 @@ public final class CodeModelDiagnostic {
                 } else if (csmFile instanceof FileSnapshot) {
                     ((FileSnapshot) csmFile).dumpInfo(printOut);
                 } else {
-                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
+                    printOut.printf("UNKNOWN FOR ME [%s] %s%n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
             Collection<? extends DataObject> dobs = context.lookupAll(DataObject.class);
@@ -137,59 +137,59 @@ public final class CodeModelDiagnostic {
                     NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
                     if (nfis != null) {
                         foundItem = true;
-                        printOut.printf("NativeFileItemSet has %d elements\n", nfis.getItems().size());// NOI18N 
+                        printOut.printf("NativeFileItemSet has %d elements%n", nfis.getItems().size());// NOI18N
                         int ind = 0;
                         for (NativeFileItem item : nfis.getItems()) {
-                            printOut.printf("[%d] NativeFileItem %s of class %s\n", ++ind, item.getAbsolutePath(), item.getClass().getName());// NOI18N 
+                            printOut.printf("[%d] NativeFileItem %s of class %s%n", ++ind, item.getAbsolutePath(), item.getClass().getName());// NOI18N
                             NativeProject nativeProject = item.getNativeProject();
-                            printOut.printf(" from project %s [%s]\n", nativeProject.getProjectDisplayName(), nativeProject.getProjectRoot());// NOI18N 
-                            printOut.printf("\tLang=%s Flavor=%s excluded=%s\n", item.getLanguage(), item.getLanguageFlavor(), item.isExcluded());// NOI18N 
-                            printOut.print("\tUser Include Paths:\n");// NOI18N 
+                            printOut.printf(" from project %s [%s]%n", nativeProject.getProjectDisplayName(), nativeProject.getProjectRoot());// NOI18N
+                            printOut.printf("\tLang=%s Flavor=%s excluded=%s%n", item.getLanguage(), item.getLanguageFlavor(), item.isExcluded());// NOI18N
+                            printOut.print("\tUser Include Paths:\n");// NOI18N
                             for (FSPath path : item.getUserIncludePaths()) {
                                 String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
                                 FileObject valid = path.getFileObject();
                                 if (valid != null && !valid.isValid()) {
                                     valid = null;
-                                } 
-                                printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
+                                }
+                                printOut.printf("\t\t%s%s%n", msg, valid == null ? "[invalid]" : "");// NOI18N
                             }
                             if (!item.getIncludeFiles().isEmpty()) {
-                                printOut.print("\tUser Include Files:\n");// NOI18N 
+                                printOut.print("\tUser Include Files:\n");// NOI18N
                                 for (String path : item.getIncludeFiles()) {
                                     String msg = path;
-                                    printOut.printf("\t\t%s%s\n", msg, "");// NOI18N 
+                                    printOut.printf("\t\t%s%s%n", msg, "");// NOI18N
                                 }
                             }
-                            printOut.print("\tUser Macros:\n");// NOI18N 
+                            printOut.print("\tUser Macros:\n");// NOI18N
                             for (String macro : item.getUserMacroDefinitions()) {
-                                printOut.printf("\t\t%s\n", macro);// NOI18N 
+                                printOut.printf("\t\t%s%n", macro);// NOI18N
                             }
-                            printOut.print("\tSystem Include Paths:\n");// NOI18N 
+                            printOut.print("\tSystem Include Paths:\n");// NOI18N
                             for (FSPath path : item.getSystemIncludePaths()) {
                                 String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
                                 FileObject valid = path.getFileObject();
                                 if (valid != null && !valid.isValid()) {
                                     valid = null;
                                 }
-                                printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
+                                printOut.printf("\t\t%s%s%n", msg, valid == null ? "[invalid]" : "");// NOI18N
                             }
-                            printOut.print("\tSystem Macros:\n");// NOI18N 
+                            printOut.print("\tSystem Macros:\n");// NOI18N
                             for (String macro : item.getSystemMacroDefinitions()) {
-                                printOut.printf("\t\t%s\n", macro);// NOI18N 
+                                printOut.printf("\t\t%s%n", macro);// NOI18N
                             }
                         }
                     }
                 }
                 if(!foundItem) {
-                    printOut.printf("no NativeFileItemSet in %s\n", context);// NOI18N 
+                    printOut.printf("no NativeFileItemSet in %s%n", context);// NOI18N
                 }
             } else {
-                printOut.printf("no file object in lookup\n");// NOI18N 
+                printOut.printf("no file object in lookup%n");// NOI18N
             }
         }
     }
-    
-    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1200)    
+
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1200)
     public final static class PPStatesTrace implements CndDiagnosticProvider {
 
         @NbBundle.Messages({"PPStatesTrace.displayName=Preprocessor States"})
@@ -200,13 +200,13 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getLongParseCount());// NOI18N 
+            printOut.printf("====Files info:%nGlobal ParseCount=%d%n", FileImpl.getLongParseCount());// NOI18N
             Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
             for (CsmFile csmFile : allFiles) {
                 if (csmFile instanceof FileImpl) {
                     ((FileImpl) csmFile).dumpPPStates(printOut);
                 } else {
-                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
+                    printOut.printf("UNKNOWN FOR ME [%s] %s%n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
         }
@@ -223,13 +223,13 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getLongParseCount());// NOI18N
+            printOut.printf("====Files info:%nGlobal ParseCount=%d%n", FileImpl.getLongParseCount());// NOI18N
             Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
             for (CsmFile csmFile : allFiles) {
                 if (csmFile instanceof FileImpl) {
                     ((FileImpl) csmFile).dumpIncludePPStates(printOut);
                 } else {
-                    printOut.printf("UNKOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
+                    printOut.printf("UNKOWN FOR ME [%s] %s%n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
         }
@@ -246,15 +246,15 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====ModelImpl:\n");// NOI18N
+            printOut.printf("====ModelImpl:%n");// NOI18N
             ModelImpl.instance().dumpInfo(printOut, false);
-            printOut.printf("====Libraries:\n"); //NOI18N
+            printOut.printf("====Libraries:%n"); //NOI18N
             LibraryManager.dumpInfo(printOut, false);
-            printOut.printf("====Files count size summary:\n"); //NOI18N
+            printOut.printf("====Files count size summary:%n"); //NOI18N
             dumpProjectFilesInfo(printOut);
         }
-        
-        private void dumpProjectFilesInfo(PrintWriter printOut) {          
+
+        private void dumpProjectFilesInfo(PrintWriter printOut) {
             Collection<CsmProject> projects = CsmModelAccessor.getModel().projects();
             for (CsmProject project : projects) {
                 dumpProjectFilesInfo(project, printOut, false);
@@ -267,14 +267,14 @@ public final class CodeModelDiagnostic {
         private void dumpProjectFilesInfo(CsmProject project, PrintWriter printOut, boolean printList) {
             Collection<CsmFile> sourceFiles = project.getSourceFiles();
             Collection<CsmFile> headerFiles = project.getHeaderFiles();
-            printOut.printf("%s\n", project.getDisplayName());// NOI18N
-            printOut.printf("   %,d source files; %,d header files; %,d total files\n", // NOI18N
+            printOut.printf("%s%n", project.getDisplayName());// NOI18N
+            printOut.printf("   %,d source files; %,d header files; %,d total files%n", // NOI18N
                     sourceFiles.size(), headerFiles.size(), sourceFiles.size() + headerFiles.size());
             long totalSize = 0;
             long maxSize = 0;
             for (CsmFile file : sourceFiles) {
                 if (printList) {
-                    printOut.printf("\t%s\n", file.getAbsolutePath()); // NOI18N
+                    printOut.printf("\t%s%n", file.getAbsolutePath()); // NOI18N
                 }
                 FileObject fo = file.getFileObject();
                 if (fo != null && fo.isValid()) {
@@ -284,7 +284,7 @@ public final class CodeModelDiagnostic {
             }
             for (CsmFile file : headerFiles) {
                 if (printList) {
-                    printOut.printf("\t%s\n", file.getAbsolutePath()); // NOI18N
+                    printOut.printf("\t%s%n", file.getAbsolutePath()); // NOI18N
                 }
                 FileObject fo = file.getFileObject();
                 if (fo != null && fo.isValid()) {
@@ -292,14 +292,14 @@ public final class CodeModelDiagnostic {
                     maxSize = Math.max(maxSize, fo.getSize());
                 }
             }
-            printOut.printf("   total files size: %,d KBytes;  max file size: %,d KBytes\n", kilobytes(totalSize), kilobytes(maxSize)); // NOI18N
+            printOut.printf("   total files size: %,d KBytes;  max file size: %,d KBytes%n", kilobytes(totalSize), kilobytes(maxSize)); // NOI18N
         }
         private static long kilobytes(long num) {
             return ((num % 1024) < 512) ? num/1024 : num/1024+1;
         }
-        
+
     }
-    
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1350)
     public final static class ModelProjectsContainers implements CndDiagnosticProvider {
 
@@ -311,13 +311,13 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====ModelImpl:\n");// NOI18N
+            printOut.printf("====ModelImpl:%n");// NOI18N
             ModelImpl.instance().dumpInfo(printOut, true);
-            printOut.printf("====Libraries:\n"); //NOI18N
+            printOut.printf("====Libraries:%n"); //NOI18N
             LibraryManager.dumpInfo(printOut, true);
         }
     }
-    
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1325)
     public final static class ModelProjectsIndex implements CndDiagnosticProvider {
 
@@ -329,11 +329,11 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====Model Projects Index:\n");// NOI18N
+            printOut.printf("====Model Projects Index:%n");// NOI18N
             ReferencesIndex.dumpInfo(printOut);
         }
     }
-    
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1375)
     public final static class ModelFileIndex implements CndDiagnosticProvider {
 
@@ -345,7 +345,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====File Indices:\n");// NOI18N
+            printOut.printf("====File Indices:%n");// NOI18N
             Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
             for (CsmFile csmFile : allFiles) {
                 if (csmFile instanceof FileImpl) {
@@ -353,12 +353,12 @@ public final class CodeModelDiagnostic {
                 } else if (csmFile instanceof FileSnapshot) {
                     ((FileSnapshot) csmFile).dumpIndex(printOut);
                 } else {
-                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
+                    printOut.printf("UNKNOWN FOR ME [%s] %s%n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
         }
     }
-    
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
     public final static class FileImplModelTrace implements CndDiagnosticProvider {
 
@@ -375,12 +375,12 @@ public final class CodeModelDiagnostic {
                 Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
                 for (CsmFile csmFile : allFiles) {
                     new CsmTracer(printOut).dumpModel(csmFile);
-                }    
+                }
             } finally {
                 CsmCacheManager.leave();
             }
         }
-    }    
+    }
 
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
     public final static class FileImplASTTrace implements CndDiagnosticProvider {
@@ -402,7 +402,7 @@ public final class CodeModelDiagnostic {
             }
         }
     }
-    
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1500)
     public final static class ProjectDeclarationsTrace implements CndDiagnosticProvider {
 
@@ -432,7 +432,7 @@ public final class CodeModelDiagnostic {
             }
         }
     }
-    
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1600)
     public final static class ModelTrace implements CndDiagnosticProvider {
 
@@ -455,7 +455,7 @@ public final class CodeModelDiagnostic {
                 }
             }
             CsmCacheManager.enter();
-            try {            
+            try {
                 for (CsmProject prj : projects) {
                     new CsmTracer(printOut).dumpModel(prj);
                 }
@@ -463,8 +463,8 @@ public final class CodeModelDiagnostic {
                 CsmCacheManager.leave();
             }
         }
-    }    
-    
+    }
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1600)
     public final static class ProjectReferencesTrace implements CndDiagnosticProvider {
 
@@ -497,7 +497,7 @@ public final class CodeModelDiagnostic {
             }
         }
     }
-    
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
     public final static class OffsetToPositionProvider implements CndDiagnosticProvider {
 
@@ -517,5 +517,5 @@ public final class CodeModelDiagnostic {
                 }
             }
         }
-    }    
+    }
 }

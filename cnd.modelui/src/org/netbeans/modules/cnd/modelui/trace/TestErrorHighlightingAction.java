@@ -146,8 +146,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         }
 
         handle.finish();
-        out.printf("%s\n", canceled.get() ? "Cancelled" : "Done"); //NOI18N
-        out.printf("%s took %d ms\n", taskName, System.currentTimeMillis() - time); // NOI18N
+        out.printf("%s%n", canceled.get() ? "Cancelled" : "Done"); //NOI18N
+        out.printf("%s took %d ms%n", taskName, System.currentTimeMillis() - time); // NOI18N
 
         for (int i = 0; i < statistics.length; i++) {
             statistics[i].print(out);
@@ -172,7 +172,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         final LineConverter lineConv = new LineConverter(file);
 
         long time = System.currentTimeMillis();
-        out.printf("\nChecking file %s    %s\n", file.getName(), file.getAbsolutePath()); // NOI18N
+        out.printf("%nChecking file %s    %s%n", file.getName(), file.getAbsolutePath()); // NOI18N
 
         final AtomicInteger cnt = new AtomicInteger(0);
 
@@ -192,7 +192,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         };
 
         CsmErrorProvider.getAllErrors(request, response);
-        out.printf("Error count %d for file %s. The check took %d ms\n", cnt.get(), file.getName(), System.currentTimeMillis() - time); // NOI18N
+        out.printf("Error count %d for file %s. The check took %d ms%n", cnt.get(), file.getName(), System.currentTimeMillis() - time); // NOI18N
     }
 
     private static OutputListener getOutputListener(final CsmFile file, final CsmErrorInfo errorInfo) {
@@ -396,7 +396,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
         public void print(OutputWriter out) {
 
-            out.printf("\n%s\n", getTitle()); // NOI18N
+            out.printf("%n%s%n", getTitle()); // NOI18N
 
             List<Map.Entry<CharSequence, Element>> entries = new ArrayList<Map.Entry<CharSequence, Element>>(data.entrySet());
 
@@ -418,7 +418,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         }
 
         protected void printTotal(OutputWriter out) {
-            out.printf("%8d TOTAL\n", total); //NOI18N
+            out.printf("%8d TOTAL%n", total); //NOI18N
         }
     }
 
@@ -498,7 +498,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
         @Override
         protected String getTitle() {
-            return "Statistics by file\n  Errors    %    Lines   Per 1K lines"; //NOI18N
+            return "Statistics by file%n  Errors    %    Lines   Per 1K lines"; //NOI18N
         }
 
         @Override
@@ -519,8 +519,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         @Override
         protected void printTotal(OutputWriter out) {
             float ratio = ((float) total) * 1000f / (float) totalLineCount;
-            out.printf("%8d      %8d %8.2f \n", total, totalLineCount, ratio); //NOI18N
-            out.printf("TOTAL for %s:\n%d errors    %d lines    %d files    %.2f errors per 1K lines \n\n", //NOI18N
+            out.printf("%8d      %8d %8.2f %n", total, totalLineCount, ratio); //NOI18N
+            out.printf("TOTAL for %s:%n%d errors    %d lines    %d files    %.2f errors per 1K lines %n%n", //NOI18N
                     project.getName(), total, totalLineCount, data.size(), ratio); //NOI18N
         }
 

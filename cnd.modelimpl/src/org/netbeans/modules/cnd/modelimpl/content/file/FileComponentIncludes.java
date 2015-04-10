@@ -60,16 +60,14 @@ import org.netbeans.modules.cnd.modelimpl.repository.FileIncludesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FileComponentIncludes extends FileComponent implements Persistent, SelfPersistent {
+public class FileComponentIncludes extends FileComponent {
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
     private final Set<CsmUID<CsmInclude>> brokenIncludes = new LinkedHashSet<>(0);
     private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
@@ -85,7 +83,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         boolean addInclude(IncludeImpl includeImpl, boolean broken) {
             return false;
         }
-        
+
         @Override
         void put() {
         }
@@ -107,7 +105,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
             }
         }
     }
-    
+
     public FileComponentIncludes(FileImpl file) {
         super(new FileIncludesKey(file));
     }

@@ -201,7 +201,7 @@ public final class ParserQueue {
                 System.err.println("setPreprocStateIfNeed for " + file.getAbsolutePath() + // NOI18N
                         " as " + tracePreprocStates(ppStates) + " with current " + tracePreprocStates(getPreprocStates())); // NOI18N
             }
-            // we don't need check here - all logic is in ProjectBase.onFileIncluded            
+            // we don't need check here - all logic is in ProjectBase.onFileIncluded
             this.ppState = new ArrayList<>(ppStates);
         }
 
@@ -248,13 +248,13 @@ public final class ParserQueue {
          */
         MARK_MORE_PARSE,
         /**
-         * File should be marked as "reparse needed", 
+         * File should be marked as "reparse needed",
          * without invalidating the APT cache, i.e.
          * FileImpl.markReparseNeeded(false) should be called
          */
         MARK_REPARSE,
         /**
-         * File should be marked as "reparse needed", 
+         * File should be marked as "reparse needed",
          * and APT cache should be invalidates, i.e.
          * FileImpl.markReparseNeeded(true) should be called
          */
@@ -315,7 +315,7 @@ public final class ParserQueue {
         public boolean isEmpty() {
             return filesInQueue.isEmpty() && filesBeingParsed.isEmpty();
         }
-        
+
         public boolean noActivity() {
             return filesInQueue.isEmpty() && filesBeingParsed.isEmpty() && (pendingActivity == 0);
         }
@@ -331,10 +331,10 @@ public final class ParserQueue {
     private static final ParserQueue instance = new ParserQueue(false);
     private final PriorityQueue<Entry> queue = new PriorityQueue<>();
     private volatile State state;
-    private static final class SuspendLock { 
+    private static final class SuspendLock {
         private final AtomicInteger counter = new AtomicInteger(0);
     }
-    
+
     private final SuspendLock suspendLock = new SuspendLock();
 
     // do not need UIDs for ProjectBase in parsing data collection
@@ -407,7 +407,7 @@ public final class ParserQueue {
 
     /**
      * @param file
-     * @return true if file was successfully added to queue 
+     * @return true if file was successfully added to queue
      */
     boolean addForPartialReparse(FileImpl file) {
         return add(file, Collections.singleton(FileImpl.PARTIAL_REPARSE_STATE), Position.HEAD, false, FileAction.NOTHING);
@@ -438,7 +438,7 @@ public final class ParserQueue {
             new Exception("ParserQueue: add for " + file).printStackTrace(System.err);  // NOI18N
             int i = 0;
             for (APTPreprocHandler.State aState : ppStates) {
-                System.err.printf("ParserQueue: State %d from original %s\n", i++, aState);
+                System.err.printf("ParserQueue: State %d from original %s%n", i++, aState);
             }
         }
         if (ppStates.isEmpty()) {
@@ -652,7 +652,7 @@ public final class ParserQueue {
             handleLastProjectFile(project, data);
         }
         if (TraceFlags.TRACE_PARSER_QUEUE_POLL) {
-            System.err.printf("ParserQueue: polling %s with %d states in thread %s\n", // NOI18N
+            System.err.printf("ParserQueue: polling %s with %d states in thread %s%n", // NOI18N
                     e.getFile().getAbsolutePath(), e.getPreprocStates().size(), Thread.currentThread().getName());
         }
         return e;
@@ -792,7 +792,7 @@ public final class ParserQueue {
                         latch = new ProjectWaitLatch();
                         if (TraceFlags.TRACE_CLOSE_PROJECT) {
                             Utils.LOG.log(Level.WARNING, "Adding a latch {0} for {1}:{2}", new Object[] { System.identityHashCode(latch), project.getName(), System.identityHashCode(project)});
-                        } 
+                        }
                         projectsAwaitLatches.put(project, latch);
                     } else {
                         if (TraceFlags.TRACE_CLOSE_PROJECT) {
@@ -948,7 +948,7 @@ public final class ParserQueue {
             if (latch != null) {
                 if (TraceFlags.TRACE_CLOSE_PROJECT) {
                     Utils.LOG.log(Level.WARNING, "notifyWaitEmpty on latch {0} for {1}:{2}", new Object[] { System.identityHashCode(latch), project.getName(), System.identityHashCode(project)});
-                } 
+                }
                 latch.countDown();
             }
         }

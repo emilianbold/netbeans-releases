@@ -74,10 +74,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -85,7 +83,7 @@ import org.openide.util.CharSequences;
  * Storage for project classifiers. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-public class ClassifierContainer extends ProjectComponent implements Persistent, SelfPersistent {
+public class ClassifierContainer extends ProjectComponent {
 
     private final Map<CharSequence, CsmUID<CsmClassifier>> classifiers;
     // storage for classifiers defined as inner classfiers in C structures
@@ -109,7 +107,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     public static ClassifierContainer empty() {
         return EMPTY;
     }
-    
+
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
         super(new ClassifierContainerKey(project.getUnitId()));
@@ -144,7 +142,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         typedefs = new HashMap<>();
         inheritances = new HashMap<>();
     }
-    
+
     public CsmClassifier getClassifier(CharSequence qualifiedName) {
         CsmClassifier result;
         CsmUID<CsmClassifier> uid;
@@ -210,7 +208,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         }
         return res;
     }
-    
+
     public boolean putClassifier(CsmClassifier decl) {
         boolean changed = false;
         CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
@@ -371,7 +369,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
             // not valid in C env
             return null;
         }
-            
+
         CharSequence qualifiedNamePostfix;
         if(decl instanceof OffsetableDeclarationBase) {
             qualifiedNamePostfix = ((OffsetableDeclarationBase)decl).getQualifiedNamePostfix();
@@ -399,11 +397,11 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     private boolean isTypedef(CsmDeclaration decl){
         return CsmKindUtilities.isTypedef(decl);
     }
-    
+
     private boolean isTypeAlias(CsmDeclaration decl){
         return CsmKindUtilities.isTypeAlias(decl);
-    }    
-    
+    }
+
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);

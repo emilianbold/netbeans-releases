@@ -71,7 +71,7 @@ import org.openide.util.CharSequences;
  *
  * @author Alexander Simon
  */
-public class FileComponentMacros extends FileComponent implements Persistent, SelfPersistent {
+public class FileComponentMacros extends FileComponent {
 
     private final TreeMap<NameSortedKey, CsmUID<CsmMacro>> macros;
     private final ReadWriteLock macrosLock = new ReentrantReadWriteLock();
@@ -86,7 +86,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         @Override
         public void addMacro(CsmMacro macro) {
         }
-        
+
         @Override
         void put() {
         }
@@ -100,7 +100,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         super(other);
         macros = createMacros(empty ? null : other.macros);
     }
-    
+
     public FileComponentMacros(FileImpl file) {
         super(new FileMacrosKey(file));
         macros = createMacros(null);

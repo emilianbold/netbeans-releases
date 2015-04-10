@@ -72,7 +72,7 @@ import org.openide.windows.OutputWriter;
  * @author Nikolay Koldunov
  */
 public class TestSemanticHighlightingAction extends TestProjectActionBase{
-    
+
     public static Action getInstance() {
         return SharedClassObject.findObject(TestSemanticHighlightingAction.class, true);
     }
@@ -94,7 +94,7 @@ public class TestSemanticHighlightingAction extends TestProjectActionBase{
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_TestSemanticHighlighting"); // NOI18N
     }
-    
+
     private void testProject(CsmProject csmProject) {
         String taskName = "Testing Semantic Highlighting - " + csmProject.getName(); // NOI18N
         InputOutput io = IOProvider.getDefault().getIO(taskName, false); // NOI18N
@@ -133,26 +133,26 @@ public class TestSemanticHighlightingAction extends TestProjectActionBase{
         }
 
         handle.finish();
-        out.printf("%s\n", interrupter.cancelled() ? "Cancelled" : "Done"); //NOI18N
-        out.printf("%s took %d ms\n", taskName, System.currentTimeMillis() - time); // NOI18N
+        out.printf("%s%n", interrupter.cancelled() ? "Cancelled" : "Done"); //NOI18N
+        out.printf("%s took %d ms%n", taskName, System.currentTimeMillis() - time); // NOI18N
 
         err.flush();
         out.flush();
         err.close();
         out.close();
     }
-    
+
     private void testFile(final CsmFile file,
             final OutputWriter out, final OutputWriter err, InterrupterImpl interrupter) {
 
         long time = System.currentTimeMillis();
-        out.printf("\nHighlighting file %s    %s\n", file.getName(), file.getAbsolutePath()); // NOI18N
-        
+        out.printf("%nHighlighting file %s    %s%n", file.getName(), file.getAbsolutePath()); // NOI18N
+
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
         Document doc = CsmUtilities.openDocument(ces);
 
         List<Highlight> highlights = TestSemanticHighlighting.gethighlightsBagForTests(doc, interrupter);
-        
+
         List<Highlight> sorted = new ArrayList<Highlight>(highlights);
         Collections.sort(sorted, new Comparator<Highlight>() {
 
@@ -161,12 +161,12 @@ public class TestSemanticHighlightingAction extends TestProjectActionBase{
                 return o1.getStartOffset() - o2.getStartOffset();
             }
         });
-        
+
         reportHighlights(sorted, out);
-        
-        out.printf("Highlighting for file %s took %d ms\n", file.getName(), System.currentTimeMillis() - time); // NOI18N
+
+        out.printf("Highlighting for file %s took %d ms%n", file.getName(), System.currentTimeMillis() - time); // NOI18N
 }
-    
+
     private void reportHighlights(List<Highlight> highlights, OutputWriter out) {
         int i = 1;
         for (Highlight b : highlights) {

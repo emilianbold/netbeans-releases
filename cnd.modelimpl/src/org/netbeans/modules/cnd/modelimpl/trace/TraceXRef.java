@@ -484,7 +484,7 @@ public class TraceXRef extends TraceModel {
             if (canceled.get()) {
                 return;
             }
-            CsmReference refFromStorage = CsmReferenceStorage.getDefault().get(ref);        
+            CsmReference refFromStorage = CsmReferenceStorage.getDefault().get(ref);
             boolean fromStorage = refFromStorage != null && refFromStorage.getReferencedObject() != null;
             CsmObject target = ref.getReferencedObject();
             if (target == null) {
@@ -528,7 +528,7 @@ public class TraceXRef extends TraceModel {
                 RefLink refLink = new RefLink(ref);
                 CharSequence text = ref.getText();
                 IndexedEntry indexed = (IndexedEntry)bag.getIndexedEntry(refLink);
-                if (indexed == null) {                    
+                if (indexed == null) {
                     indexed = new IndexedEntry(text, refLink, skind);
                     indexed = (IndexedEntry)bag.addIndexedEntry(refLink, indexed);
                 }
@@ -541,7 +541,7 @@ public class TraceXRef extends TraceModel {
             return canceled.get();
         }
     }
-    
+
     private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final StatisticsParameters params, final XRefResultSet<XRefEntry> bag,
             final PrintWriter printOut, final OutputWriter printErr) {
         final CsmScope scope = fun.getBody();
@@ -702,7 +702,7 @@ public class TraceXRef extends TraceModel {
         } else if (CsmKindUtilities.isClassForwardDeclaration(obj)) {
             out = XRefResultSet.DeclarationKind.CLASS_FORWARD;
         } else if (obj != null) {
-            printOut.println("ERROR: non classified declaration " + obj); // NOI18N            
+            printOut.println("ERROR: non classified declaration " + obj); // NOI18N
         }
         return out;
     }
@@ -741,7 +741,7 @@ public class TraceXRef extends TraceModel {
                 }
             }
         } else {
-            printOut.println("ERROR: non classified declaration " + obj); // NOI18N 
+            printOut.println("ERROR: non classified declaration " + obj); // NOI18N
         }
         if (out != XRefResultSet.IncludeLevel.THIS_FILE) {
             if (incl != null) {
@@ -863,7 +863,7 @@ public class TraceXRef extends TraceModel {
         if (objContext.objClass != null) {
             boolean isInherited = false;
             if (csmFunction.objClass != null) {
-                // check inheritance 
+                // check inheritance
                 if (csmFunction.objClass.equals(objContext.objClass)) {
                     out = XRefResultSet.DeclarationScope.CLASSIFIER_THIS;
                     isInherited = true;
@@ -951,16 +951,16 @@ public class TraceXRef extends TraceModel {
                 allUnresolvedPoints, unresolvedRatio, numMacroBasedUnresolvedPoints, unresolvedMacroBasedRatio,
                 numProjectProints, numTemplateBasedUnresolvedPoints, unresolvedTemplateBasedRatio, numBuiltinBasedUnresolvedPoints, unresolvedBuiltinBasedRatio); // NOI18N
         printOut.println(unresolvedStatistics);
-        String performanceStatistics = String.format("Line count: %d, time %.0f ms, \nspeed %.2f lines/sec, %.2f refs/sec", bag.getLineCount(), bag.getTimeMs(), bag.getLinesPerSec(), (double)numProjectProints / bag.getTimeSec()); // NOI18N
+        String performanceStatistics = String.format("Line count: %d, time %.0f ms, %nspeed %.2f lines/sec, %.2f refs/sec", bag.getLineCount(), bag.getTimeMs(), bag.getLinesPerSec(), (double)numProjectProints / bag.getTimeSec()); // NOI18N
         printOut.println(performanceStatistics);
-        
+
         if(params.reportIndex) {
             printOut.println("Index stats:"); // NOI18N
             Map<CharSequence, Integer> indexStats = new HashMap<>();
             Map<CharSequence, Integer> allStats = new HashMap<>();
             int totalAll = 0;
             int totalIndex = 0;
-            
+
             Collection<XRefEntry> entries = bag.getIndexedEntries(new Comparator<XRefEntry>() {
                     @Override
                     public int compare(XRefEntry o1, XRefEntry o2) {
@@ -970,7 +970,7 @@ public class TraceXRef extends TraceModel {
                         else {
                             return 0;
                         }
-                        
+
                     }
                 });
             for (XRefEntry entry : entries) {
@@ -993,15 +993,15 @@ public class TraceXRef extends TraceModel {
             String header = String.format("%20s %10s %10s %5s", "Kind", "Indexed", "Checked", "%%"); // NOI18N
             printOut.println(header); // NOI18N
             for (CharSequence kind : indexStats.keySet()) {
-                if(kind != null) { 
+                if(kind != null) {
                     String s2 = String.format("%20s %10d %10d %.2f%%", kind, indexStats.get(kind), allStats.get(kind), (double) indexStats.get(kind)*100/allStats.get(kind)); // NOI18N
                     printOut.println(s2); // NOI18N
                 }
             }
             String s = String.format("%20s %10d %10d %.2f%%", "Total", totalIndex, totalAll, (double) totalIndex*100/totalAll); // NOI18N
             printOut.println(s); // NOI18N
-        }        
-        
+        }
+
         if (!params.reportUnresolved) {
             return;
         }
@@ -1018,7 +1018,7 @@ public class TraceXRef extends TraceModel {
                         else {
                             return 0;
                         }
-                        
+
                     }
                 });
                 for (XRefEntry entry : entries) {
@@ -1036,7 +1036,7 @@ public class TraceXRef extends TraceModel {
             }
             return;
         }
-        String contextFmt = "%20s\t|%6s\t| %2s |\n"; // NOI18N
+        String contextFmt = "%20s\t|%6s\t| %2s |%n"; // NOI18N
         String msg = String.format(contextFmt, "Name", "Num", "%"); // NOI18N
         printOut.println(msg);
         for (XRefResultSet.ContextScope scope : sortedContextScopes) {
@@ -1083,7 +1083,7 @@ public class TraceXRef extends TraceModel {
     private static void traceFirstItemsStatistics(XRefResultSet.ContextScope scope,
             Collection<XRefResultSet.ContextEntry> entries,
             boolean printTitle, PrintWriter printOut) {
-        String entryFmtFileInfo = "%20s\t|%10s\t|%20s\t|%20s\t|%20s\t|%20s\t|%20s\n"; // NOI18N
+        String entryFmtFileInfo = "%20s\t|%10s\t|%20s\t|%20s\t|%20s\t|%20s\t|%20s%n"; // NOI18N
         if (printTitle) {
             String title = String.format(entryFmtFileInfo, "scope name", "All", "local+cls+ns", "file+#incl-1", "local+cls+ns+#incl-1", // NOI18N
                     "was usages", "context+used"); // NOI18N
@@ -1120,7 +1120,7 @@ public class TraceXRef extends TraceModel {
     private static void traceFileBasedEntriesStatistics(XRefResultSet.ContextScope scope,
             Collection<XRefResultSet.ContextEntry> entries,
             boolean printTitle, PrintWriter printOut) {
-        String entryFmtFileInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\n"; // NOI18N
+        String entryFmtFileInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s%n"; // NOI18N
         if (printTitle) {
             String title = String.format(entryFmtFileInfo, "scope name", "this file", "direct \"\"", "direct <>", "project", "library", "unresolved", "All"); // NOI18N
             printOut.print(title);
@@ -1144,7 +1144,7 @@ public class TraceXRef extends TraceModel {
     private static void traceUsedDeclarationScopeEntriesStatistics(XRefResultSet.ContextScope scope,
             Collection<XRefResultSet.ContextEntry> entries,
             boolean printTitle, PrintWriter printOut) {
-        String entryDeclScopeInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s|\n"; // NOI18N
+        String entryDeclScopeInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s|%n"; // NOI18N
         if (printTitle) {
             String title = String.format(entryDeclScopeInfo,
                     "scope name", // NOI18N
@@ -1235,7 +1235,7 @@ public class TraceXRef extends TraceModel {
     private static void traceEntriesStatistics(XRefResultSet.ContextScope scope,
             Collection<XRefResultSet.ContextEntry> entries,
             boolean printTitle, PrintWriter printOut) {
-        String entryFmt = "%20s\t|%10s\t|%10s\t|%10s|\n"; // NOI18N
+        String entryFmt = "%20s\t|%10s\t|%10s\t|%10s|%n"; // NOI18N
         if (printTitle) {
             String title = String.format(entryFmt, "Entries for scope", "Num", "Resolved", "Unresolved"); // NOI18N
             printOut.print(title);
@@ -1313,7 +1313,7 @@ public class TraceXRef extends TraceModel {
             this.numThreads = numThreads;
             this.timeThreshold = timeThreshold;
         }
-        
+
         public void printFileStatistic(boolean printFileStatistic) {
             this.printFileStatistic = printFileStatistic;
         }
@@ -1378,7 +1378,7 @@ public class TraceXRef extends TraceModel {
 
         @Override
         public boolean equals(Object o) {
-            return fileUID.getObject().equals(fileUID.getObject()) && offset == offset;            
+            return fileUID.getObject().equals(fileUID.getObject()) && offset == offset;
         }
 
         @Override
@@ -1389,7 +1389,7 @@ public class TraceXRef extends TraceModel {
 
     private static interface XRefEntry {
     }
-    
+
     private final static class UnresolvedEntry implements XRefEntry {
 
         private final RefLink link;
@@ -1435,7 +1435,7 @@ public class TraceXRef extends TraceModel {
             return this.name.hashCode();
         }
     }
-    
+
     private final static class IndexedEntry implements XRefEntry {
 
         private final RefLink link;
@@ -1463,7 +1463,7 @@ public class TraceXRef extends TraceModel {
         public int getNrAll() {
             return nrAll.get();
         }
-        
+
         public RefLink getLink() {
             return link;
         }
@@ -1471,7 +1471,7 @@ public class TraceXRef extends TraceModel {
         public CharSequence getKind() {
             return kind;
         }
-        
+
         private void increment(boolean indexed) {
             if(indexed) {
                 nrIndexed.incrementAndGet();
@@ -1496,5 +1496,5 @@ public class TraceXRef extends TraceModel {
             return this.name.hashCode();
         }
     }
-    
+
 }

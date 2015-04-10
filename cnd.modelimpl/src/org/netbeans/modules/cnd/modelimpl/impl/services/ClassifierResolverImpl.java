@@ -185,7 +185,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                             CharSequence typeTxt = ((CsmTypedef)decl).getType().getClassifierText();
                             boolean foundSameTD = false;
                             for (CsmClassifier cls : visibles) {
-                                if ((CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) 
+                                if ((CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls))
                                      && typeTxt.equals(((CsmTypedef)cls).getType().getClassifierText())) {
                                     foundSameTD = true;
                                     break;
@@ -219,7 +219,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             if (TRACE_MULTIPLE_VISIBE_OBJECTS) {
                 if (visibles.size() > 1) {
                     // we have several visible classifiers
-                    System.err.printf("findVisibleDeclaration: we have several classifiers %s visible from %s\n", uniqueName, file.getAbsolutePath()); // NOI18N
+                    System.err.printf("findVisibleDeclaration: we have several classifiers %s visible from %s%n", uniqueName, file.getAbsolutePath()); // NOI18N
                     int ind = 0;
                     for (CsmClassifier csmClassifier : visibles) {
                         String fileName = "<builtin"; // NOI18N
@@ -229,7 +229,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                                 fileName = containingFile.getAbsolutePath().toString();
                             }
                         }
-                        System.err.printf("[%d] %s from %s\n", ind++, csmClassifier, fileName); // NOI18N
+                        System.err.printf("[%d] %s from %s%n", ind++, csmClassifier, fileName); // NOI18N
                     }
                 }
             }

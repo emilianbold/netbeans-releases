@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -169,8 +170,8 @@ public class CsmContextUtilities {
             boolean match, boolean caseSensitive, int kind) {
         strPrefix = CharSequences.create(strPrefix);
         List<CsmMacro> res = new ArrayList<CsmMacro>();
-        for (Iterator itContext = context.iterator(); itContext.hasNext();) {
-            CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();
+        for (Iterator<CsmContext.CsmContextEntry> itContext = context.iterator(); itContext.hasNext();) {
+            CsmContext.CsmContextEntry entry = itContext.next();
             CsmScope scope = entry.getScope();
             if (CsmKindUtilities.isFile(scope)){
                 CsmFile file = (CsmFile)scope;
@@ -199,8 +200,8 @@ public class CsmContextUtilities {
     private static void getFileLocalMacros(CsmFile file, List<CsmMacro> res, Set<CharSequence> alredyInList,
             CharSequence strPrefix, boolean match, boolean caseSensitive){
         CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
-        for (Iterator itFile = CsmSelect.getMacros(file, filter); itFile.hasNext();) {
-            CsmMacro macro = (CsmMacro) itFile.next();
+        for (Iterator<CsmMacro> itFile = CsmSelect.getMacros(file, filter); itFile.hasNext();) {
+            CsmMacro macro = itFile.next();
             //if (macro.getStartOffset() > offsetInScope) {
             //    break;
             //}
@@ -219,8 +220,8 @@ public class CsmContextUtilities {
             gatherIncludeMacros(file, prj, true, new HashSet<CsmFile>(), new HashSet<CharSequence>(), res, strPrefix, match, caseSensitive);
         } else {
             Set<CharSequence> alredyInList = new HashSet<CharSequence>();
-            for(Iterator i = prj.getHeaderFiles().iterator(); i.hasNext();){
-                getFileLocalMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
+            for(Iterator<CsmFile> i = prj.getHeaderFiles().iterator(); i.hasNext();){
+                getFileLocalMacros(i.next(), res, alredyInList, strPrefix, match, caseSensitive);
             }
         }
     }
@@ -232,10 +233,10 @@ public class CsmContextUtilities {
             gatherIncludeMacros(file, prj, false, new HashSet<CsmFile>(), new HashSet<CharSequence>(), res, strPrefix, match, caseSensitive);
         } else {
             Set<CharSequence> alredyInList = new HashSet<CharSequence>();
-            for(Iterator p = prj.getLibraries().iterator(); p.hasNext();){
-                CsmProject lib = (CsmProject)p.next();
-                for(Iterator i = lib.getHeaderFiles().iterator(); i.hasNext();){
-                    getFileLocalMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
+            for(Iterator<CsmProject> p = prj.getLibraries().iterator(); p.hasNext();){
+                CsmProject lib = p.next();
+                for(Iterator<CsmFile> i = lib.getHeaderFiles().iterator(); i.hasNext();){
+                    getFileLocalMacros(i.next(), res, alredyInList, strPrefix, match, caseSensitive);
                 }
             }
 
@@ -273,8 +274,8 @@ public class CsmContextUtilities {
         boolean incAny = includeFileLocal || includeFunctionVars;
         assert (incAny) : "at least one must be true";
         boolean incAll = includeFileLocal && includeFunctionVars;
-        for (Iterator it = context.iterator(); it.hasNext() && incAny;) {
-            CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) it.next();
+        for (Iterator<CsmContext.CsmContextEntry> it = context.iterator(); it.hasNext() && incAny;) {
+            CsmContext.CsmContextEntry entry = it.next();
             boolean include = incAll;
             if (!include) {
                 // check if something changed
@@ -324,8 +325,8 @@ public class CsmContextUtilities {
         int offsetInScope = entry.getOffset();
         List<CsmDeclaration> resList = new ArrayList<CsmDeclaration>();
         boolean stoppedBeforeFirst = true;
-        for (Iterator it = scope.getScopeElements().iterator(); it.hasNext();) {
-            CsmScopeElement scpElem = (CsmScopeElement) it.next();
+        for (Iterator<CsmScopeElement> it = scope.getScopeElements().iterator(); it.hasNext();) {
+            CsmScopeElement scpElem = it.next();
             if (canBreak(offsetInScope, scpElem, fullContext)) {
                 break;
             }
@@ -365,8 +366,8 @@ public class CsmContextUtilities {
 
     public static List<CsmEnumerator> findFileLocalEnumerators(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         List<CsmEnumerator> res = new ArrayList<CsmEnumerator>();
-        for (Iterator itContext = context.iterator(); itContext.hasNext();) {
-            CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();
+        for (Iterator<CsmContext.CsmContextEntry> itContext = context.iterator(); itContext.hasNext();) {
+            CsmContext.CsmContextEntry entry = itContext.next();
             CsmScope scope = entry.getScope();
             int offsetInScope = entry.getOffset();
             if (CsmKindUtilities.isFile(scope)){
@@ -374,8 +375,8 @@ public class CsmContextUtilities {
                 CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION,
                     CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.STRUCT},
                                    null, match, caseSensitive, true);
-                for (Iterator itFile = CsmSelect.getDeclarations(file, fileFilter); itFile.hasNext();) {
-                    CsmDeclaration decl = (CsmDeclaration) itFile.next();
+                for (Iterator<CsmOffsetableDeclaration> itFile = CsmSelect.getDeclarations(file, fileFilter); itFile.hasNext();) {
+                    CsmDeclaration decl = itFile.next();
                     if (canBreak(offsetInScope, decl, context)) {
                         break;
                     }
@@ -388,8 +389,8 @@ public class CsmContextUtilities {
                         CsmNamespaceDefinition ns = (CsmNamespaceDefinition)decl;
                         CsmFilter filter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM},
                                 null, match, caseSensitive, true);
-                        for(Iterator i = CsmSelect.getDeclarations(ns, filter); i.hasNext();){
-                            CsmDeclaration nsDecl = (CsmDeclaration) i.next();
+                        for(Iterator<CsmOffsetableDeclaration> i = CsmSelect.getDeclarations(ns, filter); i.hasNext();){
+                            CsmDeclaration nsDecl = i.next();
                             if (canBreak(offsetInScope, nsDecl, context)) {
                                 break;
                             }
@@ -423,8 +424,8 @@ public class CsmContextUtilities {
 
     @SuppressWarnings("unchecked")
     private static void addEnumerators(List resList, CsmEnum en, String strPrefix, boolean match, boolean caseSensitive){
-        for(Iterator i = en.getEnumerators().iterator(); i.hasNext();){
-            CsmNamedElement scpElem = (CsmNamedElement) i.next();
+        for(Iterator<CsmEnumerator> i = en.getEnumerators().iterator(); i.hasNext();){
+            CsmNamedElement scpElem = i.next();
             if (CsmSortUtilities.matchName(scpElem.getName(), strPrefix, match, caseSensitive)) {
                 resList.add(scpElem);
             }
@@ -546,7 +547,7 @@ public class CsmContextUtilities {
         public CsmCacheMap call() {
             return new CsmCacheMap("CsmContextUtilities Cache", 0, 16); // NOI18N
         }
-    };      
+    };
     private static final class ObjectKey {
         private final Object obj;
 
@@ -569,9 +570,9 @@ public class CsmContextUtilities {
             }
             final ObjectKey other = (ObjectKey) obj;
             return this.obj == other.obj;
-        }            
+        }
     }
-    
+
     public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
 
@@ -607,13 +608,13 @@ public class CsmContextUtilities {
                             if (cache != null) {
                                 cache.put(key, CsmCacheMap.toValue(cppts, Integer.MAX_VALUE));
                             }
-                        }                        
+                        }
                         if (cppts != null) {
                             cppts.move(context.getOffset() - expression.getStartOffset());
                             List<Token<TokenId>> identSequence = new ArrayList<Token<TokenId>>(); // for example: { a : { .b= { c : ...
                             cppts.movePrevious();
                             while (checkValidInitializerIdent(cppts)) {
-                               identSequence.add(0, cppts.token());                               
+                               identSequence.add(0, cppts.token());
                                int level = 0;
                                while (cppts.movePrevious() && cppts.token() != null && level >= 0) {
                                    if (CppTokenId.LBRACE.equals(cppts.token().id())) {
@@ -621,7 +622,7 @@ public class CsmContextUtilities {
                                    } else if (CppTokenId.RBRACE.equals(cppts.token().id())) {
                                        ++level;
                                    }
-                               }                               
+                               }
                                if (level < 0) {
                                    // Lets find first ident before '{'
                                    findToken(
@@ -633,7 +634,7 @@ public class CsmContextUtilities {
                                    );
                                }
                             }
-                            
+
                             if (!identSequence.isEmpty()) {
                                 identSequence.remove(identSequence.size() - 1); // remove last because we are providing context for it!
                                 clazz = resolveInitializerContext(identSequence, (CsmClass) classifier);
@@ -679,7 +680,7 @@ public class CsmContextUtilities {
         }
         return clazz;
     }
-    
+
     private static boolean checkValidInitializerIdent(TokenSequence<TokenId> cppts) {
         // checks if we are at identifier in initializers like:
         // '..., .ident = { ...' or '..., ident : {...'
@@ -704,7 +705,7 @@ public class CsmContextUtilities {
         }
         return false;
     }
-    
+
     private static CsmClass resolveInitializerContext(List<Token<TokenId>> identSequence, CsmClass context) {
         for (Token<TokenId> ident : identSequence) {
             CsmClassifier classifier = null;
@@ -718,7 +719,7 @@ public class CsmContextUtilities {
                         }
                         break;
                     }
-                }                                    
+                }
             }
             if (CsmKindUtilities.isClass(classifier)) {
                 context = (CsmClass) classifier;
@@ -811,8 +812,8 @@ public class CsmContextUtilities {
 
     public static CsmFunctionDefinition getFunctionDefinition(CsmContext context) {
         CsmFunctionDefinition fun = null;
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
+        for (Iterator<CsmContext.CsmContextEntry> it = context.iterator(); it.hasNext();) {
+            CsmContext.CsmContextEntry elem = it.next();
             if (CsmKindUtilities.isFunctionDefinition(elem.getScope())) {
                 fun = (CsmFunctionDefinition)elem.getScope();
                 break;
@@ -852,11 +853,11 @@ public class CsmContextUtilities {
     }
 
     public static boolean isInFunctionBodyOrInitializerListOrCastOperatorType(CsmContext context, int offset) {
-        return isInFunctionBody(context, offset) || 
+        return isInFunctionBody(context, offset) ||
                isInInitializerList(context, offset) ||
                isInCastOperatorType(context, offset);
     }
-    
+
     public static boolean isInCastOperatorType(CsmContext context, int offset) {
         CsmFunctionDefinition funDef = getFunctionDefinition(context);
         if (funDef != null && CsmKindUtilities.isCastOperator(funDef)) {

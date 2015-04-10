@@ -115,17 +115,17 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private int numTokens;
         private final String language;
         private final String languageFlavor;
-//        private 
-        
+//        private
+
         private Map<Integer, CsmObject> objects = null;
         private final CsmParserProvider.CsmParserParameters params;
         private final CsmCorePackageAccessor csmCorePackageAccessor;
-        
+
         Antlr2CppParser(CsmParserProvider.CsmParserParameters params) {
             this.params = params;
             this.file = (FileImpl) params.getMainFile();
             this.language = params.getLanguage();
-            this.languageFlavor = params.getLanguageFlavor();            
+            this.languageFlavor = params.getLanguageFlavor();
             int aFlags = APTLanguageSupport.getInstance().isLanguageC(language) ? CPPParserEx.CPP_ANSI_C : CPPParserEx.CPP_CPLUSPLUS;
             if (!TraceFlags.REPORT_PARSING_ERRORS) {
                 aFlags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
@@ -238,9 +238,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                             CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
                             FileContent parseFileContent = getCsmCorePackageAccessor().getFileContent(descr);
                             new AstRenderer(file, parseFileContent, language, objects).render(ast);
-                        }                        
+                        }
                         break;
-                    case NAMESPACE_DEFINITION_BODY: 
+                    case NAMESPACE_DEFINITION_BODY:
                     {
                         FileContent fileContent = (FileContent) context[0];
                         FileImpl nsBodyFile = fileContent.getFile();
@@ -248,11 +248,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         CsmNamespace ns = nsDef.getNamespace();
                         if (ast != null && ns instanceof NamespaceImpl) {
                             new AstRenderer(nsBodyFile, fileContent, language, objects).render(ast, (NamespaceImpl) ns, nsDef);
-                        }                        
+                        }
                         RepositoryUtils.put(ns);
                         break;
                     }
-                    case CLASS_BODY: 
+                    case CLASS_BODY:
                     {
                         FileContent fileContent = (FileContent) context[0];
                         ClassImpl cls = (ClassImpl) context[1];
@@ -264,7 +264,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         }
                         break;
                     }
-                    case ENUM_BODY: 
+                    case ENUM_BODY:
                     {
                         FileContent fileContent = (FileContent) context[0];
                         EnumImpl enumImpl = (EnumImpl) context[1];
@@ -272,7 +272,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         enumImpl.fixFakeRender(fileContent, ast, localEnum);
                         if (!localEnum) {
                             RepositoryUtils.put(enumImpl);
-                        }                        
+                        }
                         break;
                     }
                     default:
@@ -289,7 +289,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private CsmCorePackageAccessor getCsmCorePackageAccessor() {
             return csmCorePackageAccessor;
         }
-        
+
         @Override
         public boolean isEmptyAST() {
             return AstUtil.isEmpty(ast, true);
@@ -307,10 +307,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         private void dumpParseStatistics() {
             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms\n", file.getAbsolutePath(), numTokens, initTime, parseTime, renderTime);
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms%n", file.getAbsolutePath(), numTokens, initTime, parseTime, renderTime);
             }
         }
-                
+
         @Override
         public Object getAST() {
             return ast;
@@ -325,7 +325,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public void setErrorDelegate(ParserErrorDelegate delegate) {
         }
     }
-    
+
     private final static class Antrl3FortranParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
         private FortranParserEx parser;
@@ -336,19 +336,19 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private long initTime;
         private long parseTime;
         private long renderTime;
-        
+
         Antrl3FortranParser(CsmParserProvider.CsmParserParameters params) {
             this.file = (FileImpl) params.getMainFile();
             this.params = params;
         }
-        
+
         @Override
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
             long start = System.currentTimeMillis();
-            int form = APTLanguageSupport.FLAVOR_FORTRAN_FIXED.equals(file.getFileLanguageFlavor()) ? 
-                    FortranParserEx.FIXED_FORM : 
+            int form = APTLanguageSupport.FLAVOR_FORTRAN_FIXED.equals(file.getFileLanguageFlavor()) ?
+                    FortranParserEx.FIXED_FORM :
                     FortranParserEx.FREE_FORM;
-            
+
             parser = new FortranParserEx(ts, form);
             initTime = System.currentTimeMillis() - start;
         }
@@ -364,7 +364,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                             ret = parser.program();
                         break;
                     default:
-                        assert false : "unexpected parse kind " + kind;    
+                        assert false : "unexpected parse kind " + kind;
                 }
             } catch (Exception ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
@@ -393,7 +393,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public boolean isEmptyAST() {
             return ret == null || ret.getTree() == null;
         }
-        
+
         @Override
         public Object getAST() {
             return ret == null ? null : ret.getTree();
@@ -410,13 +410,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
             System.err.println(tree);
             System.err.println(tree.getChildren());
         }
-        
+
         private void dumpParseStatistics() {
             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms\n", file.getAbsolutePath(), -1, initTime, parseTime, renderTime);
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms%n", file.getAbsolutePath(), -1, initTime, parseTime, renderTime);
             }
         }
-        
+
         @Override
         public void setErrorDelegate(ParserErrorDelegate delegate) {
         }
@@ -433,12 +433,12 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private CXXParserEx parser;
 
         private ConstructionKind kind;
-        
+
         private Map<Integer, CsmObject> objects = null;
         private long initTime;
         private long parseTime;
         private int numTokens;
-        
+
         Antlr3CXXParser(CsmParserProvider.CsmParserParameters params) {
             this.params = params;
             this.file = (FileImpl) params.getMainFile();
@@ -452,10 +452,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
             if (cppCallback == null) {
                 cppCallback = new CXXParserActionImpl(params);
-            }            
+            }
             if (cppCallback instanceof CXXParserActionImpl) {
                 objects = ((CXXParserActionImpl) cppCallback).getObjectsMap();
-            }            
+            }
             org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);
             Antrl2ToAntlr3TokenStreamAdapter tokens;
             if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
@@ -483,10 +483,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         break;
                     case COMPOUND_STATEMENT:
                         parser.compound_statement(false);
-                        break;                        
+                        break;
                     case FUNCTION_DEFINITION_AFTER_DECLARATOR:
                         parser.function_definition_after_declarator(false, true, true);
-                        break;                        
+                        break;
                 }
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
@@ -502,7 +502,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public void render(Object... context) {
             dumpParseStatistics();
         }
-        
+
         @Override
         public boolean isEmptyAST() {
             return true;
@@ -511,13 +511,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
         @Override
         public void dumpAST() {
         }
-        
+
         private void dumpParseStatistics() {
             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, No Rendering\n", file.getAbsolutePath(), numTokens, initTime, parseTime);
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, No Rendering%n", file.getAbsolutePath(), numTokens, initTime, parseTime);
             }
         }
-        
+
         @Override
         public Object getAST() {
             return null;
@@ -532,7 +532,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public void setErrorDelegate(ParserErrorDelegate delegate) {
             parser.setErrorDelegate(delegate);
         }
-        
+
         private static final class Antlr2ToAntlr3TokenAdapter implements org.antlr.runtime.Token {
 
             org.netbeans.modules.cnd.antlr.Token t;
@@ -615,7 +615,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             @Override
             public String toString() {
                 return t.toString();
-            }            
+            }
         }
 
 
@@ -624,7 +624,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             int lastMark;
             protected CXXParserEx parser;
-            
+
             public Antrl2ToAntlr3TokenStreamAdapter(org.netbeans.modules.cnd.antlr.TokenBuffer antrl2TokenBuffer) {
                 this.tb = antrl2TokenBuffer;
             }
@@ -729,7 +729,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 this.cppCallback = cppCallback;
                 this.lastConsumed = new Antlr2ToAntlr3TokenAdapter(APTUtils.EOF_TOKEN);
             }
-            
+
             private static final boolean TRACE = false;
 
             @Override
@@ -844,6 +844,6 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 }
             }
         }
-    }        
+    }
 
 }

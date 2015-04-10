@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -101,7 +102,7 @@ public class DocOffsPositionImpl implements CsmOffsetable.Position {
     public int getLine(boolean create) {
         if (create && this.line == -1 && this.doc != null) {
             try {
-                this.line = Utilities.getLineOffset(this.doc, this.offset) + 1;
+                this.line = LineDocumentUtils.getLineIndex(this.doc, this.offset) + 1;
             } catch (BadLocationException ex) {
                 this.line = -1;
             }
@@ -129,4 +130,4 @@ public class DocOffsPositionImpl implements CsmOffsetable.Position {
     public String toString() {
         return "" + getLine(true) + ':' + getColumn(true) + '/' + getOffset();
     }
-}       
+}

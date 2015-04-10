@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -93,18 +92,18 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
     // isMacro callback
     private MacroCallback macroCallback = null;
-    
+
     private final List<OffsetableToken> lambdaLookaheadTokens = new ArrayList<OffsetableToken>();
     private int lambdaLookaheadLevel = 0;
     private LambdaLookaheadStage lambdaLookaheadStage = null;
-    
+
     private final List<OffsetableToken> tplLookaheadTokens = new ArrayList<OffsetableToken>();
     private int tplLookaheadParensLevel = 0;
     private int tplLookaheadBracketsLevel = 0;
     private int tplLookaheadBracesLevel = 0;
     private int tplLookaheadLtgtsLevel = 0;
-    
-    
+
+
     CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
         this.lastSeparatorOffset = lastSeparatorOffset;
@@ -118,7 +117,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     void enableTemplateSupport(boolean supportTemplates) {
         this.supportTemplates = supportTemplates;
     }
-    
+
     /**
      * Set whether lambda features should be enabled.
      *
@@ -241,11 +240,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         addTokenTo(exp);
         return exp;
     }
-    
+
     private CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression) {
         return createTokenExp(id, oldExpression, false);
     }
-    
+
     private CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression, boolean withParams) {
         CsmCompletionExpression exp = new CsmCompletionExpression(id);
         for (int i = 0; i < oldExpression.getTokenCount(); i++) {
@@ -257,7 +256,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             }
         }
         return exp;
-    }    
+    }
 
     /** Add the token to a given expression */
     private void addTokenTo(CsmCompletionExpression exp) {
@@ -271,12 +270,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     private int tokenID2OpenExpID(CppTokenId tokenID) {
         switch (tokenID) {
             case DOT: // '.' found
-            case DOTMBR: // '.*' found  
+            case DOTMBR: // '.*' found
                 return DOT_OPEN;
             case ARROW: // '->' found
-            case ARROWMBR: // '->*' found    
+            case ARROWMBR: // '->*' found
                 return ARROW_OPEN;
-            case SCOPE: // '::' found    
+            case SCOPE: // '::' found
                 return SCOPE_OPEN;
             case IF:
                 return IF;
@@ -317,7 +316,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         exp.setType(buf.toString());
         exp.setExpID(TYPE);
     }
-    
+
     @Override
     public boolean token(Token<TokenId> token, int tokenOffset) {
         if(!(token.id() instanceof CppTokenId)) {
@@ -329,11 +328,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
             return inPP;
         }
-        
+
         lambdaLookahead(token, tokenOffset, isMacroExpansion());
         return false;
     }
-    
+
     private void lambdaLookahead(Token<TokenId> token, int tokenOffset, boolean macro) {
         boolean lookahead = false;
         if (isLambdaAmbiguity(token)) {
@@ -384,7 +383,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             }
         }
     }
-    
+
     private boolean isLambdaAmbiguity(Token<TokenId> token) {
         if (!supportLambdas) {
             return false;
@@ -407,20 +406,20 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             return true;
 
                         default:
-                            break;   
+                            break;
                     }
                 } else {
                     lambdaLookaheadStage = LambdaLookaheadStage.capture;
                     return true;
                 }
                 break;
-                
+
             default:
                 break;
         }
         return false;
     }
-    
+
     private LambdaLookaheadStage tryLookaheadLambda(Token<TokenId> token, LambdaLookaheadStage stage) {
         switch ((CppTokenId)token.id()) {
             case WHITESPACE:
@@ -448,7 +447,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     }
                 }
                 break;
-                
+
             case try_declarator_params:
                 if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LPAREN) {
                     // declarator is optional, so if it doesn't begin with '(', proceed to body immidiately
@@ -462,7 +461,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     }
                 }
                 break;
-                
+
             case try_declarator_mutable:
                 if (token.id() == CppTokenId.MUTABLE) {
                     nextStage = LambdaLookaheadStage.try_declarator_exception;
@@ -470,7 +469,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.try_declarator_exception);
                 }
                 break;
-            
+
             case try_declarator_exception:
                 if (token.id() == CppTokenId.THROW) {
                     // do nothing
@@ -487,7 +486,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     }
                 }
                 break;
-                
+
             case try_declarator_attribute:
                 if (token.id() == CppTokenId.__ATTRIBUTE) {
                     nextStage = LambdaLookaheadStage.declarator_attribute_parens;
@@ -499,7 +498,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.try_declarator_trailing_type);
                 }
                 break;
-                
+
             case declarator_attribute_parens:
                 if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LPAREN) {
                     nextStage = null; // error: after keyword should be parens
@@ -512,7 +511,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     }
                 }
                 break;
-                
+
             case declarator_attribute_cpp11:
                 if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LBRACKET) {
                     nextStage = null; // error: after first bracket should be second
@@ -525,7 +524,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     }
                 }
                 break;
-                
+
             case try_declarator_trailing_type:
                 if (token.id() == CppTokenId.ARROW) {
                     nextStage = LambdaLookaheadStage.declarator_trailing_type_rest;
@@ -533,7 +532,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     nextStage = tryLookaheadLambda(token, LambdaLookaheadStage.body);
                 }
                 break;
-                
+
             case declarator_trailing_type_rest:
                 if (CndLexerUtilities.isType((CppTokenId) token.id())) {
                     // do nothing
@@ -550,7 +549,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case UNION:
                         case ENUM:
                             break;
-                        
+
                         case LBRACKET:
                         case LPAREN:
                         case LT:
@@ -562,7 +561,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case GT:
                             lambdaLookaheadLevel--;
                             break;
-                            
+
                         default:
                             if (lambdaLookaheadLevel > 0) {
                                 // do nothing
@@ -575,7 +574,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     }
                 }
                 break;
-                
+
             case body:
                 if (lambdaLookaheadLevel == 0 && token.id() != CppTokenId.LBRACE) {
                     nextStage = null; // body should start with '{'
@@ -591,7 +590,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         }
         return nextStage;
     }
-    
+
     private void templateLookahead(Token<TokenId> token, int tokenOffset, boolean macro, boolean mayBeInLambda) {
         boolean lookahead = false;
         if(isTemplateAmbiguity(token)) {
@@ -626,19 +625,19 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case RBRACE:
                         tplLookaheadBracesLevel--;
                         break;
-                }            
+                }
             }
-        } 
+        }
         if(!lookahead) {
             if(tplLookaheadTokens.isEmpty()) {
-                tokenImpl(token, tokenOffset, macro, mayBeInLambda);                
+                tokenImpl(token, tokenOffset, macro, mayBeInLambda);
             } else {
                 Boolean oldInPP = inPP;
                 for (OffsetableToken offsetableToken : tplLookaheadTokens) {
                     inPP = offsetableToken.inPP;
                     tokenImpl(offsetableToken.token, offsetableToken.offset, offsetableToken.macro, mayBeInLambda);
                 }
-                tplLookaheadTokens.clear();                
+                tplLookaheadTokens.clear();
                 inPP = oldInPP;
                 tokenImpl(token, tokenOffset, macro, mayBeInLambda);
                 tplLookaheadParensLevel = 0;
@@ -648,13 +647,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             }
         }
     }
-    
+
     private boolean isLookaheadNeeded(Token<TokenId> token) {
         int tempLookaheadTokensParensLevel = tplLookaheadParensLevel;
         int tempLookaheadTokensBracketsLevel = tplLookaheadBracketsLevel;
         int tempLookaheadTokensBracesLevel = tplLookaheadBracesLevel;
         int tempLookaheadTokensLtgtsLevel = tplLookaheadLtgtsLevel;
-        
+
         switch ((CppTokenId) token.id()) {
             case LT:
                 tempLookaheadTokensLtgtsLevel++;
@@ -683,16 +682,16 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             case RBRACE:
                 tempLookaheadTokensBracesLevel--;
                 break;
-        }        
+        }
         if (!tplLookaheadTokens.isEmpty()) {
             return !(tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensBracesLevel == 0 && tempLookaheadTokensLtgtsLevel == 0);
         } else {
             return true;
         }
     }
-    
+
     private boolean isTemplateAmbiguity(Token<TokenId> token) {
-        if(supportTemplates && (token.id() == CppTokenId.LT || 
+        if(supportTemplates && (token.id() == CppTokenId.LT ||
                 (!tplLookaheadTokens.isEmpty() && tplLookaheadTokens.get(0).token.id() == CppTokenId.LT))) {
             CsmCompletionExpression top = peekExp();
             if(top != null) {
@@ -706,13 +705,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         return true;
 
                     default:
-                        break;   
+                        break;
                 }
             }
-        }    
+        }
         return false;
     }
-    
+
     private OffsetableToken isSupportTemplates() {
         LinkedList<CppTokenId> stack = new LinkedList<CppTokenId>();
         for (OffsetableToken offsetableToken : tplLookaheadTokens) {
@@ -753,7 +752,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         }
         return null;
     }
-    
+
     /** Check whether there can be any joining performed
      * for current expressions on the stack.
      * @param tokenID tokenID of the current token
@@ -841,7 +840,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 case SCOPE:
                 case PARENTHESIS:
                 case OPERATOR: // operator on top of stack
-                    switch (top2ID) {                            
+                    switch (top2ID) {
                         case METHOD_OPEN:
                             switch (tokenID) {
                                 case STAR:
@@ -1142,7 +1141,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             }
         }
 
-        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER 
+        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER
                 || tokenID == CppTokenId.SIZEOF
                 || tokenID == CppTokenId.TYPEID) {
             // change preproc identifier into normal identifier
@@ -1381,7 +1380,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             || getValidExpID(top) == CONSTANT) {
                                         popExp();
                                         top = peekExp();
-                                    }                                    
+                                    }
                                     pushExp(createTokenExp(VARIABLE));
                                     break;
 
@@ -1699,7 +1698,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
                                         // It seems that bugs 159068 and 159054 are now handled by other branches,
                                         // so this fix is used for cases as in bug 230079
-                                        
+
                                         // IZ#159068 : Unresolved ids in instantiations after &
                                         // IZ#159054 : Unresolved id in case of reference to template as return type
                                         if (gen.getParameterCount() > 0) {
@@ -1714,16 +1713,16 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                                         }
 
                                                         top = newGen;
-                                                        
+
                                                         // pop generic type
-                                                        popExp();          
-                                                        
+                                                        popExp();
+
                                                         // push MEMBER_POINTER_OPEN (it must be reduced to MEMBER_POINTER later)
-                                                        pushExp(createTokenExp(MEMBER_POINTER_OPEN, param)); 
-                                                        
+                                                        pushExp(createTokenExp(MEMBER_POINTER_OPEN, param));
+
                                                         // push new GENERIC_TYPE (without MEMBER_POINTER)
                                                         pushExp(newGen);
-                                                        
+
                                                     default:
                                                 }
                                             }
@@ -2170,7 +2169,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         addTokenTo(top2);
                                         top = top2;
                                         break;
-                                        
+
                                     case LAMBDA_CALL_OPEN:
                                         popExp();
                                         top2.addParameter(top);
@@ -2204,7 +2203,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case METHOD_OPEN:
                                 addTokenTo(top);
                                 break;
-                                
+
                             case LAMBDA_CALL_OPEN:
                                 addTokenTo(top);
                                 break;
@@ -2260,7 +2259,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 mtdExp.addParameter(top);
                                 pushExp(mtdExp);
                                 break;
-                                
+
                             case TYPE: { // int(a)
                                 popExp();
                                 CsmCompletionExpression convOpExp = new CsmCompletionExpression(CONVERSION_OPEN);
@@ -2269,7 +2268,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
                                 break;
                             }
-                            
+
                             case LAMBDA_FUNCTION: // [](){...}(
                                 popExp();
                                 CsmCompletionExpression lambdaExp = createTokenExp(LAMBDA_CALL_OPEN);
@@ -2278,7 +2277,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 break;
 
                             case AUTO:   // auto(
-                            case DECLTYPE_OPEN:    // decltype(                                
+                            case DECLTYPE_OPEN:    // decltype(
                             case ARRAY_OPEN:       // a[(
                             case PARENTHESIS_OPEN: // ((
                             case SPECIAL_PARENTHESIS_OPEN: // if((
@@ -2376,7 +2375,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             addTokenTo(top3);
                                             top3.addParameter(top);
                                             top3.setExpID(CONVERSION);
-                                            
+
                                             top2 = new CsmCompletionExpression(PARENTHESIS);
                                             top2.addParameter(top3);
                                             top = top2;
@@ -2386,16 +2385,16 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             popExp();
                                             popExp();
                                             popExp();
-                                            
+
                                             top2.addParameter(top);
-                                            top2.setExpID(DECLTYPE);                                            
+                                            top2.setExpID(DECLTYPE);
 
                                             top3.addParameter(top2);
                                             top3.setExpID(PARENTHESIS);
 
                                             top = top3;
 
-                                            pushExp(top);                                              
+                                            pushExp(top);
                                         } else {
                                             popExp();
                                             top2.addParameter(top);
@@ -2437,7 +2436,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         top = top2;
                                         mtd = true;
                                         break;
-                                        
+
                                     case LAMBDA_CALL_OPEN:
                                         popExp();
                                         top2.addParameter(top);
@@ -2500,7 +2499,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case METHOD_OPEN:
                                 mtd = true;
                                 break;
-                                
+
                             case LAMBDA_CALL_OPEN: // empty param_list for lambda
                                 addTokenTo(top);
                                 top.setExpID(LAMBDA_CALL);
@@ -2520,22 +2519,22 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         }
                                         addTokenTo(top2);
                                         top2.setExpID(CONVERSION);
-                                        
+
                                         top = new CsmCompletionExpression(PARENTHESIS);
                                         top.addParameter(top2);
                                         pushExp(top);
                                         break;
-                                        
+
                                     default:
                                         popExp();
                                 }
                                 break;
-                                
+
                             case MEMBER_POINTER_OPEN:
                                 if (shiftedCheckExpRow(1, AUTO, PARENTHESIS_OPEN)) {
                                     popExp();
                                     top.setExpID(MEMBER_POINTER);
-                                    
+
                                     CsmCompletionExpression newTopExp = peekExp();
                                     newTopExp.addParameter(top);
                                     newTopExp.setExpID(PARENTHESIS);
@@ -2543,7 +2542,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                     errorState = true;
                                 }
                                 break;
-                                
+
                             default:
                                 errorState = true;
                                 break;
@@ -2607,7 +2606,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case METHOD:
                             case DOT:
                             case ARRAY:
-                            case TYPE: 
+                            case TYPE:
                             case GENERIC_TYPE:
                             case PARENTHESIS_OPEN:
                                 CsmCompletionExpression exp = createTokenExp(OPERATOR);
@@ -2696,6 +2695,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             // end line finishes preproc directive
                             popExp();
                         }
+                        break;
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case DOXYGEN_LINE_COMMENT:
@@ -2719,7 +2719,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("nullptr"); // NOI18N
                         break;
-                        
+
                     case INT_LITERAL:
                     case UNSIGNED_LITERAL:
 //                    case HEX_LITERAL:
@@ -2751,10 +2751,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case CONST:
                         // OK, just skip it
                         break;
-                        
+
                     case DECLTYPE:
                         pushExp(createTokenExp(DECLTYPE_OPEN));
-                        break;                        
+                        break;
 
                     default:
                         errorState = true;
@@ -2765,7 +2765,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
         // Check whether a constant or data type keyword was found
         if (constExp != null) {
-            switch (topID) {                
+            switch (topID) {
                 case DOT_OPEN:
                 case ARROW_OPEN:
                 case SCOPE_OPEN:
@@ -2872,7 +2872,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         }
 
         if (errorState) {
-            // Code may be like that: "foo(a * 5)", where "foo(a *" was parsed as  
+            // Code may be like that: "foo(a * 5)", where "foo(a *" was parsed as
             // METHOD_OPEN and TYPE_REFERENCE. We need to try to reparse it as an expression.
             if (!alternativeParse && checkExp(peekExp2(), METHOD_OPEN)) {
                 if (top.getTokenCount() > 0 && (CppTokenId.STAR == top.getTokenID(0) || CppTokenId.AMP == top.getTokenID(0))) {
@@ -2901,7 +2901,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     }
                 }
             }
-            
+
             if (errorState) {
                 clearStack();
 
@@ -2924,7 +2924,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     public int getLastSeparatorOffset() {
         return lastSeparatorOffset;
     }
-    
+
     void setLastSeparatorOffset(int lastSeparatorOffset) {
         this.lastSeparatorOffset = lastSeparatorOffset;
     }
@@ -2949,7 +2949,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             lambdaLookaheadLevel = 0;
             inPP = oldInPP;
         }
-        
+
         // Template lookahead
         if (!tplLookaheadTokens.isEmpty()) {
             boolean oldSupportTemplates = supportTemplates;
@@ -3032,7 +3032,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             bufferStartPos + bufferOffsetDelta + offset));
                     errorState = false;
                     break;
-                default: 
+                default:
                 {
                     int validExpID = getValidExpID(peekExp());
                     if (validExpID == GENERIC_TYPE ||
@@ -3053,7 +3053,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             CsmCompletionExpression top2 = peekExp2();
             int top2ID = getValidExpID(top2);
             if (top != null) {
-                switch (getValidExpID(top)) {    
+                switch (getValidExpID(top)) {
                     case VARIABLE:
                         switch (top2ID) {
                             case DOT_OPEN:
@@ -3088,7 +3088,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 break;
                         }
                         break;
-                        
+
                     case GENERIC_TYPE:
                         switch (top2ID) {
                             case DOT_OPEN:
@@ -3106,7 +3106,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 reScan = true;
                                 break;
                         }
-                        break;                        
+                        break;
 
                     case METHOD_OPEN:
                     // let it flow to METHOD
@@ -3128,7 +3128,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 break;
                         }
                         break;
-                        
+
                     case LAMBDA_CALL:
                         switch (top2ID) {
                             case DOT_OPEN:
@@ -3303,22 +3303,22 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 if (expr.getExpID() == restricted) {
                     return -1;
                 }
-            }                     
+            }
             if (expr.getExpID() == targetId) {
                 return i + 1;
             }
         }
         return -1;
     }
-    
+
     private boolean checkExp(CsmCompletionExpression exp, int expId) {
         return exp != null && exp.getExpID() == expId;
     }
-    
+
     private boolean checkExpRow(int ... ids) {
         return shiftedCheckExpRow(0, ids);
     }
-    
+
     private boolean shiftedCheckExpRow(int skipFromTop, int ... ids) {
         if (ids != null && ids.length > 0) {
             for (int i = 1; i <= ids.length; i++) {
@@ -3327,9 +3327,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 }
             }
         }
-        return true;        
+        return true;
     }
-    
+
     private static class OffsetableToken {
         Token<TokenId> token;
         int offset;
@@ -3348,10 +3348,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             return token.id().toString();
         }
     }
-    
+
     private static enum LambdaLookaheadStage {
         capture, // [...] block
-        try_declarator_params, // (parameter-declaration-clause) 
+        try_declarator_params, // (parameter-declaration-clause)
         try_declarator_mutable, // mutable
         try_declarator_exception, // exception_spec
         try_declarator_attribute, // beginning of attribute - '[' or '__attribute__' or '__attribute'
