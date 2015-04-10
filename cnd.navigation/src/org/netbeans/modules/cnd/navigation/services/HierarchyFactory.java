@@ -68,10 +68,10 @@ public class HierarchyFactory {
     }
     
     private static class IncludedModelAdapter implements IncludedModel {
-        private Map<CsmFile, Set<CsmFile>> map;
-        private Action[] actions;
+        private final Map<CsmFile, Set<CsmFile>> map;
+        private final Action[] actions;
         private Action close;
-        private boolean direction;
+        private final boolean direction;
         public IncludedModelAdapter(Action[] actions, Map<CsmFile, Set<CsmFile>> map, boolean whoIncludes){
             this.map = map;
             this.actions = actions;

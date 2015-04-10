@@ -55,7 +55,7 @@ import javax.swing.event.ListDataListener;
  *
  * @author Alexander Simon
  */
-public class MacrosListModel implements ListModel {
+public class MacrosListModel implements ListModel<String> {
     private final NodeConfigurationImpl configuration;
     private final Map<String,String> map;
     private final List<String> names;
@@ -65,11 +65,14 @@ public class MacrosListModel implements ListModel {
         names = new ArrayList<>(map.keySet());
         Collections.<String>sort(names);
     }
+
+    @Override
     public int getSize() {
         return names.size();
     }
-    
-    public Object getElementAt(int index) {
+
+    @Override
+    public String getElementAt(int index) {
         String key = names.get(index);
         String value = map.get(key);
         if (value != null) {
@@ -77,14 +80,14 @@ public class MacrosListModel implements ListModel {
         }
         return key;
     }
-    
+
     public NodeConfigurationImpl getNodeConfiguration(){
         return configuration;
     }
-    
+
     public void addListDataListener(ListDataListener l) {
     }
-    
+
     public void removeListDataListener(ListDataListener l) {
     }
 }

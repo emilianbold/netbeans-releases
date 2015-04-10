@@ -166,7 +166,6 @@ public class ImportExecutable implements PropertyChangeListener {
         List<String> libs = new ArrayList<>();
         {
             String firstBinary = null;
-            StringBuilder buf = new StringBuilder();
             for(String s : binaryPath.split(";")) { //NOI18N
                 String path = s.trim();
                 if (path.isEmpty()) {
@@ -244,7 +243,7 @@ public class ImportExecutable implements PropertyChangeListener {
             launcher = CndPathUtilities.normalizeSlashes(launcher);
             importantBinaries.add(launcher);
         }
-        
+
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams.setOpenFlag(false)
                  .setConfiguration(conf)
@@ -440,7 +439,7 @@ public class ImportExecutable implements PropertyChangeListener {
         };
         RP.post(run);
     }
-    
+
     private int commonEnd(String mainFilePath, String candidate) {
         int len = mainFilePath.length() - 1;
         for(int i = candidate.length()-1; i >= 0; i--) {

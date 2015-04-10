@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.navigation.callgraph;
 
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.Action;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -126,7 +125,7 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
 
                 @Override
                 public Collection<CallGraphAction> getActions(CallGraphActionEDTRunnable runnable) {
-                    return Collections.EMPTY_LIST;
+                    return Collections.emptyList();
                 }
             };
         }

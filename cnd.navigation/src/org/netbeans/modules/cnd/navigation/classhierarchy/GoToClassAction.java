@@ -57,8 +57,8 @@ import org.openide.util.NbBundle;
  */
 public class GoToClassAction extends AbstractAction {
     
-    private CsmOffsetable csmObject;
-    private Action delegate;
+    private final CsmOffsetable csmObject;
+    private final Action delegate;
     
     public GoToClassAction(CsmOffsetable csmObject, Action delegate) {
         this.csmObject = csmObject;

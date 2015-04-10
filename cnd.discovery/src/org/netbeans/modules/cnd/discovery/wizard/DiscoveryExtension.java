@@ -99,7 +99,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     public static final String MAKE_LOG_PROVIDER = "make-log"; // NOI18N
     public static final String EXEC_LOG_PROVIDER = "exec-log"; // NOI18N
     public static final String MODEL_FOLDER_PROVIDER = "model-folder"; // NOI18N
-    
+
     /** Creates a new instance of DiscoveryExtension */
     public DiscoveryExtension() {
     }
@@ -108,19 +108,17 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     public void discoverArtifacts(Map<String, Object> map) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         Applicable applicable = isApplicable(descriptor, null, false);
-        if (applicable != null) {
-            if (applicable.isApplicable()) {
-                descriptor.setCompilerName(applicable.getCompilerName());
-                descriptor.setDependencies(applicable.getDependencies());
-                descriptor.setSearchPaths(applicable.getSearchPaths());
-                descriptor.setRootFolder(applicable.getSourceRoot());
-                descriptor.setErrors(applicable.getErrors());
-            } else {
-                descriptor.setErrors(applicable.getErrors());
-            }
+        if (applicable.isApplicable()) {
+            descriptor.setCompilerName(applicable.getCompilerName());
+            descriptor.setDependencies(applicable.getDependencies());
+            descriptor.setSearchPaths(applicable.getSearchPaths());
+            descriptor.setRootFolder(applicable.getSourceRoot());
+            descriptor.setErrors(applicable.getErrors());
+        } else {
+            descriptor.setErrors(applicable.getErrors());
         }
     }
-    
+
     @Override
     public Set<FileObject> createProject(WizardDescriptor wizard) throws IOException{
         return new ImportProject(wizard).create();
@@ -130,7 +128,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     public void apply(Map<String, Object> map, Project project) throws IOException {
         apply(map, project, null);
     }
-    
+
     @Override
     public void apply(Map<String, Object> map, Project project, Interrupter interrupter) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
@@ -179,7 +177,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             progress.done();
         }
     }
-    
+
     private DiscoveryExtensionInterface.Applicable isApplicableDwarfExecutable(DiscoveryDescriptor descriptor, boolean findMain){
         String selectedExecutable = descriptor.getBuildResult();
         if (selectedExecutable == null) {
@@ -219,7 +217,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         }
         return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
     }
-    
+
     private DiscoveryExtensionInterface.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor, Interrupter interrupter){
         String buildFolder = descriptor.getBuildFolder();
         if (buildFolder == null) {
@@ -231,7 +229,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.FOLDER_PROVIDER);
         if (provider != null && provider.isApplicable(proxy)){
-            ProviderPropertyType.ExecutableFolderPropertyType.setProperty(provider, buildFolder); 
+            ProviderPropertyType.ExecutableFolderPropertyType.setProperty(provider, buildFolder);
             Applicable canAnalyze = provider.canAnalyze(proxy, interrupter);
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
@@ -271,7 +269,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         }
         return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
     }
-    
+
     private DiscoveryExtensionInterface.Applicable  isApplicableExecLog(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
@@ -301,12 +299,12 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         }
         return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
     }
-    
+
     public DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project, boolean findMain) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         return isApplicable(descriptor, null, findMain);
     }
-    
+
     boolean canApply(DiscoveryDescriptor descriptor, Interrupter interrupter) {
         if (!isApplicable(descriptor, interrupter, false).isApplicable()){
             return false;
@@ -328,14 +326,14 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                 }
                 ProviderPropertyType.LibrariesPropertyType.setProperty(provider, list.toArray(new String[list.size()]));
             } else {
-                ProviderPropertyType.LibrariesPropertyType.setProperty(provider, new String[0]); 
+                ProviderPropertyType.LibrariesPropertyType.setProperty(provider, new String[0]);
             }
         } else if (DiscoveryExtension.FOLDER_PROVIDER.equals(provider.getID())){
             String buildFolder = descriptor.getBuildFolder();
             if (buildFolder == null) {
                 buildFolder = descriptor.getRootFolder();
             }
-            ProviderPropertyType.ExecutableFolderPropertyType.setProperty(provider, buildFolder); 
+            ProviderPropertyType.ExecutableFolderPropertyType.setProperty(provider, buildFolder);
         } else if (DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())){
         } else if (DiscoveryExtension.EXEC_LOG_PROVIDER.equals(provider.getID())){
         } else {
@@ -349,7 +347,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             && descriptor.getConfigurations() != null && descriptor.getConfigurations().size() > 0
             && descriptor.getIncludedFiles() != null;
     }
-    
+
     public static void buildModel(final DiscoveryDescriptor wizardDescriptor, Interrupter interrupter){
         String rootFolder = wizardDescriptor.getRootFolder();
         DiscoveryProvider provider = wizardDescriptor.getProvider();
@@ -392,7 +390,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             public boolean resolveSymbolicLinks() {
                 return wizardDescriptor.isResolveSymbolicLinks();
             }
-            
+
         }, new MyProgress(NbBundle.getMessage(DiscoveryExtension.class, "AnalyzingProjectProgress")), interrupter);
         if (interrupter != null && interrupter.cancelled()) {
             return;
@@ -455,14 +453,14 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     public boolean canApply(Map<String, Object> map, Project project) {
         return canApply(map, project, null);
     }
-    
+
     @Override
     public boolean canApply(Map<String, Object> map, Project project, Interrupter interrupter) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
         return canApply(descriptor, interrupter);
     }
-    
+
     @Override
     public void discoverProject(final Map<String, Object> map, final Project lastSelectedProject, ProjectKind projectKind) {
         ImportExecutable importer = new ImportExecutable(map, lastSelectedProject, projectKind);

@@ -90,7 +90,7 @@ import org.openide.util.Utilities;
 public class DiscoveryProjectGeneratorImpl {
     private static final boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
     private static final boolean TRUNCATE_BEGINNING_PATH = true;
-    
+
     /**
      * Old IDE behavior is random user include paths after consolidation.
      * Since 7.3 consolidation preserve paths order.
@@ -159,7 +159,7 @@ public class DiscoveryProjectGeneratorImpl {
         }
 
     }
-    
+
     public void process(){
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         Folder sourceRoot = projectBridge.getRoot();
@@ -559,7 +559,7 @@ public class DiscoveryProjectGeneratorImpl {
             first = false;
         }
         for (Item item : folder.getItemsAsArray()) {
-            if (projectBridge.getExclude(item)){
+            if (ProjectBridge.getExclude(item)){
                 continue;
             }
             CCCCompilerConfiguration cccc = projectBridge.getItemConfiguration(item);
@@ -684,7 +684,7 @@ public class DiscoveryProjectGeneratorImpl {
         }
         return !first;
     }
-    
+
     public Set<Project> makeProject(){
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DiscoveryProjectGeneratorImpl.class, "UpdateCodeAssistance"));
         handle.start();
@@ -981,7 +981,7 @@ public class DiscoveryProjectGeneratorImpl {
             }
         }
         for(Folder folder : folders){
-            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, 
+            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true,
                     Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, conf.getLanguageKind(), folder);
         }
         for(Set<Pair> set : configurationStructure.values()){

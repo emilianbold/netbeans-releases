@@ -88,7 +88,7 @@ public final class SelectConfigurationPanel extends JPanel {
     private boolean showResulting;
     private boolean wasTerminated = false;
     private boolean isStoped = false;
-    
+
     /** Creates new form DiscoveryVisualPanel2 */
     public SelectConfigurationPanel(SelectConfigurationWizard wizard) {
         this.wizard = wizard;
@@ -97,7 +97,7 @@ public final class SelectConfigurationPanel extends JPanel {
         addListeners();
         clearListModels();
     }
-    
+
     private void addListeners(){
         configurationTree.addTreeSelectionListener(new TreeSelectionListener(){
             @Override
@@ -113,7 +113,7 @@ public final class SelectConfigurationPanel extends JPanel {
             }
         });
     }
-    
+
     private void updateListModels() {
         TreePath path = configurationTree.getSelectionPath();
         if (path != null) {
@@ -143,14 +143,14 @@ public final class SelectConfigurationPanel extends JPanel {
             clearListModels();
         }
     }
-    
+
     private void clearListModels(){
         includesList.setModel(new EmptyListModel());
         macrosList.setModel(new EmptyListModel());
         includeInherate.setSelected(false);
         macroInherate.setSelected(false);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -263,11 +263,11 @@ public final class SelectConfigurationPanel extends JPanel {
 
         add(jPanel5, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private static String getString(String key) {
         return NbBundle.getMessage(SelectConfigurationPanel.class, key);
     }
-    
+
     private Icon getLoadingIcon() {
         String path = "org/netbeans/modules/cnd/discovery/wizard/resources/waitNode.gif"; // NOI18N
         Image image = ImageUtilities.loadImage(path);
@@ -277,7 +277,7 @@ public final class SelectConfigurationPanel extends JPanel {
             return null;
         }
     }
-    
+
     void read(final DiscoveryDescriptor wizardDescriptor) {
         if (wizardDescriptor.isInvokeProvider() || wasTerminated) {
             // clear model
@@ -304,7 +304,7 @@ public final class SelectConfigurationPanel extends JPanel {
         }
         updateListModels();
     }
-    
+
     private void creteTreeModel(DiscoveryDescriptor wizardDescriptor){
         ConfigurationTreeModel model = new ConfigurationTreeModel();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
@@ -317,7 +317,7 @@ public final class SelectConfigurationPanel extends JPanel {
         configurationTree.setCellRenderer(new DefaultTreeCellRenderer());
         configurationTree.setModel(model);
     }
-    
+
     void store(DiscoveryDescriptor wizardDescriptor) {
         DiscoveryProvider provider = wizardDescriptor.getProvider();
         if (provider != null && wasTerminated){
@@ -326,7 +326,7 @@ public final class SelectConfigurationPanel extends JPanel {
             provider.cancel();
         }
     }
-    
+
     boolean isValid(DiscoveryDescriptor settings) {
         List<ProjectConfiguration> projectConfigurations = settings.getConfigurations();
         if (projectConfigurations == null || projectConfigurations.isEmpty()) {
@@ -334,7 +334,7 @@ public final class SelectConfigurationPanel extends JPanel {
         }
         return projectConfigurations.get(0).getFiles().size()>0;
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTree configurationTree;
     private javax.swing.JCheckBox includeInherate;
@@ -356,25 +356,25 @@ public final class SelectConfigurationPanel extends JPanel {
     private javax.swing.JList macrosList;
     private javax.swing.JCheckBox showInherited;
     // End of variables declaration//GEN-END:variables
-    
-    
+
+
     private static class ConfigurationTreeModel extends DefaultTreeModel {
         public ConfigurationTreeModel() {
             super(new DefaultMutableTreeNode("Root")); // NOI18N
         }
     }
-    
-    public static class EmptyListModel extends AbstractListModel {
+
+    public static class EmptyListModel extends AbstractListModel<String> {
         @Override
         public int getSize() {
             return 0;
         }
         @Override
-        public Object getElementAt(int i) {
+        public String getElementAt(int i) {
             return null;
         }
     }
-    
+
     private class AnalyzingTask extends Thread {
         private final DiscoveryDescriptor wizardDescriptor;
         public AnalyzingTask(DiscoveryDescriptor wizardDescriptor){
@@ -411,7 +411,7 @@ public final class SelectConfigurationPanel extends JPanel {
         public MyProgress(String message) {
             this.message = message;
         }
-        
+
         @Override
         public void start() {
             start(0);
