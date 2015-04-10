@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
         return cacheManager;
     }
 
-    public String getHostName() {
+    public synchronized String getHostName() {
         return hostName;
     }
 
@@ -76,23 +76,23 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
         return manageUser;
     }
 
-    public String getUserName() {
+    public synchronized String getUserName() {
         return userName;
     }
 
-    public void setUserName(String name) {
+    public synchronized void setUserName(String name) {
         userName = name;
     }
     
-    public void setHostName(String hostName) {
+    public synchronized void setHostName(String hostName) {
         this.hostName = hostName;
     }
 
-    public int getPort() {
+    public synchronized int getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public synchronized void setPort(int port) {
         this.port = port;
     }
 
