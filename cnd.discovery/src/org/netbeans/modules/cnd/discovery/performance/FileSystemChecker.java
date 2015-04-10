@@ -46,10 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.nio.channels.SocketChannel;
 import java.nio.file.FileStore;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -169,8 +167,6 @@ public class FileSystemChecker {
             int COUNT = 25;
             InetAddress addr = InetAddress.getByName(host);
             for (int i = 0; i < COUNT; i++) {
-                Socket socket = null;
-                SocketChannel channel = null;
                 try {
                     long s = System.nanoTime();
                     addr.isReachable(SOCKET_CONNECTION_TIMEOUT);
@@ -179,13 +175,6 @@ public class FileSystemChecker {
                 } catch (ConnectException ex) {
                 } catch (SocketTimeoutException ex) {
                 } catch (IOException ex) {
-                } finally {
-                    if (channel != null) {
-                        channel.close();
-                    }
-                    if (socket != null) {
-                        socket.close();
-                    }
                 }
             }
             if (times.size() > 0) {

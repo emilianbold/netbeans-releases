@@ -77,7 +77,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class FollowUp extends JPanel {
+public final class FollowUp extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor(FollowUp.class.getName(), 2);
     /** Creates new form FollowUp */
     private FollowUp(ImportProject importer, NativeProject project) {

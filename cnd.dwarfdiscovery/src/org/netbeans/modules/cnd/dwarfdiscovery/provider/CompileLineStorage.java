@@ -53,7 +53,7 @@ import org.openide.util.Exceptions;
  */
 public class CompileLineStorage {
     private File file;
-    
+
     public CompileLineStorage() {
         try {
             file = File.createTempFile("lines", ".log"); // NOI18N
@@ -62,7 +62,7 @@ public class CompileLineStorage {
         }
     }
 
-    private final int MAX_STRING_LENGTH = 65535/3 - 4;
+    private static final int MAX_STRING_LENGTH = 65535/3 - 4;
     public synchronized int putCompileLine(String line) {
         if (file != null) {
             RandomAccessFile os= null;
@@ -92,7 +92,7 @@ public class CompileLineStorage {
         }
         return -1;
     }
-    
+
     public synchronized String getCompileLine(int handler) {
         if (file != null && handler >= 0) {
             RandomAccessFile is= null;

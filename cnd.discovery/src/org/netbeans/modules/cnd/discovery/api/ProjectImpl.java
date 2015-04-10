@@ -69,12 +69,12 @@ import org.openide.util.Utilities;
 /**
  * Default implementation of ProjectProperties.
  * Enough in most cases.
- * 
+ *
  * @author Alexander Simon
  */
 public final class ProjectImpl implements ProjectProperties {
     private static final boolean gatherFolders = true;
-    
+
     private final ItemProperties.LanguageKind language;
     private final Set<String> userIncludes = new LinkedHashSet<>();
     private final Set<String> userFiles = new HashSet<>();
@@ -82,12 +82,12 @@ public final class ProjectImpl implements ProjectProperties {
     private final Map<String,String> userMacros = new HashMap<>();
     private final Set<String> undefinedMacros = new LinkedHashSet<>();
     private final Map<String,FolderProperties> folders = new HashMap<>();
-    
+
     /** Creates a new instance of DwarfProject */
     public ProjectImpl(ItemProperties.LanguageKind language) {
         this.language = language;
     }
-    
+
     /**
      * Adds source file in the project
      * @param sources source file
@@ -154,7 +154,7 @@ public final class ProjectImpl implements ProjectProperties {
         }
         return languages;
     }
-    
+
     private static List<SourceFileProperties> mergeLists(List<SourceFileProperties> discovered, ProjectProxy project) {
         ProjectBridge bridge = new ProjectBridge(project.getProject());
         Map<String, SourceFileProperties> map = new HashMap<>();
@@ -188,7 +188,7 @@ public final class ProjectImpl implements ProjectProperties {
         if (!set1.equals(set2)) {
             return false;
         }
-        
+
         set1 = new HashSet<>();
         bridge.convertIncludeFiles(set1, newSource.getUserInludeFiles(), newSource.getCompilePath(), newSource.getUserInludePaths());
         set2 = new HashSet<>();
@@ -198,7 +198,7 @@ public final class ProjectImpl implements ProjectProperties {
         if (!set1.equals(set2)) {
             return false;
         }
-        
+
         Map<String, String> m1 = newSource.getUserMacros();
         Map<String, String> m2 = oldSource.getUserMacros();
         if (m1.size() != m2.size()) {
@@ -214,7 +214,7 @@ public final class ProjectImpl implements ProjectProperties {
         }
         return u1.equals(u2);
     }
-    
+
     private static List<SourceFileProperties> getExistingProjectItems(ProjectProxy project) {
         List<SourceFileProperties> res = new ArrayList<>();
         Project makeProject = project.getProject();
@@ -222,12 +222,6 @@ public final class ProjectImpl implements ProjectProperties {
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         if (makeConfigurationDescriptor != null) {
             Item[] items = makeConfigurationDescriptor.getProjectItems();
-            Map<String, Item> projectSearchBase = new HashMap<>();
-            for (int i = 0; i < items.length; i++) {
-                Item item = items[i];
-                String path = item.getNormalizedPath();
-                projectSearchBase.put(path, item);
-            }
             for (int i = 0; i < items.length; i++) {
                 Item item = items[i];
                 if (!isExcluded(item)) {
@@ -250,7 +244,7 @@ public final class ProjectImpl implements ProjectProperties {
         BooleanConfiguration excl =itemConfiguration.getExcluded();
         return excl.getValue();
     }
-   
+
     private void updateFolder(SourceFileProperties source){
         File file = new File(source.getItemPath());
         File parent = file.getParentFile();
@@ -268,27 +262,27 @@ public final class ProjectImpl implements ProjectProperties {
             }
         }
     }
-    
+
     @Override
     public List<FolderProperties> getConfiguredFolders(){
         return new ArrayList<>(folders.values());
     }
-    
+
     @Override
     public String getMakePath() {
         return null;
     }
-    
+
     @Override
     public String getBinaryPath() {
         return null;
     }
-    
+
     @Override
     public ProjectProperties.BinaryKind getBinaryKind() {
         return null;
     }
-    
+
     @Override
     public List<String> getUserInludePaths() {
         return new ArrayList<>(userIncludes);
@@ -298,12 +292,12 @@ public final class ProjectImpl implements ProjectProperties {
     public List<String> getUserInludeFiles() {
         return new ArrayList<>(userFiles);
     }
-    
+
     @Override
     public List<String> getSystemInludePaths() {
         return new ArrayList<>(systemIncludes);
     }
-    
+
     @Override
     public Map<String, String> getUserMacros() {
         return userMacros;
@@ -313,12 +307,12 @@ public final class ProjectImpl implements ProjectProperties {
     public List<String> getUndefinedMacros() {
         return new ArrayList<>(undefinedMacros);
     }
-    
+
     @Override
     public Map<String, String> getSystemMacros() {
         return null;
     }
-    
+
     @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
@@ -334,7 +328,7 @@ public final class ProjectImpl implements ProjectProperties {
         // now projects do not divided by language standards
         return LanguageStandard.Unknown;
     }
-    
+
     private static final class ItemWrapper implements SourceFileProperties {
         private final Item item;
         private final List<String> userIncludePaths;
@@ -342,7 +336,7 @@ public final class ProjectImpl implements ProjectProperties {
         private final Map<String, String> userMacroDefinitions;
         private final List<String> userUndefinesMacros;
         private final String importantFlags;
-        
+
         private ItemWrapper(Item item) {
             this.item = item;
             userIncludePaths = convertFSPaths(item.getUserIncludePaths());
@@ -359,7 +353,7 @@ public final class ProjectImpl implements ProjectProperties {
             }
             return res;
         }
-        
+
         private Map<String, String> convertToMap(List<String> list) {
             Map<String, String> res = new HashMap<>();
             for(String macro : list){
@@ -372,7 +366,7 @@ public final class ProjectImpl implements ProjectProperties {
             }
             return res;
         }
-        
+
         @Override
         public String getCompilePath() {
             return item.getFileObject().getParent().getPath();

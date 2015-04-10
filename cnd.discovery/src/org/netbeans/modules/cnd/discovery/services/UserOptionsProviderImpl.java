@@ -105,10 +105,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             }
         }
         if (makeConfiguration.isQmakeConfiguration()) {
-            ExecutionEnvironment env = getExecutionEnvironment(makeConfiguration);
-            FileSystem fs = FileSystemProvider.getFileSystem(env);
-            List<FSPath> qtIncludeDirs = QtInfoProvider.getDefault().getQtIncludeDirectories(makeConfiguration);
-            res.addAll(qtIncludeDirs);
+            res.addAll(QtInfoProvider.getDefault().getQtIncludeDirectories(makeConfiguration));
         }
         return res;
     }
@@ -116,7 +113,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     private ExecutionEnvironment getExecutionEnvironment(MakeConfiguration makeConfiguration) {
         return makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
     }
-    
+
     @Override
     public List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res = new ArrayList<>();
@@ -164,7 +161,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         }
         return null;
     }
-    
+
     @Override
     public LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
@@ -189,10 +186,10 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
                 // TODO
             }
-        } 
+        }
         return LanguageFlavor.UNKNOWN;
     }
-    
+
     private List<PackageConfiguration> getPackages(String s, MakeConfiguration conf){
         List<PackageConfiguration> res = new ArrayList<>();
         while(true){

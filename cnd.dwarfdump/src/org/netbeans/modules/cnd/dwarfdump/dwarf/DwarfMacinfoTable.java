@@ -68,14 +68,14 @@ public class DwarfMacinfoTable {
     private boolean baseSourceTableRead;
     private boolean fileSourceTableRead;
     private boolean commandIncludedFilesRead;
-    
+
     public DwarfMacinfoTable(DwarfMacroInfoSection section, long offset) {
         this.section = section;
         this.baseSourceTableRead = false;
         this.fileSourceTableRead = false;
         baseSourceTableOffset = fileSourceTableOffset = offset;
     }
-    
+
     public void addEntry(DwarfMacinfoEntry entry) {
         if (entry.fileIdx == -1) {
             baseSourceTable.add(entry);
@@ -83,38 +83,38 @@ public class DwarfMacinfoTable {
             fileSourceTable.add(entry);
         }
     }
-    
+
     private List<DwarfMacinfoEntry> getBaseSourceTable() throws IOException {
-        
+
         if (baseSourceTableRead) {
             return baseSourceTable;
         }
-        
+
         readBaseSourceTable();
-        
+
         return baseSourceTable;
     }
-    
+
     private List<DwarfMacinfoEntry> getFileSourceTable() throws IOException {
         if (fileSourceTableRead) {
             return fileSourceTable;
         }
-        
+
         readFileSourceTable();
         return fileSourceTable;
     }
-    
+
     private void readBaseSourceTable() throws IOException {
         long length = section.readMacinfoTable(this, baseSourceTableOffset, true);
         fileSourceTableOffset = baseSourceTableOffset + length;
         baseSourceTableRead = true;
     }
-    
+
     private void readFileSourceTable() throws IOException {
         /*long length =*/ section.readMacinfoTable(this, fileSourceTableOffset, false);
         fileSourceTableRead = true;
     }
-    
+
     public List<Integer> getCommandLineIncludedFiles() throws IOException{
         if (!commandIncludedFilesRead) {
             commandIncludedFilesTable = section.getCommandIncudedFiles(this, baseSourceTableOffset, baseSourceTableOffset);
@@ -126,7 +126,7 @@ public class DwarfMacinfoTable {
     public List<DwarfMacinfoEntry> getCommandLineMarcos() throws IOException {
         List<DwarfMacinfoEntry> entries = getBaseSourceTable();
         int size = entries.size();
-        
+
         if (size == 0) {
             return entries;
         }
@@ -157,7 +157,7 @@ public class DwarfMacinfoTable {
         int currLine = entries.get(idx).lineNum;
         int prevLine = -1;
         int count = 0;
-        // Skip non-command-line entries... 
+        // Skip non-command-line entries...
         while (currLine > prevLine && idx < size) {
             prevLine = currLine;
             if (idx == size -1){
@@ -184,24 +184,24 @@ public class DwarfMacinfoTable {
             currLine = entry.lineNum;
             idx++;
         } while (idx < size && (entry = entries.get(idx)).lineNum - currLine == 1);
-        
+
         return result;
     }
-    
+
     public ArrayList<DwarfMacinfoEntry> getMacros(int fileIdx) throws IOException {
         ArrayList<DwarfMacinfoEntry> result = new ArrayList<DwarfMacinfoEntry>();
-        
+
         for (DwarfMacinfoEntry entry : getFileSourceTable()) {
             if (entry.fileIdx == fileIdx && (entry.type.equals(MACINFO.DW_MACINFO_define) || entry.type.equals(MACINFO.DW_MACINFO_undef))) {
                 result.add(entry);
             }
         }
-        
+
         return result;
     }
-        
+
     public void dump(PrintStream out) {
-        out.printf("\nMACRO Table (offset = %d [0x%08x]):\n\n", baseSourceTableOffset, baseSourceTableOffset); // NOI18N
+        out.printf("%nMACRO Table (offset = %d [0x%08x]):%n%n", baseSourceTableOffset, baseSourceTableOffset); // NOI18N
         try {
             for (DwarfMacinfoEntry entry : getBaseSourceTable()) {
                 entry.dump(out);

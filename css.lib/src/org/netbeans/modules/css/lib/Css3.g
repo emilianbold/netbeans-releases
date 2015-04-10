@@ -496,7 +496,7 @@ vendorAtRule
 
 atRuleId
 	:
-	IDENT | STRING
+	IDENT | STRING | {isCssPreprocessorSource()}? ( cp_variable | sass_interpolation_expression_var )
 	;
 
 generic_at_rule
@@ -533,11 +533,12 @@ webkitKeyframesBlock
 	LBRACE  ws? syncToFollow
 		declarations?
 	RBRACE
+        | {isScssSource()}?  {isScssSource()}? sass_content SEMI?
 	;
 
 webkitKeyframeSelectors
 	:
-	( IDENT | PERCENTAGE ) ( ws? COMMA ws? ( IDENT | PERCENTAGE ) )*
+	( {tokenNameEquals("from")}? IDENT | {tokenNameEquals("to")}? IDENT | PERCENTAGE ) ( ws? COMMA ws? ( {tokenNameEquals("from")}? IDENT | {tokenNameEquals("to")}? IDENT | PERCENTAGE ) )*
 	;
 
 page
@@ -1120,7 +1121,8 @@ cp_mixin_call
 cp_mixin_block
     :
     LBRACE ws? syncToFollow
-        declarations?
+        (declarations | (webkitKeyframeSelectors) => 
+		( webkitKeyframesBlock ws? )*)?
     RBRACE
     ;
 

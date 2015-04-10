@@ -46,11 +46,11 @@ package org.netbeans.modules.cnd.modelutil;
 
 import java.awt.Color;
 import java.io.File;
-import java.util.Iterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Language;
@@ -61,38 +61,13 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmEnum;
-import org.netbeans.modules.cnd.api.model.CsmEnumerator;
-import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
-import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmInclude.IncludeState;
-import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmParameter;
-import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.spi.CsmDisplayUtilitiesProvider;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.netbeans.swing.plaf.LFCustoms;
 
 /**
@@ -113,8 +88,8 @@ public class CsmDisplayUtilities {
             try {
                 int stOffset = stToken;
                 int endOffset = endToken;
-                int startLine = Utilities.getRowFirstNonWhite(doc, stOffset);
-                int endLine = Utilities.getRowLastNonWhite(doc, endOffset) + 1;
+                int startLine = LineDocumentUtils.getLineFirstNonWhitespace(doc, stOffset);
+                int endLine = LineDocumentUtils.getLineLastNonWhitespace(doc, endOffset) + 1;
                 if (!tokenInBold) {
                     stOffset = -1;
                     endOffset = -1;
@@ -134,8 +109,8 @@ public class CsmDisplayUtilities {
         if (stDoc instanceof BaseDocument) {
             BaseDocument doc = (BaseDocument) stDoc;
             try {
-                int startLine = Utilities.getRowFirstNonWhite(doc, stToken);
-                int endLine = Utilities.getRowLastNonWhite(doc, endToken) + 1;
+                int startLine = LineDocumentUtils.getLineFirstNonWhitespace(doc, stToken);
+                int endLine = LineDocumentUtils.getLineLastNonWhitespace(doc, endToken) + 1;
                 displayText = doc.getText(startLine, endLine - startLine);
             } catch (BadLocationException ex) {
                 // skip
@@ -143,7 +118,7 @@ public class CsmDisplayUtilities {
         }
         return displayText;
     }
-    
+
     public static String getLineHtml(int startLine, int endLine, final int stToken, final int endToken, BaseDocument doc) throws BadLocationException {
         int startBold = stToken - startLine;
         int endBold = endToken - startLine;
@@ -168,20 +143,20 @@ public class CsmDisplayUtilities {
         if (lang == null) {
             return content;
         }
-        TokenHierarchy tokenH = TokenHierarchy.create(content, lang);
+        TokenHierarchy<?> tokenH = TokenHierarchy.create(content, lang);
         TokenSequence<?> tok = tokenH.tokenSequence();
         appendHtml(buf, tok);
         return buf.toString();
     }
-    
+
     public static CharSequence getTooltipText(CsmObject item) {
         return CsmDisplayUtilitiesProvider.getDefault().getTooltipText(item);
     }
-    
+
     public static CharSequence getTypeText(CsmType type, boolean expandInstantiations, boolean evaluateExpressions) {
         return CsmDisplayUtilitiesProvider.getDefault().getTypeText(type, expandInstantiations, evaluateExpressions);
     }
-    
+
     private final static boolean SKIP_COLORING = Boolean.getBoolean("cnd.test.skip.coloring");// NOI18N
 
     private static void appendHtml(StringBuilder buf, TokenSequence<?> ts) {
@@ -268,7 +243,7 @@ public class CsmDisplayUtilities {
         String html_color = "#" + colorR + colorG + colorB; //NOI18N
         return html_color;
     }
-    
+
     private static String trimStart(String s) {
         for (int x = 0; x < s.length(); x++) {
             if (Character.isWhitespace(s.charAt(x))) {

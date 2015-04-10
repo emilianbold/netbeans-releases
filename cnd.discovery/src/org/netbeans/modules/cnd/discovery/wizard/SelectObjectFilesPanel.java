@@ -51,10 +51,8 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,13 +61,13 @@ import org.openide.util.NbBundle;
 public final class SelectObjectFilesPanel extends JPanel {
     private final SelectObjectFilesWizard wizard;
     private final List<ProviderControl> controls = new ArrayList<>();
-    
+
     /** Creates new form DiscoveryVisualPanel1 */
     public SelectObjectFilesPanel(SelectObjectFilesWizard wizard) {
         this.wizard = wizard;
         initComponents();
     }
-    
+
     void read(DiscoveryDescriptor wizardDescriptor) {
         DiscoveryProvider provider = wizardDescriptor.getProvider();
         if (provider != null) {
@@ -97,7 +95,7 @@ public final class SelectObjectFilesPanel extends JPanel {
                                 ProviderPropertyType.LogFileSystemPropertyType.setProperty(provider, fileSystem);
                             } else if (ProviderPropertyType.BinaryFileSystemPropertyType == property.getPropertyType()) {
                                 ProviderPropertyType.BinaryFileSystemPropertyType.setProperty(provider, fileSystem);
-                            } 
+                            }
                         } catch (FileStateInvalidException ex) {
                         }
                         break;
@@ -108,14 +106,14 @@ public final class SelectObjectFilesPanel extends JPanel {
             }
         }
     }
-    
+
     void store(DiscoveryDescriptor wizardDescriptor) {
         for(ProviderControl pc : controls){
             pc.store();
         }
         wizardDescriptor.setInvokeProvider(true);
     }
-    
+
     boolean valid() {
         if (controls.size() == 0){
             return false;
@@ -127,7 +125,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         }
         return true;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -175,11 +173,6 @@ public final class SelectObjectFilesPanel extends JPanel {
         add(instructionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
             
-    private String getString(String key) {
-        return NbBundle.getBundle(SelectObjectFilesPanel.class).getString(key);
-    }
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;

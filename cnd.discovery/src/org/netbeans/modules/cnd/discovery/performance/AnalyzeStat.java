@@ -47,17 +47,16 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
 
 /**
  *
  * @author alsimon
  */
 public class AnalyzeStat {
-    
+
     private AnalyzeStat() {
     }
-    
+
     static void process(TreeMap<String, AgregatedStat> gatherStat) {
         upEmptyFolder(gatherStat);
         getBigUnused(gatherStat);
@@ -94,7 +93,7 @@ public class AnalyzeStat {
                 return (int)(o2.getValue().itemTime/1000/1000 - o1.getValue().itemTime/1000/1000);
             }
         });
-        
+
         return orphan;
     }
 
@@ -124,12 +123,12 @@ public class AnalyzeStat {
             public int compare(Map.Entry<String, AgregatedStat> o1, Map.Entry<String, AgregatedStat> o2) {
                 int k1 = (int)(o1.getValue().readTime/o1.getValue().readCPU);
                 int k2 = (int)(o2.getValue().readTime/o2.getValue().readCPU);
-                return (int)(k2 - k1);
+                return k2 - k1;
             }
         });
         return slow;
     }
-    
+
     static void upEmptyFolder(TreeMap<String, AgregatedStat> gatherStat) {
         List<Map.Entry<String, AgregatedStat>> list = new ArrayList<>(gatherStat.entrySet());
         int i = 0;
@@ -172,11 +171,11 @@ public class AnalyzeStat {
                     }
                     i = nextItem;
                 }
-            } 
+            }
             i++;
         }
     }
-    
+
     static void groupByReadingSpeed(TreeMap<String, AgregatedStat> gatherStat) {
         while(true) {
             int start = gatherStat.size();
@@ -186,7 +185,7 @@ public class AnalyzeStat {
             }
         }
     }
-    
+
     private static void getGroupByReadingSpeedImpl(TreeMap<String, AgregatedStat> gatherStat) {
         List<Map.Entry<String, AgregatedStat>> list = new ArrayList<>(gatherStat.entrySet());
         int i = 0;
@@ -347,13 +346,13 @@ public class AnalyzeStat {
             } else {
                 buf.append('-').append('\t'); //NOI18N
             }
-            
+
             buf.append(entry.getKey());
         }
         buf.append('\n'); //NOI18N
         PerformanceIssueDetector.LOG.log(PerformanceIssueDetector.level, buf.toString());
     }
-    
+
     static final class AgregatedStat {
         int itemNumber;
         long itemTime;
@@ -369,12 +368,12 @@ public class AnalyzeStat {
         long parseLines;
         long parseTime;
         long parseCPU;
-        long parseUser;       
+        long parseUser;
     }
     private static final class MyEntry implements Map.Entry<String, AgregatedStat> {
         private final String key;
         private AgregatedStat value;
-        
+
         MyEntry(String key, AgregatedStat value) {
             this.key = key;
             this.value = value;

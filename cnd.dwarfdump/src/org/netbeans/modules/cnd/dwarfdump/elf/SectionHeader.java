@@ -67,24 +67,24 @@ public class SectionHeader {
     public long getSectionSize() {
         return sh_size;
     }
-    
+
     public long getSectionOffset() {
         return sh_offset;
     }
-    
+
     public long getSectionEntrySize() {
         return sh_entsize;
     }
-    
+
     public String getSectionName(){
         return name;
     }
-    
+
     public void dump(PrintStream out) {
         out.println("Elf section header:"); // NOI18N
-        out.printf("  %-20s %s\n", "Offset:", sh_offset); // NOI18N
-        out.printf("  %-20s %s\n", "Length:", sh_size); // NOI18N
-        out.printf("  %-20s %s\n", "Memory alignment:", sh_addralign); // NOI18N
+        out.printf("  %-20s %s%n", "Offset:", sh_offset); // NOI18N
+        out.printf("  %-20s %s%n", "Length:", sh_size); // NOI18N
+        out.printf("  %-20s %s%n", "Memory alignment:", sh_addralign); // NOI18N
         out.println();
     }
 
