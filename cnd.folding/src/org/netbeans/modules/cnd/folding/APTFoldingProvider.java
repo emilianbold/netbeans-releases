@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.folding;
 
-import java.io.Reader;
 import java.util.List;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
