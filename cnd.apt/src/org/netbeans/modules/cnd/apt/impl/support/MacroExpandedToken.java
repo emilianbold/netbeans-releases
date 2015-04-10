@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.utils.CndUtils;

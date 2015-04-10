@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.CharSequences;
 
 /**

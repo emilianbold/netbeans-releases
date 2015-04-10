@@ -70,7 +70,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final FileSystem fileSystem;
     //private final int hashCode;
 //    private static final boolean TRACE = Boolean.getBoolean("apt.trace.resolver");
-    
+
     public APTIncludeResolverImpl(FileSystem fs, CharSequence path, int baseFileIncludeDirIndex,
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
@@ -90,10 +90,10 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         //hashCode = aHashCode;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
         this.fileSearch = fileSearch;
-//        if (TRACE) { 
+//        if (TRACE) {
 //            System.err.printf("APTIncludeResolverImpl.ctor %s %s systemIncludePaths: %s\n", fileSystem, path, systemIncludePaths); // NOI18N
 //        }
-    }       
+    }
 
 
     @Override
@@ -143,12 +143,12 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     //    }
     //    return true;
     //}
-    
+
     ////////////////////////////////////////////////////////////////////////////
-    // implementation details    
+    // implementation details
     //private static int count = 0;
     //private static int hit = 0;
-        
+
     private ResolvedPath resolveFilePath(String includedFile, boolean system, boolean includeNext) {
         ResolvedPath result = null;
         if (includedFile != null && (includedFile.length() > 0)) {
@@ -167,7 +167,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                     //    //count++;
                     //    result = ResolverResultsCache.getResolvedPath(includedFile, this);
                     //}
-                    if (result == null) {
+                    //if (result == null) {
                         PathsCollectionIterator paths = new PathsCollectionIterator(userIncludePaths, systemIncludePaths, 0);
                         result = APTIncludeUtils.resolveFilePath(paths, includedFile, 0);
                         //if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
@@ -175,12 +175,12 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                         //        ResolverResultsCache.putResolvedPath(includedFile, this, result);
                         //    }
                         //}
-                    } else {
+                    //} else {
                         //hit++;
                         //if (hit%10000 == 0) {
                         //    System.err.println("Count = "+count+" hit = "+hit);
                         //}
-                    }
+                    //}
                 }
             }
             if ( result == null && system && !includeNext) {
@@ -195,7 +195,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             }
         }
         return result;
-    }      
+    }
 
     @Override
     public String toString() {
@@ -203,5 +203,5 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                 ",\nsystemIncludePaths=" + systemIncludePaths + ",\nuserIncludePaths=" + userIncludePaths + ",\nfileSearch=" + fileSearch + "\n}"; // NOI18N
     }
 
-    
+
 }

@@ -111,7 +111,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
         return false;
     }
-    
+
     @Override
     public APTMacro getMacro(APTToken token) {
         // check own map
@@ -120,11 +120,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         APTMacro res = macroCache.get(macroText);
         if (res == null) {
             // no need to check in super, because everything is in cache already
-            if (false) {
-                res = super.getMacro(token);
-            }
             // then check system map
-            if (res == null && sysMacroMap != null) {
+            if (sysMacroMap != null) {
                 res = sysMacroMap.getMacro(token);
             }
             if (res == null) {
@@ -186,7 +183,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
         return out;
     }
-    
+
     @Override
     public void setState(State state) {
         active = makeSnapshot(((StateImpl)state).snap);
@@ -243,7 +240,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             long sysCrc = 0;
             if (sysMacroMap instanceof APTSystemMacroMap) {
                 sysCrc = ((APTSystemMacroMap) sysMacroMap).getCompilationUnitCRC();
-            }            
+            }
             return new APTHandlersSupportImpl.StateKeyImpl(crc1, crc2, sysCrc, startFileProject);
         }
 
@@ -315,7 +312,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
         return false;
     }
-    
+
     @Override
     public boolean pushExpanding(APTToken token) {
         assert (token != null);

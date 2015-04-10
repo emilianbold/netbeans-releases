@@ -76,7 +76,7 @@ public final class APTMacroMapSnapshot extends MapSnapshot<APTMacro> {
      * 4) frozen array has Holder with sorted array: [name1, name2, ..., macro1, macro2, ...]
      *    macro names followed by corresponding macro objects. Aray is sorted to be comparable by equals
      */
-    
+
     public APTMacroMapSnapshot(APTMacroMapSnapshot parent) {
         super(parent);
     }
@@ -140,11 +140,11 @@ public final class APTMacroMapSnapshot extends MapSnapshot<APTMacro> {
     public final APTMacro getMacro(APTToken token) {
         return getMacro(token.getTextID());
     }
-    
+
     /*package*/ final APTMacro getMacro(CharSequence key) {
         return get(key);
     }
-    
+
     @Override
     protected APTMacro getImpl(CharSequence key) {
         if (storage == EMPTY) {
@@ -156,7 +156,7 @@ public final class APTMacroMapSnapshot extends MapSnapshot<APTMacro> {
             return null;
         } else if (storage instanceof APTMacro) {
             assert storage != UNDEFINED_MACRO;
-            if (((APTMacro)storage).getName().equals(key)) {
+            if (((APTMacro)storage).getName().getTextID().equals(key)) {
                 return (APTMacro)storage;
             }
             return null;
@@ -167,7 +167,7 @@ public final class APTMacroMapSnapshot extends MapSnapshot<APTMacro> {
             return map;
         }
     }
-    
+
     @Override
     public String toString() {
         Map<CharSequence, APTMacro> tmpMap = getAll();
@@ -200,18 +200,18 @@ public final class APTMacroMapSnapshot extends MapSnapshot<APTMacro> {
     @Override
     public Iterator<Map.Entry<CharSequence, APTMacro>> iterator() {
         if (storage instanceof CharSequence) {
-            return new SingleItemIterator((CharSequence) storage, UNDEFINED_MACRO);
+            return new SingleItemIterator<APTMacro>((CharSequence) storage, UNDEFINED_MACRO);
         } else if (storage instanceof APTMacro) {
             APTMacro value = (APTMacro) storage;
-            return new SingleItemIterator(value.getName().getTextID(), value);
+            return new SingleItemIterator<APTMacro>(value.getName().getTextID(), value);
         } else {
             return super.iterator();
         }
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // persistence support
-    
+
     public void write(RepositoryDataOutput output) throws IOException {
         APTSerializeUtils.writeSnapshot(getParent(), output);
         if (this.storage == EMPTY) {
@@ -255,7 +255,7 @@ public final class APTMacroMapSnapshot extends MapSnapshot<APTMacro> {
             Object[] arr = readMacros(collSize, input);
             storage = SnapshotHolderCache.getManager().getHolder(new Holder(arr));
         }
-    }  
+    }
 
     private static Object[] readMacros(int collSize, RepositoryDataInput input) throws IOException {
         Object[] storage = new Object[collSize*2];
@@ -284,7 +284,7 @@ public final class APTMacroMapSnapshot extends MapSnapshot<APTMacro> {
         public CharSequence getFile() {
             return CharSequences.empty();
         }
-        
+
         @Override
         public Kind getKind() {
             return Kind.USER_SPECIFIED;
