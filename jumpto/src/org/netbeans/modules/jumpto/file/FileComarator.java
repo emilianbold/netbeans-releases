@@ -42,8 +42,12 @@
 
 package org.netbeans.modules.jumpto.file;
 
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.EntityComparator;
+import org.netbeans.modules.jumpto.common.StateFullComparator;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.openide.util.ChangeSupport;
 
 /**
  * The {@code FileComarator} establishes the sort order of the files.
@@ -55,20 +59,37 @@ import org.netbeans.spi.jumpto.file.FileDescriptor;
  *
  * @author Victor G. Vasilyev <vvg@netbeans.org>
  */
-public class FileComarator extends EntityComparator<FileDescriptor> {
+//@NotThreadSave //Use from EDT
+public final class FileComarator extends EntityComparator<FileDescriptor> implements StateFullComparator<FileDescriptor>{
 
-    private boolean usePrefered;
-    private boolean caseSensitive;
+    private final ChangeSupport support;
+    private final boolean caseSensitive;
+    private boolean usePreferred;
 
-    public FileComarator(boolean usePrefered, boolean caseSensitive ) {
-        this.usePrefered = usePrefered;
+    public FileComarator(
+            final boolean usePreferred,
+            final boolean caseSensitive ) {
         this.caseSensitive = caseSensitive;
+        this.usePreferred = usePreferred;
+        this.support = new ChangeSupport(this);
+    }
+
+    boolean isUsePreferred() {
+        return usePreferred;
+    }
+
+    void setUsePreferred(final boolean usePreferred) {
+        final boolean fire = this.usePreferred ^ usePreferred;
+        this.usePreferred = usePreferred;
+        if (fire) {
+            support.fireChange();
+        }
     }
 
     @Override
     public int compare(FileDescriptor e1, FileDescriptor e2) {
         // If prefered prefer prefered
-        if ( usePrefered ) {
+        if ( usePreferred ) {
             FileProviderAccessor fpa = FileProviderAccessor.getInstance();
             boolean isE1Curr = fpa.isFromCurrentProject(e1);
             boolean isE2Curr = fpa.isFromCurrentProject(e2);
@@ -100,6 +121,16 @@ public class FileComarator extends EntityComparator<FileDescriptor> {
         // Relative location
         r = compare( e1.getOwnerPath(), e2.getOwnerPath(), caseSensitive);
         return r;
+    }
+
+    @Override
+    public void addChangeListener(@NonNull final ChangeListener listener) {
+        support.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(@NonNull final ChangeListener listener) {
+        support.removeChangeListener(listener);
     }
 
 }

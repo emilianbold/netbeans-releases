@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -78,7 +79,9 @@ import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.netbeans.modules.weblogic.common.ProxyUtils;
+import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -660,7 +663,8 @@ public final class WebLogicDeployer {
                 // XXX authentication
                 // t3 and t3s is afaik sits on top of http and https (source ?)
                 List<Proxy> proxies = ProxySelector.getDefault().select(
-                        new URI("http://" + config.getHost() + ":" + config.getPort())); // NOI18N
+                        new URI((config.isSecured() ? "https://" : "http://")
+                                + config.getHost() + ":" + config.getPort())); // NOI18N
                 if (!proxies.isEmpty()) {
                     Proxy first = proxies.get(0);
                     if (first.type() != Proxy.Type.DIRECT) {
@@ -688,6 +692,15 @@ public final class WebLogicDeployer {
             }
         }
 
+        if (config.isSecured()) {
+            WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+            if (handler != null) {
+                for (Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
+                    arguments.add("-D" + e.getKey() + "=" + e.getValue()); // NOI18N
+                }
+            }
+        }
+
         arguments.add("-cp"); // NOI18N
         arguments.add(getClassPath());
         arguments.add("weblogic.Deployer"); // NOI18N
@@ -700,6 +713,14 @@ public final class WebLogicDeployer {
         arguments.add(command);
 
         arguments.addAll(Arrays.asList(parameters));
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Java CL deployer arguments");
+            for (String arg : arguments) {
+                LOGGER.log(Level.FINE, arg);
+            }
+        }
+
         builder.setArguments(arguments);
 
         final LineProcessor realProcessor;

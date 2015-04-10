@@ -86,7 +86,7 @@ public final class TreeUtils {
         return true;
     }
 
-    static TreePath findClass(TreePath path) {
+    public static TreePath findClass(TreePath path) {
         while (path != null) {
             if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind())) {
                 return path;

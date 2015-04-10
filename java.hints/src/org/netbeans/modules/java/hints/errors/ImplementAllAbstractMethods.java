@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
@@ -59,6 +60,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -74,6 +76,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -380,10 +384,44 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         }
     }
     
+    // copy from GeneratorUtils, need to change the processing a little.
+    public static Map<? extends ExecutableElement, ? extends ExecutableElement> generateAllAbstractMethodImplementations(
+            WorkingCopy wc, TreePath path) {
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
+        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
+        if (te == null) {
+            return null;
+        }
+        Map<? extends ExecutableElement, ? extends ExecutableElement> ret;
+        ClassTree clazz = (ClassTree)path.getLeaf();
+        GeneratorUtilities gu = GeneratorUtilities.get(wc);
+        ElementUtilities elemUtils = wc.getElementUtilities();
+        List<? extends ExecutableElement> toImplement = elemUtils.findUnimplementedMethods(te);
+        ret = Utilities.findConflictingMethods(wc, te, toImplement);
+        if (ret.size() < toImplement.size()) {
+            toImplement.removeAll(ret.keySet());
+            List<? extends MethodTree> res = gu.createAbstractMethodImplementations(te, toImplement);
+            clazz = gu.insertClassMembers(clazz, res);
+            wc.rewrite(path.getLeaf(), clazz);
+        }
+        if (ret.isEmpty()) {
+            return ret;
+        }
+        // should be probably elsewhere: UI separation
+        String msg = ret.size() == 1 ?
+                NbBundle.getMessage(ImplementAllAbstractMethods.class, "WARN_FoundConflictingMethods1", 
+                        ret.keySet().iterator().next().getSimpleName()) :
+                NbBundle.getMessage(ImplementAllAbstractMethods.class, "WARN_FoundConflictingMethodsMany", 
+                        ret.keySet().size());
+        
+        StatusDisplayer.getDefault().setStatusText(msg, StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+        return ret;
+    }
+
     private static void fixClassOrVariable(WorkingCopy copy, TreePath pathToModify, Tree toModify,
             int[] offset, boolean[] repeat) {
         if (TreeUtilities.CLASS_TREE_KINDS.contains(toModify.getKind())) {
-            GeneratorUtils.generateAllAbstractMethodImplementations(copy, pathToModify);
+            generateAllAbstractMethodImplementations(copy, pathToModify);
             return;
         } else if (!(toModify.getKind() == Kind.NEW_CLASS || toModify.getKind() == Kind.VARIABLE)) {
             return;
