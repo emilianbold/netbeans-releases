@@ -164,7 +164,7 @@ public class GoToSupport {
                         return;
                     }
 
-                    Context resolved = resolveContext(controller, doc, offset, goToSource);
+                    Context resolved = resolveContext(controller, doc, offset, goToSource, true);
 
                     if (resolved != null) {
                         result[0] = computeTooltip(controller, doc, resolved, type);
@@ -219,7 +219,7 @@ public class GoToSupport {
                     }
                     cpInfo[0] = controller.getClasspathInfo();
 
-                    Context resolved = resolveContext(controller, doc, offset, goToSource);
+                    Context resolved = resolveContext(controller, doc, offset, goToSource, false);
 
                     if (resolved == null) {
                         CALLER.beep(goToSource, javadoc);
@@ -293,7 +293,7 @@ public class GoToSupport {
         performGoTo(doc, offset, false, true);
     }
 
-    public static Context resolveContext(CompilationInfo controller, Document doc, int offset, boolean goToSource) {
+    public static Context resolveContext(CompilationInfo controller, Document doc, int offset, boolean goToSource, boolean tooltip) {
         Token<JavaTokenId>[] token = new Token[1];
         int[] span = getIdentifierSpan(doc, offset, token);
 
@@ -365,7 +365,7 @@ public class GoToSupport {
                                 }
                             }
                         }
-                    } else if (el != null && el.getKind() == ElementKind.ENUM_CONSTANT && path.getLeaf().getKind() == Kind.VARIABLE) {
+                    } else if (!tooltip && el != null && el.getKind() == ElementKind.ENUM_CONSTANT && path.getLeaf().getKind() == Kind.VARIABLE) {
                         Element e = controller.getTrees().getElement(new TreePath(path, ((VariableTree)path.getLeaf()).getInitializer()));
                         if (!controller.getElementUtilities().isSynthetic(e)) {
                             el = e;
