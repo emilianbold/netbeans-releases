@@ -54,31 +54,32 @@ import javax.swing.event.ListDataListener;
  *
  * @author Alexander Simon
  */
-public class IncludesListModel implements ListModel {
+public class IncludesListModel implements ListModel<String> {
     private final NodeConfigurationImpl configuration;
     private final List<String> names;
-    
+
     public IncludesListModel(NodeConfigurationImpl configuration, boolean resulting){
         this.configuration = configuration;
         names = new ArrayList<>(configuration.getUserInludePaths(resulting));
         Collections.<String>sort(names);
     }
-    
+
     public int getSize() {
         return names.size();
     }
-    
-    public Object getElementAt(int index) {
+
+    @Override
+    public String getElementAt(int index) {
         return names.get(index);
     }
-    
+
     public NodeConfigurationImpl getNodeConfiguration(){
         return configuration;
     }
-    
+
     public void addListDataListener(ListDataListener l) {
     }
-    
+
     public void removeListDataListener(ListDataListener l) {
     }
 }

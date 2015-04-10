@@ -147,7 +147,7 @@ public abstract class QtInfoProvider {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            return java.util.Collections.EMPTY_LIST;
+            return java.util.Collections.emptyList();
         }
 
         private String getActualVarValue(Map<String, String> vars, String var) {
@@ -157,7 +157,7 @@ public abstract class QtInfoProvider {
             }
             return result;
         }
-        
+
         /**
          * Finds Qt include directories for given project configuration.
          *
@@ -327,8 +327,7 @@ public abstract class QtInfoProvider {
                         cache.put(cacheKey, baseDir);
                     } else {
                         String baseInc = guessBaseQtIncludeDir(qmakePath);
-                        String baseLib = null;
-                        baseDir = Pair.of(baseInc, baseLib);
+                        baseDir = Pair.of(baseInc, null);
                         // do not cache this result, so that we can
                         // really query qmake once connection is up
                     }

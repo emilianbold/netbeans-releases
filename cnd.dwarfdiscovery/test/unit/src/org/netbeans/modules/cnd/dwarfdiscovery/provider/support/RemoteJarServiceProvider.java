@@ -49,7 +49,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;

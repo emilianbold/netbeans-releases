@@ -172,7 +172,7 @@ public final class GoToImplementation extends BaseAction {
     }
     
     static Element resolveTarget(CompilationInfo info, Document doc, int caretPos, AtomicBoolean onDeclaration) {
-        Context context = GoToSupport.resolveContext(info, doc, caretPos, false);
+        Context context = GoToSupport.resolveContext(info, doc, caretPos, false, false);
 
         TreePath tp = info.getTreeUtilities().pathFor(caretPos);
 

@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
  */
 public class StabIndexStrSection extends ElfSection {
     private byte[] stringtable = null;
-    
+
     public StabIndexStrSection(ElfReader reader, int sectionIdx) throws IOException {
         super(reader, sectionIdx);
         read();
@@ -69,7 +69,7 @@ public class StabIndexStrSection extends ElfSection {
         reader.seek(filePos);
         return this;
     }
-    
+
     public byte[] getStringTable() {
         return stringtable;
     }
@@ -87,37 +87,37 @@ public class StabIndexStrSection extends ElfSection {
         }
         return res;
     }
-    
+
     public String getString(long offset) {
         StringBuilder str = new StringBuilder();
-        
+
         for (int i = (int)offset; i < stringtable.length; i++) {
             if (stringtable[i] == 0) {
                 break;
             }
             str.append((char)stringtable[i]);
         }
-        
+
         return str.toString();
     }
-    
+
     @Override
     public void dump(PrintStream out) {
         super.dump(out);
-        
+
         if (stringtable == null) {
             out.println("<Empty table>"); // NOI18N
             return;
         }
-        
+
         int offset = 0;
         int idx = 0;
 
-        out.printf("No.\tOffset\tString\n"); // NOI18N
-        
+        out.printf("No.\tOffset\tString%n"); // NOI18N
+
         while (offset < stringtable.length) {
             String string = getString(offset);
-            out.printf("%d.\t%d\t%s\n", ++idx, offset, string); // NOI18N
+            out.printf("%d.\t%d\t%s%n", ++idx, offset, string); // NOI18N
             offset += string.length() + 1;
         }
     }

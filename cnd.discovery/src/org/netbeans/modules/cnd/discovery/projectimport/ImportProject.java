@@ -159,7 +159,7 @@ public class ImportProject implements PropertyChangeListener {
             logger.setLevel(Level.ALL);
         }
     }
-    
+
     private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
     private static final RequestProcessor RPR = new RequestProcessor(ImportProject.class.getName(), 1);
     private final String nativeProjectPath;
@@ -207,7 +207,7 @@ public class ImportProject implements PropertyChangeListener {
     private DoubleFile existingBuildLog;
     private File configureLog = null;
     private boolean resolveSymLinks;
-    
+
     public ImportProject(WizardDescriptor wizard) {
         isFullRemoteProject = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizard) != null;
         hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizard);
@@ -267,7 +267,7 @@ public class ImportProject implements PropertyChangeListener {
         }
         runMake = Boolean.TRUE.equals(WizardConstants.PROPERTY_RUN_REBUILD.get(wizard));
         if (runMake) {
-            makefilePath = WizardConstants.PROPERTY_USER_MAKEFILE_PATH.get(wizard); 
+            makefilePath = WizardConstants.PROPERTY_USER_MAKEFILE_PATH.get(wizard);
             if (makefilePath == null) {
                 makefilePath = nativeProjectPath + "/Makefile"; // NOI18N;
             }
@@ -276,7 +276,7 @@ public class ImportProject implements PropertyChangeListener {
         }
         toolchain = WizardConstants.PROPERTY_TOOLCHAIN.get(wizard);
         defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wizard));
-        
+
         List<SourceFolderInfo> list = new ArrayList<>();
         list.add(new SourceFolderInfo() {
 
@@ -305,17 +305,17 @@ public class ImportProject implements PropertyChangeListener {
         workingDir = WizardConstants.PROPERTY_WORKING_DIR.get(wizard);
         buildCommand = WizardConstants.PROPERTY_BUILD_COMMAND.get(wizard);
         cleanCommand = WizardConstants.PROPERTY_CLEAN_COMMAND.get(wizard);
-        buildResult = WizardConstants.PROPERTY_BUILD_RESULT.get(wizard); 
-        includeDirectories = WizardConstants.PROPERTY_INCLUDES.get(wizard); 
-        macros = WizardConstants.PROPERTY_MACROS.get(wizard); 
-        makefilePath = WizardConstants.PROPERTY_USER_MAKEFILE_PATH.get(wizard); 
+        buildResult = WizardConstants.PROPERTY_BUILD_RESULT.get(wizard);
+        includeDirectories = WizardConstants.PROPERTY_INCLUDES.get(wizard);
+        macros = WizardConstants.PROPERTY_MACROS.get(wizard);
+        makefilePath = WizardConstants.PROPERTY_USER_MAKEFILE_PATH.get(wizard);
         configurePath = WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.get(wizard);
         configureRunFolder = WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER.get(wizard);
         configureArguments = WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS.get(wizard);
         configureCommand = WizardConstants.PROPERTY_CONFIGURE_COMMAND.get(wizard);
         runConfigure = Boolean.TRUE.equals(WizardConstants.PROPERTY_RUN_CONFIGURE.get(wizard));
-        sources = WizardConstants.PROPERTY_SOURCE_FOLDERS.get(wizard); 
-        tests = WizardConstants.PROPERTY_TEST_FOLDERS.get(wizard); 
+        sources = WizardConstants.PROPERTY_SOURCE_FOLDERS.get(wizard);
+        tests = WizardConstants.PROPERTY_TEST_FOLDERS.get(wizard);
         sourceFoldersFilter = WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.get(wizard);
         runMake = Boolean.TRUE.equals(WizardConstants.PROPERTY_RUN_REBUILD.get(wizard));
         String path = WizardConstants.PROPERTY_BUILD_LOG.get(wizard);
@@ -375,7 +375,7 @@ public class ImportProject implements PropertyChangeListener {
                 extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
             }
         }
-        extConf.getProfile().setRunDirectory(workingDirRel);       
+        extConf.getProfile().setRunDirectory(workingDirRel);
         extConf.getProfile().setBuildFirst(false);
         // Include directories
         if (includeDirectories != null && includeDirectories.length() > 0) {
@@ -520,7 +520,7 @@ public class ImportProject implements PropertyChangeListener {
                 }
                 if (configurationDescriptor.getActiveConfiguration() != null) {
                     configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(resolveSymLinks);
-                    if (runConfigure && 
+                    if (runConfigure &&
                         (configurePath != null && configurePath.length() > 0 && configureFileObject != null && configureFileObject.isValid() ||
                         configureCommand != null)) {
                         waitSources.await(); // or should it be waitConfigurationDescriptor() ?
@@ -616,7 +616,7 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
     }
-    
+
     private void postConfigure(Node node, ExecutionListener listener) throws Exception {
         if (!isProjectOpened()) {
             isFinished = true;
@@ -951,7 +951,7 @@ public class ImportProject implements PropertyChangeListener {
             }
         };
     }
-    
+
     private void postMake() {
         if (!isProjectOpened()) {
             isFinished = true;
@@ -1046,7 +1046,7 @@ public class ImportProject implements PropertyChangeListener {
                     exeLogDone = true;
                 }
                 if (rc == MakeResult.Successful) {
-                    // build successful 
+                    // build successful
                     if (!done && execLog != null) {
                         done = discoveryByExecLog(execLog, done);
                         exeLogDone = true;
@@ -1079,7 +1079,7 @@ public class ImportProject implements PropertyChangeListener {
                                 done = true;
                                 buildArifactWasAnalyzed = true;
                                 // TODO reload configuration descriptor
-                            }                            
+                            }
                         } else {
                             if (makeLog != null) {
                                 // have a build log
@@ -1118,7 +1118,7 @@ public class ImportProject implements PropertyChangeListener {
             if (!done) {
                 if (!manualCA && !buildArifactWasAnalyzed) {
                     done = discoveryByDwarf(done);
-                }                
+                }
             }
             switchModel(true);
             postModelDiscovery();
@@ -1153,7 +1153,7 @@ public class ImportProject implements PropertyChangeListener {
             pdp.endModifications(delta, false, null);
         }
     }
-    
+
     private boolean updateRemoteProjectImpl(DoubleFile makeLog) {
         ProgressHandle createHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportProject.class, "CONFIGURING_PROJECT_CREATOR",executionEnvironment.getDisplayName()));
         createHandle.start();
@@ -1183,7 +1183,7 @@ public class ImportProject implements PropertyChangeListener {
             if (!execute.isOK()) {
                 // probably java does not found an
                 // try to find java in environment variables
-                String java = null; 
+                String java = null;
                 try {
                     java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JDK_HOME"); // NOI18N
                     if (java == null || java.isEmpty()) {
@@ -1362,8 +1362,8 @@ public class ImportProject implements PropertyChangeListener {
             logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
         }
         if (DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, logger)) {
+            importResult.put(Step.FixExcluded, State.Successful);
         }
-        importResult.put(Step.FixExcluded, State.Successful);
     }
 
     private Map<String,Item> normalizedItems;
@@ -1449,7 +1449,7 @@ public class ImportProject implements PropertyChangeListener {
         //}
      }
 
-    
+
     private boolean discoveryByDwarfOrBuildLog(boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
@@ -1463,10 +1463,10 @@ public class ImportProject implements PropertyChangeListener {
                     DiscoveryWizardDescriptor.BUILD_RESULT.toMap(map, dwarfSource.getPath());
                 }
             }
-            
+
             if (extension.canApply(map, makeProject, interrupter)) {
                 DiscoveryProvider provider = DiscoveryWizardDescriptor.PROVIDER.fromMap(map);
-                if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) { 
+                if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) {
                     if (TRACE) {
                         logger.log(Level.INFO, "#start discovery by log file {0}", ProviderPropertyType.MakeLogPropertyType.getProperty(provider)); // NOI18N
                     }
@@ -1505,7 +1505,7 @@ public class ImportProject implements PropertyChangeListener {
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     DiscoveryProvider provider = DiscoveryWizardDescriptor.PROVIDER.fromMap(map);
-                    if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) { 
+                    if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) {
                         logger.log(Level.INFO, "#start discovery by build log file {0}", makeLog.getLocalPath()); // NOI18N
                     } else {
                         logger.log(Level.INFO, "#start discovery by exec log file {0}", makeLog.getLocalPath()); // NOI18N
@@ -1589,7 +1589,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private static enum MakeResult {
-        
+
         Successful, Failed, Skipped
     };
 }

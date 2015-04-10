@@ -69,28 +69,28 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LNS;
  */
 public class DwarfLineInfoSection extends ElfSection {
     private HashMap<Long, DwarfStatementList> statementLists = new HashMap<Long, DwarfStatementList>();
-    
+
     public DwarfLineInfoSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
     }
-    
+
     public DwarfStatementList getStatementList(long offset) throws IOException {
         Long lOffset = Long.valueOf(offset);
         DwarfStatementList statementList = statementLists.get(lOffset);
-        
+
         if (statementList == null) {
             statementList = readStatementList(offset);
             statementLists.put(lOffset, statementList);
         }
-        
+
         return statementList;
     }
-    
+
     private DwarfStatementList readStatementList(long offset) throws IOException {
         reader.seek(header.getSectionOffset() + offset);
-        
+
         DwarfStatementList stmt_list = new DwarfStatementList(offset);
-        
+
         stmt_list.total_length = reader.readDWlen();
         stmt_list.version = reader.readShort();
         stmt_list.prologue_length = reader.read3264();
@@ -101,20 +101,20 @@ public class DwarfLineInfoSection extends ElfSection {
         stmt_list.opcode_base = 0xFF & reader.readByte();
 
         stmt_list.standard_opcode_lengths = new long[stmt_list.opcode_base - 1];
-        
+
         for (int i = 0; i < stmt_list.opcode_base - 1; i++) {
             stmt_list.standard_opcode_lengths[i] = reader.readUnsignedLEB128();
         }
-        
+
         String dirname = reader.readString();
-        
+
         while (dirname.length() > 0) {
             stmt_list.includeDirs.add(dirname);
             dirname = reader.readString();
         }
-        
+
         String fname = reader.readString();
-        
+
         while(fname.length() > 0) {
             stmt_list.fileEntries.add(new FileEntry(fname, reader.readUnsignedLEB128(), reader.readUnsignedLEB128(), reader.readUnsignedLEB128()));
             fname = reader.readString();
@@ -128,7 +128,7 @@ public class DwarfLineInfoSection extends ElfSection {
         for (DwarfStatementList statementList : statementLists.values()) {
             statementList.dump(out);
         }
-    }    
+    }
 
     @Override
     public String toString() {
@@ -306,7 +306,7 @@ public class DwarfLineInfoSection extends ElfSection {
                 sourceFile = ((prev_fileno >= 0 && prev_fileno < section.getFileEntries().size()) ? section.getFilePath(prev_fileno + 1) : define_file);
                 if (sourceFile != null) {
                     if (target > 0) {
-                        if (target > 0 && target >= prev_base_address && target < new_addr) {
+                        if (target >= prev_base_address && target < new_addr) {
                             LineNumber res = new LineNumber(sourceFile, lineno, prev_base_address, new_addr);
                             result.add(res);
                             return result;

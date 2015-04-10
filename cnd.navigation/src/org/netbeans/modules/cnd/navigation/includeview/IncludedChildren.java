@@ -59,11 +59,11 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class IncludedChildren extends Children.Keys<CsmFile> {
-    private static Comparator<CsmFile> COMARATOR = new MyComparator();
+    private static final Comparator<CsmFile> COMARATOR = new MyComparator();
     
-    private CsmFile object;
-    private IncludedChildren parent;
-    private IncludedModel model;
+    private final CsmFile object;
+    private final IncludedChildren parent;
+    private final IncludedModel model;
     private boolean isInited = false;
     
     public IncludedChildren(CsmFile object, IncludedModel model, IncludedChildren parent) {

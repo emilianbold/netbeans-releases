@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
  * @author Sergey Grinev
  */
 public class TraceDwarf {
-    
+
     private TraceDwarf() {
     }
 
@@ -72,7 +72,7 @@ public class TraceDwarf {
             dump = new Dwarf(objFileName);
             CompilationUnitIterator units = dump.iteratorCompilationUnits();
             int idx = 0;
-            if (units != null && units.hasNext()) {
+            if (units.hasNext()) {
                 Dwarf.LOG.log(Level.FINE, "\n**** Done. Compilation units were found"); // NOI18N
                 while(units.hasNext()) {
                     CompilationUnitInterface compilationUnit = units.next();

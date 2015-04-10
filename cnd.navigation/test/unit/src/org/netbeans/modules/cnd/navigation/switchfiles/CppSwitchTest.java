@@ -46,8 +46,6 @@ package org.netbeans.modules.cnd.navigation.switchfiles;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;

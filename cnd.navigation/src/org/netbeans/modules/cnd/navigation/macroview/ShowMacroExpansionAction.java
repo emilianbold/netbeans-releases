@@ -117,7 +117,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
 
     @Override
     protected Class<?>[] cookieClasses() {
-        return new Class[]{
+        return new Class<?>[]{
                     EditorCookie.class
                 };
     }
