@@ -63,6 +63,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.openide.util.Pair;
 
 /**
@@ -151,7 +152,7 @@ public final class Models {
 
         private void filterData() {
             if (filter != null) {
-                final Callable<Void> action = new Callable<Void>() {
+                invokeInEDT( new Callable<Void>() {
                     @Override
                     public Void call() {
                         assert SwingUtilities.isEventDispatchThread();
@@ -172,22 +173,7 @@ public final class Models {
                         }
                         return null;
                     }
-                };
-                if (SwingUtilities.isEventDispatchThread()) {
-                    try {
-                        action.call();
-                    } catch (RuntimeException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    try {
-                        invokeInEDT(action);
-                    } catch (InvocationTargetException | InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                });
             }
         }
     }
@@ -313,8 +299,11 @@ public final class Models {
             this.comparator = comparator;
             this.filter = filter;
             items = included = Collections.<T>emptyList();
+            if (this.comparator instanceof StateFullComparator) {
+                ((StateFullComparator)this.comparator).addChangeListener(this);
+            }
             if (this.filter != null) {
-                filter.addChangeListener(this);
+                this.filter.addChangeListener(this);
             }
         }
 
@@ -355,54 +344,51 @@ public final class Models {
 
         @Override
         public void stateChanged(@NonNull final ChangeEvent e) {
-            filterData();
+            final Object source = e.getSource();
+            if (source == this.comparator) {
+                add(Collections.<T>emptyList());
+            } else if (source == this.filter) {
+                filterData();
+            }
         }
 
         private Pair<List<T>,List<T>> getData() {
-            try {
-                return invokeInEDT(new Callable<Pair<List<T>,List<T>>>() {
-                    @Override
-                    public Pair<List<T>, List<T>> call() throws Exception {
-                        assert SwingUtilities.isEventDispatchThread();
-                        final List<T> copy = new ArrayList<>(items);
-                        return Pair.<List<T>,List<T>>of(items, copy);
-                    }
-                });
-            } catch (InterruptedException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+            return invokeInEDT(new Callable<Pair<List<T>,List<T>>>() {
+                @Override
+                public Pair<List<T>, List<T>> call() throws Exception {
+                    assert SwingUtilities.isEventDispatchThread();
+                    final List<T> copy = new ArrayList<>(items);
+                    return Pair.<List<T>,List<T>>of(items, copy);
+                }
+            });
         }
 
         private boolean casData(final List<T> expected, final List<T> update) {
-            try {
-                return invokeInEDT(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        assert SwingUtilities.isEventDispatchThread();
-                        if (items == expected) {
-                            int oldSize = items.size();
-                            items = included = update;
-                            int newSize = items.size();
-                            fireContentsChanged(this, 0, Math.min(oldSize, newSize));
-                            if (oldSize < newSize) {
-                                fireIntervalAdded(this, oldSize, newSize);
-                            } else if (oldSize > newSize) {
-                                fireIntervalRemoved(this, newSize, oldSize);
-                            }
-                            return true;
-                        } else {
-                            return false;
+            return invokeInEDT(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    assert SwingUtilities.isEventDispatchThread();
+                    if (items == expected) {
+                        int oldSize = items.size();
+                        items = included = update;
+                        int newSize = items.size();
+                        fireContentsChanged(this, 0, Math.min(oldSize, newSize));
+                        if (oldSize < newSize) {
+                            fireIntervalAdded(this, oldSize, newSize);
+                        } else if (oldSize > newSize) {
+                            fireIntervalRemoved(this, newSize, oldSize);
                         }
+                        return true;
+                    } else {
+                        return false;
                     }
-                });
-            }catch (InterruptedException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+                }
+            });
         }
 
         private void filterData() {
             if (filter != null) {
-                final Callable<Void> action = new Callable<Void>() {
+                invokeInEDT(new Callable<Void>() {
                     @Override
                     public Void call() {
                         assert SwingUtilities.isEventDispatchThread();
@@ -423,38 +409,38 @@ public final class Models {
                         }
                         return null;
                     }
-                };
-                if (SwingUtilities.isEventDispatchThread()) {
-                    try {
-                        action.call();
-                    } catch (RuntimeException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    try {
-                        invokeInEDT(action);
-                    } catch (InterruptedException | InvocationTargetException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                });
             }
         }
     }
 
-    private static <R> R invokeInEDT(@NonNull final Callable<R> call) throws InterruptedException, InvocationTargetException {
-        final AtomicReference<R> res = new AtomicReference<>();
-        SwingUtilities.invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    res.set(call.call());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+    @NullUnknown
+    private static <R> R invokeInEDT(@NonNull final Callable<R> call) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            try {
+                return call.call();
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        });
-        return res.get();
+        } else {
+            try {
+                final AtomicReference<R> res = new AtomicReference<>();
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            res.set(call.call());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+                return res.get();
+            } catch (InterruptedException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

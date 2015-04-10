@@ -146,6 +146,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             }
         });
     //@GuardedBy("this")
+    private FileComarator itemsComparator;
+    //@GuardedBy("this")
     private Worker[] running;
     //@GuardedBy("this")
     private RequestProcessor.Task[] scheduledTasks;
@@ -247,15 +249,17 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         synchronized(this) {
             final SearchType searchType = Utils.toSearchType(nameKind);
             if (currentSearch.isNarrowing(searchType, text)) {
+                itemsComparator.setUsePreferred(panel.isPreferedProject());
                 currentSearch.filter(searchType, text);
                 enableOK(panel.searchCompleted());
                 return false;
             } else {
                 final String searchText = text;
+                itemsComparator = new FileComarator(
+                        panel.isPreferedProject(),
+                        panel.isCaseSensitive());
                 final Models.MutableListModel baseListModel = Models.mutable(
-                        new FileComarator(
-                            panel.isPreferedProject(),
-                            panel.isCaseSensitive()),
+                        itemsComparator,
                         currentSearch.resetFilter());
                 panel.setModel(Models.refreshable(
                         baseListModel,
