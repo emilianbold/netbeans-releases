@@ -198,9 +198,9 @@ public class OverridesPopup extends JPanel implements FocusListener {
         private final Item item;
         private final boolean selected;
         private final boolean hasFocus;
-        private final JList list;
+        private final JList<?> list;
 
-        public RenderComponent(Item item, boolean selected, boolean hasFocus, JList list) {
+        public RenderComponent(Item item, boolean selected, boolean hasFocus, JList<?> list) {
             super(item.getDisplayName(), item.getIcon(), SwingConstants.LEFT);
             this.item = item;
             this.selected = selected;
@@ -251,7 +251,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
     private static class RendererImpl extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(
-                JList list,
+                JList<?> list,
                 Object value,
                 int index,
                 boolean isSelected,
@@ -264,8 +264,8 @@ public class OverridesPopup extends JPanel implements FocusListener {
             }
         }
     }
-    
-    private JList list;
+
+    private JList<Item> list;
     private JScrollPane scrollPane;
     private final List<Item> elements;
     private final CsmOffsetableDeclaration mainDeclaration;
@@ -304,7 +304,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
         super(new BorderLayout());
         this.mainDeclaration = mainDeclaration;
         this.gotoDefinitions = gotoDefinitions;
-        
+
         this.elements = new ArrayList<Item>();
 
         if (caption != null) {
@@ -314,7 +314,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
             add(title, BorderLayout.NORTH);
         }
 
-        list = new JList();
+        list = new JList<>();
         //list.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
         scrollPane = new JScrollPane(list);
         add(scrollPane, BorderLayout.CENTER);
@@ -339,7 +339,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
         }
         Collections.sort(elements);
 
-        DefaultListModel model = new DefaultListModel();
+        DefaultListModel<Item> model = new DefaultListModel<>();
         if (this.mainDeclaration != null) {
             model.addElement(new Item(this.mainDeclaration, Kind.MAIN));
         }
@@ -380,7 +380,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
 
             @Override
             public void run() {
-                Item el = (Item) list.getSelectedValue();
+                Item el = list.getSelectedValue();
                 if (el != null) {
                     CsmOffsetableDeclaration decl = el.declaration;
                     if (gotoDefinitions) {

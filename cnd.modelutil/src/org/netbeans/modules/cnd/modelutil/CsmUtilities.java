@@ -67,6 +67,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -74,7 +75,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.JumpList;
-import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.*;
@@ -87,11 +87,9 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.spi.utils.FileObjectRedirector;
-import org.netbeans.modules.cnd.utils.Antiloop;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -119,7 +117,7 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Voskresensky
  */
 public class CsmUtilities {
-    
+
     // Default classifier text for auto type
     public static final String AUTO_KEYWORD = "auto"; // NOI18N
 
@@ -248,12 +246,12 @@ public class CsmUtilities {
             return PRIVATE_LEVEL;
         }
     }
-    
+
     public static boolean isAutoType(CsmType varType) {
         return varType != null &&
                varType.getClassifierText() != null &&
                varType.getClassifierText().toString().equals(AUTO_KEYWORD); // NOI18N
-    }        
+    }
 
     public static boolean isPrimitiveClass(CsmClassifier c) {
         return c.getKind() == CsmDeclaration.Kind.BUILT_IN;
@@ -263,7 +261,7 @@ public class CsmUtilities {
     public static CsmFile getCsmFile(Node node, boolean waitParsing) {
         return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing, false);
     }
-    
+
     public static CsmFile getCsmFile(NativeFileItem item, boolean waitParsing, boolean snapShot) {
         CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
         if (csmProject != null) {
@@ -279,7 +277,7 @@ public class CsmUtilities {
         Document doc = component.getDocument();
         return (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
     }
-    
+
     public static JTextComponent findOpenedEditor(DataObject dob) {
         if (dob == null) {
             return null;
@@ -295,7 +293,7 @@ public class CsmUtilities {
         }
         return null;
     }
-    
+
     /*
      * redirected into EDT => can block
      * if interested in opened editor => try findRecentEditor method
@@ -465,7 +463,7 @@ public class CsmUtilities {
         // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
         return CndPathUtilities.isPathAbsolute(fo.getPath());
     }
-    
+
     public static Collection<NativeProject> getNativeProjects(DataObject dobj) {
         Collection<NativeProject> out = new ArrayList<>();
         if (dobj != null && dobj.isValid()) {
@@ -480,7 +478,7 @@ public class CsmUtilities {
     }
 
     public static CsmFile[] getCsmFiles(DataObject dobj, boolean waitParsing, boolean snapShot) {
-        if (waitParsing) { 
+        if (waitParsing) {
             CndUtils.assertNonUiThread();
         }
         if (dobj != null && dobj.isValid()) {
@@ -554,7 +552,7 @@ public class CsmUtilities {
         }
         return new CsmFile[0];
     }
-    
+
     public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing, boolean snapShot) {
         CsmFile[] files = getCsmFiles(dobj, waitParsing, snapShot);
         if (files == null || files.length == 0) {
@@ -582,14 +580,14 @@ public class CsmUtilities {
             }
         }
     }
-    
+
     public static FileObject getFileObject(CsmFile csmFile) {
         return (csmFile == null) ? null : csmFile.getFileObject();
 //        FileObject fo = null;
 //        if (csmFile != null) {
-//            
+//
 //            try {
-//                try {                    
+//                try {
 //                    fo = CndFileUtils.toFileObject(csmFile.getAbsolutePath());
 //                    if (fo == null /*paranoia*/ || !fo.isValid()) {
 //                        File file = new File(csmFile.getAbsolutePath().toString()); // XXX:FileObject conversion
@@ -616,7 +614,7 @@ public class CsmUtilities {
                 if (csmFile != null) {
                     fo = getFileObject(csmFile);
                 }
-            }            
+            }
         }
         return fo;
     }
@@ -775,7 +773,7 @@ public class CsmUtilities {
         StyledDocument doc = CsmUtilities.openDocument(cookie);
         return doc;
     }
-    
+
     /**
      * opens document even if it is very big by silently confirming open
      * @param cookie
@@ -801,7 +799,7 @@ public class CsmUtilities {
         cookie.prepareDocument().waitFinished();
         return document;
     }
-    
+
     public static StyledDocument openDocument(CloneableEditorSupport ces) {
         if (ces == null) {
             return null;
@@ -819,8 +817,8 @@ public class CsmUtilities {
         }
         ces.prepareDocument().waitFinished();
         return document;
-    } 
-    
+    }
+
     /*
      * opens source file correspond to input object and set caret on
      * start offset position
@@ -1019,7 +1017,7 @@ public class CsmUtilities {
         Offsetable element = pointOrOffsetable.getOffsetable();
         Point point = pointOrOffsetable.getPoint();
         if (element == null) {
-            start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), point.line - 1);
+            start = LineDocumentUtils.getLineStartFromIndex((BaseDocument) pane.getDocument(), point.line - 1);
             start += point.column;
         } else {
             start = element.getOffset();
@@ -1041,7 +1039,7 @@ public class CsmUtilities {
         int lineSt = 0;
         if (doc instanceof BaseDocument) {
             // use NB utilities for NB documents
-            lineSt = Utilities.getRowStartFromLineOffset((BaseDocument) doc, docLine);
+            lineSt = LineDocumentUtils.getLineStartFromIndex((BaseDocument) doc, docLine);
         } else {
             // not NB document, count lines
             int len = doc.getLength();
@@ -1177,7 +1175,7 @@ public class CsmUtilities {
         //return NameCache.getString(sb.toString());
         return sb.toString();
     }
-    
+
     private static DataObject redirect(DataObject dob) {
         if (dob == null) {
             return null;
@@ -1194,7 +1192,7 @@ public class CsmUtilities {
         }
         return dob;
     }
-    
+
     public static <T> int howMany(List<T> list, T elem) {
         int counter = 0;
         for (T lsitElem : list) {
@@ -1203,22 +1201,22 @@ public class CsmUtilities {
             }
         }
         return counter;
-    }        
-    
+    }
+
     public static int howMany(TypeInfoCollector collector, Qualificator qual) {
         return howMany(collector.qualificators, qual);
-    }    
-    
+    }
+
     public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2) {
         return checkTypesEqual(type1, contextFile1, type2, contextFile2, new AlwaysEqualQualsEqualizer());
     }
-    
+
     public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, QualifiersEqualizer qualsEqualizer) {
         if (type1 != null && type2 != null) {
             if (!qualsEqualizer.areQualsEqual(type1, type2)) {
                 return false;
             }
-            
+
             boolean resolveTypeChain = false;
             for (int i = 0; i < 2; i++) {
                 CsmClassifier tbsp1Cls = getClassifier(type1, contextFile1, resolveTypeChain);
@@ -1230,9 +1228,9 @@ public class CsmUtilities {
                         }
                     }
                 }
-                
+
                 resolveTypeChain = true;
-                
+
                 if (contextFile1 == null && contextFile2 == null) {
                     break;
                 }
@@ -1240,15 +1238,15 @@ public class CsmUtilities {
         }
         return false;
     }
-    
+
     private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, boolean resolveTypeChain) {
         CsmClassifier cls = type.getClassifier();
         if (resolveTypeChain && contextFile != null && CsmBaseUtilities.isValid(cls)) {
             cls = CsmBaseUtilities.getOriginalClassifier(cls, contextFile);
         }
         return cls;
-    }            
-    
+    }
+
     /**
      * Iterates type chain until end is reached or stopFilter returned true
      * @param type from iterate should start
@@ -1258,50 +1256,50 @@ public class CsmUtilities {
     public static CsmType iterateTypeChain(CsmType type, Predicate<CsmType> stopFilter) {
         return iterateTypeChain(type, stopFilter, 50);
     }
-    
+
     /**
      * Iterates type chain until end is reached or stopFilter returned true
      * @param type from iterate should start
      * @param stopFilter
      * @param maxDepth - max number of iterations
      * @return last type
-     */    
+     */
     public static CsmType iterateTypeChain(CsmType type, Predicate<CsmType> stopFilter, int maxDepth) {
         CsmType lastNestedType = type;
-        
+
         Set<CsmType> antiLoop = new HashSet<CsmType>();
-        
+
         while (type != null && !antiLoop.contains(type) && antiLoop.size() < maxDepth) {
             lastNestedType = type;
-            
+
             if (stopFilter.check(type)) {
                 break;
             }
-            
-            antiLoop.add(type);                
-            
-            CsmClassifier classifier = type.getClassifier();                
-            
+
+            antiLoop.add(type);
+
+            CsmClassifier classifier = type.getClassifier();
+
             type = null;
-            
+
             if (CsmKindUtilities.isTypedef(classifier) || CsmKindUtilities.isTypeAlias(classifier)) {
                 type = ((CsmTypedef)classifier).getType();
             }
         }
-        
+
         return lastNestedType;
-    } 
-    
+    }
+
     // Predicate which unrolls type while it is not user friendly
     public static class SmartTypeUnrollPredicate implements Predicate <CsmType> {
-        
+
         // Set of words which prevent type from further unrolling
         private static final Set<String> stopWords = new HashSet<>();
-        
+
         static {
             stopWords.add("iterator"); // NOI18N
         }
-        
+
         @Override
         public boolean check(CsmType value) {
             CharSequence clsText = value.getClassifierText();
@@ -1322,7 +1320,7 @@ public class CsmUtilities {
             return true;
         }
     }
-    
+
     // Predicate which unrolls type until template classifier is found
     public static class SearchTemplatePredicate implements Predicate<CsmType> {
 
@@ -1331,9 +1329,9 @@ public class CsmUtilities {
             CsmClassifier cls = value.getClassifier();
             return CsmKindUtilities.isTemplate(cls);
         }
-        
+
     }
-    
+
     //-----------------------------------------------------------------
 
     private static final class FileTarget implements CsmOffsetable {
@@ -1392,21 +1390,21 @@ public class CsmUtilities {
         public int getColumn() {
             return -1;
         }
-    };      
-    
+    };
+
     public static interface Predicate<T> {
-        
+
         /**
          * @param value to check
          */
-        boolean check(T value);        
-        
-    }      
-    
+        boolean check(T value);
+
+    }
+
     public static final class ConstantPredicate<T> implements Predicate<T> {
-        
+
         private final boolean constant;
-        
+
         public ConstantPredicate(boolean value) {
             constant = value;
         }
@@ -1415,29 +1413,29 @@ public class CsmUtilities {
         public boolean check(T value) {
             return constant;
         }
-        
-    }   
-    
+
+    }
+
     public enum Qualificator {
-        POINTER(CppTokenId.STAR), 
-        REFERENCE(CppTokenId.AMP), 
-        RVALUE_REFERENCE(CppTokenId.AMPAMP), 
-        CONST(CppTokenId.CONST), 
+        POINTER(CppTokenId.STAR),
+        REFERENCE(CppTokenId.AMP),
+        RVALUE_REFERENCE(CppTokenId.AMPAMP),
+        CONST(CppTokenId.CONST),
         ARRAY(CppTokenId.LBRACKET, CppTokenId.RBRACKET);
-        
+
         private final CppTokenId tokens[];
 
         private Qualificator(CppTokenId ... tokens) {
             this.tokens = tokens;
         }
-        
+
         public CppTokenId[] getTokens() {
             return tokens;
         }
     }
-    
+
     public static final class TypeInfoCollector implements Predicate<CsmType> {
-        
+
 
         public final List<Qualificator> qualificators = new ArrayList<>();
 
@@ -1449,34 +1447,34 @@ public class CsmUtilities {
                 } else {
                     qualificators.add(Qualificator.REFERENCE);
                 }
-            }            
+            }
             for (int i = 0; i < value.getArrayDepth(); i++) {
                 qualificators.add(Qualificator.ARRAY);
-            }            
+            }
             for (int i = 0; i < value.getPointerDepth(); i++) {
                 qualificators.add(Qualificator.POINTER);
-            }            
+            }
             if (value.isConst()) {
                 qualificators.add(Qualificator.CONST);
             }
             return false;
         }
     }
-    
+
     public static interface QualifiersEqualizer {
-        
+
         boolean areQualsEqual(CsmType from, CsmType to);
     }
-    
+
     public static class AlwaysEqualQualsEqualizer implements QualifiersEqualizer {
 
         @Override
         public boolean areQualsEqual(CsmType from, CsmType to) {
             return true;
         }
-        
+
     }
-    
+
     public static class ExactMatchQualsEqualizer implements QualifiersEqualizer {
 
         @Override
@@ -1498,11 +1496,11 @@ public class CsmUtilities {
             } else {
                 return false;
             }
-            
+
             return true;
         }
     }
-    
+
     public static class AssignableQualsEqualizer implements QualifiersEqualizer {
 
         @Override
@@ -1545,10 +1543,10 @@ public class CsmUtilities {
                 }
                 return false;
             }
-            
+
             return true;
         }
-    }    
+    }
 
     private CsmUtilities() {
     }
