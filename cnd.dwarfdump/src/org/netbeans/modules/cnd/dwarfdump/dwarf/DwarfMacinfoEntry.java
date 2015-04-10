@@ -57,13 +57,13 @@ public class DwarfMacinfoEntry {
     public int lineNum;
     public String definition;
     public int fileIdx;
-            
+
     public DwarfMacinfoEntry(MACINFO type) {
         this.type = type;
     }
 
     public void dump(PrintStream out) {
-        out.printf("%s\t%d\t[%d]\t%s\n", type, fileIdx, lineNum, definition); // NOI18N
+        out.printf("%s\t%d\t[%d]\t%s%n", type, fileIdx, lineNum, definition); // NOI18N
     }
 
     @Override

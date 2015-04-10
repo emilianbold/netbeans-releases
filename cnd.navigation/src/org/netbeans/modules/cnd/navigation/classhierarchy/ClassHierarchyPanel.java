@@ -83,10 +83,10 @@ import org.openide.windows.TopComponent;
  *
  * @author Alexander Simon
  */
-public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
+public final class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.gif"; // NOI18N
 
-    private AbstractNode root;
+    private final AbstractNode root;
     private volatile CsmUID<CsmClass> object;
     private boolean subDirection = true;
     private boolean recursive = true;
@@ -96,7 +96,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private Action close;
     private final RequestProcessor.Task refreshTask = new RequestProcessor("ClassHierarchyPanelUpdater").create(new Updater());// NOI18N
     private AtomicBoolean menuAvaliable = new AtomicBoolean(false);
-    
+
     /** Creates new form ClassHierarchyPanel */
     public ClassHierarchyPanel(boolean isView) {
         initComponents();
@@ -117,7 +117,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
         if (isView) {
-            actions = new Action[]{new RefreshAction(), 
+            actions = new Action[]{new RefreshAction(),
                                    null, new SubTypeAction(), new SuperTypeAction(),
                                    null, new DirectOnlyAction(), new TreeAction()};
         } else {
@@ -150,7 +150,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private MyBeanTreeView getTreeView(){
         return (MyBeanTreeView)hierarchyPane;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -317,7 +317,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             }
         }
     }
-    
+
     private void supertypeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supertypeButtonActionPerformed
         if (subDirection != supertypeButton.isSelected()){
             return;
@@ -343,7 +343,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             }
         }
     }
-    
+
     private void setPlain(boolean isPlain){
         if (object != null) {
             CsmClass cls = object.getObject();
@@ -363,13 +363,13 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         updateButtons();
         update(cls);
     }
-    
+
     private void updateButtons(){
         subtypeButton.setSelected(subDirection);
         supertypeButton.setSelected(!subDirection);
         directOnlyButton.setSelected(!recursive);
         treeButton.setSelected(!plain);
-        
+
         refreshButton.setEnabled(menuAvaliable.get());
         subtypeButton.setEnabled(menuAvaliable.get());
         supertypeButton.setEnabled(menuAvaliable.get());
@@ -382,7 +382,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         super.requestFocusInWindow();
         return hierarchyPane.requestFocusInWindow();
     }
-    
+
     public void setWaiting() {
         menuAvaliable.set(false);
         updateButtons();
@@ -412,7 +412,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             });
         }
     }
-    
+
     private synchronized void update(final CsmClass csmClass) {
         if (csmClass != null) {
             setWaiting();
@@ -426,7 +426,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton directOnlyButton;
     private javax.swing.ButtonGroup directionGroup;
@@ -440,13 +440,13 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JToolBar toolBar;
     private javax.swing.JToggleButton treeButton;
     // End of variables declaration//GEN-END:variables
-    
+
     private class RefreshAction extends AbstractAction implements Presenter.Popup {
-        private JMenuItem menuItem;
+        private final JMenuItem menuItem;
         public RefreshAction() {
             putValue(Action.NAME, NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.refreshButton.menuText")); //NOI18N
             putValue(Action.SMALL_ICON, refreshButton.getIcon());
-            menuItem = new JMenuItem(this); 
+            menuItem = new JMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
@@ -463,14 +463,14 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
 
     private class SubTypeAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private final JRadioButtonMenuItem menuItem;
         public SubTypeAction() {
             putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.SUB_TYPES)); //NOI18N
             putValue(Action.SMALL_ICON, subtypeButton.getIcon());
-            menuItem = new JRadioButtonMenuItem(this); 
+            menuItem = new JRadioButtonMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setSubtypeHierarchy(true);
@@ -485,14 +485,14 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
 
     private class SuperTypeAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private final JRadioButtonMenuItem menuItem;
         public SuperTypeAction() {
             putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.SUPER_TYPES));
             putValue(Action.SMALL_ICON, supertypeButton.getIcon());
-            menuItem = new JRadioButtonMenuItem(this); 
+            menuItem = new JRadioButtonMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setSubtypeHierarchy(false);
@@ -508,14 +508,14 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
 
     private class DirectOnlyAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public DirectOnlyAction() {
             putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.DIRECT_ONLY));
             putValue(Action.SMALL_ICON, getButtonIcon(ClassHierarchyPanel.DIRECT_ONLY));
-            menuItem = new JCheckBoxMenuItem(this); 
+            menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setRecursive(!recursive);
@@ -530,14 +530,14 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
 
     private class TreeAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public TreeAction() {
             putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.TREE));
             putValue(Action.SMALL_ICON, getButtonIcon(ClassHierarchyPanel.TREE));
-            menuItem = new JCheckBoxMenuItem(this); 
+            menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setPlain(!plain);
@@ -569,7 +569,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
            }
         }
     }
-    
+
     private static class MyBeanTreeView extends BeanTreeView {
         public MyBeanTreeView(){
         }
@@ -637,7 +637,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     public HelpCtx getHelpCtx() {
         return new HelpCtx("TypeView"); // NOI18N
     }
-    
+
     private class Updater implements Runnable {
         HierarchyModel model;
         CsmClass csmClass;

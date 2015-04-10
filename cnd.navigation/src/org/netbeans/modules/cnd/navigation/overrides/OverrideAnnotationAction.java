@@ -58,10 +58,10 @@ import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -132,9 +132,9 @@ public class OverrideAnnotationAction extends AbstractAction {
                 @Override
                 public void run() {
                     try {
-                        int line = Utilities.getLineOffset((BaseDocument) doc, currentPosition);
-                        int startOffset = Utilities.getRowStartFromLineOffset((BaseDocument) doc, line);
-                        int endOffset = Utilities.getRowEnd((BaseDocument) doc, startOffset);
+                        int line = LineDocumentUtils.getLineIndex((BaseDocument) doc, currentPosition);
+                        int startOffset = LineDocumentUtils.getLineStartFromIndex((BaseDocument) doc, line);
+                        int endOffset = LineDocumentUtils.getLineEnd((BaseDocument) doc, startOffset);
                         AnnotationDesc desc = annotations.getActiveAnnotation(line);
                         if (desc == null) {
                             return ;

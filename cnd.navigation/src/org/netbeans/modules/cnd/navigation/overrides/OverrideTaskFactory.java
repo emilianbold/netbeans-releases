@@ -187,7 +187,7 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
         private RunnerImpl(DataObject dobj, CsmFile file, StyledDocument doc, AtomicBoolean canceled, long time){
             this.dobj = dobj;
             this.file = file;
-            weakDoc = new WeakReference<StyledDocument>((StyledDocument) doc);
+            weakDoc = new WeakReference<StyledDocument>(doc);
             this.canceled = canceled;
             this.time = time;
         }
@@ -235,7 +235,7 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
             }
         }
     }
-    
+
     @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1300)
     public static final class OverrideOptions extends NamedOption {
         private static final String NAME = "overrides-annotations"; //NOI18N
@@ -265,7 +265,7 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
             return NbBundle.getMessage(OverrideTaskFactory.class, "Show-overrides-annotations-AD");
         }
     }
-    
+
     @MimeRegistrations({
         @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
         @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class)

@@ -73,7 +73,7 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
     private final TristateCheckBox check;
     private final JLabel label;
 
-    private static final JList LIST_FOR_COLORS = new JList();
+    private static final JList<?> LIST_FOR_COLORS = new JList<>();
 
     public CheckRenderer() {
 

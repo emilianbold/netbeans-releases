@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;

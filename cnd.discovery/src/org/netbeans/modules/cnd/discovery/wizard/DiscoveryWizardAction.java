@@ -98,7 +98,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
         invokeWizard(projects.iterator().next());
     }
-    
+
     @Override
     protected boolean enable(Node[] activatedNodes) {
         Collection<Project> projects = getMakeProjects(activatedNodes);
@@ -107,7 +107,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
         return true;
     }
-    
+
     private void invokeWizard(Project project) {
         DiscoveryWizardDescriptor wizardDescriptor = new DiscoveryWizardDescriptor(getPanels());
         wizardDescriptor.setProject(project);
@@ -115,15 +115,13 @@ public final class DiscoveryWizardAction extends NodeAction {
         wizardDescriptor.setBuildResult(findBuildResult(project));
         wizardDescriptor.setFileSystem(findBuildResultFileSystem(project));
         boolean resolveSymbolic = CommonUtilities.resolveSymbolicLinks();
-        if (project != null) {
-            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (cdp != null && cdp.gotDescriptor()) {
-                MakeConfigurationDescriptor cd = cdp.getConfigurationDescriptor();
-                if (cd != null) {
-                    MakeConfiguration activeConfiguration = cd.getActiveConfiguration();
-                    if (activeConfiguration != null) {
-                        resolveSymbolic = activeConfiguration.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
-                    }
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (cdp != null && cdp.gotDescriptor()) {
+            MakeConfigurationDescriptor cd = cdp.getConfigurationDescriptor();
+            if (cd != null) {
+                MakeConfiguration activeConfiguration = cd.getActiveConfiguration();
+                if (activeConfiguration != null) {
+                    resolveSymbolic = activeConfiguration.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
                 }
             }
         }
@@ -140,7 +138,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
         dialog.dispose();
     }
-    
+
     private static String findBuildResult(Project project) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp == null || !pdp.gotDescriptor()){
@@ -157,7 +155,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
         return null;
     }
-    
+
     private static FileSystem findBuildResultFileSystem(Project project) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp == null || !pdp.gotDescriptor()){
@@ -171,7 +169,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
         return null;
     }
-    
+
     private static String getProjectDirectoryPath(Project project) {
         FileObject projectDirectory = project.getProjectDirectory();
         if (CndFileUtils.isLocalFileSystem(projectDirectory) && Utilities.isWindows()) {
@@ -180,7 +178,7 @@ public final class DiscoveryWizardAction extends NodeAction {
             return projectDirectory.getPath();
         }
     }
-    
+
     public static String findSourceRoot(Project project) {
         String base = getProjectDirectoryPath(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -237,7 +235,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
         return base;
     }
-    
+
     /**
      * Gets the collection of native projects that correspond the given nodes.
      * @return in the case all nodes correspond to native projects -
@@ -270,7 +268,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
         return projects;
     }
-    
+
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
@@ -288,10 +286,10 @@ public final class DiscoveryWizardAction extends NodeAction {
             steps[i] = c.getName();
             setupComponent(steps, i, c);
         }
-        
+
         return new DiscoveryWizardIterator(panels);
     }
-    
+
     private void setupComponent(final String[] steps, final int i, final Component c) {
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent) c;
@@ -307,30 +305,30 @@ public final class DiscoveryWizardAction extends NodeAction {
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
         }
     }
-    
+
     @Override
     public String getName() {
         return getString("ACTION_TITLE_TXT");
     }
-    
+
     @Override
     public String iconResource() {
         return null;
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
     private String getString(String key) {
         return NbBundle.getMessage(DiscoveryWizardAction.class, key);
     }
-    
+
 }
 
