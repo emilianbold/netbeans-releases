@@ -95,7 +95,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
         }
         return null;
     }
-    
+
     private boolean showKeywordCompletion(final Document doc, final int offset) {
         final AtomicBoolean out = new AtomicBoolean(false);
         doc.render(new Runnable() {
@@ -103,11 +103,11 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             @Override
             public void run() {
                 out.set(showKeywordCompletionImpl(doc, offset));
-            }            
+            }
         });
         return out.get();
     }
-    
+
     private boolean showKeywordCompletionImpl(Document doc, int offset) {
         TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
@@ -173,7 +173,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
 
     private static final List<CppTokenId> keywordsAll;
     private static final List<CppTokenId> keywordsFirst;
-            
+
     static {
         keywordsFirst = Arrays.asList(
             CppTokenId.ALIGNOF,
@@ -264,7 +264,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             }
         }
     }
-    
+
     private static final class Query extends AsyncCompletionQuery {
 
         private Collection<CsmKeywordCompletionItem> results;
@@ -280,7 +280,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
         }
-        
+
         @Override
         protected void preQueryUpdate(JTextComponent component) {
             String mimeType = CsmCompletionUtils.getMimeType(component);
@@ -292,7 +292,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             if(TRACE)System.err.println("KW query("+caretOffset+")");
             Collection<CsmKeywordCompletionItem> items = getItems((BaseDocument) doc, caretOffset);
             if (this.queryAnchorOffset > 0) {
-                if (items != null && items.size() > 0) {
+                if (!items.isEmpty()) {
                     this.results = items;
                     items = getFilteredData(items, this.filterPrefix);
                     resultSet.estimateItems(items.size(), -1);
@@ -345,7 +345,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             }
             return null;
         }
-        
+
         private Collection<CsmKeywordCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
             Collection<CsmKeywordCompletionItem> items = new ArrayList<CsmKeywordCompletionItem>();
             try {
@@ -365,7 +365,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             }
             return items;
         }
-        
+
         private boolean init(final BaseDocument doc, final int caretOffset) throws BadLocationException {
             filterPrefix = "";
             queryAnchorOffset = -1;
@@ -404,7 +404,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
             if(TRACE)System.err.println("KW init("+caretOffset+")->"+filterPrefix);
             return this.queryAnchorOffset >= 0;
         }
-        
+
         private boolean isCppIdentifierPart(String text) {
             for (int i = 0; i < text.length(); i++) {
                 if (!(CndLexerUtilities.isCppIdentifierPart(text.charAt(i)))) {

@@ -164,7 +164,7 @@ public class CsmFinderImpl implements CsmFinder {
 
 //        repository.beginTrans (false);
         try {
-//            ((JMManager) JMManager.getManager()).setSafeTrans(true);            
+//            ((JMManager) JMManager.getManager()).setSafeTrans(true);
             CsmNamespace nmsp = resolveNamespace(namespaceName, true);
             return nmsp;
         } finally {
@@ -204,18 +204,18 @@ public class CsmFinderImpl implements CsmFinder {
                 String prefix = index > 0 ? name.substring(0, index) : ""; //NOI18N
                 CsmNamespace nmsp = resolveNamespace(prefix, caseSensitive);
                 if (nmsp != null) {
-                    Collection subpackages = nmsp.getNestedNamespaces();
+                    Collection<CsmNamespace> subpackages = nmsp.getNestedNamespaces();
                     List<CsmNamespace> list = new ArrayList<CsmNamespace>();
-                    for (Iterator it = subpackages.iterator(); it.hasNext();) {
-                        CsmNamespace subPackage = (CsmNamespace) it.next();
+                    for (Iterator<CsmNamespace> it = subpackages.iterator(); it.hasNext();) {
+                        CsmNamespace subPackage = it.next();
                         String spName = caseSensitive ? subPackage.getName().toString() : subPackage.getName().toString().toUpperCase();
                         String csName = caseSensitive ? name : name.toUpperCase();
                         if (spName.startsWith(csName)) {
                             list.add(subPackage);
                         }
                     }
-                    for (Iterator iter = list.iterator(); iter.hasNext();) {
-                        CsmNamespace nestedNmsp = (CsmNamespace) iter.next();
+                    for (Iterator<CsmNamespace> iter = list.iterator(); iter.hasNext();) {
+                        CsmNamespace nestedNmsp = iter.next();
                         ret.add(nestedNmsp);
                     }
                 }
@@ -412,7 +412,7 @@ public class CsmFinderImpl implements CsmFinder {
             }
         }
     }
-    
+
     private boolean addFoundElement(Set<CharSequence> set, Object obj) {
         if (CsmKindUtilities.isCsmObject(obj)) {
             if (CsmKindUtilities.isFunction((CsmObject) obj)) {

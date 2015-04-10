@@ -70,8 +70,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.TokenId;
@@ -847,8 +847,7 @@ public abstract class CsmResultItem implements CompletionItem {
         }
 
         private boolean isAfterShiftOperator(JTextComponent c) {
-            TokenSequence ts;
-            ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
+            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
             ts.moveStart();
             if (!ts.moveNext()) {
                 return false;
@@ -1089,7 +1088,7 @@ public abstract class CsmResultItem implements CompletionItem {
                             if (parmsCnt == 0) {
                                 if (getActiveParameterIndex() == -1) { // not showing active parm
                                     try {
-                                        int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
+                                        int fnwpos = LineDocumentUtils.getNextNonWhitespace(doc, offset + len);
                                         if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
                                             text = doc.getText(offset + len, fnwpos + 1 - offset - len);
                                             len = fnwpos + 1 - offset;
@@ -1152,8 +1151,8 @@ public abstract class CsmResultItem implements CompletionItem {
                             if (addParams) {
                                 String paramsText = null;
                                 try {
-                                    int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                                    if (fnwpos > -1 && fnwpos <= Utilities.getRowEnd(doc, offset + len) && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
+                                    int fnwpos = LineDocumentUtils.getNextNonWhitespace(doc, offset + len);
+                                    if (fnwpos > -1 && fnwpos <= LineDocumentUtils.getLineEnd(doc, offset + len) && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
                                         paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
                                         if (addSpace && paramsText.length() < 2) {
                                             text += ' ';
@@ -1187,7 +1186,7 @@ public abstract class CsmResultItem implements CompletionItem {
                                     }
                                 } else {
                                     try {
-                                        int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
+                                        int fnwpos = LineDocumentUtils.getNextNonWhitespace(doc, offset + len);
                                         if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
                                             paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
                                             len = fnwpos + 1 - offset;

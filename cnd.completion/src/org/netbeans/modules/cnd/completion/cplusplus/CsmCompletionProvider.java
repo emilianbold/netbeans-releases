@@ -135,11 +135,11 @@ public class CsmCompletionProvider implements CompletionProvider {
     public static CsmCompletionQuery getTestCompletionQuery(CsmFile csmFile, CompletionResolver.QueryScope scope) {
         return new NbCsmCompletionQuery(csmFile, scope, null, false);
     }
-    
+
     public static CsmCompletionQuery createCompletionResolver(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext, true);
     }
-    
+
     static final class Query extends AsyncCompletionQuery {
 
         private JTextComponent component;
@@ -169,7 +169,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         private String getTestState() {
             StringBuilder builder = new StringBuilder();
             builder.append(" creationCaretOffset = ").append(creationCaretOffset); // NOI18N
-            StringBuilder append = builder.append(" queryAnchorOffset = ").append(queryAnchorOffset); // NOI18N
+            builder.append(" queryAnchorOffset = ").append(queryAnchorOffset); // NOI18N
             builder.append(" queryScope = ").append(queryScope); // NOI18N
             builder.append(" filterPrefix = ").append(filterPrefix); // NOI18N
             if (queryResult == null) {
@@ -243,7 +243,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                 } else {
                     if (TRACE) {
                         System.err.println("add not CsmResultItem item " + item); // NOI18N
-                    } 
+                    }
                     items.add(item);
                 }
             }

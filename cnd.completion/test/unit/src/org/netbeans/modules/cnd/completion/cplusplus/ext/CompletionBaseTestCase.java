@@ -49,7 +49,6 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Comparator;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
-import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.spi.editor.completion.CompletionItem;
 

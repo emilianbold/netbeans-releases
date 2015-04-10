@@ -65,8 +65,8 @@ import org.openide.filesystems.FileObject;
  * <li><code>CsmFinderFactory instance</code> is used for synchronization of getFinder and
  *     getGlobalFinder methods. The purpose is to synchronize situation when two
  *     threads are asking for global finder or for finder for the same file. Both
- *     methods are relatively fast: they #1) retrieve classpath(s) and ask for 
- *     parsed DBs and #2) if parser DB does not exist it will schedule its 
+ *     methods are relatively fast: they #1) retrieve classpath(s) and ask for
+ *     parsed DBs and #2) if parser DB does not exist it will schedule its
  *     parsing and continues. After scheduled parser DB was created the
  *     parser thread will notify this class by resetCache() method.</li>
  * <li><code>CACHE_LOCK instance</code> is used for synchronization of access to internal caches.
@@ -95,13 +95,13 @@ public final class CsmFinderFactory {
      * The key is fakeJCClass used in web/jsp => XXX
      */
     //private WeakHashMap fakeClasses = new WeakHashMap();
-    /** This is property change listener listening on classpaths and 
+    /** This is property change listener listening on classpaths and
      * invalidating cache when cp has changed. It must be wrapped in weak
      * listener to allow cp to be garbage collected. */
     //private static PropertyChangeListener cpListener;
     /** Cached global finder. Access to this variable must be always
      * synchronized on CACHE_LOCK instance. */
-    private SoftReference globalFinder;
+    private SoftReference<CsmFinder> globalFinder;
 //    private GlobalPathRegistryListener gpListener;
     /** Object used as lock for cache updating synchronization. */
     private final Object CACHE_LOCK = new Object();
@@ -133,8 +133,8 @@ public final class CsmFinderFactory {
         }
     }
 
-    /** Returns finder for the given file. 
-     * 
+    /** Returns finder for the given file.
+     *
      * @return finder; cannot be null;
      */
     public synchronized CsmFinder getFinder(FileObject fo) {
@@ -170,13 +170,13 @@ public final class CsmFinderFactory {
         } else {
             finders.add(getGlobalFinder());
         }
-//        
+//
 //        // XXX - appending fake finder
 //        if (useFakeFinder){
 //            JCBaseFinder fakeFinder = new FakeFinder(getKitClass());
 //            finders.add(fakeFinder);
 //        }
-//            
+//
 //        finder = new CompoundFinder(finders, getKitClass());
         finder = getGlobalFinder();
         synchronized (CACHE_LOCK) {
@@ -193,7 +193,7 @@ public final class CsmFinderFactory {
 //            Iterator iter = keySet.iterator();
 //            while (iter.hasNext()){
 //                CsmClass cls = (CsmClass) iter.next();
-//                appendClass(cls); 
+//                appendClass(cls);
 //            }
 //        }
 //    }
@@ -203,7 +203,7 @@ public final class CsmFinderFactory {
     public synchronized CsmFinder getGlobalFinder() {
         CsmFinder finder;
         synchronized (CACHE_LOCK) {
-            finder = globalFinder != null ? (CsmFinder) globalFinder.get() : null;
+            finder = globalFinder != null ? globalFinder.get() : null;
         }
         if (finder != null) {
             return finder;
@@ -248,8 +248,8 @@ public final class CsmFinderFactory {
 
     private CsmFinder retrieveFromCache(FileObject fo) {
         synchronized (CACHE_LOCK) {
-            SoftReference ref = (SoftReference) cache.get(fo);
-            return ref != null ? (CsmFinder) ref.get() : null;
+            SoftReference<CsmFinder> ref = (SoftReference<CsmFinder>) cache.get(fo);
+            return ref != null ? ref.get() : null;
         }
     }
     /**
@@ -263,7 +263,7 @@ public final class CsmFinderFactory {
 //        Iterator it = keys.iterator();
 //        while (it.hasNext()) {
 //            FileObject fo = (FileObject)it.next();
-//            
+//
 //            // first check that this item from cache is still valid
 //            CsmFinder finder = retrieveFromCache(fo);
 //            if (finder == null) {
@@ -271,7 +271,7 @@ public final class CsmFinderFactory {
 //                removeFromCache(fo);
 //                continue;
 //            }
-//            
+//
 //            ClassPath c = ClassPath.getClassPath(fo, ClassPath.COMPILE);
 //            if (c != null && c.equals(cp)) {
 //                removeFromCache(fo);
@@ -292,25 +292,25 @@ public final class CsmFinderFactory {
 //        invalidateGlobalFinderCache();
 //    }
 //    private class ClassPathListener implements PropertyChangeListener {
-//        
+//
 //        public void propertyChange(PropertyChangeEvent evt) {
 //            if (ClassPath.PROP_ENTRIES.equals(evt.getPropertyName())) {
 //                assert evt != null && evt.getSource() instanceof ClassPath;
 //                updateCache((ClassPath)evt.getSource());
 //            }
 //        }
-//        
+//
 //    }
-//    
+//
 //    private class GlobalPathListener implements GlobalPathRegistryListener {
-//        
+//
 //        public void pathsAdded(GlobalPathRegistryEvent event) {
 //            invalidateGlobalFinderCache();
-//            
+//
 //            // any change (e.g.: a project was open) will trigger parser DB creation
 //            // if it does not exist yet
 //            // Post it to RP and do not block event processing. The getGlobalFinder()
-//            // method is relatively fast and result is cached, but opening 
+//            // method is relatively fast and result is cached, but opening
 //            // multiple projects at once is visibly slower if global finder
 //            // is refreshed directly here.
 //            RequestProcessor.getDefault().postRequest(new Runnable() {
@@ -319,10 +319,10 @@ public final class CsmFinderFactory {
 //                }
 //            }, 1000); // meaning of 1 sec is just to slightly delay this operation
 //        }
-//        
+//
 //        public void pathsRemoved(GlobalPathRegistryEvent event) {
 //            invalidateGlobalFinderCache();
 //        }
-//        
+//
 //    }
 }

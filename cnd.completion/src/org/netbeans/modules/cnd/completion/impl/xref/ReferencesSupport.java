@@ -153,21 +153,21 @@ public final class ReferencesSupport {
      * the start of document is (1,1)
      */
     public static int getDocumentOffset(BaseDocument doc, int lineIndex, int colIndex) {
-        return Utilities.getRowStartFromLineOffset(doc, lineIndex - 1) + (colIndex - 1);
+        return LineDocumentUtils.getLineStartFromIndex(doc, lineIndex - 1) + (colIndex - 1);
     }
 
     public CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset) {
         return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
-    /*package*/ static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token, 
+    /*package*/ static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token,
             FileReferencesContext fileReferencesContext) {
         CsmContext context = CsmOffsetResolver.findContext(csmFile, offset, fileReferencesContext);
         CsmObject out = context.getLastObject();
         return out;
     }
 
-    /*package*/ static CsmObject findClosestTopLevelObject(CsmFile csmFile, int offset, TokenItem<TokenId> token, 
+    /*package*/ static CsmObject findClosestTopLevelObject(CsmFile csmFile, int offset, TokenItem<TokenId> token,
             FileReferencesContext fileReferencesContext) {
         CsmContext context = CsmOffsetResolver.findContext(csmFile, offset, fileReferencesContext);
         CsmObject out = context.getLastObject();
@@ -176,7 +176,7 @@ public final class ReferencesSupport {
         }
         return out;
     }
-    
+
     /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc,
             final int offset, TokenItem<TokenId> jumpToken, FileReferencesContext fileReferencesContext) {
         long fileVersionOnStartResolving = CsmFileInfoQuery.getDefault().getFileVersion(csmFile);
@@ -236,7 +236,7 @@ public final class ReferencesSupport {
         }
         return csmItem;
     }
-    
+
     public static CsmObject findDefine(Document doc, CsmFile csmFile, TokenItem<TokenId> tokenUnderOffset, int offset) {
         assert (csmFile != null);
         assert (doc != null);
@@ -249,13 +249,13 @@ public final class ReferencesSupport {
             }
         }
         return null;
-    }    
+    }
 
     public static CsmErrorDirective findErrorDirective(CsmFile csmFile, int offset) {
         assert (csmFile != null);
         return CsmOffsetUtilities.findObject(csmFile.getErrors(), null, offset);
     }
-    
+
     public static CsmInclude findInclude(CsmFile csmFile, int offset) {
         assert (csmFile != null);
         return CsmOffsetUtilities.findObject(csmFile.getIncludes(), null, offset);
@@ -288,7 +288,7 @@ public final class ReferencesSupport {
                     // Just ignore it
                 }
             }
-            
+
             // fast check, if possible
             // macros have max priority in file
             List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile, Interrupter.DUMMY);
@@ -322,7 +322,7 @@ public final class ReferencesSupport {
                         csmItem = labels.iterator().next().getReferencedObject();
                     }
                 }
-    // Commented because goto statements could be expression based. 
+    // Commented because goto statements could be expression based.
     // In such case there are inner identifiers
     //            if (csmItem == null) {
     //                // Exit now, don't look for variables, types and etc.
@@ -345,7 +345,7 @@ public final class ReferencesSupport {
                             type = deeperParameter.getType();
                             repeat = true;
                         }
-                    } 
+                    }
                     if (type != null && !type.getInstantiationParams().isEmpty()) {
                         CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
                         if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
@@ -401,7 +401,7 @@ public final class ReferencesSupport {
                             type = deeperParameter.getType();
                             repeat = true;
                         }
-                    } 
+                    }
                     if (!type.getInstantiationParams().isEmpty()) {
                         CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
                         if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
@@ -412,7 +412,7 @@ public final class ReferencesSupport {
                         }
                     }
                 } while (repeat);
-                csmItem = parameter;            
+                csmItem = parameter;
             }
             if (csmItem == null) {
                 int[] idFunBlk = null;
@@ -429,7 +429,7 @@ public final class ReferencesSupport {
                 }
             }
             if (csmItem == null || !CsmIncludeResolver.getDefault().isObjectVisible(csmFile, csmItem)) {
-                // then full check 
+                // then full check
                 CsmObject other = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
                 if (other != null) {
                     csmItem = other;
@@ -482,7 +482,7 @@ public final class ReferencesSupport {
                 CsmType varType = var.getType();
                 if (varType != null) {
                     CsmClassifier varClassifier = (varType != null) ? varType.getClassifier() : null;
-                    
+
                 }
             }
         }*/
@@ -512,7 +512,7 @@ public final class ReferencesSupport {
         }
         return out;
     }
-    
+
     /*package*/ static ReferenceImpl createReferenceImpl(final CsmFile file, final BaseDocument doc, final int offset) {
         ReferenceImpl ref = null;
         doc.readLock();
@@ -539,8 +539,8 @@ public final class ReferencesSupport {
 
     private static boolean isSupportedToken(TokenItem<TokenId> token) {
         return token != null &&
-                (CsmIncludeHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) || 
-                CsmHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) || 
+                (CsmIncludeHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) ||
+                CsmHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) ||
                 CsmDefineHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION));
     }
 
@@ -764,10 +764,10 @@ public final class ReferencesSupport {
 
         @Override
         public CsmObject getClosestTopLevelObject() {
-            throw new UnsupportedOperationException("Not supported.");// NOI18N 
+            throw new UnsupportedOperationException("Not supported.");// NOI18N
         }
     }
-    
+
     @ServiceProvider(service=CndDiagnosticProvider.class, position=2000)
     public static final class RefSupportDiagnostic implements CndDiagnosticProvider {
 
@@ -783,11 +783,11 @@ public final class ReferencesSupport {
             inst.cache.dumpInfo(printOut);
         }
     }
-    
+
     private static DefineImpl getDefine(final Document doc, final CsmFile file, final int offset) {
-        
+
         final DefineTarget dt = new DefineTarget();
-        
+
         if (doc instanceof BaseDocument) {
             ((BaseDocument)doc).render(new Runnable() {
                 @Override
@@ -859,14 +859,14 @@ public final class ReferencesSupport {
                         }
                         int end = ts.offset();
                         dt.setDefine(new DefineImpl(name, params, file, start, offset));
-                    }                    
-                    
+                    }
+
                 }
             });
-        }        
+        }
         return dt.getDefine();
     }
-    
+
     private static int getDefineStartOffset(TokenSequence<TokenId> ts, int offset) {
         if (!ts.moveNext()) {
             return -1;
@@ -884,7 +884,7 @@ public final class ReferencesSupport {
         }
         return lastDefineOffset;
     }
-    
+
 
     private static class DefineParameterImpl implements CsmOffsetable, CsmNamedElement {
         private final CharSequence name;
@@ -896,12 +896,12 @@ public final class ReferencesSupport {
             this.file = file;
             this.startOffset = startOffset;
         }
-     
+
         @Override
         public CharSequence getName() {
             return name;
         }
-        
+
         @Override
         public CsmFile getContainingFile() {
             return file;
@@ -963,7 +963,7 @@ public final class ReferencesSupport {
         }
 
     }
-    
+
     private static class DefineTarget {
         private DefineImpl define;
 
@@ -975,7 +975,7 @@ public final class ReferencesSupport {
             this.define = define;
         }
     }
-    
+
     private static class DefineImpl implements CsmOffsetable {
         private final int startOffset;
         private final int endOffset;
@@ -990,7 +990,7 @@ public final class ReferencesSupport {
             this.endOffset = endOffset;
             this.params = params;
         }
-        
+
         @Override
         public CsmFile getContainingFile() {
             return file;
@@ -1024,10 +1024,10 @@ public final class ReferencesSupport {
         public List<DefineParameterImpl> getParams() {
             return params;
         }
-        
-        
+
+
     }
-    
+
     private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
 
         @Override
@@ -1044,6 +1044,6 @@ public final class ReferencesSupport {
         public int getColumn() {
             return -1;
         }
-    };    
-    
+    };
+
 }

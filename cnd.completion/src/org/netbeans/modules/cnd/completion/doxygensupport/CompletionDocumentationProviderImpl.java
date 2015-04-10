@@ -77,10 +77,7 @@ public class CompletionDocumentationProviderImpl implements CsmDocProvider {
     @Override
     public CharSequence getDocumentation(CsmObject obj, CsmFile file) {
         CompletionDocumentation doc = createDocumentationImpl(obj, file);
-        if (doc != null) {
-            return doc.getText();
-        }
-        return null;
+        return doc.getText();
     }
 
     @Override
