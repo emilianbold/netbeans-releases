@@ -403,6 +403,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
                         reset();
                         setServerState(ServerInstance.STATE_STOPPED);
                     }
+                } catch (RuntimeException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
                 } finally {
                     // safety catch - make sure that we are not still waiting
                     if (getServerState() == STATE_WAITING) {
