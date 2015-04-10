@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 public class SymTabSection extends ElfSection {
     // .symtab section index -> elf section index
     private Map<Integer,Integer> sectionMap = new HashMap<Integer, Integer>();
-    
+
     public SymTabSection(ElfReader reader, int sectionIdx) throws IOException {
         super(reader, sectionIdx);
         read();
@@ -107,23 +107,23 @@ public class SymTabSection extends ElfSection {
         reader.seek(filePos);
         return this;
     }
-    
+
     /**
-     * 
+     *
      * @param sectionIndex in symtab
      * @return section index in elf
      */
     public Integer getSectionIndex(int sectionIndex) {
         return sectionMap.get(sectionIndex);
     }
-    
+
     @Override
     public void dump(PrintStream out) {
         super.dump(out);
-        
-        out.printf("Elf section\tSymtab Section\n"); // NOI18N
+
+        out.printf("Elf section\tSymtab Section%n"); // NOI18N
         for(Map.Entry<Integer, Integer> entry: sectionMap.entrySet()) {
-            out.printf("%d\t%d\n", entry.getKey(), entry.getValue()); // NOI18N
+            out.printf("%d\t%d%n", entry.getKey(), entry.getValue()); // NOI18N
         }
     }
 
@@ -134,5 +134,5 @@ public class SymTabSection extends ElfSection {
         dump(out);
         return st.toString();
     }
-    
+
 }

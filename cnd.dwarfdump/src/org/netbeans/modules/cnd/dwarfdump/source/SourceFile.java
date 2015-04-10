@@ -74,7 +74,7 @@ public final class SourceFile implements CompilationUnitInterface {
     private final String sourceLanguage;
     private final boolean hasMain;
     private final int mainLine;
-    
+
     public static SourceFile createSourceFile(String compileDir, String sourceFile, String compileLine) {
         return new SourceFile(compileDir, sourceFile, compileLine, null, null, false, -1, null);
     }
@@ -89,11 +89,13 @@ public final class SourceFile implements CompilationUnitInterface {
             CompilationUnit dcu = (CompilationUnit)cu;
             StringBuilder buf = new StringBuilder();
             DwarfStatementList dwarfStatementTable = dcu.getStatementList();
-            for(String dir : dwarfStatementTable.includeDirs) {
-                buf.append(" -d").append("'").append(dir).append("'"); // NOI18N
-            }
-            for(FileEntry fileEntry : dwarfStatementTable.fileEntries) {
-                buf.append(" -f:").append(""+fileEntry.dirIndex).append(":'").append(fileEntry.fileName).append("'"); // NOI18N
+            if (dwarfStatementTable != null) {
+                for(String dir : dwarfStatementTable.includeDirs) {
+                    buf.append(" -d").append("'").append(dir).append("'"); // NOI18N
+                }
+                for(FileEntry fileEntry : dwarfStatementTable.fileEntries) {
+                    buf.append(" -f:").append(""+fileEntry.dirIndex).append(":'").append(fileEntry.fileName).append("'"); // NOI18N
+                }
             }
             DwarfMacinfoTable dwarfMacroTable = dcu.getMacrosTable();
             if (dwarfMacroTable != null) {
@@ -133,7 +135,7 @@ public final class SourceFile implements CompilationUnitInterface {
         }
         return res;
     }
-    
+
     private SourceFile(CompilationUnitInterface cu) throws IOException, Exception {
         String s = cu.getCommandLine();
         if (s == null) {
@@ -151,7 +153,7 @@ public final class SourceFile implements CompilationUnitInterface {
         sourceLanguage = cu.getSourceLanguage();
         hasMain = cu.hasMain();
         mainLine = cu.getMainLine();
-    } 
+    }
 
     private SourceFile(String compileDir, String sourceFile, String compileLine, String absolutePath, String sourceLanguage, boolean hasMain, int mainLine, String dwarf) {
         this.compileLine = compileLine == null ? "" : compileLine;
@@ -175,7 +177,7 @@ public final class SourceFile implements CompilationUnitInterface {
     public final String getCommandLine() {
         return compileLine;
     }
-    
+
     public String getSourceFileAbsolutePath() {
         return absolutePath;
     }
