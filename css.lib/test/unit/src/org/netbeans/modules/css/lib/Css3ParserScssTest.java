@@ -1801,4 +1801,36 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testKeyframesInSass() {
+        String source = "@mixin keyframes($name)\n"
+                + "{\n"
+                + "    @-webkit-keyframes $name\n"
+                + "    {\n"
+                + "        @content;\n"
+                + "    }\n"
+                + "    @keyframes $name\n"
+                + "    {\n"
+                + "        @content;\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+        
+        source = "@mixin keyframes($name) {\n"
+                + "  @-webkit-keyframes #{$name} {\n"
+                + "    @content; \n"
+                + "  }}";
+        
+        result = TestUtil.parse(source);
+        assertResultOK(result);
+        
+        source = "@include keyframes(slide-down) {\n"
+                + "  0% { opacity: 1; }\n"
+                + "  90% { opacity: 0; }\n"
+                + "}";
+        
+        result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }
