@@ -87,11 +87,11 @@ import org.openide.windows.TopComponent;
  *
  * @author  Alexander Simon
  */
-public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
+public final class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/includeview/resources/tree.png"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("IncludeHierarchyWorker", 1); // NOI18N
 
-    private AbstractNode root;
+    private final AbstractNode root;
     private transient ExplorerManager explorerManager = new ExplorerManager();
     private CsmUID<CsmFile> object;
     private boolean recursive = true;
@@ -100,7 +100,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private Action[] actions;
     private Action close;
     private AtomicBoolean menuAvaliable = new AtomicBoolean(false);
-    
+
     /** Creates new form IncludeHierarchyPanel */
     public IncludeHierarchyPanel(boolean isView) {
         initComponents();
@@ -121,7 +121,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
         if (isView) {
-            actions = new Action[]{new RefreshAction(), 
+            actions = new Action[]{new RefreshAction(),
                                    null, new WhoIncludesAction(), new WhoIsIncludedAction(),
                                    null, new DirectOnlyAction(), new TreeAction()};
         } else {
@@ -335,7 +335,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         }
     }
 
-    
+
     private void setPlain(boolean isPlain){
         if (object != null) {
             CsmFile file = object.getObject();
@@ -346,7 +346,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             }
         }
     }
-    
+
     private void setWhoIncludes(boolean isWhoIncludes) {
         if (object != null) {
             CsmFile file = object.getObject();
@@ -357,7 +357,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             }
         }
     }
-        
+
     public void setFile(CsmFile file) {
         if (file != null) {
             object = UIDs.get(file);
@@ -402,7 +402,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             });
         }
     }
-    
+
     @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
@@ -452,13 +452,13 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private javax.swing.JToggleButton whoIncludesButton;
     private javax.swing.JToggleButton whoIsIncludedButton;
     // End of variables declaration//GEN-END:variables
-    
+
     private class RefreshAction extends AbstractAction implements Presenter.Popup {
-        private JMenuItem menuItem;
+        private final JMenuItem menuItem;
         public RefreshAction() {
             putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.refreshButton.menuText")); //NOI18N
             putValue(Action.SMALL_ICON, refreshButton.getIcon());
-            menuItem = new JMenuItem(this); 
+            menuItem = new JMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
@@ -475,14 +475,14 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     }
 
     private class WhoIncludesAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private final JRadioButtonMenuItem menuItem;
         public WhoIncludesAction() {
             putValue(Action.NAME, getButtonTooltip(IncludeHierarchyPanel.WHO_INCLUDES));
             putValue(Action.SMALL_ICON, getButtonIcon(IncludeHierarchyPanel.WHO_INCLUDES));
             menuItem = new JRadioButtonMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setWhoIncludes(true);
@@ -497,14 +497,14 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     }
 
     private class WhoIsIncludedAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private final JRadioButtonMenuItem menuItem;
         public WhoIsIncludedAction() {
             putValue(Action.NAME, getButtonTooltip(IncludeHierarchyPanel.WHO_IS_INCLUDED));
             putValue(Action.SMALL_ICON, getButtonIcon(IncludeHierarchyPanel.WHO_IS_INCLUDED));
             menuItem = new JRadioButtonMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setWhoIncludes(false);
@@ -519,14 +519,14 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     }
 
     private class DirectOnlyAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public DirectOnlyAction() {
             putValue(Action.NAME, getButtonTooltip(IncludeHierarchyPanel.DIRECT_ONLY));
             putValue(Action.SMALL_ICON, getButtonIcon(IncludeHierarchyPanel.DIRECT_ONLY));
             menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setRecursive(!recursive);
@@ -541,14 +541,14 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     }
 
     private class TreeAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public TreeAction() {
             putValue(Action.NAME, getButtonTooltip(IncludeHierarchyPanel.TREE));
             putValue(Action.SMALL_ICON, getButtonIcon(IncludeHierarchyPanel.TREE));
             menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setPlain(!plain);
@@ -580,7 +580,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             });
         }
     }
-    
+
     private class DialogClose extends AbstractAction {
         public DialogClose() {
         }
@@ -649,7 +649,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     public HelpCtx getHelpCtx() {
         return new HelpCtx("IncludeView"); // NOI18N
     }
-    
+
     private class Updater implements Runnable {
         private final CsmFile csmFile;
         private final Node[] oldSelection;
