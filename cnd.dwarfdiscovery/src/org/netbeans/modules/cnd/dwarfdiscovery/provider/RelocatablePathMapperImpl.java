@@ -71,7 +71,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
     private final ProjectProxy project;
     private final Map<String,Boolean> fileCache = new ConcurrentHashMap<String, Boolean>();
     private boolean isAtomatic = true;
-    
+
     /**
      * Local path mapper file is located in the file
      * nbproject/private/LocaPathMapper.properties.
@@ -86,7 +86,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
      */
     private static final String AUTO_SIGNATURE = "# Automatic path mapper. CRC = "; // NOI18N
     private static final String PATH_TO_MAPPER = "nbproject/private/CodeAssistancePathMapper.properties"; // NOI18N
-    
+
     /**
      * By default IDE tries to discover path mapper by analyzing source root. If
      * IDE automatically discovers wrong path mapper, you can provide own path
@@ -113,62 +113,60 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
             if (makeProject != null) {
                 fo = makeProject.getProjectDirectory().getFileObject(PATH_TO_MAPPER);
             }
-            if (list == null || list.isEmpty()) {
-                if (fo != null && fo.isValid()) {
-                    BufferedReader in = null;
-                    long parseLong = 0;
-                    isAtomatic = true;
-                    try {
-                        list = new ArrayList<String>();
-                        in = new BufferedReader(new InputStreamReader(fo.getInputStream()));
-                        while (true) {
-                            String line = in.readLine();
-                            if (line == null) {
-                                break;
-                            }
-                            if (line.startsWith("#")) { // NOI18N
-                                // comment
-                                if (line.startsWith(AUTO_SIGNATURE)) {
-                                    String s = line.substring(AUTO_SIGNATURE.length()).trim();
-                                    try {
-                                        parseLong = Long.parseLong(s);
-                                    } catch (NumberFormatException ex) {
-                                        //
-                                    }
+            if (fo != null && fo.isValid()) {
+                BufferedReader in = null;
+                long parseLong = 0;
+                isAtomatic = true;
+                try {
+                    list = new ArrayList<String>();
+                    in = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+                    while (true) {
+                        String line = in.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        if (line.startsWith("#")) { // NOI18N
+                            // comment
+                            if (line.startsWith(AUTO_SIGNATURE)) {
+                                String s = line.substring(AUTO_SIGNATURE.length()).trim();
+                                try {
+                                    parseLong = Long.parseLong(s);
+                                } catch (NumberFormatException ex) {
+                                    //
                                 }
-                                continue;
                             }
-                            line = line.trim();
-                            int i = line.indexOf('='); // NOI18N
-                            if (i > 0) {
-                                list.add(line.substring(0, i));
-                                list.add(line.substring(i + 1));
-                            }
+                            continue;
                         }
+                        line = line.trim();
+                        int i = line.indexOf('='); // NOI18N
+                        if (i > 0) {
+                            list.add(line.substring(0, i));
+                            list.add(line.substring(i + 1));
+                        }
+                    }
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Cannot read mapper file {0}", fo); // NOI18N
+                }
+                if (in != null) {
+                    try {
+                        in.close();
                     } catch (IOException ex) {
-                        LOG.log(Level.INFO, "Cannot read mapper file {0}", fo); // NOI18N
-                    }
-                    if (in != null) {
-                        try {
-                            in.close();
-                        } catch (IOException ex) {
-                        }
-                    }
-                    if (parseLong != 0) {
-                        Checksum checksum = new Adler32();
-                        for(String s : list) {
-                            for (char c : s.toCharArray()) {
-                                checksum.update(c);
-                            }
-                        }
-                        if (parseLong != checksum.getValue()) {
-                            isAtomatic = false;
-                        }
                     }
                 }
-                if (isAtomatic) {
-                    list = null;
+                if (parseLong != 0) {
+                    Checksum checksum = new Adler32();
+                    for(String s : list) {
+                        for (char c : s.toCharArray()) {
+                            checksum.update(c);
+                        }
+                    }
+                    if (parseLong != checksum.getValue()) {
+                        isAtomatic = false;
+                    }
                 }
+            }
+            if (isAtomatic) {
+                list = null;
             }
             if (list != null) {
                 for (int i = 0; i < list.size(); i += 2) {

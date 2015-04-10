@@ -216,7 +216,7 @@ public class MakeLogReader {
         }
         return env;
     }
-    
+
     private MakeConfiguration getConfiguration(ProjectProxy project) {
         if (project != null && project.getProject() != null) {
             ConfigurationDescriptorProvider pdp = project.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -450,7 +450,7 @@ public class MakeLogReader {
                         path = root.substring(0,2)+path;
                     }
                 }
-                
+
             }
         }
         return path;
@@ -658,7 +658,7 @@ public class MakeLogReader {
         }
         return null;
     }
-    
+
     private int[] find(String line, String pattern) {
         int fromIndex = 0;
         while(true) {
@@ -852,8 +852,8 @@ public class MakeLogReader {
             return trimBackApostropheCalls(out.toString(), pkgConfig);
         }
     }
-    
-    // boost 
+
+    // boost
     // #./b2 -a -d+2
     // prints:
     // gcc.compile.c++ bin.v2/libs/graph/build/gcc-4.5.2/release/threading-multi/read_graphviz_new.o
@@ -989,7 +989,7 @@ public class MakeLogReader {
             }
         }
     }
-    
+
     private String convertSymbolicLink(String fullName) {
         if (project.resolveSymbolicLinks()) {
             String resolvedLink = DiscoveryUtils.resolveSymbolicLink(fileSystem, fullName);
@@ -1113,7 +1113,7 @@ public class MakeLogReader {
         public String getItemName() {
             return sourceName;
         }
-        
+
         @Override
         public List<String> getUserInludePaths() {
             return userIncludes;
