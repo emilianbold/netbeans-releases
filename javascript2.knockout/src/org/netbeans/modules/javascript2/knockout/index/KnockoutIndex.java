@@ -152,6 +152,9 @@ public class KnockoutIndex {
 
     private Collection<KnockoutCustomElement> createCustomElements(final IndexResult indexResult) {
         String[] values = indexResult.getValues(KnockoutIndexer.CUSTOM_ELEMENT);
+        if (indexResult.getFile() == null) {
+            return Collections.emptyList();
+        }
         Collection<KnockoutCustomElement> result = new ArrayList<>(values.length);
         for (String value : values) {
             if (value != null && !value.isEmpty() && value.indexOf(':') > 0) {
