@@ -55,9 +55,9 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
 /**
- * Abstract base class for CsmNode. 
+ * Abstract base class for CsmNode.
  * Disadvantage of (previous version) of CsmNode is that it necessarily stores CsmObject.
- * AbstractNode just declares abstract method 
+ * AbstractNode just declares abstract method
  * CsmObject getCsmObject()
  *
  * @author Vladimir Kvashin
@@ -71,7 +71,7 @@ public abstract class AbstractCsmNode extends AbstractNode {
     public AbstractCsmNode(Children children) {
         this(children, null);
     }
-    
+
     public abstract CsmObject getCsmObject();
 
     @Override
@@ -92,21 +92,21 @@ public abstract class AbstractCsmNode extends AbstractNode {
     protected Image superGetIcon(int param) {
         return ImageUtilities.loadImage(CsmImageLoader.DEFAULT);
     }
-    
+
     @Override
     public Image getOpenedIcon(int param) {
         return getIcon(param);
     }
-    
+
     public void dump(PrintStream ps) {
 	dump(new Tracer(ps));
     }
-    
+
     protected void dump(Tracer tracer) {
 	tracer.trace(this.getDisplayName());
 	tracer.indent();
-	for( Enumeration children = getChildren().nodes(); children.hasMoreElements(); ) {
-	    Node child = (Node) children.nextElement();
+	for( Enumeration<Node> children = getChildren().nodes(); children.hasMoreElements(); ) {
+	    Node child = children.nextElement();
 	    if( child instanceof AbstractCsmNode ) {
 		((AbstractCsmNode) child).dump(tracer);
 	    }
