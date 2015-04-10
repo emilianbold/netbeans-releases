@@ -64,7 +64,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
     private final ExecutionEnvironment env;
-    private AtomicBoolean canceled = new AtomicBoolean(false);
+    private final AtomicBoolean canceled = new AtomicBoolean(false);
 
     /*package-local*/ RemoteCompilerSetProvider(ExecutionEnvironment env) {
         if (env == null) {

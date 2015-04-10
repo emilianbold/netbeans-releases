@@ -88,8 +88,8 @@ public class RemoteOpenHelper {
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
     private static boolean isRunning = false;
     private static final Object lock = new Object();
-    private static RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
-    private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
+    private static final RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
+    private static final Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
 
     private RemoteOpenHelper(ExecutionEnvironment env) {
         this.env = env;

@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 public class RfsSetupProvider implements SetupProvider {
 
     public static final String POSTFIX_64 = "_64"; // NOI18N
-    private Map<String, File> binarySetupMap;
+    private final Map<String, File> binarySetupMap;
     private static final String CONTROLLER = "rfs_controller"; // NOI18N
     private static final String PRELOAD = "rfs_preload.so"; // NOI18N
 

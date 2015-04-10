@@ -83,9 +83,9 @@ public class HostUpdatesRequestPanel extends JPanel {
 
     private final List<RowData> model;
 
-    private JPanel bottomPanel;
-    private JCheckBox cbRememberChoice;
-    private JTable fileTable;
+    private final JPanel bottomPanel;
+    private final JCheckBox cbRememberChoice;
+    private final JTable fileTable;
     private final HostUpdatesPersistence persistence;
 
     /*package*/ static Set<FileDownloadInfo> request(Collection<FileDownloadInfo> infos, ExecutionEnvironment env, HostUpdatesPersistence persistence) {

@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  */
 public class SetDefaultAction extends AbstractAction {
     
-    private RemoteServerRecord record;
+    private final RemoteServerRecord record;
     
     public SetDefaultAction(RemoteServerRecord record) {
         super(NbBundle.getMessage(SetDefaultAction.class, "LBL_SetDefaultAction"));

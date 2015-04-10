@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 })
 public class OpenRemoteProjectAction extends RemoteOpenActionBase {
 
-    private ImageIcon icon;
+    private final ImageIcon icon;
     
     public OpenRemoteProjectAction() {
         super(NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title")); //NOI18N

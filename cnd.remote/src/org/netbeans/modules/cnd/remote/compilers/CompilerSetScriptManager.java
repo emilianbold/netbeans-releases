@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
  */
 /*package-local*/ class CompilerSetScriptManager extends RemoteConnectionSupport {
 
-    private List<String> compilerSets;
+    private final List<String> compilerSets;
     private int nextSet;
     private String platform;
     private Process process;

@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
  */
 /*package*/ class CreateHostData extends HostSetupResultImpl {
 
-    private ToolsCacheManager cacheManager;
+    private final ToolsCacheManager cacheManager;
     private int port = 22;
     private String hostName = "";
     private String userName;

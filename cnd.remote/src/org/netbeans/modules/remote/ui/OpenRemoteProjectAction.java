@@ -85,7 +85,7 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Remote/Host/Actions", name = "OpenRemoteProjectAction", position = 250)
 public class OpenRemoteProjectAction extends SingleHostAction {
 
-    private static RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
     private static boolean isRunning = false;
     private static final Object lock = new Object();
     
