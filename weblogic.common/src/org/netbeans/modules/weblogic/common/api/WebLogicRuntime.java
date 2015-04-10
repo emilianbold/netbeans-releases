@@ -56,8 +56,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.GeneralSecurityException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.util.ArrayList;

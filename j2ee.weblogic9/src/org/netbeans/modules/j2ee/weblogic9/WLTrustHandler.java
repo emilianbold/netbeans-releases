@@ -76,6 +76,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
@@ -95,6 +96,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = WebLogicTrustHandler.class)
 public class WLTrustHandler implements WebLogicTrustHandler {
 
+    public static final String TRUST_EXCEPTION_PROPERTY = "trustException"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(WLTrustHandler.class.getName());
 
     private static final RequestProcessor TRUST_MANAGER_ACCESS = new RequestProcessor(WLTrustHandler.class);
@@ -102,8 +105,6 @@ public class WLTrustHandler implements WebLogicTrustHandler {
     private static final int CHECK_TIMEOUT = 5000;
 
     private static final String TRUST_STORE_PATH = "J2EE/TrustStores/wlstruststore.jks"; // NOI18N
-
-    private static final String TRUST_EXCEPTION_PROPERTY = "trustException"; // NOI18N
 
     private static final String TRUST_PASSWORD_KEY = "nb_weblogic_truststore"; // NOI18N
 
@@ -238,17 +239,23 @@ public class WLTrustHandler implements WebLogicTrustHandler {
             throw new CertificateException("TrustManager does not trust any client");
         }
 
-        @NbBundle.Messages("MSG_NotTrusted=The server certificate is not trusted. Add as an exception and proceed anyway?")
+        @NbBundle.Messages({
+            "LBL_Certificate=The Server Certificate Problem",
+            "LBL_RemoveServer=Remove Server"
+        })
         @Override
         public void checkServerTrusted(final X509Certificate[] chain, final String authType)
                 throws CertificateException {
             final String url = WLDeploymentFactory.getUrl(config);
             final InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
+            if (ip == null) {
+                return;
+            }
             try {
                 pkixTrustManager.checkServerTrusted(chain, authType);
-                boolean trustException = Boolean.parseBoolean(ip.getProperty(TRUST_EXCEPTION_PROPERTY));
-                if (trustException) {
-                    ip.setProperty(TRUST_EXCEPTION_PROPERTY, Boolean.FALSE.toString());
+                String rawTrustValue = ip.getProperty(TRUST_EXCEPTION_PROPERTY);
+                if (rawTrustValue != null) {
+                    ip.setProperty(TRUST_EXCEPTION_PROPERTY, null);
                     try {
                         removeFromTrustStore(url);
                     } catch (GeneralSecurityException ex) {
@@ -258,11 +265,13 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                     }
                 }
             } catch (CertificateException excep) {
+                LOGGER.log(Level.FINE, null, excep);
                 Future<Boolean> task = TRUST_MANAGER_ACCESS.submit(new Callable<Boolean>() {
 
                     @Override
                     public Boolean call() throws GeneralSecurityException, IOException {
-                        boolean trustException = Boolean.parseBoolean(ip.getProperty(TRUST_EXCEPTION_PROPERTY));
+                        String rawTrustValue = ip.getProperty(TRUST_EXCEPTION_PROPERTY);
+                        boolean trustException = Boolean.parseBoolean(rawTrustValue);
                         if (trustException) {
                             FileObject fo = FileUtil.getConfigFile(TRUST_STORE_PATH);
                             if (fo != null) {
@@ -284,15 +293,36 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                             }
                         }
 
-                        NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(Bundle.MSG_NotTrusted(),
-                                NotifyDescriptor.YES_NO_OPTION);
+                        if (rawTrustValue != null && !trustException) {
+                            return false;
+                        }
                         X509Certificate[] sorted = sortChain(chain);
-                        Object result = DialogDisplayer.getDefault().notify(notDesc);
+                        X509Certificate last = sorted[sorted.length - 1];
+
+                        String removeOption = Bundle.LBL_RemoveServer();
+                        NotifyDescriptor descriptor = new NotifyDescriptor(
+                                new CertificateQuestionPanel(last), Bundle.LBL_Certificate(),
+                                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
+                                new Object[]{removeOption, NotifyDescriptor.YES_OPTION,
+                                    NotifyDescriptor.NO_OPTION}, NotifyDescriptor.NO_OPTION);
+
+                        Object result = DialogDisplayer.getDefault().notify(descriptor);
                         if (result == NotifyDescriptor.YES_OPTION) {
-                            addToTrustStore(url, sorted[sorted.length - 1]);
+                            addToTrustStore(url, last);
                             ip.setProperty(TRUST_EXCEPTION_PROPERTY, Boolean.TRUE.toString());
                             return true;
+                        } else if (result.equals(removeOption)) {
+                            ip.setProperty(TRUST_EXCEPTION_PROPERTY, Boolean.FALSE.toString());
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    InstanceProperties.removeInstance(url);
+                                }
+                            });
+                            return false;
                         } else {
+                            ip.setProperty(TRUST_EXCEPTION_PROPERTY, Boolean.FALSE.toString());
                             return false;
                         }
                     }
@@ -304,6 +334,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 } catch (ExecutionException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
                     throw new CertificateException(ex);
                 }
             }
