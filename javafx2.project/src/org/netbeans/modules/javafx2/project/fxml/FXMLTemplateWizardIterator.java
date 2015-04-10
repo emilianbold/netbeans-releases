@@ -137,7 +137,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroupsJava = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         SourceGroup[] sourceGroupsResources = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (sourceGroupsJava == null) {
+        if (sourceGroupsJava == null || sourceGroupsJava.length == 0) {
             throw new IllegalStateException(
                     NbBundle.getMessage(FXMLTemplateWizardIterator.class,
                     "MSG_ConfigureFXMLPanel_SGs_Error")); // NOI18N
