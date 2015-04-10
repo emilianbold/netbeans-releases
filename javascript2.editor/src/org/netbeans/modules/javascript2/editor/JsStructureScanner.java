@@ -140,7 +140,10 @@ public class JsStructureScanner implements StructureScanner {
             if (child.isVirtual()) {
                 continue;
             }
-            
+            if (child.getName().equals(ModelUtils.PROTOTYPE) && child.getProperties().isEmpty()) {
+                // don't display prototype, if thre are no properties
+                continue;
+            }
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
                     && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) &&  child.getJSKind() != JsElement.Kind.OBJECT_LITERAL)
