@@ -454,13 +454,15 @@ public final class JFXProjectUtils {
                 Document doc = builder.parse(FileUtil.toFile(pomXml));
                 XPathFactory xPathfactory = XPathFactory.newInstance();
                 XPath xpath = xPathfactory.newXPath();
-                XPathExpression exprJfxrt = xpath.compile("//bootclasspath[contains(text(),'jfxrt')]");
-                XPathExpression exprPackager = xpath.compile("//executable[contains(text(),'javafxpackager')]");
+                XPathExpression exprJfxrt = xpath.compile("//bootclasspath[contains(text(),'jfxrt')]"); //NOI18N
+                XPathExpression exprFxPackager = xpath.compile("//executable[contains(text(),'javafxpackager')]"); //NOI18N
+                XPathExpression exprPackager = xpath.compile("//executable[contains(text(),'javapackager')]"); //NOI18N
                 boolean jfxrt = (Boolean) exprJfxrt.evaluate(doc, XPathConstants.BOOLEAN);
                 boolean packager = (Boolean) exprPackager.evaluate(doc, XPathConstants.BOOLEAN);
-                return jfxrt && packager;
+                boolean fxPackager = (Boolean) exprFxPackager.evaluate(doc, XPathConstants.BOOLEAN);
+                return jfxrt && (packager || fxPackager);
             } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "Error while parsing pom.xml.", ex);  //NOI18N
                 return false;
             }
         }
