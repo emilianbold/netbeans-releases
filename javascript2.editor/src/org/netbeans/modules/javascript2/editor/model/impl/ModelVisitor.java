@@ -904,15 +904,17 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
 
-            List<Type> extendTypes = docHolder.getExtends(functionNode);
-            if (!extendTypes.isEmpty()) {
-                JsObject prototype = fncScope.getProperty(ModelUtils.PROTOTYPE);
-                if (prototype == null) {
-                    prototype = new JsObjectImpl(fncScope, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parserResult.getSnapshot().getMimeType(), null);
-                    fncScope.addProperty(ModelUtils.PROTOTYPE, prototype);
-                }
-                for (Type type : extendTypes) {
-                    prototype.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), type.getOffset());
+            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
+                List<Type> extendTypes = docHolder.getExtends(functionNode);
+                if (!extendTypes.isEmpty()) {
+                    JsObject prototype = fncScope.getProperty(ModelUtils.PROTOTYPE);
+                    if (prototype == null) {
+                        prototype = new JsObjectImpl(fncScope, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parserResult.getSnapshot().getMimeType(), null);
+                        fncScope.addProperty(ModelUtils.PROTOTYPE, prototype);
+                    }
+                    for (Type type : extendTypes) {
+                        prototype.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), type.getOffset());
+                    }
                 }
             }
 
