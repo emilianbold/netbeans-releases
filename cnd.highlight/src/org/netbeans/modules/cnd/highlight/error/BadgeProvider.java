@@ -64,17 +64,17 @@ import org.openide.util.NbBundle;
  */
 public class BadgeProvider {
     private static BadgeProvider myInstance = new BadgeProvider();
-    
+
     private Storage storage = new Storage();
     private final Object listLock = new Object();
-    
+
     private BadgeProvider() {
     }
-    
+
     public static BadgeProvider getInstance(){
         return myInstance;
     }
-    
+
     public void invalidateProject(CsmProject project){
         boolean badgeStateChanged = false;
         synchronized (listLock){
@@ -140,19 +140,15 @@ public class BadgeProvider {
             fireBadgeChanged(project);
         }
     }
-    
-    private void fireBadgeChanged(CsmFile file){
-        BrokenProjectService.fireChanges(null);
-    }
-    
+
     private void fireBadgeChanged(CsmProject csmProject){
         BrokenProjectService.fireChanges(null);
     }
-    
+
     private void fireBadgeChanged(){
         BrokenProjectService.fireChanges(null);
     }
-    
+
     public void onFileRemoved(CsmFile file) {
         boolean badgeStateChanged = false;
         CsmProject project = file.getProject();
@@ -172,7 +168,7 @@ public class BadgeProvider {
             fireBadgeChanged(project);
         }
     }
-    
+
     public void removeAllProjects(){
         boolean badgeStateChanged = false;
         synchronized (listLock){
@@ -183,7 +179,7 @@ public class BadgeProvider {
             fireBadgeChanged();
         }
     }
-    
+
     public void removeProject(CsmProject project){
         boolean badgeStateChanged = false;
         synchronized (listLock){
@@ -194,23 +190,19 @@ public class BadgeProvider {
             fireBadgeChanged(project);
         }
     }
-    
-    private static String i18n(String id) {
-        return NbBundle.getMessage(BadgeProvider.class,id);
-    }
-    
+
     boolean isBroken(NativeProject project) {
         synchronized (listLock){
             return storage.contains(project);
         }
     }
-    
+
     public Set<CsmUID<CsmFile>> getFailedFiles(NativeProject nativeProject) {
         synchronized (listLock) {
             return new HashSet<CsmUID<CsmFile>>(storage.getFiles(nativeProject));
         }
     }
-    
+
     public Set<CsmUID<CsmFile>> getFailedFiles(CsmProject csmProject) {
         synchronized (listLock) {
             return new HashSet<CsmUID<CsmFile>>(storage.getFiles(csmProject));
@@ -228,16 +220,16 @@ public class BadgeProvider {
             return storage.contains(csmProject);
         }
     }
-    
+
     private static class Storage {
-	
+
         private Map<CsmProject,Set<CsmUID<CsmFile>>> wrongFiles = new HashMap<CsmProject,Set<CsmUID<CsmFile>>>();
         private Map<CsmProject,NativeProject> nativeProjects = new HashMap<CsmProject, NativeProject>();
-        
+
         public Set<CsmUID<CsmFile>> getFiles(CsmProject project){
             return wrongFiles.get(project);
         }
-        
+
         public Set<CsmUID<CsmFile>> getFiles(NativeProject project) {
             for(Map.Entry<CsmProject,NativeProject> entry : nativeProjects.entrySet()){
                 if (project == entry.getValue()){
@@ -246,21 +238,21 @@ public class BadgeProvider {
             }
             return Collections.<CsmUID<CsmFile>>emptySet();
         }
-        
+
         public boolean isEmpty(){
             return nativeProjects.isEmpty();
         }
-        
+
         public void clear(){
             wrongFiles.clear();
             nativeProjects.clear();
         }
-        
+
         public void remove(CsmProject project){
             wrongFiles.remove(project);
             nativeProjects.remove(project);
         }
-        
+
         public void remove(CsmFile file) {
             CsmProject project = file.getProject();
             if (project != null) {
@@ -270,7 +262,7 @@ public class BadgeProvider {
                 }
             }
         }
-        
+
         public void add(CsmFile file) {
             CsmProject project = file.getProject();
             if (project != null) {
@@ -283,22 +275,20 @@ public class BadgeProvider {
                     set = new HashSet<CsmUID<CsmFile>>();
                     wrongFiles.put(project,set);
                 }
-                if (set != null) {
-                    set.add(UIDs.get(file));
-                }
+                set.add(UIDs.get(file));
             }
         }
-        
+
         public boolean contains(CsmProject project){
             Set<CsmUID<CsmFile>> set = getFiles(project);
             return set != null && set.size() > 0;
         }
-        
+
         public boolean contains(NativeProject project){
             Set<CsmUID<CsmFile>> set = getFiles(project);
             return set != null && set.size() > 0;
         }
-        
+
         public boolean contains(CsmFile file){
             CsmProject project = file.getProject();
             if (project != null) {
