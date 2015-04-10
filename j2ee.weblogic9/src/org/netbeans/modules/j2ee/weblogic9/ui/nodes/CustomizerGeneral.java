@@ -49,12 +49,15 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Font;
+import java.awt.event.ItemEvent;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import org.netbeans.api.progress.BaseProgressUtils;
 
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLTrustHandler;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
@@ -131,11 +134,13 @@ class CustomizerGeneral extends javax.swing.JPanel {
         if (port != null) {
             serverPort.setText(port);
         }
-        
+        sslCheckBox.setSelected(config.isSecured());
+        certificateButton.setEnabled(sslCheckBox.isSelected());
+
         boolean statusVisible = support.isSwitchSupported();
         boolean buttonVisible = statusVisible
                 && !support.isEnabledViaSmartUpdate();
-        
+
         jpa2SwitchLabel.setVisible(statusVisible);
         jpa2Status.setVisible(statusVisible);
         jpa2SwitchButton.setVisible(buttonVisible);
@@ -199,6 +204,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
         jpa2SwitchButton = new javax.swing.JButton();
         serverHostLabel = new javax.swing.JLabel();
         serverHost = new javax.swing.JTextField();
+        sslCheckBox = new javax.swing.JCheckBox();
+        certificateButton = new javax.swing.JButton();
 
         domainNameLabel.setLabelFor(domainName);
         org.openide.awt.Mnemonics.setLocalizedText(domainNameLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizerDomainName")); // NOI18N
@@ -249,6 +256,16 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
         serverHost.setEditable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(sslCheckBox, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.sslCheckBox.text")); // NOI18N
+        sslCheckBox.setEnabled(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(certificateButton, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.certificateButton.text")); // NOI18N
+        certificateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                certificateButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -256,47 +273,43 @@ class CustomizerGeneral extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(noteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(noteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(domainNameLabel)
+                            .addComponent(domainFolderLabel)
+                            .addComponent(userNameLabel)
+                            .addComponent(passwordLabel)
+                            .addComponent(serverHostLabel)
+                            .addComponent(serverPortLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(domainName)
+                            .addComponent(domainFolder)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(domainNameLabel)
-                                    .addComponent(domainFolderLabel)
-                                    .addComponent(userNameLabel)
-                                    .addComponent(passwordLabel))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(sslCheckBox))
+                                    .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                                    .addComponent(userName)
+                                    .addComponent(serverHost))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(domainName)
-                                    .addComponent(domainFolder)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                    .addComponent(serverHost, javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(userName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(showButton))
-                                            .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(135, 135, 135)
-                                                .addComponent(jpa2SwitchButton)))
-                                        .addGap(0, 0, Short.MAX_VALUE))))
+                                    .addComponent(certificateButton)
+                                    .addComponent(showButton)
+                                    .addComponent(jpa2SwitchButton))
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(adminInfoLabel)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(serverHostLabel)
-                                    .addComponent(adminInfoLabel))
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(serverPortLabel)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jpa2SwitchLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jpa2Status)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                                .addComponent(jpa2SwitchLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jpa2Status)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -320,15 +333,17 @@ class CustomizerGeneral extends javax.swing.JPanel {
                     .addComponent(passwordLabel)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(showButton))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverHostLabel)
                     .addComponent(serverHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverPortLabel)
-                    .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sslCheckBox)
+                    .addComponent(certificateButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jpa2SwitchLabel)
                     .addComponent(jpa2Status)
@@ -395,10 +410,24 @@ class CustomizerGeneral extends javax.swing.JPanel {
         }
         updateJpa2Status();
     }//GEN-LAST:event_jpa2SwitchButtonActionPerformed
+
+    @NbBundle.Messages("MSG_ContactingServer=Contacting the server")
+    private void certificateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_certificateButtonActionPerformed
+        manager.getInstanceProperties().setProperty(WLTrustHandler.TRUST_EXCEPTION_PROPERTY, null);
+        BaseProgressUtils.showProgressDialogAndRun(new Runnable() {
+
+            @Override
+            public void run() {
+                WLTrustHandler.check(manager.getCommonConfiguration());
+            }
+        }, Bundle.MSG_ContactingServer());
+
+    }//GEN-LAST:event_certificateButtonActionPerformed
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel adminInfoLabel;
+    private javax.swing.JButton certificateButton;
     private javax.swing.JTextField domainFolder;
     private javax.swing.JLabel domainFolderLabel;
     private javax.swing.JTextField domainName;
@@ -414,6 +443,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
     private javax.swing.JTextField serverPort;
     private javax.swing.JLabel serverPortLabel;
     private javax.swing.JButton showButton;
+    private javax.swing.JCheckBox sslCheckBox;
     private javax.swing.JTextField userName;
     private javax.swing.JLabel userNameLabel;
     // End of variables declaration//GEN-END:variables

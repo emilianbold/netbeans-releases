@@ -19,62 +19,54 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="noteChangesLabel" alignment="0" pref="489" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="noteChangesLabel" alignment="0" max="32767" attributes="1"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="domainNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="domainFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="userNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="domainNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="domainFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="userNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="serverHostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="serverPortLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="domainName" alignment="0" max="32767" attributes="0"/>
+                          <Component id="domainFolder" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="serverPort" min="-2" pref="55" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="sslCheckBox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="passwordField" alignment="0" pref="160" max="32767" attributes="1"/>
+                                  <Component id="userName" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="serverHost" alignment="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="domainName" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="domainFolder" max="32767" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                                  <Component id="serverHost" alignment="0" max="32767" attributes="0"/>
-                                                  <Component id="passwordField" alignment="0" max="32767" attributes="1"/>
-                                                  <Component id="userName" alignment="0" pref="129" max="32767" attributes="1"/>
-                                              </Group>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="showButton" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="serverPort" alignment="0" min="-2" pref="55" max="-2" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace min="-2" pref="135" max="-2" attributes="0"/>
-                                              <Component id="jpa2SwitchButton" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="serverHostLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="adminInfoLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="certificateButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="showButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jpa2SwitchButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="serverPortLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="117" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jpa2SwitchLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="jpa2Status" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="adminInfoLabel" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jpa2SwitchLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="jpa2Status" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -104,7 +96,7 @@
                   <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="showButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="serverHostLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serverHost" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -113,8 +105,10 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="serverPortLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serverPort" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sslCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="certificateButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jpa2SwitchLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jpa2Status" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -355,6 +349,24 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="sslCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="CustomizerGeneral.sslCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="certificateButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="CustomizerGeneral.certificateButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="certificateButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
