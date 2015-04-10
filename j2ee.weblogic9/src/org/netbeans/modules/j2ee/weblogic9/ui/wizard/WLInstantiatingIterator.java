@@ -45,6 +45,7 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,13 +54,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLTrustHandler;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -71,6 +76,8 @@ import org.openide.util.Utilities;
  * @author Kirill Sorokin
  */
 public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingIterator {
+
+    private static final Logger LOGGER = Logger.getLogger(WLInstantiatingIterator.class.getName());
 
     /**
      * Since the WizardDescriptor does not expose the property name for the
@@ -153,6 +160,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.toString(remote));
+        props.put(WLPluginProperties.SECURED_ATTR, Boolean.toString(ssl));
+        props.put(WLTrustHandler.TRUST_EXCEPTION_PROPERTY, null);
         props.put(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.toString(remoteDebug));
         props.put(WLPluginProperties.PROXY_ENABLED, DEFAULT_PROXY_ENABLED);
         if (remoteDebug) {
@@ -160,14 +169,20 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         } else {
             props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
         }
-        
+
         if (Utilities.isMac()) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
         }
 
+        try {
+            // remove the certificate from the struststore - safety catch
+            WLTrustHandler.removeFromTrustStore(url);
+        } catch (GeneralSecurityException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, username, password, displayName, props);
-        
+
         return ip;
     }
 
@@ -194,6 +209,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String debugPort;
     private String host;
     private boolean remote;
+    private boolean ssl;
     private boolean remoteDebug;
     private Version serverVersion;
 
@@ -325,6 +341,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
     public void setRemote(boolean remote) {
         this.remote = remote;
+    }
+
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    public void setSsl(boolean ssl) {
+        this.ssl = ssl;
     }
 
     public boolean isRemoteDebug() {
