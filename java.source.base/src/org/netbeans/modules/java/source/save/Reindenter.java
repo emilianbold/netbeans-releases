@@ -668,13 +668,26 @@ public class Reindenter implements IndentTask {
                         t = ct;
                     }
                     if (t != null) {
-                        int i = getCurrentIndent(t, path);
-                        currentIndent = i < 0 ? currentIndent + (cs.indentCasesFromSwitch() ? cs.getIndentSize() : 0) : i;
+                        CaseTree ct = (CaseTree)t;
                         if (nextTokenId == null || !EnumSet.of(JavaTokenId.CASE, JavaTokenId.DEFAULT).contains(nextTokenId)) {
-                            token = findFirstNonWhitespaceToken(startOffset, lastPos);
-                            if (token == null || token.token().id() != JavaTokenId.RBRACE) {
+                            t = null;
+                            for (StatementTree st : ct.getStatements()) {
+                                if (sp.getEndPosition(cut, st) > startOffset) {
+                                    break;
+                                }
+                                t = st;
+                            }
+                            if (t != null) {
+                                int i = getCurrentIndent(t, path);
+                                currentIndent = i < 0 ? getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.COLON), (int)sp.getEndPosition(cut, ct.getExpression()), currentIndent) : i;
+                            } else {
+                                int i = getCurrentIndent(ct, path);
+                                currentIndent = i < 0 ? getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.COLON), (int)sp.getEndPosition(cut, ct.getExpression()), currentIndent) : i;
                                 currentIndent += cs.getIndentSize();
                             }
+                        } else {
+                            int i = getCurrentIndent(t, path);
+                            currentIndent = i < 0 ? currentIndent + (cs.indentCasesFromSwitch() ? cs.getIndentSize() : 0) : i;                            
                         }
                     } else {
                         token = findFirstNonWhitespaceToken(startOffset, lastPos);
