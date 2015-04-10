@@ -117,13 +117,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
 
     @Override
     public Map<String, String> getTrustProperties(WebLogicConfiguration config) {
-        try {
-            setup(config);
-        } catch (GeneralSecurityException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
+        check(config);
 
         final InstanceProperties ip = InstanceProperties.getInstanceProperties(WLDeploymentFactory.getUrl(config));
         boolean trustException = Boolean.parseBoolean(ip.getProperty(TRUST_EXCEPTION_PROPERTY));
@@ -177,22 +171,28 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         }
     }
 
-    private void setup(WebLogicConfiguration config) throws GeneralSecurityException, IOException {
-        SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
-        context.init(null, new TrustManager[]{getTrustManager(config)}, RANDOM);
-        SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket();
+    public static void check(WebLogicConfiguration config) {
         try {
-            // we just trigger the trust manager here
-            socket.connect(new InetSocketAddress(config.getHost(), config.getPort()), CHECK_TIMEOUT); // NOI18N
-            socket.setSoTimeout(CHECK_TIMEOUT);
-            PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true); // NOI18N
+            SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
+            context.init(null, new TrustManager[]{new DelegatingTrustManager(config)}, RANDOM);
+            SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket();
             try {
-                out.println("GET / HTTP/1.1\nHost:\n"); // NOI18N
+                // we just trigger the trust manager here
+                socket.connect(new InetSocketAddress(config.getHost(), config.getPort()), CHECK_TIMEOUT); // NOI18N
+                socket.setSoTimeout(CHECK_TIMEOUT);
+                PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true); // NOI18N
+                try {
+                    out.println("GET / HTTP/1.1\nHost:\n"); // NOI18N
+                } finally {
+                    out.close();
+                }
             } finally {
-                out.close();
+                socket.close();
             }
-        } finally {
-            socket.close();
+        } catch (GeneralSecurityException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
     }
 
