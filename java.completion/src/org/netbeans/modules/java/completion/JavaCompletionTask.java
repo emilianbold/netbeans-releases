@@ -3324,8 +3324,20 @@ public final class JavaCompletionTask<T> extends BaseTask {
 
     private void addEnumConstants(Env env, TypeElement elem) {
         Elements elements = env.getController().getElements();
+        Trees trees = env.getController().getTrees();
+        TreePath path = env.getPath().getParentPath();
+        Set<Element> alreadyUsed = new HashSet<>();
+        if (path != null && path.getLeaf().getKind() == Tree.Kind.SWITCH) {
+            SwitchTree st = (SwitchTree)path.getLeaf();
+            for (CaseTree ct : st.getCases()) {
+                Element e = trees.getElement(new TreePath(path, ct.getExpression()));
+                if (e != null && e.getKind() == ENUM_CONSTANT) {
+                    alreadyUsed.add(e);
+                }
+            }
+        }
         for (Element e : elem.getEnclosedElements()) {
-            if (e.getKind() == ENUM_CONSTANT) {
+            if (e.getKind() == ENUM_CONSTANT && !alreadyUsed.contains(e)) {
                 String name = e.getSimpleName().toString();
                 if (startsWith(env, name) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))) {
                     results.add(itemFactory.createVariableItem(env.getController(), (VariableElement) e, e.asType(), anchorOffset, null, false, elements.isDeprecated(e), false, env.assignToVarPos()));
