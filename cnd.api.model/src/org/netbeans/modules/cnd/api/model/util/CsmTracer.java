@@ -538,7 +538,7 @@ public final class CsmTracer {
         dumpStatement(stmt.getTryStatement());
         print("HANDLERS:"); // NOI18N
         for (Iterator<CsmExceptionHandler> iter = stmt.getHandlers().iterator(); iter.hasNext();) {
-            dumpStatement(iter.next());
+            dumpStatement((CsmStatement)iter.next());
         }
     }
 
