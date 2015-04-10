@@ -680,6 +680,7 @@ declaration
     | (cp_mixin_call)=> cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?    
     | {isLessSource()}? AT_IDENT LPAREN RPAREN
+    | {isLessSource()}? LESS_AND pseudo
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_extend
@@ -831,7 +832,9 @@ pseudo
                 )
                 |
                 ( NOT ws? LPAREN ws? simpleSelectorSequence? RPAREN )
-             )
+                | 
+                ({isLessSource()}? {tokenNameEquals("extend")}? IDENT ws? LPAREN ws? selectorsGroup? RPAREN)
+             ) 
     ;
 
 propertyDeclaration

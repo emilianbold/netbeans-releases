@@ -838,4 +838,25 @@ public class Css3ParserLessTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testExtendKeyword() {
+        
+        assertParses(".sidenav:extend(.nav, #foo, .bar) {}");
+        assertParses(".big-division,\n"
+                + ".big-bag:extend(.bag),\n"
+                + ".big-bucket:extend(.bucket) {\n"
+                + "  // body\n"
+                + "}");
+        assertParses(".b {\n"
+                + "	&:extend(.a);\n"
+                + "}");
+        assertParses(".aa{\n"
+                + "font-size: 12px;\n"
+                + "&:extend(.clearfix);\n"
+                + "}");
+        
+        String source = ".sidenav:extend(.nav) {}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }
