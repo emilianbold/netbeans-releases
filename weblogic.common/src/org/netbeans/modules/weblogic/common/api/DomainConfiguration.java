@@ -77,6 +77,8 @@ public final class DomainConfiguration {
 
     private static final int DEFAULT_PORT = 7001;
 
+    private static final int DEFAULT_SECURED_PORT = 7002;
+
     private static final Pattern DOMAIN_NAME_PATTERN =
             Pattern.compile("(?:[a-z]+\\:)?name"); // NOI18N
 
@@ -88,6 +90,12 @@ public final class DomainConfiguration {
 
     private static final Pattern LISTEN_ADDRESS_PATTERN =
             Pattern.compile("(?:[a-z]+\\:)?listen-address"); // NOI18N
+
+    private static final Pattern SSL_PATTERN =
+            Pattern.compile("(?:[a-z]+\\:)?ssl"); // NOI18N
+
+    private static final Pattern ENABLED_PATTERN =
+            Pattern.compile("(?:[a-z]+\\:)?enabled"); // NOI18N
 
     private static final Pattern LISTEN_PORT_PATTERN =
             Pattern.compile("(?:[a-z]+\\:)?listen-port"); // NOI18N
@@ -128,6 +136,9 @@ public final class DomainConfiguration {
 
     // GuardedBy("this")
     private int port;
+
+    // GuardedBy("this")
+    private boolean secured;
 
     // GuardedBy("this")
     private boolean production;
@@ -175,12 +186,12 @@ public final class DomainConfiguration {
         return port;
     }
 
-    public synchronized boolean isProduction() {
-        return production;
+    public synchronized boolean isSecured() {
+        return secured;
     }
 
-    public synchronized String getAdminURL() {
-        return "t3://" + host + ":" + port; // NOI18N
+    public synchronized boolean isProduction() {
+        return production;
     }
 
     public synchronized File getLogFile() {
@@ -241,6 +252,7 @@ public final class DomainConfiguration {
                     String serverName = null;
                     String serverPort = null;
                     String serverHost = null;
+                    String serverSecured = null;
 
                     // iterate over the children
                     for (int k = 0; k < nl.getLength(); k++) {
@@ -257,6 +269,12 @@ public final class DomainConfiguration {
                                 serverHost = ch.getFirstChild().getNodeValue();
                             }
                         }
+                        if (SSL_PATTERN.matcher(ch.getNodeName()).matches()) {
+                            Node enabled = ch.getFirstChild();
+                            if (ENABLED_PATTERN.matcher(enabled.getNodeName()).matches()) {
+                                serverSecured = ch.getFirstChild().getNodeValue();
+                            }
+                        }
                     }
 
                     if (serverName != null) {
@@ -268,13 +286,23 @@ public final class DomainConfiguration {
                     if (serverPort != null) {
                         serverPort = serverPort.trim();
                     }
+                    if (serverSecured != null) {
+                        serverSecured = serverSecured.trim();
+                    }
 
                     if (serverName != null && !serverName.isEmpty()) {
                         // address and port have minOccurs=0
                         if (serverHost == null || serverHost.isEmpty()) {
                             serverHost = DEFAULT_HOST;
                         }
-                        int parsedServerPort = DEFAULT_PORT;
+                        boolean parsedServerSecured = false;
+// we are prepared even for localhosts on ssl but it does
+// not make any sense so far
+//                        if (serverSecured != null && !serverSecured.isEmpty()) {
+//                            // xsd boolean type ?
+//                            parsedServerSecured = Boolean.parseBoolean(serverSecured);
+//                        }
+                        int parsedServerPort = parsedServerSecured ? DEFAULT_SECURED_PORT : DEFAULT_PORT;
                         if (serverPort != null && !serverPort.isEmpty()) {
                             try {
                                 parsedServerPort = Integer.parseInt(serverPort);
@@ -282,7 +310,8 @@ public final class DomainConfiguration {
                                 LOGGER.log(Level.INFO, null, ex);
                             }
                         }
-                        servers.put(serverName, new Server(serverName, serverHost, parsedServerPort));
+                        servers.put(serverName, new Server(serverName, serverHost,
+                                parsedServerPort, parsedServerSecured));
                     }
                 }
             }
@@ -299,9 +328,11 @@ public final class DomainConfiguration {
             if (admin != null) {
                 host = admin.getHost();
                 port = admin.getPort();
+                secured = admin.isSecured();
             } else {
                 host = DEFAULT_HOST;
                 port = DEFAULT_PORT;
+                secured = false;
             }
 
             if (logFile == null) {
@@ -373,10 +404,13 @@ public final class DomainConfiguration {
 
         private final int port;
 
-        public Server(String name, String host, int port) {
+        private final boolean secured;
+
+        public Server(String name, String host, int port, boolean secured) {
             this.name = name;
             this.host = host;
             this.port = port;
+            this.secured = secured;
         }
 
         public String getName() {
@@ -389,6 +423,10 @@ public final class DomainConfiguration {
 
         public int getPort() {
             return port;
+        }
+
+        public boolean isSecured() {
+            return secured;
         }
     }
 }
