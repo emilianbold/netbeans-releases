@@ -48,7 +48,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -98,38 +99,30 @@ public final class PhingTargets implements ChangeListener {
         return targetsRef == null ? null : Collections.unmodifiableList(targetsRef);
     }
 
-    public void processTargets(final TargetsProcessor processor) {
-        assert processor != null;
+    public List<String> loadTargets(@NullAllowed Long timeout, @NullAllowed TimeUnit unit) throws ExecutionException, TimeoutException {
         List<String> targetsRef = targets;
         if (targetsRef != null) {
-            processor.process(Collections.unmodifiableList(targetsRef));
-            return;
+            return Collections.unmodifiableList(targetsRef);
         }
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                readTargetsInternal(processor);
-            }
-        });
-    }
-
-    void readTargetsInternal(TargetsProcessor processor) {
         assert !EventQueue.isDispatchThread();
         Future<List<String>> targetsJob = getTargetsJob();
         if (targetsJob == null) {
             // some error
-            processor.process(null);
-            return;
+            return null;
         }
         try {
-            targets = new CopyOnWriteArrayList<>(targetsJob.get());
+            List<String> allTargets;
+            if (timeout != null) {
+                assert unit != null;
+                allTargets = targetsJob.get(timeout, unit);
+            } else {
+                allTargets = targetsJob.get();
+            }
+            targets = new CopyOnWriteArrayList<>(allTargets);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-            // XXX warn user?
-            LOGGER.log(Level.INFO, null, ex);
         }
-        processor.process(getTargets());
+        return getTargets();
     }
 
     @CheckForNull
@@ -151,19 +144,6 @@ public final class PhingTargets implements ChangeListener {
     }
 
     //~ Inner classes
-
-    public interface TargetsProcessor {
-
-        TargetsProcessor DEV_NULL = new TargetsProcessor() {
-            @Override
-            public void process(List<String> targets) {
-                // noop
-            }
-        };
-
-        void process(@NullAllowed List<String> targets);
-
-    }
 
     private final class NodeModulesListener extends FileChangeAdapter {
 
