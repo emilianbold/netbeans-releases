@@ -54,7 +54,6 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public final class CsmTypes {
-    private static TypesProvider provider;
 
     // private service constructor
     private CsmTypes() {
@@ -101,19 +100,19 @@ public final class CsmTypes {
         }
         return getProvider().createType(type, new TypeDescriptor(type.isConst(), TypeDescriptor.getReferenceType(type), ptrDepth, arrDepth));
     }
-    
+
     public static final class SequenceDescriptor {
-        
+
         public final String lang;
-        
+
         public final String langFlavour;
-        
+
         public final boolean inTypedef;
-        
+
         public final boolean inTemplateDescriptor;
-        
+
         public final boolean inFunctionParams;
-        
+
         public final OffsetDescriptor offsets;
 
         public SequenceDescriptor(String lang, String langFlavour, boolean inTypedef, boolean inTemplateDescriptor, boolean inFunctionParams, OffsetDescriptor offsets) {
@@ -153,13 +152,13 @@ public final class CsmTypes {
 
     //@Immutable
     public static final class TypeDescriptor {
-        
+
         public static final int NON_REFERENCE = 0;
-        
+
         public static final int REFERENCE = 1;
-        
+
         public static final int RVALUE_REFERENCE = 2;
-        
+
         public static int getReferenceType(CsmType type) {
             if (type.isRValueReference()) {
                 return RVALUE_REFERENCE;
@@ -168,12 +167,12 @@ public final class CsmTypes {
             }
             return NON_REFERENCE;
         }
-        
+
         public static int getReferenceType(TypeDescriptor td) {
             return td._reference;
         }
 
-        
+
         private final boolean _const;
         private final int _reference;
         private final int _ptrDepth;
@@ -201,7 +200,7 @@ public final class CsmTypes {
         public boolean isReference() {
             return _reference > 0;
         }
-        
+
         public boolean isRValueReference() {
             return _reference > 1;
         }
