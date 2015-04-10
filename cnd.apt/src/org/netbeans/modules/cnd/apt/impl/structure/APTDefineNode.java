@@ -68,12 +68,12 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
  */
 public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serializable {
     private static final long serialVersionUID = -99267816578145490L;
-    
+
     private APTToken[] params = null;
     private APTToken[] bodyTokens = null;
-    
+
     private volatile int stateAndHashCode = BEFORE_MACRO_NAME;
-    
+
     private static final byte BEFORE_MACRO_NAME = 0;
     private static final byte AFTER_MACRO_NAME = 1;
     private static final byte IN_PARAMS = 2;
@@ -83,7 +83,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
     private static final byte IN_BODY_AFTER_SHARP = 6;
     private static final byte IN_BODY_AFTER_LPAREN_AND_SHARP = 7;
     private static final byte ERROR = 8;
-    
+
     /** Copy constructor */
     /**package*/APTDefineNode(APTDefineNode orig) {
         super(orig);
@@ -91,7 +91,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
         this.bodyTokens = orig.bodyTokens;
         this.stateAndHashCode = orig.stateAndHashCode;
     }
-    
+
     /** Constructor for serialization */
     protected APTDefineNode() {
     }
@@ -110,7 +110,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
     public final int getType() {
         return APT.Type.DEFINE;
     }
-    
+
     @Override
     public Collection<APTToken> getParams() {
         if (params == null) {
@@ -119,12 +119,12 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
             return Collections.<APTToken>unmodifiableList(Arrays.asList(params));// != null ? (APTToken[]) params.toArray(new APTToken[params.size()]) : null;
         }
     }
-    
+
     @Override
     public boolean isFunctionLike() {
         return params != null;
     }
-    
+
     /**
      * returns List of Tokens of macro body
      */
@@ -136,7 +136,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
             return Arrays.asList(bodyTokens);
         }
     }
-    
+
     /**
      * returns true if #define directive is valid
      */
@@ -149,21 +149,21 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
     public boolean accept(APTFile curFile, APTToken token) {
         throw new IllegalStateException("Do not call accept on APTDefineNode directly, use APTDefineNode.Builder"); //NOI18N
     }
-    
+
     private boolean superAccept(APTFile curFile, APTToken token) {
         return super.accept(curFile, token);
     }
-    
+
     public static class Builder implements APTNodeBuilder {
         private List<APTToken> params = null;
         private List<APTToken> bodyTokens = null;
-        
+
         private final APTDefineNode node;
 
         public Builder(APTToken token) {
             node = new APTDefineNode(token);
         }
-        
+
         @Override
         public APTDefineNode getNode() {
             if (params != null) {
@@ -239,7 +239,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                             if (bodyTokens == null) {
                                 bodyTokens = new ArrayList<APTToken>();
                             }
-                            bodyTokens.add(token);                        
+                            bodyTokens.add(token);
                             node.stateAndHashCode = IN_BODY;
                         }
                         break;
@@ -254,7 +254,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                             case APTTokenTypes.RPAREN:
                                 node.stateAndHashCode = IN_BODY;
                                 break;
-                            case APTTokenTypes.ELLIPSIS: 
+                            case APTTokenTypes.ELLIPSIS:
                                 // support ELLIPSIS for IZ#83949
                                 params.add(APTUtils.VA_ARGS_TOKEN);
                                 node.stateAndHashCode = IN_PARAMS_AFTER_ELLIPSIS;
@@ -285,7 +285,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                         }
                         break;
                     }
-                    case IN_PARAMS_AFTER_ID: 
+                    case IN_PARAMS_AFTER_ID:
                     {
                         switch (token.getType()) {
                             case APTTokenTypes.RPAREN:
@@ -293,7 +293,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                                 break;
                             case APTTokenTypes.ELLIPSIS:
                                 //previous parameter is variadic named token
-                                // #195560 - more support for variadic variables in macro 
+                                // #195560 - more support for variadic variables in macro
                                 if (params.isEmpty()) {
                                     node.logError(curFile, token);
                                     node.stateAndHashCode = ERROR;
@@ -317,7 +317,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                                 break;
                         }
                         break;
-                    }                    
+                    }
                     case IN_BODY:
                     {
                         // init body list if necessary
@@ -353,15 +353,15 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                                 // only id is accepted after #
                                 node.stateAndHashCode = ERROR;
                             }
-                        }                   
+                        }
                         if (node.stateAndHashCode == ERROR) {
                             if (DebugUtils.STANDALONE) {
-                                System.err.printf("%s, line %d: '#' is not followed by a macro parameter\n", // NOI18N
+                                System.err.printf("%s, line %d: '#' is not followed by a macro parameter%n", // NOI18N
                                         APTTraceUtils.toFileString(curFile), node.getToken().getLine());
                             } else {
                                 APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: '#' is not followed by a macro parameter", // NOI18N
                                         new Object[] {APTTraceUtils.toFileString(curFile), node.getToken().getLine()} );
-                            }                                
+                            }
                         }
                         break;
                     }
@@ -376,7 +376,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                 return true;
             }
         }
-        
+
         private boolean isInParamList(APTToken id) {
             assert id != null;
             if (params == null) {
@@ -394,14 +394,14 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
     private void logError(APTFile curFile, APTToken token) {
         // error report
         if (DebugUtils.STANDALONE) {
-            System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
+            System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list%n", // NOI18N
                     APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
         } else {
             APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
                     new Object[]{APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()}); // NOI18N
         }
     }
-    
+
     @Override
     public String getText() {
         String ret = super.getText();

@@ -65,25 +65,25 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
     private static final long serialVersionUID = 1068728941146083839L;
     private List<APTToken> condition;
     private int endOffset;
-    
+
     /** Copy constructor */
     /**package*/APTIfConditionBaseNode(APTIfConditionBaseNode orig) {
         super(orig);
         this.condition = orig.condition;
         this.endOffset = orig.getEndOffset();
     }
-    
+
     /** Constructor for serialization */
     protected APTIfConditionBaseNode() {
     }
-    
+
     /**
      * Creates a new instance of APTIfConditionBaseNode
      */
     protected APTIfConditionBaseNode(APTToken token) {
         super(token);
     }
-    
+
     @Override
     public String getText() {
         String text = super.getText();
@@ -96,12 +96,12 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         }
         return text + " CONDITION{" + condStr + "}"; // NOI18N
     }
-    
+
     /** provides APTIf and APTElif interfaces support */
     public TokenStream getCondition() {
         return condition != null ? new ListBasedTokenStream(condition) : APTUtils.EMPTY_STREAM;
     }
-    
+
     @Override
     public boolean accept(APTFile curFile,APTToken token) {
         assert (token != null);
@@ -112,7 +112,7 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
             endOffset = token.getOffset();
             if (condition == null) {
                 if (DebugUtils.STANDALONE) {
-                    System.err.printf("%s, line %d: %s with no expression\n", // NOI18N
+                    System.err.printf("%s, line %d: %s with no expression%n", // NOI18N
                         APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()); // NOI18N
                 } else {
                     APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: {2} with no expression", // NOI18N
@@ -131,7 +131,7 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         }
         return true;
     }
-    
+
     @Override
     public int getEndOffset() {
         return endOffset;

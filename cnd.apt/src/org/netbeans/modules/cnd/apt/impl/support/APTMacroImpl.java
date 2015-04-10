@@ -79,7 +79,7 @@ public final class APTMacroImpl implements APTMacro {
     public CharSequence getFile() {
         return file;
     }
-    
+
     @Override
     public Kind getKind() {
         return macroType;
@@ -121,7 +121,7 @@ public final class APTMacroImpl implements APTMacro {
         }
         return retValue;
     }
-    
+
     private static boolean equals(APTMacroImpl one, APTMacroImpl other) {
         if (one.macroType != other.macroType) {
             return false;
@@ -132,7 +132,7 @@ public final class APTMacroImpl implements APTMacro {
         }
         return one.defineNode.equals(other.defineNode);
     }
-    
+
     @Override
     public int hashCode() {
         int retValue = hashCode;
@@ -145,7 +145,7 @@ public final class APTMacroImpl implements APTMacro {
             retValue = hashCode;
         }
         return retValue;
-    }       
+    }
 
     @Override
     public String toString() {
@@ -156,11 +156,7 @@ public final class APTMacroImpl implements APTMacro {
                 retValue.append("<U>"); // NOI18N
                 break;
             case COMPILER_PREDEFINED:
-                retValue.append("<S>"); // NOI18N
-                break;
             case POSITION_PREDEFINED:
-                retValue.append("<S>"); // NOI18N
-                break;
             case USER_SPECIFIED:
             default:
                 retValue.append("<S>"); // NOI18N
@@ -181,17 +177,15 @@ public final class APTMacroImpl implements APTMacro {
             retValue.append("]"); // NOI18N
         }
         TokenStream bodyStream = getBody();
-        if (bodyStream != null) {
-            retValue.append("'='"); // NOI18N
-            retValue.append(APTUtils.toString(bodyStream));
-        }
+        retValue.append("'='"); // NOI18N
+        retValue.append(APTUtils.toString(bodyStream));
         return retValue.toString();
-    }       
+    }
 
     public void write(RepositoryDataOutput output) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
     }
-    
+
     public APTMacroImpl(RepositoryDataInput input) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
     }

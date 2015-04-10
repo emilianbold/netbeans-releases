@@ -57,23 +57,23 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * #ifndef/#ifdef directives base implementation
  * @author Vladimir Voskresensky
  */
-public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNode 
+public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNode
                                                 implements Serializable {
     private static final long serialVersionUID = -5900095440680811076L;
     private APTToken macroName;
     private int endOffset;
-    
+
     /** Copy constructor */
     /**package*/ APTIfdefConditionBaseNode(APTIfdefConditionBaseNode orig) {
         super(orig);
         this.macroName = orig.macroName;
         this.endOffset = orig.endOffset;
     }
-    
+
     /** Constructor for serialization */
     protected APTIfdefConditionBaseNode() {
     }
-    
+
     /** Creates a new instance of APTIfdefConditionBaseNode */
     protected APTIfdefConditionBaseNode(APTToken token) {
         super(token);
@@ -81,12 +81,12 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
 
     @Override
     public boolean accept(APTFile curFile,APTToken token) {
-        /** base implementation of #ifdef/#ifndef */        
+        /** base implementation of #ifdef/#ifndef */
         if (APTUtils.isID(token)) {
             if (macroName != null) {
                 // init macro name only once
                 if (DebugUtils.STANDALONE) {
-                    System.err.printf("%s, line %d: extra tokens after %s at end of %s directive\n", // NOI18N
+                    System.err.printf("%s, line %d: extra tokens after %s at end of %s directive%n", // NOI18N
                             APTTraceUtils.toFileString(curFile), getToken().getLine(), macroName.getText(), getToken().getText().trim()); // NOI18N
                 } else {
                     APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: extra tokens after {2} at end of {3} directive", // NOI18N
@@ -98,21 +98,21 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
         } else if (token.getType() == APTTokenTypes.DEFINED) {
             // "defined" cannot be used as a macro name
             if (DebugUtils.STANDALONE) {
-                System.err.printf("%s, line %d: \"defined\" cannot be used as a macro name\n", // NOI18N
+                System.err.printf("%s, line %d: \"defined\" cannot be used as a macro name%n", // NOI18N
                                     APTTraceUtils.toFileString(curFile), getToken().getLine()); // NOI18N
             } else {
                 APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: \"defined\" cannot be used as a macro name", // NOI18N
                         new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine()} ); // NOI18N
-            }            
+            }
         }
-        // eat all till END_PREPROC_DIRECTIVE     
+        // eat all till END_PREPROC_DIRECTIVE
         if (APTUtils.isEndDirectiveToken(token.getType())) {
             endOffset = token.getOffset();
             if (macroName == null) {
                 if (DebugUtils.STANDALONE) {
-                    System.err.printf("%s, line %d: no macro name given in %s directive\n", // NOI18N
+                    System.err.printf("%s, line %d: no macro name given in %s directive%n", // NOI18N
                         APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim());
-                } else {                
+                } else {
                     APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: no macro name given in {2} directive ", // NOI18N
                             new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()} );
                 }
@@ -127,7 +127,7 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     public int getEndOffset() {
         return endOffset;
     }
-    
+
     @Override
     public String getText() {
         assert (getToken() != null) : "must have valid preproc directive"; // NOI18N
@@ -143,6 +143,6 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     /** base implementation for #ifdef/#ifndef */
     public APTToken getMacroName() {
         return macroName;
-    }    
+    }
 
 }

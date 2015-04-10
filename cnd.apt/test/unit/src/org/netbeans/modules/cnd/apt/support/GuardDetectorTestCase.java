@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.actions.SystemAction;
 
 /**
  *

@@ -58,8 +58,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.CharSequences;
 
 /**
  * composition of include handler and macro map for parsing file phase
