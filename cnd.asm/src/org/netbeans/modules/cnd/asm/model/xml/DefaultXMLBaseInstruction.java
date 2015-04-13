@@ -50,14 +50,14 @@ import org.netbeans.modules.cnd.asm.model.lang.instruction.InstructionArgs;
 import org.netbeans.modules.cnd.asm.model.lang.operand.Operand;
 
 public class DefaultXMLBaseInstruction extends XMLBaseInstruction {
-    public static final Collection<Integer> DEFAULT_READ = Arrays.asList(new Integer[]{2});
-    public static final Collection<Integer> DEFAULT_WRITE = Arrays.asList(new Integer[]{1});
-    
+    public static final Collection<Integer> DEFAULT_READ = Collections.singletonList(2);
+    public static final Collection<Integer> DEFAULT_WRITE = Collections.singletonList(1);
+
     //TODO: There are some instructions with fixed read,write registers, not in arguments
     private Collection<Integer> readArgsIdx = DEFAULT_READ;
     private Collection<Integer> writeArgsIdx = DEFAULT_WRITE;
-    
-    public DefaultXMLBaseInstruction(String name, String groupName, String desc, 
+
+    public DefaultXMLBaseInstruction(String name, String groupName, String desc,
                                     Collection<InstructionArgs> args) {
         super(name, desc, groupName, args);
     }
@@ -65,21 +65,21 @@ public class DefaultXMLBaseInstruction extends XMLBaseInstruction {
     public boolean isSupportive(Operand[] ops) {
         return false;
     }
-    
+
     public void setWrite(String write) {
         this.writeArgsIdx = parseArgs(Util.descriptionTokenizer(write));
         if (this.readArgsIdx == DEFAULT_READ) {
             this.readArgsIdx = Collections.emptyList();
         }
     }
-    
+
     public void setRead(String read) {
         this.readArgsIdx = parseArgs(Util.descriptionTokenizer(read));
         if (this.writeArgsIdx == DEFAULT_WRITE) {
             this.writeArgsIdx = Collections.emptyList();
         }
     }
-    
+
     private static final String ARG_PREFIX = "%arg"; // NOI18N
     private static Collection<Integer> parseArgs(List<String> args) {
         Collection<Integer> res = new ArrayList<Integer>();
@@ -95,7 +95,7 @@ public class DefaultXMLBaseInstruction extends XMLBaseInstruction {
         }
         return res;
     }
-    
+
     public Collection<Integer> getReadArgIdxs() {
         return readArgsIdx;
     }

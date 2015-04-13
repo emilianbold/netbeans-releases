@@ -61,7 +61,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public class AsmLanguageHierarchy extends LanguageHierarchy<AsmTokenId> {
     
         
-    private AsmSyntax synt;
+    private final AsmSyntax synt;
 
     public AsmLanguageHierarchy(AsmSyntax synt) {
         this.synt = synt;

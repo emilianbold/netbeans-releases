@@ -60,11 +60,11 @@ import org.netbeans.modules.cnd.asm.model.lang.instruction.Instruction;
 
 public class ATTIdentResolver implements IdentResolver {
     
-    private AbstractAsmModel model;
+    private final AbstractAsmModel model;
     
-    private Map<Character, BitWidth> suffixes;
+    private final Map<Character, BitWidth> suffixes;
     
-    private static Set<String> directives;
+    private static final Set<String> directives;
     
     static {
          String []dnames = new String[] {

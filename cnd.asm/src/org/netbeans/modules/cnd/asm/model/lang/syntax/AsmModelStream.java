@@ -107,7 +107,7 @@ public class AsmModelStream implements Iterable<AsmOffsetable> {
     }        
             
     public static class ClazzFilter implements AsmFilter {        
-        private Class<?> cl;
+        private final Class<?> cl;
         
         public boolean accept(AsmOffsetable el) {
             return el.getClass() == cl;

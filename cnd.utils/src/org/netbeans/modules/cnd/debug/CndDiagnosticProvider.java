@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.debug;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import org.openide.util.Lookup;
 
@@ -51,5 +52,5 @@ import org.openide.util.Lookup;
  */
 public interface CndDiagnosticProvider {
     public String getDisplayName();
-    public void dumpInfo(Lookup context, PrintWriter printOut);
+    public void dumpInfo(Lookup context, PrintWriter printOut) throws IOException;
 }

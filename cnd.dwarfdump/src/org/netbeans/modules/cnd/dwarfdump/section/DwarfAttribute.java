@@ -53,9 +53,11 @@
 package org.netbeans.modules.cnd.dwarfdump.section;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ACCESS;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.INL;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIRTUALITY;
@@ -146,10 +148,14 @@ public class DwarfAttribute {
     }
 
     public String toString(Object value) {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out, value);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out, value);
+            return st.toString(Charset.defaultCharset().name());
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
 }
 

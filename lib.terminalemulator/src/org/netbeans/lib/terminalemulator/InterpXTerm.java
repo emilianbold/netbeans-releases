@@ -81,7 +81,7 @@ class InterpXTerm extends InterpProtoANSIX {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 // first number: 0 for vt100, 1 for vt220
-                // second number: firmware version / patch# 
+                // second number: firmware version / patch#
                 // third number: always 0
                 ai.ops.op_send_chars("\033[>0;0;0c");   // NOI18N
                 return null;
@@ -147,7 +147,7 @@ class InterpXTerm extends InterpProtoANSIX {
                     case 10: {
                         // This is specific to nbterm!
                         int semix2 = p2.indexOf(';');
-                        if (semix == -1)
+                        if (semix2 == -1)
                             return null;
                         String p3 = p2.substring(semix2+1);
                         p2 = p2.substring(0, semix2);
@@ -168,18 +168,18 @@ class InterpXTerm extends InterpProtoANSIX {
 	super(ops, type_singleton);
 	this.type = type_singleton;
 	setup();
-    } 
+    }
 
     protected InterpXTerm(Ops ops, InterpTypeXTerm type) {
 	super(ops, type);
 	this.type = type;
 	setup();
-    } 
+    }
 
     @Override
     public String name() {
 	return "xterm";	// NOI18N
-    } 
+    }
 
     @Override
     public void reset() {

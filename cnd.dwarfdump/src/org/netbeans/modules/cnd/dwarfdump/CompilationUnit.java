@@ -44,13 +44,18 @@
 
 package org.netbeans.modules.cnd.dwarfdump;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -718,9 +723,9 @@ public class CompilationUnit implements CompilationUnitInterface{
     public String toString() {
         try {
             ByteArrayOutputStream st = new ByteArrayOutputStream();
-            PrintStream out = new PrintStream(st);
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
             dump(out);
-            return st.toString();
+            return st.toString(Charset.defaultCharset().name());
         } catch (IOException ex) {
             Dwarf.LOG.log(Level.INFO, "File "+reader.getFileName(), ex); // NOI18N
             return ""; // NOI18N

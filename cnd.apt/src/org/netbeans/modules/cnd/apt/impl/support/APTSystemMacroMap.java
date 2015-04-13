@@ -61,26 +61,26 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public class APTSystemMacroMap extends APTBaseMacroMap {
-    
+
     private APTMacroMap preMacroMap;
     private final long startCRC;
-    
+
 //    /** Creates a new instance of APTSystemMacroMap */
-    protected APTSystemMacroMap(long crc) {           
+    protected APTSystemMacroMap(long crc) {
         preMacroMap = new APTPredefinedMacroMap();
         startCRC = crc;
     }
-    
+
     public APTSystemMacroMap(List<String> sysMacros) {
         this(calculateCRC(sysMacros));
         fill(sysMacros, true);
     }
-    
+
     @Override
     protected APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType) {
         return new APTMacroImpl(file, define, macroType);
     }
-    
+
     @Override
     public boolean pushPPDefined() {
         APTUtils.LOG.log(Level.SEVERE, "pushPPDefined is not supported", new IllegalAccessException()); // NOI18N
@@ -92,7 +92,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "popPPDefined is not supported", new IllegalAccessException()); // NOI18N
         return false;
     }
-    
+
     @Override
     public boolean pushExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException());// NOI18N
@@ -108,19 +108,19 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
     public boolean isExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "isExpanding is not supported", new IllegalAccessException());// NOI18N
         return false;
-    }  
-    
+    }
+
     @Override
     public APTMacro getMacro(APTToken token) {
         APTMacro res = super.getMacro(token);
-        
+
         if(res == null) {
             res = preMacroMap.getMacro(token);
         }
         // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
-    
+
     @Override
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
         assert parent == null : "parent must be null";
@@ -136,16 +136,16 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
     public void undef(APTFile file, APTToken name) {
         throw new UnsupportedOperationException("Can not modify immutable System macro map"); // NOI18N
     }
-    
+
     //@Override
     public long getCompilationUnitCRC() {
         return startCRC;
-    }    
+    }
 
     private static long calculateCRC(List<String> sysMacros) {
 	Checksum checksum = new Adler32();
 	for( String s : sysMacros ) {
-             checksum.update(s.getBytes(), 0, s.length());
+             checksum.update(s.getBytes(SupportAPIAccessor.INTERNAL_CHARSET), 0, s.length());
 	}
 	return checksum.getValue();
     }

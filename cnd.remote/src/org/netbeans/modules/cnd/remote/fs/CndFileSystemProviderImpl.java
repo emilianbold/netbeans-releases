@@ -178,6 +178,7 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // three state
     protected Boolean canReadImpl(CharSequence path) {
         FileSystemAndString p = getFileSystemAndRemotePath(path);
         if (p != null) {
@@ -190,6 +191,7 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // three state
     protected Boolean existsImpl(CharSequence path) {
         FileSystemAndString p = getFileSystemAndRemotePath(path);
         if (p != null) {
@@ -224,8 +226,8 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
         FileSystemProvider.removeFileChangeListener(listener);
         return true;
     }
-    
-    
+
+
 
     private FileSystemAndString getFileSystemAndRemotePath(CharSequence path) {
         String prefix = getPrefix();
@@ -291,9 +293,9 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
         }
         return result;
     }
-    
+
     private final List<ProblemListenerAdapter> adapters = new ArrayList<ProblemListenerAdapter>();
-    
+
     @Override
     protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
         ProblemListenerAdapter newAdapter = new ProblemListenerAdapter(listener);
@@ -325,11 +327,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
                 } else if (l == listener) {
                     FileSystemProvider.removeFileSystemProblemListener(adapter, fileSystem);
                     it.remove();
-                }                
+                }
             }
         }
     }
-    
+
     private static HostInfo getHostInfoIfAvailable(ExecutionEnvironment env) {
         if (HostInfoUtils.isHostInfoAvailable(env)) {
             try {
@@ -377,7 +379,7 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     }
 
     private static class ProblemListenerAdapter implements FileSystemProblemListener {
-        
+
         private final WeakReference<CndFileSystemProblemListener> listenerRef;
 
         public ProblemListenerAdapter(CndFileSystemProblemListener listener) {
@@ -398,7 +400,7 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
             if (listener != null) {
                 listener.recovered(fileSystem);
             }
-        }        
+        }
     }
 
     private static class FileSystemAndString {

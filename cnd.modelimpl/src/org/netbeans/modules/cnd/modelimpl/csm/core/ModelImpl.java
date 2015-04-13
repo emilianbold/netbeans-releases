@@ -798,6 +798,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
      * null if the project is being created
      */
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP")
     public Boolean isProjectEnabled(Object nativeProject) {
         assert nativeProject instanceof NativeProject : "unexpected class " + nativeProject;
         if (projectsBeingCreated.contains((NativeProject)nativeProject)) {

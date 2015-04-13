@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.asm.core.ui.top;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -310,7 +309,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         public static final int COLUMN_USAGE=1;
         public static final int COLUMN_VALUE=2;
         
-        private Class[] types; 
+        private final Class[] types; 
          
         public RegisterTableModel() {
              super(new Object [][]  { },
