@@ -51,34 +51,34 @@ import org.netbeans.modules.cnd.asm.model.lang.instruction.Instruction;
 import org.netbeans.modules.cnd.asm.model.lang.instruction.InstructionArgs;
 
 public class InstructionInfoPanel extends javax.swing.JPanel {
-                  
+
     public InstructionInfoPanel() {
-        initComponents();                
+        initComponents();
     }
-    
-    private String infoTemplate = "%s  -  %s\n"; // NOI18N
-                                  
-    
+
+    private static final String infoTemplate = "%s  -  %s%n"; // NOI18N
+
+
     public void setInstruction(Instruction instr) {
         StringBuilder res = new StringBuilder();
-               
-       res.append( 
+
+       res.append(
            new Formatter().format(infoTemplate, instr.getName(),
-                                  instr.getDescription()) 
+                                  instr.getDescription())
         );
-                       
+
         for (InstructionArgs arg : instr.getArguments()) {
             res.append("\n").append(instr.getName()); // NOI18N
             for (String mnemonic : arg.getParamMnemonic()) {
                 res.append(" ").append(mnemonic); // NOI18N
             }
             res.append(" - ").append(arg.getDescription()); // NOI18N
-        } 
-        
+        }
+
         //jInfoTextArea.setDocument(new HTMLDocument());
-        jInfoTextArea.setText(res.toString());        
+        jInfoTextArea.setText(res.toString());
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -98,11 +98,11 @@ public class InstructionInfoPanel extends javax.swing.JPanel {
 
         add(jInfoScrollPanel);
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jInfoScrollPanel;
     private javax.swing.JTextArea jInfoTextArea;
     // End of variables declaration//GEN-END:variables
-    
+
 }

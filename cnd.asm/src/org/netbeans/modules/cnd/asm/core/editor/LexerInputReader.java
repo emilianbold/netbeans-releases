@@ -52,7 +52,7 @@ import org.netbeans.spi.lexer.LexerInput;
 
 class LexerInputReader extends Reader {
 
-    private LexerInput input;
+    private final LexerInput input;
     
     boolean isClosed;
     boolean isEof;

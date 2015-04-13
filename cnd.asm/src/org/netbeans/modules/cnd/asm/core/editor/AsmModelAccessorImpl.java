@@ -226,7 +226,7 @@ public class AsmModelAccessorImpl implements AsmModelAccessor {
         private class LabelLinkResolver implements  AsmModelUtilities.AsmVisitor {
             
             private AsmElement result;
-            private String name;
+            private final String name;
             
             public LabelLinkResolver(String name) {
                 this.name = name;

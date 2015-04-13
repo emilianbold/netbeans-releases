@@ -45,8 +45,6 @@
 package org.netbeans.modules.cnd.asm.core.assistance;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.netbeans.modules.cnd.asm.core.assistance.RegisterUsageAccesor;
 import org.netbeans.modules.cnd.asm.core.assistance.RegisterUsageAccesor.PredefinedStatuses;
@@ -55,8 +53,8 @@ import org.netbeans.modules.cnd.asm.model.lang.Register;
 
 class MockRegisterInfoAccessor implements RegisterUsageAccesor {
     
-   private RegisterStatus []stat;
-   private Register []regs;
+   private final RegisterStatus []stat;
+   private final Register []regs;
    
    public MockRegisterInfoAccessor(Register []regs) {       
        this.regs = regs;

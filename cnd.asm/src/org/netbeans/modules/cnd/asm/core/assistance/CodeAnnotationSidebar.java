@@ -70,8 +70,8 @@ public class CodeAnnotationSidebar extends JComponent
     private static final int SIDEBAR_WIDTH = 9;    
     private static final Color colorBorder = new Color(102, 102, 102);
     
-    private EditorUI editorUI;
-    private JTextComponent target;
+    private final EditorUI editorUI;
+    private final JTextComponent target;
     
     private boolean enabled;
     

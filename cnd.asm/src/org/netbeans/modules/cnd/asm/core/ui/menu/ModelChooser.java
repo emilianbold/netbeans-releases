@@ -54,8 +54,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
@@ -75,7 +73,7 @@ public class ModelChooser extends AbstractAction
     private static AsmModelProvider curModel;
     private static AsmSyntaxProvider curSyntax;
     
-    private static JMenu menu;
+    private static final JMenu menu;
     
     static {   
          menu = new UpdatingMenu();
@@ -105,7 +103,7 @@ public class ModelChooser extends AbstractAction
 
     private static final class UpdatingMenu extends JMenu implements DynamicMenuContent {
 
-        private JComponent[] models;
+        private final JComponent[] models;
         
         public UpdatingMenu() {
             models = calcPresenters();
