@@ -66,6 +66,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
@@ -414,7 +415,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
     // Normailizes include directive string
     private String normalizeInclude(String inc) {
-        inc = inc.toLowerCase();
+        inc = inc.toLowerCase(Locale.getDefault());
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();

@@ -83,6 +83,7 @@ import org.openide.util.NbBundle;
  * @author thp
  */
 public class ManDocumentation {
+    private static final String MAN_PAGES_CACHE_ENCODING = "UTF-8";
 
 //    private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
 //    private static String manPath = null;
@@ -183,7 +184,7 @@ public class ManDocumentation {
             try {
                 out = new FileOutputStream(cache);
 
-                out.write(doc.getBytes());
+                out.write(doc.getBytes(MAN_PAGES_CACHE_ENCODING));
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             } finally {
@@ -221,7 +222,7 @@ public class ManDocumentation {
         // name might look like "operator /=", so we need to escape it
         String safeName;
         try {
-            safeName = URLEncoder.encode(name, "UTF-8"); // NOI18N
+            safeName = URLEncoder.encode(name, MAN_PAGES_CACHE_ENCODING); // NOI18N
         } catch (UnsupportedEncodingException ex) {
             // UTF-8 should always be supported, but anyway...
             safeName = name;
@@ -336,7 +337,7 @@ public class ManDocumentation {
 
             FileUtil.copy(in, out);
 
-            return out.toString();
+            return out.toString(MAN_PAGES_CACHE_ENCODING);
         } finally {
             if (in != null) {
                 try {
