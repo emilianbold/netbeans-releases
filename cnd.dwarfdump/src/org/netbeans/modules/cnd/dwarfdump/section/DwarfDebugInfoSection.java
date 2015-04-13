@@ -55,6 +55,7 @@ package org.netbeans.modules.cnd.dwarfdump.section;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -76,7 +77,7 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 public class DwarfDebugInfoSection extends ElfSection {
     private List<CompilationUnitInterface> compilationUnits;
     //DwarfRelaDebugInfoSection rela;
-    
+
     public DwarfDebugInfoSection(DwarfReader reader, int sectionIdx) throws IOException {
         super(reader, sectionIdx);
         /*rela = (DwarfRelaDebugInfoSection)*/ reader.getSection(SECTIONS.RELA_DEBUG_INFO);
@@ -85,7 +86,7 @@ public class DwarfDebugInfoSection extends ElfSection {
     public DwarfDebugInfoSection(ElfReader reader, int sectionIdx, SectionHeader header, String sectionName) {
         super(reader, sectionIdx, header, sectionName);
     }
-    
+
     public CompilationUnit getCompilationUnit(long unit_offset) throws IOException {
         for (CompilationUnitInterface unit : getCompilationUnits()) {
             if (unit instanceof CompilationUnit) {
@@ -104,7 +105,7 @@ public class DwarfDebugInfoSection extends ElfSection {
         }
         return new UnitIterator();
     }
-    
+
     public List<CompilationUnitInterface> getCompilationUnits() throws IOException {
         if (compilationUnits != null) {
             return compilationUnits;
@@ -122,7 +123,7 @@ public class DwarfDebugInfoSection extends ElfSection {
         }
         return compilationUnits;
     }
-    
+
     @Override
     public void dump(PrintStream out) {
         try {
@@ -140,10 +141,14 @@ public class DwarfDebugInfoSection extends ElfSection {
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString(Charset.defaultCharset().name());
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
 
     private class UnitIterator implements CompilationUnitIterator {
@@ -178,7 +183,7 @@ public class DwarfDebugInfoSection extends ElfSection {
             }
         }
     }
-    
+
     public static class ListIterator implements CompilationUnitIterator {
         private final Iterator<CompilationUnitInterface> it;
         public ListIterator(Iterator<CompilationUnitInterface> it) {

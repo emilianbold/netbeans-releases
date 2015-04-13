@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -67,7 +68,7 @@ public class ElfSection {
     final SectionHeader header;
     private final int sectionIdx;
     private final String sectionName;
-    
+
     public ElfSection(ElfReader reader, int sectionIdx) {
         this.reader = reader;
         this.sectionIdx = sectionIdx;
@@ -81,7 +82,7 @@ public class ElfSection {
         this.header = header;
         this.sectionName = sectionName;
     }
-    
+
     public void dump(PrintStream out) {
         out.println("\n** Section " + sectionName); // NOI18N
         if (header != null) {
@@ -92,12 +93,16 @@ public class ElfSection {
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString(Charset.defaultCharset().name());
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
-    
+
     public ElfSection read() throws IOException {
         return null;
     }
