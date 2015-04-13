@@ -43,16 +43,17 @@ package org.netbeans.modules.javascript.grunt.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -61,6 +62,7 @@ import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
 import org.netbeans.modules.javascript.grunt.util.GruntUtils;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -72,7 +74,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 @ActionID(id = "org.netbeans.modules.javascript.grunt.ui.actions.RunGruntTaskAction", category = "Build")
@@ -88,7 +89,7 @@ import org.openide.util.actions.Presenter;
 @NbBundle.Messages("RunGruntTaskAction.name=Grunt Tasks")
 public final class RunGruntTaskAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 
-    static final RequestProcessor RP = new RequestProcessor(RunGruntTaskAction.class.getName(), 2);
+    static final Logger LOGGER = Logger.getLogger(RunGruntTaskAction.class.getName());
 
     private final Project project;
 
@@ -156,167 +157,142 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         if (project == null) {
             return new Actions.MenuItem(this, false);
         }
-        return new LazyMenu(project);
+        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project));
     }
 
     //~ Inner classes
 
-    private static final class LazyMenu extends JMenu {
+    private static final class TasksMenuSupportImpl implements BuildTools.TasksMenuSupport {
 
         private final Project project;
-
-        // @GuardedBy("EDT")
-        boolean menuBuilt = false;
+        private final GruntTasks gruntTasks;
 
 
-        public LazyMenu(Project project) {
-            super(Bundle.RunGruntTaskAction_name());
+        public TasksMenuSupportImpl(Project project) {
             assert project != null;
             this.project = project;
+            gruntTasks = GruntBuildTool.forProject(project).getGruntTasks();
+        }
+
+        @NbBundle.Messages({
+            "TasksMenuSupportImpl.tasks.label=Task(s)",
+            "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
+            "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
+            "TasksMenuSupportImpl.tasks.run.advanced=Run Task(s)",
+            "TasksMenuSupportImpl.grunt.configure=Configure Grunt...",
+        })
+        @Override
+        public String getTitle(Title title) {
+            switch (title) {
+                case MENU:
+                    return Bundle.RunGruntTaskAction_name();
+                case LOADING_TASKS:
+                    return Bundle.TasksMenuSupportImpl_tasks_loading();
+                case RELOAD_TASKS:
+                    return Bundle.TasksMenuSupportImpl_tasks_reload();
+                case CONFIGURE_TOOL:
+                    return Bundle.TasksMenuSupportImpl_grunt_configure();
+                case RUN_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_tasks_run_advanced();
+                case TASKS_LABEL:
+                    return Bundle.TasksMenuSupportImpl_tasks_label();
+                case BUILD_TOOL_EXEC:
+                    return GruntExecutable.GRUNT_NAME;
+                default:
+                    assert false : "Unknown title: " + title;
+            }
+            return null;
         }
 
         @Override
-        public JPopupMenu getPopupMenu() {
-            assert EventQueue.isDispatchThread();
-            if (!menuBuilt) {
-                menuBuilt = true;
-                buildMenu();
+        public String getDefaultTaskName() {
+            return GruntTasks.DEFAULT_TASK;
+        }
+
+        @Override
+        public Future<List<String>> getTasks() {
+            return new TasksFuture(gruntTasks);
+        }
+
+        @Override
+        public List<String> getAdvancedTasks() {
+            // XXX
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void runTask(String... args) {
+            assert !EventQueue.isDispatchThread();
+            GruntExecutable grunt = GruntExecutable.getDefault(project, true);
+            if (grunt != null) {
+                GruntUtils.logUsageGruntBuild();
+                grunt.run(args);
             }
-            return super.getPopupMenu();
         }
 
-        private void buildMenu() {
-            assert EventQueue.isDispatchThread();
-            GruntTasks gruntTasks = GruntBuildTool.forProject(project).getGruntTasks();
-            List<String> tasks = gruntTasks.getTasks();
-            if (tasks != null) {
-                addTasksMenuItems(tasks);
+        @Override
+        public void runAdvancedTask(boolean isPrivate, String... args) {
+            assert !EventQueue.isDispatchThread();
+            runTask(args);
+            // XXX save it!
+        }
+
+        @Override
+        public void reloadTasks() {
+            assert !EventQueue.isDispatchThread();
+            gruntTasks.reset();
+            try {
+                gruntTasks.loadTasks(null, null);
+            } catch (ExecutionException | TimeoutException ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
-            // load tasks
-            addLoadingMenuItem();
-            gruntTasks.processTasks(new GruntTasks.TasksProcessor() {
-                @Override
-                public void process(final List<String> tasks) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            removeAll();
-                            addTasksMenuItems(tasks);
-                            refreshMenu();
-                        }
-                    });
-                }
-            });
         }
 
-        void refreshMenu() {
-            JPopupMenu popupMenu = getPopupMenu();
-            popupMenu.pack();
-            popupMenu.invalidate();
-            popupMenu.revalidate();
-            popupMenu.repaint();
+        @Override
+        public void configure() {
+            OptionsDisplayer.getDefault().open(GruntOptionsPanelController.OPTIONS_PATH);
         }
 
-        void addTasksMenuItems(@NullAllowed List<String> tasks) {
-            assert EventQueue.isDispatchThread();
-            if (tasks == null) {
-                // grunt cli error?
-                addConfigureGruntMenuItem();
-                return;
+    }
+
+    private static final class TasksFuture implements Future<List<String>> {
+
+        private final GruntTasks gruntTasks;
+
+
+        public TasksFuture(GruntTasks gruntTasks) {
+            assert gruntTasks != null;
+            this.gruntTasks = gruntTasks;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return gruntTasks.getTasks() != null;
+        }
+
+        @Override
+        public List<String> get() throws InterruptedException, ExecutionException {
+            try {
+                return gruntTasks.loadTasks(null, null);
+            } catch (TimeoutException ex) {
+                assert false;
             }
-            // default task
-            addDefaultMenuItem();
-            addSeparator();
-            Set<String> allTasks = new LinkedHashSet<>(tasks);
-            allTasks.remove(GruntTasks.DEFAULT_TASK);
-            for (String task : allTasks) {
-                addTaskMenuItem(task);
-            }
-            if (!allTasks.isEmpty()) {
-                addSeparator();
-            }
-            addReloadTasksMenuItem();
+            return null;
         }
 
-        @NbBundle.Messages("LazyMenu.tasks.default=default")
-        private void addDefaultMenuItem() {
-            JMenuItem menuitem = new JMenuItem(Bundle.LazyMenu_tasks_default());
-            menuitem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            GruntExecutable grunt = GruntExecutable.getDefault(project, true);
-                            if (grunt != null) {
-                                GruntUtils.logUsageGruntBuild();
-                                grunt.run();
-                            }
-                        }
-                    });
-                }
-            });
-            add(menuitem);
-        }
-
-        private void addTaskMenuItem(final String task) {
-            JMenuItem menuitem = new JMenuItem(task);
-            menuitem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            GruntExecutable grunt = GruntExecutable.getDefault(project, true);
-                            if (grunt != null) {
-                                GruntUtils.logUsageGruntBuild();
-                                grunt.run(task);
-                            }
-                        }
-                    });
-                }
-            });
-            add(menuitem);
-        }
-
-        @NbBundle.Messages("LazyMenu.tasks.loading=Loading Tasks...")
-        private void addLoadingMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_tasks_loading());
-            menuItem.setEnabled(false);
-            add(menuItem);
-        }
-
-        @NbBundle.Messages("LazyMenu.grunt.configure=Configure Grunt...")
-        private void addConfigureGruntMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_grunt_configure());
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    OptionsDisplayer.getDefault().open(GruntOptionsPanelController.OPTIONS_PATH);
-                }
-            });
-            add(menuItem);
-        }
-
-        @NbBundle.Messages("LazyMenu.tasks.reload=Reload Tasks")
-        private void addReloadTasksMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_tasks_reload());
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    assert EventQueue.isDispatchThread();
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            GruntTasks gruntTasks = GruntBuildTool.forProject(project).getGruntTasks();
-                            gruntTasks.reset();
-                            gruntTasks.processTasks(GruntTasks.TasksProcessor.DEV_NULL);
-                        }
-                    });
-                    menuBuilt = false;
-                }
-            });
-            add(menuItem);
+        @Override
+        public List<String> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return gruntTasks.loadTasks(timeout, unit);
         }
 
     }

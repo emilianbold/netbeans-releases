@@ -43,16 +43,17 @@ package org.netbeans.modules.php.phing.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -61,6 +62,7 @@ import org.netbeans.modules.php.phing.exec.PhingExecutable;
 import org.netbeans.modules.php.phing.file.PhingTargets;
 import org.netbeans.modules.php.phing.ui.options.PhingOptionsPanelController;
 import org.netbeans.modules.php.phing.util.PhingUtils;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -72,7 +74,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 @ActionID(id = "org.netbeans.modules.php.phing.ui.actions.RunPhingTargetAction", category = "Build")
@@ -86,7 +87,7 @@ import org.openide.util.actions.Presenter;
 @NbBundle.Messages("RunPhingTargetAction.name=Phing Targets")
 public final class RunPhingTargetAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 
-    static final RequestProcessor RP = new RequestProcessor(RunPhingTargetAction.class.getName(), 2);
+    static final Logger LOGGER = Logger.getLogger(RunPhingTargetAction.class.getName());
 
     private final Project project;
 
@@ -153,168 +154,142 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         if (project == null) {
             return new Actions.MenuItem(this, false);
         }
-        return new LazyMenu(project);
+        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project));
     }
 
     //~ Inner classes
 
-    private static final class LazyMenu extends JMenu {
+    private static final class TasksMenuSupportImpl implements BuildTools.TasksMenuSupport {
 
         private final Project project;
-
-        // @GuardedBy("EDT")
-        boolean menuBuilt = false;
+        private final PhingTargets phingTargets;
 
 
-        public LazyMenu(Project project) {
-            super(Bundle.RunPhingTargetAction_name());
+        public TasksMenuSupportImpl(Project project) {
             assert project != null;
             this.project = project;
+            phingTargets = PhingBuildTool.forProject(project).getPhingTargets();
+        }
+
+        @NbBundle.Messages({
+            "TasksMenuSupportImpl.targets.label=Target(s)",
+            "TasksMenuSupportImpl.targets.loading=Loading Targets...",
+            "TasksMenuSupportImpl.targets.reload=Reload Targets",
+            "TasksMenuSupportImpl.targets.run.advanced=Run Target(s)",
+            "TasksMenuSupportImpl.phing.configure=Configure Phing...",
+        })
+        @Override
+        public String getTitle(BuildTools.TasksMenuSupport.Title title) {
+            switch (title) {
+                case MENU:
+                    return Bundle.RunPhingTargetAction_name();
+                case LOADING_TASKS:
+                    return Bundle.TasksMenuSupportImpl_targets_loading();
+                case RELOAD_TASKS:
+                    return Bundle.TasksMenuSupportImpl_targets_reload();
+                case CONFIGURE_TOOL:
+                    return Bundle.TasksMenuSupportImpl_phing_configure();
+                case RUN_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_targets_run_advanced();
+                case TASKS_LABEL:
+                    return Bundle.TasksMenuSupportImpl_targets_label();
+                case BUILD_TOOL_EXEC:
+                    return PhingExecutable.PHING_NAME;
+                default:
+                    assert false : "Unknown title: " + title;
+            }
+            return null;
         }
 
         @Override
-        public JPopupMenu getPopupMenu() {
-            assert EventQueue.isDispatchThread();
-            if (!menuBuilt) {
-                menuBuilt = true;
-                buildMenu();
+        public String getDefaultTaskName() {
+            return PhingTargets.DEFAULT_TARGET;
+        }
+
+        @Override
+        public Future<List<String>> getTasks() {
+            return new TargetsFuture(phingTargets);
+        }
+
+        @Override
+        public List<String> getAdvancedTasks() {
+            // XXX
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void runTask(String... args) {
+            assert !EventQueue.isDispatchThread();
+            PhingExecutable phing = PhingExecutable.getDefault(project, true);
+            if (phing != null) {
+                PhingUtils.logUsagePhingBuild();
+                phing.run(args);
             }
-            return super.getPopupMenu();
         }
 
-        private void buildMenu() {
-            assert EventQueue.isDispatchThread();
-            PhingTargets phingTargets = PhingBuildTool.forProject(project).getPhingTargets();
-            List<String> targets = phingTargets.getTargets();
-            if (targets != null) {
-                addTargetsMenuItems(targets);
+        @Override
+        public void runAdvancedTask(boolean isPrivate, String... args) {
+            assert !EventQueue.isDispatchThread();
+            runTask(args);
+            // XXX save it!
+        }
+
+        @Override
+        public void reloadTasks() {
+            assert !EventQueue.isDispatchThread();
+            phingTargets.reset();
+            try {
+                phingTargets.loadTargets(null, null);
+            } catch (ExecutionException | TimeoutException ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
-            // load targets
-            addLoadingMenuItem();
-            phingTargets.processTargets(new PhingTargets.TargetsProcessor() {
-                @Override
-                public void process(final List<String> targets) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            removeAll();
-                            addTargetsMenuItems(targets);
-                            refreshMenu();
-                        }
-                    });
-                }
-            });
         }
 
-        void refreshMenu() {
-            JPopupMenu popupMenu = getPopupMenu();
-            popupMenu.pack();
-            popupMenu.invalidate();
-            popupMenu.revalidate();
-            popupMenu.repaint();
+        @Override
+        public void configure() {
+            OptionsDisplayer.getDefault().open(PhingOptionsPanelController.OPTIONS_PATH);
         }
 
-        void addTargetsMenuItems(@NullAllowed List<String> targets) {
-            assert EventQueue.isDispatchThread();
-            if (targets == null) {
-                // phing cli error?
-                addConfigurePhingMenuItem();
-                return;
+    }
+
+    private static final class TargetsFuture implements Future<List<String>> {
+
+        private final PhingTargets phingTargets;
+
+
+        public TargetsFuture(PhingTargets phingTargets) {
+            assert phingTargets != null;
+            this.phingTargets = phingTargets;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return phingTargets.getTargets() != null;
+        }
+
+        @Override
+        public List<String> get() throws InterruptedException, ExecutionException {
+            try {
+                return phingTargets.loadTargets(null, null);
+            } catch (TimeoutException ex) {
+                assert false;
             }
-            // default target
-            addDefaultMenuItem();
-            addSeparator();
-            Set<String> allTargets = new LinkedHashSet<>(targets);
-            allTargets.remove(PhingTargets.DEFAULT_TARGET);
-            for (String target : allTargets) {
-                addTargetMenuItem(target);
-            }
-            if (!allTargets.isEmpty()) {
-                addSeparator();
-            }
-            addReloadTargetsMenuItem();
+            return null;
         }
 
-        @NbBundle.Messages("LazyMenu.targets.default=default")
-        private void addDefaultMenuItem() {
-            JMenuItem menuitem = new JMenuItem(Bundle.LazyMenu_targets_default());
-            menuitem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            PhingExecutable phing = PhingExecutable.getDefault(project, true);
-                            if (phing != null) {
-                                PhingUtils.logUsagePhingBuild();
-                                phing.run();
-                            }
-                        }
-                    });
-                }
-            });
-            add(menuitem);
-        }
-
-
-        private void addTargetMenuItem(final String targets) {
-            JMenuItem menuitem = new JMenuItem(targets);
-            menuitem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            PhingExecutable phing = PhingExecutable.getDefault(project, true);
-                            if (phing != null) {
-                                PhingUtils.logUsagePhingBuild();
-                                phing.run(targets);
-                            }
-                        }
-                    });
-                }
-            });
-            add(menuitem);
-        }
-
-        @NbBundle.Messages("LazyMenu.targets.loading=Loading Targets...")
-        private void addLoadingMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_targets_loading());
-            menuItem.setEnabled(false);
-            add(menuItem);
-        }
-
-        @NbBundle.Messages("LazyMenu.phing.configure=Configure Phing...")
-        private void addConfigurePhingMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_phing_configure());
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    OptionsDisplayer.getDefault().open(PhingOptionsPanelController.OPTIONS_PATH);
-                }
-            });
-            add(menuItem);
-        }
-
-        @NbBundle.Messages("LazyMenu.targets.reload=Reload Targets")
-        private void addReloadTargetsMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_targets_reload());
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    assert EventQueue.isDispatchThread();
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            PhingTargets phingTargets = PhingBuildTool.forProject(project).getPhingTargets();
-                            phingTargets.reset();
-                            phingTargets.processTargets(PhingTargets.TargetsProcessor.DEV_NULL);
-                        }
-                    });
-                    menuBuilt = false;
-                }
-            });
-            add(menuItem);
+        @Override
+        public List<String> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return phingTargets.loadTargets(timeout, unit);
         }
 
     }
