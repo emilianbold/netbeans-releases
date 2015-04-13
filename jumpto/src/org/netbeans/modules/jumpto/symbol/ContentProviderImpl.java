@@ -561,7 +561,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
             return SearchType.EXACT_NAME;
         } else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
-            return SearchType.CAMEL_CASE;
+            return isCaseSensitive ? SearchType.CAMEL_CASE : SearchType.CASE_INSENSITIVE_CAMEL_CASE;
         } else if (wildcard != -1) {
             return isCaseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
         } else {
