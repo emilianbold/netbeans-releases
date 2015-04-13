@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -227,7 +228,7 @@ public final class PlatformInfo {
         if (pathName == null) {
             if (isWindows()) {
                 for (String key : getEnv().keySet()) {
-                    if (key.toLowerCase().equals("path")) { // NOI18N
+                    if (key.toLowerCase(Locale.getDefault()).equals("path")) { // NOI18N
                         pathName = key.substring(0, 4);
                         return pathName;
                     }
