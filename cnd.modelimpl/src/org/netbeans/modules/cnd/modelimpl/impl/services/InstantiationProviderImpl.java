@@ -167,11 +167,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 //            CsmClassifir cls = patternType.getClassifier();
             TypeDigger digger = TypeDigger.create(templateParam, patternType);
             if (digger != null) {
-                //CsmType templateType = digger.getTemplateType();
+                CsmType templateType = digger.getTemplateType();
                 CsmType targetTypes[] = digger.extract(actualType, strategy);
                 if (targetTypes != null) {
                     TypeInfoCollector templateTypeInfo = new CsmUtilities.TypeInfoCollector();
-                    //CsmType templateUnderlyingType = CsmUtilities.iterateTypeChain(templateType, templateTypeInfo);
+                    /*CsmType templateUnderlyingType =*/ CsmUtilities.iterateTypeChain(templateType, templateTypeInfo);
                     List<Qualificator> templateTypeQuals = templateTypeInfo.qualificators;
                     List<CsmType> results = new ArrayList<>();
                     for (CsmType targetType : targetTypes) {
