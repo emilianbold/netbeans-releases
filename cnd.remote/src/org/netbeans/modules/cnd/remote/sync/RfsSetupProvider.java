@@ -135,11 +135,11 @@ public class RfsSetupProvider implements SetupProvider {
         }
         return result;
     }
-    
+
     @Override
     public void failed(Collection<File> files, StringBuilder describeProblem) {
         describeProblem.append(NbBundle.getMessage(RfsSetupProvider.class, "ErrorUploadingBinaries"));
-    }        
+    }
 
     public static String getPreloadName(ExecutionEnvironment execEnv) {
         return PRELOAD;
@@ -156,6 +156,7 @@ public class RfsSetupProvider implements SetupProvider {
         return result;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // three state
     public static Boolean isApplicable(ExecutionEnvironment env) {
         if (env == null) {
             throw new NullPointerException();
@@ -194,7 +195,7 @@ public class RfsSetupProvider implements SetupProvider {
 
         switch (osFamily) {
             case LINUX:
-                return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ? 
+                return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ?
                         Boolean.TRUE : Boolean.FALSE;
             case SUNOS:
                 //BZ #189231 Smart secure copy does not work on (remote) Solaris 8
@@ -217,7 +218,7 @@ public class RfsSetupProvider implements SetupProvider {
         if (versionString.startsWith(prefixToStrip)) {
             versionString = versionString.substring(prefixToStrip.length());
         }
-        
+
         Pattern p = Pattern.compile("[a-zA-Z]+[ ]([\\d]+).*"); // NOI18N
         Matcher m = p.matcher(versionString);
         String result = "-1"; // NOI18N
