@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 
 /**
@@ -49,6 +51,16 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
  * @author vv159170
  */
 public abstract class SupportAPIAccessor {
+    public static final Charset INTERNAL_CHARSET;
+    static {
+        Charset preferred = null;
+        try {
+            preferred = Charset.forName("UTF-8");
+        } catch (UnsupportedCharsetException e) {
+            preferred = Charset.defaultCharset();
+        }
+        INTERNAL_CHARSET = preferred;
+    }
     private static SupportAPIAccessor INSTANCE;
 
     public static SupportAPIAccessor get() {
