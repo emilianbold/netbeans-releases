@@ -292,8 +292,11 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
         public void run(WorkingCopy parameter) throws Exception {
             parameter.toPhase(JavaSource.Phase.RESOLVED);
             TreePath resolved = handle.resolve(parameter);
+            if (resolved == null) {
+                return; //TODO...
+            }
             TypeMirror tm = IntroduceHint.resolveType(parameter, resolved);
-            if (resolved == null || tm == null) {
+            if (tm == null) {
                 return; //TODO...
             }
             tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));

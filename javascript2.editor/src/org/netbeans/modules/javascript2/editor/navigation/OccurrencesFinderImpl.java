@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.navigation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,8 +53,10 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.JsReference;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
@@ -121,8 +124,12 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
         cancelled = true;
     }
     
-    private static List<OffsetRange> findMemberUsage(JsObject object, String fqnType, String property, int offset) {
+    private static List<OffsetRange> findMemberUsage(JsObject object, String fqnType, String property, int offset, List<String> processedObjects) {
         List<OffsetRange> result = new ArrayList<OffsetRange>();
+        if (ModelUtils.wasProcessed(object, processedObjects)) {
+            return Collections.emptyList();
+        }
+        
         String fqn = fqnType;
         if (fqn.endsWith(".prototype")) { // NOI18N
             fqn = fqn.substring(0, fqn.length() - 10);
@@ -144,7 +151,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
         }
         if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
             for(JsObject child : object.getProperties().values()) {
-                result.addAll(findMemberUsage(child, fqn, property, offset));
+                result.addAll(findMemberUsage(child, fqn, property, offset, processedObjects));
             }
         }
         return result;
@@ -189,7 +196,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                         }
                     }
                     if (types.isEmpty()) {
-                        List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), parent.getFullyQualifiedName(), object.getName(), caretPosition);
+                        List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), parent.getFullyQualifiedName(), object.getName(), caretPosition, new ArrayList<String>());
                         for (OffsetRange range : usages) {
                             offsets.add(range);
                         }
