@@ -175,13 +175,13 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         }
     }
 
-    public static void check(final WebLogicConfiguration config) {
+    public static boolean check(final WebLogicConfiguration config) {
         // we use the different thread as this check thread may have
         // the interrupted flag set as a result of normal operation on socket :(
-        Future<?> task = TRUST_CHECK.submit(new Runnable() {
+        Future<Boolean> task = TRUST_CHECK.submit(new Callable() {
 
             @Override
-            public void run() {
+            public Boolean call() {
                 try {
                     SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
                     context.init(null, new TrustManager[]{new DelegatingTrustManager(config)}, RANDOM);
@@ -193,6 +193,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                         PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true); // NOI18N
                         try {
                             out.println("GET / HTTP/1.1\nHost:\n"); // NOI18N
+                            return true;
                         } finally {
                             out.close();
                         }
@@ -204,11 +205,12 @@ public class WLTrustHandler implements WebLogicTrustHandler {
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 }
+                return false;
             }
         });
 
         try {
-            task.get(CHECK_TIMEOUT + 1000, TimeUnit.MILLISECONDS);
+            return task.get(CHECK_TIMEOUT + 1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             LOGGER.log(Level.INFO, null, ex);
             Thread.currentThread().interrupt();
@@ -217,6 +219,7 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         } catch (TimeoutException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
+        return false;
     }
 
     private static class DelegatingTrustManager implements X509TrustManager {

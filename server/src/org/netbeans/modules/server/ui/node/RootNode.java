@@ -77,7 +77,7 @@ import org.openide.util.lookup.Lookups;
 public final class RootNode extends AbstractNode {
 
     private static final RequestProcessor REFRESH_PROCESSOR =
-            new RequestProcessor("Server registry update/refresh", 5);
+            new RequestProcessor("Server registry node update/refresh", 5);
 
     private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/resources/servers.png"; // NOI18N
     private static final String CLOUD_ICON = "org/netbeans/modules/server/ui/resources/cloud.png"; // NOI18N
@@ -198,15 +198,15 @@ public final class RootNode extends AbstractNode {
         }
     }
 
-    private static class ChildFactory extends org.openide.nodes.ChildFactory<ServerInstance> 
-    implements ChangeListener, Runnable {
+    private static class ChildFactory extends org.openide.nodes.ChildFactory<ServerInstance>
+            implements ChangeListener, Runnable {
 
         private static final Comparator<ServerInstance> COMPARATOR = new InstanceComparator();
 
         /** <i>GuardedBy("this")</i> */
         private final List<ServerInstanceProvider> types = new ArrayList<ServerInstanceProvider>();
 
-        private ServerRegistry registry;
+        private final ServerRegistry registry;
         
         public ChildFactory(ServerRegistry registry) {
             super();
