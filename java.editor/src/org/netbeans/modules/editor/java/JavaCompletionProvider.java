@@ -409,9 +409,14 @@ public class JavaCompletionProvider implements CompletionProvider {
             for (Iterator<JavaCompletionItem> it = data.iterator(); it.hasNext();) {
                 CompletionItem itm = it.next();
                 CharSequence cs = itm != null ? itm.getInsertPrefix() : null;
-                if (org.netbeans.modules.java.completion.Utilities.startsWith(cs != null ? cs.toString() : null, prefix)
-                        || (camelCase && org.netbeans.modules.java.completion.Utilities.startsWithCamelCase(cs != null ? cs.toString() : null, prefix))) {
-                    ret.add(itm);
+                if (cs != null) {
+                    for (String s : cs.toString().split("\\.")) { //NOI18N
+                        if (org.netbeans.modules.java.completion.Utilities.startsWith(s, prefix)
+                                || (camelCase && org.netbeans.modules.java.completion.Utilities.startsWithCamelCase(s, prefix))) {
+                            ret.add(itm);
+                            break;
+                        }
+                    }
                 }
             }
             return ret;

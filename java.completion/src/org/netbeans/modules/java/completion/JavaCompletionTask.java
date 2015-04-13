@@ -2755,25 +2755,25 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         if (JAVA_LANG_CLASS.contentEquals(element.getQualifiedName())) {
                             addTypeDotClassMembers(env, type);
                         }
-                        if (startsWith(env, element.getSimpleName().toString())) {
-                            final boolean withinScope = withinScope(env, element);
-                            if (withinScope && scope.getEnclosingClass() == element) {
-                                continue;
+                        final boolean startsWith = startsWith(env, element.getSimpleName().toString());
+                        final boolean withinScope = withinScope(env, element);
+                        if (withinScope && scope.getEnclosingClass() == element) {
+                            continue;
+                        }
+                        final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
+                        final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
+                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                            @Override
+                            public boolean accept(Element e, TypeMirror t) {
+                                return (startsWith || startsWith(env, e.getSimpleName().toString()))
+                                        && (!e.getSimpleName().contentEquals(CLASS_KEYWORD) && (!withinScope && (!isStatic || e.getModifiers().contains(STATIC))) || withinScope && e.getSimpleName().contentEquals(THIS_KEYWORD))
+                                        && trees.isAccessible(scope, e, (DeclaredType) t)
+                                        && (e.getKind().isField() && isOfSmartType(env, ((VariableElement) e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement) e).getReturnType(), finalSmartTypes));
                             }
-                            final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
-                            final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
-                            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                                @Override
-                                public boolean accept(Element e, TypeMirror t) {
-                                    return (!e.getSimpleName().contentEquals(CLASS_KEYWORD) && (!withinScope && (!isStatic || e.getModifiers().contains(STATIC))) || withinScope && e.getSimpleName().contentEquals(THIS_KEYWORD))
-                                            && trees.isAccessible(scope, e, (DeclaredType) t)
-                                            && (e.getKind().isField() && isOfSmartType(env, ((VariableElement) e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement) e).getReturnType(), finalSmartTypes));
-                                }
-                            };
-                            for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
-                                if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ee)) {
-                                    results.add(itemFactory.createStaticMemberItem(env.getController(), type, ee, asMemberOf(ee, type, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon()));
-                                }
+                        };
+                        for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
+                            if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ee)) {
+                                results.add(itemFactory.createStaticMemberItem(env.getController(), type, ee, asMemberOf(ee, type, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon()));
                             }
                         }
                     }
