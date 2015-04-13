@@ -49,7 +49,6 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Font;
-import java.awt.event.ItemEvent;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.netbeans.api.progress.BaseProgressUtils;
