@@ -90,7 +90,7 @@ public final class CsmTracer {
     }
 
     public static PrintStream toPrintStream(Writer writer) throws IOException {
-        return new PrintStream(new WriterOutputStream(writer), false, "UTF-8");
+        return new PrintStream(new WriterOutputStream(writer), false, "UTF-8"); //NOI18N
     }
 
     public void setDeep(boolean deep) {

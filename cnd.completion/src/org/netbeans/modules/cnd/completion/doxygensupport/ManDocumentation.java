@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
  * @author thp
  */
 public class ManDocumentation {
-    private static final String MAN_PAGES_CACHE_ENCODING = "UTF-8";
+    private static final String MAN_PAGES_CACHE_ENCODING = "UTF-8"; //NOI18N
 
 //    private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
 //    private static String manPath = null;

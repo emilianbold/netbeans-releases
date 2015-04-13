@@ -55,7 +55,7 @@ public abstract class SupportAPIAccessor {
     static {
         Charset preferred = null;
         try {
-            preferred = Charset.forName("UTF-8");
+            preferred = Charset.forName("UTF-8"); //NOI18N
         } catch (UnsupportedCharsetException e) {
             preferred = Charset.defaultCharset();
         }
