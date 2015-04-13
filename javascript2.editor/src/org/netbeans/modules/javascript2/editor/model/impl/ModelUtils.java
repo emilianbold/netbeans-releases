@@ -1654,10 +1654,14 @@ public class ModelUtils {
             if (where instanceof DeclarationScope) {
                 if (where.isDeclared()) {
                     DeclarationScope scope = (DeclarationScope)where;
-                    if (scope.getParentScope() != null) {
-                        scope.getParentScope().getChildrenScopes().remove(scope);
+                    DeclarationScope oldScope = scope.getParentScope();
+                    if (oldScope != null) {
+                        oldScope.getChildrenScopes().remove(scope);
                         if (scope instanceof DeclarationScopeImpl) {
                             ((DeclarationScopeImpl)scope).setParentScope(newScope);
+                        }  
+                        for (JsObject property : where.getProperties().values()) {
+                            changeDeclarationScope(property, newScope, done);
                         }
                     }
                     newScope.addDeclaredScope(scope);
