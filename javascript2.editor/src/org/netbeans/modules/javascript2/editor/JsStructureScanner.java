@@ -95,32 +95,8 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects) {
-        if (processedObjects.contains(jsObject.getFullyQualifiedName())) {
+        if (ModelUtils.wasProcessed(jsObject, processedObjects)) {
             return collectedItems;
-        } else if (jsObject instanceof JsReference) {
-            JsObject original = ((JsReference) jsObject).getOriginal();
-            boolean isOrginalReachable = !original.isAnonymous() && !original.getName().equals(jsObject.getName());
-            JsObject parent = original.getParent();
-            while (parent != null && isOrginalReachable) {
-                if (parent.isAnonymous() && !(parent.getParent() != null && parent.getParent().getParent() == null)) {
-                    isOrginalReachable = false;
-                }
-                parent = parent.getParent();
-            }
-            if (isOrginalReachable) {
-                processedObjects.add(jsObject.getFullyQualifiedName());
-                return collectedItems;
-            }
-            if (processedObjects.contains(original.getFullyQualifiedName())) {
-                return collectedItems;
-            } else {
-                processedObjects.add(jsObject.getFullyQualifiedName());
-                processedObjects.add(original.getFullyQualifiedName());
-            }
-        } else {
-            if (jsObject.getJSKind() != JsElement.Kind.FILE) {
-                processedObjects.add(jsObject.getFullyQualifiedName());
-            }
         }
         if (jsObject.isVirtual()) {
             return collectedItems;
