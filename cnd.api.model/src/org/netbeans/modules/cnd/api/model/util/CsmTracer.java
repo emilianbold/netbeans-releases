@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
@@ -84,12 +85,12 @@ public final class CsmTracer {
         this.printStream = printStream;
     }
 
-    public CsmTracer(Writer writer) {
+    public CsmTracer(Writer writer) throws IOException {
         this.printStream = toPrintStream(writer);
     }
 
-    public static PrintStream toPrintStream(Writer writer) {
-        return new PrintStream(new WriterOutputStream(writer));
+    public static PrintStream toPrintStream(Writer writer) throws IOException {
+        return new PrintStream(new WriterOutputStream(writer), false, "UTF-8");
     }
 
     public void setDeep(boolean deep) {
@@ -1179,6 +1180,7 @@ public final class CsmTracer {
         }
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
         public void write(byte b[], int off, int len) throws IOException {
             writer.write(new String(b, off, len));
         }
