@@ -29,7 +29,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * markiewb@netbeans.org
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -109,7 +109,7 @@ public class JavaTypeProvider implements TypeProvider {
     private static final Collection<? extends JavaTypeDescription> ACTIVE = Collections.unmodifiableSet(new HashSet<JavaTypeDescription>());  //Don't replace with C.emptySet() has to be identity unique.
 
     //@NotThreadSafe //Confinement within a thread
-    private Map<URI,CacheItem> rootCache;    
+    private Map<URI,CacheItem> rootCache;
 
     private volatile boolean isCanceled = false;
     private ClasspathInfo cpInfo;
@@ -174,6 +174,7 @@ public class JavaTypeProvider implements TypeProvider {
         case REGEXP: nameKind = ClassIndex.NameKind.REGEXP; break;
         case CASE_INSENSITIVE_REGEXP: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP; break;
         case CAMEL_CASE: nameKind = ClassIndex.NameKind.CAMEL_CASE; break;
+        case CASE_INSENSITIVE_CAMEL_CASE: nameKind = ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE; break;
         default: throw new RuntimeException("Unexpected search type: " + searchType);
         }
 
@@ -358,7 +359,7 @@ public class JavaTypeProvider implements TypeProvider {
             final Collection<CacheItem> nonCached = new ArrayDeque<CacheItem>(c.size());
             for (CacheItem ci : c.values()) {
                 Collection<? extends JavaTypeDescription> cacheLine = dataCache.get(ci);
-                if (cacheLine != null) {                    
+                if (cacheLine != null) {
                     types.addAll(cacheLine);
                 } else {
                     nonCached.add(ci);
@@ -380,7 +381,7 @@ public class JavaTypeProvider implements TypeProvider {
                                     //WB(dataCache[ci], ACTIVE)
                                     dataCache.put(ci, ACTIVE);
                                     try {
-                                        exists = ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);                                        
+                                        exists = ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);
                                         if (exists) {
                                             types.addAll(ct);
                                         }
@@ -547,14 +548,14 @@ public class JavaTypeProvider implements TypeProvider {
     }
 
     private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
-    
+
     private static boolean isCamelCase(String text) {
          return camelCasePattern.matcher(text).matches();
     }
 
     //@NotTreadSafe
     static final class CacheItem implements ClassIndexImplListener {
-        
+
         private final URI rootURI;
         private final boolean isBinary;
         private final String cpType;
@@ -563,7 +564,7 @@ public class JavaTypeProvider implements TypeProvider {
         private String projectName;
         private Icon projectIcon;
         private ClasspathInfo cpInfo;
-        private ClassIndexImpl index;        
+        private ClassIndexImpl index;
         private FileObject cachedRoot;
 
         public CacheItem (
@@ -628,19 +629,19 @@ public class JavaTypeProvider implements TypeProvider {
             }
             return projectIcon;
         }
-        
+
         public ClasspathInfo getClasspathInfo() {
-            if (cpInfo == null) {            
+            if (cpInfo == null) {
                 final ClassPath cp = ClassPathSupport.createClassPath(toURL(rootURI));
-                cpInfo = isBinary ? 
+                cpInfo = isBinary ?
                     ClassPath.BOOT.equals(cpType) ?
                         ClasspathInfo.create(cp,ClassPath.EMPTY,ClassPath.EMPTY):
                         ClasspathInfo.create(ClassPath.EMPTY,cp,ClassPath.EMPTY):
-                    ClasspathInfo.create(ClassPath.EMPTY,ClassPath.EMPTY,cp);                
+                    ClasspathInfo.create(ClassPath.EMPTY,ClassPath.EMPTY,cp);
             }
             return cpInfo;
         }
-        
+
         private boolean initIndex() {
             if (index == null) {
                 final URL root = toURL(rootURI);
@@ -651,7 +652,7 @@ public class JavaTypeProvider implements TypeProvider {
                     return false;
                 }
                 index.addClassIndexImplListener(this);
-            }            
+            }
             return true;
         }
 
@@ -689,7 +690,7 @@ public class JavaTypeProvider implements TypeProvider {
             }
             return true;
         }
-        
+
         @Override
         public void typesAdded(@NonNull final ClassIndexImplEvent event) {
             if (callBack != null) {
@@ -715,12 +716,12 @@ public class JavaTypeProvider implements TypeProvider {
         URI getRootURI() {
             return rootURI;
         }
-        
+
         @CheckForNull
         ClassIndexImpl getClassIndex() {
             return index;
         }
-        
+
         private void initProjectInfo() {
             Project p = FileOwnerQuery.getOwner(this.rootURI);
             if (p != null) {
@@ -835,7 +836,7 @@ public class JavaTypeProvider implements TypeProvider {
                 return true;
             }
             return false;
-        }        
+        }
 
         static synchronized void clear() {
             forText = null;

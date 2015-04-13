@@ -50,9 +50,7 @@ import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.Filter;
@@ -73,7 +71,7 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class Queries {
-    
+
     /**
      * Encodes a type of the query used by {@link Queries#createQuery}
      * and {@link Queries#createTermCollectingQuery}
@@ -83,38 +81,38 @@ public final class Queries {
          * The created query looks for exact match with given text
          */
         EXACT,
-        
+
         /**
          * The given text is a prefix of requested value.
          */
         PREFIX,
-        
+
         /**
          * The given text is a case insensitive prefix of requested value.
          */
         CASE_INSENSITIVE_PREFIX,
-        
+
         /**
          * The given text is treated as camel case pattern used to match the value.
          */
         CAMEL_CASE,
-        
+
         /**
          * The given text is treated as case insensitive camel case pattern used to match the value.
          */
         CASE_INSENSITIVE_CAMEL_CASE,
-        
+
         /**
          * The given text is a regular expression used to match the value.
          */
         REGEXP,
-        
+
         /**
          * The given text is a case insensitive regular expression used to match the value.
          */
         CASE_INSENSITIVE_REGEXP;
     }
-    
+
     /**
      * Creates a standard lucene query querying the index for
      * documents having indexed field containing the given value
@@ -134,8 +132,8 @@ public final class Queries {
         Parameters.notNull("value", value); //NOI18N
         Parameters.notNull("kind", kind);   //NOI18N
         return createQueryImpl(fieldName, caseInsensitiveFieldName, value, kind, new StandardQueryFactory());
-    }  
-    
+    }
+
     /**
      * Creates an extended lucene query querying the index for
      * documents having indexed field containing the given value.
@@ -158,7 +156,7 @@ public final class Queries {
         Parameters.notNull("kind", kind);   //NOI18N
         return createQueryImpl(fieldName, caseInsensitiveFieldName, value, kind, new TCQueryFactory());
     }
-    
+
     /**
      * Creates a FieldSelector loading the given fields.
      * @param fieldsToLoad the fields to be loaded into the document.
@@ -167,8 +165,8 @@ public final class Queries {
     public static FieldSelector createFieldSelector(final @NonNull String... fieldsToLoad) {
         return new FieldSelectorImpl(fieldsToLoad);
     }
-    
-    
+
+
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
     private static Query createQueryImpl(
             final @NonNull String fieldName,
@@ -215,20 +213,14 @@ public final class Queries {
                 if (value.length() == 0) {
                     //Special case (all) handle in different way
                     return f.createAllDocsQuery(caseInsensitiveFieldName);
-                }
-                else {
-                    final Query pq = f.createPrefixQuery(caseInsensitiveFieldName, value.toLowerCase());
-                    final Query fq = f.createRegExpQuery(caseInsensitiveFieldName, createCamelCaseRegExp(value, false), false);
-                    final BooleanQuery result = f.createBooleanQuery();
-                    result.add(pq, Occur.SHOULD);
-                    result.add(fq, Occur.SHOULD);
-                    return result;
+                } else {
+                    return f.createRegExpQuery(caseInsensitiveFieldName, createCamelCaseRegExp(value, false), false);
                 }
             default:
                 throw new UnsupportedOperationException (kind.toString());
         }
     }
-    
+
     private static String createCamelCaseRegExp(final String camel, final boolean caseSensitive) {
         final StringBuilder sb = new StringBuilder();
         int lastIndex = 0;
@@ -242,7 +234,7 @@ public final class Queries {
         } while(index != -1);
         return sb.toString();
     }
-    
+
     private static int findNextUpper(String text, int offset ) {
         for( int i = offset; i < text.length(); i++ ) {
             if ( Character.isUpperCase(text.charAt(i)) ) {
@@ -251,15 +243,15 @@ public final class Queries {
         }
         return -1;
     }
-        
+
     private static abstract class TCFilter extends Filter {
         public abstract void attach (TermCollector collector);
     }
-    
+
     private static abstract class AbstractTCFilter extends TCFilter {
-        
+
         private  TermCollector termCollector;
-                
+
         @Override
         public final DocIdSet getDocIdSet(IndexReader reader) throws IOException {
             final FilteredTermEnum enumerator = getTermEnum(reader);
@@ -267,7 +259,7 @@ public final class Queries {
             if (enumerator.term() == null) {
                 return DocIdSet.EMPTY_DOCIDSET;
             }
-            try {                                
+            try {
                 // else fill into a OpenBitSet
                 final OpenBitSet bitSet = new OpenBitSet(reader.maxDoc());
                 final int[] docs = new int[32];
@@ -302,23 +294,23 @@ public final class Queries {
                 enumerator.close();
             }
         }
-        
+
         @Override
         public final void attach(final TermCollector tc) {
             this.termCollector = tc;
         }
-        
+
         protected abstract FilteredTermEnum getTermEnum(IndexReader reader) throws IOException;
-        
+
     }
-    
+
     private static class RegexpTermEnum extends FilteredTermEnum {
-        
+
         private final String fieldName;
         private final String startPrefix;
         private final Pattern pattern;
         private boolean endEnum;
-        
+
         public RegexpTermEnum(
                 final IndexReader in,
                 final String  fieldName,
@@ -406,20 +398,20 @@ public final class Queries {
     }
 
     private static class PrefixFilter extends AbstractTCFilter {
-        
+
         protected final Term term;
-        
+
         public PrefixFilter(final @NonNull String fieldName, final @NonNull String prefix) {
             this.term = new Term(fieldName, prefix);
         }
-        
+
         protected FilteredTermEnum getTermEnum(final @NonNull IndexReader reader) throws IOException {
             return new PrefixTermEnum(reader, term);
         }
     }
-    
+
     private static class TermFilter extends PrefixFilter {
-                
+
         public TermFilter (final String fieldName, final String value) {
             super(fieldName, value);
         }
@@ -427,12 +419,12 @@ public final class Queries {
         @Override
         protected FilteredTermEnum getTermEnum(IndexReader reader) throws IOException {
             return new PrefixTermEnum(reader, term) {
-                
+
                 private boolean endEnum;
-                
+
                 @Override
                 protected boolean termCompare(Term term) {
-                    if (TermFilter.this.term.field() == term.field() && TermFilter.this.term.text().equals(term.text())) {                                                                              
+                    if (TermFilter.this.term.field() == term.field() && TermFilter.this.term.text().equals(term.text())) {
                         return true;
                     }
                     endEnum = true;
@@ -443,28 +435,28 @@ public final class Queries {
                 protected boolean endEnum() {
                     return endEnum;
                 }
-                
-                
-                
+
+
+
             };
-        }        
+        }
     }
-    
+
     private static class HasFieldFilter extends PrefixFilter {
-        
+
         public HasFieldFilter (final String fieldName) {
             super (fieldName, "");  //NOI18N
         }
-        
+
         @Override
         protected FilteredTermEnum getTermEnum(IndexReader reader) throws IOException {
             return new PrefixTermEnum(reader, term) {
-                
+
                 private boolean endEnum;
-                
+
                 @Override
                 protected boolean termCompare(Term term) {
-                    if (HasFieldFilter.this.term.field() == term.field()) {                                                                              
+                    if (HasFieldFilter.this.term.field() == term.field()) {
                         return true;
                     }
                     endEnum = true;
@@ -474,26 +466,26 @@ public final class Queries {
                 @Override
                 protected boolean endEnum() {
                     return endEnum;
-                }       
+                }
             };
         }
     }
-    
-    private static class TCFilteredQuery extends FilteredQuery implements TermCollector.TermCollecting {        
+
+    private static class TCFilteredQuery extends FilteredQuery implements TermCollector.TermCollecting {
         private TCFilteredQuery(final Query query, final TCFilter filter) {
             super (query, filter);
         }
-        
+
         @Override
         public void attach(TermCollector collector) {
             ((TCFilter)getFilter()).attach(collector);
         }
     }
-    
+
     private static class TCBooleanQuery extends BooleanQuery implements TermCollector.TermCollecting {
-        
+
         private TermCollector collector;
-        
+
         @Override
         public void attach(TermCollector collector) {
             this.collector = collector;
@@ -510,7 +502,7 @@ public final class Queries {
             }
             return result;
         }
-        
+
         private static void attach (final BooleanQuery query, final TermCollector collector) {
             for (BooleanClause clause : query.getClauses()) {
                 final Query q = clause.getQuery();
@@ -519,9 +511,9 @@ public final class Queries {
                 }
                 ((TermCollector.TermCollecting)q).attach(collector);
             }
-        }                
+        }
     }
-            
+
     private static interface QueryFactory {
         Query createTermQuery(@NonNull String name, @NonNull String value);
         Query createPrefixQuery(@NonNull String name, @NonNull String value);
@@ -529,26 +521,26 @@ public final class Queries {
         Query createAllDocsQuery(@NonNull String name);
         BooleanQuery createBooleanQuery();
     }
-    
+
     private static class StandardQueryFactory implements QueryFactory {
-        
+
         @Override
         public Query createTermQuery(final @NonNull String name, final @NonNull String value) {
             return new TermQuery(new Term (name, value));
         }
-        
+
         @Override
         public Query createPrefixQuery(final @NonNull String name, final @NonNull String value) {
             final PrefixQuery pq = new PrefixQuery(new Term(name, value));
             pq.setRewriteMethod(PrefixQuery.CONSTANT_SCORE_FILTER_REWRITE);
             return pq;
         }
-        
+
         @Override
         public Query createRegExpQuery(final @NonNull String name, final @NonNull String value, final boolean caseSensitive) {
             return new FilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(name, value, caseSensitive));
         }
-        
+
         @Override
         public Query createAllDocsQuery(final @NonNull String name) {
             if (name.length() == 0) {
@@ -557,52 +549,52 @@ public final class Queries {
                 return new FilteredQuery(new MatchAllDocsQuery(), new HasFieldFilter(name));
             }
         }
-        
+
         @Override
         public BooleanQuery createBooleanQuery() {
             return new BooleanQuery();
         }
     }
-    
+
     private static class TCQueryFactory implements QueryFactory {
-        
+
         @Override
         public Query createTermQuery(final @NonNull String name, final @NonNull String value) {
             return new TCFilteredQuery(new MatchAllDocsQuery(), new TermFilter(name,value));
         }
-        
+
         @Override
         public Query createPrefixQuery(final @NonNull String name, final @NonNull String value) {
             return new TCFilteredQuery(new MatchAllDocsQuery(), new PrefixFilter(name, value));
         }
-        
+
         @Override
         public Query createRegExpQuery(final @NonNull String name, final @NonNull String value, final boolean caseSensitive) {
             return new TCFilteredQuery(new MatchAllDocsQuery(), new RegexpFilter(name, value, caseSensitive));
         }
-        
+
         @Override
         public Query createAllDocsQuery(final @NonNull String name) {
             throw new IllegalArgumentException ();
         }
-        
+
         @Override
         public BooleanQuery createBooleanQuery() {
             return new TCBooleanQuery();
         }
     }
-    
+
     private static class FieldSelectorImpl implements FieldSelector {
-        
+
         private final Term[] terms;
-        
+
         FieldSelectorImpl(String... fieldNames) {
             terms = new Term[fieldNames.length];
             for (int i=0; i< fieldNames.length; i++) {
                 terms[i] = new Term (fieldNames[i],""); //NOI18N
             }
         }
-        
+
         @Override
         public FieldSelectorResult accept(String fieldName) {
             for (Term t : terms) {
@@ -613,7 +605,7 @@ public final class Queries {
             return FieldSelectorResult.NO_LOAD;
         }
     }
-    
+
     private Queries() {}
     //</editor-fold>
 

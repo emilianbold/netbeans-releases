@@ -132,6 +132,10 @@ public final class FastTypeProvider implements TypeProvider {
             case CAMEL_CASE:
                 pattern.append(createCamelCaseRegExp(context.getText(), sensitive));
                 break;
+            case CASE_INSENSITIVE_CAMEL_CASE:
+                sensitive = false;
+                pattern.append(createCamelCaseRegExp(context.getText(), sensitive));
+                break;
             case EXACT_NAME:
                 pattern.append("^").append(quotedText).append("$"); // NOI18N
                 break;

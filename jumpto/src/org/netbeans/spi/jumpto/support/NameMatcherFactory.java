@@ -145,7 +145,7 @@ public final class NameMatcherFactory {
             if (name.length() == 0) {
                 throw new IllegalArgumentException ();
             }
-                 
+
             final StringBuilder patternString = new StringBuilder ();
             int lastIndex = 0;
             int index;
@@ -158,7 +158,7 @@ public final class NameMatcherFactory {
             } while(index != -1);
             pattern = Pattern.compile(patternString.toString(), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
 	}
-        
+
         private static int findNextUpper(String text, int offset ) {
             for( int i = offset; i < text.length(); i++ ) {
                 if ( Character.isUpperCase(text.charAt(i)) ) {
