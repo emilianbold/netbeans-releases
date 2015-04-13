@@ -69,6 +69,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
@@ -99,6 +101,8 @@ public class WLTrustHandler implements WebLogicTrustHandler {
     public static final String TRUST_EXCEPTION_PROPERTY = "trustException"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLTrustHandler.class.getName());
+
+    private static final RequestProcessor TRUST_CHECK = new RequestProcessor("Trust Handler Check", 5);
 
     private static final RequestProcessor TRUST_MANAGER_ACCESS = new RequestProcessor(WLTrustHandler.class);
 
@@ -171,28 +175,47 @@ public class WLTrustHandler implements WebLogicTrustHandler {
         }
     }
 
-    public static void check(WebLogicConfiguration config) {
-        try {
-            SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
-            context.init(null, new TrustManager[]{new DelegatingTrustManager(config)}, RANDOM);
-            SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket();
-            try {
-                // we just trigger the trust manager here
-                socket.connect(new InetSocketAddress(config.getHost(), config.getPort()), CHECK_TIMEOUT); // NOI18N
-                socket.setSoTimeout(CHECK_TIMEOUT);
-                PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true); // NOI18N
+    public static void check(final WebLogicConfiguration config) {
+        // we use the different thread as this check thread may have
+        // the interrupted flag set as a result of normal operation on socket :(
+        Future<?> task = TRUST_CHECK.submit(new Runnable() {
+
+            @Override
+            public void run() {
                 try {
-                    out.println("GET / HTTP/1.1\nHost:\n"); // NOI18N
-                } finally {
-                    out.close();
+                    SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
+                    context.init(null, new TrustManager[]{new DelegatingTrustManager(config)}, RANDOM);
+                    SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket();
+                    try {
+                        // we just trigger the trust manager here
+                        socket.connect(new InetSocketAddress(config.getHost(), config.getPort()), CHECK_TIMEOUT); // NOI18N
+                        socket.setSoTimeout(CHECK_TIMEOUT);
+                        PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true); // NOI18N
+                        try {
+                            out.println("GET / HTTP/1.1\nHost:\n"); // NOI18N
+                        } finally {
+                            out.close();
+                        }
+                    } finally {
+                        socket.close();
+                    }
+                } catch (GeneralSecurityException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
                 }
-            } finally {
-                socket.close();
             }
-        } catch (GeneralSecurityException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        } catch (IOException ex) {
+        });
+
+        try {
+            task.get(CHECK_TIMEOUT + 1000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
             LOGGER.log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (TimeoutException ex) {
+            LOGGER.log(Level.FINE, null, ex);
         }
     }
 

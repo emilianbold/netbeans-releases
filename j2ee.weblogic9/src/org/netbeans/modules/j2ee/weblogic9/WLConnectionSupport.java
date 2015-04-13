@@ -97,10 +97,12 @@ public final class WLConnectionSupport {
                 }
             }
 
-            WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
-            if (handler != null) {
-                for (Map.Entry<String, String> e : handler.getTrustProperties(deploymentManager.getCommonConfiguration()).entrySet()) {
-                    System.setProperty(e.getKey(), e.getValue());
+            if (deploymentManager.getCommonConfiguration().isSecured()) {
+                WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+                if (handler != null) {
+                    for (Map.Entry<String, String> e : handler.getTrustProperties(deploymentManager.getCommonConfiguration()).entrySet()) {
+                        System.setProperty(e.getKey(), e.getValue());
+                    }
                 }
             }
 
