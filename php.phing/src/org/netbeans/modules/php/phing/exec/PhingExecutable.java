@@ -82,6 +82,7 @@ public class PhingExecutable {
     static final Logger LOGGER = Logger.getLogger(PhingExecutable.class.getName());
 
     @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_ARRAY", justification = "No need to worry, noone will change it") // NOI18N
+    public static final String PHING_NAME = "phing"; // NOI18N
     public static final String[] PHING_NAMES;
 
     private static final String LOGGER_PARAM = "-logger"; // NOI18N
@@ -97,9 +98,9 @@ public class PhingExecutable {
 
     static {
         PHING_NAMES = new String[] {
-            Utilities.isWindows() ? "phing.bat" : "phing", // NOI18N
-            "phing.php", // NOI18N
-            "phing-latest.phar", // NOI18N
+            Utilities.isWindows() ? PHING_NAME + ".bat" : PHING_NAME, // NOI18N
+            PHING_NAME + ".php", // NOI18N
+            PHING_NAME + "-latest.phar", // NOI18N
         };
     }
 
