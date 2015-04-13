@@ -75,9 +75,9 @@ public final class ServerRegistry {
 
     private final Lookup lookup;
     
-    private String path;
+    private final String path;
     
-    private boolean cloud;
+    private final boolean cloud;
 
     private ServerRegistry(String path, boolean cloud) {
         this.path = path;

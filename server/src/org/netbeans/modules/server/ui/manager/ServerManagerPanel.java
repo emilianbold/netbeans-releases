@@ -63,8 +63,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ServerRegistry;
+import org.netbeans.modules.server.ui.node.RootNode;
 import org.netbeans.modules.server.ui.wizard.AddServerInstanceWizard;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.awt.Mnemonics;
@@ -76,6 +79,8 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 
@@ -87,6 +92,9 @@ import org.openide.util.NbBundle;
  */
 public class ServerManagerPanel extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 
+    private static final RequestProcessor REFRESH_PROCESSOR =
+            new RequestProcessor("Server registry UI update/refresh", 5);
+
     private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/resources/servers.png"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(ServerManagerPanel.class.getName());
@@ -96,8 +104,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     //private ServerCategoriesChildren children;
     private ServersChildren children;
     private ExplorerManager manager;
-    private ServerInstance initialInstance;
-    private ServerRegistry registry;
+    private final ServerInstance initialInstance;
+    private final ServerRegistry registry;
 
     /** Creates new form PlatformsCustomizer */
     public ServerManagerPanel(ServerInstance initialInstance, ServerRegistry registry) {
@@ -333,6 +341,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         private synchronized ServersChildren getChildren() {
             if (this.children == null) {
                 this.children = new ServersChildren(registry);
+                this.children.init();
             }
             return this.children;
         }
@@ -472,15 +481,58 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
     }
 
-    private static class ServersChildren extends ChildFactory<ServerInstance> {
+    private static class ServersChildren extends ChildFactory<ServerInstance> implements ChangeListener {
 
         private static final Comparator<ServerInstance> COMPARATOR = new InstanceComparator();
 
-        private ServerRegistry registry;
-        
+        private final ServerRegistry registry;
+
+        /** <i>GuardedBy("this")</i> */
+        private final List<ServerInstanceProvider> types = new ArrayList<ServerInstanceProvider>();
+
         public ServersChildren(ServerRegistry registry) {
             super();
             this.registry = registry;
+        }
+
+        public void init() {
+            REFRESH_PROCESSOR.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    synchronized (ServerManagerPanel.ServersChildren.this) {
+                        registry.addChangeListener(
+                            WeakListeners.create(ChangeListener.class, ServerManagerPanel.ServersChildren.this, registry));
+                        updateState(new ChangeEvent(registry));
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void stateChanged(final ChangeEvent e) {
+            REFRESH_PROCESSOR.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    updateState(e);
+                }
+            });
+        }
+
+        private synchronized void updateState(final ChangeEvent e) {
+            if (e.getSource() instanceof ServerRegistry) {
+                for (ServerInstanceProvider type : types) {
+                    type.removeChangeListener(ServerManagerPanel.ServersChildren.this);
+                }
+
+                types.clear();
+                types.addAll(((ServerRegistry) e.getSource()).getProviders());
+                for (ServerInstanceProvider type : types) {
+                    type.addChangeListener(ServerManagerPanel.ServersChildren.this);
+                }
+            }
+            refresh();
         }
 
         protected final void refresh() {
@@ -513,7 +565,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                     assert instance != null : "ServerInstance returned by provider " + provider + " is null";
                     if (instance == null) {
                         continue;
-                    }                    
+                    }
                     if (null != instance.getDisplayName()) {
                         fresh.add(instance);
                     } else {
