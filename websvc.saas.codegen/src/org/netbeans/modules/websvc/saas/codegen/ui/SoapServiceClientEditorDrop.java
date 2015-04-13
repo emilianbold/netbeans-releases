@@ -45,6 +45,7 @@ package org.netbeans.modules.websvc.saas.codegen.ui;
 
 import org.netbeans.modules.websvc.saas.codegen.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -73,8 +74,7 @@ import org.openide.util.RequestProcessor;
  * @author Ayub Khan, Nam Nguyen
  */
 public class SoapServiceClientEditorDrop implements ActiveEditorDrop {
-
-    private WsdlSaas service;
+    private final WsdlSaas service;
     private FileObject targetFO;
     private RequestProcessor.Task generatorTask;
     private List<WsdlSaasMethod> methods;
@@ -83,6 +83,7 @@ public class SoapServiceClientEditorDrop implements ActiveEditorDrop {
         this.service = service;
     }
 
+    @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
         doHandleTransfer(targetComponent);
         return true; //TODO allow correct nodes only
@@ -102,7 +103,6 @@ public class SoapServiceClientEditorDrop implements ActiveEditorDrop {
 
     private boolean doHandleTransfer(final JTextComponent targetComponent) {
         final Document targetDoc = targetComponent.getDocument();
-        FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
 
         targetFO = getTargetFile(targetComponent);
 
@@ -112,19 +112,23 @@ public class SoapServiceClientEditorDrop implements ActiveEditorDrop {
 
         final List<Exception> errors = new ArrayList<Exception>();
 
-
-        
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             ProgressDialog[] dialog = new ProgressDialog[1];
+            @Override
             public void run() {
                 for (final WsdlSaasMethod method : getMethods()) {
-                    SwingUtilities.invokeLater(new Runnable(){
-                        public void run(){
-                            dialog[0] = new ProgressDialog(
-                                NbBundle.getMessage(SoapServiceClientEditorDrop.class, "LBL_CodeGenProgress",
-                                method.getName()));
-                        }
-                    });
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable(){
+                            @Override
+                            public void run(){
+                                dialog[0] = new ProgressDialog(
+                                    NbBundle.getMessage(SoapServiceClientEditorDrop.class, "LBL_CodeGenProgress", // NOI18N
+                                    method.getName()));
+                            }
+                        });
+                    } catch (InterruptedException iex) {
+                    } catch (InvocationTargetException itex) {
+                    }
                     
                     try {
                         String displayName = method.getName();
@@ -191,7 +195,7 @@ public class SoapServiceClientEditorDrop implements ActiveEditorDrop {
         if (d == null) {
             return null;
         }
-        EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
+        EditorCookie ec = (EditorCookie) d.getLookup().lookup(EditorCookie.class);
         if (ec == null || ec.getOpenedPanes() == null) {
             return null;
         }
