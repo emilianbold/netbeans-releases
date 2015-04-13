@@ -138,7 +138,7 @@ public class RegisterHighlightAssistance extends AbstractHighlightsContainer
        
     private static class RegisterHighlightsSequence implements HighlightsSequence {
         private HighlightEntry cur;
-        private Iterator<HighlightEntry> it;
+        private final Iterator<HighlightEntry> it;
                 
         public RegisterHighlightsSequence(IntervalSet<HighlightEntry> acc) {
             it = acc.iterator();           

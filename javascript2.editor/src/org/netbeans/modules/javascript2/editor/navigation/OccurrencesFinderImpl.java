@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.navigation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -125,32 +126,8 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
     
     private static List<OffsetRange> findMemberUsage(JsObject object, String fqnType, String property, int offset, List<String> processedObjects) {
         List<OffsetRange> result = new ArrayList<OffsetRange>();
-        if (processedObjects.contains(object.getFullyQualifiedName())) {
-            return result;
-        } else if (object instanceof JsReference) {
-            JsObject original = ((JsReference) object).getOriginal();
-            boolean isOrginalReachable = !original.isAnonymous() && !original.getName().equals(object.getName());
-            JsObject origParent = original.getParent();
-            while (origParent != null && isOrginalReachable) {
-                if (origParent.isAnonymous() && !(origParent.getParent() != null && origParent.getParent().getParent() == null)) {
-                    isOrginalReachable = false;
-                }
-                origParent = origParent.getParent();
-            }
-            if (isOrginalReachable) {
-                processedObjects.add(object.getFullyQualifiedName());
-                return result;
-            }
-            if (processedObjects.contains(original.getFullyQualifiedName())) {
-                return result;
-            } else {
-                processedObjects.add(object.getFullyQualifiedName());
-                processedObjects.add(original.getFullyQualifiedName());
-            }
-        } else {
-            if (object.getJSKind() != JsElement.Kind.FILE) {
-                processedObjects.add(object.getFullyQualifiedName());
-            }
+        if (ModelUtils.wasProcessed(object, processedObjects)) {
+            return Collections.emptyList();
         }
         
         String fqn = fqnType;

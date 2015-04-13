@@ -45,6 +45,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 
 /**
@@ -59,7 +60,7 @@ public class CompilationUnitStab implements CompilationUnitInterface {
     private final boolean hasMain;
     private final int mainLine;
     private final int desc;
-    
+
     public CompilationUnitStab(String sourceName, String line, String objectFile, boolean hasMain, int mainLine, int desc) {
         this.sourceName = sourceName;
         int i = line.indexOf(';');
@@ -75,15 +76,15 @@ public class CompilationUnitStab implements CompilationUnitInterface {
         this.mainLine = mainLine;
         this.desc = desc;
     }
-    
+
     public String getCompilationDir() throws IOException {
         return compileDir;
     }
-    
+
     public String getSourceFileName() throws IOException {
         return sourceName;
     }
-    
+
     public String getCommandLine() throws IOException {
         return compileLine;
     }
@@ -102,7 +103,7 @@ public class CompilationUnitStab implements CompilationUnitInterface {
 
     public String getSourceFileAbsolutePath() throws IOException {
         String result;
-        
+
         String dir = getCompilationDir();
         String name = getSourceFileName();
         if (dir != null) {
@@ -118,7 +119,7 @@ public class CompilationUnitStab implements CompilationUnitInterface {
         } else {
             result = name;
         }
-        
+
         return result;
     }
 
@@ -167,9 +168,9 @@ public class CompilationUnitStab implements CompilationUnitInterface {
     public String toString() {
         try {
             ByteArrayOutputStream st = new ByteArrayOutputStream();
-            PrintStream out = new PrintStream(st);
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
             dump(out);
-            return st.toString();
+            return st.toString(Charset.defaultCharset().name());
         } catch (IOException ex) {
             return ""; // NOI18N
         }

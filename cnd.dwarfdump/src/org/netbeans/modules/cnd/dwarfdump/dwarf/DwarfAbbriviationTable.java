@@ -45,7 +45,9 @@
 package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -60,23 +62,23 @@ public class DwarfAbbriviationTable {
     public DwarfAbbriviationTable(long offset) {
         //this.offset = offset;
     }
-    
+
     public void setEntries(List<DwarfAbbriviationTableEntry> entries) {
         this.entries = entries;
         this.numOfEntries = entries.size();
     }
-    
+
     public DwarfAbbriviationTableEntry getEntry(long idx) {
         return (idx > 0 && idx <= numOfEntries) ? entries.get((int)idx - 1) : null;
     }
-    
+
     public int size() {
         return numOfEntries;
     }
-    
+
     public void dump(PrintStream out) {
         out.println("  Number TAG"); // NOI18N
-        
+
         for (DwarfAbbriviationTableEntry entry : entries) {
             entry.dump(out);
         }
@@ -84,9 +86,13 @@ public class DwarfAbbriviationTable {
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString(Charset.defaultCharset().name());
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
 }

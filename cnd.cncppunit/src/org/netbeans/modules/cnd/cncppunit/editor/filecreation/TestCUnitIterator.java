@@ -55,8 +55,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.cncppunit.codegeneration.CUnitCodeGenerator;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;

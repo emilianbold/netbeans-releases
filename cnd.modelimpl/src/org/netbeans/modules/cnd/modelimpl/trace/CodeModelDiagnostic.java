@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -369,7 +370,7 @@ public final class CodeModelDiagnostic {
         }
 
         @Override
-        public void dumpInfo(Lookup context, PrintWriter printOut) {
+        public void dumpInfo(Lookup context, PrintWriter printOut) throws IOException {
             CsmCacheManager.enter();
             try {
                 Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
@@ -413,7 +414,7 @@ public final class CodeModelDiagnostic {
         }
 
         @Override
-        public void dumpInfo(Lookup context, PrintWriter printOut) {
+        public void dumpInfo(Lookup context, PrintWriter printOut) throws IOException{
             Collection<CsmProject> projects = new ArrayList<>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);
@@ -443,7 +444,7 @@ public final class CodeModelDiagnostic {
         }
 
         @Override
-        public void dumpInfo(Lookup context, PrintWriter printOut) {
+        public void dumpInfo(Lookup context, PrintWriter printOut) throws IOException {
             Collection<CsmProject> projects = new ArrayList<>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);

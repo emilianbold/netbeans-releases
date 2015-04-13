@@ -50,7 +50,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.asm.model.lang.AsmElement;
 
 public class BaseAsmElement extends AbstractAsmElement {        
-    private List<AsmElement> compList;
+    private final List<AsmElement> compList;
     
     protected BaseAsmElement(List<AsmElement> compList) {
         this.compList = compList;

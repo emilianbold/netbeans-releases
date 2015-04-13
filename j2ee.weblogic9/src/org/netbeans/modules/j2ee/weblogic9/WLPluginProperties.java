@@ -301,6 +301,12 @@ public final class WLPluginProperties {
         String sunJavaHome = null; 
         properties.put(JAVA_HOME, javaHomeVendors);
 
+        // for remote instances domain is null
+        if (domainPath == null) {
+            javaHomeVendors.put("", getDefaultPlatformHome());
+            return properties;
+        }
+
         try {
             String setDomainEnv = domainPath + (Utilities.isWindows() ? "/bin/setDomainEnv.cmd" : "/bin/setDomainEnv.sh"); // NOI18N
             File file = new File(setDomainEnv);
@@ -308,7 +314,6 @@ public final class WLPluginProperties {
                 LOGGER.log(Level.INFO, "Domain environment "
                         + "setup {0} is not found. Probably server configuration was "
                         + "changed externally", setDomainEnv); // NOI18N
-                // FIXME DWP could be the web profile
                 javaHomeVendors.put("", getDefaultPlatformHome());
                 return properties;
             }

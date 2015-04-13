@@ -70,7 +70,7 @@ public class AsmFoldManager implements FoldManager, AsmModelAccessor.ParseListen
     private FoldOperation operation;    
     private AsmModelAccessor acc;
     
-    private static FoldType fold = new FoldType("ASM_FUNCTION"); // NOI18N
+    private static final FoldType fold = new FoldType("ASM_FUNCTION"); // NOI18N
 
     public void init(FoldOperation operation) {
         this.operation = operation; 

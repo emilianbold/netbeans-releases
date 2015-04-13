@@ -76,6 +76,7 @@ public final class XMLEncoderStream {
     private OutputStream os;	// just so we can close it
 
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm") // default encodings used as fall back
     XMLEncoderStream(OutputStream os, int indentChars, String encoding, String lineSeparator) {
 	this.os = os;
         try {

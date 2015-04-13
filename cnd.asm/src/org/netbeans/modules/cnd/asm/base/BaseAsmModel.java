@@ -59,31 +59,35 @@ import org.netbeans.modules.cnd.asm.model.xml.ModelXMLReaderException;
 import org.netbeans.modules.cnd.asm.model.xml.ModelXMLRootContext;
 
 public class BaseAsmModel extends AbstractAsmModel implements AsmModel {
-      
-    private List<Instruction> instr;
-    private List<Register> regs;
-    
+
+    private final List<Instruction> instr;
+    private final List<Register> regs;
+
     public BaseAsmModel(Reader modelXML) {
-        ModelXMLRootContext ctx = new ModelXMLRootContext(); 
-        
+        ModelXMLRootContext ctx = new ModelXMLRootContext();
+
+        List<Instruction> aInstr;
+        List<Register> aRegs;
         try {
             new ModelXMLReader().readModelXml(modelXML, ctx);
-            instr = ctx.getInstructions();
-            regs = ctx.getRegisters();
-        }   
+            aInstr = ctx.getInstructions();
+            aRegs = ctx.getRegisters();
+        }
         catch(ModelXMLReaderException ex) {
-           instr = java.util.Collections.<Instruction>emptyList(); 
-           regs = java.util.Collections.<Register>emptyList();
-       } 
-       init();
+           aInstr = java.util.Collections.<Instruction>emptyList();
+           aRegs = java.util.Collections.<Register>emptyList();
+        }
+        instr = aInstr;
+        regs = aRegs;
+        init();
     }
-    
+
     public List<Instruction> getInstructionSet() {
-        return instr;       
+        return instr;
     }
 
     public List<Register> getRegisterSet() {
-        return regs;  
+        return regs;
     }
 
     public StateFactory getStateFactory() {
@@ -91,6 +95,6 @@ public class BaseAsmModel extends AbstractAsmModel implements AsmModel {
     }
 
     public OpcodeFactory getOpcodeFactory() {
-        return null; 
-    }                
+        return null;
+    }
 }

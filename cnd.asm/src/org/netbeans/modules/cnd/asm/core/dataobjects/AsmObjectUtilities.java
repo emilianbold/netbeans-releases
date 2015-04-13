@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +60,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.queries.FileEncodingQuery;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -147,7 +149,7 @@ public class AsmObjectUtilities {
             is = new BufferedInputStream(fo.getInputStream());
             Reader reader;
 
-            reader = new InputStreamReader(is);
+            reader = new InputStreamReader(is, getEncoding(fo));
 
             return new String(readContents(reader));
         } catch (Exception ex) {
@@ -165,6 +167,17 @@ public class AsmObjectUtilities {
                 return "";
             }
         }
+    }
+
+    private static Charset getEncoding(FileObject fo) {
+        Charset cs = null;
+        if (fo != null && fo.isValid()) {
+            cs = FileEncodingQuery.getEncoding(fo);
+        }
+        if (cs == null) {
+            cs = FileEncodingQuery.getDefaultEncoding();
+        }
+        return cs;
     }
 
     public static char[] readContents(Reader r) throws IOException {
@@ -237,7 +250,7 @@ public class AsmObjectUtilities {
     }
 
     public static boolean openFileInEditor(DataObject ob) {
-        
+
         EditCookie ck = ob.getLookup().lookup(EditCookie.class);
         if (ck != null) {
             ck.edit();

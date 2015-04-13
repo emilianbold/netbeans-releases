@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -132,10 +133,14 @@ public class DwarfLineInfoSection extends ElfSection {
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString(Charset.defaultCharset().name());
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
 
     public LineNumber getLineNumber(long shift, long target) throws IOException{

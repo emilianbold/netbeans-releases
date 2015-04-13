@@ -56,34 +56,35 @@ import org.netbeans.modules.cnd.asm.model.AsmModel;
 import org.netbeans.modules.cnd.asm.model.AsmModelProvider;
 import org.netbeans.modules.cnd.asm.model.util.EmptyModel;
 
-public abstract class BaseModelProvider implements AsmModelProvider {   
+public abstract class BaseModelProvider implements AsmModelProvider {
 
     private final String resource;
     private Reference<AsmModel> modelRef;
 
     public BaseModelProvider(String resource) {
         this.resource = resource;
-        
-        modelRef = new SoftReference<AsmModel>(null);        
+
+        modelRef = new SoftReference<AsmModel>(null);
     }
 
     public synchronized AsmModel getModel() {
         AsmModel model = modelRef.get();
         if (model == null) {
             model = load();
-            modelRef = new SoftReference<AsmModel>(model);   
+            modelRef = new SoftReference<AsmModel>(model);
         }
 
         return  model;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("UI") //Both subclasses are located in this package
     private AsmModel load() {
         InputStream stream = null;
         AsmModel model;
 
         try {
-            stream = getClass().getResourceAsStream(resource);              
-            model = new BaseAsmModel(new InputStreamReader(stream));
+            stream = getClass().getResourceAsStream(resource);
+            model = new BaseAsmModel(new InputStreamReader(stream, "UTF-8")); //NOI18N
         }
         catch(Exception ex) {
             Logger.getLogger(this.getClass().getName()).
@@ -103,7 +104,7 @@ public abstract class BaseModelProvider implements AsmModelProvider {
                  return EmptyModel.getInstance();
               }
            }
-        }   
+        }
 
         return model;
     }

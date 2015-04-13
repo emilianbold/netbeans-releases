@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.cnd.cncppunit;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -149,7 +152,7 @@ public class LibraryChecker {
         HostInfo localHostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
         File dummyFile = File.createTempFile("dummy", ext, localHostInfo.getTempDirFile()); // NOI18N
         try {
-            FileWriter writer = new FileWriter(dummyFile);
+            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dummyFile), "UTF-8")); //NOI18N
             try {
                 writer.write("int main(int argc, char** argv) { return 0; }\n"); // NOI18N
             } finally {

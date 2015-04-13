@@ -49,7 +49,6 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Font;
-import java.awt.event.ItemEvent;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.netbeans.api.progress.BaseProgressUtils;
@@ -61,6 +60,8 @@ import org.netbeans.modules.j2ee.weblogic9.WLTrustHandler;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -411,14 +412,22 @@ class CustomizerGeneral extends javax.swing.JPanel {
         updateJpa2Status();
     }//GEN-LAST:event_jpa2SwitchButtonActionPerformed
 
-    @NbBundle.Messages("MSG_ContactingServer=Contacting the server")
+    @NbBundle.Messages({
+        "MSG_ContactingServer=Contacting the server",
+        "MSG_ConnectionFailed=Could not connect to the server. It is either not running or not accessible at the moment."
+    })
     private void certificateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_certificateButtonActionPerformed
         manager.getInstanceProperties().setProperty(WLTrustHandler.TRUST_EXCEPTION_PROPERTY, null);
         BaseProgressUtils.showProgressDialogAndRun(new Runnable() {
 
             @Override
             public void run() {
-                WLTrustHandler.check(manager.getCommonConfiguration());
+                boolean connected = WLTrustHandler.check(manager.getCommonConfiguration());
+                if (!connected) {
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(Bundle.MSG_ConnectionFailed(),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
+                }
             }
         }, Bundle.MSG_ContactingServer());
 

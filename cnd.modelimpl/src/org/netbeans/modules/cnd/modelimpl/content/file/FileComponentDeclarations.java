@@ -317,8 +317,8 @@ public class FileComponentDeclarations extends FileComponent {
             declarationsLock.readLock().lock();
             res = getDeclarationsByOffset(startOffset-1);
             if (startOffset < endOffset) {
-                OffsetSortedKey fromKey = new OffsetSortedKey(startOffset,0);
-                OffsetSortedKey toKey = new OffsetSortedKey(endOffset,0);
+                OffsetSortedKey fromKey = new OffsetSortedKey(startOffset, Integer.MIN_VALUE);
+                OffsetSortedKey toKey = new OffsetSortedKey(endOffset, Integer.MIN_VALUE);
                 SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> map = declarations.subMap(fromKey, toKey);
                 for(Map.Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> entry : map.entrySet()){
                     CsmUID<CsmOffsetableDeclaration> anUid = entry.getValue();
@@ -352,7 +352,7 @@ public class FileComponentDeclarations extends FileComponent {
     // call under read lock
     private List<CsmUID<CsmOffsetableDeclaration>> getDeclarationsByOffset(int offset){
         List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<>();
-        OffsetSortedKey key = new OffsetSortedKey(offset+1,0); // NOI18N
+        OffsetSortedKey key = new OffsetSortedKey(offset+1, Integer.MIN_VALUE);
         outer : while(true) {
             SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> head = declarations.headMap(key);
             if (head.isEmpty()) {
