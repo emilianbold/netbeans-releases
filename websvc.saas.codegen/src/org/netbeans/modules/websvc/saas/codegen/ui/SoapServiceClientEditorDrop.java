@@ -45,6 +45,7 @@ package org.netbeans.modules.websvc.saas.codegen.ui;
 
 import org.netbeans.modules.websvc.saas.codegen.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -118,13 +119,17 @@ public class SoapServiceClientEditorDrop implements ActiveEditorDrop {
             ProgressDialog[] dialog = new ProgressDialog[1];
             public void run() {
                 for (final WsdlSaasMethod method : getMethods()) {
-                    SwingUtilities.invokeLater(new Runnable(){
-                        public void run(){
-                            dialog[0] = new ProgressDialog(
-                                NbBundle.getMessage(SoapServiceClientEditorDrop.class, "LBL_CodeGenProgress",
-                                method.getName()));
-                        }
-                    });
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable(){
+                            public void run(){
+                                dialog[0] = new ProgressDialog(
+                                    NbBundle.getMessage(SoapServiceClientEditorDrop.class, "LBL_CodeGenProgress",
+                                    method.getName()));
+                            }
+                        });
+                    } catch (InterruptedException iex) {
+                    } catch (InvocationTargetException itex) {
+                    }
                     
                     try {
                         String displayName = method.getName();
