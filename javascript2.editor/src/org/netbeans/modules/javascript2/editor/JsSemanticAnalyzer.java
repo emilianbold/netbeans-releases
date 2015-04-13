@@ -62,8 +62,10 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.hints.JSHintSupport;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.JsReference;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
@@ -117,7 +119,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         for (Identifier iden: definedGlobal) {
             globalJsHintInlines.add(iden.getOffsetRange());
         }
-        highlights = count(result, global, highlights);
+        highlights = count(result, global, highlights, new ArrayList<String>());
 
         if (highlights != null && highlights.size() > 0) {
             semanticHighlights = highlights;
@@ -126,8 +128,34 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         }
     }
 
-    private Map<OffsetRange, Set<ColoringAttributes>> count (JsParserResult result, JsObject parent, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
-
+    private Map<OffsetRange, Set<ColoringAttributes>> count (JsParserResult result, JsObject parent, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> processedObjects) {
+        if (processedObjects.contains(parent.getFullyQualifiedName())) {
+            return highlights;
+        } else if (parent instanceof JsReference) {
+            JsObject original = ((JsReference) parent).getOriginal();
+            boolean isOrginalReachable = !original.isAnonymous() && !original.getName().equals(parent.getName());
+            JsObject origParent = original.getParent();
+            while (origParent != null && isOrginalReachable) {
+                if (origParent.isAnonymous() && !(origParent.getParent() != null && origParent.getParent().getParent() == null)) {
+                    isOrginalReachable = false;
+                }
+                origParent = origParent.getParent();
+            }
+            if (isOrginalReachable) {
+                processedObjects.add(parent.getFullyQualifiedName());
+                return highlights;
+            }
+            if (processedObjects.contains(original.getFullyQualifiedName())) {
+                return highlights;
+            } else {
+                processedObjects.add(parent.getFullyQualifiedName());
+                processedObjects.add(original.getFullyQualifiedName());
+            }
+        } else {
+            if (parent.getJSKind() != JsElement.Kind.FILE) {
+                processedObjects.add(parent.getFullyQualifiedName());
+            }
+        }
         for (Iterator<? extends JsObject> it = parent.getProperties().values().iterator(); it.hasNext();) {
             JsObject object = it.next();
             if (object.getDeclarationName() != null) {
@@ -152,7 +180,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                         }
                         for(JsObject param: ((JsFunction)object).getParameters()) {
                             if (!(object instanceof JsObjectReference && !((JsObjectReference)object).getOriginal().isAnonymous())) {
-                                count(result, param, highlights);
+                                count(result, param, highlights, processedObjects);
                             }
                             if (!hasSourceOccurences(result, param)) {
                                 OffsetRange range = LexUtilities.getLexerOffsets(result, param.getDeclarationName().getOffsetRange());
@@ -261,7 +289,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 break;
             }
             if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
-                highlights = count(result, object, highlights);
+                System.out.println(object.getFullyQualifiedName());
+                highlights = count(result, object, highlights, processedObjects);
             }
         }
 
