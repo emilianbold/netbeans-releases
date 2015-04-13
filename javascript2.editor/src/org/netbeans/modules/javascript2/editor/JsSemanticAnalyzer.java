@@ -56,7 +56,6 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
@@ -129,32 +128,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     }
 
     private Map<OffsetRange, Set<ColoringAttributes>> count (JsParserResult result, JsObject parent, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> processedObjects) {
-        if (processedObjects.contains(parent.getFullyQualifiedName())) {
+        if (ModelUtils.wasProcessed(parent, processedObjects)) {
             return highlights;
-        } else if (parent instanceof JsReference) {
-            JsObject original = ((JsReference) parent).getOriginal();
-            boolean isOrginalReachable = !original.isAnonymous() && !original.getName().equals(parent.getName());
-            JsObject origParent = original.getParent();
-            while (origParent != null && isOrginalReachable) {
-                if (origParent.isAnonymous() && !(origParent.getParent() != null && origParent.getParent().getParent() == null)) {
-                    isOrginalReachable = false;
-                }
-                origParent = origParent.getParent();
-            }
-            if (isOrginalReachable) {
-                processedObjects.add(parent.getFullyQualifiedName());
-                return highlights;
-            }
-            if (processedObjects.contains(original.getFullyQualifiedName())) {
-                return highlights;
-            } else {
-                processedObjects.add(parent.getFullyQualifiedName());
-                processedObjects.add(original.getFullyQualifiedName());
-            }
-        } else {
-            if (parent.getJSKind() != JsElement.Kind.FILE) {
-                processedObjects.add(parent.getFullyQualifiedName());
-            }
         }
         for (Iterator<? extends JsObject> it = parent.getProperties().values().iterator(); it.hasNext();) {
             JsObject object = it.next();

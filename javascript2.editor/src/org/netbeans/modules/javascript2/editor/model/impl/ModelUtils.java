@@ -73,6 +73,7 @@ import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.JsReference;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -1667,5 +1668,46 @@ public class ModelUtils {
                 }
             }
         }
+    }
+    
+    /**
+     * This method is useful, when you need to go through the model and be sure that
+     * the algorithm will not run into endless cycle. In the model there can be references
+     * to an object that can caused endless cycle. This method check whether the object has an reference or
+     * the original of the reference object was already processed. Also adds the fully qualified names of the object
+     * and the references to the list of processed objects. 
+     * @param object object that should be processed
+     * @param processedObjects list of already processed object
+     * @return true if the object full qualified name or his reference full qualified name is in the processedObjects list.
+     */
+    public static boolean wasProcessed (JsObject object, List<String> processedObjects) {
+        if (processedObjects.contains(object.getFullyQualifiedName())) {
+            return true;
+        } else if (object instanceof JsReference) {
+            JsObject original = ((JsReference) object).getOriginal();
+            boolean isOrginalReachable = !original.isAnonymous() && !original.getName().equals(object.getName());
+            JsObject origParent = original.getParent();
+            while (origParent != null && isOrginalReachable) {
+                if (origParent.isAnonymous() && !(origParent.getParent() != null && origParent.getParent().getParent() == null)) {
+                    isOrginalReachable = false;
+                }
+                origParent = origParent.getParent();
+            }
+            if (isOrginalReachable) {
+                processedObjects.add(object.getFullyQualifiedName());
+                return true;
+            }
+            if (processedObjects.contains(original.getFullyQualifiedName())) {
+                return true;
+            } else {
+                processedObjects.add(object.getFullyQualifiedName());
+                processedObjects.add(original.getFullyQualifiedName());
+            }
+        } else {
+            if (object.getJSKind() != JsElement.Kind.FILE) {
+                processedObjects.add(object.getFullyQualifiedName());
+            }
+        }
+        return false;
     }
 }
