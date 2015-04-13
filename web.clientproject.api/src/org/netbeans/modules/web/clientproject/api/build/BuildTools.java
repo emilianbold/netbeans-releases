@@ -250,7 +250,7 @@ public final class BuildTools {
          * Runs the given advanced task. The task should be returned on next {@link #getAdvancedTasks()} call.
          * <p>
          * This method always runs in a background thread.
-         * @param isPrivate {@code true} if this task should be publicly available (via VCS), {@code false} otherwise
+         * @param isPrivate {@code true} if this task should not be publicly available (e.g. via VCS), {@code false} otherwise
          * @param args task arguments
          */
         void runAdvancedTask(boolean isPrivate, @NullAllowed String... args);
