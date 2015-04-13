@@ -74,10 +74,12 @@ public final class WebLogicRemote {
             if (nonProxyHosts != null) {
                 System.setProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS, nonProxyHosts);
             }
-            WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
-            if (handler != null) {
-                for (Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
-                    System.setProperty(e.getKey(), e.getValue());
+            if (config.isSecured()) {
+                WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+                if (handler != null) {
+                    for (Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
+                        System.setProperty(e.getKey(), e.getValue());
+                    }
                 }
             }
 
