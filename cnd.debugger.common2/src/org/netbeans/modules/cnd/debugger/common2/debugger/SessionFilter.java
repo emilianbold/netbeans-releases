@@ -79,7 +79,7 @@ public final class SessionFilter extends ModelListenerSupport
 
     public SessionFilter() {
 	super("sessions");		// NOI18N
-    } 
+    }
 
     // interface TreeModelFilter etc
     @Override
@@ -101,7 +101,7 @@ public final class SessionFilter extends ModelListenerSupport
      *
      * We discover the pairing through NativeSession.map(). Not exactly
      * snappy but better than doing it everywhere else which now
-     * can use the cheaper "instanceof NativeSession". 
+     * can use the cheaper "instanceof NativeSession".
      * In other words, this is the most central place to do this.
      */
 
@@ -171,7 +171,7 @@ public final class SessionFilter extends ModelListenerSupport
 
     // interface NodeModelFilter
     @Override
-    public String getDisplayName(NodeModel original, Object node) 
+    public String getDisplayName(NodeModel original, Object node)
 	throws UnknownTypeException {
 
 	if (! (node instanceof Session))
@@ -323,7 +323,7 @@ public final class SessionFilter extends ModelListenerSupport
 	    return original.getValueAt(node, columnID);
 	} catch (UnknownTypeException x) {
 		return "";
-	} 
+	}
     }
 
     // interface TableModelFilter
@@ -336,7 +336,7 @@ public final class SessionFilter extends ModelListenerSupport
 
 	NativeSession ds = NativeSession.map((Session) node);
 	if (ds != null) {
-	    if (columnID == PROP_SESSION_PID) {
+	    if (PROP_SESSION_PID.equals(columnID)) {
 		return new Long(ds.getPid());
 		/* no longer exist
 	    } else if (columnID == PROP_SESSION_CURRENT_LANGUAGE ) {
@@ -344,19 +344,19 @@ public final class SessionFilter extends ModelListenerSupport
 	    } else if (columnID == SESSION_HOST_NAME_COLUMN_ID ) {
 		return "Location-placeholder";
 		*/
-	    } else if (columnID == SESSION_DEBUGGER_COLUMN_ID) {
+	    } else if (SESSION_DEBUGGER_COLUMN_ID.equals(columnID)) {
 		return ds.getSessionEngine();
-	    } else if (columnID == SESSION_STATE_COLUMN_ID ) {
+	    } else if (SESSION_STATE_COLUMN_ID.equals(columnID)) {
 		return ds.getSessionState();
-	    } else if (columnID == PROP_SESSION_LOCATION ) {
+	    } else if (PROP_SESSION_LOCATION.equals(columnID)) {
 		return ds.getSessionLocation();
-	    } else if (columnID == PROP_SESSION_MODE ) {
+	    } else if (PROP_SESSION_MODE.equals(columnID)) {
 		return ds.getSessionMode();
-	    } else if (columnID == PROP_SESSION_ARGS ) {
+	    } else if (PROP_SESSION_ARGS.equals(columnID)) {
 		return ds.getSessionArgs();
-	    } else if (columnID == PROP_SESSION_CORE ) {
+	    } else if (PROP_SESSION_CORE.equals(columnID)) {
 		return ds.getSessionCore();
-	    } else if (columnID == PROP_SESSION_HOST ) {
+	    } else if (PROP_SESSION_HOST.equals(columnID)) {
 		return ds.getSessionHost();
 	    } else {
 		return original.getValueAt(node, columnID);
@@ -378,8 +378,8 @@ public final class SessionFilter extends ModelListenerSupport
 	    try {
 		return original.isReadOnly(node, columnID);
 	    } catch (UnknownTypeException x) {
-		return true; 
-	    } 
+		return true;
+	    }
 	}
     }
 
@@ -402,7 +402,7 @@ public final class SessionFilter extends ModelListenerSupport
 
     // interface NodeActionsProviderFilter
     @Override
-    public Action[] getActions(NodeActionsProvider original, Object node) 
+    public Action[] getActions(NodeActionsProvider original, Object node)
 	throws UnknownTypeException {
 
 	Action[] actions = original.getActions(node);

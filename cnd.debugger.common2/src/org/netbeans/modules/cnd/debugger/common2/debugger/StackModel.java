@@ -93,7 +93,7 @@ public final class StackModel extends ModelListenerSupport
     public Object getRoot() {
 	// redundant?
 	return ROOT;
-    } 
+    }
 
     // interface TreeModel
     @Override
@@ -198,19 +198,19 @@ public final class StackModel extends ModelListenerSupport
 	}
 	Frame frame = (Frame) node;
 
-	if (columnID == PROP_FRAME_LOCATION) {
+	if (PROP_FRAME_LOCATION.equals(columnID)) {
 	    return frame.getLocation();
 
-	} else if (columnID == PROP_FRAME_NUMBER) {
+	} else if (PROP_FRAME_NUMBER.equals(columnID)) {
 	    return frame.getNumber();
 
-	} else if (columnID == PROP_FRAME_OPTIMIZED) {
+	} else if (PROP_FRAME_OPTIMIZED.equals(columnID)) {
 	    return frame.getOptimized();
 
-	} else if (columnID == PROP_FRAME_CURRENT_PC) {
+	} else if (PROP_FRAME_CURRENT_PC.equals(columnID)) {
 	    return frame.getCurrentPC();
 
-	} else if (columnID == PROP_FRAME_LOADOBJ) {
+	} else if (PROP_FRAME_LOADOBJ.equals(columnID)) {
 	    return frame.getLoadObjBase();
 
 	} else {
@@ -226,7 +226,7 @@ public final class StackModel extends ModelListenerSupport
 
     // interface TableModel
     @Override
-    public void setValueAt(Object node, String columnID, Object value) 
+    public void setValueAt(Object node, String columnID, Object value)
 	throws UnknownTypeException {
 
 	if (!(node instanceof Frame)) {
@@ -235,7 +235,7 @@ public final class StackModel extends ModelListenerSupport
 	// should never be called on us
     }
 
-    private static final Action Action_VERBOSE = new VerboseAction(); 
+    private static final Action Action_VERBOSE = new VerboseAction();
 
     // interface NodeActionsProvider
     @Override
@@ -263,7 +263,7 @@ public final class StackModel extends ModelListenerSupport
 		new PopTopmostCallAction(debugger),
 		new PopToHereAction(debugger, frame),
 		SystemAction.get(PopLastDebuggerCallAction.class),
-		new CopyStackAction(debugger), 
+		new CopyStackAction(debugger),
 		null,
 		canDoMaxFrame ? SystemAction.get(MaxFrameAction.class) : null,
 		canDoVerbose ? Action_VERBOSE : null,
@@ -293,7 +293,7 @@ public final class StackModel extends ModelListenerSupport
 	    this.debugger = debugger;
 	    this.frame = frame;
 	    setEnabled(!frame.isCurrent() && !frame.isSpecial());
-	} 
+	}
 
         @Override
 	public void actionPerformed(ActionEvent e) {
@@ -310,7 +310,7 @@ public final class StackModel extends ModelListenerSupport
 	    this.debugger = debugger;
 	    this.frame = frame;
 	    setEnabled(!frame.isCurrent() && !frame.isSpecial());
-	} 
+	}
 
         @Override
 	public void actionPerformed(ActionEvent e) {
@@ -329,7 +329,7 @@ public final class StackModel extends ModelListenerSupport
 	    super(Catalog.get("ACT_Pop_Caller"));	// NOI18N
 	    this.debugger = debugger;
 	    setEnabled(!debugger.state().isCore);
-	} 
+	}
 
         @Override
 	public void actionPerformed(ActionEvent e) {
@@ -350,7 +350,7 @@ public final class StackModel extends ModelListenerSupport
         @Override
 	public String getName() {
 	    return Catalog.get("LBL_Verbose");	// NOI18N
-	} 
+	}
 
 	// interface SystemAction
         @Override
@@ -372,7 +372,7 @@ public final class StackModel extends ModelListenerSupport
 	CopyStackAction (NativeDebugger debugger) {
 	    super(Catalog.get("ACT_Copy_Stack"));	// NOI18N
 	    this.debugger = debugger;
-	} 
+	}
 
         @Override
 	public void actionPerformed(ActionEvent e) {
