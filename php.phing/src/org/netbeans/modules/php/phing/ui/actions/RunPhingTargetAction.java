@@ -43,6 +43,7 @@ package org.netbeans.modules.php.phing.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -171,8 +172,10 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         }
 
         @NbBundle.Messages({
+            "TasksMenuSupportImpl.targets.label=Target(s)",
             "TasksMenuSupportImpl.targets.loading=Loading Targets...",
             "TasksMenuSupportImpl.targets.reload=Reload Targets",
+            "TasksMenuSupportImpl.targets.run.advanced=Run Target(s)",
             "TasksMenuSupportImpl.phing.configure=Configure Phing...",
         })
         @Override
@@ -186,6 +189,12 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
                     return Bundle.TasksMenuSupportImpl_targets_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_phing_configure();
+                case RUN_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_targets_run_advanced();
+                case TASKS_LABEL:
+                    return Bundle.TasksMenuSupportImpl_targets_label();
+                case BUILD_TOOL_EXEC:
+                    return PhingExecutable.PHING_NAME;
                 default:
                     assert false : "Unknown title: " + title;
             }
@@ -203,6 +212,12 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         }
 
         @Override
+        public List<String> getAdvancedTasks() {
+            // XXX
+            return Collections.emptyList();
+        }
+
+        @Override
         public void runTask(String... args) {
             assert !EventQueue.isDispatchThread();
             PhingExecutable phing = PhingExecutable.getDefault(project, true);
@@ -210,6 +225,13 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
                 PhingUtils.logUsagePhingBuild();
                 phing.run(args);
             }
+        }
+
+        @Override
+        public void runAdvancedTask(boolean isPrivate, String... args) {
+            assert !EventQueue.isDispatchThread();
+            runTask(args);
+            // XXX save it!
         }
 
         @Override

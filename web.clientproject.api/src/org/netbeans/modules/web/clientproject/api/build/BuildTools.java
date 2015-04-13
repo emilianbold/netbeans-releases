@@ -202,6 +202,9 @@ public final class BuildTools {
             LOADING_TASKS,
             RELOAD_TASKS,
             CONFIGURE_TOOL,
+            RUN_ADVANCED,
+            TASKS_LABEL,
+            BUILD_TOOL_EXEC,
         }
 
         /**
@@ -229,12 +232,28 @@ public final class BuildTools {
         Future<List<String>> getTasks();
 
         /**
+         * Gets advanced tasks.
+         * @return advanced tasks, can be empty but never {@code null}
+         */
+        @NonNull
+        List<String> getAdvancedTasks();
+
+        /**
          * Runs the given task. No task is given for {@link #getDefaultTaskName() default} task.
          * <p>
          * This method always runs in a background thread.
-         * @param args
+         * @param args task arguments
          */
         void runTask(@NullAllowed String... args);
+
+        /**
+         * Runs the given advanced task. The task should be returned on next {@link #getAdvancedTasks()} call.
+         * <p>
+         * This method always runs in a background thread.
+         * @param isPrivate {@code true} if this task should be publicly available (via VCS), {@code false} otherwise
+         * @param args task arguments
+         */
+        void runAdvancedTask(boolean isPrivate, @NullAllowed String... args);
 
         /**
          * Reloads tasks.

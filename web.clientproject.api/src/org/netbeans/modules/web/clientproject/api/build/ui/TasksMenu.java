@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.api.build.ui;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,9 +58,13 @@ import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools.TasksMenuSupport;
+import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 public class TasksMenu extends JMenu {
 
@@ -104,7 +109,7 @@ public class TasksMenu extends JMenu {
         final Future<List<String>> tasks = support.getTasks();
         if (tasks.isDone()) {
             try {
-                addTasksMenuItems(tasks.get());
+                addMenuItems(tasks.get());
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {
@@ -123,7 +128,7 @@ public class TasksMenu extends JMenu {
                         @Override
                         public void run() {
                             removeAll();
-                            addTasksMenuItems(allTasks.get());
+                            addMenuItems(allTasks.get());
                             refreshMenu();
                         }
                     });
@@ -144,17 +149,26 @@ public class TasksMenu extends JMenu {
         popupMenu.repaint();
     }
 
-    void addTasksMenuItems(@NullAllowed List<String> tasks) {
+    void addMenuItems(@NullAllowed List<String> tasks) {
+        Collection<String> allTasks = addTasksMenuItems(tasks);
+        if (tasks != null) { // not 'allTasks' intentianlly, one can run default task e.g. with just some parameters
+            addAdvancedMenuItems(allTasks);
+        }
+        addReloadTasksMenuItem();
+    }
+
+    @CheckForNull
+    private Collection<String> addTasksMenuItems(@NullAllowed List<String> tasks) {
         assert EventQueue.isDispatchThread();
         if (tasks == null) {
             // build tool cli error?
             addConfigureToolMenuItem();
-            return;
+            return null;
         }
         // default task
         final String defaultTaskName = support.getDefaultTaskName();
         if (defaultTaskName != null) {
-            addTaskMenuItem(true, defaultTaskName);
+            addTaskMenuItem(true, defaultTaskName, false);
         }
         addSeparator();
         Set<String> allTasks = new LinkedHashSet<>(tasks);
@@ -162,15 +176,45 @@ public class TasksMenu extends JMenu {
             allTasks.remove(defaultTaskName);
         }
         for (String task : allTasks) {
-            addTaskMenuItem(false, task);
+            addTaskMenuItem(false, task, false);
         }
         if (!allTasks.isEmpty()) {
             addSeparator();
         }
-        addReloadTasksMenuItem();
+        return allTasks;
     }
 
-    private void addTaskMenuItem(final boolean isDefault, final String task) {
+    @NbBundle.Messages("TasksMenu.menu.advanced=Advanced...")
+    private void addAdvancedMenuItems(final Collection<String> tasks) {
+        assert EventQueue.isDispatchThread();
+        assert tasks != null;
+        // advanced...
+        JMenuItem menuItem = new JMenuItem(Bundle.TasksMenu_menu_advanced());
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                assert EventQueue.isDispatchThread();
+                final Pair<Boolean, String> advancedTask = AdvancedTaskPanel.open(support.getTitle(TasksMenuSupport.Title.RUN_ADVANCED),
+                        support.getTitle(TasksMenuSupport.Title.TASKS_LABEL), support.getTitle(TasksMenuSupport.Title.BUILD_TOOL_EXEC), tasks);
+                if (advancedTask != null) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            support.runAdvancedTask(advancedTask.first(), Utilities.parseParameters(advancedTask.second()));
+                        }
+                    });
+                }
+            }
+        });
+        add(menuItem);
+        // last advanced tasks
+        for (String task : support.getAdvancedTasks()) {
+            addTaskMenuItem(false, task, true);
+        }
+        addSeparator();
+    }
+
+    private void addTaskMenuItem(final boolean isDefault, final String task, final boolean isAdvanced) {
         JMenuItem menuitem = new JMenuItem(task);
         menuitem.addActionListener(new ActionListener() {
             @Override
@@ -180,6 +224,8 @@ public class TasksMenu extends JMenu {
                     public void run() {
                         if (isDefault) {
                             support.runTask();
+                        } else if (isAdvanced) {
+                            support.runTask(Utilities.parseParameters(task));
                         } else {
                             support.runTask(task);
                         }

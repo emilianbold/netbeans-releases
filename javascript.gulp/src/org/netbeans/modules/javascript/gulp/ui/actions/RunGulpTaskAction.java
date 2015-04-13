@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.gulp.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -174,8 +175,10 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         }
 
         @NbBundle.Messages({
+            "TasksMenuSupportImpl.tasks.label=Task(s)",
             "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
             "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
+            "TasksMenuSupportImpl.tasks.run.advanced=Run Task(s)",
             "TasksMenuSupportImpl.gulp.configure=Configure Gulp...",
         })
         @Override
@@ -189,6 +192,12 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
                     return Bundle.TasksMenuSupportImpl_tasks_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_gulp_configure();
+                case RUN_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_tasks_run_advanced();
+                case TASKS_LABEL:
+                    return Bundle.TasksMenuSupportImpl_tasks_label();
+                case BUILD_TOOL_EXEC:
+                    return GulpExecutable.GULP_NAME;
                 default:
                     assert false : "Unknown title: " + title;
             }
@@ -206,6 +215,12 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         }
 
         @Override
+        public List<String> getAdvancedTasks() {
+            // XXX
+            return Collections.emptyList();
+        }
+
+        @Override
         public void runTask(String... args) {
             assert !EventQueue.isDispatchThread();
             GulpExecutable gulp = GulpExecutable.getDefault(project, true);
@@ -213,6 +228,13 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
                 GulpUtils.logUsageGulpBuild();
                 gulp.run(args);
             }
+        }
+
+        @Override
+        public void runAdvancedTask(boolean isPrivate, String... args) {
+            assert !EventQueue.isDispatchThread();
+            runTask(args);
+            // XXX save it!
         }
 
         @Override

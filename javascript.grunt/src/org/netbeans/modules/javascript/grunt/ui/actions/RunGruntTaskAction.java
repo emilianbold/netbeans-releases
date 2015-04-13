@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.grunt.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -174,8 +175,10 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         }
 
         @NbBundle.Messages({
+            "TasksMenuSupportImpl.tasks.label=Task(s)",
             "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
             "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
+            "TasksMenuSupportImpl.tasks.run.advanced=Run Task(s)",
             "TasksMenuSupportImpl.grunt.configure=Configure Grunt...",
         })
         @Override
@@ -189,6 +192,12 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                     return Bundle.TasksMenuSupportImpl_tasks_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_grunt_configure();
+                case RUN_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_tasks_run_advanced();
+                case TASKS_LABEL:
+                    return Bundle.TasksMenuSupportImpl_tasks_label();
+                case BUILD_TOOL_EXEC:
+                    return GruntExecutable.GRUNT_NAME;
                 default:
                     assert false : "Unknown title: " + title;
             }
@@ -206,6 +215,12 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         }
 
         @Override
+        public List<String> getAdvancedTasks() {
+            // XXX
+            return Collections.emptyList();
+        }
+
+        @Override
         public void runTask(String... args) {
             assert !EventQueue.isDispatchThread();
             GruntExecutable grunt = GruntExecutable.getDefault(project, true);
@@ -213,6 +228,13 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 GruntUtils.logUsageGruntBuild();
                 grunt.run(args);
             }
+        }
+
+        @Override
+        public void runAdvancedTask(boolean isPrivate, String... args) {
+            assert !EventQueue.isDispatchThread();
+            runTask(args);
+            // XXX save it!
         }
 
         @Override
