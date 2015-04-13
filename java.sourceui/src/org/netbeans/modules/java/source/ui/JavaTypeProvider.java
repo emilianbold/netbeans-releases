@@ -510,7 +510,7 @@ public class JavaTypeProvider implements TypeProvider {
             originalSearchType == NameKind.CASE_INSENSITIVE_REGEXP) {
             return originalSearchType;
         } else if ((isAllUpper(simpleName) && simpleName.length() > 1) || isCamelCase(simpleName)) {
-            return NameKind.CAMEL_CASE;
+            return isCaseSensitive(originalSearchType) ? NameKind.CAMEL_CASE : NameKind.CAMEL_CASE_INSENSITIVE;
         } else if (containsWildCard(simpleName) != -1) {
             return isCaseSensitive(originalSearchType) ? NameKind.REGEXP : NameKind.CASE_INSENSITIVE_REGEXP;
         } else {
