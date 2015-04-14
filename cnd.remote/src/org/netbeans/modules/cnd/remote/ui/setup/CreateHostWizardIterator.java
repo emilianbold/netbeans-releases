@@ -243,7 +243,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
             return null;
         }
         Runnable r = result.getRunOnFinish();
-        CndUtils.assertFalse(r == null);
+        // CndUtils.assertFalse(r == null); // can be null - fixing #248752 - Some UI control item is needed in order to skip "Search Compliers"
         if (r != null) {
             r.run();
         }

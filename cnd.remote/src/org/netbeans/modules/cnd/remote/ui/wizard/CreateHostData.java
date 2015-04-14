@@ -57,11 +57,13 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
     private String hostName = "";
     private String userName;
     private final boolean manageUser;
+    private boolean searchTools;
 
     public CreateHostData(ToolsCacheManager toolsCacheManager, boolean manageUser) {
         this.cacheManager = toolsCacheManager;
         this.manageUser = manageUser;
         this.userName = System.getProperty("user.name", ""); // NOI18N
+        searchTools = true;
     }
 
     public ToolsCacheManager getCacheManager() {
@@ -94,6 +96,14 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 
     public synchronized void setPort(int port) {
         this.port = port;
+    }
+
+    public synchronized boolean getSearchTools() {
+        return searchTools;
+    }
+
+    public synchronized void setSearchTools(boolean searchTools) {
+        this.searchTools = searchTools;
     }
 
     @Override

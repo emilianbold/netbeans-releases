@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -55,10 +56,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
+import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -80,7 +81,7 @@ import org.openide.util.RequestProcessor;
         this.data = data;
         wizardListener = listener;
         initComponents();
-
+        
         textLoginName.setText(System.getProperty("user.name"));
 
         configurationPanel = ConnectionManager.getInstance().getConfigurationPanel(null);
@@ -135,6 +136,7 @@ import org.openide.util.RequestProcessor;
                 data.getUserName().concat("@"). // NOI18N
                 concat(data.getHostName()).concat(":") // NOI18N
                 .concat(Integer.toString(data.getPort())));
+        this.cbFindCompilers.setSelected(data.getSearchTools());
     }
 
     private String getLoginName() {
@@ -153,6 +155,7 @@ import org.openide.util.RequestProcessor;
     private void initComponents() {
 
         authPanel = new javax.swing.JPanel();
+        cbFindCompilers = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tpOutput = new javax.swing.JTextPane();
         pbarStatusPanel = new javax.swing.JPanel();
@@ -164,6 +167,13 @@ import org.openide.util.RequestProcessor;
         setRequestFocusEnabled(false);
 
         authPanel.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbFindCompilers, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.cbFindCompilers.text")); // NOI18N
+        cbFindCompilers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbFindCompilersActionPerformed(evt);
+            }
+        });
 
         tpOutput.setEditable(false);
         tpOutput.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.tpOutput.text")); // NOI18N
@@ -189,7 +199,7 @@ import org.openide.util.RequestProcessor;
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textLoginName, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+                .addComponent(textLoginName)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -205,24 +215,42 @@ import org.openide.util.RequestProcessor;
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pbarStatusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .addComponent(pbarStatusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addComponent(cbFindCompilers, javax.swing.GroupLayout.PREFERRED_SIZE, 502, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
+                .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addComponent(cbFindCompilers)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pbarStatusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbFindCompilersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFindCompilersActionPerformed
+        data.setSearchTools(cbFindCompilers.isSelected());
+        HostValidator v = this.hostValidator;
+        if (v != null) { // validation already started
+            cbFindCompilers.setEnabled(false);
+            if (!cbFindCompilers.isSelected()) {
+                v.cancelToolSearch();
+            }
+        }
+    }//GEN-LAST:event_cbFindCompilersActionPerformed
     private ProgressHandle phandle;
+    private volatile HostValidator hostValidator;
 
     /* package-local */ ExecutionEnvironment getHost() {
         return hostFound;
@@ -288,13 +316,14 @@ import org.openide.util.RequestProcessor;
 
                 try {
                     StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "hostValidator.validate"); //NOI18N
-                    HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
-                    if (hostValidator.validate(env, /*password, rememberPassword, */ new TextComponentWriter(tpOutput))) {
+                    hostValidator = new HostValidatorImpl(data.getCacheManager());
+                    if (hostValidator.validate(env, data.getSearchTools(), new TextComponentWriter(tpOutput))) {
                         sw.stop();
                         hostFound = env;
                         runOnFinish = hostValidator.getRunOnFinish();
                     }
                 } finally {
+                    hostValidator = null;
                     phandle.finish();
                     wizardListener.stateChanged(null);
                     pbarStatusPanel.setVisible(false);
@@ -310,6 +339,7 @@ import org.openide.util.RequestProcessor;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel authPanel;
+    private javax.swing.JCheckBox cbFindCompilers;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
