@@ -43,8 +43,6 @@ package org.netbeans.modules.test.refactoring.suites;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.test.refactoring.FindUsagesClassTest;
-import org.netbeans.modules.test.refactoring.FindUsagesMethodTest;
 import org.netbeans.modules.test.refactoring.IntroduceConstantTest;
 import org.netbeans.modules.test.refactoring.IntroduceFieldTest;
 import org.netbeans.modules.test.refactoring.IntroduceMethodTest;
@@ -57,10 +55,11 @@ import org.netbeans.modules.test.refactoring.IntroduceParameterTest;
 public class IntroduceSuite {
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(IntroduceConstantTest.class).
-                        addTest(IntroduceFieldTest.class).
-                        addTest(IntroduceParameterTest.class).
-                        addTest(IntroduceMethodTest.class));
+        return NbModuleSuite.emptyConfiguration().
+                addTest(IntroduceConstantTest.class).
+                addTest(IntroduceFieldTest.class).
+                addTest(IntroduceParameterTest.class).
+                addTest(IntroduceMethodTest.class)
+                .suite();
     }
 }

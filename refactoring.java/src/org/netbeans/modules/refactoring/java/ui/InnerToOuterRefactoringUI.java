@@ -165,9 +165,11 @@ public class InnerToOuterRefactoringUI implements RefactoringUI, JavaRefactoring
         }
         if(handles[0] != null && resolved != null) {
             Element inner = handles[0].resolveElement(info);
-            TypeElement outer = info.getElementUtilities().enclosingTypeElement(inner);
-            if (outer != null && outer.getEnclosedElements().contains(inner)) {
-                return new InnerToOuterRefactoringUI(handles[0], info);
+            if(inner != null && inner.getKind() != ElementKind.PACKAGE) {
+                TypeElement outer = info.getElementUtilities().enclosingTypeElement(inner);
+                if (outer != null && outer.getEnclosedElements().contains(inner)) {
+                    return new InnerToOuterRefactoringUI(handles[0], info);
+                }
             }
         }
         return null;
