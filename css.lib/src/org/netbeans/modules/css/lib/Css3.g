@@ -712,7 +712,7 @@ combinator
 
 simpleSelectorSequence
 	:
-        (elementSubsequent | {isScssSource()}? sass_selector_interpolation_exp | {isLessSource()}? less_selector_interpolation_exp) ((ws? esPred)=>((ws? elementSubsequent) |(ws {isScssSource()}? sass_selector_interpolation_exp | {isLessSource()}? less_selector_interpolation_exp)))*
+        (elementSubsequent | {isScssSource()}? sass_selector_interpolation_exp ) ((ws? esPred)=>((ws? elementSubsequent) |(ws {isScssSource()}? sass_selector_interpolation_exp | {isLessSource()}? less_selector_interpolation_exp)))*
 	| (typeSelector)=>typeSelector ((ws? esPred)=>((ws? elementSubsequent) | {isScssSource()}? ws sass_selector_interpolation_exp))* 
 	;
 	catch[ RecognitionException rce] {
@@ -739,7 +739,7 @@ elementSubsequent
     :
     (
         {isScssSource()}? sass_extend_only_selector
-        | {isLessSource()}? less_selector_interpolation // @{var} { ... }
+        | {isLessSource()}? less_selector_interpolation_exp
     	| cssId
     	| cssClass
         | slAttribute
