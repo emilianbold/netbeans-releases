@@ -77,7 +77,7 @@ public final class CompletionSettings {
     }
     
     public int completionAutoPopupDelay() {
-        return preferences.getInt(SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY, 250);
+        return preferences.getInt(SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY, 0);
     }
     
     public boolean documentationAutoPopup() {
