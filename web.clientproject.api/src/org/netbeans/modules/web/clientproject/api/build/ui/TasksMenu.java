@@ -73,6 +73,7 @@ public class TasksMenu extends JMenu {
     private static final RequestProcessor RP = new RequestProcessor(TasksMenu.class);
 
     final TasksMenuSupport support;
+    final AdvancedTasks advancedTasks;
 
     // @GuardedBy("EDT")
     private boolean menuBuilt = false;
@@ -82,6 +83,7 @@ public class TasksMenu extends JMenu {
         super(support.getTitle(TasksMenuSupport.Title.MENU));
         assert support != null;
         this.support = support;
+        advancedTasks = new AdvancedTasks(support.getProject(), support.getIdentifier());
     }
 
     boolean isMenuBuilt() {
@@ -188,6 +190,10 @@ public class TasksMenu extends JMenu {
     private void addAdvancedMenuItems(final Collection<String> tasks) {
         assert EventQueue.isDispatchThread();
         assert tasks != null;
+        // last advanced tasks
+        for (String task : advancedTasks.getTasks()) {
+            addTaskMenuItem(false, task, true);
+        }
         // advanced...
         JMenuItem menuItem = new JMenuItem(Bundle.TasksMenu_menu_advanced());
         menuItem.addActionListener(new ActionListener() {
@@ -200,17 +206,15 @@ public class TasksMenu extends JMenu {
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            support.runAdvancedTask(advancedTask.first(), Utilities.parseParameters(advancedTask.second()));
+                            String task = advancedTask.second();
+                            support.runTask(Utilities.parseParameters(task));
+                            advancedTasks.addTask(advancedTask.first(), task);
                         }
                     });
                 }
             }
         });
         add(menuItem);
-        // last advanced tasks
-        for (String task : support.getAdvancedTasks()) {
-            addTaskMenuItem(false, task, true);
-        }
         addSeparator();
     }
 

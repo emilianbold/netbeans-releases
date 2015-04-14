@@ -43,7 +43,6 @@ package org.netbeans.modules.php.phing.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -171,8 +170,18 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
             phingTargets = PhingBuildTool.forProject(project).getPhingTargets();
         }
 
+        @Override
+        public Project getProject() {
+            return project;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return PhingBuildTool.IDENTIFIER;
+        }
+
         @NbBundle.Messages({
-            "TasksMenuSupportImpl.targets.label=Target(s)",
+            "TasksMenuSupportImpl.targets.label=&Target(s)",
             "TasksMenuSupportImpl.targets.loading=Loading Targets...",
             "TasksMenuSupportImpl.targets.reload=Reload Targets",
             "TasksMenuSupportImpl.targets.run.advanced=Run Target(s)",
@@ -212,12 +221,6 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         }
 
         @Override
-        public List<String> getAdvancedTasks() {
-            // XXX
-            return Collections.emptyList();
-        }
-
-        @Override
         public void runTask(String... args) {
             assert !EventQueue.isDispatchThread();
             PhingExecutable phing = PhingExecutable.getDefault(project, true);
@@ -225,13 +228,6 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
                 PhingUtils.logUsagePhingBuild();
                 phing.run(args);
             }
-        }
-
-        @Override
-        public void runAdvancedTask(boolean isPrivate, String... args) {
-            assert !EventQueue.isDispatchThread();
-            runTask(args);
-            // XXX save it!
         }
 
         @Override

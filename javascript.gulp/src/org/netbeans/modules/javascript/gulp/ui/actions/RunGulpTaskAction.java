@@ -174,8 +174,18 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
             gulpTasks = GulpBuildTool.forProject(project).getGulpTasks();
         }
 
+        @Override
+        public Project getProject() {
+            return project;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return GulpBuildTool.IDENTIFIER;
+        }
+
         @NbBundle.Messages({
-            "TasksMenuSupportImpl.tasks.label=Task(s)",
+            "TasksMenuSupportImpl.tasks.label=&Task(s)",
             "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
             "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
             "TasksMenuSupportImpl.tasks.run.advanced=Run Task(s)",
@@ -215,12 +225,6 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         }
 
         @Override
-        public List<String> getAdvancedTasks() {
-            // XXX
-            return Collections.emptyList();
-        }
-
-        @Override
         public void runTask(String... args) {
             assert !EventQueue.isDispatchThread();
             GulpExecutable gulp = GulpExecutable.getDefault(project, true);
@@ -228,13 +232,6 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
                 GulpUtils.logUsageGulpBuild();
                 gulp.run(args);
             }
-        }
-
-        @Override
-        public void runAdvancedTask(boolean isPrivate, String... args) {
-            assert !EventQueue.isDispatchThread();
-            runTask(args);
-            // XXX save it!
         }
 
         @Override
