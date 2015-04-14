@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.ArrayList;
 import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.Collections;
 import java.util.List;
@@ -44,8 +45,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -63,14 +64,14 @@ public class JsParserResult extends ParserResult {
 
     private final FunctionNode root;
     private final boolean embedded;
-    private List<? extends Error> errors;
+    private List<? extends FilterableError> errors;
     private Model model;
     private JsDocumentationHolder docHolder;
 
     public JsParserResult(@NonNull Snapshot snapshot, @NullAllowed FunctionNode root) {
         super(snapshot);
         this.root = root;
-        this.errors = Collections.<Error>emptyList();
+        this.errors = Collections.<FilterableError>emptyList();
         this.model = null;
         this.docHolder = null;
 
@@ -82,9 +83,24 @@ public class JsParserResult extends ParserResult {
                 && !JsTokenId.JSON_MIME_TYPE.equals(snapshot.getMimePath().getPath());
     }
 
+    public List<? extends FilterableError> getErrors(boolean includeFiltered) {
+        if (includeFiltered) {
+            return Collections.unmodifiableList(errors);
+        } else {
+            //remove filtered issues
+            List<FilterableError> result = new ArrayList<FilterableError>();
+            for(FilterableError e : errors) {
+                if(!e.isFiltered()) {
+                    result.add(e);
+                }
+            }
+            return result;
+        }
+    }
+    
     @Override
-    public List<? extends Error> getDiagnostics() {
-        return errors;
+    public List<? extends FilterableError> getDiagnostics() {
+        return getErrors(false);
     }
 
     @Override
@@ -96,7 +112,7 @@ public class JsParserResult extends ParserResult {
         return root;
     }
 
-    public void setErrors(List<? extends Error> errors) {
+    public void setErrors(List<? extends FilterableError> errors) {
         this.errors = errors;
     }
 
