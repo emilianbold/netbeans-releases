@@ -94,7 +94,7 @@ public abstract class VariableModel extends ModelListenerSupport
     implements TreeModel, ExtendedNodeModelFilter, TableModel, TreeExpansionModel, AsynchronousModelFilter {
 
     protected NativeDebugger debugger;
-    
+
     @Override
     public Executor asynchronous(Executor original, AsynchronousModelFilter.CALL asynchCall, Object node) {
         // for now let's use synchronious model (in EDT)
@@ -125,7 +125,7 @@ public abstract class VariableModel extends ModelListenerSupport
     public Object getRoot() {
 	// redundant?
 	return ROOT;
-    } 
+    }
 
     // interface TreeModel
     @Override
@@ -143,7 +143,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
 	    return v.isLeaf();
-	} 
+	}
 	throw new UnknownTypeException (node);
     }
 
@@ -360,20 +360,20 @@ public abstract class VariableModel extends ModelListenerSupport
 
     // interface TableModel
     @Override
-    public Object getValueAt(Object node, String columnID) 
+    public Object getValueAt(Object node, String columnID)
 	throws UnknownTypeException {
 	if (node == ROOT) {
 	    return null;
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
-	    if (columnID == Constants.PROP_LOCAL_TYPE || 
-		columnID == Constants.PROP_WATCH_TYPE)
+	    if (Constants.PROP_LOCAL_TYPE.equals(columnID) ||
+		Constants.PROP_WATCH_TYPE.equals(columnID))
 	        return v.getType();
 
-	    else if (columnID == Constants.PROP_LOCAL_VALUE || 
-		     columnID == Constants.PROP_WATCH_VALUE ||
-		     columnID == Constants.PROP_LOCAL_TO_STRING ||
-		     columnID == Constants.PROP_WATCH_TO_STRING ) {
+	    else if (Constants.PROP_LOCAL_VALUE.equals(columnID) ||
+		     Constants.PROP_WATCH_VALUE.equals(columnID) ||
+		     Constants.PROP_LOCAL_TO_STRING.equals(columnID) ||
+		     Constants.PROP_WATCH_TO_STRING.equals(columnID)) {
 			VariableValue value = new VariableValue(v.getAsText(), v.getDelta());
 			return value.toString();
 		}
@@ -387,15 +387,15 @@ public abstract class VariableModel extends ModelListenerSupport
 
     // interface TableModel
     @Override
-    public boolean isReadOnly(Object node, String columnID) 
+    public boolean isReadOnly(Object node, String columnID)
 	throws UnknownTypeException {
 
 	if (node == ROOT) {
 	    return false;
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
-	    if (columnID == Constants.PROP_LOCAL_VALUE ||
-		columnID == Constants.PROP_WATCH_VALUE ) 
+	    if (Constants.PROP_LOCAL_VALUE.equals(columnID) ||
+		Constants.PROP_WATCH_VALUE.equals(columnID) )
 		return !v.isEditable();
 	    else
 		// 6500791 Type column is read only
@@ -407,15 +407,15 @@ public abstract class VariableModel extends ModelListenerSupport
 
     // interface TableModel
     @Override
-    public void setValueAt(Object node, String columnID, Object value) 
+    public void setValueAt(Object node, String columnID, Object value)
 	throws UnknownTypeException {
 	if (node == ROOT) {
 	    ;
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
-	    if (columnID == Constants.PROP_LOCAL_VALUE || 
-	        columnID == Constants.PROP_WATCH_VALUE ) {
-		// successful result that come back from cmd 
+	    if (Constants.PROP_LOCAL_VALUE.equals(columnID) ||
+	        Constants.PROP_WATCH_VALUE.equals(columnID) ) {
+		// successful result that come back from cmd
 		// "assign" will do the work, if not, keep the
 		v.setVariableValue((String)value);
 
@@ -498,7 +498,7 @@ public abstract class VariableModel extends ModelListenerSupport
         }
     }
 
-    public static final Action Action_DYNAMIC_TYPE = 
+    public static final Action Action_DYNAMIC_TYPE =
 	new DynamicTypeAction();
 
     private static class DynamicTypeAction extends BooleanStateAction {
@@ -515,7 +515,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	    }
 
 	    setEnabled(false);
-	    return false; 
+	    return false;
 	}
 
 	// interface SystemAction
@@ -537,7 +537,7 @@ public abstract class VariableModel extends ModelListenerSupport
         }
     }
 
-    public static final Action Action_INHERITED_MEMBERS = 
+    public static final Action Action_INHERITED_MEMBERS =
 	new InheritedMembersAction();
 
     private static class InheritedMembersAction extends BooleanStateAction {
@@ -577,7 +577,7 @@ public abstract class VariableModel extends ModelListenerSupport
         }
     }
 
-    public static final Action Action_STATIC_MEMBERS = 
+    public static final Action Action_STATIC_MEMBERS =
 	new StaticMembersAction();
 
     private static class StaticMembersAction extends BooleanStateAction {
@@ -617,14 +617,14 @@ public abstract class VariableModel extends ModelListenerSupport
         }
     }
 
-    private static final OutputFormatAction Action_OUTPUT_FORMAT = 
+    private static final OutputFormatAction Action_OUTPUT_FORMAT =
 	new OutputFormatAction();
-    
+
     public static Action getOutputFormatAction(Variable v) {
         Action_OUTPUT_FORMAT.setVar(v);
         return Action_OUTPUT_FORMAT;
     }
-    
+
     public static Action getWatchAction(final Variable var) {
         return new AbstractAction(Catalog.get("ACT_Variable_Watch")) { //NOI18N
             @Override
@@ -633,7 +633,7 @@ public abstract class VariableModel extends ModelListenerSupport
             }
         };
     }
-    
+
     private static class OutputFormatAction extends SystemAction
 			implements Presenter.Popup {
 
@@ -712,9 +712,9 @@ public abstract class VariableModel extends ModelListenerSupport
 	    }
 	}
     }
-    
+
     public static final Action Action_PRETTY_PRINT = new PrettyPrintAction();
-    
+
     private static class PrettyPrintAction  extends BooleanStateAction {
 	PrettyPrintAction() {
 	}
@@ -753,18 +753,18 @@ public abstract class VariableModel extends ModelListenerSupport
             debugger.postPrettyPrint(newState);
         }
     }
-        
+
     public static class ShowMoreMessage {
         private final Variable v;
-        
+
         public ShowMoreMessage(Variable v) {
             this.v = v;
         }
-        
+
         public void getMore() {
             v.getMoreChildren();
         }
-        
+
         public String getMessage() {
             return Catalog.get("MSG_Show_More_Message"); // NOI18N
         }

@@ -56,7 +56,7 @@ public class FakeInstruction implements Instruction {
    
     private static final String name = "FAKE"; // NOI18N
     
-    private static Instruction instr = new FakeInstruction();
+    private static final Instruction instr = new FakeInstruction();
     
     public static Instruction getInstance() {
         return instr;

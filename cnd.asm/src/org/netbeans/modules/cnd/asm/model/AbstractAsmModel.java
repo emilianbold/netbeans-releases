@@ -53,8 +53,8 @@ import org.netbeans.modules.cnd.asm.model.lang.instruction.Instruction;
 
 public abstract class AbstractAsmModel implements AsmModel {
     
-    private Map<String, Instruction> str2inst;
-    private Map<String, Register> str2reg;
+    private final Map<String, Instruction> str2inst;
+    private final Map<String, Register> str2reg;
     
     protected AbstractAsmModel() {
         str2inst = new HashMap<String, Instruction>();

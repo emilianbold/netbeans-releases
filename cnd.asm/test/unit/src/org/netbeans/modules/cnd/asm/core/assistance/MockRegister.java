@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.asm.model.lang.Register;
 
 class MockRegister implements Register {
     
-    private static List<MockRegister> regs;
+    private static final List<MockRegister> regs;
     
     static  {
         regs = new LinkedList<MockRegister>();              

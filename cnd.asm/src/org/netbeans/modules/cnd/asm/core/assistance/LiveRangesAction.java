@@ -151,8 +151,8 @@ public class LiveRangesAction {
     
     private static class LivaRangesAccessorImpl implements LiveRangesAccessor {
         
-        private Map<Register, List<Integer>> ranges;
-        private AsmState state;
+        private final Map<Register, List<Integer>> ranges;
+        private final AsmState state;
         
         public LivaRangesAccessorImpl(AsmState state) {
             this.state = state;

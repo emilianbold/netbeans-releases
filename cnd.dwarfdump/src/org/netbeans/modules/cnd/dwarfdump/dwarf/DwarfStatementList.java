@@ -47,7 +47,9 @@ package org.netbeans.modules.cnd.dwarfdump.dwarf;
 import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.section.FileEntry;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -140,10 +142,14 @@ public class DwarfStatementList {
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString(Charset.defaultCharset().name());
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
 
     public int getDirectoryIndex(String dirname) {

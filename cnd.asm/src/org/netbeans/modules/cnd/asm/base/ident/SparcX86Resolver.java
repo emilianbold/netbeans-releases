@@ -77,85 +77,85 @@ import org.netbeans.modules.cnd.asm.base.syntax.IdentResolver;
 public class SparcX86Resolver implements AsmTypesProvider {
 
     public static final AsmSyntaxProvider ATT_X86_SYNTAX =
-                new ATTx86SyntaxProvider();   
-    public static final AsmSyntaxProvider ATT_SPARC_SYNTAX = 
-                new ATTSparcSyntaxProvider();    
+                new ATTx86SyntaxProvider();
+    public static final AsmSyntaxProvider ATT_SPARC_SYNTAX =
+                new ATTSparcSyntaxProvider();
     public static final AsmSyntaxProvider DIS_X86_SYNTAX =
                 new DisX86SyntaxProvider();
-    public static final AsmSyntaxProvider DIS_SPARC_SYNTAX = 
+    public static final AsmSyntaxProvider DIS_SPARC_SYNTAX =
                 new DisSparcSyntaxProvider();
-       
-    public static final AsmModelProvider AMD64 = 
+
+    public static final AsmModelProvider AMD64 =
                  X86ModelProvider.getInstance();
-    public static final AsmModelProvider SPARC = 
+    public static final AsmModelProvider SPARC =
                  SparcModelProvider.getInstance();
-       
+
     public List<AsmTypesEntry> getAsmTypes() {
-        AsmTypesEntry amd64 = new DefaultAsmTypesEntry(AMD64, ATT_X86_SYNTAX, 
+        AsmTypesEntry amd64 = new DefaultAsmTypesEntry(AMD64, ATT_X86_SYNTAX,
                                                        DIS_X86_SYNTAX);
-        
-        AsmTypesEntry sparc = new DefaultAsmTypesEntry(SPARC, ATT_SPARC_SYNTAX, 
+
+        AsmTypesEntry sparc = new DefaultAsmTypesEntry(SPARC, ATT_SPARC_SYNTAX,
                                                        DIS_SPARC_SYNTAX);
-        
+
         return Arrays.asList(amd64, sparc);
     }
-    
+
     public ResolverResult resolve(Reader source) {
-                
+
         AbstractAsmModel amd64 = (AbstractAsmModel) AMD64.getModel();
         AbstractAsmModel sparc = (AbstractAsmModel) SPARC.getModel();
 
         AsmSyntaxProvider syntRes;
         AsmModelProvider modelRes;
-        
+
         IdentResolver []resolvers = new IdentResolver[] { new ATTIdentResolver(amd64),
-                                                          new ATTIdentResolver(sparc)        
+                                                          new ATTIdentResolver(sparc)
                                                         };
-        
+
         SyntaxChooser syntChooser = new SyntaxChooser();
         ModelChooser modelChooser = new ModelChooser(resolvers);
-                                                  
+
         resolver(source, new ScannerListener[] { syntChooser, modelChooser });
-        
-        int synt = modelChooser.getResult(); 
-        
-        
+
+        int synt = modelChooser.getResult();
+
+
         if (synt == 0) {
             modelRes = AMD64;
         } else {
             modelRes = SPARC;
         }
 
-        if (syntChooser.hasDis()) {                        
-            if (synt == 0) {              
+        if (syntChooser.hasDis()) {
+            if (synt == 0) {
                 syntRes = DIS_X86_SYNTAX;
-               
+
             } else {
                 syntRes = DIS_SPARC_SYNTAX;
             }
-        } else {           
+        } else {
             if (synt == 0) {
                 syntRes = ATT_X86_SYNTAX;
-               
+
             } else {
                 syntRes = ATT_SPARC_SYNTAX;
             }
         }
-        
-                        
+
+
         return new DefaultResolverResult(modelRes, syntRes, null);
     }
-    
+
     private void resolver(Reader source, ScannerListener[] listeners) {
         IdentScanner scanner = new IdentScanner(source);
-        
+
         for (ScannerListener lis : listeners) {
             lis.start();
         }
-                
+
         while (true) {
             Token tok;
-            
+
             try {
                 tok = scanner.nextToken();
             } catch (TokenStreamException ex) {
@@ -164,30 +164,30 @@ public class SparcX86Resolver implements AsmTypesProvider {
 
                 break;
             }
-             
+
             for (ScannerListener lis : listeners) {
                 lis.token(tok);
             }
-           
-            if (tok.getType() == IdentScannerTokenTypes.EOF) {                
+
+            if (tok.getType() == IdentScannerTokenTypes.EOF) {
                 break;
-            }           
+            }
         }
-        
+
         int numLines = scanner.getNumLines();
         for (ScannerListener lis : listeners) {
             lis.end(numLines);
-        }        
+        }
     }
-    
+
     private interface ScannerListener extends EventListener {
         void start();
         void token(Token tok);
         void end(int lines);
     }
-    
+
     private static class SyntaxChooser implements ScannerListener {
-        
+
         private int numPluses;
         private int numOpcodes;
         private int numComments;
@@ -196,12 +196,12 @@ public class SparcX86Resolver implements AsmTypesProvider {
         public void token(Token tok) {
             String text = tok.getText();
             int type = tok.getType();
-            
+
             switch (type) {
                 case IdentScannerTokenTypes.Mark:
                     if ("+".equals(text)) { // NOI18N
                         numPluses++;
-                    }                
+                    }
                     break;
                 case IdentScannerTokenTypes.Comment:
                     numComments++;
@@ -211,26 +211,28 @@ public class SparcX86Resolver implements AsmTypesProvider {
                         numOpcodes++;
                     }
                     break;
+                default:
+                    break;
             }
         }
-        
+
         public boolean hasDis() {
             float opCodesPerLine = 0.f;
             float plusesPerLine = 0.f;
-            
+
             if (numLines > 0) {
                 opCodesPerLine = (float) numOpcodes / (float) numLines;
                 plusesPerLine = (float) numPluses / (float) numLines;
             }
-            
+
             // VERY MAGIC NUMBERS :)
-            return Float.compare(opCodesPerLine, 2f) > 0 || 
-                   Float.compare(plusesPerLine, 0.9f) > 0; 
+            return Float.compare(opCodesPerLine, 2f) > 0 ||
+                   Float.compare(plusesPerLine, 0.9f) > 0;
         }
-                       
+
         private boolean isOpcode(String res) {
-            if (res.length() == 2 && 
-                isHexDigit(res.charAt(0)) && 
+            if (res.length() == 2 &&
+                isHexDigit(res.charAt(0)) &&
                 isHexDigit(res.charAt(1))) {
                 return true;
              }
@@ -241,59 +243,59 @@ public class SparcX86Resolver implements AsmTypesProvider {
            if ((ch >= '0' && ch <= '9') ||
                (ch >= 'a' && ch <= 'f') ||
                (ch >= 'A' && ch <= 'F')) {
-               return true; 
+               return true;
            }
            return false;
         }
 
         public void end(int lines) { numLines = lines - numComments; }
-        
-        public void start() { }        
+
+        public void start() { }
     }
-    
+
     private static class ModelChooser implements  ScannerListener {
-        
-        private int []results;
-        private IdentResolver[] resolvers;
-                        
+
+        private final int []results;
+        private final IdentResolver[] resolvers;
+
         public ModelChooser(IdentResolver[] resolvers) {
             assert resolvers.length > 0;
 
-            this.resolvers = resolvers;           
+            this.resolvers = resolvers;
             results = new int[resolvers.length];
         }
-             
+
         public int getResult() {
             int maxIdx = 0;
-            
+
             // ToDo: next index
             for(int i = 1; i < results.length; i++) {
                 if (results[maxIdx] < results[i])
                     maxIdx = i;
             }
-            
+
             if (results[maxIdx] == 0)
                 return 0;
 
             return maxIdx;
         }
-  
+
         public void token(Token tok) {
             String text = tok.getText();
             int type = tok.getType();
-            
+
             if (type == IdentScannerTokenTypes.Register) {
-                
+
                 for (int i = 0; i < resolvers.length; i++) {
                     if (resolvers[i].getRegister(text) != null) {
                         results[i]++;
                     }
                 }
-            }       
-         }                        
-        
+            }
+         }
+
          public void start() { }
-        
-         public void end(int lines) { }        
-    }   
+
+         public void end(int lines) { }
+    }
 }

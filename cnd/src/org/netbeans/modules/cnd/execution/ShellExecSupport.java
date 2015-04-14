@@ -47,6 +47,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import org.netbeans.modules.cnd.settings.ShellSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject.Entry;
@@ -213,7 +214,7 @@ public class ShellExecSupport extends ExecutionSupport {
         // If no shell command set, read first line in script and use if set here
         if (shellCommand.isEmpty()) {
             try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(fo.getInputStream(), Charset.defaultCharset()));
                 String firstLine = in.readLine();
                 if (firstLine != null) {
                     if (firstLine.startsWith("#!")) { // NOI18N

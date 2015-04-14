@@ -85,7 +85,7 @@ public class RegisterHighlightAction {
     }
     
     public static class HighlightEntry extends DefaultOffsetable {
-        private OperandElement.Usage usage;
+        private final OperandElement.Usage usage;
 
         HighlightEntry(AsmOffsetable off, OperandElement.Usage usage) {
             super(off);

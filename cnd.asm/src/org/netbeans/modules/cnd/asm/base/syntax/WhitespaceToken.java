@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmToken;
 import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmBaseTokenId;
      
 public class WhitespaceToken extends AsmToken {     
-    private boolean isNextLine;
+    private final boolean isNextLine;
     
     public WhitespaceToken(int start, int end, boolean isNextLine) {
         super(AsmBaseTokenId.ASM_EMPTY, "", start, end);

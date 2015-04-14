@@ -95,7 +95,7 @@ public final class CsmModelAccessor {
         public CsmFile[] findFiles(FSPath absPath, boolean createIfPossible, boolean snapShot) {
             return new CsmFile[0];
         }
-        
+
         @Override
         public CsmModelState getState() {
             return CsmModelState.OFF;
@@ -105,27 +105,28 @@ public final class CsmModelAccessor {
         public Cancellable enqueue(Runnable task, CharSequence name) {
             return cancellableStub;
         }
-        
+
         @Override
         public void scheduleReparse(Collection<CsmProject> projects) {
         }
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("NP")
         public Boolean isProjectEnabled(Object id) {
             return null;
         }
 
         @Override
         public void disableProject(Object p) {
-            
+
         }
 
         @Override
         public void enableProject(Object p) {
-            
+
         }
     }
-    
+
     private static final Cancellable cancellableStub = new Cancellable() {
 
         @Override

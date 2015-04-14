@@ -1279,6 +1279,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/callbackDeclaration2.js", " * @param {requestCallback} c^b - The callback that handles the response.", true); 
     }
     
+    public void testIssue251794_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "function Mod^el () {};", true); 
+    }
+    
+    public void testIssue251794_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "Model.comp^ile = function compile () {", true); 
+    }
+    
+    public void testIssue251794_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "Model.compile = function comp^ile () {", true); 
+    }
+    
+    public void testIssue251794_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "model.__pro^to__ = Model;", true); 
+    }
+    
+    public void testIssue251794_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "mod^el.__proto__ = Model;", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
