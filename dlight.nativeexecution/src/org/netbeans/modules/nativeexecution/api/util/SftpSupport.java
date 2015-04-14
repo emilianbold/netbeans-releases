@@ -812,7 +812,7 @@ class SftpSupport {
         return result;
     }
 
-    /*package*/ Future<StatInfo> lstat(String absPath, Writer error) {
+    /*package*/ Future<StatInfo> lstat(String absPath) {
         StatLoader loader = new StatLoader(absPath, true);
         FutureTask<StatInfo> ftask = new FutureTask<>(loader);
         requestProcessor.post(ftask);
@@ -822,7 +822,7 @@ class SftpSupport {
         return ftask;
     }
 
-    /*package*/ Future<StatInfo> stat(String absPath, Writer error) {
+    /*package*/ Future<StatInfo> stat(String absPath) {
         StatLoader loader = new StatLoader(absPath, false);
         FutureTask<StatInfo> ftask = new FutureTask<>(loader);
         requestProcessor.post(ftask);
@@ -832,7 +832,7 @@ class SftpSupport {
         return ftask;
     }
     
-    /*package*/ Future<StatInfo[]> ls(String absPath, Writer error) {
+    /*package*/ Future<StatInfo[]> ls(String absPath) {
         LsLoader loader = new LsLoader(absPath);
         FutureTask<StatInfo[]> ftask = new FutureTask<>(loader);
         requestProcessor.post(ftask);

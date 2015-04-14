@@ -66,16 +66,16 @@ import org.openide.util.Exceptions;
  */
 public class WindowsSupport {
     /*package*/ static final String NFS_NETWORK_PROVIDER_NAME = "NFS Network";//NOI18N
-    
+
     /**
-     * 
+     *
      * @param execEnv
      * @param otherExecEnv
-     * @param providerName provider name ("NFS Network", "Microsoft Windows Network"), if not specified will return *all* drivers 
-     * @return 
+     * @param providerName provider name ("NFS Network", "Microsoft Windows Network"), if not specified will return *all* drivers
+     * @return
      */
-    /*package*/static  Map<String, String> findMappings(ExecutionEnvironment execEnv, 
-            ExecutionEnvironment otherExecEnv, String providerName, boolean localToRemoteMap) {        
+    /*package*/static  Map<String, String> findMappings(ExecutionEnvironment execEnv,
+            ExecutionEnvironment otherExecEnv, String providerName, boolean localToRemoteMap) {
         try {
             //trying to workaround #227719 - StringIndexOutOfBoundsException: String index out of range: -14
 
@@ -101,20 +101,21 @@ public class WindowsSupport {
             String line;
             while ((line = reader.readLine()) != null) {
                 netOutput.add(line);
-            }            
-            Map<String, String> mappings = parseWmicNetUseOutput(otherExecEnv, netOutput, providerName, localToRemoteMap);            
+            }
+            reader.close();
+            Map<String, String> mappings = parseWmicNetUseOutput(otherExecEnv, netOutput, providerName, localToRemoteMap);
             if (mappings.isEmpty()) {
                 return findMappingsNetUse(execEnv, otherExecEnv, localToRemoteMap);
             }
             return mappings;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        } 
+        }
         return findMappingsNetUse(execEnv, otherExecEnv, localToRemoteMap);
     }
 
 /**
-     *  
+     *
      * AccessMask=1179785
      * Comment=
      * ConnectionState=Disconnected
@@ -131,28 +132,28 @@ public class WindowsSupport {
      * ResourceType=Disk
      * Status=Unavailable
      * UserName=
-     * 
+     *
      * @param hostName
      * @param output
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
-    /* package */ static Map<String, String> parseWmicNetUseOutput(ExecutionEnvironment execEnv, 
-        List<String> output, String providerName, boolean localToRemoteMap) throws IOException {    
+    /* package */ static Map<String, String> parseWmicNetUseOutput(ExecutionEnvironment execEnv,
+        List<String> output, String providerName, boolean localToRemoteMap) throws IOException {
         return parseWmicNetUseOutput(execEnv.getHost(), output, providerName, true, localToRemoteMap);
-    }   
-    
+    }
+
     /**
      * Returns local -> remote map
      * @param host
      * @param output
      * @param providerName
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     //for test purpose only
-    static Map<String, String> parseWmicNetUseOutput(String host, 
-        List<String> output, String providerName, boolean isUnixStyle, boolean localToRemoteMap) throws IOException {    
+    static Map<String, String> parseWmicNetUseOutput(String host,
+        List<String> output, String providerName, boolean isUnixStyle, boolean localToRemoteMap) throws IOException {
         List<NetUseStructure> elements = new ArrayList<>();
         NetUseStructure currentElement = null;
         //started from AccessMask
@@ -181,32 +182,32 @@ public class WindowsSupport {
                 case "RemotePath"://NOI18N
                     if (currentElement == null) {
                         break;
-                    }                    
+                    }
                     currentElement.setRemotePath(value);
                     break;
                 case "ConnectionState"://NOI18N
                     if (currentElement == null) {
                         break;
-                    }                    
+                    }
                     currentElement.isConnected = !"Disconnected".equals(value);//NOI18N
                     break;
                 case "ProviderName"://NOI18N
                     if (currentElement == null) {
                         break;
-                    }                    
+                    }
                     currentElement.isNFS = NFS_NETWORK_PROVIDER_NAME.equals(value);
                     currentElement.providerName = value;
                     break;
-                        
+
             }
         }
         //put the last one
         if (currentElement != null) {
             elements.add(currentElement);
-        }      
+        }
         Map<String, String> result = new HashMap<>();
         for (NetUseStructure element : elements) {
-            if ( host.equals(element.host) && (element.isConnected || element.isNFS) && (providerName == null || 
+            if ( host.equals(element.host) && (element.isConnected || element.isNFS) && (providerName == null ||
                     providerName.equals(element.providerName))) {
                 if (localToRemoteMap) {
                     result.put(element.localDiskName, isUnixStyle ? element.remoteFolder.replace('\\', '/') : element.remoteFolder); // NOI18N
@@ -216,16 +217,16 @@ public class WindowsSupport {
             }
         }
         return result;
-    }       
-    
+    }
+
     /**
-     * 
+     *
      * @param execEnv
      * @param otherExecEnv
      * @param localToRemoteMap use true if you wan to see L:->/export as a result map
-     * @return 
+     * @return
      */
-    private static Map<String, String> findMappingsNetUse(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv, boolean localToRemoteMap) {        
+    private static Map<String, String> findMappingsNetUse(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv, boolean localToRemoteMap) {
         try {
             //trying to workaround #227719 - StringIndexOutOfBoundsException: String index out of range: -14
             ProcessBuilder pb = new ProcessBuilder("net", "use");//NOI18N
@@ -247,17 +248,18 @@ public class WindowsSupport {
             String line;
             while ((line = reader.readLine()) != null) {
                 netOutput.add(line);
-            }             
-            //we will set LANG and LC_ALL env variables 
-          
+            }
+            reader.close();
+            //we will set LANG and LC_ALL env variables
+
             Map<String, String> mappings = parseNetUseOutput(otherExecEnv.getHost(), netOutput, localToRemoteMap);
             return mappings;
         } catch (IOException ex) {
             //Exceptions.printStackTrace(ex);
-        } 
-        return Collections.<String, String>emptyMap();        
+        }
+        return Collections.<String, String>emptyMap();
     }
-    
+
 /**
      * Parses "net use" Windows command output.
      * Here is an example of the output (note that "\\" means "\")
@@ -312,7 +314,7 @@ public class WindowsSupport {
         int nNetwork = lastNonEmptyLine.indexOf(words[3]); // "Network"
         // neither of nLocal, nRemote and nNetwork can be negative - no check need
         List<NetUseStructure> elements = new ArrayList<>();
-        NetUseStructure currentElement = null;        
+        NetUseStructure currentElement = null;
         //status can be empty
         while (iterator.hasNext()) {
             line = iterator.next();
@@ -320,7 +322,7 @@ public class WindowsSupport {
             if (line.indexOf(':') != -1) {
                 if (currentElement != null) {
                     elements.add(currentElement);
-                }                
+                }
                 currentElement = new NetUseStructure();
                 currentElement.localDiskName = line.substring(nLocal, nRemote -1).trim(); // something like X:
                 String remote = line.substring(nRemote).trim(); // something like \\hostname\foldername
@@ -344,17 +346,17 @@ public class WindowsSupport {
         Map<String, String> result = new HashMap<>();
         for (NetUseStructure element : elements) {
             if ( hostName.equals(element.host) && (element.isConnected || element.isNFS)) {
-                if (localToRemoteMap) { 
+                if (localToRemoteMap) {
                     result.put(element.localDiskName, element.remoteFolder.replace('\\', '/')); // NOI18N
                 } else {
                     result.put(element.remoteFolder.replace('\\', '/'), element.localDiskName); // NOI18N
                 }
             }
         }
-        return result;        
-    }    
-    
-    
+        return result;
+    }
+
+
 
     /*protected*/
     static class NetUseStructure {

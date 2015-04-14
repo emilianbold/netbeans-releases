@@ -73,6 +73,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -99,8 +100,8 @@ import org.openide.util.RequestProcessor;
     private final RequestProcessor RP = new RequestProcessor("FtpSyncWorker", 3); // NOI18N
 
     private static final boolean HARD_CODED_FILTER = Boolean.valueOf(System.getProperty("cnd.remote.hardcoded.filter", "true")); //NOI18N
-    
-    public FtpSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+
+    public FtpSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err,
             FileObject privProjectStorageDir, List<FSPath> paths, List<FSPath> buildResults) {
         super(executionEnvironment, out, err, privProjectStorageDir, paths, buildResults);
         this.mapper = RemotePathMap.getPathMap(executionEnvironment);
@@ -175,7 +176,7 @@ import org.openide.util.RequestProcessor;
 
         uploadCount = 0;
         uploadSize = 0;
-        
+
         RemoteLogger.fine("Uploading {0} to {1} ...\n", getLocalFilesString(), executionEnvironment); // NOI18N
         long time = System.currentTimeMillis();
 
@@ -222,7 +223,7 @@ import org.openide.util.RequestProcessor;
             throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_NewFilesDiscovery"));
         }
         time2 = System.currentTimeMillis();
-        
+
         if (CndUtils.getBoolean("cnd.remote.zip", true)) {
             try {
                 uploadPlainFilesInZip(remoteRoot);
@@ -248,7 +249,7 @@ import org.openide.util.RequestProcessor;
 
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Done"));
         out.println();
-        
+
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
             time = System.currentTimeMillis() - time;
             long bps = uploadSize * 1000L / time;
@@ -279,32 +280,36 @@ import org.openide.util.RequestProcessor;
         pb.setArguments(args);
         final NativeProcess process;
         process = pb.call();
- 
+
         final AtomicReference<IOException> problem = new AtomicReference<>();
 
         RP.post(new Runnable() {
             @Override
             public void run() {
-                BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+                BufferedWriter requestWriter = null;
                 try {
+                    requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), "UTF-8")); //NOI18N
                     feeder.feed(requestWriter);
                 } catch (IOException ex) {
                     problem.set(ex);
                 } finally {
-                    try {
-                        requestWriter.close();
-                    } catch (IOException ex) {
-                        problem.set(ex);
+                    if (requestWriter != null) {
+                        try {
+                            requestWriter.close();
+                        } catch (IOException ex) {
+                            problem.set(ex);
+                        }
                     }
                 }
             }
         });
 
         RP.post(new Runnable() {
-            private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             @Override
             public void run() {
+                BufferedReader errorReader = null;
                 try {
+                    errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), "UTF-8")); //NOI18N
                     for (String errLine = errorReader.readLine(); errLine != null; errLine = errorReader.readLine()) {
                         if (errProcessor != null) {
                             errProcessor.processLine(errLine);
@@ -315,20 +320,23 @@ import org.openide.util.RequestProcessor;
                 } catch (IOException ex) {
                     problem.set(ex);
                 } finally {
-                    try {
-                        errorReader.close();
-                    } catch (IOException ex) {
-                        problem.set(ex);
+                    if (errorReader != null) {
+                        try {
+                            errorReader.close();
+                        } catch (IOException ex) {
+                            problem.set(ex);
+                        }
                     }
                 }
             }
         });
 
         RP.post(new Runnable() {
-            private final BufferedReader outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             @Override
             public void run() {
+                BufferedReader outputReader = null;
                 try {
+                    outputReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8")); //NOI18N
                     for (String errLine = outputReader.readLine(); errLine != null; errLine = outputReader.readLine()) {
                         if (outProcessor != null) {
                             outProcessor.processLine(errLine);
@@ -339,10 +347,12 @@ import org.openide.util.RequestProcessor;
                 } catch (IOException ex) {
                     problem.set(ex);
                 } finally {
-                    try {
-                        outputReader.close();
-                    } catch (IOException ex) {
-                        problem.set(ex);
+                    if (outputReader != null) {
+                        try {
+                            outputReader.close();
+                        } catch (IOException ex) {
+                            problem.set(ex);
+                        }
                     }
                 }
             }
@@ -360,7 +370,7 @@ import org.openide.util.RequestProcessor;
             throw new InterruptedIOException();
         }
     }
-    
+
     private void createDirs() throws IOException {
         final List<String> dirsToCreate = new LinkedList<>();
         for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
@@ -577,7 +587,7 @@ import org.openide.util.RequestProcessor;
             if (cancelled) {
                 return;
             }
-            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {                
+            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
                 if (needsCopying(fileInfo)) {
                     File srcFile = fileInfo.file;
                     progressHandle.progress(srcFile.getAbsolutePath());
@@ -593,8 +603,8 @@ import org.openide.util.RequestProcessor;
                             err.println(uploadStatus.getError());
                         }
                         throw new IOException(
-                                NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_UploadFile", 
-                                        srcFile, executionEnvironment, remotePath, 
+                                NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_UploadFile",
+                                        srcFile, executionEnvironment, remotePath,
                                         uploadStatus.getExitCode()));
                     }
                 }
@@ -610,11 +620,11 @@ import org.openide.util.RequestProcessor;
     }
 
     private void uploadPlainFilesInZip(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
-    
+
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesInZip"));
-        
+
         List<FileCollector.FileCollectorInfo> toCopy = new ArrayList<>();
-        
+
         for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
             if (cancelled) {
                 throw new InterruptedException();
@@ -625,13 +635,13 @@ import org.openide.util.RequestProcessor;
                 }
             }
         }
-        
+
         if (toCopy.isEmpty()) {
             return;
         }
-        
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping", toCopy.size()));  
-        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_Zipping"));            
+
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping", toCopy.size()));
+        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_Zipping"));
         File zipFile = null;
         String remoteFile = null;
         try  {
@@ -674,7 +684,7 @@ import org.openide.util.RequestProcessor;
             if (cancelled) {
                 throw new InterruptedException();
             }
- 
+
             out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadingZip", executionEnvironment));
             progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_UploadingZip"));
             remoteFile = remoteRoot + '/' + zipFile.getName(); //NOI18N
@@ -683,18 +693,18 @@ import org.openide.util.RequestProcessor;
                 Future<UploadStatus> upload = CommonTasksSupport.uploadFile(zipFile.getAbsolutePath(), executionEnvironment, remoteFile, 0600);
                 UploadStatus uploadStatus = upload.get();
                 RemoteLogger.fine("SFTP/ZIP:  uploading {0}to {1}:{2} finished in {3} ms with rc={4}", //NOI18N
-                        zipFile, executionEnvironment, remoteFile, 
+                        zipFile, executionEnvironment, remoteFile,
                         System.currentTimeMillis()-uploadStart, uploadStatus.getExitCode());
                 if (!uploadStatus.isOK()) {
                     throw new IOException(uploadStatus.getError());
                 }
             }
-            
+
             if (cancelled) {
                 throw new InterruptedException();
             }
 
-            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Unzipping", executionEnvironment));  
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Unzipping", executionEnvironment));
             progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_Unzipping"),
                     (uploadCount += (toCopy.size()/3)));
             {
@@ -704,37 +714,23 @@ import org.openide.util.RequestProcessor;
                 pb.setExecutable("unzip"); // NOI18N
                 pb.setArguments("-oqq", remoteFile); // NOI18N
                 pb.setWorkingDirectory(remoteRoot);
-                Process proc = pb.call();
-                String line;
-
-                BufferedReader inReader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                try {
-                    while ((line = inReader.readLine()) != null) {
-                        if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                            System.out.printf("\tunzip: %s\n", line); // NOI18N
-                        } //NOI18N
+                ProcessUtils.ExitStatus status = ProcessUtils.execute(pb);
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST) && !status.output.isEmpty()) {
+                    for(String s : status.output.split("\n")) {
+                        System.out.printf("\tunzip: %s%n", s); // NOI18N
                     }
-                } finally {
-                    inReader.close();
                 }
-
-                BufferedReader errReader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-                try {
-                    while ((line = errReader.readLine()) != null) {
-                        err.printf("unzip: %s\n", line); //NOI18N
+                if (!status.error.isEmpty()) {
+                    for(String s : status.error.split("\n")) {
+                        err.printf("unzip: %s%n", s); //NOI18N
                     }
-                } finally {
-                    errReader.close();
                 }
-
-                int rc = proc.waitFor();
-                
                 RemoteLogger.fine("SFTP/ZIP: Unzipping {0}:{1} finished in {2} ms; rc={3}", // NOI18N
-                        executionEnvironment , remoteFile, System.currentTimeMillis()-unzipTime, rc); 
-            
-                if (rc != 0) {
+                        executionEnvironment , remoteFile, System.currentTimeMillis()-unzipTime, status.exitCode);
+
+                if (status.exitCode != 0) {
                     throw new ZipIOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip",
-                            remoteFile, executionEnvironment, rc)); // NOI18N
+                            remoteFile, executionEnvironment, status.exitCode)); // NOI18N
                 }
                 for (FileCollector.FileCollectorInfo fileInfo : toCopy) {
                     fileData.setState(fileInfo.file, FileState.COPIED);
@@ -752,7 +748,7 @@ import org.openide.util.RequestProcessor;
         }
         progressHandle.progress(uploadCount += (toCopy.size()/3));
     }
-    
+
     @Override
     public boolean startup(Map<String, String> env2add) {
 
@@ -765,7 +761,7 @@ import org.openide.util.RequestProcessor;
         String remoteRoot = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
         if (remoteRoot == null) {
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
+                err.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
             }
             return false; // TODO: error processing
         }
@@ -779,7 +775,7 @@ import org.openide.util.RequestProcessor;
         progressHandle.start();
         try {
             if (out != null) {
-                out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
+                out.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Copying",
                         remoteRoot, ServerList.get(executionEnvironment).toString()));
             }
             synchronizeImpl(remoteRoot);
@@ -796,13 +792,13 @@ import org.openide.util.RequestProcessor;
         } catch (ExecutionException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                err.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteRoot, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                err.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteRoot, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         } catch (ConnectionManager.CancellationException ex) {
@@ -836,10 +832,10 @@ import org.openide.util.RequestProcessor;
         }
         return true;
     }
-    
+
     private static File getTemp() {
         String tmpPath = System.getProperty("java.io.tmpdir");
         File tmpFile = CndFileUtils.createLocalFile(tmpPath);
         return tmpFile.exists() ? tmpFile : null;
-    }    
+    }
 }

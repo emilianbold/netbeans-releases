@@ -114,7 +114,7 @@ import org.openide.util.Utilities;
     private static final RequestProcessor RP = new RequestProcessor("FileCollector", 1); // NOI18N
 
     public FileCollector(File[] files, List<File> buildResults, RemoteUtil.PrefixedLogger logger, RemotePathMap mapper, SharabilityFilter filter,
-            FileData fileData, ExecutionEnvironment execEnv, PrintWriter err) {        
+            FileData fileData, ExecutionEnvironment execEnv, PrintWriter err) {
         this.files = new ArrayList<>(files.length);
         this.files.addAll(Arrays.asList(files));
         this.buildResults = new ArrayList<>(buildResults);
@@ -144,7 +144,7 @@ import org.openide.util.Utilities;
     }
 
     public void gatherFiles() {
-        long time = System.currentTimeMillis();        
+        long time = System.currentTimeMillis();
 
         // the set of top-level dirs
         Set<File> topDirs = new HashSet<>();
@@ -283,8 +283,9 @@ import org.openide.util.Utilities;
         RP.post(new Runnable() {
             @Override
             public void run() {
-                BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+                BufferedWriter requestWriter = null;
                 try {
+                    requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), "UTF-8")); //NOI18N
                     for (FileCollectorInfo info : filesToCheck) {
                         String path = "\"" + info.file.getAbsolutePath() + "\""; // NOI18N
                         requestWriter.append(path);
@@ -293,30 +294,35 @@ import org.openide.util.Utilities;
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 } finally {
-                    try {
-                        requestWriter.close();
-                    } catch (IOException ex) {
-                        ex.printStackTrace(System.err);
+                    if (requestWriter != null) {
+                        try {
+                            requestWriter.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace(System.err);
+                        }
                     }
                 }
             }
         });
 
         RP.post(new Runnable() {
-            private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             @Override
             public void run() {
+                BufferedReader errorReader = null;
                 try {
+                    errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), "UTF-8")); //NOI18N
                     for (String errLine = errorReader.readLine(); errLine != null; errLine = errorReader.readLine()) {
                         logger.log(Level.INFO, errLine);
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 } finally {
-                    try {
-                        errorReader.close();
-                    } catch (IOException ex) {
-                        ex.printStackTrace(System.err);
+                    if (errorReader != null) {
+                        try {
+                            errorReader.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace(System.err);
+                        }
                     }
                 }
             }
@@ -327,8 +333,9 @@ import org.openide.util.Utilities;
             map.put(info.file.getAbsolutePath(), info);
         }
 
-        BufferedReader outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader outputReader = null;
         try {
+            outputReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8")); //NOI18N
             boolean errorReported = false;
             for (String line = outputReader.readLine(); line != null; line = outputReader.readLine()) {
                 // line format is:
@@ -381,9 +388,16 @@ import org.openide.util.Utilities;
         } catch (InterruptedException ex) {
             // don't report InterruptedException
         }
+        if (outputReader != null) {
+            try {
+                outputReader.close();
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
         return addedInfos;
     }
-    
+
     private boolean isBsdBased() {
         HostInfo.OSFamily os;
         try {
@@ -423,7 +437,7 @@ import org.openide.util.Utilities;
             String errMsg = NbBundle.getMessage(getClass(), "MSG_Error_Running_Command", "mktemp -p " + remoteSyncRoot, execEnv, res.error, res.exitCode);
             logger.log(Level.INFO, errMsg);
             if (err != null) {
-                err.printf("%s\n", errMsg); // NOI18N
+                err.printf("%s%n", errMsg); // NOI18N
             }
             return false;
         }
@@ -441,7 +455,7 @@ import org.openide.util.Utilities;
         remoteUpdates.add(localFile);
     }
 
-    public void shutDownNewFilesDiscovery() {        
+    public void shutDownNewFilesDiscovery() {
         try {
             if (!remoteUpdates.isEmpty()) {
                 HostUpdates.register(remoteUpdates, execEnv, fileData.getDataFile().getParent());
@@ -470,11 +484,11 @@ import org.openide.util.Utilities;
         int oldSize = remoteUpdates.size();
 
         StringBuilder remoteDirs = new StringBuilder();
-        
+
         List<File> filesAndBuildResults = new ArrayList<>(files.size()+ buildResults.size());
         filesAndBuildResults.addAll(files);
         filesAndBuildResults.addAll(buildResults);
-        
+
         for (File file : filesAndBuildResults) {
             if (file.isDirectory() || buildResults.contains(file)) {
                 String rPath = mapper.getRemotePath(file.getAbsolutePath(), false);

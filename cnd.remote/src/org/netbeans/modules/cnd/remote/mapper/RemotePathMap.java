@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.remote.mapper;
@@ -46,15 +46,19 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Timer;
@@ -71,13 +75,14 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
  * An implementation of PathMap which returns remote path information.
- * 
+ *
  * @author gordonp
  */
 public abstract class RemotePathMap extends PathMap {
@@ -108,9 +113,9 @@ public abstract class RemotePathMap extends PathMap {
             }
         }
         pathmap = pathmaps.get(syncID);
-        if (pathmap == null) {            
+        if (pathmap == null) {
             synchronized (pmtable) {
-                pathmap = customizable ? new CustomizableRemotePathMap(env) : new FixedRemotePathMap(env);                
+                pathmap = customizable ? new CustomizableRemotePathMap(env) : new FixedRemotePathMap(env);
                 pathmaps.put(syncID, pathmap);
             }
         }
@@ -139,7 +144,7 @@ public abstract class RemotePathMap extends PathMap {
 
                     if (file.exists() && file.canRead()) {
                         try {
-                            BufferedReader in = new BufferedReader(new FileReader(file));
+                            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
                             try {
                                 while ((line = in.readLine()) != null) {
                                     int pos = line.indexOf(' ');
@@ -170,12 +175,12 @@ public abstract class RemotePathMap extends PathMap {
             return true;
         }
     }
-    /** 
+    /**
      *
      * Initialization the path map here:
      */
     public abstract void initIfNeeded();
-    
+
     // PathMap
     @Override
     public String getRemotePath(String lpath, boolean useDefault) {
@@ -225,7 +230,7 @@ public abstract class RemotePathMap extends PathMap {
                 }
                 return mpoint + rest;
             }
-        }        
+        }
         if (useDefault) {
             initLocalBase();
             return localBase  + '/' + rpath;
@@ -235,7 +240,7 @@ public abstract class RemotePathMap extends PathMap {
 
     @Override
     public String getTrueLocalPath(String rpath) {
-        return getLocalPath(rpath, false); 
+        return getLocalPath(rpath, false);
     }
 
     @Override
@@ -368,12 +373,12 @@ public abstract class RemotePathMap extends PathMap {
             return path;
         }
     }
-    // inside path mapper we use only / and lowercase 
+    // inside path mapper we use only / and lowercase
     // TODO: lowercase should be only windows issue -- possible flaw
     private static String unifySeparators(String path) {
         String result = path.replace('\\', '/');
         if (!CndFileUtils.isSystemCaseSensitive()) {
-            result = result.toLowerCase();
+            result = result.toLowerCase(Locale.getDefault());
         }
         if (!result.endsWith("/")) { //NOI18N
             result = result + "/"; //NOI18N
@@ -414,7 +419,7 @@ public abstract class RemotePathMap extends PathMap {
         }
         return false;
     }
-    
+
     /**
      * Determines whether local and remote directories coincide,
      * i.e. map to the same physical directory
@@ -428,14 +433,16 @@ public abstract class RemotePathMap extends PathMap {
     public static boolean isTheSame(ExecutionEnvironment execEnv, String rpath, File path) throws InterruptedException {
         if (path.exists() && path.isDirectory()) {
             File validationFile = null;
+            BufferedWriter out = null;
             try {
                 // create file
                 validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
                 if (validationFile.exists()) {
-                    BufferedWriter out = new BufferedWriter(new FileWriter(validationFile));
+                    out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(validationFile), "UTF-8")); // NOI18N
                     String validationLine = Double.toString(Math.random());
                     out.write(validationLine);
                     out.close();
+                    out = null;
 
                     RemoteCommandSupport rcs = new RemoteCommandSupport(
                             execEnv, "grep", null, // NOI18N
@@ -454,6 +461,12 @@ public abstract class RemotePathMap extends PathMap {
             } finally {
                 if (validationFile != null && validationFile.exists()) {
                     validationFile.delete(); // it isn\t worth removing RV FindBugs violation here
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException ex) {
+                    }
                 }
             }
         }
@@ -517,12 +530,12 @@ public abstract class RemotePathMap extends PathMap {
             }
         }
     }
-        
+
     private static final String NO_MAPPING_PREFIX = "///"; // NOI18N
     private final static class FixedRemotePathMap extends RemotePathMap {
 
         private volatile String remoteBase;
-        
+
         private FixedRemotePathMap(ExecutionEnvironment exc) {
             super(exc);
             initRemoteBase(false);
@@ -532,7 +545,7 @@ public abstract class RemotePathMap extends PathMap {
         public void initIfNeeded() {
             // Fix for noIZ: IDE fails to build if -J-Dcnd.remote.sync.root is specified
             // Loading from prefs leads to incompatibility with MirrorPathProvider.getRemoteMirror,
-            // which is widely used 
+            // which is widely used
             //if (!loadFromPrefs()) {
                 if (remoteBase != null) {
                     super.addMappingImpl("/", remoteBase); // NOI18N

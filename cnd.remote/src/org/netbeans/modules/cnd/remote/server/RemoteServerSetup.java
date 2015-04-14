@@ -74,9 +74,9 @@ public class RemoteServerSetup {
             this.localFile = file;
             this.remotePath = remotePath;
             this.setupProvider = provider;
-        }        
+        }
     }
-    
+
     private final Map<String, BinarySetupMapEntry> binarySetupMap;
     private final Map<ExecutionEnvironment, List<String>> updateMap;
     private final ExecutionEnvironment executionEnvironment;
@@ -140,7 +140,7 @@ public class RemoteServerSetup {
                     String remotePath = path;
                     boolean success = false;
                     try {
-                        success = file != null && file.exists() && copyTo(file, remotePath);
+                        success = file.exists() && copyTo(file, remotePath);
                     } catch (Exception ex) {
                         ex.printStackTrace(System.err);
                     }
@@ -163,7 +163,7 @@ public class RemoteServerSetup {
                 List<File> files = new ArrayList<>();
                 for (BinarySetupMapEntry entry : tmp.getValue()) {
                     files.add(entry.localFile);
-                    message.append('\n').append(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Line", 
+                    message.append('\n').append(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Line",
                             entry.localFile.getName(), CndPathUtilities.getDirName(entry.remotePath)));
                 }
                 consequences.append('\n');
@@ -197,7 +197,7 @@ public class RemoteServerSetup {
         this.problems = true;
         this.reason = reason;
     }
-    
+
     protected boolean hasProblems() {
         return problems;
     }

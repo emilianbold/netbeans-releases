@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.compilers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
@@ -61,7 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
  * @author gordonp
  */
 public class RemoteCompilerSetProvider implements CompilerSetProvider {
-    
+
     private CompilerSetScriptManager manager;
     private final ExecutionEnvironment env;
     private final AtomicBoolean canceled = new AtomicBoolean(false);
@@ -90,7 +91,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         }
         return false;
     }
-    
+
     @Override
     public int getPlatform() {
         String platform = manager.getPlatform();
@@ -108,7 +109,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             return PlatformTypes.PLATFORM_SOLARIS_INTEL;
         } else if (platform.startsWith("PLATFORM_SOLARIS_SPARC")) { // NOI18N
             return PlatformTypes.PLATFORM_SOLARIS_SPARC;
-        } else if (platform.toLowerCase().startsWith("mac") || platform.startsWith("PLATFORM_MACOSX")) { // NOI18N
+        } else if (platform.toLowerCase(Locale.getDefault()).startsWith("mac") || platform.startsWith("PLATFORM_MACOSX")) { // NOI18N
             return PlatformTypes.PLATFORM_MACOSX;
         } else {
             return PlatformTypes.PLATFORM_GENERIC;
@@ -141,7 +142,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             HostInfo hinfo = HostInfoUtils.getHostInfo(env);
             pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
             Process process = pb.call();
-            process.getOutputStream().write(ToolchainScriptGenerator.generateScript(path, hinfo).getBytes());
+            process.getOutputStream().write(ToolchainScriptGenerator.generateScript(path, hinfo).getBytes("UTF-8")); //NOI18N
             process.getOutputStream().close();
 
             List<String> lines = ProcessUtils.readProcessOutput(process);

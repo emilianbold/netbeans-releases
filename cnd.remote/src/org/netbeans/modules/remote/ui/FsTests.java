@@ -47,10 +47,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,10 +60,10 @@ import org.openide.filesystems.FileObject;
  * @author vk155633
  */
 public class FsTests {
-    
-    private FsTests() {        
+
+    private FsTests() {
     }
-    
+
     public static void testLs(List<FileObject> fileObjects, PrintWriter out, PrintWriter err) {
         try {
             new TestLs(fileObjects, out, err).test();
@@ -69,7 +71,7 @@ public class FsTests {
             ex.printStackTrace(err);
         }
     }
-    
+
     private static abstract class TestBase {
 
         private final PrintWriter out;
@@ -81,26 +83,26 @@ public class FsTests {
             this.err = err;
             this.fileObjects = new ArrayList<>(fileObjects);
         }
-        
+
         protected abstract Processor createProcessor();
-        
+
         protected Counter createCounter() {
             return new Counter(out, 1000);
         }
-        
+
         public void test() throws IOException {
             long time = System.currentTimeMillis();
             Counter counter = createCounter();
             try {
                 for (FileObject fo : fileObjects) {
                     recurse(fo, counter, createProcessor(), new HashSet<FileObject>());
-                }            
+                }
             } finally {
                 time = System.currentTimeMillis() - time;
-                out.printf("Processing %d files in %d directories took %d seconds\n", counter.getFiles(), counter.getDirectories(), time/1000); // NOI18N
-            }            
+                out.printf("Processing %d files in %d directories took %d seconds%n", counter.getFiles(), counter.getDirectories(), time/1000); // NOI18N
+            }
         }
-        
+
         private void recurse(FileObject fo, Counter counter, Processor processor, Set<FileObject> bag) throws IOException {
             if (bag != null) {
                 if (!bag.contains(fo)) {
@@ -122,7 +124,7 @@ public class FsTests {
                 }
             }
         }
-        
+
     }
 
     private static class TestLs extends TestBase {
@@ -134,12 +136,13 @@ public class FsTests {
         @Override
         protected Processor createProcessor() {
             return new LsProcessor();
-        }        
+        }
     }
-    
+
     private static void readFileToDevNull(FileObject fo) throws IOException {
         InputStream is = fo.getInputStream();
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
+        Charset encoding = FileEncodingQuery.getEncoding(fo);
+        BufferedReader rdr = new BufferedReader(new InputStreamReader(new BufferedInputStream(is), encoding));
         try {
             String line;
             while ((line = rdr.readLine()) != null) {
@@ -154,10 +157,10 @@ public class FsTests {
         public void processFile(FileObject fo) throws IOException;
         public void processDir(FileObject fo) throws IOException;
     }
-    
+
     private static class BaseProcessor implements Processor {
         @Override
-        public void processFile(FileObject fo) throws IOException {            
+        public void processFile(FileObject fo) throws IOException {
         }
         @Override
         public void processDir(FileObject fo) throws IOException {
@@ -170,16 +173,16 @@ public class FsTests {
             if (fo.canRead()) {
                 readFileToDevNull(fo);
             } else {
-                System.err.printf("Skipping %s\n", fo.getPath());
+                System.err.printf("Skipping %s%n", fo.getPath());
             }
         }
     }
-    
-    private static class LsProcessor extends BaseProcessor {        
+
+    private static class LsProcessor extends BaseProcessor {
     }
-    
+
     private static class Counter {
-        
+
         private int files = 0;
         private int directories = 0;
         private final int divider;
@@ -189,7 +192,7 @@ public class FsTests {
             this.divider = divider;
             this.writer = writer;
         }
-        
+
         public int getFiles() {
             return files;
         }
@@ -207,12 +210,12 @@ public class FsTests {
             this.directories++;
             progress();
         }
-        
+
         private void progress() {
             if ((directories + files) % divider == 0) {
-                writer.printf("%d files in %d directories so far...\n", files, directories); // NOI18N
+                writer.printf("%d files in %d directories so far...%n", files, directories); // NOI18N
             }
         }
     }
-    
+
 }

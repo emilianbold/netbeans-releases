@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.remote.server;
@@ -79,7 +79,7 @@ import org.openide.util.WeakListeners;
 
 /**
  * The cnd.remote implementation of ServerList.
- * 
+ *
  * @author gordonp
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerListImplementation.class)
@@ -87,7 +87,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
 
     public static final boolean TRACE_SETUP = Boolean.getBoolean("cnd.remote.trace.setup"); //NOI18N
     public static final String TRACE_SETUP_PREFIX = "#HostSetup"; //NOI18N
-    
+
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
     private static final String DEFAULT_RECORD = CND_REMOTE + ".defaultEnv"; // NOI18N
@@ -127,7 +127,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             defaultIndex = Math.min(defaultIndex, items.size() - 1);
             if (defaultIndex >= 0) {
                 defaultRecord = items.get(defaultIndex);
-            }            
+            }
         } else {
             ExecutionEnvironment defEnv = ExecutionEnvironmentFactory.fromUniqueID(defaultEnvId);
             for (RemoteServerRecord r : items) {
@@ -149,7 +149,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             public void run() {
                 checkSetup(env);
             }
-        });  
+        });
     }
 
     private void checkSetup(ExecutionEnvironment env) {
@@ -170,13 +170,13 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
                     addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
                 } else if (!record.isOnline()) {
                     record.validate(true);
-                }            
+                }
             }
         } else {
             for (RemoteServerRecord rec : recordsToNotify) {
                 rec.checkHostInfo();
             }
-        }        
+        }
     }
 
     @Override
@@ -185,7 +185,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
 
     /**
      * Get a ServerRecord pertaining to env. If needed, create the record.
-     * 
+     *
      * @param env specifies the host
      * @return A RemoteServerRecord for env
      */
@@ -207,7 +207,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             if (env.equals(record.getExecutionEnvironment())) {
                 return record;
             }
-        }        
+        }
         if (create) {
             CndUtils.assertNonUiThread();
             synchronized (lock) {
@@ -445,9 +445,9 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         }
         if (SwingUtilities.isEventDispatchThread()) {
             RemoteUtil.LOGGER.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
-        }        
+        }
         if (!CndPathUtilities.isPathAbsolute(path)) {
-            if (RemoteUtil.isWindows(env) ? 
+            if (RemoteUtil.isWindows(env) ?
                     (path.contains("\\") | path.contains("/")) : //NOI18N
                     path.contains("/")) { //NOI18N
                 // path contains slashes - don't call 'which'
@@ -458,10 +458,10 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
                 path = res.output;
             } else {
                 return false;
-            }            
+            }
         }
         try {
-            FileInfoProvider.StatInfo info = FileInfoProvider.stat(env, path, new PrintWriter(System.err)).get();
+            FileInfoProvider.StatInfo info = FileInfoProvider.stat(env, path).get();
             return info.canExecute(env);
         } catch (InterruptedException ex) {
             return false;
@@ -470,7 +470,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             return false;
         }
     }
-    
+
     @Override
     public Collection<? extends ServerRecord> getRecords() {
         return new ArrayList<>(items);
