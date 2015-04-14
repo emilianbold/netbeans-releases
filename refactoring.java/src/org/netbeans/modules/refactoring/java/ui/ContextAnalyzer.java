@@ -402,20 +402,39 @@ public final class ContextAnalyzer {
     }
 
     public static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
-        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
+        if(start == end) {
+            TokenSequence<JavaTokenId> cts = ci.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+
+            if (cts != null) {
+                cts.move(start);
+
+                if (cts.moveNext() && cts.token().id() != JavaTokenId.WHITESPACE && cts.offset() == start) {
+                    start = end += 1;
+                }
+            }
+        }
+        
+        TreePath tp = ci.getTreeUtilities().pathFor(start == end? start : (start + end) / 2 + 1);
 
         for ( ; tp != null; tp = tp.getParentPath()) {
             Tree leaf = tp.getLeaf();
 
             if (   !ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface())
-                && (leaf.getKind() != Tree.Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null))
-               continue;
+                && (leaf.getKind() != Tree.Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null)) {
+                continue;
+            }
 
             long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
             long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
 
-            if (treeStart != start || treeEnd != end) {
-                continue;
+            if (start != end) {
+                if (treeStart != start || treeEnd != end) {
+                    continue;
+                }
+            } else {
+                if (treeStart != start && treeEnd != end) {
+                    continue;
+                } 
             }
 
             TypeMirror type = ci.getTrees().getTypeMirror(tp);

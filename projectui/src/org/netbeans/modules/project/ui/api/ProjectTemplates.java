@@ -52,8 +52,9 @@ public class ProjectTemplates {
 
     /**
      * {@link String}-valued action property for a project category (subfolder code name) to select.
+     * @deprecated use {@link CommonProjectActions.PRESELECT_CATEGORY} instead
      */
-    public static final String PRESELECT_CATEGORY = "PRESELECT_CATEGORY";
+    public static final String PRESELECT_CATEGORY = CommonProjectActions.PRESELECT_CATEGORY;
 
     /**
      * {@link String}-valued action property for a project template (code name within a category) to select.

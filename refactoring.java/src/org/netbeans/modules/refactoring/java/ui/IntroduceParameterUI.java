@@ -83,7 +83,7 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
     private Lookup lookup;
     
     /** Creates a new instance of IntroduceParameterUI */
-    private IntroduceParameterUI(TreePathHandle expression, CompilationInfo info) {
+    private IntroduceParameterUI(TreePathHandle expression) {
         this.refactoring = new IntroduceParameterRefactoring(expression);
         this.expression = expression;
     }
@@ -94,15 +94,10 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
     
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        JEditorPane textC = NbDocument.findRecentEditorPane(ec);
-        int startOffset = textC.getSelectionStart();
-        int endOffset = textC.getSelectionEnd();
-        TreePath tp = validateSelection(info, startOffset, endOffset);
-        if (tp == null) {
-            return null;
+        if(handles.length > 0) {
+        return new IntroduceParameterUI(handles[0]);
         }
-        return new IntroduceParameterUI(TreePathHandle.create(tp, info), info);
+        return null;
     }
     
     public static JavaRefactoringUIFactory factory(Lookup lookup) {
@@ -171,123 +166,5 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("org.netbeans.modules.refactoring.java.ui.IntroduceParameterUI"); // NOI18N
-    }
-    
-    private static final Set<TypeKind> NOT_ACCEPTED_TYPES = EnumSet.of(TypeKind.ERROR, TypeKind.NONE, TypeKind.OTHER, TypeKind.VOID, TypeKind.EXECUTABLE);
- 
-    private static TreePath validateSelection(CompilationInfo ci, int start, int end) {
-        return validateSelection(ci, start, end, NOT_ACCEPTED_TYPES);
-    }
-
-    private static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
-        int[] span = ignoreWhitespaces(ci, start, end);
-        start = span[0];
-        end = span[1];
-        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
-
-        for ( ; tp != null; tp = tp.getParentPath()) {
-            Tree leaf = tp.getLeaf();
-
-            if (   !ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface())
-                && (leaf.getKind() != Tree.Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null)) {
-                continue;
-            }
-
-            long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
-            long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
-
-            if (treeStart != start || treeEnd != end) {
-                continue;
-            }
-
-            TypeMirror type = ci.getTrees().getTypeMirror(tp);
-
-            if (type != null && type.getKind() == TypeKind.ERROR) {
-                type = ci.getTrees().getOriginalType((ErrorType) type);
-            }
-
-            if (type == null || ignoredTypes.contains(type.getKind())) {
-                continue;
-            }
-
-            if(tp.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
-                continue;
-            }
-
-            if (tp.getLeaf().getKind() == Tree.Kind.ANNOTATION) {
-                continue;
-            }
-
-            if (!isInsideClass(tp)) {
-                return null;
-            }
-
-            TreePath candidate = tp;
-
-            tp = tp.getParentPath();
-
-            while (tp != null) {
-                switch (tp.getLeaf().getKind()) {
-                    case VARIABLE:
-                        VariableTree vt = (VariableTree) tp.getLeaf();
-                        if (vt.getInitializer() == leaf) {
-                            return candidate;
-                        } else {
-                            return null;
-                        }
-                    case NEW_CLASS:
-                        NewClassTree nct = (NewClassTree) tp.getLeaf();
-                        
-                        if (nct.getIdentifier().equals(candidate.getLeaf())) { //avoid disabling hint ie inside of anonymous class higher in treepath
-                            for (Tree p : nct.getArguments()) {
-                                if (p == leaf) {
-                                    return candidate;
-                                }
-                            }
-
-                            return null;
-                        }
-                }
-                leaf = tp.getLeaf();
-                tp = tp.getParentPath();
-            }
-            return candidate;
-        }
-        return null;
-    }
-
-    private static boolean isInsideClass(TreePath tp) {
-        while (tp != null) {
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
-                return true;
-            }
-
-            tp = tp.getParentPath();
-        }
-
-        return false;
-    }    
-    
-    private static final Set<JavaTokenId> WHITESPACES = EnumSet.of(JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
-    private static int[] ignoreWhitespaces(CompilationInfo ci, int start, int end) {
-        TokenSequence<JavaTokenId> ts = ci.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-        if (ts == null) {
-            return new int[]{start, end};
-        }
-        ts.move(start);
-        if (ts.moveNext()) {
-            boolean wasMoveNext = true;
-            while (WHITESPACES.contains(ts.token().id()) && (wasMoveNext = ts.moveNext())) {
-                ;
-            }
-            if (wasMoveNext && ts.offset() > start) {
-                start = ts.offset();
-            }
-        }
-        ts.move(end);
-        while (ts.movePrevious() && WHITESPACES.contains(ts.token().id()) && ts.offset() < end) {
-            end = ts.offset();
-        }
-        return new int[]{start, end};
     }
 }
