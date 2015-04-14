@@ -135,7 +135,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             err.append(status.error);
             if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
                 if (!status.error.isEmpty()) {
-                    for(String s: status.error.split("\n")) {
+                    for(String s: status.error.split("\n")) { // NOI18N
                         RemoteUtil.LOGGER.log(Level.FINEST, "RemoteCommandSupport ERROR: {0}", s);
                     }
                 }

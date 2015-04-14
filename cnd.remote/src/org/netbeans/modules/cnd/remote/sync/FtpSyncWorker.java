@@ -716,12 +716,12 @@ import org.openide.util.RequestProcessor;
                 pb.setWorkingDirectory(remoteRoot);
                 ProcessUtils.ExitStatus status = ProcessUtils.execute(pb);
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINEST) && !status.output.isEmpty()) {
-                    for(String s : status.output.split("\n")) {
+                    for(String s : status.output.split("\n")) { // NOI18N
                         System.out.printf("\tunzip: %s%n", s); // NOI18N
                     }
                 }
                 if (!status.error.isEmpty()) {
-                    for(String s : status.error.split("\n")) {
+                    for(String s : status.error.split("\n")) { // NOI18N
                         err.printf("unzip: %s%n", s); //NOI18N
                     }
                 }

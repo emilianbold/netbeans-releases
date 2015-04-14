@@ -144,7 +144,7 @@ public abstract class RemotePathMap extends PathMap {
 
                     if (file.exists() && file.canRead()) {
                         try {
-                            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+                            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); // NOI18N
                             try {
                                 while ((line = in.readLine()) != null) {
                                     int pos = line.indexOf(' ');
