@@ -87,24 +87,20 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
 	public static Test suite(){
 
 		return JellyTestCase.emptyConfiguration().
-				addTest(RenameTest.class, "testSimple_A_A").
-				addTest(RenameTest.class, "testSimple_A_B").
-				addTest(RenameTest.class, "testSimple_A_C").
-				addTest(RenameTest.class, "testSimple_A_D").
-                        
-                addTest(RenameTest.class, "testSimple_A_E").
-				addTest(RenameTest.class, "testSimple_A_F").
-				addTest(RenameTest.class, "testSimple_A_G").
-				addTest(RenameTest.class, "testSimple_A_H").
-                        
-                addTest(RenameTest.class, "testSimple_A_I").
-				addTest(RenameTest.class, "testSimple_A_J").
-//				addTest(RenameTest.class, "testSimple_A_K").
-				addTest(RenameTest.class, "testSimple_A_L").
-
-                addTest(RenameTest.class, "testSimple_A_M").
-                        
-				suite();
+                    addTest(IntroduceParameterTest.class, "testSimple_A_A").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_B").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_C").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_D").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_E").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_F").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_G").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_H").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_I").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_J").
+//                    addTest(IntroduceParameterTest.class, "testSimple_A_K").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_L").
+                    addTest(IntroduceParameterTest.class, "testSimple_A_M").
+                    suite();
 	}
          
 	public void testSimple_A_A(){
