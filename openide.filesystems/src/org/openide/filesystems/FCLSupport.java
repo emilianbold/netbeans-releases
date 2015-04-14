@@ -158,7 +158,7 @@ class FCLSupport {
                 if (threadName != null && !threadName.contains(" :: ")) { //NOI18N
                     try {
                         origThreadName = threadName;
-                        thread.setName(threadName + " :: " + operation + " " + fe.getFile());  //NOI18N
+                        thread.setName(threadName + " :: " + operation + " " + fe.getFile().getPath());  //NOI18N
                     } catch (SecurityException e) {
                     }
                 }
