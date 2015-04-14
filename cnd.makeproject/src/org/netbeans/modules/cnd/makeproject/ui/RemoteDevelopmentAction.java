@@ -104,7 +104,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         createSubMenu();
         return subMenu;
     }
-    
+
     private void createSubMenu() {
         if (subMenu == null) {
             String label = NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_RemoteDevelopmentAction_Name"); // NOI18N
@@ -117,10 +117,13 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             return;
         }
         final MakeConfiguration mconf = pdp.getConfigurationDescriptor().getActiveConfiguration();
-        ExecutionEnvironment currExecEnv = mconf.getDevelopmentHost().getExecutionEnvironment();
-        if (mconf == null || currExecEnv == null) {
+        if (mconf == null) {
             return;
-        }        
+        }
+        ExecutionEnvironment currExecEnv = mconf.getDevelopmentHost().getExecutionEnvironment();
+        if (currExecEnv == null) {
+            return;
+        }
         if (MakeProjectUtils.canChangeHost(project, mconf)) {
             subMenu.setEnabled(true);
         } else {
@@ -206,7 +209,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             }
             ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
-            configurationDescriptor.setModified();            
+            configurationDescriptor.setModified();
             BrokenReferencesSupport.updateProblems(project);
         }
         return; // false;

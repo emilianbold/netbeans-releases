@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-import javax.swing.JPanel;
-
 /**
  *
  * @author  thp

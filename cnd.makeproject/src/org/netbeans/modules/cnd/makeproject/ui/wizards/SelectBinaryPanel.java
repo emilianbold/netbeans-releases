@@ -190,7 +190,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
         }
 
         public void setBinaryPath(FileSystem fs, String path) {
-            binaryPath = new ArrayList<FSPath>();
+            binaryPath = new ArrayList<>();
             for(String s : path.split(";")) { //NOI18N
                 String p = s.trim();
                 if (!p.isEmpty()) {

@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
@@ -86,7 +87,7 @@ public class DebuggerChooserConfiguration implements Cloneable {
                             priority = ((PrioritizedCustomizerNode) node).getPriority();
                             idx = n.size();
                         }
-                    } else if (node.getClass().getName().toLowerCase().contains("dbx")) { // NOI18N
+                    } else if (node.getClass().getName().toLowerCase(Locale.getDefault()).contains("dbx")) { // NOI18N
                         priority = PrioritizedCustomizerNode.MAX_PRIORITY;
                         idx = n.size();
                     }
@@ -116,7 +117,7 @@ public class DebuggerChooserConfiguration implements Cloneable {
             }
         }
     }
-    
+
     public int getValue() {
         return value;
     }
@@ -136,7 +137,7 @@ public class DebuggerChooserConfiguration implements Cloneable {
     public boolean getDirty() {
         return dirty;
     }
-    
+
     public int getDefault() {
         return def;
     }

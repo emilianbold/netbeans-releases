@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;

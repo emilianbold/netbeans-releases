@@ -58,12 +58,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -181,7 +183,7 @@ public class MakeSampleProjectGenerator {
         Element element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, nodeName);
         data.appendChild(element);
     }
-    
+
     private static void postProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         // update project.xml
         try {
@@ -328,7 +330,7 @@ public class MakeSampleProjectGenerator {
                     Logger.getLogger("remote.support.logger").log(Level.INFO, //NOI18N
                             "__DIAGNOSTICS__", new Object[]{prjLoc, Boolean.TRUE}); //NOI18N
                     ProcessUtils.ExitStatus rc = ProcessUtils.execute(env, "find", prjLoc.getPath(), " -ls"); //NOI18N
-                    System.err.printf("Find in\n%s\nexited with rc=%d;\nerr=%s\nout=\n%s\n", prjLoc.getPath(), rc.exitCode, rc.error, rc.output); //NOI18N
+                    System.err.printf("Find in%n%s%nexited with rc=%d;%nerr=%s%nout=%n%s%n", prjLoc.getPath(), rc.exitCode, rc.error, rc.output); //NOI18N
                 }
             }
             IOException ex = new IOException(e);
@@ -434,7 +436,7 @@ public class MakeSampleProjectGenerator {
             }
         }
     }
-    
+
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         String projectFolderPath = prjParams.getProjectFolderPath();
         FOPath fopath = new FOPath(projectFolderPath);
@@ -535,7 +537,7 @@ public class MakeSampleProjectGenerator {
                     OutputStream out = f.getOutputStream();
                     try {
                         String ls;
-                        if (ent.getName().toLowerCase().contains("makefile")) { // NOI18N
+                        if (ent.getName().toLowerCase(Locale.getDefault()).contains("makefile")) { // NOI18N
                             ls = "\n"; // NOI18N
                         } else {
                             ls = (String) f.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
@@ -565,8 +567,8 @@ public class MakeSampleProjectGenerator {
      * @throws java.io.IOException
      */
     private static void copy(InputStream is, OutputStream os, String ls) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8")); //NOI18N
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, FileEncodingQuery.getDefaultEncoding()));
         String line;
 
         while ((line = br.readLine()) != null) {

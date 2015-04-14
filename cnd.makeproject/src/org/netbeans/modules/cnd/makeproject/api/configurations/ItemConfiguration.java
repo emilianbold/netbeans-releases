@@ -48,6 +48,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -71,7 +72,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationAuxObjectWithDictionary {
-    
+
     // enabled by default for now, see #217779
     private static final boolean SHOW_HEADER_EXCLUDE = CndUtils.getBoolean("cnd.makeproject.showHeaderExclude", true); // NOI18N
 
@@ -193,15 +194,15 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
         this.excluded = excluded;
         needSave = true;
     }
-    
+
     public boolean isToolDirty() {
         return toolDirty;
     }
-    
+
     public void setToolDirty(boolean dirty) {
         toolDirty = dirty;
     }
-    
+
     public void setTool(PredefinedToolKind tool) {
         if (this.tool != tool){
             lastConfiguration = null;
@@ -233,7 +234,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
             }
         }
     }
-    
+
     private void updateLanguageFlavor() {
         {
             CCompilerConfiguration conf = getCCompilerConfiguration();
@@ -354,14 +355,14 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
     public boolean shared() {
         return true;
     }
-    
+
     public boolean isVCSVisible() {
         if (item != null && getExcluded() != null && isItemFromDiskFolder()) {
             return !getExcluded().getValue();
         }
         return shared();
     }
-    
+
     // interface ConfigurationAuxObject
     @Override
     public boolean hasChanged() {
@@ -385,7 +386,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
 //        assert this.id != null;
 //        return this.id;
 //    }
-//    
+//
 //    static public String getId(String path) {
 //        return "item-" + path; // NOI18N
 //    }
@@ -559,7 +560,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
         final String baseDir = mc.getBaseDir();
         FileObject baseDirFO = sourceFS.findResource(baseDir);
         if (baseDirFO != null && baseDirFO.isValid()) {
-            fullPath = CndPathUtilities.toAbsolutePath(baseDirFO, item.getPath());            
+            fullPath = CndPathUtilities.toAbsolutePath(baseDirFO, item.getPath());
             itemFO = sourceFS.findResource(FileSystemProvider.normalizeAbsolutePath(fullPath, sourceFS));
         } else {
             fullPath = CndPathUtilities.toAbsolutePath(sourceFS, baseDir, item.getPath());
@@ -578,7 +579,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
         set.setName("ItemConfiguration"); // NOI18N
         set.setDisplayName(getString("ItemConfigurationTxt"));
         set.setShortDescription(getString("ItemConfigurationHint"));
-        
+
         set.put(new StateCANodeProp(StateCA.getState(getConfiguration(), item, this),
                 getString("CodeAssistanceTxt"), getString("CodeAssistanceHint"))); //NOI18N
         if (SHOW_HEADER_EXCLUDE || !MIMENames.isHeader(item.getMIMEType())) {
@@ -603,7 +604,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
         if (tool == PredefinedToolKind.CCompiler
                 || tool == PredefinedToolKind.CCCompiler) {
             if (item != null) {
-                if (item.getName().toLowerCase().endsWith(".pc")) { //NOI18N
+                if (item.getName().toLowerCase(Locale.getDefault()).endsWith(".pc")) { //NOI18N
                     return true;
                 }
             }
@@ -703,7 +704,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
         public void setValue(String v) {
         }
     }
-    
+
     @Override
     public String toString() {
         String pref = "";
