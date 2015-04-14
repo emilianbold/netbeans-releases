@@ -548,7 +548,11 @@ public class FileComponentDeclarations extends FileComponent {
         public int compareTo(OffsetSortedKey o) {
             int res = start - o.start;
             if (res == 0) {
-                res = name - o.name;
+                if (name < o.name) {
+                    return -1;
+                } else if (name > o.name) {
+                    return 1;
+                }
             }
             return res;
         }
