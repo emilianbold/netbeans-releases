@@ -102,6 +102,7 @@ import org.netbeans.modules.jumpto.common.CurrentSearch;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.modules.jumpto.file.LazyListModel;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -305,7 +306,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             nameKind = panel.isCaseSensitive() ?
                     SearchType.EXACT_NAME :
                     SearchType.CASE_INSENSITIVE_EXACT_NAME;
-        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
+        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, null, null)) {
             nameKind = panel.isCaseSensitive() ?
                     SearchType.CAMEL_CASE:
                     SearchType.CASE_INSENSITIVE_CAMEL_CASE;

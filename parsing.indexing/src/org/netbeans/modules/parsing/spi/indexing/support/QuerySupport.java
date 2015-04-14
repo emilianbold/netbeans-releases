@@ -441,6 +441,8 @@ public final class QuerySupport {
         public static final class Factory {
 
             private final QuerySupport qs;
+            private String camelCaseSeparator;
+            private String camelCasePart;
 
             private Factory(@NonNull final QuerySupport qs) {
                 assert qs != null;
@@ -462,13 +464,30 @@ public final class QuerySupport {
                 Parameters.notNull("fieldName", fieldName); //NOI18N
                 Parameters.notNull("fieldValue", fieldValue);   //NOI18N
                 Parameters.notNull("kind", kind);   //NOI18N
+                Map<String,Object> options = null;
+                if (camelCaseSeparator != null) {
+                    if (options == null) {
+                        options = new HashMap<>();
+                    }
+                    options.put(Queries.OPTION_CAMEL_CASE_SEPARATOR, camelCaseSeparator);
+                }
+                if (camelCasePart != null) {
+                    if (options == null) {
+                        options = new HashMap<>();
+                    }
+                    options.put(Queries.OPTION_CAMEL_CASE_PART, camelCasePart);
+                }
+                if (options == null) {
+                    options = Collections.emptyMap();
+                }
                 return new Query(
                     qs,
                     Queries.createQuery(
                         fieldName,
                         fieldName,
                         fieldValue,
-                        translateQueryKind(kind)));
+                        translateQueryKind(kind),
+                        options));
             }
 
             /**
@@ -554,6 +573,28 @@ public final class QuerySupport {
                 return new Query(
                     qs,
                     bq);
+            }
+
+            /**
+             * Sets a camel case separator.
+             * Sets a regular expression for camel case separator.
+             * @param camelCaseSeparator the regular expression for camel case separator.
+             * When null the default (upper case letter) is used.
+             * @since 9.5
+             */
+            public void setCamelCaseSeparator(@NullAllowed final String camelCaseSeparator) {
+                this.camelCaseSeparator = camelCaseSeparator;
+            }
+
+            /**
+             * Sets a camel case part.
+             * Sets a regular expression for camel case part content.
+             * @param camelCasePart  the regular expression for camel case part.
+             * When null the default (lower case letter, digit) is used.
+             * @since 9.5
+             */
+            public void setCamelCasePart(@NullAllowed final String camelCasePart) {
+                this.camelCasePart = camelCasePart;
             }
         }
 

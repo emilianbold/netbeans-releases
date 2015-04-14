@@ -84,6 +84,7 @@ import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
@@ -509,7 +510,7 @@ public class JavaTypeProvider implements TypeProvider {
         if (originalSearchType == NameKind.SIMPLE_NAME ||
             originalSearchType == NameKind.CASE_INSENSITIVE_REGEXP) {
             return originalSearchType;
-        } else if ((isAllUpper(simpleName) && simpleName.length() > 1) || isCamelCase(simpleName)) {
+        } else if ((isAllUpper(simpleName) && simpleName.length() > 1) || Queries.isCamelCase(simpleName, null, null)) {
             return isCaseSensitive(originalSearchType) ? NameKind.CAMEL_CASE : NameKind.CAMEL_CASE_INSENSITIVE;
         } else if (containsWildCard(simpleName) != -1) {
             return isCaseSensitive(originalSearchType) ? NameKind.REGEXP : NameKind.CASE_INSENSITIVE_REGEXP;
@@ -545,12 +546,6 @@ public class JavaTypeProvider implements TypeProvider {
             }
         }
         return true;
-    }
-
-    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
-
-    private static boolean isCamelCase(String text) {
-         return camelCasePattern.matcher(text).matches();
     }
 
     //@NotTreadSafe
