@@ -49,15 +49,18 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.modules.java.hints.introduce.TreeUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,12 +75,22 @@ public class SizeEqualsZero {
     @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.perf.SizeEqualsZero.CHECK_NOT_EQUALS", tooltip = "#TP_org.netbeans.modules.java.hints.perf.SizeEqualsZero.CHECK_NOT_EQUALS", defaultValue=CHECK_NOT_EQUALS_DEFAULT)
     public static final String CHECK_NOT_EQUALS = "check.not.equals";
 
-    @TriggerPattern(value="$subj.size() == 0")
+    @TriggerPatterns({
+        @TriggerPattern(value="$subj.size() == 0", 
+            constraints = @ConstraintVariableType(type = "java.util.Collection", variable = "$subj")),
+        @TriggerPattern(value="$subj.size() == 0", 
+            constraints = @ConstraintVariableType(type = "java.util.Map", variable = "$subj")),
+    })
     public static ErrorDescription sizeEqualsZero(HintContext ctx) {
         return sizeEqualsZeroHint(ctx, false);
     }
 
-    @TriggerPattern(value="$subj.size() != 0")
+    @TriggerPatterns({
+        @TriggerPattern(value="$subj.size() != 0", 
+            constraints = @ConstraintVariableType(type = "java.util.Collection", variable = "$subj")),
+        @TriggerPattern(value="$subj.size() != 0", 
+            constraints = @ConstraintVariableType(type = "java.util.Map", variable = "$subj")),
+    })
     public static ErrorDescription sizeNotEqualsZero(HintContext ctx) {
         if (!ctx.getPreferences().getBoolean(CHECK_NOT_EQUALS, CHECK_NOT_EQUALS_DEFAULT)) {
             return null;
@@ -87,6 +100,10 @@ public class SizeEqualsZero {
 
     public static ErrorDescription sizeEqualsZeroHint(HintContext ctx, boolean not) {
         TreePath subj = ctx.getVariables().get("$subj");
+        if (subj == null) {
+            // assume implicit this
+            subj = TreeUtils.findClass(ctx.getPath());
+        }
         TypeMirror subjType = ctx.getInfo().getTrees().getTypeMirror(subj);
 
         if (subjType == null || subjType.getKind() != TypeKind.DECLARED) {
@@ -114,7 +131,7 @@ public class SizeEqualsZero {
         }
         
         // #247190: check that the replacement is NOT done in the isEmpty method of the target type itself
-        TreePath enclMethod = org.netbeans.modules.java.hints.errors.Utilities.findEnclosingMethodOrConstructor(subj);
+        TreePath enclMethod = org.netbeans.modules.java.hints.errors.Utilities.findEnclosingMethodOrConstructor(ctx.getPath());
         if (enclMethod != null) {
             Element enclMethodEl = ctx.getInfo().getTrees().getElement(enclMethod);
             if (enclMethodEl == isEmptyFound) {

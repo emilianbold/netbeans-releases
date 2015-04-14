@@ -98,6 +98,45 @@ public class SizeEqualsZeroTest {
                         "     }\n" +
                         "}\n");
     }
+    
+    @Test
+    public void testCollection() throws Exception {
+        HintTest.create()
+                .input("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.ArrayList;" +
+                       "public class Test extends ArrayList {\n" +
+                       "     private void test() {\n" +
+                       "         boolean b = size() == 0;\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(SizeEqualsZero.class)
+                .findWarning("3:21-3:32:verifier:.size() == 0")
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                       "import java.util.ArrayList;" +
+                       "public class Test extends ArrayList {\n" +
+                       "     private void test() {\n" +
+                       "         boolean b = isEmpty();\n" +
+                       "     }\n" +
+                        "}\n");
+    }
+    
+    @Test
+    public void testDoNotChangeIsEmptyItself() throws Exception {
+        HintTest.create()
+                .input("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.ArrayList;" +
+                       "public class Test extends ArrayList {\n" +
+                       "     public boolean isEmpty() {\n" +
+                       "         return this.size() == 0;\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(SizeEqualsZero.class)
+                .assertWarnings();
+    }
 
     @Test
     public void testSimpleConfig() throws Exception {

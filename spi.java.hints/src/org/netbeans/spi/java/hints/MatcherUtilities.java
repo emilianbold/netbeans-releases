@@ -74,11 +74,17 @@ public class MatcherUtilities {
     }
 
     public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern, boolean fillInVariablesHack) {
-        return matches(ctx, variable, pattern, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames());
+        return matches(ctx, variable, pattern, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), 
+                fillInVariablesHack ? ctx.getConstraints() : Collections.<String, TypeMirror>emptyMap());
     }
 
     public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern, Map<String, TreePath> outVariables, Map<String, Collection<? extends TreePath>> outMultiVariables, Map<String, String> outVariables2Names) {
-        Pattern p = PatternCompiler.compile(ctx.getInfo(), pattern, Collections.<String, TypeMirror>emptyMap(), Collections.<String>emptyList());
+        return matches(ctx, variable, pattern, outVariables, outMultiVariables, outVariables2Names, Collections.<String, TypeMirror>emptyMap());
+    }
+
+    public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern, Map<String, TreePath> outVariables, 
+                        Map<String, Collection<? extends TreePath>> outMultiVariables, Map<String, String> outVariables2Names, Map<String, TypeMirror> variable2Type) {
+        Pattern p = PatternCompiler.compile(ctx.getInfo(), pattern, variable2Type, Collections.<String>emptyList());
         Map<String, TreePath> variables = new HashMap<String, TreePath>(ctx.getVariables());
         Map<String, Collection<? extends TreePath>> multiVariables = new HashMap<String, Collection<? extends TreePath>>(ctx.getMultiVariables());
         Map<String, String> variables2Names = new HashMap<String, String>(ctx.getVariableNames());
