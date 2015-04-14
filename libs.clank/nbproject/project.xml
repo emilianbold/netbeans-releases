@@ -85,56 +85,68 @@ made subject to such option by the copyright holder.
                 <package>org.llvm.support.spi</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org-clang-arcmigrate.jar</runtime-relative-path>
-                <binary-origin>external/org-clang-arcmigrate.jar</binary-origin>
+                <runtime-relative-path>ext/org-clang-rewrite.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-rewrite.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org-clang-ast.jar</runtime-relative-path>
-                <binary-origin>external/org-clang-ast.jar</binary-origin>
+                <runtime-relative-path>ext/org-llvm-adtsupport.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-adtsupport.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-clank-java.jar</runtime-relative-path>
+                <binary-origin>external/org-clank-java.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-llvm-utils.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-utils.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-basic.jar</runtime-relative-path>
                 <binary-origin>external/org-clang-basic.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org-clang-codegen.jar</runtime-relative-path>
-                <binary-origin>external/org-clang-codegen.jar</binary-origin>
+                <runtime-relative-path>ext/org-clang-ast.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-ast.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-driver.jar</runtime-relative-path>
                 <binary-origin>external/org-clang-driver.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org-clang-frontend.jar</runtime-relative-path>
-                <binary-origin>external/org-clang-frontend.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/org-clang-frontendtool.jar</runtime-relative-path>
-                <binary-origin>external/org-clang-frontendtool.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/org-clang-lex.jar</runtime-relative-path>
                 <binary-origin>external/org-clang-lex.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org-clang-parse.jar</runtime-relative-path>
-                <binary-origin>external/org-clang-parse.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/org-clang-rewrite.jar</runtime-relative-path>
-                <binary-origin>external/org-clang-rewrite.jar</binary-origin>
+                <runtime-relative-path>ext/org-llvm-bitcode.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-bitcode.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-sema.jar</runtime-relative-path>
                 <binary-origin>external/org-clang-sema.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org-clang-serialization.jar</runtime-relative-path>
-                <binary-origin>external/org-clang-serialization.jar</binary-origin>
+                <runtime-relative-path>ext/org-llvm-option.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-option.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-clang-arcmigrate.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-arcmigrate.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-clang-frontendtool.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-frontendtool.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-staticanalyzer.jar</runtime-relative-path>
                 <binary-origin>external/org-clang-staticanalyzer.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-clang-serialization.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-serialization.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-clang-frontend.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-frontend.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-tools-driver.jar</runtime-relative-path>
@@ -145,24 +157,12 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/org-clang-tools-services.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org-clank-java.jar</runtime-relative-path>
-                <binary-origin>external/org-clank-java.jar</binary-origin>
+                <runtime-relative-path>ext/org-clang-codegen.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-codegen.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org-llvm-adtsupport.jar</runtime-relative-path>
-                <binary-origin>external/org-llvm-adtsupport.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/org-llvm-bitcode.jar</runtime-relative-path>
-                <binary-origin>external/org-llvm-bitcode.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/org-llvm-option.jar</runtime-relative-path>
-                <binary-origin>external/org-llvm-option.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/org-llvm-utils.jar</runtime-relative-path>
-                <binary-origin>external/org-llvm-utils.jar</binary-origin>
+                <runtime-relative-path>ext/org-clang-parse.jar</runtime-relative-path>
+                <binary-origin>external/org-clang-parse.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
