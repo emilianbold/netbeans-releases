@@ -113,8 +113,10 @@ class CustomizerGeneral extends javax.swing.JPanel {
         String domain = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_NAME);
         String host = manager.getInstanceProperties().getProperty(WLPluginProperties.HOST_ATTR);
         String port = manager.getInstanceProperties().getProperty(WLPluginProperties.PORT_ATTR);
+        String securedString = manager.getInstanceProperties().getProperty(WLPluginProperties.SECURED_ATTR);
+        Boolean secured = securedString == null ? null : Boolean.valueOf(securedString);
         WebLogicConfiguration config = null;
-        if (domain== null || host == null || port == null) {
+        if (domain == null || host == null || port == null || secured == null) {
             config = manager.getCommonConfiguration();
         }
         if (domain == null) {
@@ -135,7 +137,11 @@ class CustomizerGeneral extends javax.swing.JPanel {
         if (port != null) {
             serverPort.setText(port);
         }
-        sslCheckBox.setSelected(config.isSecured());
+        if (secured == null) {
+            secured = config.isSecured();
+        }
+
+        sslCheckBox.setSelected(secured);
         certificateButton.setEnabled(sslCheckBox.isSelected());
 
         boolean statusVisible = support.isSwitchSupported();
