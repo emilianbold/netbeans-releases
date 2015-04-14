@@ -56,7 +56,7 @@ import org.openide.WizardDescriptor.Panel;
  */
 public class RemoteHostSetupWorker implements HostSetupWorker {
 
-    private CreateHostData data;
+    private final CreateHostData data;
 
     /*package*/ RemoteHostSetupWorker(ToolsCacheManager toolsCacheManager) {
         data = new CreateHostData(toolsCacheManager, false);
