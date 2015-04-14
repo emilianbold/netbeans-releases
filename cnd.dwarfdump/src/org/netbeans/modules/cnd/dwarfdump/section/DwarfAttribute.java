@@ -152,7 +152,7 @@ public class DwarfAttribute {
             ByteArrayOutputStream st = new ByteArrayOutputStream();
             PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
             dump(out, value);
-            return st.toString(Charset.defaultCharset().name());
+            return st.toString("UTF-8"); //NOI18N
         } catch (IOException ex) {
             return ""; // NOI18N
         }
