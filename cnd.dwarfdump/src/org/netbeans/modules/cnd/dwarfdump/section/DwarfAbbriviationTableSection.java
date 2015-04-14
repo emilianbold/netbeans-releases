@@ -90,7 +90,7 @@ public class DwarfAbbriviationTableSection extends ElfSection {
             ByteArrayOutputStream st = new ByteArrayOutputStream();
             PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
             dump(out);
-            return st.toString(Charset.defaultCharset().name());
+            return st.toString("UTF-8"); //NOI18N
         } catch (IOException ex) {
             return ""; // NOI18N
         }
