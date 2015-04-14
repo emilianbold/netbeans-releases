@@ -94,13 +94,13 @@ public final class AdvancedTaskPanel extends JPanel {
         // ui
         panel.taskChanged();
         if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION) {
-            return Pair.of(panel.isPrivateTask(), panel.getTask());
+            return Pair.of(panel.isSharedTask(), panel.getTask());
         }
         return null;
     }
 
     private void init(String tasksLabel, Collection<String> tasks) {
-        this.tasksLabel.setText(tasksLabel);
+        Mnemonics.setLocalizedText(this.tasksLabel, tasksLabel);
         tasksComboBox.setModel(new DefaultComboBoxModel(new ArrayList<>(tasks).toArray(new String[tasks.size()])));
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
@@ -133,8 +133,8 @@ public final class AdvancedTaskPanel extends JPanel {
         return sb.toString();
     }
 
-    boolean isPrivateTask() {
-        return privateCheckBox.isSelected();
+    boolean isSharedTask() {
+        return sharedCheckBox.isSelected();
     }
 
     void taskChanged() {
@@ -166,11 +166,12 @@ public final class AdvancedTaskPanel extends JPanel {
         parametersTextField = new JTextField();
         previewLabel = new JLabel();
         previewTextField = new JTextField();
-        privateCheckBox = new JCheckBox();
+        sharedCheckBox = new JCheckBox();
 
         optionsLabel.setLabelFor(optionsTextField);
         Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(AdvancedTaskPanel.class, "AdvancedTaskPanel.optionsLabel.text")); // NOI18N
 
+        tasksLabel.setLabelFor(tasksComboBox);
         Mnemonics.setLocalizedText(tasksLabel, "TASKS:"); // NOI18N
 
         tasksComboBox.setEditable(true);
@@ -183,7 +184,8 @@ public final class AdvancedTaskPanel extends JPanel {
 
         previewTextField.setEditable(false);
 
-        Mnemonics.setLocalizedText(privateCheckBox, NbBundle.getMessage(AdvancedTaskPanel.class, "AdvancedTaskPanel.privateCheckBox.text")); // NOI18N
+        sharedCheckBox.setSelected(true);
+        Mnemonics.setLocalizedText(sharedCheckBox, NbBundle.getMessage(AdvancedTaskPanel.class, "AdvancedTaskPanel.sharedCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -201,7 +203,7 @@ public final class AdvancedTaskPanel extends JPanel {
                     .addComponent(parametersTextField)
                     .addComponent(previewTextField)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(privateCheckBox)
+                        .addComponent(sharedCheckBox)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(tasksComboBox, 0, 487, Short.MAX_VALUE))
                 .addContainerGap())
@@ -225,7 +227,7 @@ public final class AdvancedTaskPanel extends JPanel {
                     .addComponent(previewTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(previewLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(privateCheckBox)
+                .addComponent(sharedCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -238,7 +240,7 @@ public final class AdvancedTaskPanel extends JPanel {
     private JTextField parametersTextField;
     private JLabel previewLabel;
     private JTextField previewTextField;
-    private JCheckBox privateCheckBox;
+    private JCheckBox sharedCheckBox;
     private JComboBox<String> tasksComboBox;
     private JLabel tasksLabel;
     // End of variables declaration//GEN-END:variables

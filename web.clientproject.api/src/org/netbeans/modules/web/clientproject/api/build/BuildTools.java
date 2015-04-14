@@ -208,6 +208,23 @@ public final class BuildTools {
         }
 
         /**
+         * Gets project we run tasks for.
+         * @return project we run tasks for
+         * @since 1.93
+         */
+        @NonNull
+        Project getProject();
+
+        /**
+         * Gets unique identifier, <b>non-localized</b> identifier of the build tool.
+         * @return unique identifier, <b>non-localized</b> identifier of the build tool
+         * @see BuildToolImplementation#getIdentifier()
+         * @since 1.93
+         */
+        @NonNull
+        String getIdentifier();
+
+        /**
          * Gets title for the given {@link Title}.
          * @param title title to be "labeled"
          * @return title for the given {@link Title}
@@ -232,28 +249,12 @@ public final class BuildTools {
         Future<List<String>> getTasks();
 
         /**
-         * Gets advanced tasks.
-         * @return advanced tasks, can be empty but never {@code null}
-         */
-        @NonNull
-        List<String> getAdvancedTasks();
-
-        /**
          * Runs the given task. No task is given for {@link #getDefaultTaskName() default} task.
          * <p>
          * This method always runs in a background thread.
          * @param args task arguments
          */
         void runTask(@NullAllowed String... args);
-
-        /**
-         * Runs the given advanced task. The task should be returned on next {@link #getAdvancedTasks()} call.
-         * <p>
-         * This method always runs in a background thread.
-         * @param isPrivate {@code true} if this task should not be publicly available (e.g. via VCS), {@code false} otherwise
-         * @param args task arguments
-         */
-        void runAdvancedTask(boolean isPrivate, @NullAllowed String... args);
 
         /**
          * Reloads tasks.

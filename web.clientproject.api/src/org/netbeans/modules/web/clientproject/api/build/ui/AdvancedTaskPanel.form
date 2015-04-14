@@ -30,7 +30,7 @@
                   <Component id="parametersTextField" max="32767" attributes="0"/>
                   <Component id="previewTextField" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Component id="privateCheckBox" min="-2" max="-2" attributes="0"/>
+                      <Component id="sharedCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Component id="tasksComboBox" pref="487" max="32767" attributes="0"/>
@@ -63,7 +63,7 @@
                   <Component id="previewLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="privateCheckBox" min="-2" max="-2" attributes="0"/>
+              <Component id="sharedCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -85,7 +85,7 @@
     <Component class="javax.swing.JLabel" name="tasksLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="default"/>
+          <ComponentRef name="tasksComboBox"/>
         </Property>
         <Property name="text" type="java.lang.String" value="TASKS:" noResource="true"/>
       </Properties>
@@ -125,10 +125,11 @@
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="privateCheckBox">
+    <Component class="javax.swing.JCheckBox" name="sharedCheckBox">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/api/build/ui/Bundle.properties" key="AdvancedTaskPanel.privateCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/api/build/ui/Bundle.properties" key="AdvancedTaskPanel.sharedCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

@@ -67,7 +67,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(GruntBuildTool.class.getName());
 
-    private static final String IDENTIFIER = "Grunt"; // NOI18N
+    public static final String IDENTIFIER = "Grunt"; // NOI18N
 
     private final Project project;
     private final Gruntfile gruntfile;
