@@ -81,7 +81,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private ProjectActionHandler delegate;
     private ProjectActionEvent pae;
     private ExecutionEnvironment execEnv;
-    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
+    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<>();
 
     private PrintWriter out;
     private PrintWriter err;
@@ -158,7 +158,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
         FileObject privProjectStorage = RemoteProjectSupport.getPrivateStorage(pae.getProject());
         MakeConfiguration conf = pae.getConfiguration();
-        AtomicReference<String> runDir = new AtomicReference<String>();
+        AtomicReference<String> runDir = new AtomicReference<>();
         List<FSPath> sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf, runDir);
 
         RemoteSyncFactory syncFactory = conf.getRemoteSyncFactory();
@@ -171,7 +171,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             return;            
         }
 
-        Map<String, String> env2add = new HashMap<String, String>();
+        Map<String, String> env2add = new HashMap<>();
         System.setProperty(testWorkerRunningProp, "true"); // NOI18N
         if (worker.startup(env2add)) {            
             final ExecutionListener listener = new ExecutionListener() {

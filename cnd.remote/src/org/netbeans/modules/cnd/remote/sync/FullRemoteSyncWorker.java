@@ -91,7 +91,7 @@ import org.openide.util.RequestProcessor;
 
             final String hostName = RemoteUtil.getDisplayName(executionEnvironment);
             final Object lock = new Object();
-            final AtomicReference<Boolean> waiting = new AtomicReference<Boolean>(true);
+            final AtomicReference<Boolean> waiting = new AtomicReference<>(true);
             if (out != null) {
                 RequestProcessor.Task task = RP.create(new Runnable() {
                     @Override
@@ -105,7 +105,7 @@ import org.openide.util.RequestProcessor;
                 });
                 task.schedule(500);
             }
-            List<String> failedList = new ArrayList<String>();
+            List<String> failedList = new ArrayList<>();
             boolean written = FileSystemProvider.waitWrites(executionEnvironment, failedList);
             synchronized (lock) {
                 waiting.set(false);

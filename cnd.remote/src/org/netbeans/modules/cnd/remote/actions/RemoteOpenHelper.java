@@ -89,7 +89,7 @@ public class RemoteOpenHelper {
     private static boolean isRunning = false;
     private static final Object lock = new Object();
     private static final RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
-    private static final Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
+    private static final Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<>();
 
     private RemoteOpenHelper(ExecutionEnvironment env) {
         this.env = env;
@@ -350,7 +350,7 @@ public class RemoteOpenHelper {
     private static final class ProjectSelectionFileView extends FileView implements Runnable {
 
         private final JFileChooser chooser;
-        private final Map<File, Icon> knownProjectIcons = new HashMap<File, Icon>();
+        private final Map<File, Icon> knownProjectIcons = new HashMap<>();
         private final RequestProcessor.Task task = new RequestProcessor("ProjectIconFileView").create(this);//NOI18N
         private File lookingForIcon;
 

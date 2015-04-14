@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -268,12 +267,12 @@ import org.openide.util.RequestProcessor;
     }
 
     public boolean canValidateHost() {
-        List<ServerRecord> records = new ArrayList<ServerRecord>();
+        List<ServerRecord> records = new ArrayList<>();
 
         if (data.getCacheManager().getServerUpdateCache() != null && data.getCacheManager().getServerUpdateCache().getHosts() != null) {
             records.addAll(data.getCacheManager().getServerUpdateCache().getHosts());
         } else {
-            records = new ArrayList<ServerRecord>(ServerList.getRecords());
+            records = new ArrayList<>(ServerList.getRecords());
         }
 
         for (ServerRecord record : records) {
@@ -290,7 +289,7 @@ import org.openide.util.RequestProcessor;
     }
 
     public Future<Boolean> validateHost() {
-        FutureTask<Boolean> validationTask = new FutureTask<Boolean>(new Callable<Boolean>() {
+        FutureTask<Boolean> validationTask = new FutureTask<>(new Callable<Boolean>() {
 
             @Override
             public Boolean call() throws Exception {

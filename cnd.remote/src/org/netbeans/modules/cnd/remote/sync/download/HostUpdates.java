@@ -74,7 +74,7 @@ public class HostUpdates {
     //  Static stuff
     //
 
-    private static final Map<ExecutionEnvironment, HostUpdates> map = new HashMap<ExecutionEnvironment, HostUpdates>();
+    private static final Map<ExecutionEnvironment, HostUpdates> map = new HashMap<>();
     
     private static final RequestProcessor RP = new RequestProcessor("HostUpdates", 1); // NOI18N
 
@@ -86,7 +86,7 @@ public class HostUpdates {
     /*package*/ static List<FileDownloadInfo> testGetUpdates(ExecutionEnvironment env, FileObject privProjectStorageDir) throws IOException {
         HostUpdates hu = get(env, false, privProjectStorageDir);
         if (hu != null) {
-            return new ArrayList<FileDownloadInfo>(hu.infos);
+            return new ArrayList<>(hu.infos);
         }
         return Collections.<FileDownloadInfo>emptyList();
     }
@@ -113,7 +113,7 @@ public class HostUpdates {
      * (since downloading is much, much longer than all the rest,
      * the only thing to do is to ensure we don't hold lock when downloading)
      */
-    private final List<FileDownloadInfo> infos = new ArrayList<FileDownloadInfo>();
+    private final List<FileDownloadInfo> infos = new ArrayList<>();
 
     private HostUpdates(ExecutionEnvironment env, FileObject privStorageDir) throws IOException {
         this.env = env;
@@ -180,7 +180,7 @@ public class HostUpdates {
     }
 
     private Collection<FileDownloadInfo> getByState(FileDownloadInfo.State state) {
-        Collection<FileDownloadInfo> result = new ArrayList<FileDownloadInfo>();
+        Collection<FileDownloadInfo> result = new ArrayList<>();
         synchronized (FileDownloadInfo.LOCK) {
             for (FileDownloadInfo info : infos) {
                 if (info.getState() == state) {
@@ -236,7 +236,7 @@ public class HostUpdates {
     
     /** */
     private void download() {
-        final Collection<FileDownloadInfo> confirmed = new ArrayList<FileDownloadInfo>();
+        final Collection<FileDownloadInfo> confirmed = new ArrayList<>();
         synchronized (FileDownloadInfo.LOCK) {
             Collection<FileDownloadInfo> unconfirmed = getByState(FileDownloadInfo.State.UNCONFIRMED);
             for (FileDownloadInfo info : unconfirmed) {
@@ -267,7 +267,7 @@ public class HostUpdates {
         handle.switchToDeterminate(infos.size());
 
         int cnt = 0;
-        Set<File> refreshDirs = new HashSet<File>();
+        Set<File> refreshDirs = new HashSet<>();
         for (FileDownloadInfo info : infos) {
             handle.progress(NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Message", info.getLocalFile().getName()), cnt++);
             File dirToRefresh = info.getLocalFile().getParentFile();
@@ -289,7 +289,7 @@ public class HostUpdates {
 
         handle.finish();
 
-        final AtomicReference<Notification> notRef = new AtomicReference<Notification>();
+        final AtomicReference<Notification> notRef = new AtomicReference<>();
 
         ActionListener onClickAction = new ActionListener() {
             @Override

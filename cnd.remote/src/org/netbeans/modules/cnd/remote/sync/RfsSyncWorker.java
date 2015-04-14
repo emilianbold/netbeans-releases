@@ -271,7 +271,7 @@ import org.openide.util.RequestProcessor;
 
     private void refreshRemoteFs() {
         RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
-        Collection<String> remoteDirs = new ArrayList<String>(files.length);
+        Collection<String> remoteDirs = new ArrayList<>(files.length);
         for (File file : files) {
             if (!file.isDirectory()) {
                 file = file.getParentFile();

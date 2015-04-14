@@ -85,7 +85,7 @@ public class HostMappingsAnalyzer {
             thread = Thread.currentThread();
         }
         try {      
-            Map<String, String> mappingsFirst2Second = new HashMap<String, String>();
+            Map<String, String> mappingsFirst2Second = new HashMap<>();
             getMappingsImpl(mappingsFirst2Second);
             return mappingsFirst2Second;
         } finally {
@@ -146,7 +146,7 @@ public class HostMappingsAnalyzer {
     // host is one we are searching on
     // other is host in which context we are interested in mappings
     private Map<String, String> populateMappingsList(PlatformInfo hostPlatformInfo, PlatformInfo otherPlatformInfo) {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         for (HostMappingProvider prov : pairedProviders) {
             if (isCancelled()) {
                 break;
@@ -164,8 +164,8 @@ public class HostMappingsAnalyzer {
     
     static {
         //providers
-        pairedProviders = new ArrayList<HostMappingProvider>();
-        singularProviders = new ArrayList<HostMappingProvider>();
+        pairedProviders = new ArrayList<>();
+        singularProviders = new ArrayList<>();
         // TODO: should it be Lookup?
         pairedProviders.add(new HostMappingProviderWindows());
         pairedProviders.add(new HostMappingProviderSamba());

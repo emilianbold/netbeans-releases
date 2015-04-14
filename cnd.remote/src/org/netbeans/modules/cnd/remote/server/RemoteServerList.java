@@ -94,8 +94,8 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     private volatile RemoteServerRecord defaultRecord;
     private final PropertyChangeSupport pcs;
     private final ChangeSupport cs;
-    private final CopyOnWriteArrayList<RemoteServerRecord> unlisted = new CopyOnWriteArrayList<RemoteServerRecord>();
-    private final CopyOnWriteArrayList<RemoteServerRecord> items = new CopyOnWriteArrayList<RemoteServerRecord>();
+    private final CopyOnWriteArrayList<RemoteServerRecord> unlisted = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<RemoteServerRecord> items = new CopyOnWriteArrayList<>();
     private final Object lock = new Object();
     private static final RequestProcessor RP = new RequestProcessor("Remote setup", 1); // NOI18N
 
@@ -153,7 +153,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     }
 
     private void checkSetup(ExecutionEnvironment env) {
-        Collection<RemoteServerRecord> recordsToNotify = new ArrayList<RemoteServerRecord>();
+        Collection<RemoteServerRecord> recordsToNotify = new ArrayList<>();
         for (RemoteServerRecord rec : items) {
             if (rec.getExecutionEnvironment().equals(env)) {
                 if (rec.needsValidationOnConnect()) {
@@ -268,7 +268,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
 
     @Override
     public List<ExecutionEnvironment> getEnvironments() {
-        List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
+        List<ExecutionEnvironment> result = new ArrayList<>(items.size());
         for (RemoteServerRecord item : items) {
             result.add(item.getExecutionEnvironment());
         }
@@ -317,7 +317,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
                 record.setSyncFactory(syncFactory);
                 unlisted.remove(record);
             }
-            ArrayList<RemoteServerRecord> oldItems = new ArrayList<RemoteServerRecord>(items);
+            ArrayList<RemoteServerRecord> oldItems = new ArrayList<>(items);
             insert(items, record, RECORDS_COMPARATOR);
             if (asDefault) {
                 defaultRecord = record;
@@ -326,7 +326,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
                 refresh();
                 storePreferences();
                 getPreferences().put(DEFAULT_RECORD, ExecutionEnvironmentFactory.toUniqueID(defaultRecord.getExecutionEnvironment()));
-                firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
+                firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<>(items));
             }
             return record;
         }
@@ -378,7 +378,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             RemoteUtil.LOGGER.warning("Can not find RemoteServerList instance");
             return;
         }
-        List<RemoteServerRecord> records = new ArrayList<RemoteServerRecord>();
+        List<RemoteServerRecord> records = new ArrayList<>();
         for (RemoteServerRecord record : instance.items) {
             if (record.isRemote()) {
                 records.add(record);
@@ -391,10 +391,10 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     public void set(List<ServerRecord> records, ServerRecord defaultRecord) {
         CndUtils.assertNonUiThread();
         synchronized (lock) {
-            ArrayList<RemoteServerRecord> oldItems = new ArrayList<RemoteServerRecord>(items);
+            ArrayList<RemoteServerRecord> oldItems = new ArrayList<>(items);
             RemoteUtil.LOGGER.log(Level.FINEST, "ServerList: set {0}", records);
             Collection<ExecutionEnvironment> removed = clear();
-            List<ExecutionEnvironment> allEnv = new ArrayList<ExecutionEnvironment>();
+            List<ExecutionEnvironment> allEnv = new ArrayList<>();
             for (ServerRecord rec : records) {
                 addServerImpl(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false, false);
                 removed.remove(rec.getExecutionEnvironment());
@@ -404,7 +404,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             refresh();
             storePreferences();
             PasswordManager.getInstance().setServerList(allEnv);
-            firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
+            firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<>(items));
         }
     }
 
@@ -414,7 +414,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     }
 
     private Collection<ExecutionEnvironment> clear() {
-        Collection<ExecutionEnvironment> removed = new ArrayList<ExecutionEnvironment>();
+        Collection<ExecutionEnvironment> removed = new ArrayList<>();
         CndUtils.assertNonUiThread();
         synchronized (lock) {
             for (RemoteServerRecord record : items) {
@@ -473,7 +473,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     
     @Override
     public Collection<? extends ServerRecord> getRecords() {
-        return new ArrayList<RemoteServerRecord>(items);
+        return new ArrayList<>(items);
     }
 
     // TODO: Are these still needed?

@@ -75,7 +75,7 @@ public class MeasurementTestCase extends RemoteTestBase {
     private final String displayNameBase;
     private static final boolean DEBUG = false;
 
-    private static final List<StatEntry> statistics = new ArrayList<StatEntry>();
+    private static final List<StatEntry> statistics = new ArrayList<>();
 
     private static final class StatEntry {
         public String label;
@@ -248,7 +248,7 @@ public class MeasurementTestCase extends RemoteTestBase {
     }
 
     public static Test suite() throws IOException, FormatException {
-        Collection<Test> tests = new ArrayList<Test>();
+        Collection<Test> tests = new ArrayList<>();
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         Collection<String> dirs = rcFile.getKeys("remote.zip.testdirs");
         Collection<String> mspecs = rcFile.getKeys(RemoteDevelopmentTest.PLATFORMS_SECTION);

@@ -52,7 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -80,7 +79,7 @@ public class FsTests {
         public TestBase(List<FileObject> fileObjects, PrintWriter out, PrintWriter err) {
             this.out = out;
             this.err = err;
-            this.fileObjects = new ArrayList<FileObject>(fileObjects);
+            this.fileObjects = new ArrayList<>(fileObjects);
         }
         
         protected abstract Processor createProcessor();

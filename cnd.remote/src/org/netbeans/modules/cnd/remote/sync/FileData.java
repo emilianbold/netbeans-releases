@@ -95,7 +95,7 @@ public final class FileData {
 
     }
 
-    private static final Map<String, WeakReference<FileData>> instances = new HashMap<String, WeakReference<FileData>>();
+    private static final Map<String, WeakReference<FileData>> instances = new HashMap<>();
 
     @Deprecated
     public static FileData get(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
@@ -121,7 +121,7 @@ public final class FileData {
         }
         if (instance == null) {
             instance = new FileData(privProjectStorageDir, executionEnvironment);
-            instances.put(key, new WeakReference<FileData>(instance));
+            instances.put(key, new WeakReference<>(instance));
         }
         return instance;
     }

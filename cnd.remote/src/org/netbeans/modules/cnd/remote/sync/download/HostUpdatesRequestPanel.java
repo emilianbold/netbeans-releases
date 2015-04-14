@@ -119,7 +119,7 @@ public class HostUpdatesRequestPanel extends JPanel {
     HostUpdatesRequestPanel(Collection<FileDownloadInfo> fileInfos, ExecutionEnvironment env, HostUpdatesPersistence persistence) {
         super(new BorderLayout());
         this.persistence = persistence;
-        this.model = new ArrayList<RowData>(fileInfos.size());
+        this.model = new ArrayList<>(fileInfos.size());
         for (FileDownloadInfo info : fileInfos) {
             boolean selected = persistence.getFileSelected(info.getLocalFile(), true);
             model.add(new RowData(info, selected));
@@ -257,7 +257,7 @@ public class HostUpdatesRequestPanel extends JPanel {
     }
 
     private Set<FileDownloadInfo> getConfirmed() {
-        Set<FileDownloadInfo> result = new HashSet<FileDownloadInfo>();
+        Set<FileDownloadInfo> result = new HashSet<>();
         for (RowData data : model) {
             if (data.selected) {
                 result.add(data.fileInfo);

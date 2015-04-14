@@ -67,7 +67,7 @@ public class FsSkewNotifier {
     private FsSkewNotifier() {
     }
     
-    private final Set<ExecutionEnvironment> alreadyNotified = new HashSet<ExecutionEnvironment>();
+    private final Set<ExecutionEnvironment> alreadyNotified = new HashSet<>();
     private final Object lock = new Object();
 
     public static FsSkewNotifier getInstance() {

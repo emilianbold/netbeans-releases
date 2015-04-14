@@ -73,7 +73,7 @@ import org.openide.util.Exceptions;
 
     public CompilerSetScriptManager(ExecutionEnvironment env) {
         super(env);
-        compilerSets = new ArrayList<String>();
+        compilerSets = new ArrayList<>();
     }
 
     public boolean cancel() {

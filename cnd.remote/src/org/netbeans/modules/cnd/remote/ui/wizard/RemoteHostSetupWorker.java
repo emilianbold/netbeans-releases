@@ -74,7 +74,7 @@ public class RemoteHostSetupWorker implements HostSetupWorker {
 
     @SuppressWarnings( "unchecked" )
     private List<WizardDescriptor.Panel<WizardDescriptor>> callUncheckedNewForPanels() {
-        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<Panel<WizardDescriptor>>();
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
         panels.add(new CreateHostWizardPanel1(data));
         panels.add(new CreateHostWizardPanel2(data));
         panels.add(new CreateHostWizardPanel3(data));

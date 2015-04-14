@@ -81,7 +81,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -108,8 +107,8 @@ import org.openide.util.Utilities;
      * Maps remote canonical remote path remote controller operates with
      * to the absolute remote path local controller uses
      */
-    private final Map<String, String> canonicalToAbsolute = new HashMap<String, String>();
-    private final List<FileCollectorInfo> filesToFeed = new ArrayList<FileCollectorInfo>(512);
+    private final Map<String, String> canonicalToAbsolute = new HashMap<>();
+    private final List<FileCollectorInfo> filesToFeed = new ArrayList<>(512);
     private String timeStampFile;
 
     private static final RequestProcessor RP = new RequestProcessor("FileCollector", 1); // NOI18N
@@ -148,8 +147,8 @@ import org.openide.util.Utilities;
         long time = System.currentTimeMillis();        
 
         // the set of top-level dirs
-        Set<File> topDirs = new HashSet<File>();
-        DupsPreventer<File> dupsPreventer = new DupsPreventer<File>();
+        Set<File> topDirs = new HashSet<>();
+        DupsPreventer<File> dupsPreventer = new DupsPreventer<>();
 
         for (File file : files) {
             file = CndFileUtils.normalizeFile(file);
@@ -234,7 +233,7 @@ import org.openide.util.Utilities;
 
 
     private Collection<File> gatherParents(Collection<File> files) {
-        Set<File> parents = new HashSet<File>();
+        Set<File> parents = new HashSet<>();
         for (File file : files) {
             gatherParents(file, parents);
         }
@@ -258,7 +257,7 @@ import org.openide.util.Utilities;
         // the real cycling check is inside checkLinks(List,List) logic
         int cnt = 0;
         final int max = 16;
-        Collection<FileCollectorInfo> filesToCheck = new ArrayList<FileCollectorInfo>(filesToFeed);
+        Collection<FileCollectorInfo> filesToCheck = new ArrayList<>(filesToFeed);
         do {
             filesToCheck = checkLinks(filesToCheck, filesToFeed);
         } while (!filesToCheck.isEmpty() && cnt++ < max);
@@ -269,7 +268,7 @@ import org.openide.util.Utilities;
     }
 
     private Collection<FileCollectorInfo> checkLinks(final Collection<FileCollectorInfo> filesToCheck, final List<FileCollectorInfo> filesToAdd) {
-        Set<FileCollectorInfo> addedInfos = new HashSet<FileCollectorInfo>();
+        Set<FileCollectorInfo> addedInfos = new HashSet<>();
         NativeProcessBuilder pb = NativeProcessBuilder.newLocalProcessBuilder();
         pb.setExecutable("sh"); //NOI18N
         pb.setArguments("-c", "xargs ls -ld | grep '^l'"); //NOI18N
@@ -323,7 +322,7 @@ import org.openide.util.Utilities;
             }
         });
 
-        Map<String, FileCollectorInfo> map = new HashMap<String, FileCollectorInfo>(filesToCheck.size());
+        Map<String, FileCollectorInfo> map = new HashMap<>(filesToCheck.size());
         for (FileCollectorInfo info : filesToCheck) {
             map.put(info.file.getAbsolutePath(), info);
         }
@@ -494,7 +493,7 @@ import org.openide.util.Utilities;
 
         StringBuilder extOptions = new StringBuilder();
         if (srcOnly) {
-            Collection<Collection<String>> values = new ArrayList<Collection<String>>();
+            Collection<Collection<String>> values = new ArrayList<>();
             values.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
             values.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
             values.add(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());

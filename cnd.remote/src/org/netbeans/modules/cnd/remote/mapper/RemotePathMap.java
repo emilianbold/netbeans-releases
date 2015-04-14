@@ -83,10 +83,10 @@ import org.openide.util.Utilities;
 public abstract class RemotePathMap extends PathMap {
 
     private final static Map<ExecutionEnvironment, Map<String, RemotePathMap>> fixedPathMaps =
-            new HashMap<ExecutionEnvironment, Map<String, RemotePathMap>>();
+            new HashMap<>();
 
     private final static Map<ExecutionEnvironment, Map<String, RemotePathMap>> customPathMaps =
-            new HashMap<ExecutionEnvironment, Map<String, RemotePathMap>>();
+            new HashMap<>();
 
 
     public static RemotePathMap getPathMap(ExecutionEnvironment env) {
@@ -103,7 +103,7 @@ public abstract class RemotePathMap extends PathMap {
         RemotePathMap pathmap = null;
         if (pathmaps == null) {
             synchronized (pmtable) {
-                pathmaps = new HashMap<String, RemotePathMap>();
+                pathmaps = new HashMap<>();
                 pmtable.put(env, pathmaps);
             }
         }
@@ -118,7 +118,7 @@ public abstract class RemotePathMap extends PathMap {
         return pathmap;
     }
 
-    protected final HashMap<String, String> map = new HashMap<String, String>();
+    protected final HashMap<String, String> map = new HashMap<>();
     protected final ExecutionEnvironment execEnv;
     protected volatile String localBase;
 
@@ -240,7 +240,7 @@ public abstract class RemotePathMap extends PathMap {
 
     @Override
     public boolean checkRemotePaths(File[] localFiles, boolean fixMissingPaths) {
-        List<String> localPaths = new ArrayList<String>();
+        List<String> localPaths = new ArrayList<>();
         for (File file : localFiles) {
             if (file.isDirectory()) {
                 localPaths.add(file.getAbsolutePath());
@@ -253,7 +253,7 @@ public abstract class RemotePathMap extends PathMap {
         }
         // sort local paths so that if there are parent paths, they go first
         Collections.sort(localPaths);
-        List<String> invalidLocalPaths = new ArrayList<String>();
+        List<String> invalidLocalPaths = new ArrayList<>();
         for (String lPath : localPaths) {
             if (!checkRemotePath(lPath)) {
                 invalidLocalPaths.add(lPath);
@@ -326,7 +326,7 @@ public abstract class RemotePathMap extends PathMap {
             return;
         }
         synchronized( map ) {
-            Map<String, String> clone = new LinkedHashMap<String, String>(map);
+            Map<String, String> clone = new LinkedHashMap<>(map);
             clone.put(localParent,remoteParent);
             updatePathMapImpl(clone);
         }
@@ -494,7 +494,7 @@ public abstract class RemotePathMap extends PathMap {
                     if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                         return;
                     }
-                    final AtomicReference<Boolean> cancelled = new AtomicReference<Boolean>(Boolean.FALSE);
+                    final AtomicReference<Boolean> cancelled = new AtomicReference<>(Boolean.FALSE);
                     // 2. Automated mappings gathering entry point
                     final HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
                     Timer timer = new Timer(TIMEOUT, new ActionListener() {

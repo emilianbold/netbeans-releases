@@ -90,7 +90,7 @@ public final class NetworkRegistry {
     private NetworkRegistry() {
         // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4773521
         System.setProperty("java.net.preferIPv4Stack", "true"); // NOI18N
-        hosts = new ArrayList<NeighbourHost>();
+        hosts = new ArrayList<>();
         scanner = NO_SCAN ? null : new Scanner();
         manager.setRootContext(Node.EMPTY);
         Preferences proxyPrefs = NbPreferences.root().node("org/netbeans/core"); // NOI18N
@@ -257,7 +257,7 @@ public final class NetworkRegistry {
         private SingleRangeEnumeration currentEnumerator;
 
         public AdressesEnumeration() {
-            final Set<SingleRangeEnumeration> set = new HashSet<SingleRangeEnumeration>();
+            final Set<SingleRangeEnumeration> set = new HashSet<>();
 
             try {
                 Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();

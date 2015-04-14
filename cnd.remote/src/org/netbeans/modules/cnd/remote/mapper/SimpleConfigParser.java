@@ -58,8 +58,8 @@ import org.openide.util.Exceptions;
  */
 public class SimpleConfigParser {
 
-    private final Map<String, Map<String, String>> sections2attributes = new HashMap<String, Map<String, String>>();
-    private final Map<String, String> orphanAttributes = new HashMap<String, String>();
+    private final Map<String, Map<String, String>> sections2attributes = new HashMap<>();
+    private final Map<String, String> orphanAttributes = new HashMap<>();
     private final Pattern patternSection = Pattern.compile("\\[.+\\]"); //NOI18N
     private final Pattern patternAttribute = Pattern.compile("[^=]+=[^=]+"); //NOI18N
     private boolean parsed = false;

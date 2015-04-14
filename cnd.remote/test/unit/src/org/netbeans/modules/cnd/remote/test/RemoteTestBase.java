@@ -223,7 +223,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         setLoggers(false);
     }
 
-    private static Set<ExecutionEnvironment> hosts = new HashSet<ExecutionEnvironment>();
+    private static Set<ExecutionEnvironment> hosts = new HashSet<>();
 
     protected static synchronized void setupHost(ExecutionEnvironment execEnv) {
         if (! hosts.contains(execEnv)) {

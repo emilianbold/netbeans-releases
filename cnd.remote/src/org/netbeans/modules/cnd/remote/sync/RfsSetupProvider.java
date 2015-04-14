@@ -89,7 +89,7 @@ public class RfsSetupProvider implements SetupProvider {
             , "SunOS-sparc" // NOI18N
             , "SunOS-sparc_64" // NOI18N
         };
-        binarySetupMap = new HashMap<String, File>();
+        binarySetupMap = new HashMap<>();
         for (String dir : dirs) {
             binarySetupMap.put(dir + "/" + PRELOAD, InstalledFileLocator.getDefault().locate("bin/" + dir + "/" + PRELOAD, "org.netbeans.modules.cnd.remote", false)); // NOI18N
             binarySetupMap.put(dir + "/" + CONTROLLER, InstalledFileLocator.getDefault().locate("bin/" + dir + "/" + CONTROLLER, "org.netbeans.modules.cnd.remote", false)); // NOI18N
@@ -98,7 +98,7 @@ public class RfsSetupProvider implements SetupProvider {
 
     @Override
     public Map<String, File> getBinaryFiles(ExecutionEnvironment env) {
-        Map<String, File> result = new LinkedHashMap<String, File>();
+        Map<String, File> result = new LinkedHashMap<>();
         Boolean applicable = isApplicable(env);
         if (applicable == null) {
             RemoteUtil.LOGGER.log(Level.WARNING, "Can not determine whether RFS is applicable for {0}", env.getDisplayName());

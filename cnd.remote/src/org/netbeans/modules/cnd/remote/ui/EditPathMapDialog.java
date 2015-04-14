@@ -146,7 +146,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private final ServerRecord currentHost;
     private final DefaultComboBoxModel serverListModel;
     private final List<String> pathsToValidate;
-    private final Map<ServerRecord, PathMapTableModel> cache = new HashMap<ServerRecord, PathMapTableModel>();
+    private final Map<ServerRecord, PathMapTableModel> cache = new HashMap<>();
     private ProgressHandle phandle;
 
     /** Creates new form EditPathMapDialog */
@@ -343,7 +343,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
     /* package */ void applyChanges() {
         for (ServerRecord host : cache.keySet()) {
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             DefaultTableModel model = cache.get(host);
             for (int i = 0; i < model.getRowCount(); i++) {
                 String local = (String) model.getValueAt(i, 0);
@@ -576,7 +576,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private String validateMaps() {
         DefaultTableModel model = cache.get(currentHost);
         StringBuilder sb = new StringBuilder();
-        List<String> pathsToValidateCopy = new ArrayList<String>(pathsToValidate);
+        List<String> pathsToValidateCopy = new ArrayList<>(pathsToValidate);
         for (int i = 0; i < model.getRowCount(); i++) {
             String local = (String) model.getValueAt(i, 0);
             String remote = (String) model.getValueAt(i, 1);
@@ -586,7 +586,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     if (!HostInfoProvider.fileExists(ExecutionEnvironmentFactory.getLocal(), local)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadLocalPath", local));
                     }                    
-                    for (String pathToValidate : new ArrayList<String>(pathsToValidateCopy)) {
+                    for (String pathToValidate : new ArrayList<>(pathsToValidateCopy)) {
                         if (remote != null && RemotePathMap.isSubPath(local, pathToValidate)) {
                             pathsToValidateCopy.remove(pathToValidate);
                             //TODO: real path mapping validation (create file, check from both sides, etc)

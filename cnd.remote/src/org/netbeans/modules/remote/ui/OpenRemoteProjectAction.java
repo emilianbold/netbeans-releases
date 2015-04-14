@@ -215,7 +215,7 @@ public class OpenRemoteProjectAction extends SingleHostAction {
     private static final class ProjectSelectionFileView extends FileView implements Runnable {
 
         private final JFileChooser chooser;
-        private final Map<File, Icon> knownProjectIcons = new HashMap<File, Icon>();
+        private final Map<File, Icon> knownProjectIcons = new HashMap<>();
         private final RequestProcessor.Task task = new RequestProcessor("ProjectIconFileView").create(this);//NOI18N
         private File lookingForIcon;
 

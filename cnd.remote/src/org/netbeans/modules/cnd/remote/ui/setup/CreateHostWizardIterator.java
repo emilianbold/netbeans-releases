@@ -60,12 +60,9 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker.Result;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -76,7 +73,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     private final ToolsCacheManager cacheManager;
     private final List<HostSetupProvider> providers;
     private final CreateHostWizardPanel0 panel0;
-    final List<ChangeListener> changeListeners = new CopyOnWriteArrayList<ChangeListener>();
+    final List<ChangeListener> changeListeners = new CopyOnWriteArrayList<>();
 
     private CreateHostWizardIterator(List<HostSetupProvider> providers, ToolsCacheManager cacheManager) {
         this.providers = providers;
@@ -99,7 +96,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     @SuppressWarnings("unchecked")
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanelsUnchecked() {
 
-        List<WizardDescriptor.Panel<WizardDescriptor>> pList = new ArrayList<Panel<WizardDescriptor>>();
+        List<WizardDescriptor.Panel<WizardDescriptor>> pList = new ArrayList<>();
         HostSetupWorker worker;
         if (providers.size() > 1) {
             pList.add(panel0);
@@ -126,7 +123,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
@@ -197,7 +194,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
 
     public static ServerRecord invokeMe(ToolsCacheManager cacheManager) {
 
-        List<HostSetupProvider> providers = new ArrayList<HostSetupProvider>();
+        List<HostSetupProvider> providers = new ArrayList<>();
         for (HostSetupProvider provider : Lookup.getDefault().lookupAll(HostSetupProvider.class)) {
             if (provider.isApplicable()) {
                 providers.add(provider);
@@ -263,7 +260,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     public static void applyHostSetup(ToolsCacheManager cacheManager, HostSetupWorker.Result createHostData) {
         ServerRecord newServerRecord = CreateHostWizardIterator.finishHostSetup(createHostData);
         if (newServerRecord != null) {
-            List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
+            List<ServerRecord> hosts = new ArrayList<>(ServerList.getRecords());
             if (!hosts.contains(newServerRecord)) {
                 hosts.add(newServerRecord);
                 cacheManager.setHosts(hosts);
