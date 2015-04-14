@@ -70,7 +70,7 @@ public class SyncUtils {
     
     public static void arrangeComboBox(JComboBox cbSyncMode, ExecutionEnvironment execEnv) {
 
-        List<RemoteSyncFactory> factories = new ArrayList<RemoteSyncFactory>();
+        List<RemoteSyncFactory> factories = new ArrayList<>();
         for (RemoteSyncFactory factory : RemoteSyncFactory.getFactories()) {
             if (factory.isApplicable(execEnv)) {
                 factories.add(factory);
@@ -117,7 +117,7 @@ public class SyncUtils {
     }
     
     public static File[] toFiles(FSPath[] paths) {
-        List<File> l = new ArrayList<File>(paths.length);
+        List<File> l = new ArrayList<>(paths.length);
         for (FSPath path : paths) {
             if (FileSystemProvider.getExecutionEnvironment(path.getFileSystem()).isLocal()) {
                 l.add(new File(path.getPath()));

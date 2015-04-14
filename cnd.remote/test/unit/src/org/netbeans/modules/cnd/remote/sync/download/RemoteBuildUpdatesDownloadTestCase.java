@@ -167,7 +167,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     }
 
     private void checkInfo(NameStatePair[] pairsToCheck, long timeout, FileObject privProjectStorageDir) throws IOException {
-        List<NameStatePair> pairs = new ArrayList<NameStatePair>(Arrays.asList(pairsToCheck));
+        List<NameStatePair> pairs = new ArrayList<>(Arrays.asList(pairsToCheck));
         long stopTime = System.currentTimeMillis() + timeout;
         while (true) {
             List<FileDownloadInfo> updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment(), privProjectStorageDir);

@@ -57,9 +57,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class RfsListenerSupportImpl {
 
     private final ExecutionEnvironment execEnv;
-    private final List<RfsListener> listeners = new ArrayList<RfsListener>();
+    private final List<RfsListener> listeners = new ArrayList<>();
     
-    private static final Map<ExecutionEnvironment, RfsListenerSupportImpl> instances = new HashMap<ExecutionEnvironment, RfsListenerSupportImpl>();
+    private static final Map<ExecutionEnvironment, RfsListenerSupportImpl> instances = new HashMap<>();
     
     public static RfsListenerSupportImpl getInstanmce(ExecutionEnvironment execEnv) {
         synchronized (instances) {

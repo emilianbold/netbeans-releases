@@ -86,7 +86,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -271,7 +270,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 String root = getString(atts.getValue(ROOT_ATTR));
                 // physical folders have own name as display name
                 String displayName = name;
-                if (root != null) { 
+                if (root != null) {
                     // except source root which has name as ID and we'd like to display physical
                     String absRootPath = CndPathUtilities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
                     absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
@@ -486,7 +485,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String op = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT));
 
             LibraryItem.ProjectItem projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
-                    pl, new Integer(ct),
+                    pl, Integer.parseInt(ct),
                     cn,
                     ac.equals(TRUE_VALUE),
                     bl != null ? bl.equals(TRUE_VALUE) : true,
@@ -585,11 +584,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             boolean ds = currentText.equals(TRUE_VALUE);
             ((MakeConfiguration) currentConf).getRebuildPropChanged().setValue(ds);
         } else if (element.equals(DEFAULT_CONF_ELEMENT)) {
-            defaultConf = new Integer(currentText);
+            defaultConf = Integer.parseInt(currentText);
         } else if (element.equals(PROJECT_MAKEFILE_ELEMENT)) {
             projectDescriptor.setProjectMakefileName(getString(currentText));
         } else if (element.equals(OPTIMIZATION_LEVEL_ELEMENT)) { // FIXUP <= version 21
-            int ol = new Integer(currentText);
+            int ol = Integer.parseInt(currentText);
             if (currentCCCCompilerConfiguration != null) {
                 if (ol == 0) {
                     currentCCCCompilerConfiguration.getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
@@ -912,7 +911,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentCCCompilerConfiguration.setCppStandardExternal(val);
             } else if (currentCCompilerConfiguration != null) {
                 currentCCompilerConfiguration.setCStandardExternal(val);
-            }            
+            }
         } else if (element.equals(INHERIT_INC_VALUES_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentCCCCompilerConfiguration != null) {
@@ -1098,7 +1097,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType, String customizerId) {
         String host;
         // here we need to handle tags added between version.
-        // becase such tags will not be handled in "endElement" callbacks        
+        // becase such tags will not be handled in "endElement" callbacks
         if (descriptorVersion < 46) {
             host = HostInfoUtils.LOCALHOST;
         } else {

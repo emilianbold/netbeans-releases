@@ -81,7 +81,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private ProjectActionHandler delegate;
     private ProjectActionEvent pae;
     private ExecutionEnvironment execEnv;
-    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
+    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<>();
 
     private PrintWriter out;
     private PrintWriter err;
@@ -91,7 +91,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     /* package-local */
     RemoteBuildProjectActionHandler() {
     }
-    
+
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
@@ -135,7 +135,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             } catch (IOException ex) {
                 ex.printStackTrace(System.err);
                 if (io != null) {
-                    io.getErr().printf("%s\n", ex.getMessage()); //NOI18N
+                    io.getErr().printf("%s%n", ex.getMessage()); //NOI18N
                 }
                 delegate.cancel();
                 return;
@@ -158,22 +158,22 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
         FileObject privProjectStorage = RemoteProjectSupport.getPrivateStorage(pae.getProject());
         MakeConfiguration conf = pae.getConfiguration();
-        AtomicReference<String> runDir = new AtomicReference<String>();
+        AtomicReference<String> runDir = new AtomicReference<>();
         List<FSPath> sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf, runDir);
 
         RemoteSyncFactory syncFactory = conf.getRemoteSyncFactory();
-        final RemoteSyncWorker worker = (syncFactory == null) ? null : 
-                syncFactory.createNew(execEnv, out, err, privProjectStorage, runDir.get(), sourceDirs, 
+        final RemoteSyncWorker worker = (syncFactory == null) ? null :
+                syncFactory.createNew(execEnv, out, err, privProjectStorage, runDir.get(), sourceDirs,
                         RemoteProjectSupport.getBuildResults(conf));
         CndUtils.assertTrue(worker != null, "RemoteSyncWorker shouldn't be null"); //NOI18N
         if (worker == null) {
             delegate.execute(io);
-            return;            
+            return;
         }
 
-        Map<String, String> env2add = new HashMap<String, String>();
+        Map<String, String> env2add = new HashMap<>();
         System.setProperty(testWorkerRunningProp, "true"); // NOI18N
-        if (worker.startup(env2add)) {            
+        if (worker.startup(env2add)) {
             final ExecutionListener listener = new ExecutionListener() {
                 @Override
                 public void executionStarted(int pid) {
@@ -200,7 +200,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 l.executionFinished(-8);
             }
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
+                err.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
             }
         }
     }

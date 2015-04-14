@@ -118,7 +118,7 @@ public final class HostInfoUtils {
             }
 
             try {
-                SftpSupport.getInstance(execEnv).lstat(fname, null).get();
+                SftpSupport.getInstance(execEnv).lstat(fname).get();
                 return true;
             } catch (ExecutionException ex) {
                 if (ex.getCause() instanceof SftpIOException) {
@@ -166,7 +166,7 @@ public final class HostInfoUtils {
             }
 
             try {
-                FileInfoProvider.StatInfo statInfo = SftpSupport.getInstance(execEnv).stat(fname, null).get();
+                FileInfoProvider.StatInfo statInfo = SftpSupport.getInstance(execEnv).stat(fname).get();
                 return statInfo.isDirectory();
             } catch (ExecutionException ex) {
                 if (ex.getCause() instanceof SftpIOException) {

@@ -53,6 +53,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -82,10 +83,10 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<Pars
     private static final int TASK_DELAY = getInt("cnd.docview.delay", 500); // NOI18N
     private final CancelSupport cancel = CancelSupport.create(this);
     private AtomicBoolean canceled = new AtomicBoolean(false);
-    
+
     public DocViewCaretAwareFactory(String mimeType) {
         super(TaskIndexingMode.ALLOWED_DURING_SCAN);
-        
+
     }
     @Override
     public void run(Parser.Result result, SchedulerEvent event) {
@@ -123,7 +124,7 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<Pars
         }
         RP.post(new RunnerImpl(csmFile, (StyledDocument)doc, (CursorMovedSchedulerEvent)event, canceled, time+TASK_DELAY), TASK_DELAY);
     }
-    
+
     @Override
     public void cancel() {
         synchronized(this) {
@@ -178,6 +179,7 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<Pars
         @Override
         public void run() {
             try {
+                CsmCacheManager.enter();
                 CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, event.getCaretOffset());
                 if (ref == null) {
                     return;
@@ -222,6 +224,7 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<Pars
                     }
                 });
             } finally {
+                CsmCacheManager.leave();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "DocViewCaretAwareFactory finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
                 }

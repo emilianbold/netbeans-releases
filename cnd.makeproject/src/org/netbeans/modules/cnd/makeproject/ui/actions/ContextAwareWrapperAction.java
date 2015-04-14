@@ -44,10 +44,8 @@ package org.netbeans.modules.cnd.makeproject.ui.actions;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.ui.RemoteDevelopmentAction;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
 /**

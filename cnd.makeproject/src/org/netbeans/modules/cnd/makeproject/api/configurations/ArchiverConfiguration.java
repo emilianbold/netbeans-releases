@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.Locale;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
@@ -316,7 +317,7 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
     }
 
     private String getOutputDefault() {
-        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase(Locale.getDefault());
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_STATIC_LIB:
                 outputName = "lib" + outputName + ".a"; // NOI18N
@@ -330,7 +331,7 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
      * Default output pre version 28
      */
     public String getOutputDefault27() {
-        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase(Locale.getDefault());
         outputName = "lib" + outputName + ".a"; // NOI18N
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // UNIX path // NOI18N
     }

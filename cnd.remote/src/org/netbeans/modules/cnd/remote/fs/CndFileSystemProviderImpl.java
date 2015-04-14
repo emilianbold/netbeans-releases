@@ -294,7 +294,7 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
         return result;
     }
 
-    private final List<ProblemListenerAdapter> adapters = new ArrayList<ProblemListenerAdapter>();
+    private final List<ProblemListenerAdapter> adapters = new ArrayList<>();
 
     @Override
     protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
@@ -383,7 +383,7 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
         private final WeakReference<CndFileSystemProblemListener> listenerRef;
 
         public ProblemListenerAdapter(CndFileSystemProblemListener listener) {
-            listenerRef = new WeakReference<CndFileSystemProblemListener>(listener);
+            listenerRef = new WeakReference<>(listener);
         }
 
         @Override

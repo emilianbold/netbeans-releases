@@ -51,6 +51,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeMap;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
@@ -114,12 +115,12 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
     }
 
     private void updateModel() {
-        String pattern = filter.getText().trim().toLowerCase();
+        String pattern = filter.getText().trim().toLowerCase(Locale.getDefault());
         final List<PackageConfiguration> res = new ArrayList<>();
         for(PackageConfiguration conf : avaliablePkgConfigs) {
-            if (conf.getName().toLowerCase().contains(pattern)){
+            if (conf.getName().toLowerCase(Locale.getDefault()).contains(pattern)){
                 res.add(conf);
-            } else if (conf.getDisplayName().toLowerCase().contains(pattern)){
+            } else if (conf.getDisplayName().toLowerCase(Locale.getDefault()).contains(pattern)){
                 res.add(conf);
             }
         }

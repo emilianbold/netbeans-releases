@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.packaging;
 
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;

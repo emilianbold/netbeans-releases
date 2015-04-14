@@ -56,7 +56,7 @@ import org.openide.WizardDescriptor.Panel;
  */
 public class RemoteHostSetupWorker implements HostSetupWorker {
 
-    private CreateHostData data;
+    private final CreateHostData data;
 
     /*package*/ RemoteHostSetupWorker(ToolsCacheManager toolsCacheManager) {
         data = new CreateHostData(toolsCacheManager, false);
@@ -74,7 +74,7 @@ public class RemoteHostSetupWorker implements HostSetupWorker {
 
     @SuppressWarnings( "unchecked" )
     private List<WizardDescriptor.Panel<WizardDescriptor>> callUncheckedNewForPanels() {
-        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<Panel<WizardDescriptor>>();
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
         panels.add(new CreateHostWizardPanel1(data));
         panels.add(new CreateHostWizardPanel2(data));
         panels.add(new CreateHostWizardPanel3(data));

@@ -137,7 +137,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
         final DataObject templateDO = DataObject.find(templateFO);
         assertNotNull("DataObject for " + name + " sample not found", templateDO);
-        final AtomicReference<IOException> exRef = new AtomicReference<IOException>();
+        final AtomicReference<IOException> exRef = new AtomicReference<>();
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
             public void run() {
@@ -164,7 +164,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
 
     @Override
     protected List<Class<?>> getServices() {
-        List<Class<?>> list = new ArrayList<Class<?>>();
+        List<Class<?>> list = new ArrayList<>();
         list.add(MakeProjectTypeImpl.class);
         list.addAll(super.getServices());
         return list;

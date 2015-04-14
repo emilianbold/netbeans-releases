@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -91,6 +92,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
@@ -166,7 +168,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         FileSystem fileSystem;
         ExecutionEnvironment env = remoteProject.getSourceFileSystemHost();
         fileSystem = FileSystemProvider.getFileSystem(env);
-        CndUtils.assertNotNull(fileSystem, "null file system"); //NOI18N        
+        CndUtils.assertNotNull(fileSystem, "null file system"); //NOI18N
         return fileSystem;
     }
 
@@ -189,7 +191,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     private static String getProjectRoot(RemoteProject remoteProject) {
         String projectRoot = remoteProject.getSourceBaseDir();
-        CndUtils.assertNotNull(projectRoot, "null projectRoot"); //NOI18N        
+        CndUtils.assertNotNull(projectRoot, "null projectRoot"); //NOI18N
         return projectRoot;
     }
 
@@ -372,7 +374,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
         }
     }
-    
+
     public void fireProjectDeleted() {
         if (TRACE) {
             System.out.println("fireProjectDeleted "); // NOI18N
@@ -464,7 +466,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
             toolColectionChanged = true;
         }
-        
+
         if (toolColectionChanged && newConf.getName().equals(oldConf.getName())) {
             fireFilesPropertiesChanged();
             return;
@@ -643,7 +645,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             while (iter.hasNext()) {
                 String path = iter.next();
                 if (CndPathUtilities.isPathAbsolute(path)) {
-                    vec.add(new FSPath(fs, path));                    
+                    vec.add(new FSPath(fs, path));
                 } else {
                     path = CndPathUtilities.toAbsolutePath(fs, getProjectRoot(), path);
                     vec.add(new FSPath(fs, path));
@@ -667,7 +669,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             while (iter.hasNext()) {
                 String path = iter.next();
                 if (CndPathUtilities.isPathAbsolute(path)) {
-                    vec.add(path);                    
+                    vec.add(path);
                 } else {
                     path = CndPathUtilities.toAbsolutePath(fs, getProjectRoot(), path);
                     vec.add(path);
@@ -763,84 +765,34 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         ExecutionEnvironment ev = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
         return execute(ev, executable, env, args);
     }
-    
-    /*package*/ static NativeExitStatus execute(ExecutionEnvironment ev, String executable, String[] env, String... args) throws IOException {
-        if (ev.isLocal()) {
-            String exePath = Path.findCommand(executable);
-            if (exePath == null) {
-                throw new IOException(getString("NOT_FOUND", executable));  // NOI18N
-            }
-            List<String> arguments = new ArrayList<>(args.length + 1);
-            arguments.add(exePath);
-            arguments.addAll(Arrays.asList(args));
-            StringBuilder output = new StringBuilder();
-            RequestProcessor.Task errorTask = null;
-            Process startedProcess = null;
-           
-            try {
-                ProcessBuilder pb = new ProcessBuilder(arguments);
-                if (env != null) {
-                    for(String envEntry: env) {
-                        String[] varValuePair = envEntry.split("=");  // NOI18N
-                        pb.environment().put(varValuePair[0], varValuePair[1]);
-                    }
-                }
-                startedProcess = pb.start();
 
-                final BufferedReader reader2 = new BufferedReader(new InputStreamReader(startedProcess.getErrorStream()));
-                errorTask = RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            String line;
-                            while ((line = reader2.readLine()) != null) {
-                                // we is not interested in err stream
-                                //System.err.println(line);
-                            }
-                        } catch (IOException ex) {
-                        }
-                    }
-                });
-                
-                BufferedReader reader1 = new BufferedReader(new InputStreamReader(startedProcess.getInputStream()));
-                String line;
-                while ((line = reader1.readLine()) != null) {
-                    output.append(line).append("\n"); // NOI18N
+    /*package*/ static NativeExitStatus execute(ExecutionEnvironment ee, String executable, String[] env, String... args) throws IOException {
+        ServerRecord record = ServerList.get(ee);
+        if (!record.isOnline()) {
+            return new NativeExitStatus(-1, "", getString("HOST_OFFLINE", ee.getHost()));
+        }
+        try {
+            if (ee.isLocal()) {
+                String exePath = Path.findCommand(executable);
+                if (exePath == null) {
+                    throw new IOException(getString("NOT_FOUND", executable));  // NOI18N
                 }
-
-                startedProcess.waitFor();
-                reader1.close();
-                reader2.close();
-                startedProcess = null;
-                errorTask = null;
-                return new NativeExitStatus(0, output.toString(), "");
-            } catch (IOException ioe) {
-                throw ioe;
-            } catch (InterruptedException ex) {
-                throw new IOException(ex);
-            } finally {
-                if (errorTask != null){
-                    errorTask.cancel();
-                }
-                if (startedProcess != null) {
-                    startedProcess.destroy();
+                executable = exePath;
+            }
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(ee);
+            //npb.setCharset(Charset.forName("UTF-8")); // NOI18N
+            npb.setExecutable(executable); //NOI18N
+            npb.setArguments(args);
+            if (env != null) {
+                for(String envEntry: env) {
+                    String[] varValuePair = envEntry.split("=");  // NOI18N
+                    npb.getEnvironment().put(varValuePair[0], varValuePair[1]);
                 }
             }
-        } else {
-            ServerRecord record = ServerList.get(ev);
-            if (!record.isOnline()) {
-                return new NativeExitStatus(-1, "", getString("HOST_OFFLINE", ev.getHost()));
-            }
-            try {
-                // FIXUP: need to handle env!
-                ExitStatus exitStatus;
-                exitStatus = ProcessUtils.execute(ev, executable, args);
-                return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
-            }
-            catch (Exception e) {
-                return new NativeExitStatus(-1, "", e.getMessage());
-            }
+            ExitStatus exitStatus =  ProcessUtils.execute(npb);
+            return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
+        } catch (Exception e) {
+            return new NativeExitStatus(-1, "", e.getMessage());
         }
     }
 

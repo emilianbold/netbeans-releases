@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -92,10 +93,10 @@ public class PackagingConfiguration implements Cloneable {
         tool = new StringConfiguration(null, ""); // NOI18N
         options = new StringConfiguration(null, ""); // NOI18N
         topDir = new StringConfiguration(null, null); // NOI18N
-        
+
         setDefaultValues();
     }
-    
+
     public final void setDefaultValues() {
         // Init default values
         String perm = MakeOptions.getInstance().getDefExePerm();
@@ -127,7 +128,7 @@ public class PackagingConfiguration implements Cloneable {
                 MakeOptions.getInstance().getDefGroup());
         elem.setDefaultValue(true);
         files.add(elem);
-        
+
         // Add default info lists
         List<PackagerInfoElement> infoList = getInfo().getValue();
         List<PackagerDescriptor> packagerList = PackagerManager.getDefault().getPackagerList();
@@ -137,7 +138,7 @@ public class PackagingConfiguration implements Cloneable {
             }
         }
     }
-    
+
     public List<PackagerInfoElement> getHeaderSubList(String packager) {
         List<PackagerInfoElement> list = new ArrayList<>();
         List<PackagerInfoElement> headerList = getInfo().getValue();
@@ -148,7 +149,7 @@ public class PackagingConfiguration implements Cloneable {
         }
         return list;
     }
-    
+
     public boolean isModified() {
         if (getType().getModified() || getOutput().getModified() || getOptions().getModified() || getVerbose().getModified() || getTool().getModified()) {
             return true;
@@ -161,7 +162,7 @@ public class PackagingConfiguration implements Cloneable {
                 return true;
             }
         }
-        
+
         List<PackagerInfoElement> headerList = getHeaderSubList(getType().getValue());
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
         if (packager != null && packager.hasInfoList()) {
@@ -171,7 +172,7 @@ public class PackagingConfiguration implements Cloneable {
         }
         return false;
     }
-    
+
     // MakeConfiguration
     public void setMakeConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
@@ -250,7 +251,7 @@ public class PackagingConfiguration implements Cloneable {
     public StringConfiguration getOptions() {
         return options;
     }
-    
+
     public void setTopDir(StringConfiguration topDir) {
         this.topDir = topDir;
     }
@@ -258,7 +259,7 @@ public class PackagingConfiguration implements Cloneable {
     public StringConfiguration getTopDir() {
         return topDir;
     }
-    
+
     // Clone and assign
     public void assign(PackagingConfiguration conf) {
         //setMakeConfiguration(conf.getMakeConfiguration()); // MakeConfiguration should not be assigned
@@ -287,7 +288,7 @@ public class PackagingConfiguration implements Cloneable {
         clone.setTopDir(getTopDir().clone());
         return clone;
     }
-    
+
     private TypePropertyChangeListener typePropertyChangeListener;
     // Sheet
     public Sheet getGeneralSheet(JPanel makeCustomizer) {
@@ -303,7 +304,7 @@ public class PackagingConfiguration implements Cloneable {
         set.setShortDescription(getString("GeneralHint"));
 
         IntConfiguration tmpIntConfiguration = new PackagerIntConfiguration(null, 0, PackagerManager.getDefault().getDisplayNames(), null);
-        
+
         set.put(intNodeprop = new PackagerIntNodeProp(tmpIntConfiguration, true, "PackageType", getString("PackageTypeName"), getString("PackageTypeHint"))); // NOI18N
         set.put(outputNodeProp = new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
         String[] texts = new String[]{"Files", getString("FilesName"), getString("FilesHint")}; // NOI18N
@@ -317,12 +318,12 @@ public class PackagingConfiguration implements Cloneable {
         intNodeprop.getPropertyEditor().addPropertyChangeListener(typePropertyChangeListener = new TypePropertyChangeListener(makeCustomizer, outputNodeProp, toolNodeProp, optionsNodeProp));
         return sheet;
     }
-    
+
     private class PackagerIntConfiguration extends IntConfiguration {
         PackagerIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
             super(master, def, names, options);
         }
-        
+
         @Override
         public void setValue(String s) {
             if (s != null) {
@@ -342,20 +343,20 @@ public class PackagingConfiguration implements Cloneable {
             int i = PackagerManager.getDefault().getNameIndex(getType().getValue());
             return i;
         }
-    
+
     }
-    
+
     private class PackagerIntNodeProp extends IntNodeProp {
         public PackagerIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String name, String displayName, String description) {
             super(intConfiguration, canWrite, name, displayName, description);
         }
-        
-        
+
+
         @Override
         public Object getValue() {
             return PackagerManager.getDefault().getNameIndex(getType().getValue());
         }
-    
+
         @Override
         public void setValue(Object v) {
             String displayName = (String)v;
@@ -411,7 +412,7 @@ public class PackagingConfiguration implements Cloneable {
             return getOutputDefault();
         }
     }
-    
+
     public String getTopDirValue() {
         if (getTopDir().getModified()) {
             return getTopDir().getValue();
@@ -425,12 +426,12 @@ public class PackagingConfiguration implements Cloneable {
             }
         }
     }
-    
+
     public String getOutputName() {
         String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION ||
             getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DB_APPLICATION) {
-            outputName = outputName.toLowerCase();
+            outputName = outputName.toLowerCase(Locale.getDefault());
         } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             Platform platform = Platforms.getPlatform(getMakeConfiguration().getDevelopmentHost().getBuildPlatform());
             outputName = platform.getLibraryName(outputName);
@@ -438,7 +439,7 @@ public class PackagingConfiguration implements Cloneable {
         outputName = createValidPackageName(outputName);
         return outputName;
     }
-    
+
     private String getOutputDefault() {
         String outputPath = MakeConfiguration.CND_DISTDIR_MACRO + "/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/package"; // NOI18N
 //        String outputName = getOutputName();
@@ -502,17 +503,17 @@ public class PackagingConfiguration implements Cloneable {
 //        return TYPE_DISPLAY_NAMES[getType().getValue()];
         return PackagerManager.getDefault().getDisplayName(getType().getValue()); // FIXUP?
     }
-    
+
     public String getName() {
         return getType().getValue();
     }
-    
+
     public String expandMacros(String s) {
         s = makeConfiguration.expandMacros(s);
         s = CndPathUtilities.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
         return s;
     }
-    
+
     private String createValidPackageName(String name) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < name.length(); i++) {
@@ -527,8 +528,8 @@ public class PackagingConfiguration implements Cloneable {
         }
         return stringBuilder.toString();
     }
-    
-    
+
+
     public PackagerInfoElement findInfoElement(String name) {
         List<PackagerInfoElement> infoList = getInfo().getValue();
         for (PackagerInfoElement elem : infoList) {
@@ -538,7 +539,7 @@ public class PackagingConfiguration implements Cloneable {
         }
         return null;
     }
-    
+
     public String findInfoValueName(String name) {
         List<PackagerInfoElement> infoList = getInfo().getValue();
         for (PackagerInfoElement elem : infoList) {

@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 })
 public class OpenRemoteFileAction extends RemoteOpenActionBase {
 
-    private ImageIcon icon;
+    private final ImageIcon icon;
     
     public OpenRemoteFileAction() {
         super(NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title")); //NOI18N

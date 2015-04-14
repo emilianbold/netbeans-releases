@@ -113,12 +113,12 @@ import org.openide.util.RequestProcessor;
     }
 
     private void respond_ok() {
-        responseStream.printf("1\n"); // NOI18N
+        responseStream.printf("1%n"); // NOI18N
         responseStream.flush();
     }
 
     private void respond_err(String tail) {
-        responseStream.printf("0 %s\n", tail); // NOI18N
+        responseStream.printf("0 %s%n", tail); // NOI18N
         responseStream.flush();
     }
 
@@ -257,7 +257,7 @@ import org.openide.util.RequestProcessor;
         String versionsPattern = "VERSIONS "; // NOI18N
         if (!versionsString.startsWith(versionsPattern)) {
             if (err != null) {
-                err.printf("Protocol error, expected %s, got %s\n", versionsPattern, versionsString); //NOI18N
+                err.printf("Protocol error, expected %s, got %s%n", versionsPattern, versionsString); //NOI18N
             }
             return false;
         }
@@ -265,7 +265,7 @@ import org.openide.util.RequestProcessor;
         for (String v : versionsArray) {
             if (v.length() != 1) {
                 if (err != null) {
-                    err.printf("Protocol error: incorrect version format: %s\n", versionsString); //NOI18N
+                    err.printf("Protocol error: incorrect version format: %s%n", versionsString); //NOI18N
                 }
                 return false;
             }
@@ -283,20 +283,20 @@ import org.openide.util.RequestProcessor;
     private static class FormatException extends Exception {
         public FormatException(String message) {
             super(message);
-        }        
+        }
         public FormatException(String message, Throwable cause) {
             super(message, cause);
-        }        
+        }
     }
 
-    private long getTimeSkew() throws IOException, CancellationException, FormatException {        
+    private long getTimeSkew() throws IOException, CancellationException, FormatException {
         final int cnt = 10;
-        responseStream.printf("SKEW_COUNT=%d\n", cnt); //NOI18N
+        responseStream.printf("SKEW_COUNT=%d%n", cnt); //NOI18N
         responseStream.flush();
         long[] deltas = new long[cnt];
         for (int i = 0; i < cnt; i++) {
             long localTime1 = System.currentTimeMillis();
-            responseStream.printf("SKEW %d\n", i); //NOI18N
+            responseStream.printf("SKEW %d%n", i); //NOI18N
             responseStream.flush();
             String line = requestReader.readLine();
             long localTime2 = System.currentTimeMillis();
@@ -307,19 +307,19 @@ import org.openide.util.RequestProcessor;
                 throw new FormatException("Wrong skew format: " + line, nfe); //NOI18N
             }
         }
-        responseStream.printf("SKEW_END\n"); //NOI18N
+        responseStream.printf("SKEW_END%n"); //NOI18N
         responseStream.flush();
-        
+
         long skew = 0;
         for (int i = 0; i < cnt; i++) {
             skew += deltas[i];
         }
         skew /= cnt;
-        
+
         String line = requestReader.readLine();
         if (!line.startsWith("FS_SKEW ")) { //NOI18N
             throw new FormatException("Wrong file system skew response: " + line); //NOI18N
-        }   
+        }
         try {
             long fsSkew = Long.parseLong(line.substring(8));
             fsSkew /=  1000;
@@ -337,18 +337,18 @@ import org.openide.util.RequestProcessor;
      * @return true in the case of success, otherwise false
      * NB: in the case false is returned, no shutdown will be called
      */
-    boolean init() throws IOException, CancellationException {        
+    boolean init() throws IOException, CancellationException {
         if (!checkVersion()) {
             return false;
         }
         logger.log(Level.FINE, "Initialization. Version=%c", VERSION);
         if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             if (err != null) {
-                err.printf("Process exited unexpectedly when initializing\n"); //NOI18N
+                err.printf("Process exited unexpectedly when initializing%n"); //NOI18N
             }
             return false;
         }
-        responseStream.printf("VERSION=%c\n", VERSION); //NOI18N
+        responseStream.printf("VERSION=%c%n", VERSION); //NOI18N
         responseStream.flush();
 
         long clockSkew;
@@ -356,11 +356,11 @@ import org.openide.util.RequestProcessor;
             clockSkew = getTimeSkew();
             if (logger .isLoggable(Level.FINE)) {
                 logger .log(Level.FINE, "HostInfo skew=%d calculated skew=%d", //NOI18N
-                        new Object[]{HostInfoUtils.getHostInfo(execEnv).getClockSkew(), clockSkew}); 
+                        new Object[]{HostInfoUtils.getHostInfo(execEnv).getClockSkew(), clockSkew});
             }
         } catch (FormatException ex) {
             if (err != null) {
-                err.printf("protocol error: %s\n", ex.getMessage()); // NOI18N
+                err.printf("protocol error: %s%n", ex.getMessage()); // NOI18N
             }
             return false;
         }
@@ -375,18 +375,18 @@ import org.openide.util.RequestProcessor;
                 sendFileInitRequest(info, clockSkew);
             } catch (IOException ex) {
                 if (err != null) {
-                    err.printf("Process exited unexpectedly while file info was being sent\n"); //NOI18N
+                    err.printf("Process exited unexpectedly while file info was being sent%n"); //NOI18N
                 }
                 return false;
             }
         }
         if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             if (err != null) {
-                err.printf("Process exited unexpectedly\n"); //NOI18N
+                err.printf("Process exited unexpectedly%n"); //NOI18N
             }
             return false;
         }
-        responseStream.printf("\n"); // NOI18N
+        responseStream.printf("%n"); // NOI18N
         responseStream.flush();
         logger.log(Level.FINE, "sending file list took %d ms", System.currentTimeMillis() - time);
 
@@ -396,7 +396,7 @@ import org.openide.util.RequestProcessor;
             logger.log(Level.FINE, "reading initial response took %d ms", System.currentTimeMillis() - time);
         } catch (IOException ex) {
             if (err != null) {
-                err.printf("%s\n", ex.getMessage());
+                err.printf("%s%n", ex.getMessage());
                 return false;
             }
         }
@@ -462,9 +462,9 @@ import org.openide.util.RequestProcessor;
             throw new IOException("process already exited"); //NOI18N
         }
         if(fgi.isLink()) {
-            responseStream.printf("L %s\n%s\n", fgi.remotePath, fgi.getLinkTarget()); //NOI18N
+            responseStream.printf("L %s%n%s%n", fgi.remotePath, fgi.getLinkTarget()); //NOI18N
         } else if (fgi.file.isDirectory()) {
-            responseStream.printf("D %s\n", fgi.remotePath); //NOI18N
+            responseStream.printf("D %s%n", fgi.remotePath); //NOI18N
             responseStream.flush(); //TODO: remove?
         } else {
             File file = fgi.file;
@@ -498,7 +498,7 @@ import org.openide.util.RequestProcessor;
                     newState = FileState.UNCONTROLLED;
                 } else {
                     newState = FileState.INEXISTENT;
-                }            
+                }
             }
             CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED
                     || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED
@@ -508,9 +508,9 @@ import org.openide.util.RequestProcessor;
                 long fileTime = file.exists() ? Math.max(0, file.lastModified() + timeSkew) : 0;
                 long seconds = fileTime / 1000;
                 long microseconds = (fileTime % 1000) * 1000;
-                responseStream.printf("%c %d %d %d %s\n", newState.id, file.length(), seconds, microseconds, remotePath); // NOI18N
+                responseStream.printf("%c %d %d %d %s%n", newState.id, file.length(), seconds, microseconds, remotePath); // NOI18N
             } else {
-                responseStream.printf("%c %d %s\n", newState.id, file.length(), remotePath); // NOI18N
+                responseStream.printf("%c %d %s%n", newState.id, file.length(), remotePath); // NOI18N
             }
             responseStream.flush(); //TODO: remove?
             if (newState == FileState.INITIAL ) {

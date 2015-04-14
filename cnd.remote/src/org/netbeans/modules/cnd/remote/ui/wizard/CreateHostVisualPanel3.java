@@ -90,6 +90,10 @@ import org.openide.util.NbBundle;
                 JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value == null) {
                     out.setText(""); //NOI18N
+                } else if (value instanceof String) {
+                    // BasicComboBoxUI replaces null with empty string
+                    assert ((String) value).trim().isEmpty();
+                    out.setText(""); //NOI18N
                 } else {
                     CompilerSet cset = (CompilerSet) value;
                     out.setText(cset.getName());

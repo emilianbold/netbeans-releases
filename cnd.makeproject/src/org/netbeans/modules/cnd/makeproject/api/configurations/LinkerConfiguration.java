@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.List;
+import java.util.Locale;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -270,7 +271,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         }
         return CppUtils.reformatWhitespaces(options);
     }
-    
+
     public String getBasicOptions() {
         String options = ""; // NOI18N
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
@@ -481,7 +482,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
             case MakeConfiguration.TYPE_DB_APPLICATION:
-                outputName = outputName.toLowerCase();
+                outputName = outputName.toLowerCase(Locale.getDefault());
                 break;
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
             case MakeConfiguration.TYPE_CUSTOM: // <=== FIXUP
@@ -500,7 +501,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION ||
             getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DB_APPLICATION) {
-            outputName = outputName.toLowerCase();
+            outputName = outputName.toLowerCase(Locale.getDefault());
         } else if (getMakeConfiguration().isDynamicLibraryConfiguration()) {
             outputName = "lib" + outputName + ".so"; // NOI18N
         }

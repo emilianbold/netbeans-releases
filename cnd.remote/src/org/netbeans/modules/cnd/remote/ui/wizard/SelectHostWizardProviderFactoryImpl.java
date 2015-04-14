@@ -68,7 +68,7 @@ public class SelectHostWizardProviderFactoryImpl implements SelectHostWizardProv
 
     private static class SelectHostWizardProviderImpl extends SelectHostWizardProvider {
 
-        private SelectHostWizardPanel panel;
+        private final SelectHostWizardPanel panel;
 
         public SelectHostWizardProviderImpl(boolean allowLocal, boolean allowToCreateNewHostDirectly, ChangeListener changeListener) {
             panel = new SelectHostWizardPanel(allowLocal, allowToCreateNewHostDirectly, changeListener);

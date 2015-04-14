@@ -109,7 +109,7 @@ import org.openide.filesystems.FileSystem;
             }
         }
         if (inexistentFound) {
-            List<File> l = new ArrayList<File>();
+            List<File> l = new ArrayList<>();
             for (File file : files) {
                 if (file.exists()) {
                     l.add(file);
