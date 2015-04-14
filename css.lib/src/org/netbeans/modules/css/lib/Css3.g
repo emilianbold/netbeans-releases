@@ -712,7 +712,7 @@ combinator
 
 simpleSelectorSequence
 	:
-        (elementSubsequent| {isScssSource()}? sass_selector_interpolation_exp) ((ws? esPred)=>((ws? elementSubsequent) |(ws sass_selector_interpolation_exp)))*
+        (elementSubsequent | {isScssSource()}? sass_selector_interpolation_exp | {isLessSource()}? less_selector_interpolation_exp) ((ws? esPred)=>((ws? elementSubsequent) |(ws {isScssSource()}? sass_selector_interpolation_exp | {isLessSource()}? less_selector_interpolation_exp)))*
 	| (typeSelector)=>typeSelector ((ws? esPred)=>((ws? elementSubsequent) | {isScssSource()}? ws sass_selector_interpolation_exp))* 
 	;
 	catch[ RecognitionException rce] {
@@ -753,7 +753,7 @@ cssId
       |
         ( HASH_SYMBOL
             ( NAME
-              | {isLessSource()}? less_selector_interpolation // #@{var} { ... }
+              | {isLessSource()}? less_selector_interpolation_exp // #@{var} { ... }
             )
         )
     ;
@@ -769,7 +769,7 @@ cssClass
             | IDENT
             | NOT
             | GEN
-            | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
+            | {isLessSource()}? less_selector_interpolation_exp
         )
     ;
     catch[ RecognitionException rce] {
@@ -934,7 +934,8 @@ term
         | hexColor
         | {isCssPreprocessorSource()}? cp_variable
         | {isScssSource()}? LESS_AND
-        | {isCssPreprocessorSource()}? sass_interpolation_expression_var
+        | {isScssSource()}? sass_interpolation_expression_var
+        | {isLessSource()}? less_selector_interpolation
         | {isCssPreprocessorSource()}? cp_term_symbol //accept any garbage in preprocessors
     )
     ;
@@ -1203,6 +1204,10 @@ less_fn_name
 less_condition_operator
     :
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
+    ;
+
+less_selector_interpolation_exp :
+    less_selector_interpolation (less_selector_interpolation_exp | IDENT | MINUS)?
     ;
 
 less_selector_interpolation
