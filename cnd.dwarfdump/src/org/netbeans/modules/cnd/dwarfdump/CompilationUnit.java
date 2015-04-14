@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -722,10 +723,11 @@ public class CompilationUnit implements CompilationUnitInterface{
     @Override
     public String toString() {
         try {
+            StringWriter sw = new StringWriter();
             ByteArrayOutputStream st = new ByteArrayOutputStream();
             PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
             dump(out);
-            return st.toString(Charset.defaultCharset().name());
+            return st.toString("UTF-8"); // NOI18N
         } catch (IOException ex) {
             Dwarf.LOG.log(Level.INFO, "File "+reader.getFileName(), ex); // NOI18N
             return ""; // NOI18N
