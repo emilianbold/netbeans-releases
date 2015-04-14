@@ -67,7 +67,7 @@ public final class PhingBuildTool implements BuildToolImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(PhingBuildTool.class.getName());
 
-    private static final String IDENTIFIER = "Phing"; // NOI18N
+    public static final String IDENTIFIER = "Phing"; // NOI18N
 
     private final Project project;
     private final BuildXml buildXml;
