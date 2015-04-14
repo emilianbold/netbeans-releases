@@ -117,8 +117,8 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    public boolean onNotFoundInclusionDirective(InclusionDirectiveInfo directive, StringRef FileName, SmallVectorImplChar RecoveryPath) {
-      return super.onNotFoundInclusionDirective(directive, FileName, RecoveryPath);
+    public boolean onNotFoundInclusionDirective(FileInfoCallback.FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
+      return super.onNotFoundInclusionDirective(curFile, FileName, RecoveryPath);
     }
 
     @Override
