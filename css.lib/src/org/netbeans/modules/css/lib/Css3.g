@@ -971,7 +971,7 @@ functionName
 
 fnAttributes
     :
-    fnAttribute (ws? COMMA ws? fnAttribute)* ws?
+    fnAttribute (ws? (COMMA | {isLessSource()}? SEMI) ws? fnAttribute)* ws?
     ;
 
 fnAttribute
@@ -1168,6 +1168,7 @@ cp_args_list
 cp_arg
     :
     cp_variable ws? ( COLON ws? cp_expression ws?)?
+    | {isLessSource()}? IDENT
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
