@@ -44,8 +44,7 @@ package org.netbeans.modules.web.clientproject.api.build.ui;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.JCheckBox;
@@ -73,7 +72,7 @@ public final class AdvancedTaskPanel extends JPanel {
     DialogDescriptor descriptor;
 
 
-    private AdvancedTaskPanel(String tasksLabel, String buildToolExec, Collection<String> tasks) {
+    private AdvancedTaskPanel(String tasksLabel, String buildToolExec, List<String> tasks) {
         assert EventQueue.isDispatchThread();
         assert tasksLabel != null;
         assert buildToolExec != null;
@@ -86,7 +85,7 @@ public final class AdvancedTaskPanel extends JPanel {
     }
 
     @CheckForNull
-    public static Pair<Boolean, String> open(String title, String tasksLabel, String buildToolExec, Collection<String> tasks) {
+    public static Pair<Boolean, String> open(String title, String tasksLabel, String buildToolExec, List<String> tasks) {
         assert EventQueue.isDispatchThread();
         AdvancedTaskPanel panel = new AdvancedTaskPanel(tasksLabel, buildToolExec, tasks);
         DialogDescriptor descriptor = new DialogDescriptor(panel, title, true, null);
@@ -99,9 +98,9 @@ public final class AdvancedTaskPanel extends JPanel {
         return null;
     }
 
-    private void init(String tasksLabel, Collection<String> tasks) {
+    private void init(String tasksLabel, List<String> tasks) {
         Mnemonics.setLocalizedText(this.tasksLabel, tasksLabel);
-        tasksComboBox.setModel(new DefaultComboBoxModel(new ArrayList<>(tasks).toArray(new String[tasks.size()])));
+        tasksComboBox.setModel(new DefaultComboBoxModel(tasks.toArray(new String[tasks.size()])));
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         optionsTextField.getDocument().addDocumentListener(defaultDocumentListener);

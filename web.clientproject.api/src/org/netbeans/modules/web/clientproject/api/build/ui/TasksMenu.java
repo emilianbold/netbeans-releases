@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.api.build.ui;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -200,8 +201,12 @@ public class TasksMenu extends JMenu {
             @Override
             public void actionPerformed(ActionEvent e) {
                 assert EventQueue.isDispatchThread();
+                List<String> tasksWithDefaultTask = new ArrayList<>(tasks.size() + 1);
+                // add empty task for default task/action
+                tasksWithDefaultTask.add(""); // NOI18N
+                tasksWithDefaultTask.addAll(tasks);
                 final Pair<Boolean, String> advancedTask = AdvancedTaskPanel.open(support.getTitle(TasksMenuSupport.Title.RUN_ADVANCED),
-                        support.getTitle(TasksMenuSupport.Title.TASKS_LABEL), support.getTitle(TasksMenuSupport.Title.BUILD_TOOL_EXEC), tasks);
+                        support.getTitle(TasksMenuSupport.Title.TASKS_LABEL), support.getTitle(TasksMenuSupport.Title.BUILD_TOOL_EXEC), tasksWithDefaultTask);
                 if (advancedTask != null) {
                     RP.post(new Runnable() {
                         @Override

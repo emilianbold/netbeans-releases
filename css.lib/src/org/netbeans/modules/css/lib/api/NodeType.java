@@ -474,6 +474,7 @@ public enum NodeType {
     
     , sass_selector_interpolation_exp
     , sass_error
+    , less_selector_interpolation_exp
     ;
     
     

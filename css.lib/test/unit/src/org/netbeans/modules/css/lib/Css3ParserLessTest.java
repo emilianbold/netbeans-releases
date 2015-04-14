@@ -859,4 +859,33 @@ public class Css3ParserLessTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testInterpolationInPseudo() {
+        assertParses(".@{var}bar{}");
+        assertParses("li:nth-child(@{somevar}+1) {}");
+        assertParses("li:nth-child(@{somevar}) {}");
+        assertParses("li:nth-child(~\"@{somevar}\") {}");
+        assertParses(".foo {\n"
+                + "\n"
+                + "	&:not(.@{var}bar):active {\n"
+                + "		color: red;\n"
+                + "	}\n"
+                + "\n"
+                + "}");
+    }
+    
+    public void testPatternMatchingInMixin() {
+        assertParses(".mixin(@s; @color) { }\n"
+                + "\n"
+                + ".class {\n"
+                + "  .mixin(@switch; #888);\n"
+                + "}");
+        assertParses(".mixin(dark; @color) {\n"
+                + "  color: darken(@color, 10%);\n"
+                + "}");
+        
+        assertParses(".mixin(@a; @b) {\n"
+                + "  color: fade(@a; @b);\n"
+                + "}");
+    }
 }
