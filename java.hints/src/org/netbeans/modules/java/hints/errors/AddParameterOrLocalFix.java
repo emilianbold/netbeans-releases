@@ -141,7 +141,7 @@ public class AddParameterOrLocalFix implements EnhancedFix {
 
                 TypeMirror proposedType = type.resolve(working);
 
-                if (proposedType == null) {
+                if (proposedType == null || proposedType.getKind() == TypeKind.NONE) {
                     ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type."); // NOI18N
                     return;
                 }
