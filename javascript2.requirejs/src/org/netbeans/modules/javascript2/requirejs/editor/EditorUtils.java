@@ -65,6 +65,7 @@ public class EditorUtils {
     public static final String REQUIREJS = "requirejs"; // NOI18N
     public static final String PATHS = "paths";        //NOI18N
     public static final String BASE_URL = "baseUrl";    //NOI8N
+    public static final String PACKAGES = "packages";    //NOI8N
     public static final String CONFIG_METHOD_NAME = "config"; //NOI18N
     
     private static final String REQUIRE_JS_ICON_PATH = "org/netbeans/modules/javascript2/requirejs/resources/requirejs.png"; //NOI18N
