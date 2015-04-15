@@ -46,6 +46,7 @@ package org.netbeans.modules.javaee.wildfly;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -54,9 +55,11 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -69,6 +72,16 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -116,8 +129,11 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
 
     public static class WildFlyClassLoader extends URLClassLoader {
 
-        public WildFlyClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException, RuntimeException {
+        private final boolean patch249135;
+
+        public WildFlyClassLoader(URL[] urls, ClassLoader parent, boolean patch249135) throws MalformedURLException, RuntimeException {
             super(urls, parent);
+            this.patch249135 = patch249135;
         }
 
         @Override
@@ -128,14 +144,74 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
         }
 
         @Override
-       public Enumeration<URL> getResources(String name) throws IOException {
-           // get rid of annoying warnings
-           if (name.contains("jndi.properties")) { // NOI18N
-               return Collections.enumeration(Collections.<URL>emptyList());
-           }
+        public Enumeration<URL> getResources(String name) throws IOException {
+            // get rid of annoying warnings
+            if (name.contains("jndi.properties")) { // NOI18N
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
 
-           return super.getResources(name);
-       }
+            return super.getResources(name);
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            // see issue #249135
+            if (patch249135 && "org.xnio.nio.WorkerThread".equals(name)) { // NOI18N
+                try {
+                    LOGGER.log(Level.INFO, "Patching the issue #249135");
+                    String path = name.replace('.', '/').concat(".class"); // NOI18N
+                    try (InputStream is = super.getResourceAsStream(path)) {
+                        ClassReader cr = new ClassReader(is);
+                        ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES) {
+
+                            @Override
+                            protected String getCommonSuperClass(String string, String string1) {
+                                if ("org/xnio/nio/NioHandle".equals(string) // NOI18N
+                                        || "org/xnio/nio/NioHandle".equals(string1)) { // NOI18N
+                                    return "java/lang/Object"; // NOI18N
+                                }
+                                return super.getCommonSuperClass(string, string1);
+                            }
+                        };
+                        ClassNode node = new ClassNode();
+                        cr.accept(node, 0);
+
+                        for (MethodNode m : (Collection<MethodNode>) node.methods) {
+                            if ("execute".equals(m.name) // NOI18N
+                                    && "(Ljava/lang/Runnable;)V".equals(m.desc)) { // NOI18N
+                                InsnList list = m.instructions;
+                                for (ListIterator it = list.iterator(); it.hasNext(); ) {
+                                    AbstractInsnNode n = (AbstractInsnNode) it.next();
+                                    if (n instanceof MethodInsnNode) {
+                                        MethodInsnNode mn = (MethodInsnNode) n;
+                                        if ("org/xnio/nio/Log".equals(mn.owner) // NOI18N
+                                                && "threadExiting".equals(mn.name) // NOI18N
+                                                && "()Ljava/util/concurrent/RejectedExecutionException;".equals(mn.desc)) { // NOI18N
+                                            if (it.hasNext()) {
+                                                AbstractInsnNode possibleThrow = (AbstractInsnNode) it.next();
+                                                if (possibleThrow.getOpcode() == Opcodes.ATHROW) {
+                                                    it.set(new InsnNode(Opcodes.POP));
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+
+                        node.accept(cw);
+                        byte[] newBytecode = cw.toByteArray();
+                        return super.defineClass(name, newBytecode, 0, newBytecode.length);
+                    }
+                } catch (Exception ex) {
+                    // just fallback to original behavior
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+            return super.findClass(name);
+        }
     }
 
     public synchronized WildFlyClassLoader getWildFlyClassLoader(InstanceProperties ip) {
@@ -194,7 +270,11 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
             addUrl(urlList, org, "picketbox" + sep + "main", Pattern.compile("picketbox-.*.jar"));
             addUrl(urlList, as, "cli" + sep + "main", Pattern.compile("wildfly-cli-.*.jar"));
 
-            WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}), WildflyDeploymentFactory.class.getClassLoader());
+            Version version = WildflyPluginUtils.getServerVersion(new File(serverRoot));
+            WildFlyClassLoader loader = new WildFlyClassLoader(
+                    urlList.toArray(new URL[] {}),
+                    WildflyDeploymentFactory.class.getClassLoader(),
+                    version != null && version.compareToIgnoreUpdate(WildflyPluginUtils.WILDFLY_8_2_0) == 0);
             return loader;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, null, e);
