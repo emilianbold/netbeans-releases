@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.jumpto.common;
 
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -49,6 +51,7 @@ import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -57,10 +60,17 @@ import org.openide.util.ChangeSupport;
 public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
 
     private final ChangeSupport changeSupport;
+    private final Map<String,Object> options;
     //GuardedBy("this")
     private NameMatcher matcher;
 
     protected AbstractModelFilter() {
+        this(Collections.<String,Object>emptyMap());
+    }
+
+    protected AbstractModelFilter(@NonNull final Map<String,Object> options) {
+        Parameters.notNull("options", options); //NOI18N
+        this.options = options;
         this.changeSupport = new ChangeSupport(this);
     }
 
@@ -78,7 +88,7 @@ public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
             @NullAllowed final SearchType searchType,
             @NullAllowed final String searchText) {
         synchronized (this) {
-            this.matcher = createNameMatcher(searchType, searchText);
+            this.matcher = createNameMatcher(searchType, searchText, options);
         }
         changeSupport.fireChange();
     }
@@ -104,9 +114,10 @@ public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
     @CheckForNull
     private static NameMatcher createNameMatcher (
             @NullAllowed final SearchType searchType,
-            @NullAllowed final String searchText) {
+            @NullAllowed final String searchText,
+            @NonNull final Map<String,Object> options) {
         return (searchText != null && searchType != null) ?
-            NameMatcherFactory.createNameMatcher(searchText, searchType) :
+            NameMatcherFactory.createNameMatcher(searchText, searchType, options) :
             null;
     }
 }

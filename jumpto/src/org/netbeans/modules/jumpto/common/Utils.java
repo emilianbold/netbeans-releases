@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.jumpto.common;
 
-import java.util.Locale;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -54,7 +53,6 @@ import org.netbeans.spi.jumpto.type.SearchType;
  */
 public class Utils {
 
-    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
     private static final int MAX_INPUT_LENGTH = 1<<10;
     private static final char[] INVALID_CHARS = {
         '\n'    //NOI18N
@@ -71,10 +69,6 @@ public class Utils {
             }
         }
         return -1;
-    }
-
-    public static boolean isCamelCase(String text) {
-         return camelCasePattern.matcher(text).matches();
     }
 
     public static boolean isAllUpper( String text ) {

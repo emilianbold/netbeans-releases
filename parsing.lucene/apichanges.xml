@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="CustomCamelCase">
+    <api name="LuceneSupport"/>
+    <summary>Added camel case support methods into <code>Queries</code>.</summary>
+    <version major="2" minor="31"/>
+    <date day="14" month="4" year="2015"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added methods into <code>Queries</code> to test if given string is a camel case
+            and to create a regular expression from the camel case.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="Queries"/>
+  </change>
   <change id="DocumentIndex2">
     <api name="LuceneSupport"/>
     <summary>Added <code>DocumentIndex2</code> allowing execution of arbitrary Lucene query.</summary>

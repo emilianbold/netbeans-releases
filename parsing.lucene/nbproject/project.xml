@@ -67,6 +67,7 @@
                 <friend>org.netbeans.modules.cnd.indexing</friend>
                 <friend>org.netbeans.modules.java.source.base</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>
+                <friend>org.netbeans.modules.jumpto</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
                 <friend>org.netbeans.modules.parsing.indexing</friend>
                 <friend>org.netbeans.modules.whitelist</friend>

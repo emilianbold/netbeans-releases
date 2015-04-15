@@ -108,18 +108,19 @@ public class ConfigInterceptor implements FunctionInterceptor {
             if (paths != null || baseUrl != null || packages != null) {
                 FileObject fo = globalObject.getFileObject();
                 if (fo == null) {
-                     return Collections.emptyList(); 
+                    return Collections.emptyList();
                 }
                 Source source = Source.create(fo);
                 TokenHierarchy<?> th = source.createSnapshot().getTokenHierarchy();
+                TokenSequence<? extends JsTokenId> ts;
+                Token<? extends JsTokenId> token;
                 if (paths != null) {
                     // find defined mappings 
-                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, paths.getOffset());
-                    Token<? extends JsTokenId> token;
+                    ts = LexUtilities.getJsTokenSequence(th, paths.getOffset());
                     if (ts == null) {
                         return Collections.emptyList();
                     }
-                    Map<String, String> mapping = new HashMap<String, String>();
+                    Map<String, String> mapping = new HashMap<>();
                     for (JsObject path : paths.getProperties().values()) {
                         String alias = path.getName();
                         String target = null;
@@ -141,46 +142,46 @@ public class ConfigInterceptor implements FunctionInterceptor {
                     if (!mapping.isEmpty()) {
                         RequireJsIndexer.addPathMapping(fo.toURI(), mapping);
                     }
+                }
 
-                    if (baseUrl != null) {
-                        // find defined mappings 
-                        ts = LexUtilities.getJsTokenSequence(th, baseUrl.getOffset());
-                        if (ts == null) {
-                            return Collections.emptyList();
-                        }
-                        ts.move(baseUrl.getOffset());
-                        String target = null;
-                        if (ts.moveNext()) {
-                            token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.OPERATOR_COLON));
-                            if (token.id() == JsTokenId.OPERATOR_COLON) {
-                                token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
-                                        JsTokenId.STRING_BEGIN, JsTokenId.OPERATOR_COLON));
-                                if (token.id() == JsTokenId.STRING) {
-                                    target = token.text().toString();
-                                }
+                if (baseUrl != null) {
+                    // find defined mappings 
+                    ts = LexUtilities.getJsTokenSequence(th, baseUrl.getOffset());
+                    if (ts == null) {
+                        return Collections.emptyList();
+                    }
+                    ts.move(baseUrl.getOffset());
+                    String target = null;
+                    if (ts.moveNext()) {
+                        token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.OPERATOR_COLON));
+                        if (token.id() == JsTokenId.OPERATOR_COLON) {
+                            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
+                                    JsTokenId.STRING_BEGIN, JsTokenId.OPERATOR_COLON));
+                            if (token.id() == JsTokenId.STRING) {
+                                target = token.text().toString();
                             }
                         }
-                        if (target != null) {
-                            RequireJsIndexer.addBasePath(fo.toURI(), target);
-                        }
                     }
-
-                    if (packages != null && packages instanceof JsArray) {
-                        Map<String, String> packagesMap = loadPackages(th, packages.getOffset());
-                        if (packagesMap != null) {
-                            // save packages to the index
-                            RequireJsIndexer.addPackages(fo.toURI(), packagesMap);
-                        }
+                    if (target != null) {
+                        RequireJsIndexer.addBasePath(fo.toURI(), target);
                     }
+                }
 
-                    // save the name of the source root folder
-                    final Project project = FileOwnerQuery.getOwner(fo);
-                    if (project != null) {
-                        for (FileObject dir : project.getProjectDirectory().getChildren()) {
-                            if (dir.isFolder() && FileUtil.isParentOf(dir, fo)) {
-                                RequireJsIndexer.addSourceRoot(fo.toURI(), dir.getName());
-                                break;
-                            }
+                if (packages != null && packages instanceof JsArray) {
+                    Map<String, String> packagesMap = loadPackages(th, packages.getOffset());
+                    if (packagesMap != null) {
+                        // save packages to the index
+                        RequireJsIndexer.addPackages(fo.toURI(), packagesMap);
+                    }
+                }
+
+                // save the name of the source root folder
+                final Project project = FileOwnerQuery.getOwner(fo);
+                if (project != null) {
+                    for (FileObject dir : project.getProjectDirectory().getChildren()) {
+                        if (dir.isFolder() && FileUtil.isParentOf(dir, fo)) {
+                            RequireJsIndexer.addSourceRoot(fo.toURI(), dir.getName());
+                            break;
                         }
                     }
                 }

@@ -54,6 +54,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.ui.Icons;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider;
@@ -64,11 +65,11 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-/** 
+/**
  * Fast & dirty type provider, which fakes Java types from filenames.
  * The provider is used just after project loads, and before the source roots
  * are indexed by a proper Java indexer.
- * 
+ *
  * <p/>
  * The TypeProvider uses {@link OpenProjectFastIndex} as data source.
  *
@@ -77,38 +78,38 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public final class FastTypeProvider implements TypeProvider {
     private static final Logger LOG = Logger.getLogger(FastTypeProvider.class.getName());
-    
+
     /**
      * Cancel flag, set by the infrastructure.
      */
     private AtomicBoolean cancel = new AtomicBoolean();
-    
+
     /**
      * Fast index instance
      */
     private OpenProjectFastIndex fastIndex;
-    
+
     /**
      * Cached class icon for results; we do not use other icons :)
      */
     private Icon classIcon;
-    
+
     public FastTypeProvider() {
         this(OpenProjectFastIndex.getDefault());
     }
-    
+
     // used from unit tests
     FastTypeProvider(OpenProjectFastIndex fastIndex) {
         this.fastIndex = fastIndex;
     }
-    
+
     private Icon getClassIcon() {
         if (classIcon == null) {
             classIcon = Icons.getElementIcon (ElementKind.CLASS, null);
         }
         return classIcon;
     }
-    
+
     @Override
     public void cancel() {
         cancel.set(true);
@@ -123,14 +124,18 @@ public final class FastTypeProvider implements TypeProvider {
     public void computeTypeNames(Context context, Result result) {
         StringBuilder pattern = new StringBuilder();
         boolean sensitive = true;
-        
+
         String quotedText = Pattern.quote(context.getText());
-        
+
         switch (context.getSearchType()) {
             case CASE_INSENSITIVE_EXACT_NAME:
                 sensitive = false;
             case CAMEL_CASE:
-                pattern.append(createCamelCaseRegExp(context.getText(), sensitive));
+                pattern.append(Queries.createCamelCaseRegExp(context.getText(), null, null, sensitive));
+                break;
+            case CASE_INSENSITIVE_CAMEL_CASE:
+                sensitive = false;
+                pattern.append(Queries.createCamelCaseRegExp(context.getText(), null, null, sensitive));
                 break;
             case EXACT_NAME:
                 pattern.append("^").append(quotedText).append("$"); // NOI18N
@@ -152,14 +157,14 @@ public final class FastTypeProvider implements TypeProvider {
                 break;
         }
         Pattern searchPattern = Pattern.compile(
-                pattern.toString(), 
-                Pattern.MULTILINE + 
+                pattern.toString(),
+                Pattern.MULTILINE +
                     (sensitive ? 0 : Pattern.CASE_INSENSITIVE));
-        
+
         for (Map.Entry<FileObject, OpenProjectFastIndex.NameIndex> one : fastIndex.copyIndexes().entrySet()) {
             FileObject root = one.getKey();
             Project p = FileOwnerQuery.getOwner(root);
-            
+
             if (context.getProject() != null && !context.getProject().equals(p)) {
                 continue;
             }
@@ -191,7 +196,7 @@ public final class FastTypeProvider implements TypeProvider {
     public String name() {
         return "fastJavaIndex";  // NOI18N
     }
-    
+
     private class SimpleDescriptor extends TypeDescriptor {
         public static final String JAVA_EXTENSION = ".java"; // NOI18N
         private FileObject      root;
@@ -216,7 +221,7 @@ public final class FastTypeProvider implements TypeProvider {
         @CheckForNull
         public FileObject getFileObject() {
             String s = simpleName;
-            
+
             if (pkgName != null && !"".equals(pkgName)) {
                 StringBuilder sb = new StringBuilder();
                 s = sb.append(pkgName).append('.').append(simpleName).toString().replaceAll("\\.", "/"); // NOI18N
@@ -226,7 +231,7 @@ public final class FastTypeProvider implements TypeProvider {
 
         @Override
         public Icon getIcon() {
-            return getClassIcon(); 
+            return getClassIcon();
         }
 
         @Override
@@ -258,7 +263,7 @@ public final class FastTypeProvider implements TypeProvider {
         public String getTypeName() {
             return simpleName;
         }
-        
+
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(simpleName).append(" (");
@@ -314,31 +319,6 @@ public final class FastTypeProvider implements TypeProvider {
                 Toolkit.getDefaultToolkit().beep();
             }
         }
-        
-        
     }
 
-    private static String createCamelCaseRegExp(final String camel, final boolean caseSensitive) {
-        final StringBuilder sb = new StringBuilder();
-        int lastIndex = 0;
-        int index;
-        do {
-            index = findNextUpper(camel, lastIndex + 1);
-            String token = camel.substring(lastIndex, index == -1 ? camel.length(): index);
-            sb.append(Pattern.quote(caseSensitive ? token : token.toLowerCase()));
-            sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-            lastIndex = index;
-        } while(index != -1);
-        return sb.toString();
-    }
-    
-    private static int findNextUpper(String text, int offset ) {
-        for( int i = offset; i < text.length(); i++ ) {
-            if ( Character.isUpperCase(text.charAt(i)) ) {
-                return i;
-            }
-        }
-        return -1;
-    }
-        
 }

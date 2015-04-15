@@ -106,7 +106,7 @@ public class AddParameterOrLocalFix implements EnhancedFix {
                                   boolean parameter,
                                   int /*!!!Position*/ unresolvedVariable) {
         this.file = info.getFileObject();
-        if (type.getKind() == TypeKind.NULL) {
+        if (type.getKind() == TypeKind.NULL || type.getKind() == TypeKind.NONE) {
             TypeElement te = info.getElements().getTypeElement("java.lang.Object"); // NOI18N
             if (te != null) {
                 type = te.asType();

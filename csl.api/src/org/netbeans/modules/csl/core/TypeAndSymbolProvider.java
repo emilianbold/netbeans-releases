@@ -270,6 +270,8 @@ public class TypeAndSymbolProvider {
                 return new Object [] { QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, NameMatcherFactory.wildcardsToRegexp(text,true) };
             case CAMEL_CASE:
                 return new Object [] { QuerySupport.Kind.CAMEL_CASE, text };
+            case CASE_INSENSITIVE_CAMEL_CASE:
+                return new Object [] { QuerySupport.Kind.CASE_INSENSITIVE_CAMEL_CASE, text };
             default:
                 throw new IllegalStateException("Can't translate " + searchType + " to QuerySupport.Kind"); //NOI18N
         }

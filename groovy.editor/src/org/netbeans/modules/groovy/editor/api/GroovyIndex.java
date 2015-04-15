@@ -163,6 +163,7 @@ public final class GroovyIndex {
             field = GroovyIndexer.CLASS_NAME;
             break;
         case CASE_INSENSITIVE_PREFIX:
+        case CASE_INSENSITIVE_CAMEL_CASE:
         case CASE_INSENSITIVE_REGEXP:
             field = GroovyIndexer.CASE_INSENSITIVE_CLASS_NAME;
             break;

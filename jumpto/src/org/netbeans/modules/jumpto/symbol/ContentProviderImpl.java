@@ -78,6 +78,7 @@ import org.netbeans.modules.jumpto.common.CurrentSearch;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -560,8 +561,8 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         if (exact) {
             //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
             return SearchType.EXACT_NAME;
-        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
-            return SearchType.CAMEL_CASE;
+        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, null, null)) {
+            return isCaseSensitive ? SearchType.CAMEL_CASE : SearchType.CASE_INSENSITIVE_CAMEL_CASE;
         } else if (wildcard != -1) {
             return isCaseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
         } else {
