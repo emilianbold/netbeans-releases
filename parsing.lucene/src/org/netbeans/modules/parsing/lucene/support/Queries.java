@@ -42,11 +42,11 @@
 
 package org.netbeans.modules.parsing.lucene.support;
 
-import com.sun.org.apache.bcel.internal.util.Objects;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.lucene.document.FieldSelector;
