@@ -51,6 +51,7 @@ import java.security.InvalidKeyException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -243,7 +244,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             } catch (SSLKeyException ex) {
                 if(ex.getCause() instanceof InvalidKeyException) {
                     InvalidKeyException ike = (InvalidKeyException) ex.getCause();
-                    if(ike.getMessage().toLowerCase().equals("illegal key size or default parameters")) { // NOI18N
+                    if(ike.getMessage().toLowerCase(Locale.ENGLISH).equals("illegal key size or default parameters")) { // NOI18N
                         SvnClientExceptionHandler.handleInvalidKeyException(ike);
                     }
                     return null; 

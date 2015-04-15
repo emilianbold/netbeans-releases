@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
@@ -466,7 +467,7 @@ public class WorkingCopyDetails {
     private List<String> normalizeKeywords(String[] keywords) {
         List<String> keywordsList = new ArrayList<>();
         for (int i = 0; i < keywords.length; i++) {
-            String kw = keywords[i].toLowerCase().trim();
+            String kw = keywords[i].toLowerCase(Locale.ENGLISH).trim();
             if(kw.equals("date") || kw.equals("lastchangeddate")) {                                         // NOI18N
                 keywordsList.add("LastChangedDate");                                                        // NOI18N
                 keywordsList.add("Date");                                                                   // NOI18N

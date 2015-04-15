@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -732,7 +733,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     }
 
     private String translateMessage (String message) {
-        message = message.toLowerCase();
+        message = message.toLowerCase(Locale.ENGLISH);
         int pos = message.indexOf(INVALID_SVN_URL);
         if (pos != -1) {
             message = message.substring(INVALID_SVN_URL.length());
