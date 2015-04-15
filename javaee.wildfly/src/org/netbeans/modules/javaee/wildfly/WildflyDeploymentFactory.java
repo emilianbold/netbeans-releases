@@ -205,7 +205,8 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
                         byte[] newBytecode = cw.toByteArray();
                         return super.defineClass(name, newBytecode, 0, newBytecode.length);
                     }
-                } catch (IOException ex) {
+                } catch (Exception ex) {
+                    // just fallback to original behavior
                     LOGGER.log(Level.INFO, null, ex);
                 }
             }
