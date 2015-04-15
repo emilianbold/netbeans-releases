@@ -107,22 +107,22 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    public void onInclusionDirective(InclusionDirectiveInfo directive) {
+    protected void onInclusionDirective(InclusionDirectiveInfo directive) {
         
     }
 
     @Override
-    public void onSkippedInclusionDirective(InclusionDirectiveInfo directive) {
+    protected void onSkippedInclusionDirective(InclusionDirectiveInfo directive) {
       super.onSkippedInclusionDirective(directive);
     }
 
     @Override
-    public boolean onNotFoundInclusionDirective(FileInfoCallback.FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
+    protected boolean onNotFoundInclusionDirective(FileInfoCallback.FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
       return super.onNotFoundInclusionDirective(curFile, FileName, RecoveryPath);
     }
 
     @Override
-    public void onEnter(FileInfoCallback.FileInfo fileInfo) {
+    protected void onEnter(FileInfoCallback.FileInfo fileInfo) {
         if (ClankDriverImpl.TRACE) {
             traceOS.$out("Enter: " + fileInfo).$out("\n").flush();
         }
@@ -151,7 +151,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    public void onExit(FileInfoCallback.FileInfo fileInfo) {
+    protected void onExit(FileInfoCallback.FileInfo fileInfo) {
         if (ClankDriverImpl.TRACE) {
             traceOS.$out("Exit from ");
             if (fileInfo.isFile()) {
@@ -197,17 +197,17 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    public boolean needTokens() {
+    protected boolean needTokens() {
       return delegate.needTokens();
     }
 
     @Override
-    public boolean needSkippedRanges() {
+    protected boolean needSkippedRanges() {
       return delegate.needSkippedRanges();
     }
 
     @Override
-    public boolean needMacroExpansion() {
+    protected boolean needMacroExpansion() {
       return delegate.needMacroExpansion();
     }
 
