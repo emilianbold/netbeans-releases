@@ -1856,4 +1856,9 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }");
 
     }
+    
+    public void testDotInterpolationMinus() {
+    assertParses("$fa-css-prefix : test;\n"
+                + ".#{$fa-css-prefix}-2x { font-size: 2em; }");
+    }
 }
