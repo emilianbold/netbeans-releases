@@ -160,13 +160,17 @@ class FilesystemHandler extends VCSInterceptor {
                 }
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
-                if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
-                    SvnClientExceptionHandler.notifyException(new Context(file), e, false, false); // log this
+                // skip "does not exist" exception.
+                // It can be after move
+                if(e.getMessage().indexOf("does not exist") < 0) { //NOI18N
+                    if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
+                        SvnClientExceptionHandler.notifyException(new Context(file), e, false, false); // log this
+                    }
+                    IOException ex = new IOException();
+                    Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemHandler.class, "MSG_DeleteFailed", new Object[] {file, e.getLocalizedMessage()})); // NOI18N
+                    ex.getCause().initCause(e);
+                    throw ex;
                 }
-                IOException ex = new IOException();
-                Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemHandler.class, "MSG_DeleteFailed", new Object[] {file, e.getLocalizedMessage()})); // NOI18N
-                ex.getCause().initCause(e);
-                throw ex;
             } finally {
                 internalyDeletedFiles.add(file);
             }
