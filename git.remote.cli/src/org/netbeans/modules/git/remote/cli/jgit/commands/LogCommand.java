@@ -158,12 +158,12 @@ public class LogCommand extends GitCommand {
             addArgument(0, "--grep="+pattern);
         }
         if (criteria != null && criteria.getFrom() != null && criteria.getTo() != null) {
-            addArgument(0, "--since="+criteria.getFrom().toString());
-            addArgument(0, "--until="+criteria.getTo().toString());
+            addArgument(0, "--since="+(criteria.getFrom().getTime()/1000));
+            addArgument(0, "--until="+(criteria.getTo().getTime()/1000));
         } else if (criteria != null && criteria.getFrom() != null) {
-            addArgument(0, "--since="+criteria.getFrom().toString());
+            addArgument(0, "--since="+(criteria.getFrom().getTime()/1000));
         } else if (criteria != null && criteria.getTo() != null) {
-            addArgument(0, "--until="+criteria.getTo().toString());
+            addArgument(0, "--until="+(criteria.getTo().getTime()/1000));
         }
         if (criteria != null && criteria.getLimit() > 0) {
             addArgument(0, "-"+criteria.getLimit());
