@@ -46,7 +46,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -184,10 +183,10 @@ public class TasksMenu extends JMenu {
 
     void addMenuItems(@NullAllowed List<String> tasks) {
         Collection<String> allTasks = addTasksMenuItems(tasks);
-        if (tasks != null) { // not 'allTasks' intentianlly, one can run default task e.g. with just some parameters
+        if (tasks != null) { // not 'allTasks' intentionally, one can run default task e.g. with just some parameters
             addAdvancedMenuItems(allTasks);
+            addReloadTasksMenuItem();
         }
-        addReloadTasksMenuItem();
     }
 
     @CheckForNull
