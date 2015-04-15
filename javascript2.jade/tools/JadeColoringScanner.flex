@@ -263,6 +263,7 @@ WhiteSpace = [ \t\f\u00A0\u000B]+
 Input = [^\r\n \t\f\u00A0\u000B]+
 IdentifierPart = [:jletterdigit:]
 Identifier = [:jletter:]{IdentifierPart}*
+MixinName = {CssIdentifier}
 
 Comment = "//"
 UnbufferedComment = "//-"
@@ -792,9 +793,11 @@ UnbufferedComment = "//-"
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
     {LineTerminator}                {   yybegin(AFTER_EOL);
                                         return JadeTokenId.EOL; }
-    {HtmlIdentifier}                {   return JadeTokenId.MIXIN_NAME; }
+    {MixinName}                     {   return JadeTokenId.MIXIN_NAME; }
     "("                             {   yybegin(MIXIN_ARGUMENTS); 
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
+    .                               {   return JadeTokenId.UNKNOWN; }
+                 
 }
 
 <MIXIN_ARGUMENTS> {
@@ -811,7 +814,7 @@ UnbufferedComment = "//-"
 
 <AFTER_PLUS_MIXIN> {    
     {WhiteSpace}                    {   return JadeTokenId.WHITESPACE; }
-    {HtmlIdentifier}                    {   return JadeTokenId.MIXIN_NAME; }
+    {MixinName}                     {   return JadeTokenId.MIXIN_NAME; }
     "("                             {   yybegin(MIXIN_CALL_ARGUMENT);
                                         parenBalance = 1; braceBalance = 0;
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
@@ -822,6 +825,7 @@ UnbufferedComment = "//-"
                                         return JadeTokenId.BRACKET_LEFT_PAREN;}
     {LineTerminator}                {   yybegin(AFTER_EOL);
                                         return JadeTokenId.EOL; }
+    .                               {   return JadeTokenId.UNKNOWN; }
 }
 
 <MIXIN_CALL_ARGUMENT> {
