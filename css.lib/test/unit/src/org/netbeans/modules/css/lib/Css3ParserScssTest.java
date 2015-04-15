@@ -1847,4 +1847,13 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     } 
+    
+    public void testPseudoClassBeforeAmpersand() {
+        assertParses("  li {\n"
+                + "        a:hover, &.selected {\n"
+                + "            display: block;\n"
+                + "        }\n"
+                + "    }");
+
+    }
 }
