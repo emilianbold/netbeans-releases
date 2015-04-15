@@ -739,13 +739,18 @@ public class ReflectionHelper {
                 Class classToAdd = null;
                 if (null != parameterList && ii < parameterList.size()) {
                     JavaParameter actualParameter = (JavaParameter) parameterList.get(ii);
-                    if (isPrimitiveClass(actualParameter.getType().getFormalName())) {
+                    String formalName = actualParameter.getType().getFormalName();
+                    if (isPrimitiveClass(formalName)) {
                         classToAdd = referenceClass2PrimitiveClass(paramValues[ii].getClass());
-                    } else if (actualParameter.getType().getFormalName().equals("java.util.Calendar") && !actualParameter.isHolder()) {
+                    } else if (formalName.equals("java.util.Calendar") && !actualParameter.isHolder()) { // NOI18N
                         classToAdd = java.util.Calendar.class;
+                    } else if (formalName.equals("java.util.List") // NOI18N
+                            || formalName.startsWith("java.util.List<") // NOI18N
+                            && !actualParameter.isHolder()) {
+                        classToAdd = java.util.List.class;
                     } else if (paramValues[ii] == null) {
                         try {
-                            classToAdd = Class.forName(actualParameter.getType().getFormalName(), true, urlClassLoader);
+                            classToAdd = Class.forName(formalName, true, urlClassLoader);
                         } catch (Exception ex) {
                             throw new WebServiceReflectionException("Exception", ex);
                         }
