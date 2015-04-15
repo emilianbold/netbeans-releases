@@ -91,7 +91,7 @@ public class UploadTestCase extends RemoteTestBase {
             sb.append( addr.getHostName() );
         } catch (UnknownHostException e) {
         }
-        sb.append("\ntime: ").append(System.currentTimeMillis()).append("\n"); //NOI18N
+        sb.append("\ntime: ").append(System.currentTimeMillis());//.append("\n"); //NOI18N
         BufferedWriter out = new BufferedWriter(fstream);
         out.write(sb.toString());
         out.close();

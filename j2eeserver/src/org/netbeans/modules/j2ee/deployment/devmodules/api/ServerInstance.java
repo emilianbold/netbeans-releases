@@ -172,19 +172,16 @@ public final class ServerInstance {
      */
     public boolean isDeployOnSaveSupported() throws InstanceRemovedException {
         final ServerRegistry registry = ServerRegistry.getInstance();
-        // see comment at the beginning of the class
-        IncrementalDeployment incremental;
-        synchronized (registry) {
-            org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
-            
-            try {
-                incremental = inst.getServer().getOptionalFactory().getIncrementalDeployment(inst.getDisconnectedDeploymentManager());
-            } catch (DeploymentManagerCreationException ex) {
-                throw new RuntimeException(ex);
-            }
+        org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
+        try {
+            IncrementalDeployment incremental = inst.getServer().getOptionalFactory()
+                    .getIncrementalDeployment(inst.getDisconnectedDeploymentManager());
+            return incremental != null && incremental.isDeployOnSaveSupported();
+        } catch (DeploymentManagerCreationException ex) {
+            // this would throw InstanceRemovedException
+            inst = getInstanceFromRegistry(registry);
+            throw new RuntimeException(ex);
         }
-        // TODO missing condition on canFileDeploy - this would need started server
-        return incremental != null && incremental.isDeployOnSaveSupported();
     }
 
     /**
@@ -234,14 +231,20 @@ public final class ServerInstance {
      */
     public LibraryManager getLibraryManager() throws InstanceRemovedException {
         final ServerRegistry registry = ServerRegistry.getInstance();
-        // see comment at the beginning of the class
-        synchronized (registry) {
-            org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
+
+        org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
+        try {
             if (inst.isServerLibraryManagementSupported()) {
                 return new LibraryManager();
             }
+            return null;
+        } catch (RuntimeException ex) {
+            if (ex.getCause() instanceof DeploymentManagerCreationException) {
+                // this would throws InstanceRemovedException
+                inst = getInstanceFromRegistry(registry);
+            }
+            throw ex;
         }
-        return null;
     }
 
     private org.netbeans.modules.j2ee.deployment.impl.ServerInstance getInstanceFromRegistry(ServerRegistry registry)

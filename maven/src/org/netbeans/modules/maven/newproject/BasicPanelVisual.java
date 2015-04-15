@@ -173,56 +173,61 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         txtGroupId.setText(MavenSettings.getDefault().getLastArchetypeGroupId());
         txtVersion.setText(MavenSettings.getDefault().getLastArchetypeVersion());
         vg = ValidationGroup.create();
-        vg.add(txtGroupId, MavenValidators.createGroupIdValidators());
-        vg.add(txtArtifactId, MavenValidators.createArtifactIdValidators());
-        vg.add(txtVersion, MavenValidators.createVersionValidators());
-        vg.add(txtPackage, StringValidators.JAVA_PACKAGE_NAME);
-        vg.add(projectNameTextField, ValidatorUtils.merge(
-                MavenValidators.createArtifactIdValidators(),
-                StringValidators.REQUIRE_VALID_FILENAME
-              ));
+        runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                vg.add(txtGroupId, MavenValidators.createGroupIdValidators());
+                vg.add(txtArtifactId, MavenValidators.createArtifactIdValidators());
+                vg.add(txtVersion, MavenValidators.createVersionValidators());
+                vg.add(txtPackage, StringValidators.JAVA_PACKAGE_NAME);
+                vg.add(projectNameTextField, ValidatorUtils.merge(
+                        MavenValidators.createArtifactIdValidators(),
+                        StringValidators.REQUIRE_VALID_FILENAME
+                      ));
 
-        vg.add(projectLocationTextField, 
-//                        ValidatorUtils.merge(Validators.FILE_MUST_BE_DIRECTORY,
-                new AbstractValidator<String>(String.class) {
-                    @Override public void validate(Problems problems, String compName, String model) {
-                        File fil = FileUtil.normalizeFile(new File(model));
-                        File projLoc = fil;
-                        while (projLoc != null && !projLoc.exists()) {
-                            projLoc = projLoc.getParentFile();
-                        }
-                        if (projLoc == null || !projLoc.canWrite()) {
-                            problems.add(ERR_Project_Folder_cannot_be_created());
+                vg.add(projectLocationTextField, 
+        //                        ValidatorUtils.merge(Validators.FILE_MUST_BE_DIRECTORY,
+                        new AbstractValidator<String>(String.class) {
+                            @Override public void validate(Problems problems, String compName, String model) {
+                                File fil = FileUtil.normalizeFile(new File(model));
+                                File projLoc = fil;
+                                while (projLoc != null && !projLoc.exists()) {
+                                    projLoc = projLoc.getParentFile();
+                                }
+                                if (projLoc == null || !projLoc.canWrite()) {
+                                    problems.add(ERR_Project_Folder_cannot_be_created());
+                                    return;
+                                }
+                                if (FileUtil.toFileObject(projLoc) == null) {
+                                    problems.add(ERR_Project_Folder_is_not_valid_path());
+                                    return;
+                                }
+                                //#167136
+                                if (Utilities.isWindows() && fil.getAbsolutePath().startsWith("\\\\")) {
+                                    problems.add(ERR_Project_Folder_is_UNC());
+                                }
+                            }
+                        });
+
+                vg.addItem(new ValidationListener<Void>(Void.class, ValidationUI.NO_OP, null) {
+                    @Override
+                    protected void performValidation(Problems problems) {
+                        boolean tooOld = isMavenTooOld();
+                        btnSetupNewer.setVisible(tooOld);
+                        if (tooOld) {
+                            problems.add(ERR_old_maven(getCommandLineMavenVersion()));
                             return;
                         }
-                        if (FileUtil.toFileObject(projLoc) == null) {
-                            problems.add(ERR_Project_Folder_is_not_valid_path());
-                            return;
-                        }
-                        //#167136
-                        if (Utilities.isWindows() && fil.getAbsolutePath().startsWith("\\\\")) {
-                            problems.add(ERR_Project_Folder_is_UNC());
+                        File destFolder = FileUtil.normalizeFile(new File(new File(projectLocationTextField.getText().trim()), projectNameTextField.getText().trim()).getAbsoluteFile());
+                        File[] kids = destFolder.listFiles();
+                        if (destFolder.exists() && kids != null && kids.length > 0) {
+                            // Folder exists and is not empty
+                            problems.add(ERR_Project_Folder_exists());
                         }
                     }
-                });
-
-        vg.addItem(new ValidationListener<Void>(Void.class, ValidationUI.NO_OP, null) {
-            @Override
-            protected void performValidation(Problems problems) {
-                boolean tooOld = isMavenTooOld();
-                btnSetupNewer.setVisible(tooOld);
-                if (tooOld) {
-                    problems.add(ERR_old_maven(getCommandLineMavenVersion()));
-                    return;
-                }
-                File destFolder = FileUtil.normalizeFile(new File(new File(projectLocationTextField.getText().trim()), projectNameTextField.getText().trim()).getAbsoluteFile());
-                File[] kids = destFolder.listFiles();
-                if (destFolder.exists() && kids != null && kids.length > 0) {
-                    // Folder exists and is not empty
-                    problems.add(ERR_Project_Folder_exists());
-                }
+                }, true);
             }
-        }, true);
+        });
 
     }
     
@@ -822,6 +827,14 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         } else {
             // phase two, inside EQ thread
             vg.performValidation();
+        }
+    }
+
+    private void runInAWT(Runnable runnable) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(runnable);
+        } else {
+            runnable.run();
         }
     }
 
