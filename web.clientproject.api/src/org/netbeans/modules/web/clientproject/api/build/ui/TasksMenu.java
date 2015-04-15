@@ -170,7 +170,9 @@ public class TasksMenu extends JMenu {
     }
 
     void errorOccured(String message) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        if (isShowing()) {
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        }
     }
 
     void refreshMenu() {
